@@ -1,23 +1,3 @@
-/*
-interface MPEConfig {
-  breakOnSingleNewLine: boolean
-  enableTypographer: boolean
-  enableWikiLinkSyntax: boolean
-  wikiLinkFileExtension: string
-  frontMatterRenderingOption:string
-  scrollSync: boolean
-  mermaidTheme: string
-  mathRenderingOption: string
-  mathInlineDelimiters: Array<string[]>
-  mathBlockDelimiters: Array<string[]>
-  codeBlockTheme: string
-  previewTheme: string
-  protocolsWhiteList: string
-  imageFolderPath: string
-  imageUploader: string
-}
-*/
-
 interface MarkdownEngineConfig {
   usePandocParser: boolean
   breakOnSingleNewLine: boolean
@@ -42,7 +22,6 @@ interface MarkdownEngineConfig {
   pandocMarkdownFlavor: string 
   pandocArguments: string[]
 }
-
 
 interface CodeChunkData {
   /**

@@ -21,7 +21,7 @@ const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascr
 import {CustomSubjects} from "./custom-subjects"
 import * as PDF from "./pdf"
 
-interface TransformMarkdownOutput {
+export interface TransformMarkdownOutput {
   outputString: string,
   /**
    * An array of slide configs.  
@@ -47,7 +47,7 @@ interface TransformMarkdownOutput {
   frontMatterString: string 
 }
 
-interface TransformMarkdownOptions {
+export interface TransformMarkdownOptions {
   fileDirectoryPath: string 
   projectDirectoryPath: string 
   filesCache: {[key:string]: string}

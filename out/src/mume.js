@@ -14,11 +14,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
-const utility = require("./utility");
+const utility_ = require("./utility");
 const engine = require("./markdown-engine");
 let INITIALIZED = false;
 let CONFIG_CHANGE_CALLBACK = null;
-exports.extensionConfig = utility.extensionConfig;
+exports.utility = utility_;
+exports.extensionConfig = exports.utility.extensionConfig;
 exports.MarkdownEngine = engine.MarkdownEngine;
 /**
  * init mume config folder at ~/.mume
@@ -32,37 +33,37 @@ function init() {
         if (!fs.existsSync(extensionConfigDirectoryPath)) {
             fs.mkdirSync(extensionConfigDirectoryPath);
         }
-        exports.extensionConfig.globalStyle = yield utility.getGlobalStyles();
-        exports.extensionConfig.mermaidConfig = yield utility.getMermaidConfig();
-        exports.extensionConfig.mathjaxConfig = yield utility.getMathJaxConfig();
-        exports.extensionConfig.phantomjsConfig = yield utility.getPhantomjsConfig();
-        exports.extensionConfig.parserConfig = yield utility.getParserConfig();
-        exports.extensionConfig.config = yield utility.getExtensionConfig();
+        exports.extensionConfig.globalStyle = yield exports.utility.getGlobalStyles();
+        exports.extensionConfig.mermaidConfig = yield exports.utility.getMermaidConfig();
+        exports.extensionConfig.mathjaxConfig = yield exports.utility.getMathJaxConfig();
+        exports.extensionConfig.phantomjsConfig = yield exports.utility.getPhantomjsConfig();
+        exports.extensionConfig.parserConfig = yield exports.utility.getParserConfig();
+        exports.extensionConfig.config = yield exports.utility.getExtensionConfig();
         fs.watch(extensionConfigDirectoryPath, (eventType, fileName) => {
             if (eventType === 'change' && CONFIG_CHANGE_CALLBACK) {
                 if (fileName === 'style.less') {
-                    utility.getGlobalStyles()
+                    exports.utility.getGlobalStyles()
                         .then((css) => {
                         exports.extensionConfig.globalStyle = css;
                         CONFIG_CHANGE_CALLBACK();
                     });
                 }
                 else if (fileName === 'mermaid_config.js') {
-                    utility.getMermaidConfig()
+                    exports.utility.getMermaidConfig()
                         .then((mermaidConfig) => {
                         exports.extensionConfig.mermaidConfig = mermaidConfig;
                         CONFIG_CHANGE_CALLBACK();
                     });
                 }
                 else if (fileName === 'mathjax_config.js') {
-                    utility.getMathJaxConfig()
+                    exports.utility.getMathJaxConfig()
                         .then((mathjaxConfig) => {
                         exports.extensionConfig.mathjaxConfig = mathjaxConfig;
                         CONFIG_CHANGE_CALLBACK();
                     });
                 }
                 else if (fileName === 'parser.js') {
-                    utility.getParserConfig()
+                    exports.utility.getParserConfig()
                         .then((parserConfig) => {
                         exports.extensionConfig.parserConfig = parserConfig;
                         CONFIG_CHANGE_CALLBACK();
@@ -76,7 +77,7 @@ function init() {
 }
 exports.init = init;
 /**
- * cb will be called when global style.less file is changed.
+ * cb will be called when global style.less like files is changed.
  * @param cb function(error, css){}
  */
 function onDidChangeConfigFile(cb) {

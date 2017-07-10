@@ -52,7 +52,7 @@ function sanitizeContent(content) {
  *  depthTo: number, default 6
  *  tab: string, default `\t`
  */
-interface tocOption {
+export interface tocOption {
   ordered:boolean,
   depthFrom:number,
   depthTo:number,

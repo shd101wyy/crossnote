@@ -45,6 +45,9 @@ const defaults = {
     typographer: true,
 };
 let MODIFY_SOURCE = null;
+/**
+ * The markdown engine that can be used to parse markdown and export files
+ */
 class MarkdownEngine {
     // private cachedInputString:string = '' // <= this is wrong
     constructor(args) {
@@ -1687,6 +1690,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
             }
             if (utility.extensionConfig.parserConfig['onDidParseMarkdown']) {
                 html = yield utility.extensionConfig.parserConfig['onDidParseMarkdown'](html);
+            }
+            if (options.runAllCodeChunks) {
+                yield this.runAllCodeChunks();
             }
             this.cachedHTML = html; // save to cache
             return { html, markdown: inputString, tocHTML: this.tocHTML, yamlConfig, JSAndCssFiles };

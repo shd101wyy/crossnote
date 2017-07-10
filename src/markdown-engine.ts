@@ -31,20 +31,21 @@ const pdf = require(path.resolve(extensionDirectoryPath, './dependencies/node-ht
 // import * as Prism from "prismjs"
 let Prism = null
 
-interface MarkdownEngineConstructorArgs {
+export interface MarkdownEngineConstructorArgs {
   filePath: string,
   projectDirectoryPath: string,
   config: MarkdownEngineConfig
 }
 
-interface MarkdownEngineRenderOption {
+export interface MarkdownEngineRenderOption {
   useRelativeFilePath: boolean,
   isForPreview: boolean,
   hideFrontMatter: boolean,
-  triggeredBySave?: boolean
+  triggeredBySave?: boolean,
+  runAllCodeChunks?: boolean
 }
 
-interface MarkdownEngineOutput {
+export interface MarkdownEngineOutput {
   html:string,
   markdown:string,
   tocHTML:string,
@@ -58,7 +59,7 @@ interface MarkdownEngineOutput {
  // slideConfigs: Array<object>
 }
 
-interface HTMLTemplateOption {
+export interface HTMLTemplateOption {
   /**
    * whether is for print. 
    */
@@ -98,6 +99,9 @@ const defaults = {
 
 let MODIFY_SOURCE:(codeChunkData:CodeChunkData, result:string, filePath:string)=>Promise<string> = null
 
+/**
+ * The markdown engine that can be used to parse markdown and export files
+ */
 export class MarkdownEngine {
   /**
    * Modify markdown source, append `result` after corresponding code chunk.
@@ -1900,6 +1904,10 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 
     if (utility.extensionConfig.parserConfig['onDidParseMarkdown']) {
       html = await utility.extensionConfig.parserConfig['onDidParseMarkdown'](html)
+    }
+
+    if (options.runAllCodeChunks) {
+      await this.runAllCodeChunks()
     }
 
     this.cachedHTML = html // save to cache

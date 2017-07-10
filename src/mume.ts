@@ -6,12 +6,13 @@ import * as path from "path"
 import * as os from "os"
 import * as less from "less"
 
-import * as utility from "./utility"
+import * as utility_ from "./utility"
 import * as engine from "./markdown-engine"
 
 let INITIALIZED = false
 let CONFIG_CHANGE_CALLBACK:()=>void = null
 
+export const utility = utility_
 export const extensionConfig = utility.extensionConfig
 export const MarkdownEngine = engine.MarkdownEngine
 
@@ -70,7 +71,7 @@ export async function init():Promise<void> {
 
 
 /**
- * cb will be called when global style.less file is changed.
+ * cb will be called when global style.less like files is changed.
  * @param cb function(error, css){}
  */
 
