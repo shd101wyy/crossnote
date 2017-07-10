@@ -1,0 +1,17 @@
+{
+  "name": "@shd101wyy/mume",
+  "version": "0.0.1",
+  "description": "A powerful markdown tool",
+  "main": "out/src/mume.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "markdown"
+  ],
+  "author": "shd101wyy",
+  "license": "NCSA",
+  "devDependencies": {
+    "@types/node": "^8.0.10"
+  }
+}
