@@ -104,6 +104,7 @@ export async function processGraphs(text:string,
     } else {
       displayPNGFilePath = '/' + path.relative(projectDirectoryPath, pngFilePath) + '?' + Math.random()
     }
+    displayPNGFilePath = displayPNGFilePath.replace(/\\/g, '/') // fix windows path error.
 
     imgCount++
   
@@ -186,7 +187,7 @@ export async function processGraphs(text:string,
           const $ = cheerio.load(currentCodeChunk.result, {xmlMode: true}) // xmlMode here is necessary...
           const svg = $('svg')
           if (svg.length === 1) {
-            const pngFilePath = await convertSVGToPNGFile($.html('svg'), lines, start, end, false)
+            const pngFilePath = (await convertSVGToPNGFile($.html('svg'), lines, start, end, false)).replace(/\\/g, '/')
             result = `![](${pngFilePath})  \n`
           }
         } else if (options['cmd'].match(/^(la)?tex$/)) { // for latex, need to run it again to generate svg file in currect directory.

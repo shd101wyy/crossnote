@@ -98,6 +98,7 @@ function processGraphs(text, { fileDirectoryPath, projectDirectoryPath, imageDir
                 else {
                     displayPNGFilePath = '/' + path.relative(projectDirectoryPath, pngFilePath) + '?' + Math.random();
                 }
+                displayPNGFilePath = displayPNGFilePath.replace(/\\/g, '/'); // fix windows path error.
                 imgCount++;
                 if (modifyCodeBlock) {
                     clearCodeBlock(lines, start, end);
@@ -181,7 +182,7 @@ function processGraphs(text, { fileDirectoryPath, projectDirectoryPath, imageDir
                         const $ = cheerio.load(currentCodeChunk.result, { xmlMode: true }); // xmlMode here is necessary...
                         const svg = $('svg');
                         if (svg.length === 1) {
-                            const pngFilePath = yield convertSVGToPNGFile($.html('svg'), lines, start, end, false);
+                            const pngFilePath = (yield convertSVGToPNGFile($.html('svg'), lines, start, end, false)).replace(/\\/g, '/');
                             result = `![](${pngFilePath})  \n`;
                         }
                     }

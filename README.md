@@ -13,10 +13,11 @@ npm install --save @shd101wyy/mume
 ## Example
 
 ```javascript 
-import * as mume from "@shd101wyy/mume"
-
 // node.js 
 const mume = require('@shd101wyy/mume')
+
+// es6
+// import * as mume from "@shd101wyy/mume"
 
 async function main() {
   await mume.init()
