@@ -983,7 +983,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     /**
      * markdown(gfm) export
      */
-    markdownExport({ runAllCodeChunks }) {
+    markdownExport({ runAllCodeChunks = false }) {
         return __awaiter(this, void 0, void 0, function* () {
             let inputString = yield utility.readFile(this.filePath, { encoding: 'utf-8' });
             if (runAllCodeChunks) {

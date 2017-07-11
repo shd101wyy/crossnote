@@ -1,5 +1,4 @@
 import * as utility_ from "./utility";
-import * as engine from "./markdown-engine";
 export declare const utility: typeof utility_;
 export declare const configs: {
     globalStyle: string;
@@ -9,8 +8,8 @@ export declare const configs: {
     parserConfig: object;
     config: object;
 };
-export declare const MarkdownEngine: typeof engine.MarkdownEngine;
-export { MarkdownEngineConfig } from "./markdown-engine";
+export { MarkdownEngineConfig, MarkdownEngine } from "./markdown-engine";
+export { CodeChunkData } from "./code-chunk-data";
 /**
  * init mume config folder at ~/.mume
  */

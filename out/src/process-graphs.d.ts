@@ -1,3 +1,4 @@
+import { CodeChunkData } from "./code-chunk-data";
 export declare function processGraphs(text: string, {fileDirectoryPath, projectDirectoryPath, imageDirectoryPath, imageFilePrefix, useRelativeFilePath, codeChunksData, graphsCache}: {
     fileDirectoryPath: string;
     projectDirectoryPath: string;

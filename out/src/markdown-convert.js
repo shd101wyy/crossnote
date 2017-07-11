@@ -14,9 +14,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const fs = require("fs");
 const mkdirp = require("mkdirp");
-// processGraphs = require './process-graphs'
-// encrypt = require './encrypt'
-// CACHE = require './cache'
 const transformer_1 = require("./transformer");
 const utility = require("./utility");
 const process_graphs_1 = require("./process-graphs");

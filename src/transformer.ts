@@ -21,6 +21,12 @@ const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascr
 import {CustomSubjects} from "./custom-subjects"
 import * as PDF from "./pdf"
 
+export interface HeadingData {
+  content:string,
+  level:number,
+  id:string
+}
+
 export interface TransformMarkdownOutput {
   outputString: string,
   /**
@@ -39,7 +45,7 @@ export interface TransformMarkdownOutput {
    */
   JSAndCssFiles: string[] 
 
-  headings: Heading[]
+  headings: HeadingData[]
 
   /**
    * Get `---\n...\n---\n` string.  

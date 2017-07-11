@@ -1,3 +1,4 @@
+import { CodeChunkData } from "./code-chunk-data";
 export interface MarkdownEngineRenderOption {
     useRelativeFilePath: boolean;
     isForPreview: boolean;
@@ -200,7 +201,7 @@ export declare class MarkdownEngine {
      * markdown(gfm) export
      */
     markdownExport({runAllCodeChunks}: {
-        runAllCodeChunks: any;
+        runAllCodeChunks?: boolean;
     }): Promise<string>;
     /**
      *

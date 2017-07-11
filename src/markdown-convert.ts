@@ -5,12 +5,11 @@
 import * as path from "path"
 import * as fs from "fs"
 import * as mkdirp from "mkdirp"
-// processGraphs = require './process-graphs'
-// encrypt = require './encrypt'
-// CACHE = require './cache'
 import {transformMarkdown} from "./transformer"
 import * as utility from "./utility"
 import {processGraphs} from "./process-graphs"
+import {CodeChunkData} from "./code-chunk-data"
+
 const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 

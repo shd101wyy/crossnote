@@ -1,6 +1,4 @@
-
-
-interface CodeChunkData {
+export interface CodeChunkData {
   /**
    * id of the code chunk
    */
@@ -34,10 +32,4 @@ interface CodeChunkData {
    * next code chunk
    */
   next: string,
-}
-
-interface Heading {
-  content:string,
-  level:number,
-  id:string
 }

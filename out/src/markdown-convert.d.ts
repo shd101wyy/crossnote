@@ -1,3 +1,4 @@
+import { CodeChunkData } from "./code-chunk-data";
 export declare function markdownConvert(text: any, {projectDirectoryPath, fileDirectoryPath, protocolsWhiteListRegExp, filesCache, mathInlineDelimiters, mathBlockDelimiters, codeChunksData, graphsCache, usePandocParser}: {
     projectDirectoryPath: string;
     fileDirectoryPath: string;

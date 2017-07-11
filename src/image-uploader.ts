@@ -2,6 +2,7 @@
 import * as request from "request"
 import * as fs from "fs"
 import * as path from "path"
+import * as utility from "./utility"
 
 // imgur api
 // referred from node-imgur:
@@ -12,6 +13,41 @@ import * as path from "path"
 // module only.
 const IMGUR_API_URL = process.env.IMGUR_API_URL || 'https://api.imgur.com/3/';
 const IMGUR_CLIENT_ID    = process.env.IMGUR_CLIENT_ID || 'f0ea04148a54268';
+
+/**
+ * 
+ * @param imageFilePath local image file path
+ * @param imageUrl http://... image url
+ */
+async function addImageURLToHistory(imageFilePath, imageUrl) {
+  let description
+  if (imageFilePath.lastIndexOf('.'))
+    description = imageFilePath.slice(0, imageFilePath.lastIndexOf('.'))
+  else
+    description = imageFilePath
+
+  const markdownImage = `![${description}](${imageUrl})`
+
+    // TODO: save to history
+  const imageHistoryPath = path.resolve(utility.extensionConfigDirectoryPath, './image_history.md')
+  let data:string
+  try {
+    data = await utility.readFile(imageHistoryPath, {encoding: 'utf-8'})
+  } catch(e) {
+    data = ''
+  }
+  data = `
+${markdownImage}
+
+\`${markdownImage}\`
+
+${(new Date()).toString()}
+
+---
+
+` + data 
+  utility.writeFile(imageHistoryPath, data, {encoding: 'utf-8'})
+}
 
 /**
  * Upload image to imgur
@@ -35,7 +71,9 @@ function imgurUploadImage(filePath:string):Promise<string> {
         return reject(err)
       } 
       if (body.success) {
-        return resolve(body.data.link)
+        const url = body.data.link
+        addImageURLToHistory(filePath, url)
+        return resolve(url)
       } else {
         return resolve(body.data.error.message)
       }
@@ -66,8 +104,11 @@ function smmsUploadImage(filePath:string):Promise<string> {
           return reject('Failed to upload image')
         else if (body.code === 'error')
           return reject(body.msg)
-        else
-          return resolve(body.data.url)
+        else {
+          const url = body.data.url
+          addImageURLToHistory(filePath, url)
+          return resolve(url)
+        }
       } catch (error) {
         return reject('Failed to connect to sm.ms host')
       }

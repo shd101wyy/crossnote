@@ -10,7 +10,7 @@ import * as plantumlAPI from "./puml"
 import {escapeString, unescapeString, readFile} from "./utility"
 import * as utility from "./utility"
 import {scopeForLanguageName} from "./extension-helper"
-import {transformMarkdown} from "./transformer"
+import {transformMarkdown, HeadingData} from "./transformer"
 import {toc} from "./toc"
 import {CustomSubjects} from "./custom-subjects"
 import {princeConvert} from "./prince-convert"
@@ -18,6 +18,7 @@ import {ebookConvert} from "./ebook-convert"
 import {pandocConvert} from "./pandoc-convert"
 import {markdownConvert} from "./markdown-convert"
 import * as CodeChunkAPI from "./code-chunk"
+import {CodeChunkData} from "./code-chunk-data"
 
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const katex = require(path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.js'))
@@ -180,7 +181,7 @@ export class MarkdownEngine {
   private enableTypographer: boolean
   private protocolsWhiteListRegExp:RegExp
 
-  private headings: Array<Heading>
+  private headings: Array<HeadingData>
   private tocHTML: string
 
   private md;
@@ -1176,7 +1177,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   /**
    * markdown(gfm) export 
    */
-  public async markdownExport({runAllCodeChunks}):Promise<string> {
+  public async markdownExport({runAllCodeChunks=false}):Promise<string> {
     let inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
     
     if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData

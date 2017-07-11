@@ -15,12 +15,12 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const utility_ = require("./utility");
-const engine = require("./markdown-engine");
 let INITIALIZED = false;
 let CONFIG_CHANGE_CALLBACK = null;
 exports.utility = utility_;
 exports.configs = exports.utility.configs;
-exports.MarkdownEngine = engine.MarkdownEngine;
+var markdown_engine_1 = require("./markdown-engine");
+exports.MarkdownEngine = markdown_engine_1.MarkdownEngine;
 /**
  * init mume config folder at ~/.mume
  */

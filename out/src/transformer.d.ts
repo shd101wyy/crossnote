@@ -1,3 +1,8 @@
+export interface HeadingData {
+    content: string;
+    level: number;
+    id: string;
+}
 export interface TransformMarkdownOutput {
     outputString: string;
     /**
@@ -14,7 +19,7 @@ export interface TransformMarkdownOutput {
      * convert .css file to <link href='...'></link>
      */
     JSAndCssFiles: string[];
-    headings: Heading[];
+    headings: HeadingData[];
     /**
      * Get `---\n...\n---\n` string.
      */

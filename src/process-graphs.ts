@@ -7,6 +7,8 @@ import * as utility from "./utility"
 import {svgElementToPNGFile} from "./magick"
 // import {mermaidToPNG} from "./mermaid"
 import {compileLaTeX} from "./code-chunk"
+import {CodeChunkData} from "./code-chunk-data"
+
 const Viz = require(path.resolve(utility.extensionDirectoryPath, './dependencies/viz/viz.js'))
 const jsonic = require(path.resolve(utility.extensionDirectoryPath, './dependencies/jsonic/jsonic.js'))
 const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
