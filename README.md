@@ -60,82 +60,74 @@ main()
 
 ```js
 const config = {
-  /**
-   * Enable this option will render markdown by pandoc instead of remarkable.
-   */
+  // Enable this option will render markdown by pandoc instead of remarkable.
   usePandocParser: false,
 
-  /**
-   * In Markdown, a single newline character doesn't cause a line break in the generated HTML. In GitHub Flavored Markdown, that is not true. Enable this config option to insert line breaks in rendered HTML for single newlines in Markdown source.
-   */
+  // In Markdown, a single newline character doesn't cause a line break in the generated HTML. In GitHub Flavored Markdown, that is not true. Enable this config option to insert line breaks in rendered HTML for single newlines in Markdown source.
   breakOnSingleNewLine: true,
 
-  /**
-   * Enable smartypants and other sweet transforms.
-   */ 
+  // Enable smartypants and other sweet transforms.
   enableTypographer: false,
 
-  /**
-   * Math
-   */
+  // Math
   mathRenderingOption: "KaTeX",  // "KaTeX" | "MathJax" | "None"
   mathInlineDelimiters: [["$", "$"], ["\\(", "\\)"]],
   mathBlockDelimiters: [["$$", "$$"], ["\\[", "\\]"]],
 
-   // Enable Wiki Link syntax support. More information can be found at https://help.github.com/articles/adding-links-to-wikis/ 
-   enableWikiLinkSyntax: true,
-   // By default, the extension for wikilink is `.md`. For example: [[test]] will direct to file path `test.md`.
-   wikiLinkFileExtension: '.md'
+  // Enable Wiki Link syntax support. More information can be found a  https://help.github.com/articles/adding-links-to-wikis/ 
+  enableWikiLinkSyntax: true,
+  // By default, the extension for wikilink is `.md`. For example: [[test]] will direct to file path `test.md`.
+  wikiLinkFileExtension: '.md'
 
-   // Front matter rendering option
-   frontMatterRenderingOption: 'table', // 'table' | 'code block' | 'none'
+  // Front matter rendering option
+  frontMatterRenderingOption: 'table', // 'table' | 'code block' | 'none'
 
-   // Mermaid theme 
-   mermaidTheme: 'mermaid.css', // 'mermaid.css' | 'mermaid.dark.css' | 'mermaid.forest.css'
+  // Mermaid theme 
+  mermaidTheme: 'mermaid.css', // 'mermaid.css' | 'mermaid.dark.css' | 'mermaid.forest.css'
 
-   // Code Block theme
-   codeBlockTheme: 'default.css', 
-   //  "default.css",
-   //  "atom-dark.css",
-   //  "coy.css",
-   //  "dark.css",
-   //  "funky.css",
-   //  "github.css",
-   //  "monokai.css",
-   //  "okaidia.css",
-   //  "solarized-light.css",
-   //  "twilight.css" 
+  // Code Block theme
+  codeBlockTheme: 'default.css', 
+  //  "default.css",
+  //  "atom-dark.css",
+  //  "coy.css",
+  //  "dark.css",
+  //  "funky.css",
+  //  "github.css",
+  //  "monokai.css",
+  //  "okaidia.css",
+  //  "solarized-light.css",
+  //  "twilight.css" 
 
-   // Preview theme
-   previewTheme: 'github-light.css',
-   // "github-light.css",
-   // "github-dark.css",
-   // "gothic.css",
-   // "newsprint.css",
-   // "night.css",
-   // "medium.css"
-   // "none.css"
+  // Preview theme
+  previewTheme: 'github-light.css',
+  // "github-light.css",
+  // "github-dark.css",
+  // "gothic.css",
+  // "newsprint.css",
+  // "night.css",
+  // "medium.css"
+  // "none.css"
 
-   // Accepted protocols followed by `://` for links.
-   protocolsWhiteList: "http, https, atom, file",
+  // Accepted protocols followed by `://` for links.
+  protocolsWhiteList: "http, https, atom, file",
 
-   // When using Image Helper to copy images, by default images will be copied to root image folder path '/assets'
-   imageFolderPath: '/assets',
+  // When using Image Helper to copy images, by default images will be copied to root image folder path '/assets'
+  imageFolderPath: '/assets',
 
-   // Whether to print background for PDF file export or not. If set to `false`, then `github-light` preview theme will be used.
-   printBackground: false,
+  // Whether to print background for PDF file export or not. If set to `false`, then `github-light` preview theme will b  used.
+  printBackground: false,
 
-   // PhantomJS executable path
-   phantomjs: 'phantomjs',
+  // PhantomJS executable path
+  phantomjs: 'phantomjs',
 
-   // Pandoc executable path
-   pandocPath: 'pandoc',
+  // Pandoc executable path
+  pandocPath: 'pandoc',
 
-   // Pandoc markdown flavor
-   pandocMarkdownFlavor: "markdown-raw_tex+tex_math_single_backslash",
+  // Pandoc markdown flavor
+  pandocMarkdownFlavor: "markdown-raw_tex+tex_math_single_backslash",
 
-   // Pandoc arguments e.g. ['--smart', '--filter=/bin/exe']. Please use long argument names.
-   pandocArguments: []
+  // Pandoc arguments e.g. ['--smart', '--filter=/bin/exe']. Please use long argument names.
+  pandocArguments: []
 }
 
 // Init Engine
@@ -149,3 +141,7 @@ const engine = new mume.MarkdownEngine({
 
 ## Global Configuration
 Global config files are located at `~/.mume` directory
+
+## Development
+[Visual Studio Code](https://code.visualstudio.com/) is recommended.    
+Clone this project, open in vscode, then `cmd+shift+b` to build.  
