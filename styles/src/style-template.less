@@ -1,11 +1,7 @@
 // out: ../style-template.css, compress:true
 
 
-html body {
-  .pagebreak, .newpage {
-    page-break-before: always;
-  }
-
+html body:not([data-presentation-mode]) {
   @media screen and (min-width: 914px) {
     width: 980px;
     margin:10px auto;
@@ -17,8 +13,14 @@ html body {
     margin: 0 auto;
     padding: 15px;
   }
+}
 
-  // code block line numbers 
+html body {
+  .pagebreak, .newpage {
+    page-break-before: always;
+  }
+
+    // code block line numbers 
   pre.line-numbers {
     position: relative;
     padding-left: 3.8em;

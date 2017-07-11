@@ -1877,7 +1877,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       return attrString
     }
 
-    let i = 0
+    let i = 0,
+        h = -1, // horizontal
+        v = 0  // vertical
     while (i < slides.length) { 
       const slide = slides[i] 
       const slideConfig = slideConfigs[i]
@@ -1886,13 +1888,19 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       const idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : ''
 
       if (!slideConfig['vertical']) {
-        if (i > 0 && slideConfigs[i-1]['vertical']) // end of vertical slides
+        h += 1
+        if (i > 0 && slideConfigs[i-1]['vertical']) { // end of vertical slides
           output += '</section>'
-        if (i < slides.length - 1 && slideConfigs[i+1]['vertical']) // start of vertical slides
+          v = 0
+        }
+        if (i < slides.length - 1 && slideConfigs[i+1]['vertical']) { // start of vertical slides
           output += "<section>"
+        }
+      } else { // vertical slide
+        v += 1
       }
 
-      output += `<section ${attrString} ${idString} class=\"${classString}\">${slide}</section>`
+      output += `<section ${attrString} ${idString} class=\"${classString}\" data-h=\"${h}\" data-v="${v}">${slide}</section>`
       i += 1
     }
     if (i > 0 && slideConfigs[i-1]['vertical']) // end of vertical slides
