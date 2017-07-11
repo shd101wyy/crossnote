@@ -9,6 +9,7 @@ import {transformMarkdown} from "./transformer"
 import * as utility from "./utility"
 import {processGraphs} from "./process-graphs"
 import {CodeChunkData} from "./code-chunk-data"
+import {toc} from "./toc"
 
 const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
@@ -154,9 +155,17 @@ config:object):Promise<string> {
   const useRelativeFilePath = !config['absolute_image_path']
 
   // import external files
-  const data = await transformMarkdown(text, {fileDirectoryPath, projectDirectoryPath, useRelativeFilePath, filesCache, forPreview:false, protocolsWhiteListRegExp, imageDirectoryPath, usePandocParser})
+  const data = await transformMarkdown(text, {fileDirectoryPath, projectDirectoryPath, useRelativeFilePath, filesCache, forPreview:false, forMarkdownExport:true, protocolsWhiteListRegExp, imageDirectoryPath, usePandocParser})
   text = data.outputString
-  
+  const tocBracketEnabled = data.tocBracketEnabled
+
+  // replace [MUMETOC]
+  if (tocBracketEnabled) { // [TOC]
+    const headings = data.headings
+    const {content:tocMarkdown} = toc(headings, {ordered: false, depthFrom: 1, depthTo: 6, tab: '\t'})
+    text = text.replace(/^\s*\[MUMETOC\]\s*/gm, '\n\n'+tocMarkdown+'\n\n')
+  }
+
   // change link path to project '/' path
   // this is actually differnet from pandoc-convert.coffee
   text = processPaths(text, fileDirectoryPath, projectDirectoryPath, useRelativeFilePath, protocolsWhiteListRegExp)

@@ -59,6 +59,7 @@ export interface TransformMarkdownOptions {
   filesCache: {[key:string]: string}
   useRelativeFilePath: boolean
   forPreview: boolean
+  forMarkdownExport?: boolean
   protocolsWhiteListRegExp: RegExp,
   notSourceFile?: boolean,
   imageDirectoryPath?: string
@@ -200,6 +201,7 @@ export async function transformMarkdown(inputString:string,
                               filesCache = {}, 
                               useRelativeFilePath = null,
                               forPreview = false,
+                              forMarkdownExport = false,
                               protocolsWhiteListRegExp = null,
                               notSourceFile = false,
                               imageDirectoryPath = '',
@@ -312,9 +314,15 @@ export async function transformMarkdown(inputString:string,
           optionsStr += '}'
           return helper(end+1, lineNo+1, outputString + `${tag} ${heading} ${optionsStr}` + '\n')
         } else { // remarkable
-          const classesString = classes ? `class="${classes}"` : '',
-              idString = id ? `id="${id}"` : ''
-          return helper(end+1, lineNo+1, outputString + `<h${level} ${classesString} ${idString}>${heading}</h${level}>\n`)
+          if (!forMarkdownExport) { // convert to <h? ... ></h?>
+            const classesString = classes ? `class="${classes}"` : '',
+                idString = id ? `id="${id}"` : ''
+            line = `<h${level} ${classesString} ${idString}>${heading}</h${level}>`
+          } else {
+            line = `${tag} ${heading}`
+          }
+
+          return helper(end+1, lineNo+1, outputString + line + '\n')
         }
       } else if (line.match(/^\<!--/)) { // custom comment
         if (forPreview) outputString += createAnchor(lineNo)
