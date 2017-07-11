@@ -1,10 +1,12 @@
 {
   "name": "@shd101wyy/mume",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A powerful markdown tool",
   "main": "out/src/mume.js",
+  "typings": "out/src/mume.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "publish": "npm publish --access public"
   },
   "keywords": [
     "markdown"
