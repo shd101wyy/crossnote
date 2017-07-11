@@ -13,7 +13,7 @@ let INITIALIZED = false
 let CONFIG_CHANGE_CALLBACK:()=>void = null
 
 export const utility = utility_
-export const extensionConfig = utility.extensionConfig
+export const configs = utility.configs
 export const MarkdownEngine = engine.MarkdownEngine
 export {MarkdownEngineConfig} from "./markdown-engine"
 
@@ -29,38 +29,44 @@ export async function init():Promise<void> {
     fs.mkdirSync(extensionConfigDirectoryPath)
   }
 
-  extensionConfig.globalStyle = await utility.getGlobalStyles()
-  extensionConfig.mermaidConfig = await utility.getMermaidConfig()
-  extensionConfig.mathjaxConfig = await utility.getMathJaxConfig()
-  extensionConfig.phantomjsConfig = await utility.getPhantomjsConfig()
-  extensionConfig.parserConfig = await utility.getParserConfig()
-  extensionConfig.config = await utility.getExtensionConfig()
+  configs.globalStyle = await utility.getGlobalStyles()
+  configs.mermaidConfig = await utility.getMermaidConfig()
+  configs.mathjaxConfig = await utility.getMathJaxConfig()
+  configs.phantomjsConfig = await utility.getPhantomjsConfig()
+  configs.parserConfig = await utility.getParserConfig()
+  configs.config = await utility.getExtensionConfig()
 
   fs.watch(extensionConfigDirectoryPath, (eventType, fileName)=> {
-    if (eventType === 'change' && CONFIG_CHANGE_CALLBACK) {
+    if (eventType === 'change') {
       if (fileName === 'style.less') { // || fileName==='mermaid_config.js' || fileName==='mathjax_config')
         utility.getGlobalStyles()
         .then((css)=> {
-          extensionConfig.globalStyle = css
-          CONFIG_CHANGE_CALLBACK()
+          configs.globalStyle = css
+          if (CONFIG_CHANGE_CALLBACK) CONFIG_CHANGE_CALLBACK()
         })
       } else if (fileName === 'mermaid_config.js') {
         utility.getMermaidConfig()
         .then((mermaidConfig)=> {
-          extensionConfig.mermaidConfig = mermaidConfig
-          CONFIG_CHANGE_CALLBACK()
+          configs.mermaidConfig = mermaidConfig
+          if (CONFIG_CHANGE_CALLBACK) CONFIG_CHANGE_CALLBACK()
         })
       } else if (fileName === 'mathjax_config.js') {
         utility.getMathJaxConfig()
         .then((mathjaxConfig)=> {
-          extensionConfig.mathjaxConfig = mathjaxConfig
-          CONFIG_CHANGE_CALLBACK()
+          configs.mathjaxConfig = mathjaxConfig
+          if (CONFIG_CHANGE_CALLBACK) CONFIG_CHANGE_CALLBACK()
         })
       } else if (fileName === 'parser.js') {
         utility.getParserConfig()
         .then((parserConfig)=> {
-          extensionConfig.parserConfig = parserConfig
-          CONFIG_CHANGE_CALLBACK()
+          configs.parserConfig = parserConfig
+          if (CONFIG_CHANGE_CALLBACK) CONFIG_CHANGE_CALLBACK()
+        })
+      } else if (fileName === 'config.json') {
+        utility.getExtensionConfig()
+        .then((config)=> {
+          configs.config = config
+          if (CONFIG_CHANGE_CALLBACK) CONFIG_CHANGE_CALLBACK()
         })
       }
     }

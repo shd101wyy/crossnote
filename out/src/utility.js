@@ -399,7 +399,7 @@ exports.removeFileProtocol = removeFileProtocol;
  *
  * files
  */
-exports.extensionConfig = {
+exports.configs = {
     globalStyle: "",
     mathjaxConfig: null,
     mermaidConfig: "MERMAID_CONFIG = {startOnLoad: false}",
@@ -407,3 +407,5 @@ exports.extensionConfig = {
     parserConfig: {},
     config: {}
 };
+var image_uploader_1 = require("./image-uploader");
+exports.uploadImage = image_uploader_1.uploadImage;

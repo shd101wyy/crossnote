@@ -78,21 +78,17 @@ function processPaths(text, fileDirectoryPath, projectDirectoryPath, useRelative
       output = ''
 
   function resolvePath(src) {
-    if (src.match(protocolsWhiteListRegExp))
-      return src
-
-    if (useRelativeFilePath) {
+    if (src.match(protocolsWhiteListRegExp)) {
+      // do nothing
+    } else if (useRelativeFilePath) {
       if (src.startsWith('/'))
-        return path.relative(fileDirectoryPath, path.resolve(projectDirectoryPath, '.'+src))
-      else // ./test.png or test.png
-        return src
+        src = path.relative(fileDirectoryPath, path.resolve(projectDirectoryPath, '.'+src))
     }
     else {
-      if (src.startsWith('/'))
-        return src
-      else // ./test.png or test.png
-        return '/' + path.relative(projectDirectoryPath, path.resolve(fileDirectoryPath, src))
+      if (!src.startsWith('/')) // ./test.png or test.png
+        src = '/' + path.relative(projectDirectoryPath, path.resolve(fileDirectoryPath, src))
     }
+    return src.replace(/\\/g, '/') // https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/17
   }
 
   let inBlock = false

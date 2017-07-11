@@ -373,7 +373,7 @@ export function removeFileProtocol(filePath:string):string {
  * 
  * files
  */
-export const extensionConfig:
+export const configs:
 { globalStyle:string
   mathjaxConfig:object 
   mermaidConfig: string
@@ -388,3 +388,5 @@ export const extensionConfig:
   parserConfig: {},
   config: {}
 }
+
+export {uploadImage} from "./image-uploader"

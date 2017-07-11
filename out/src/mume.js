@@ -19,7 +19,7 @@ const engine = require("./markdown-engine");
 let INITIALIZED = false;
 let CONFIG_CHANGE_CALLBACK = null;
 exports.utility = utility_;
-exports.extensionConfig = exports.utility.extensionConfig;
+exports.configs = exports.utility.configs;
 exports.MarkdownEngine = engine.MarkdownEngine;
 /**
  * init mume config folder at ~/.mume
@@ -33,40 +33,52 @@ function init() {
         if (!fs.existsSync(extensionConfigDirectoryPath)) {
             fs.mkdirSync(extensionConfigDirectoryPath);
         }
-        exports.extensionConfig.globalStyle = yield exports.utility.getGlobalStyles();
-        exports.extensionConfig.mermaidConfig = yield exports.utility.getMermaidConfig();
-        exports.extensionConfig.mathjaxConfig = yield exports.utility.getMathJaxConfig();
-        exports.extensionConfig.phantomjsConfig = yield exports.utility.getPhantomjsConfig();
-        exports.extensionConfig.parserConfig = yield exports.utility.getParserConfig();
-        exports.extensionConfig.config = yield exports.utility.getExtensionConfig();
+        exports.configs.globalStyle = yield exports.utility.getGlobalStyles();
+        exports.configs.mermaidConfig = yield exports.utility.getMermaidConfig();
+        exports.configs.mathjaxConfig = yield exports.utility.getMathJaxConfig();
+        exports.configs.phantomjsConfig = yield exports.utility.getPhantomjsConfig();
+        exports.configs.parserConfig = yield exports.utility.getParserConfig();
+        exports.configs.config = yield exports.utility.getExtensionConfig();
         fs.watch(extensionConfigDirectoryPath, (eventType, fileName) => {
-            if (eventType === 'change' && CONFIG_CHANGE_CALLBACK) {
+            if (eventType === 'change') {
                 if (fileName === 'style.less') {
                     exports.utility.getGlobalStyles()
                         .then((css) => {
-                        exports.extensionConfig.globalStyle = css;
-                        CONFIG_CHANGE_CALLBACK();
+                        exports.configs.globalStyle = css;
+                        if (CONFIG_CHANGE_CALLBACK)
+                            CONFIG_CHANGE_CALLBACK();
                     });
                 }
                 else if (fileName === 'mermaid_config.js') {
                     exports.utility.getMermaidConfig()
                         .then((mermaidConfig) => {
-                        exports.extensionConfig.mermaidConfig = mermaidConfig;
-                        CONFIG_CHANGE_CALLBACK();
+                        exports.configs.mermaidConfig = mermaidConfig;
+                        if (CONFIG_CHANGE_CALLBACK)
+                            CONFIG_CHANGE_CALLBACK();
                     });
                 }
                 else if (fileName === 'mathjax_config.js') {
                     exports.utility.getMathJaxConfig()
                         .then((mathjaxConfig) => {
-                        exports.extensionConfig.mathjaxConfig = mathjaxConfig;
-                        CONFIG_CHANGE_CALLBACK();
+                        exports.configs.mathjaxConfig = mathjaxConfig;
+                        if (CONFIG_CHANGE_CALLBACK)
+                            CONFIG_CHANGE_CALLBACK();
                     });
                 }
                 else if (fileName === 'parser.js') {
                     exports.utility.getParserConfig()
                         .then((parserConfig) => {
-                        exports.extensionConfig.parserConfig = parserConfig;
-                        CONFIG_CHANGE_CALLBACK();
+                        exports.configs.parserConfig = parserConfig;
+                        if (CONFIG_CHANGE_CALLBACK)
+                            CONFIG_CHANGE_CALLBACK();
+                    });
+                }
+                else if (fileName === 'config.json') {
+                    exports.utility.getExtensionConfig()
+                        .then((config) => {
+                        exports.configs.config = config;
+                        if (CONFIG_CHANGE_CALLBACK)
+                            CONFIG_CHANGE_CALLBACK();
                     });
                 }
             }

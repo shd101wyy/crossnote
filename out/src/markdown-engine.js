@@ -44,6 +44,27 @@ const defaults = {
     linkTarget: '',
     typographer: true,
 };
+const defaultMarkdownEngineConfig = {
+    usePandocParser: false,
+    breakOnSingleNewLine: true,
+    enableTypographer: false,
+    enableWikiLinkSyntax: true,
+    wikiLinkFileExtension: '.md',
+    protocolsWhiteList: 'http, https, atom, file',
+    mathRenderingOption: 'KaTeX',
+    mathInlineDelimiters: [["$", "$"], ["\\(", "\\)"]],
+    mathBlockDelimiters: [["$$", "$$"], ["\\[", "\\]"]],
+    codeBlockTheme: 'default.css',
+    previewTheme: 'github-light.css',
+    mermaidTheme: 'mermaid.css',
+    frontMatterRenderingOption: 'table',
+    imageFolderPath: '/assets',
+    printBackground: false,
+    phantomPath: 'phantomjs',
+    pandocPath: 'pandoc',
+    pandocMarkdownFlavor: 'markdown-raw_tex+tex_math_single_backslash',
+    pandocArguments: []
+};
 let MODIFY_SOURCE = null;
 /**
  * The markdown engine that can be used to parse markdown and export files
@@ -64,7 +85,7 @@ class MarkdownEngine {
         this.filePath = args.filePath;
         this.fileDirectoryPath = path.dirname(this.filePath);
         this.projectDirectoryPath = args.projectDirectoryPath || this.fileDirectoryPath;
-        this.config = args.config;
+        this.config = Object.assign({}, defaultMarkdownEngineConfig, utility.configs.config || {}, args.config || {});
         this.initConfig();
         this.headings = [];
         this.tocHTML = '';
@@ -100,46 +121,12 @@ class MarkdownEngine {
      */
     initConfig() {
         // break on single newline
-        if (this.config.breakOnSingleNewLine == null)
-            this.config.breakOnSingleNewLine = true;
         this.breakOnSingleNewLine = this.config.breakOnSingleNewLine;
         // enable typographer
         this.enableTypographer = this.config.enableTypographer;
-        // math 
-        if (this.config.mathRenderingOption == null)
-            this.config.mathRenderingOption = 'KaTeX';
-        if (this.config.mathInlineDelimiters == null)
-            this.config.mathInlineDelimiters = [["$", "$"], ["\\(", "\\)"]];
-        if (this.config.mathBlockDelimiters == null)
-            this.config.mathBlockDelimiters = [["$$", "$$"], ["\\[", "\\]"]];
-        // wikilink
-        if (this.config.enableWikiLinkSyntax == null)
-            this.config.enableWikiLinkSyntax = true;
-        // front matter
-        if (this.config.frontMatterRenderingOption == null)
-            this.config.frontMatterRenderingOption = 'table';
-        // mermaid 
-        if (this.config.mermaidTheme == null)
-            this.config.mermaidTheme = 'mermaid.css';
-        // codeblock theme 
-        if (this.config.codeBlockTheme == null)
-            this.config.codeBlockTheme = 'default.css';
-        // preview theme 
-        if (this.config.previewTheme == null)
-            this.config.previewTheme = 'github-light.css';
         // protocal whitelist
-        if (this.config.protocolsWhiteList == null)
-            this.config.protocolsWhiteList = 'http, https, atom, file';
         const protocolsWhiteList = this.config.protocolsWhiteList.split(',').map((x) => x.trim()) || ['http', 'https', 'atom', 'file'];
         this.protocolsWhiteListRegExp = new RegExp('^(' + protocolsWhiteList.join('|') + ')\:\/\/'); // eg /^(http|https|atom|file)\:\/\//
-        // image folder path 
-        if (this.config.imageFolderPath == null)
-            this.config.imageFolderPath = '/assets';
-        this.config.printBackground = this.config.printBackground || false;
-        this.config.phantomPath = this.config.phantomPath || 'phantomjs';
-        this.config.pandocPath = this.config.pandocPath || 'pandoc';
-        this.config.pandocArguments = this.config.pandocArguments || [];
-        this.config.pandocMarkdownFlavor = this.config.pandocMarkdownFlavor || 'markdown-raw_tex+tex_math_single_backslash';
     }
     updateConfiguration(config) {
         this.config = Object.assign({}, this.config, config);
@@ -170,7 +157,7 @@ class MarkdownEngine {
     parseMath({ content, openTag, closeTag, displayMode }) {
         if (!content)
             return '';
-        if (this.config.mathRenderingOption[0] == 'K') {
+        if (this.config.mathRenderingOption[0] === 'K') {
             try {
                 return katex.renderToString(content, { displayMode });
             }
@@ -178,7 +165,7 @@ class MarkdownEngine {
                 return `<span style=\"color: #ee7f49; font-weight: 500;\">${error.toString()}</span>`;
             }
         }
-        else if (this.config.mathRenderingOption[0] == 'M') {
+        else if (this.config.mathRenderingOption[0] === 'M') {
             const text = (openTag + content + closeTag).replace(/\n/g, '');
             const tag = displayMode ? 'div' : 'span';
             return `<${tag} class="mathjax-exps">${utility_1.escapeString(text)}</${tag}>`;
@@ -192,7 +179,7 @@ class MarkdownEngine {
          * math rule
          */
         this.md.inline.ruler.before('escape', 'math', (state, silent) => {
-            if (this.config.mathRenderingOption[0] == 'N')
+            if (this.config.mathRenderingOption[0] === 'N')
                 return false;
             let openTag = null, closeTag = null, displayMode = true, inline = this.config.mathInlineDelimiters, block = this.config.mathBlockDelimiters;
             for (let a = 0; a < block.length; a++) {
@@ -224,7 +211,7 @@ class MarkdownEngine {
                     end = i;
                     break;
                 }
-                else if (state.src[i] == '\\') {
+                else if (state.src[i] === '\\') {
                     i += 1;
                 }
                 i += 1;
@@ -265,7 +252,7 @@ class MarkdownEngine {
             let content = null, tag = ']]', end = -1;
             let i = state.pos + tag.length;
             while (i < state.src.length) {
-                if (state.src[i] == '\\') {
+                if (state.src[i] === '\\') {
                     i += 1;
                 }
                 else if (state.src.startsWith(tag, i)) {
@@ -423,7 +410,7 @@ class MarkdownEngine {
             // get `id` and `class`
             const elementId = yamlConfig['id'] || '';
             let elementClass = yamlConfig['class'] || [];
-            if (typeof (elementClass) == 'string')
+            if (typeof (elementClass) === 'string')
                 elementClass = [elementClass];
             elementClass = elementClass.join(' ');
             // math style and script
@@ -452,7 +439,7 @@ class MarkdownEngine {
         `;
                 }
             }
-            else if (this.config.mathRenderingOption == 'KaTeX') {
+            else if (this.config.mathRenderingOption === 'KaTeX') {
                 if (options.offline) {
                     mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.css')}">`;
                 }
@@ -886,7 +873,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
             // math
             let mathStyle = '';
             if (outputHTML.indexOf('class="katex"') > 0) {
-                if (path.extname(dest) == '.html' && ebookConfig['html'] && ebookConfig['html'].cdn) {
+                if (path.extname(dest) === '.html' && ebookConfig['html'] && ebookConfig['html'].cdn) {
                     mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">`;
                 }
                 else {
@@ -1041,10 +1028,10 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     resolveFilePath(filePath = '', relative) {
         if (filePath.match(this.protocolsWhiteListRegExp) ||
             filePath.startsWith('data:image/') ||
-            filePath[0] == '#') {
+            filePath[0] === '#') {
             return filePath;
         }
-        else if (filePath[0] == '/') {
+        else if (filePath[0] === '/') {
             if (relative)
                 return path.relative(this.fileDirectoryPath, path.resolve(this.projectDirectoryPath, '.' + filePath));
             else
@@ -1441,7 +1428,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
             if (this.config.usePandocParser) {
                 return { content: frontMatterString, table: '', data: data || {} };
             }
-            else if (hideFrontMatter || this.config.frontMatterRenderingOption[0] == 'n') {
+            else if (hideFrontMatter || this.config.frontMatterRenderingOption[0] === 'n') {
                 return { content: '', table: '', data };
             }
             else if (this.config.frontMatterRenderingOption[0] === 't') {
@@ -1658,8 +1645,8 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         return __awaiter(this, void 0, void 0, function* () {
             if (!inputString)
                 inputString = yield utility.readFile(this.filePath, { encoding: 'utf-8' });
-            if (utility.extensionConfig.parserConfig['onWillParseMarkdown']) {
-                inputString = yield utility.extensionConfig.parserConfig['onWillParseMarkdown'](inputString);
+            if (utility.configs.parserConfig['onWillParseMarkdown']) {
+                inputString = yield utility.configs.parserConfig['onWillParseMarkdown'](inputString);
             }
             // import external files and insert anchors if necessary 
             let { outputString, slideConfigs, tocBracketEnabled, JSAndCssFiles, headings, frontMatterString } = yield transformer_1.transformMarkdown(inputString, {
@@ -1725,8 +1712,8 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
                 if (yamlConfig)
                     yamlConfig['isPresentationMode'] = true; // mark as presentation mode
             }
-            if (utility.extensionConfig.parserConfig['onDidParseMarkdown']) {
-                html = yield utility.extensionConfig.parserConfig['onDidParseMarkdown'](html);
+            if (utility.configs.parserConfig['onDidParseMarkdown']) {
+                html = yield utility.configs.parserConfig['onDidParseMarkdown'](html);
             }
             if (options.runAllCodeChunks) {
                 yield this.runAllCodeChunks();

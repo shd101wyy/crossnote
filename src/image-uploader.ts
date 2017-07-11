@@ -80,7 +80,7 @@ function smmsUploadImage(filePath:string):Promise<string> {
  * @param imageFilePath 
  * @param method 'imgur' or 'sm.ms' 
  */
-export function uploadImage(imageFilePath, {method="imgur"}):Promise<string> {
+export function uploadImage(imageFilePath:string, {method="imgur"}):Promise<string> {
   if (method === 'imgur') {
     return imgurUploadImage(imageFilePath)
   } else { // sm.ms

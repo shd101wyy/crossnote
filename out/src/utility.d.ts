@@ -62,7 +62,7 @@ export declare function removeFileProtocol(filePath: string): string;
  *
  * files
  */
-export declare const extensionConfig: {
+export declare const configs: {
     globalStyle: string;
     mathjaxConfig: object;
     mermaidConfig: string;
@@ -70,3 +70,4 @@ export declare const extensionConfig: {
     parserConfig: object;
     config: object;
 };
+export { uploadImage } from "./image-uploader";

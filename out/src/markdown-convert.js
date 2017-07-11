@@ -78,20 +78,18 @@ function processMath(text, { mathInlineDelimiters, mathBlockDelimiters }) {
 function processPaths(text, fileDirectoryPath, projectDirectoryPath, useRelativeFilePath, protocolsWhiteListRegExp) {
     let match = null, offset = 0, output = '';
     function resolvePath(src) {
-        if (src.match(protocolsWhiteListRegExp))
-            return src;
-        if (useRelativeFilePath) {
+        if (src.match(protocolsWhiteListRegExp)) {
+            // do nothing
+        }
+        else if (useRelativeFilePath) {
             if (src.startsWith('/'))
-                return path.relative(fileDirectoryPath, path.resolve(projectDirectoryPath, '.' + src));
-            else
-                return src;
+                src = path.relative(fileDirectoryPath, path.resolve(projectDirectoryPath, '.' + src));
         }
         else {
-            if (src.startsWith('/'))
-                return src;
-            else
-                return '/' + path.relative(projectDirectoryPath, path.resolve(fileDirectoryPath, src));
+            if (!src.startsWith('/'))
+                src = '/' + path.relative(projectDirectoryPath, path.resolve(fileDirectoryPath, src));
         }
+        return src.replace(/\\/g, '/'); // https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/17
     }
     let inBlock = false;
     let lines = text.split('\n');

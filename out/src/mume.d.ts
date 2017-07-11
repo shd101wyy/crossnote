@@ -1,7 +1,7 @@
 import * as utility_ from "./utility";
 import * as engine from "./markdown-engine";
 export declare const utility: typeof utility_;
-export declare const extensionConfig: {
+export declare const configs: {
     globalStyle: string;
     mathjaxConfig: object;
     mermaidConfig: string;
