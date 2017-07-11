@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const utility = require("./utility");
 function svgElementToPNGFile(svgElement, pngFilePath) {
     return __awaiter(this, void 0, void 0, function* () {
-        const info = yield utility.tempOpen({ prefix: "mpe-svg", suffix: '.svg' });
+        const info = yield utility.tempOpen({ prefix: "mume-svg", suffix: '.svg' });
         yield utility.write(info.fd, svgElement); // write svgElement to temp .svg file
         try {
             yield utility.execFile('magick', [info.path, pngFilePath]);

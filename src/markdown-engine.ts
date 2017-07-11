@@ -1145,7 +1145,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     const inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
 
     if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData
-      this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
+      await this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
     }
 
     const {data:config} = this.processFrontMatter(inputString, false)
@@ -1176,8 +1176,13 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   /**
    * markdown(gfm) export 
    */
-  public async markdownExport():Promise<string> {
+  public async markdownExport({runAllCodeChunks}):Promise<string> {
     let inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
+    
+    if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData
+      await this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
+    }
+
     let {data:config} = this.processFrontMatter(inputString, false)
 
     if (inputString.startsWith('---\n')) {
@@ -1419,7 +1424,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     } else if (options['cmd']) {
       const $el = $("<div class=\"code-chunk\"></div>") // create code chunk
       if (!options['id']) {
-        options['id'] = 'mpe-code-chunk-id-' + codeChunksArray.length
+        options['id'] = 'code-chunk-id-' + codeChunksArray.length
       }
 
       if (options['cmd'] === true) {
@@ -1855,7 +1860,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       }
 
       if (line.match(/^\[toc\]/i) && !inCodeBlock) {
-        line = '[MPETOC]'
+        line = '[MUMETOC]'
       }
 
       outputString += line + '\n'
@@ -1939,7 +1944,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     this.headings = headings // reset headings information
 
     if (tocBracketEnabled) { // [TOC]
-      html = html.replace(/^\s*<p>\[MPETOC\]<\/p>\s*/gm, this.tocHTML)
+      html = html.replace(/^\s*<p>\[MUMETOC\]<\/p>\s*/gm, this.tocHTML)
     }
 
     /**

@@ -17,7 +17,7 @@ function toSVGMarkdown(pdfFilePath, { svgDirectoryPath, markdownDirectoryPath, s
     return new Promise((resolve, reject) => {
         if (!svgDirectoryPath) {
             if (!SVG_DIRECTORY_PATH)
-                SVG_DIRECTORY_PATH = temp.mkdirSync('mpe_pdf');
+                SVG_DIRECTORY_PATH = temp.mkdirSync('mume_pdf');
             svgDirectoryPath = SVG_DIRECTORY_PATH;
         }
         const svgFilePrefix = md5(pdfFilePath) + '_';

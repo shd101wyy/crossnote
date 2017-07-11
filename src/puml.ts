@@ -88,10 +88,10 @@ class PlantUMLTask {
 // async call 
 export async function render(content:string, fileDirectoryPath:string=""):Promise<string> {
   content = content.trim()
-  // ' @mpe_file_directory_path:/fileDirectoryPath
+  // ' @mume_file_directory_path:/fileDirectoryPath
   // fileDirectoryPath 
   let match = null
-  if (match = content.match(/^'\s@mpe_file_directory_path:(.+)$/m)) {
+  if (match = content.match(/^'\s@mume_file_directory_path:(.+)$/m)) {
     fileDirectoryPath = match[1]
   }
 

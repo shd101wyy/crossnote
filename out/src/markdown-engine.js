@@ -955,7 +955,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         return __awaiter(this, void 0, void 0, function* () {
             const inputString = yield utility.readFile(this.filePath, { encoding: 'utf-8' });
             if (runAllCodeChunks) {
-                this.parseMD(inputString, { useRelativeFilePath: true, isForPreview: false, hideFrontMatter: false, runAllCodeChunks });
+                yield this.parseMD(inputString, { useRelativeFilePath: true, isForPreview: false, hideFrontMatter: false, runAllCodeChunks });
             }
             const { data: config } = this.processFrontMatter(inputString, false);
             let content = inputString;
@@ -983,9 +983,12 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     /**
      * markdown(gfm) export
      */
-    markdownExport() {
+    markdownExport({ runAllCodeChunks }) {
         return __awaiter(this, void 0, void 0, function* () {
             let inputString = yield utility.readFile(this.filePath, { encoding: 'utf-8' });
+            if (runAllCodeChunks) {
+                yield this.parseMD(inputString, { useRelativeFilePath: true, isForPreview: false, hideFrontMatter: false, runAllCodeChunks });
+            }
             let { data: config } = this.processFrontMatter(inputString, false);
             if (inputString.startsWith('---\n')) {
                 const end = inputString.indexOf('---\n', 4);
@@ -1232,7 +1235,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
             else if (options['cmd']) {
                 const $el = $("<div class=\"code-chunk\"></div>"); // create code chunk
                 if (!options['id']) {
-                    options['id'] = 'mpe-code-chunk-id-' + codeChunksArray.length;
+                    options['id'] = 'code-chunk-id-' + codeChunksArray.length;
                 }
                 if (options['cmd'] === true) {
                     options['cmd'] = lang;
@@ -1614,7 +1617,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
                     continue;
                 }
                 if (line.match(/^\[toc\]/i) && !inCodeBlock) {
-                    line = '[MPETOC]';
+                    line = '[MUMETOC]';
                 }
                 outputString += line + '\n';
                 i += 1;
@@ -1693,7 +1696,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
             }
             this.headings = headings; // reset headings information
             if (tocBracketEnabled) {
-                html = html.replace(/^\s*<p>\[MPETOC\]<\/p>\s*/gm, this.tocHTML);
+                html = html.replace(/^\s*<p>\[MUMETOC\]<\/p>\s*/gm, this.tocHTML);
             }
             /**
              * resolve image paths and render code block.

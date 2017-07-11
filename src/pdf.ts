@@ -25,7 +25,7 @@ export function toSVGMarkdown(pdfFilePath:string, {svgDirectoryPath, markdownDir
 }):Promise<string> {
 return new Promise<string>((resolve, reject)=> {
   if (!svgDirectoryPath) {
-    if (!SVG_DIRECTORY_PATH) SVG_DIRECTORY_PATH = temp.mkdirSync('mpe_pdf')
+    if (!SVG_DIRECTORY_PATH) SVG_DIRECTORY_PATH = temp.mkdirSync('mume_pdf')
     svgDirectoryPath = SVG_DIRECTORY_PATH
   }
 

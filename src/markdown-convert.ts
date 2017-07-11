@@ -1,5 +1,5 @@
 /**
- * Convert MPE markdown to Githb Flavored Markdown
+ * Convert Mume markdown to Githb Flavored Markdown
  */
 
 import * as path from "path"

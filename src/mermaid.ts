@@ -12,7 +12,7 @@ import * as temp from "temp"
 import * as utility from "./utility"
 
 export async function mermaidToPNG(mermaidCode:string, pngFilePath:string, css="mermaid.css"):Promise<string> {
-  const info = await utility.tempOpen({prefix: 'mpe-mermaid', suffix: '.mermaid'})
+  const info = await utility.tempOpen({prefix: 'mume-mermaid', suffix: '.mermaid'})
   await utility.write(info.fd, mermaidCode)
   try {
     await utility.execFile('mermaid', 

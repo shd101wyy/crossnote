@@ -199,7 +199,9 @@ export declare class MarkdownEngine {
     /**
      * markdown(gfm) export
      */
-    markdownExport(): Promise<string>;
+    markdownExport({runAllCodeChunks}: {
+        runAllCodeChunks: any;
+    }): Promise<string>;
     /**
      *
      * @param filePath

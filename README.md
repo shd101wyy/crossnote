@@ -44,6 +44,9 @@ async function main() {
   // pandoc export 
   await engine.pandocExport({runAllCodeChunks: true})
 
+  // markdown(gfm) export 
+  await engine.markdownExport({runAllCodeChunks: true})
+
   return process.exit()
 }
 

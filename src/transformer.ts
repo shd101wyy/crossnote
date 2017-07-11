@@ -110,7 +110,7 @@ function downloadFileIfNecessary(filePath:string):Promise<string> {
     if (!filePath.match(/^https?\:\/\//))
       return resolve(filePath)
 
-    if (!DOWNLOADS_TEMP_FOLDER) DOWNLOADS_TEMP_FOLDER = temp.mkdirSync('mpe_downloads')
+    if (!DOWNLOADS_TEMP_FOLDER) DOWNLOADS_TEMP_FOLDER = temp.mkdirSync('mume_downloads')
     request.get({url: filePath, encoding: 'binary'}, (error, response, body)=> {
       if (error)
         return reject(error)
@@ -374,7 +374,7 @@ export async function transformMarkdown(inputString:string,
       } else if (line.match(/^\s*\[toc\]\s*$/i)) { // [TOC]
         if (forPreview) outputString += createAnchor(lineNo) // insert anchor for scroll sync
         tocBracketEnabled = true 
-        return helper(end+1, lineNo+1, outputString + `\n[MPETOC]\n\n`)
+        return helper(end+1, lineNo+1, outputString + `\n[MUMETOC]\n\n`)
       } else if (taskListItemMatch = line.match(/^\s*(?:[*\-+]|\d+)\s+(\[[xX\s]\])\s/)) { // task list
         const checked = taskListItemMatch[1] !== '[ ]'
         line = line.replace(
@@ -570,7 +570,7 @@ export async function transformMarkdown(inputString:string,
               output = `\`\`\`mermaid\n${fileContent}\n\`\`\`  `
             }
             else if (extname === '.plantuml' || extname === '.puml') { // PlantUML
-              output = `\`\`\`puml\n' @mpe_file_directory_path:${path.dirname(absoluteFilePath)}\n${fileContent}\n\`\`\`  `
+              output = `\`\`\`puml\n' @mume_file_directory_path:${path.dirname(absoluteFilePath)}\n${fileContent}\n\`\`\`  `
             }
             /*
             else if extname in ['.wavedrom']

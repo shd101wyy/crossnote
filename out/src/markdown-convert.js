@@ -1,6 +1,6 @@
 "use strict";
 /**
- * Convert MPE markdown to Githb Flavored Markdown
+ * Convert Mume markdown to Githb Flavored Markdown
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {

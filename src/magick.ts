@@ -10,7 +10,7 @@ import * as temp from "temp"
 import * as utility from "./utility"
 
 export async function svgElementToPNGFile(svgElement:string, pngFilePath:string):Promise<string> {
-  const info = await utility.tempOpen({prefix: "mpe-svg", suffix:'.svg'})
+  const info = await utility.tempOpen({prefix: "mume-svg", suffix:'.svg'})
   await utility.write(info.fd, svgElement) // write svgElement to temp .svg file
   try {
     await utility.execFile('magick', [info.path, pngFilePath])

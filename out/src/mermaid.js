@@ -18,7 +18,7 @@ const path = require("path");
 const utility = require("./utility");
 function mermaidToPNG(mermaidCode, pngFilePath, css = "mermaid.css") {
     return __awaiter(this, void 0, void 0, function* () {
-        const info = yield utility.tempOpen({ prefix: 'mpe-mermaid', suffix: '.mermaid' });
+        const info = yield utility.tempOpen({ prefix: 'mume-mermaid', suffix: '.mermaid' });
         yield utility.write(info.fd, mermaidCode);
         try {
             yield utility.execFile('mermaid', [info.path, '-p',
