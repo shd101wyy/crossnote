@@ -157,9 +157,9 @@ config:object):Promise<string> {
   // import external files
   const data = await transformMarkdown(text, {fileDirectoryPath, projectDirectoryPath, useRelativeFilePath, filesCache, forPreview:false, forMarkdownExport:true, protocolsWhiteListRegExp, imageDirectoryPath, usePandocParser})
   text = data.outputString
-  const tocBracketEnabled = data.tocBracketEnabled
 
   // replace [MUMETOC]
+  const tocBracketEnabled = data.tocBracketEnabled
   if (tocBracketEnabled) { // [TOC]
     const headings = data.headings
     const {content:tocMarkdown} = toc(headings, {ordered: false, depthFrom: 1, depthTo: 6, tab: '\t'})

@@ -2,6 +2,7 @@ import * as path from "path"
 import * as fs from "fs"
 import {execFile} from "child_process"
 import * as mkdirp from "mkdirp"
+import {toc} from "./toc"
 
 const matter = require('gray-matter')
 
@@ -292,6 +293,14 @@ export async function pandocConvert(text,
   // import external files
   let data = await transformMarkdown(text, {fileDirectoryPath, projectDirectoryPath, useRelativeFilePath:true, filesCache, protocolsWhiteListRegExp, forPreview: false, usePandocParser: true})
   text = data.outputString
+
+    // replace [MUMETOC]
+  const tocBracketEnabled = data.tocBracketEnabled
+  if (tocBracketEnabled) { // [TOC]
+    const headings = data.headings
+    const {content:tocMarkdown} = toc(headings, {ordered: false, depthFrom: 1, depthTo: 6, tab: '\t'})
+    text = text.replace(/^\s*\[MUMETOC\]\s*/gm, '\n\n'+tocMarkdown+'\n\n')
+  }
 
   // change link path to relative path
   text = processPaths(text, fileDirectoryPath, projectDirectoryPath)
