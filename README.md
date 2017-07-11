@@ -26,6 +26,7 @@ async function main() {
     filePath: "/Users/wangyiyi/Desktop/markdown-example/test3.md",
     config: {
       previewTheme: "github-light.css",
+      // revealjsTheme: "white.css"
       codeBlockTheme: "default.css" 
     }
   })
@@ -107,6 +108,21 @@ const config = {
   // "newsprint.css",
   // "night.css",
   // "medium.css"
+  // "none.css"
+
+  // Revealjs presentation theme
+  revealjsTheme: "white.css"
+  // "beige.css"
+  // "black.css"
+  // "blood.css"
+  // "league.css"
+  // "moon.css"
+  // "night.css"
+  // "serif.css"
+  // "simple.css"
+  // "sky.css"
+  // "solarized.css"
+  // "white.css"
   // "none.css"
 
   // Accepted protocols followed by `://` for links.
