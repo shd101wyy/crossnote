@@ -400,6 +400,64 @@ class MarkdownEngine {
         });
     }
     /**
+     * Generate scripts string for preview usage.
+     */
+    generateScriptsForPreview() {
+        let scripts = "";
+        // jquery 
+        scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/jquery/jquery.js')}"></script>`;
+        // jquery contextmenu
+        scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/jquery-contextmenu/jquery.ui.position.min.js')}"></script>`;
+        scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/jquery-contextmenu/jquery.contextMenu.min.js')}"></script>`;
+        // jquery modal 
+        scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/jquery-modal/jquery.modal.min.js')}"></script>`;
+        // crpto-js
+        scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/crypto-js/crypto-js.js')}"></script>`;
+        // mermaid
+        scripts += `<script src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/mermaid.min.js`)}"></script>`;
+        scripts += `<script>
+${utility.configs.mermaidConfig}
+mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
+</script>`;
+        // math 
+        if (this.config.mathRenderingOption === 'MathJax' || this.config.usePandocParser) {
+            const mathJaxConfig = utility.configs.mathjaxConfig;
+            mathJaxConfig['tex2jax'] = mathJaxConfig['tex2jax'] || {};
+            mathJaxConfig['tex2jax']['inlineMath'] = this.config.mathInlineDelimiters;
+            mathJaxConfig['tex2jax']['displayMath'] = this.config.mathBlockDelimiters;
+            scripts += `<script type="text/javascript" async src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/mathjax/MathJax.js')}"></script>`;
+            scripts += `<script type="text/x-mathjax-config"> MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)}); </script>`;
+        }
+        return scripts;
+    }
+    /**
+     * Generate styles string for preview usage.
+     */
+    generateStylesForPreview() {
+        let styles = '';
+        // loading.css 
+        styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, './styles/loading.css')}">`;
+        // jquery-contextmenu
+        styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/jquery-contextmenu/jquery.contextMenu.min.css`)}">`;
+        // jquery-modal 
+        styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/jquery-modal/jquery.modal.min.css`)}">`;
+        // check math 
+        if (this.config.mathRenderingOption === "KaTeX" && !this.config.usePandocParser) {
+            styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/katex/katex.min.css')}">`;
+        }
+        // check mermaid 
+        styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/${this.config.mermaidTheme}`)}">`;
+        // check prism 
+        styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/prism/themes/${this.config.codeBlockTheme}`)}">`;
+        // check preview theme 
+        styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/${this.config.previewTheme}`)}">`;
+        // style template
+        styles += `<link rel="stylesheet" media="screen" href="${path.resolve(utility.extensionDirectoryPath, './styles/style-template.css')}">`;
+        // global styles
+        styles += `<style>${utility.configs.globalStyle}</style>`;
+        return styles;
+    }
+    /**
      * Generate HTML content
      * @param html: this is the final content you want to put.
      * @param yamlConfig: this is the front matter.

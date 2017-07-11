@@ -143,6 +143,14 @@ export declare class MarkdownEngine {
      */
     private embedSVG($);
     /**
+     * Generate scripts string for preview usage.
+     */
+    generateScriptsForPreview(): string;
+    /**
+     * Generate styles string for preview usage.
+     */
+    generateStylesForPreview(): string;
+    /**
      * Generate HTML content
      * @param html: this is the final content you want to put.
      * @param yamlConfig: this is the front matter.
