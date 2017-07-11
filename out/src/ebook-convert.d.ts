@@ -1,5 +1,0 @@
-/**
- * @param src: link to .html file
- * @param dest: output path
- */
-export declare function ebookConvert(src: any, dest: any, config?: {}): Promise<{}>;

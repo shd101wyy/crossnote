@@ -5,7 +5,9 @@
   "main": "out/src/mume.js",
   "typings": "out/src/mume.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node_modules/.bin/tsc",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "markdown"
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "^8.0.10",
-    "eslint": "^4.2.0"
+    "eslint": "^4.2.0",
+    "typescript": "^2.4.1"
   }
 }
