@@ -69,6 +69,7 @@ export interface MarkdownEngineConfig {
   mathBlockDelimiters: string[][]
   codeBlockTheme: string
   previewTheme: string
+  revealjsTheme: string
   mermaidTheme: string
   frontMatterRenderingOption: string 
   imageFolderPath: string
@@ -129,6 +130,7 @@ const defaultMarkdownEngineConfig:MarkdownEngineConfig = {
   mathBlockDelimiters: [["$$", "$$"], ["\\[", "\\]"]],
   codeBlockTheme: 'default.css',
   previewTheme: 'github-light.css',
+  revealjsTheme: 'white.css',
   mermaidTheme: 'mermaid.css',
   frontMatterRenderingOption: 'table',
   imageFolderPath: '/assets',
@@ -614,7 +616,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/prism/themes/${this.config.codeBlockTheme}`)}">`
 
     // check preview theme 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/${this.config.previewTheme}`)}">`
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`)}">`
 
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${path.resolve(utility.extensionDirectoryPath, './styles/style-template.css')}">`
@@ -754,17 +756,20 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     // prism and preview theme 
     let styleCSS = ""
     try{
-      const styles = await Promise.all([
-         // prism *.css
-        utility.readFile(path.resolve(extensionDirectoryPath, `./dependencies/prism/themes/${this.config.codeBlockTheme}`), {encoding:'utf-8'}),
+      // prism *.css
+      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./dependencies/prism/themes/${this.config.codeBlockTheme}`), {encoding:'utf-8'})
+      
+      if (yamlConfig["isPresentationMode"]) {
+        styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`), {encoding:'utf-8'})
+      } else {
         // preview theme
-        (options.isForPrint && !this.config.printBackground) ? 
-        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/github-light.css`), {encoding:'utf-8'}) :
-        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/${this.config.previewTheme}`), {encoding:'utf-8'}),
-        // style template
-        utility.readFile(path.resolve(extensionDirectoryPath, './styles/style-template.css'), {encoding:'utf-8'})
-      ])
-      styleCSS = styles.join('')
+        styleCSS += (options.isForPrint && !this.config.printBackground) ? 
+          await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/github-light.css`), {encoding:'utf-8'}) :
+          await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
+      }
+      
+      // style template
+      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, './styles/style-template.css'), {encoding:'utf-8'})
     } catch(e) {
       styleCSS = ''
     }
@@ -1155,7 +1160,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         // prism *.css
         utility.readFile(path.resolve(extensionDirectoryPath, `./dependencies/prism/themes/${this.config.codeBlockTheme}`), {encoding:'utf-8'}),
         // preview theme
-        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/${this.config.previewTheme}`), {encoding:'utf-8'})
+        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
       ])
       styleCSS = styles.join('')
     } catch(e) {
