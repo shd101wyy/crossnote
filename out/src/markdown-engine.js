@@ -1774,7 +1774,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
                     yamlConfig['isPresentationMode'] = true; // mark as presentation mode
             }
             if (utility.configs.parserConfig['onDidParseMarkdown']) {
-                html = yield utility.configs.parserConfig['onDidParseMarkdown'](html);
+                html = yield utility.configs.parserConfig['onDidParseMarkdown'](html, { cheerio });
             }
             if (options.runAllCodeChunks) {
                 yield this.runAllCodeChunks();

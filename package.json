@@ -1,6 +1,6 @@
 {
   "name": "@shd101wyy/mume",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A powerful markdown tool",
   "main": "out/src/mume.js",
   "typings": "out/src/mume.d.ts",
@@ -16,7 +16,6 @@
   "dependencies": {
     "babyparse": "^0.4.6",
     "cheerio": "0.15.0",
-    "eslint": "^4.2.0",
     "gray-matter": "^2.1.1",
     "less": "^2.7.2",
     "mkdirp": "^0.5.1",
@@ -25,6 +24,7 @@
     "uslug": "^1.0.4"
   },
   "devDependencies": {
-    "@types/node": "^8.0.10"
+    "@types/node": "^8.0.10",
+    "eslint": "^4.2.0"
   }
 }

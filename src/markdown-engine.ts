@@ -2044,7 +2044,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     }
 
     if (utility.configs.parserConfig['onDidParseMarkdown']) {
-      html = await utility.configs.parserConfig['onDidParseMarkdown'](html)
+      html = await utility.configs.parserConfig['onDidParseMarkdown'](html, {cheerio})
     }
 
     if (options.runAllCodeChunks) {
