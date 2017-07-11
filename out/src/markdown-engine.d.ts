@@ -1,8 +1,3 @@
-export interface MarkdownEngineConstructorArgs {
-    filePath: string;
-    projectDirectoryPath: string;
-    config: MarkdownEngineConfig;
-}
 export interface MarkdownEngineRenderOption {
     useRelativeFilePath: boolean;
     isForPreview: boolean;
@@ -21,6 +16,30 @@ export interface MarkdownEngineOutput {
      * convert .css file to <link href='...'></link>
      */
     JSAndCssFiles: string[];
+}
+export interface MarkdownEngineConfig {
+    usePandocParser: boolean;
+    breakOnSingleNewLine: boolean;
+    enableTypographer: boolean;
+    enableWikiLinkSyntax: boolean;
+    wikiLinkFileExtension: string;
+    protocolsWhiteList: string;
+    /**
+     * "KaTeX", "MathJax", or "None"
+     */
+    mathRenderingOption: string;
+    mathInlineDelimiters: string[][];
+    mathBlockDelimiters: string[][];
+    codeBlockTheme: string;
+    previewTheme: string;
+    mermaidTheme: string;
+    frontMatterRenderingOption: string;
+    imageFolderPath: string;
+    printBackground: boolean;
+    phantomPath: string;
+    pandocPath: string;
+    pandocMarkdownFlavor: string;
+    pandocArguments: string[];
 }
 export interface HTMLTemplateOption {
     /**
@@ -84,7 +103,23 @@ export declare class MarkdownEngine {
      * cachedHTML is the cache of html generated from the markdown file.
      */
     private cachedHTML;
-    constructor(args: MarkdownEngineConstructorArgs);
+    constructor(args: {
+        /**
+         * The markdown file path.
+         */
+        filePath: string;
+        /**
+         * The project directory path.
+         */
+        projectDirectoryPath: string;
+        /**
+         * Markdown Engine configuration.
+         */
+        config?: MarkdownEngineConfig;
+    });
+    /**
+     * Set default values
+     */
     private initConfig();
     updateConfiguration(config: any): void;
     cacheCodeChunkResult(id: string, result: string): void;
@@ -116,36 +151,51 @@ export declare class MarkdownEngine {
     /**
      * generate HTML file and open it in browser
      */
-    openInBrowser(): Promise<void>;
+    openInBrowser({runAllCodeChunks}: {
+        runAllCodeChunks?: boolean;
+    }): Promise<void>;
     /**
      *
      * @param filePath
      * @return dest if success, error if failure
      */
-    saveAsHTML(offline: boolean): Promise<string>;
+    htmlExport({offline, runAllCodeChunks}: {
+        offline?: boolean;
+        runAllCodeChunks?: boolean;
+    }): Promise<string>;
     /**
      * Phantomjs file export
      * The config could be set by front-matter.
      * Check https://github.com/marcbachmann/node-html-pdf website.
-     * @param type the export file type
+     * @param fileType the export file type
      */
-    phantomjsExport(type?: string): Promise<string>;
+    phantomjsExport({fileType, runAllCodeChunks}: {
+        fileType?: string;
+        runAllCodeChunks?: boolean;
+    }): Promise<string>;
     /**
      * prince pdf file export
      * @return dest if success, error if failure
      */
-    princeExport(): Promise<string>;
+    princeExport({runAllCodeChunks}: {
+        runAllCodeChunks?: boolean;
+    }): Promise<string>;
     private eBookDownloadImages($, dest);
     /**
      *
      * @param fileType: `epub`, `pdf`, `mobi` or `html`
      * @return dest if success, error if failure
      */
-    eBookExport(fileType?: string): Promise<string>;
+    eBookExport({fileType, runAllCodeChunks}: {
+        fileType?: string;
+        runAllCodeChunks?: boolean;
+    }): Promise<string>;
     /**
      * pandoc export
      */
-    pandocExport(): Promise<string>;
+    pandocExport({runAllCodeChunks}: {
+        runAllCodeChunks?: boolean;
+    }): Promise<string>;
     /**
      * markdown(gfm) export
      */

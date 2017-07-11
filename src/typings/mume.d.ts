@@ -1,27 +1,4 @@
-interface MarkdownEngineConfig {
-  usePandocParser: boolean
-  breakOnSingleNewLine: boolean
-  enableTypographer: boolean
-  enableWikiLinkSyntax: boolean
-  wikiLinkFileExtension: string
-  protocolsWhiteList: string
-  /**
-   * "KaTeX", "MathJax", or "None"
-   */
-  mathRenderingOption: string
-  mathInlineDelimiters: string[][]
-  mathBlockDelimiters: string[][]
-  codeBlockTheme: string
-  previewTheme: string
-  mermaidTheme: string
-  frontMatterRenderingOption: string 
-  imageFolderPath: string
-  printBackground: boolean
-  phantomPath: string 
-  pandocPath: string
-  pandocMarkdownFlavor: string 
-  pandocArguments: string[]
-}
+
 
 interface CodeChunkData {
   /**

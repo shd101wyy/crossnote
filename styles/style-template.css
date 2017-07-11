@@ -1,29 +1,29 @@
-html .markdown-preview-enhanced .pagebreak,
-html .markdown-preview-enhanced .newpage {
+html body .pagebreak,
+html body .newpage {
   page-break-before: always;
 }
 @media screen and (min-width: 914px) {
-  html .markdown-preview-enhanced {
+  html body {
     width: 980px;
     margin: 10px auto;
   }
 }
 @media screen and (max-width: 400px) {
-  html .markdown-preview-enhanced {
+  html body {
     font-size: 14px;
     margin: 0 auto;
     padding: 15px;
   }
 }
-html .markdown-preview-enhanced pre.line-numbers {
+html body pre.line-numbers {
   position: relative;
   padding-left: 3.8em;
   counter-reset: linenumber;
 }
-html .markdown-preview-enhanced pre.line-numbers > code {
+html body pre.line-numbers > code {
   position: relative;
 }
-html .markdown-preview-enhanced pre.line-numbers .line-numbers-rows {
+html body pre.line-numbers .line-numbers-rows {
   position: absolute;
   pointer-events: none;
   top: 1em;
@@ -38,48 +38,48 @@ html .markdown-preview-enhanced pre.line-numbers .line-numbers-rows {
   -ms-user-select: none;
   user-select: none;
 }
-html .markdown-preview-enhanced pre.line-numbers .line-numbers-rows > span {
+html body pre.line-numbers .line-numbers-rows > span {
   pointer-events: none;
   display: block;
   counter-increment: linenumber;
 }
-html .markdown-preview-enhanced pre.line-numbers .line-numbers-rows > span:before {
+html body pre.line-numbers .line-numbers-rows > span:before {
   content: counter(linenumber);
   color: #999;
   display: block;
   padding-right: 0.8em;
   text-align: right;
 }
-html .markdown-preview-enhanced .mathjax-exps .MathJax_Display {
+html body .mathjax-exps .MathJax_Display {
   text-align: center !important;
 }
-html .markdown-preview-enhanced:not([for="preview"]) .code-chunk .btn-group {
+html body:not([for="preview"]) .code-chunk .btn-group {
   display: none;
 }
-html .markdown-preview-enhanced:not([for="preview"]) .code-chunk .status {
+html body:not([for="preview"]) .code-chunk .status {
   display: none;
 }
-.markdown-preview-enhanced[data-presentation-mode] {
+html body[data-presentation-mode] {
   font-size: 24px;
   width: 100%;
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-.markdown-preview-enhanced[data-presentation-mode] h1,
-.markdown-preview-enhanced[data-presentation-mode] h2,
-.markdown-preview-enhanced[data-presentation-mode] h3,
-.markdown-preview-enhanced[data-presentation-mode] h4,
-.markdown-preview-enhanced[data-presentation-mode] h5,
-.markdown-preview-enhanced[data-presentation-mode] h6 {
+html body[data-presentation-mode] h1,
+html body[data-presentation-mode] h2,
+html body[data-presentation-mode] h3,
+html body[data-presentation-mode] h4,
+html body[data-presentation-mode] h5,
+html body[data-presentation-mode] h6 {
   margin-top: 0;
 }
-.markdown-preview-enhanced[data-presentation-mode] strong {
+html body[data-presentation-mode] strong {
   font-weight: bold;
 }
-.markdown-preview-enhanced[data-presentation-mode]::-webkit-scrollbar {
+html body[data-presentation-mode]::-webkit-scrollbar {
   display: none;
 }
-.markdown-preview-enhanced .slides {
+html body .slides {
   text-align: left !important;
 }

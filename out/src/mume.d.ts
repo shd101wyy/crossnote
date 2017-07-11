@@ -10,6 +10,7 @@ export declare const extensionConfig: {
     config: object;
 };
 export declare const MarkdownEngine: typeof engine.MarkdownEngine;
+export { MarkdownEngineConfig } from "./markdown-engine";
 /**
  * init mume config folder at ~/.mume
  */

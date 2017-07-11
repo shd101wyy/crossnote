@@ -15,6 +15,7 @@ let CONFIG_CHANGE_CALLBACK:()=>void = null
 export const utility = utility_
 export const extensionConfig = utility.extensionConfig
 export const MarkdownEngine = engine.MarkdownEngine
+export {MarkdownEngineConfig} from "./markdown-engine"
 
 /**
  * init mume config folder at ~/.mume

@@ -31,12 +31,6 @@ const pdf = require(path.resolve(extensionDirectoryPath, './dependencies/node-ht
 // import * as Prism from "prismjs"
 let Prism = null
 
-export interface MarkdownEngineConstructorArgs {
-  filePath: string,
-  projectDirectoryPath: string,
-  config: MarkdownEngineConfig
-}
-
 export interface MarkdownEngineRenderOption {
   useRelativeFilePath: boolean,
   isForPreview: boolean,
@@ -57,6 +51,31 @@ export interface MarkdownEngineOutput {
    */
   JSAndCssFiles: string[]
  // slideConfigs: Array<object>
+}
+
+export interface MarkdownEngineConfig {
+  usePandocParser: boolean
+  breakOnSingleNewLine: boolean
+  enableTypographer: boolean
+  enableWikiLinkSyntax: boolean
+  wikiLinkFileExtension: string
+  protocolsWhiteList: string
+  /**
+   * "KaTeX", "MathJax", or "None"
+   */
+  mathRenderingOption: string
+  mathInlineDelimiters: string[][]
+  mathBlockDelimiters: string[][]
+  codeBlockTheme: string
+  previewTheme: string
+  mermaidTheme: string
+  frontMatterRenderingOption: string 
+  imageFolderPath: string
+  printBackground: boolean
+  phantomPath: string 
+  pandocPath: string
+  pandocMarkdownFlavor: string 
+  pandocArguments: string[]
 }
 
 export interface HTMLTemplateOption {
@@ -159,10 +178,23 @@ export class MarkdownEngine {
   private cachedHTML:string = '';
   // private cachedInputString:string = '' // <= this is wrong
 
-  constructor(args:MarkdownEngineConstructorArgs) {
+  constructor(args:{
+    /**
+     * The markdown file path.  
+     */
+    filePath: string,
+    /**
+     * The project directory path.  
+     */
+    projectDirectoryPath: string,
+    /**
+     * Markdown Engine configuration.
+     */
+    config ?: MarkdownEngineConfig
+  }) {
     this.filePath = args.filePath
     this.fileDirectoryPath = path.dirname(this.filePath)
-    this.projectDirectoryPath = args.projectDirectoryPath || '/'
+    this.projectDirectoryPath = args.projectDirectoryPath || this.fileDirectoryPath
     this.config = args.config
 
     this.initConfig()
@@ -175,13 +207,45 @@ export class MarkdownEngine {
     this.configureRemarkable()
   }
 
+  /**
+   * Set default values 
+   */
   private initConfig() {
+    // break on single newline
+    if (this.config.breakOnSingleNewLine == null) this.config.breakOnSingleNewLine = true
     this.breakOnSingleNewLine = this.config.breakOnSingleNewLine
+
+    // enable typographer
     this.enableTypographer = this.config.enableTypographer
 
+    // math 
+    if (this.config.mathRenderingOption == null) this.config.mathRenderingOption = 'KaTeX'
+    if (this.config.mathInlineDelimiters == null) this.config.mathInlineDelimiters = [["$", "$"], ["\\(", "\\)"]]
+    if (this.config.mathBlockDelimiters == null) this.config.mathBlockDelimiters = [["$$", "$$"], ["\\[", "\\]"]]
+
+
+    // wikilink
+    if (this.config.enableWikiLinkSyntax == null) this.config.enableWikiLinkSyntax = true
+
+    // front matter
+    if (this.config.frontMatterRenderingOption == null) this.config.frontMatterRenderingOption = 'table'
+
+    // mermaid 
+    if (this.config.mermaidTheme == null) this.config.mermaidTheme = 'mermaid.css'
+
+    // codeblock theme 
+    if (this.config.codeBlockTheme == null) this.config.codeBlockTheme = 'default.css'
+
+    // preview theme 
+    if (this.config.previewTheme == null) this.config.previewTheme = 'github-light.css'
+
     // protocal whitelist
+    if (this.config.protocolsWhiteList == null) this.config.protocolsWhiteList = 'http, https, atom, file'
     const protocolsWhiteList = this.config.protocolsWhiteList.split(',').map((x)=>x.trim()) || ['http', 'https', 'atom', 'file']
     this.protocolsWhiteListRegExp = new RegExp('^(' + protocolsWhiteList.join('|')+')\:\/\/')  // eg /^(http|https|atom|file)\:\/\//
+
+    // image folder path 
+    if (this.config.imageFolderPath == null) this.config.imageFolderPath = '/assets'
 
     this.config.printBackground = this.config.printBackground || false
 
@@ -706,9 +770,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   /**
    * generate HTML file and open it in browser
    */
-  public async openInBrowser():Promise<void> {
+  public async openInBrowser({runAllCodeChunks=false}):Promise<void> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false})
+    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false, runAllCodeChunks})
     html = await this.generateHTMLFromTemplate(html, yamlConfig, 
                                     {isForPrint: false, isForPrince: false, offline: true, embedLocalImages: false} )   
     // create temp file
@@ -729,9 +793,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * @param filePath 
    * @return dest if success, error if failure
    */
-  public async saveAsHTML(offline:boolean):Promise<string> {
+  public async htmlExport({offline=false, runAllCodeChunks=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:true, hideFrontMatter:true, isForPreview: false})
+    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:true, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     const htmlConfig = yamlConfig['html'] || {}
     if ('cdn' in htmlConfig) {
         offline = !htmlConfig['cdn']
@@ -771,25 +835,25 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * Phantomjs file export
    * The config could be set by front-matter. 
    * Check https://github.com/marcbachmann/node-html-pdf website.  
-   * @param type the export file type 
+   * @param fileType the export file type 
    */
-  public async phantomjsExport(type:string = "pdf"):Promise<string> {
+  public async phantomjsExport({fileType="pdf", runAllCodeChunks=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false})
+    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     let dest = this.filePath
     let extname = path.extname(dest)
-    dest = dest.replace(new RegExp(extname + '$'), '.' + type)
+    dest = dest.replace(new RegExp(extname + '$'), '.' + fileType)
 
     html = await this.generateHTMLFromTemplate(html, yamlConfig, {
       isForPrint: true,
       isForPrince: false,
       embedLocalImages: false,
       offline: true,
-      phantomjsType: type
+      phantomjsType: fileType
     })
 
     const phantomjsConfig = Object.assign({
-      type: type,
+      type: fileType,
       border: '1cm',
       quality: '75',
       script: path.join(extensionDirectoryPath, './dependencies/phantomjs/pdf_a4_portrait.js')
@@ -823,9 +887,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * prince pdf file export
    * @return dest if success, error if failure
    */
-  public async princeExport():Promise<string> {
+  public async princeExport({runAllCodeChunks=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false})
+    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     let dest = this.filePath
     let extname = path.extname(dest) 
     dest = dest.replace(new RegExp(extname+'$'), '.pdf')
@@ -886,9 +950,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * @param fileType: `epub`, `pdf`, `mobi` or `html`
    * @return dest if success, error if failure
    */
-  public async eBookExport(fileType='epub'):Promise<string> {
+  public async eBookExport({fileType='epub', runAllCodeChunks=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false})
+    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
 
     let dest = this.filePath
     let extname = path.extname(dest) 
@@ -1089,8 +1153,13 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   /**
    * pandoc export
    */
-  public async pandocExport():Promise<string> {
+  public async pandocExport({runAllCodeChunks=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
+
+    if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData
+      this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
+    }
+
     const {data:config} = this.processFrontMatter(inputString, false)
     let content = inputString
     if (content.match(/\-\-\-\s+/)) {
@@ -1908,6 +1977,8 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 
     if (options.runAllCodeChunks) {
       await this.runAllCodeChunks()
+      options.runAllCodeChunks = false
+      return this.parseMD(inputString, options)
     }
 
     this.cachedHTML = html // save to cache

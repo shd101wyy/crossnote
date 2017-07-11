@@ -19,7 +19,8 @@
     }
 }
 
-.markdown-preview-enhanced-container {
+// the preview
+.preview-container {
     width: 100%;
     margin: 0;
     padding: 0;
@@ -121,17 +122,12 @@
         .mpe-toolbar {
             right: 300px;
         }
-        .markdown-preview-enhanced {
+        .mume {
             width: calc(~"100% - 268px");
         }
     }
-    /*
-    .mpe-sidebar-toc,
-    .markdown-preview-enhanced {
-        // .scrollbar-style();
-    }
-    */
-    .markdown-preview-enhanced[for="preview"] {
+
+    .mume[for="preview"] {
         position: fixed;
         left: 0;
         top: 0;
@@ -219,7 +215,7 @@
     /*
     * Reveal.js styles
     */
-    .markdown-preview-enhanced[data-presentation-preview-mode] {
+    .mume[data-presentation-preview-mode] {
         background-color: #f4f4f4;
         #preview-slides {
             width: 100%;

@@ -63,7 +63,7 @@ class MarkdownEngine {
         this.cachedHTML = '';
         this.filePath = args.filePath;
         this.fileDirectoryPath = path.dirname(this.filePath);
-        this.projectDirectoryPath = args.projectDirectoryPath || '/';
+        this.projectDirectoryPath = args.projectDirectoryPath || this.fileDirectoryPath;
         this.config = args.config;
         this.initConfig();
         this.headings = [];
@@ -95,12 +95,46 @@ class MarkdownEngine {
     static onModifySource(cb) {
         MODIFY_SOURCE = cb;
     }
+    /**
+     * Set default values
+     */
     initConfig() {
+        // break on single newline
+        if (this.config.breakOnSingleNewLine == null)
+            this.config.breakOnSingleNewLine = true;
         this.breakOnSingleNewLine = this.config.breakOnSingleNewLine;
+        // enable typographer
         this.enableTypographer = this.config.enableTypographer;
+        // math 
+        if (this.config.mathRenderingOption == null)
+            this.config.mathRenderingOption = 'KaTeX';
+        if (this.config.mathInlineDelimiters == null)
+            this.config.mathInlineDelimiters = [["$", "$"], ["\\(", "\\)"]];
+        if (this.config.mathBlockDelimiters == null)
+            this.config.mathBlockDelimiters = [["$$", "$$"], ["\\[", "\\]"]];
+        // wikilink
+        if (this.config.enableWikiLinkSyntax == null)
+            this.config.enableWikiLinkSyntax = true;
+        // front matter
+        if (this.config.frontMatterRenderingOption == null)
+            this.config.frontMatterRenderingOption = 'table';
+        // mermaid 
+        if (this.config.mermaidTheme == null)
+            this.config.mermaidTheme = 'mermaid.css';
+        // codeblock theme 
+        if (this.config.codeBlockTheme == null)
+            this.config.codeBlockTheme = 'default.css';
+        // preview theme 
+        if (this.config.previewTheme == null)
+            this.config.previewTheme = 'github-light.css';
         // protocal whitelist
+        if (this.config.protocolsWhiteList == null)
+            this.config.protocolsWhiteList = 'http, https, atom, file';
         const protocolsWhiteList = this.config.protocolsWhiteList.split(',').map((x) => x.trim()) || ['http', 'https', 'atom', 'file'];
         this.protocolsWhiteListRegExp = new RegExp('^(' + protocolsWhiteList.join('|') + ')\:\/\/'); // eg /^(http|https|atom|file)\:\/\//
+        // image folder path 
+        if (this.config.imageFolderPath == null)
+            this.config.imageFolderPath = '/assets';
         this.config.printBackground = this.config.printBackground || false;
         this.config.phantomPath = this.config.phantomPath || 'phantomjs';
         this.config.pandocPath = this.config.pandocPath || 'pandoc';
@@ -581,10 +615,10 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     /**
      * generate HTML file and open it in browser
      */
-    openInBrowser() {
+    openInBrowser({ runAllCodeChunks = false }) {
         return __awaiter(this, void 0, void 0, function* () {
             const inputString = yield utility.readFile(this.filePath, { encoding: 'utf-8' });
-            let { html, yamlConfig } = yield this.parseMD(inputString, { useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false });
+            let { html, yamlConfig } = yield this.parseMD(inputString, { useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false, runAllCodeChunks });
             html = yield this.generateHTMLFromTemplate(html, yamlConfig, { isForPrint: false, isForPrince: false, offline: true, embedLocalImages: false });
             // create temp file
             const info = yield utility.tempOpen({
@@ -602,10 +636,10 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
      * @param filePath
      * @return dest if success, error if failure
      */
-    saveAsHTML(offline) {
+    htmlExport({ offline = false, runAllCodeChunks = false }) {
         return __awaiter(this, void 0, void 0, function* () {
             const inputString = yield utility.readFile(this.filePath, { encoding: 'utf-8' });
-            let { html, yamlConfig } = yield this.parseMD(inputString, { useRelativeFilePath: true, hideFrontMatter: true, isForPreview: false });
+            let { html, yamlConfig } = yield this.parseMD(inputString, { useRelativeFilePath: true, hideFrontMatter: true, isForPreview: false, runAllCodeChunks });
             const htmlConfig = yamlConfig['html'] || {};
             if ('cdn' in htmlConfig) {
                 offline = !htmlConfig['cdn'];
@@ -640,24 +674,24 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
      * Phantomjs file export
      * The config could be set by front-matter.
      * Check https://github.com/marcbachmann/node-html-pdf website.
-     * @param type the export file type
+     * @param fileType the export file type
      */
-    phantomjsExport(type = "pdf") {
+    phantomjsExport({ fileType = "pdf", runAllCodeChunks = false }) {
         return __awaiter(this, void 0, void 0, function* () {
             const inputString = yield utility.readFile(this.filePath, { encoding: 'utf-8' });
-            let { html, yamlConfig } = yield this.parseMD(inputString, { useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false });
+            let { html, yamlConfig } = yield this.parseMD(inputString, { useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false, runAllCodeChunks });
             let dest = this.filePath;
             let extname = path.extname(dest);
-            dest = dest.replace(new RegExp(extname + '$'), '.' + type);
+            dest = dest.replace(new RegExp(extname + '$'), '.' + fileType);
             html = yield this.generateHTMLFromTemplate(html, yamlConfig, {
                 isForPrint: true,
                 isForPrince: false,
                 embedLocalImages: false,
                 offline: true,
-                phantomjsType: type
+                phantomjsType: fileType
             });
             const phantomjsConfig = Object.assign({
-                type: type,
+                type: fileType,
                 border: '1cm',
                 quality: '75',
                 script: path.join(extensionDirectoryPath, './dependencies/phantomjs/pdf_a4_portrait.js')
@@ -692,10 +726,10 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
      * prince pdf file export
      * @return dest if success, error if failure
      */
-    princeExport() {
+    princeExport({ runAllCodeChunks = false }) {
         return __awaiter(this, void 0, void 0, function* () {
             const inputString = yield utility.readFile(this.filePath, { encoding: 'utf-8' });
-            let { html, yamlConfig } = yield this.parseMD(inputString, { useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false });
+            let { html, yamlConfig } = yield this.parseMD(inputString, { useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false, runAllCodeChunks });
             let dest = this.filePath;
             let extname = path.extname(dest);
             dest = dest.replace(new RegExp(extname + '$'), '.pdf');
@@ -750,10 +784,10 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
      * @param fileType: `epub`, `pdf`, `mobi` or `html`
      * @return dest if success, error if failure
      */
-    eBookExport(fileType = 'epub') {
+    eBookExport({ fileType = 'epub', runAllCodeChunks = false }) {
         return __awaiter(this, void 0, void 0, function* () {
             const inputString = yield utility.readFile(this.filePath, { encoding: 'utf-8' });
-            let { html, yamlConfig } = yield this.parseMD(inputString, { useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false });
+            let { html, yamlConfig } = yield this.parseMD(inputString, { useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false, runAllCodeChunks });
             let dest = this.filePath;
             let extname = path.extname(dest);
             dest = dest.replace(new RegExp(extname + '$'), '.' + fileType.toLowerCase());
@@ -930,9 +964,12 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     /**
      * pandoc export
      */
-    pandocExport() {
+    pandocExport({ runAllCodeChunks = false }) {
         return __awaiter(this, void 0, void 0, function* () {
             const inputString = yield utility.readFile(this.filePath, { encoding: 'utf-8' });
+            if (runAllCodeChunks) {
+                this.parseMD(inputString, { useRelativeFilePath: true, isForPreview: false, hideFrontMatter: false, runAllCodeChunks });
+            }
             const { data: config } = this.processFrontMatter(inputString, false);
             let content = inputString;
             if (content.match(/\-\-\-\s+/)) {
@@ -1693,6 +1730,8 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
             }
             if (options.runAllCodeChunks) {
                 yield this.runAllCodeChunks();
+                options.runAllCodeChunks = false;
+                return this.parseMD(inputString, options);
             }
             this.cachedHTML = html; // save to cache
             return { html, markdown: inputString, tocHTML: this.tocHTML, yamlConfig, JSAndCssFiles };

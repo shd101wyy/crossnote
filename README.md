@@ -10,3 +10,26 @@ This documentation will be released sooooon...
 npm install --save @shd101wyy/mume
 ```
 
+
+## Example
+
+```javascript 
+const mume = require('./out/src/mume.js')
+
+async function main() {
+  await mume.init()
+
+  const engine = new mume.MarkdownEngine({
+    filePath: "/Users/wangyiyi/Desktop/markdown-example/test3.md",
+    config: {
+      previewTheme: "newsprint.css",
+      codeBlockTheme: "atom-dark.css" 
+    }
+  })
+
+  await engine.saveAsHTML({offline: false, runAllCodeChunks: true})
+  return process.exit()
+}
+
+main()
+```

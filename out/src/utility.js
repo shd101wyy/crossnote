@@ -146,7 +146,7 @@ function getGlobalStyles() {
         catch (e) {
             // create style.less file 
             fileContent = `
-body {
+html body {
   // modify your style here
   // eg: background-color: blue;
 }    `;
