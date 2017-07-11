@@ -13,7 +13,7 @@ npm install --save @shd101wyy/mume
 ## Example
 
 ```javascript 
-const mume = require('./out/src/mume.js')
+import * as mume from "@shd101wyy/mume"
 
 async function main() {
   await mume.init()
