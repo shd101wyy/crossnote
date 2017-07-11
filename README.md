@@ -15,6 +15,9 @@ npm install --save @shd101wyy/mume
 ```javascript 
 import * as mume from "@shd101wyy/mume"
 
+// node.js 
+const mume = require('@shd101wyy/mume')
+
 async function main() {
   await mume.init()
 
@@ -111,6 +114,7 @@ const config = {
    // "newsprint.css",
    // "night.css",
    // "medium.css"
+   // "none.css"
 
    // Accepted protocols followed by `://` for links.
    protocolsWhiteList: "http, https, atom, file",
