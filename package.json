@@ -11,6 +11,7 @@
   ],
   "author": "shd101wyy",
   "license": "NCSA",
+  "repository": "https://github.com/shd101wyy/mume",
   "dependencies": {
     "babyparse": "^0.4.6",
     "cheerio": "0.15.0",
