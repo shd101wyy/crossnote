@@ -1171,10 +1171,16 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 
   /**
    * 
-   * @param fileType: `epub`, `pdf`, `mobi` or `html`
+   * 
    * @return dest if success, error if failure
    */
-  public async eBookExport({fileType='epub', runAllCodeChunks=false}):Promise<string> {
+  public async eBookExport({fileType='epub', runAllCodeChunks=false}:{
+    /**
+     * fileType: 'epub', 'pdf', 'mobi' or 'html'
+     */
+    fileType:string,
+    runAllCodeChunks:boolean
+  }):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
 
@@ -1204,7 +1210,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         }
       }
 
-      $(':root').children('h1, h2, h3, h4, h5, h6').each((offset, h)=> {
+      $('h1, h2, h3, h4, h5, h6').each((offset, h)=> {
         const $h = $(h)
         const level = parseInt($h[0].name.slice(1)) - 1
 
