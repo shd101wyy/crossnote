@@ -202,8 +202,12 @@ export class MarkdownEngine {
   /**
    * cachedHTML is the cache of html generated from the markdown file.  
    */
-  private cachedHTML:string = '';
-  // private cachedInputString:string = '' // <= this is wrong
+  // private cachedHTML:string = '';
+
+  /**
+   * Check whether the preview is in presentation mode.  
+   */
+  public isPreviewInPresentationMode:boolean = false
 
   constructor(args:{
     /**
@@ -743,15 +747,14 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         <!-- <div class="markdown-spinner"> Loading Markdown\u2026 </div> -->
     `
 
-    // parse markdown
-    const {yamlConfig, html, JSAndCssFiles} = await this.parseMD(inputString, {isForPreview: true, useRelativeFilePath: false, hideFrontMatter: false})
-    const isPresentationMode = yamlConfig["isPresentationMode"]
+    const {yamlConfig, JSAndCssFiles, html} = await this.parseMD(inputString, {isForPreview: true, useRelativeFilePath: false, hideFrontMatter: false})
+    const isPresentationMode = yamlConfig['isPresentationMode']
 
     const htmlTemplate = `<!DOCTYPE html>
       <html>
       <head>
         <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-        <meta id="mume-data" data-config="${utility.escapeString(JSON.stringify(Object.assign({}, this.config, config)))}">
+        <meta id="mume-data" data-config="${utility.escapeString(JSON.stringify(Object.assign({}, this.config, config)))}" data-time="${Date.now()}">
         <meta charset="UTF-8">
 
         ${this.generateStylesForPreview(isPresentationMode)}
@@ -1179,7 +1182,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
      * fileType: 'epub', 'pdf', 'mobi' or 'html'
      */
     fileType:string,
-    runAllCodeChunks:boolean
+    runAllCodeChunks?:boolean
   }):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
@@ -1826,9 +1829,11 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   /**
    * return this.cachedHTML
    */
+  /*
   public getCachedHTML() {
     return this.cachedHTML
   }
+  */
 
   /**
    * clearCaches will clear filesCache, codeChunksData, graphsCache
@@ -2135,7 +2140,10 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       return this.parseMD(inputString, options)
     }
 
-    this.cachedHTML = html // save to cache
+    if (options.isForPreview) {
+      // this.cachedHTML = html // save to cache
+      this.isPreviewInPresentationMode = !!(slideConfigs.length) // check presentation mode
+    }
     return {html, markdown:inputString, tocHTML: this.tocHTML, yamlConfig, JSAndCssFiles}
   }
 }

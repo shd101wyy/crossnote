@@ -376,7 +376,11 @@ export async function transformMarkdown(inputString:string,
               return helper(commentEnd, lineNo + newlines, outputString + '<div class="pagebreak"> </div>\n')
             } else if (subject === 'slide') { // slide 
               slideConfigs.push(options)
-              return helper(commentEnd, lineNo + newlines, outputString + '\n[MUMESLIDE]\n\n')
+              if (forMarkdownExport) {
+                return helper(commentEnd, lineNo + newlines, outputString + `<!-- ${content} -->` + '\n')
+              } else {
+                return helper(commentEnd, lineNo + newlines, outputString + '\n[MUMESLIDE]\n\n')
+              }
             }
           } else {
             const content = inputString.slice(i+4, commentEnd-3).trim()
