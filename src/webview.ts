@@ -1,9 +1,7 @@
-// markdown-preview-enhanced-view controller
+// preview controller
 (function() {
 
 console.log('init webview')
-// const settings = JSON.parse(document.getElementById('vscode-markdown-preview-enhanced-data').getAttribute('data-settings'));
-// console.log(settings)
 
 interface MarkdownConfig {
   breakOnSingleNewLine?: boolean,
@@ -49,13 +47,13 @@ interface MarkdownPreviewEnhancedPreview {
   containerElement: HTMLElement,
 
  /**
-  * this is the element with class `markdown-preview-enhanced`
+  * this is the element with class `mume`
   * the final html is rendered by that previewElement
   */
   previewElement: HTMLElement,
 
   /**
-   * .markdown-preview-enhanced.hidden-preview element
+   * .mume.hidden-preview element
    * hiddenPreviewElement is used to render html and then put the rendered html result to previewElement
    */
   hiddenPreviewElement: HTMLElement,
@@ -171,7 +169,7 @@ function onLoad() {
   initContextMenu()
 
   /** load config */
-  config = JSON.parse(document.getElementById('vscode-markdown-preview-enhanced-data').getAttribute('data-config'))
+  config = JSON.parse(document.getElementById('mume-data').getAttribute('data-config'))
   sourceUri = config['sourceUri']
   previewUri = config['previewUri']
 
@@ -221,7 +219,7 @@ function onLoad() {
 
   window.parent.postMessage({ 
     command: 'did-click-link', // <= this has to be `did-click-link` to post message
-    data: `command:_markdown-preview-enhanced.webviewFinishLoading?${JSON.stringify([sourceUri])}`
+    data: `command:_mume.webviewFinishLoading?${JSON.stringify([sourceUri])}`
   }, 'file://')
 
   // console.log(document.getElementsByTagName('html')[0].outerHTML)
@@ -292,13 +290,12 @@ function initBackToTopButton() {
  */
 function initRefreshButton() {
   mpe.toolbar.refreshBtn.onclick = ()=> {
-    window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.refreshPreview?${JSON.stringify([sourceUri])}`}, 'file://') 
+    window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.refreshPreview?${JSON.stringify([sourceUri])}`}, 'file://') 
   }
 }
 
 /**
  * init contextmenu
- * check markdown-preview-enhanced-view.ts
  * reference: http://jsfiddle.net/w33z4bo0/1/
  */
 function initContextMenu() {
@@ -308,7 +305,7 @@ function initContextMenu() {
       "open_in_browser": {
         name: "Open in Browser", 
         callback: ()=>{     
-          window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.openInBrowser?${JSON.stringify([sourceUri])}`}, 'file://') 
+          window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.openInBrowser?${JSON.stringify([sourceUri])}`}, 'file://') 
         } 
       },
       "sep1": "---------",
@@ -318,13 +315,13 @@ function initContextMenu() {
           "html_offline": {
             name: "HTML (offline)",
             callback() {
-              window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.saveAsHTML?${JSON.stringify([sourceUri, true])}`}, 'file://') 
+              window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.saveAsHTML?${JSON.stringify([sourceUri, true])}`}, 'file://') 
             }
           },
           "html_cdn": {
             name: "HTML (cdn hosted)",
             callback() {
-              window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.saveAsHTML?${JSON.stringify([sourceUri, false])}`}, 'file://') 
+              window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.saveAsHTML?${JSON.stringify([sourceUri, false])}`}, 'file://') 
             }
           }
         }
@@ -336,19 +333,19 @@ function initContextMenu() {
           "phantomjs_pdf": {
             name: "PDF",
             callback() {
-              window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.phantomjsExport?${JSON.stringify([sourceUri, 'pdf'])}`}, 'file://') 
+              window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.phantomjsExport?${JSON.stringify([sourceUri, 'pdf'])}`}, 'file://') 
             }
           },
           "phantomjs_png": {
             name: "PNG",
             callback() {
-              window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.phantomjsExport?${JSON.stringify([sourceUri, 'png'])}`}, 'file://') 
+              window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.phantomjsExport?${JSON.stringify([sourceUri, 'png'])}`}, 'file://') 
             }
           },
           "phantomjs_jpeg": {
             name: "JPEG",
             callback() {
-              window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.phantomjsExport?${JSON.stringify([sourceUri, 'jpeg'])}`}, 'file://') 
+              window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.phantomjsExport?${JSON.stringify([sourceUri, 'jpeg'])}`}, 'file://') 
             }
           }
         }
@@ -357,7 +354,7 @@ function initContextMenu() {
       {
         name: "PDF (prince)",
         callback: ()=> {
-          window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.princeExport?${JSON.stringify([sourceUri])}`}, 'file://') 
+          window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.princeExport?${JSON.stringify([sourceUri])}`}, 'file://') 
         }
       },
       "ebook_export": {
@@ -366,25 +363,25 @@ function initContextMenu() {
           "ebook_epub": {
             name: "ePub",
             callback: ()=> {
-              window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.eBookExport?${JSON.stringify([sourceUri, 'epub'])}`}, 'file://') 
+              window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.eBookExport?${JSON.stringify([sourceUri, 'epub'])}`}, 'file://') 
             }
           },
           "ebook_mobi": {
             name: "mobi",
             callback: ()=> {
-              window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.eBookExport?${JSON.stringify([sourceUri, 'mobi'])}`}, 'file://') 
+              window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.eBookExport?${JSON.stringify([sourceUri, 'mobi'])}`}, 'file://') 
             }
           },
           "ebook_pdf": {
             name: "PDF",
             callback: ()=> {
-              window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.eBookExport?${JSON.stringify([sourceUri, 'pdf'])}`}, 'file://') 
+              window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.eBookExport?${JSON.stringify([sourceUri, 'pdf'])}`}, 'file://') 
             }
           },
           "ebook_html": {
             name: "HTML",
             callback: ()=> {
-              window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.eBookExport?${JSON.stringify([sourceUri, 'html'])}`}, 'file://') 
+              window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.eBookExport?${JSON.stringify([sourceUri, 'html'])}`}, 'file://') 
             }
           }
         }
@@ -392,13 +389,13 @@ function initContextMenu() {
       "pandoc_export": {
         name: "Pandoc",
         callback: ()=> {
-          window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.pandocExport?${JSON.stringify([sourceUri])}`}, 'file://') 
+          window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.pandocExport?${JSON.stringify([sourceUri])}`}, 'file://') 
         }
       },
       "save_as_markdown": {
         name: "Save as Markdown",
         callback: ()=> {
-          window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.markdownExport?${JSON.stringify([sourceUri])}`}, 'file://') 
+          window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.markdownExport?${JSON.stringify([sourceUri])}`}, 'file://') 
         }
       },
       "sep2": "---------",
@@ -424,7 +421,7 @@ function initImageHelper() {
       }
       if (url.length) {
         $['modal'].close() // close modal
-        window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.insertImageUrl?${JSON.stringify([sourceUri, url])}`}, 'file://') 
+        window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.insertImageUrl?${JSON.stringify([sourceUri, url])}`}, 'file://') 
       }
       return false 
     } else {
@@ -451,13 +448,13 @@ function initImageHelper() {
         const files = e.originalEvent.dataTransfer.files
         for (let i = 0; i < files.length; i++) {
           const file = files[i]
-          window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.pasteImageFile?${JSON.stringify([sourceUri, file.path])}`}, 'file://') 
+          window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.pasteImageFile?${JSON.stringify([sourceUri, file.path])}`}, 'file://') 
         }
       } else { // upload
         const files = e.originalEvent.dataTransfer.files
         for (let i = 0; i < files.length; i++) {
           const file = files[i]
-          window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.uploadImageFile?${JSON.stringify([sourceUri, file.path, imageUploaderSelect.value])}`}, 'file://') 
+          window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.uploadImageFile?${JSON.stringify([sourceUri, file.path, imageUploaderSelect.value])}`}, 'file://') 
         }
       }
       $['modal'].close() // close modal
@@ -477,14 +474,14 @@ function initImageHelper() {
       const files = e.target.files
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
-        window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.pasteImageFile?${JSON.stringify([sourceUri, file.path])}`}, 'file://') 
+        window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.pasteImageFile?${JSON.stringify([sourceUri, file.path])}`}, 'file://') 
       }
       fileUploader.val('')
     } else { // upload
       const files = e.target.files
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
-        window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.uploadImageFile?${JSON.stringify([sourceUri, file.path, imageUploaderSelect.value])}`}, 'file://') 
+        window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.uploadImageFile?${JSON.stringify([sourceUri, file.path, imageUploaderSelect.value])}`}, 'file://') 
       }
       fileUploader.val('')
     }
@@ -515,7 +512,7 @@ function initPresentationEvent() {
         if (h === indexh && v === indexv) {
           window.parent.postMessage({ 
             command: 'did-click-link', // <= this has to be `did-click-link` to post message
-            data: `command:_markdown-preview-enhanced.revealLine?${JSON.stringify([sourceUri, line + 6])}`
+            data: `command:_mume.revealLine?${JSON.stringify([sourceUri, line + 6])}`
           }, 'file://')
         }
       }
@@ -563,7 +560,7 @@ function renderMermaid() {
 
         window.parent.postMessage({ 
           command: 'did-click-link', // <= this has to be `did-click-link` to post message
-          data: `command:_markdown-preview-enhanced.cacheSVG?${JSON.stringify([sourceUri, code, svg])}`
+          data: `command:_mume.cacheSVG?${JSON.stringify([sourceUri, code, svg])}`
         }, 'file://')
       })
       */
@@ -612,11 +609,11 @@ function runCodeChunk(id:string) {
       codeChunk.classList.remove('running') // done running javascript code 
 
       const CryptoJS = window["CryptoJS"]
-      const result = CryptoJS.AES.encrypt(codeChunk.getElementsByClassName('output-div')[0].outerHTML, "markdown-preview-enhanced").toString()
+      const result = CryptoJS.AES.encrypt(codeChunk.getElementsByClassName('output-div')[0].outerHTML, "mume").toString()
 
       window.parent.postMessage({ 
         command: 'did-click-link', // <= this has to be `did-click-link` to post message
-        data: `command:_markdown-preview-enhanced.cacheCodeChunkResult?${JSON.stringify([sourceUri, id, result])}`
+        data: `command:_mume.cacheCodeChunkResult?${JSON.stringify([sourceUri, id, result])}`
       }, 'file://')
     } catch(e) {
       const outputDiv = codeChunk.getElementsByClassName('output-div')[0]
@@ -625,7 +622,7 @@ function runCodeChunk(id:string) {
   } else {
     window.parent.postMessage({ 
       command: 'did-click-link', // <= this has to be `did-click-link` to post message
-      data: `command:_markdown-preview-enhanced.runCodeChunk?${JSON.stringify([sourceUri, id])}`
+      data: `command:_mume.runCodeChunk?${JSON.stringify([sourceUri, id])}`
     }, 'file://')
   }
 }
@@ -638,7 +635,7 @@ function runAllCodeChunks() {
 
   window.parent.postMessage({ 
     command: 'did-click-link', // <= this has to be `did-click-link` to post message
-    data: `command:_markdown-preview-enhanced.runAllCodeChunks?${JSON.stringify([sourceUri])}`
+    data: `command:_mume.runAllCodeChunks?${JSON.stringify([sourceUri])}`
   }, 'file://')
 }
 
@@ -730,7 +727,7 @@ function bindTagAClickEvent() {
 
         window.parent.postMessage({ 
           command: 'did-click-link', // <= this has to be `did-click-link` to post message
-          data: `command:_markdown-preview-enhanced.clickTagA?${JSON.stringify([sourceUri, encodeURIComponent(href)])}`
+          data: `command:_mume.clickTagA?${JSON.stringify([sourceUri, encodeURIComponent(href)])}`
         }, 'file://')
       }
     }
@@ -761,7 +758,7 @@ function bindTaskListEvent() {
         if (!isNaN(dataLine)) {
           window.parent.postMessage({ 
             command: 'did-click-link', // <= this has to be `did-click-link` to post message
-            data: `command:_markdown-preview-enhanced.clickTaskListCheckbox?${JSON.stringify([sourceUri, dataLine])}`
+            data: `command:_mume.clickTaskListCheckbox?${JSON.stringify([sourceUri, dataLine])}`
           }, 'file://')
         }
       }
@@ -779,7 +776,7 @@ function updateHTML(html:string, id:string, classes:string) {
   //   1. Using singlePreview 
   //   2. Switch from a presentationMode file to not presentationMode file.
   if (mpe.presentationMode) {
-    return window.parent.postMessage({ command: 'did-click-link', data: `command:_markdown-preview-enhanced.refreshPreview?${JSON.stringify([sourceUri])}`}, 'file://') 
+    return window.parent.postMessage({ command: 'did-click-link', data: `command:_mume.refreshPreview?${JSON.stringify([sourceUri])}`}, 'file://') 
   }
 
   // editorScrollDelay = Date.now() + 500
@@ -898,7 +895,7 @@ function previewSyncSource() {
 
     window.parent.postMessage({ 
       command: 'did-click-link', // <= this has to be `did-click-link` to post message
-      data: `command:_markdown-preview-enhanced.revealLine?${JSON.stringify([sourceUri, scrollToLine])}`
+      data: `command:_mume.revealLine?${JSON.stringify([sourceUri, scrollToLine])}`
     }, 'file://')
 
     return 
@@ -940,7 +937,7 @@ function previewSyncSource() {
 
   window.parent.postMessage({ 
     command: 'did-click-link', // <= this has to be `did-click-link` to post message
-    data: `command:_markdown-preview-enhanced.revealLine?${JSON.stringify([sourceUri, scrollToLine])}`
+    data: `command:_mume.revealLine?${JSON.stringify([sourceUri, scrollToLine])}`
   }, 'file://')
 
   // @scrollToPos(screenRow * @editor.getLineHeightInPixels() - @previewElement.offsetHeight / 2, @editor.getElement())
@@ -1112,7 +1109,7 @@ window.addEventListener('resize', resizeEvent)
 /*
 window.parent.postMessage({ 
   command: 'did-click-link', // <= this has to be `did-click-link` to post message
-  data: `command:_markdown-preview-enhanced.revealLine?${JSON.stringify([settings.fsPath])}`
+  data: `command:_mume.revealLine?${JSON.stringify([settings.fsPath])}`
 }, 'file://')
 */
 

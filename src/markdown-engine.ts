@@ -751,7 +751,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       <html>
       <head>
         <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-        <meta id="vscode-markdown-preview-enhanced-data" data-config="${utility.escapeString(JSON.stringify(Object.assign({}, this.config, config)))}">
+        <meta id="mume-data" data-config="${utility.escapeString(JSON.stringify(Object.assign({}, this.config, config)))}">
         <meta charset="UTF-8">
 
         ${this.generateStylesForPreview(isPresentationMode)}
