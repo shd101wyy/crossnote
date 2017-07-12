@@ -666,12 +666,123 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   }
 
   /**
+   * Generate <style> and <link> string from an array of file paths.
+   * @param JSAndCssFiles 
+   */
+  private generateJSAndCssFilesForPreview(JSAndCssFiles=[]) {
+    let output = ''
+    JSAndCssFiles.forEach((sourcePath)=> {
+      let absoluteFilePath = sourcePath
+      if (sourcePath[0] === '/') {
+        absoluteFilePath = 'file:///' + path.resolve(this.projectDirectoryPath, '.' + sourcePath)
+      } else if (sourcePath.match(/^file:\/\//) || sourcePath.match(/^https?\:\/\//)) {
+        // do nothing 
+      } else {
+        absoluteFilePath = 'file:///' + path.resolve(this.fileDirectoryPath, sourcePath)
+      }
+
+      if (absoluteFilePath.endsWith('.js')) {
+        output += `<script type="text/javascript" src="${absoluteFilePath}"></script>`
+      } else { // css
+        output += `<link rel="stylesheet" href="${absoluteFilePath}">`
+      }
+    })
+    return output
+  }
+
+  /**
+   * Generate html template for preview.
+   */
+  public async generateHTMLTemplateForPreview({inputString="", body='', webviewScript='', scripts="", styles="", config={}}):Promise<string> {
+    if (!inputString)  
+      inputString = fs.readFileSync(this.filePath, {encoding:'utf-8'})
+    if (!webviewScript) 
+      webviewScript = path.resolve(utility.extensionDirectoryPath, './out/src/webview.js')
+    if (!body) // default body
+      body = `
+        <div class="refreshing-icon"></div>
+
+        <div id="md-toolbar">
+          <div class="back-to-top-btn btn"><span>⬆︎</span></div>
+          <div class="refresh-btn btn"><span>⟳︎</span></div>
+          <div class="sidebar-toc-btn btn"><span>§</span></div>
+        </div>
+
+        <div id="image-helper-view">
+          <h4>Image Helper</h4>
+          <div class="upload-div">
+            <label>Link</label>
+            <input type="text" class="url-editor" placeholder="enter image URL here, then press \'Enter\' to insert.">
+
+            <div class="splitter"></div>
+
+            <label class="copy-label">Copy image to root /assets folder</label>
+            <div class="drop-area paster">
+              <p class="paster"> Drop image file here or click me </p>
+              <input class="file-uploader paster" type="file" style="display:none;" multiple="multiple" >
+            </div>
+
+            <div class="splitter"></div>
+
+            <label>Upload</label>
+            <div class="drop-area uploader">
+              <p class="uploader">Drop image file here or click me</p>
+              <input class="file-uploader uploader" type="file" style="display:none;" multiple="multiple" >
+            </div>
+            <div class="uploader-choice">
+              <span>use</span>
+              <select class="uploader-select">
+                <option>imgur</option>
+                <option>sm.ms</option>
+              </select>
+              <span> to upload images</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class="markdown-spinner"> Loading Markdown\u2026 </div> -->
+    `
+
+    // parse markdown
+    const {yamlConfig, html, JSAndCssFiles} = await this.parseMD(inputString, {isForPreview: true, useRelativeFilePath: false, hideFrontMatter: false})
+    const isPresentationMode = yamlConfig["isPresentationMode"]
+
+    const htmlTemplate = `<!DOCTYPE html>
+      <html>
+      <head>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+        <meta id="vscode-markdown-preview-enhanced-data" data-config="${utility.escapeString(JSON.stringify(Object.assign({}, this.config, config)))}">
+        <meta charset="UTF-8">
+
+        ${this.generateStylesForPreview(isPresentationMode)}
+        ${styles}
+        <link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath , './styles/preview.css')}">
+
+        ${this.generateJSAndCssFilesForPreview(JSAndCssFiles)}
+        
+        <base href="${this.filePath}">
+      </head>
+      <body class="preview-container">
+        <div class="mume" for="preview" ${isPresentationMode ? 'data-presentation-mode' : ''}>
+          ${html}
+        </div>
+        ${body}
+      </body>
+      ${this.generateScriptsForPreview(isPresentationMode, yamlConfig)}
+      ${scripts}
+      <script src="${webviewScript}"></script>
+      </html>`
+    
+      return htmlTemplate
+  }
+
+  /**
    * Generate HTML content
    * @param html: this is the final content you want to put. 
    * @param yamlConfig: this is the front matter.
    * @param option: HTMLTemplateOption
    */
-  public async generateHTMLFromTemplate(html:string, yamlConfig={}, options:HTMLTemplateOption):Promise<string> {
+  public async generateHTMLTemplateForExport(html:string, yamlConfig={}, options:HTMLTemplateOption):Promise<string> {
     // get `id` and `class`
     const elementId = yamlConfig['id'] || ''
     let elementClass = yamlConfig['class'] || []
@@ -886,7 +997,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   public async openInBrowser({runAllCodeChunks=false}):Promise<void> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false, runAllCodeChunks})
-    html = await this.generateHTMLFromTemplate(html, yamlConfig, 
+    html = await this.generateHTMLTemplateForExport(html, yamlConfig, 
                                     {isForPrint: false, isForPrince: false, offline: true, embedLocalImages: false} )   
     // create temp file
     const info = await utility.tempOpen({
@@ -919,7 +1030,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     let extname = path.extname(dest) 
     dest = dest.replace(new RegExp(extname+'$'), '.html')
 
-    html = await this.generateHTMLFromTemplate(html, yamlConfig, {
+    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
         isForPrint: false, 
         isForPrince: false,
         embedLocalImages: embedLocalImages,
@@ -957,7 +1068,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     let extname = path.extname(dest)
     dest = dest.replace(new RegExp(extname + '$'), '.' + fileType)
 
-    html = await this.generateHTMLFromTemplate(html, yamlConfig, {
+    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
       isForPrint: true,
       isForPrince: false,
       embedLocalImages: false,
@@ -1007,7 +1118,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     let extname = path.extname(dest) 
     dest = dest.replace(new RegExp(extname+'$'), '.pdf')
 
-    html = await this.generateHTMLFromTemplate(html, yamlConfig, {
+    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
         isForPrint: true, 
         isForPrince: true,
         embedLocalImages: false, 
