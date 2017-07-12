@@ -552,7 +552,7 @@ export class MarkdownEngine {
   /**
    * Generate scripts string for preview usage.
    */
-  public generateScriptsForPreview() {
+  public generateScriptsForPreview(isForPresentation=false, yamlConfig={}) {
     let scripts = ""
 
     // jquery 
@@ -572,6 +572,10 @@ export class MarkdownEngine {
     scripts += `<script src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/mermaid.min.js`)}"></script>`
     scripts += `<script>
 ${utility.configs.mermaidConfig}
+${isForPresentation ? `if (window['MERMAID_CONFIG']) {
+  window['MERMAID_CONFIG'].startOnLoad = true
+  window['MERMAID_CONFIG'].cloneCssStyles = false 
+}\n` : '' }
 mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 </script>`
 
@@ -585,6 +589,22 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       scripts += `<script type="text/javascript" async src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/mathjax/MathJax.js')}"></script>`
       scripts += `<script type="text/x-mathjax-config"> MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)}); </script>`
     }
+
+    // reveal.js
+    if (isForPresentation) {
+      scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/reveal/lib/js/head.min.js')}'></script>`
+      scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/reveal/js/reveal.js')}'></script>`
+  
+      let presentationConfig = yamlConfig['presentation'] || {}
+      let dependencies = presentationConfig['dependencies'] || []
+      presentationConfig['dependencies'] = dependencies
+
+      scripts += `
+      <script>
+        Reveal.initialize(${JSON.stringify(Object.assign({margin: 0.1}, presentationConfig))})
+      </script>
+      `
+    }
     
     return scripts
   }
@@ -592,7 +612,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   /**
    * Generate styles string for preview usage.
    */
-  public generateStylesForPreview() {
+  public generateStylesForPreview(isPresentationMode=false) {
     let styles = ''
 
     // loading.css 
@@ -612,11 +632,16 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     // check mermaid 
     styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/${this.config.mermaidTheme}`)}">`
 
+    // check preview theme and revealjs theme
+    if (!isPresentationMode) {
+      styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`)}">`
+    } else {
+      styles += `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, './dependencies/reveal/reveal.css')}" >`
+      styles += `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`)}" >`
+    }
+
     // check prism 
     styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/prism/themes/${this.config.codeBlockTheme}`)}">`
-
-    // check preview theme 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`)}">`
 
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${path.resolve(utility.extensionDirectoryPath, './styles/style-template.css')}">`
@@ -691,7 +716,10 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       let mermaidConfig:string = await utility.getMermaidConfig()
       mermaidScript += `<script>
 ${mermaidConfig}
-window['MERMAID_CONFIG'].startOnLoad = true
+if (window['MERMAID_CONFIG']) {
+  window['MERMAID_CONFIG'].startOnLoad = true
+  window['MERMAID_CONFIG'].cloneCssStyles = false 
+}
 mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 </script>`
     }
@@ -1745,94 +1773,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 
   /**
    * Parse `html` to generate slides
-   * @param html 
-   * @param slideConfigs 
-   * @param yamlConfig 
    */
-  private parseSlides(html:string, slideConfigs:Array<object>, yamlConfig) {
-    let slides = html.split('<span class="new-slide"></span>')
-    
-    let output = ''
-    let width = 960,
-        height = 700
-
-    let presentationConfig = {}
-    if (yamlConfig && yamlConfig['presentation']) {
-      presentationConfig = yamlConfig['presentation']
-      width = presentationConfig['width'] || 960
-      height = presentationConfig['height'] || 700
-    }
-
-
-    slides.forEach((slide, offset)=> {
-      if (!offset) {  // first part of html before the first <!-- slide -->
-        return output += `<div style='display: none;'>${slide}</div>`
-      }
-      offset = offset - 1
-      const slideConfig = slideConfigs[offset] || {}
-      let styleString = '',
-          videoString = '',
-          iframeString = '',
-          classString = slideConfig['class'] || '',
-          idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : ''
-      if (slideConfig['data-background-image']) {
-        styleString += `background-image: url('${this.resolveFilePath(slideConfig['data-background-image'], false)}');`
-
-        if (slideConfig['data-background-size'])
-          styleString += `background-size: ${slideConfig['data-background-size']};`
-        else
-          styleString += "background-size: cover;"
-
-        if (slideConfig['data-background-position'])
-          styleString += `background-position: ${slideConfig['data-background-position']};`
-        else
-          styleString += "background-position: center;"
-
-        if (slideConfig['data-background-repeat'])
-          styleString += `background-repeat: ${slideConfig['data-background-repeat']};`
-        else
-          styleString += "background-repeat: no-repeat;"
-      } else if (slideConfig['data-background-color']) {
-        styleString += `background-color: ${slideConfig['data-background-color']} !important;`
-      } else if (slideConfig['data-background-video']) {
-        const videoMuted = slideConfig['data-background-video-muted']
-        const videoLoop = slideConfig['data-background-video-loop']
-
-        const muted_ = videoMuted ? 'muted' : ''
-        const loop_ = videoLoop ? 'loop' : ''
-
-        videoString = `
-        <video ${muted_} ${loop_} playsinline autoplay class="background-video" src="${this.resolveFilePath(slideConfig['data-background-video'], false)}">
-        </video>
-        `
-      } else if (slideConfig['data-background-iframe']) {
-        iframeString = `
-        <iframe class="background-iframe" src="${this.resolveFilePath(slideConfig['data-background-iframe'], false)}" frameborder="0" > </iframe>
-        <div class="background-iframe-overlay"></div>
-        `
-      }
-
-      output += `
-        <div class='slide ${classString}' ${idString} data-line="${slideConfig['lineNo']}" data-offset='${offset}' style="width: ${width}px; height: ${height}px; ${styleString}">
-          ${videoString}
-          ${iframeString}
-          <section>${slide}</section>
-        </div>
-      `
-    })
-
-    // remove <aside class="notes"> ... </aside>
-    output = output.replace(/(<aside\b[^>]*>)[^<>]*(<\/aside>)/ig, '')
-
-    return `
-    <div id="preview-slides" data-width="${width}" data-height="${height}">
-      ${output}
-    </div>
-    `
-  }
-
-  private parseSlidesForExport(html:string, slideConfigs:Array<object>, useRelativeFilePath:boolean) {
-    let slides = html.split('<span class="new-slide"></span>')
+  private parseSlides(html:string, slideConfigs:Array<object>, useRelativeFilePath:boolean) {
+    let slides = html.split('<p>[MUMESLIDE]</p>')
     let before = slides[0]
     slides = slides.slice(1)
 
@@ -1900,7 +1843,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         v += 1
       }
 
-      output += `<section ${attrString} ${idString} class=\"${classString}\" data-h=\"${h}\" data-v="${v}">${slide}</section>`
+      output += `<section ${attrString} ${idString}  class=\"slide ${classString}\" data-line="${slideConfig['lineNo']}" data-h=\"${h}\" data-v="${v}">${slide}</section>`
       i += 1
     }
     if (i > 0 && slideConfigs[i-1]['vertical']) // end of vertical slides
@@ -2048,11 +1991,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
      * check slides
      */
     if (slideConfigs.length) {
-      if (options.isForPreview) {
-        html = this.parseSlides(html, slideConfigs, yamlConfig)
-      } else {
-        html = this.parseSlidesForExport(html, slideConfigs, options.useRelativeFilePath)
-      }
+      html = this.parseSlides(html, slideConfigs, options.useRelativeFilePath)
       if (yamlConfig) yamlConfig['isPresentationMode'] = true // mark as presentation mode
     }
 
