@@ -220,7 +220,9 @@ export class MarkdownEngine {
     this.filePath = args.filePath
     this.fileDirectoryPath = path.dirname(this.filePath)
     this.projectDirectoryPath = args.projectDirectoryPath || this.fileDirectoryPath
-    this.config = Object.assign({}, defaultMarkdownEngineConfig, utility.configs.config || {}, args.config || {}) as MarkdownEngineConfig
+    
+    // Please notice that ~/.mume/config.json has the highest priority.
+    this.config = Object.assign({}, defaultMarkdownEngineConfig, args.config || {}, utility.configs.config || {}) as MarkdownEngineConfig
 
     this.initConfig()
     this.headings = []
