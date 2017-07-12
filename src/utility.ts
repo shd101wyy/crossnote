@@ -297,6 +297,19 @@ export async function getExtensionConfig():Promise<object> {
   return config
 }
 
+/**
+ * Update ~/.mume/config.json
+ * @param newConfig The new config.
+ */
+export async function updateExtensionConfig(newConfig={}):Promise<void> {
+  let config = await getExtensionConfig()
+  config = Object.assign(config, newConfig)
+
+  const homeDir = os.homedir()
+  fs.writeFile(path.resolve(homeDir, './.mume/config.json'), JSON.stringify(config, null, 2), {encoding: 'utf-8'}, function(){})
+}
+
+
 export async function getParserConfig():Promise<object> {
   const homeDir = os.homedir()
   const parserConfigPath = path.resolve(homeDir, './.mume/parser.js')
