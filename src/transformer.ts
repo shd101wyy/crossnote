@@ -391,9 +391,11 @@ export async function transformMarkdown(inputString:string,
         return helper(end+1, lineNo+1, outputString + `\n[MUMETOC]\n\n`)
       } else if (taskListItemMatch = line.match(/^\s*(?:[*\-+]|\d+)\s+(\[[xX\s]\])\s/)) { // task list
         const checked = taskListItemMatch[1] !== '[ ]'
-        line = line.replace(
-          taskListItemMatch[1], 
-          `<input type="checkbox" class="task-list-item-checkbox${forPreview ? ' sync-line' : ''}" ${forPreview ? `data-line="${lineNo}"` : '' }${checked? ' checked' : ''}>`)
+        if (!forMarkdownExport) {
+          line = line.replace(
+            taskListItemMatch[1], 
+            `<input type="checkbox" class="task-list-item-checkbox${forPreview ? ' sync-line' : ''}" ${forPreview ? `data-line="${lineNo}"` : '' }${checked? ' checked' : ''}>`)
+        }
         return helper(end+1, lineNo+1, outputString+line+`\n`)
       }
 
@@ -515,6 +517,7 @@ export async function transformMarkdown(inputString:string,
                 filesCache, 
                 useRelativeFilePath: false, 
                 forPreview: false, 
+                forMarkdownExport,
                 protocolsWhiteListRegExp,
                 notSourceFile: true, // <= this is not the sourcefile
                 imageDirectoryPath,
