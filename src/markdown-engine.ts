@@ -177,6 +177,8 @@ export class MarkdownEngine {
   private readonly filePath: string 
   private readonly fileDirectoryPath: string
   private readonly projectDirectoryPath: string
+
+  private _originalConfig: MarkdownEngineConfig
   private config: MarkdownEngineConfig
 
   private breakOnSingleNewLine: boolean
@@ -221,10 +223,9 @@ export class MarkdownEngine {
     this.fileDirectoryPath = path.dirname(this.filePath)
     this.projectDirectoryPath = args.projectDirectoryPath || this.fileDirectoryPath
     
-    // Please notice that ~/.mume/config.json has the highest priority.
-    this.config = Object.assign({}, defaultMarkdownEngineConfig, args.config || {}, utility.configs.config || {}) as MarkdownEngineConfig
+    this._originalConfig = args.config
+    this.resetConfig()
 
-    this.initConfig()
     this.headings = []
     this.tocHTML = ''
 
@@ -232,6 +233,16 @@ export class MarkdownEngine {
       Object.assign({}, defaults, {typographer: this.enableTypographer, breaks: this.breakOnSingleNewLine}))
     
     this.configureRemarkable()
+  }
+
+  /**
+   * Reset config
+   */
+  public resetConfig() {
+    // Please notice that ~/.mume/config.json has the highest priority.
+    this.config = Object.assign({}, defaultMarkdownEngineConfig, this._originalConfig || {}, utility.configs.config || {}) as MarkdownEngineConfig
+
+    this.initConfig()
   }
 
   /**
