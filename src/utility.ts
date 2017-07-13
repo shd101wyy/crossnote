@@ -324,14 +324,17 @@ export async function getParserConfig():Promise<object> {
     }
   } else {
     const template = `module.exports = {
-  onWillParseMarkdown: async function(markdown) {
-    return markdown
+  onWillParseMarkdown: function(markdown) {
+    return new Promise((resolve, reject)=> {
+      return resolve(markdown)
+    })
   },
-  onDidParseMarkdown: async function(html) {
-    return html
+  onDidParseMarkdown: function(html) {
+    return new Promise((resolve, reject)=> {
+      return resolve(html)
+    })
   }
-}
-`
+}`
     await writeFile(parserConfigPath, template, {encoding: 'utf-8'})
 
     parserConfig = {}
