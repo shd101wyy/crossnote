@@ -93,7 +93,7 @@ except Exception:
   // check macros 
   let findInputFileMacro = false 
   args = args.map((arg)=> {
-    if (arg === '{input_file}') {
+    if (arg === '$input_file') {
       findInputFileMacro = true 
       return savePath
     } else {
