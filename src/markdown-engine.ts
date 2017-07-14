@@ -1079,6 +1079,14 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       phantomjsType: fileType
     })
 
+    // TODO: phantomjs reveal.js export directly.
+    if (yamlConfig['isPresentationMode']) { // reveal.js presentation
+      const info = await utility.tempOpen({prefix: 'mume', suffix: '.html'})
+      await utility.writeFile(info.fd, html)
+      const url = 'file:///' + info.path + '?print-pdf'
+      return url
+    }
+
     const phantomjsConfig = Object.assign({
       type: fileType,
       border: '1cm',
