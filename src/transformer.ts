@@ -322,7 +322,9 @@ export async function transformMarkdown(inputString:string,
             line = `${tag} ${heading}`
           }
 
-          return helper(end+1, lineNo+1, outputString + line + '\n')
+          return helper(end+1, lineNo+1, outputString + line + '\n\n') 
+          // I added one extra `\n` here because remarkable renders content below 
+          // heading differently with `\n` and without `\n`.  
         }
       } else if (line.match(/^\<!--/)) { // custom comment
         if (forPreview) outputString += createAnchor(lineNo)
