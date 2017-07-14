@@ -697,7 +697,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   /**
    * Generate html template for preview.
    */
-  public async generateHTMLTemplateForPreview({inputString="", body='', webviewScript='', scripts="", styles="", config={}}):Promise<string> {
+  public async generateHTMLTemplateForPreview({inputString="", body='', webviewScript='', scripts="", styles="", head=`<base href="${this.filePath}">`, config={}}):Promise<string> {
     if (!inputString)  
       inputString = fs.readFileSync(this.filePath, {encoding:'utf-8'})
     if (!webviewScript) 
@@ -762,8 +762,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         <link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath , './styles/preview.css')}">
 
         ${this.generateJSAndCssFilesForPreview(JSAndCssFiles)}
-        
-        <base href="${this.filePath}">
+        ${head}        
       </head>
       <body class="preview-container">
         <div class="mume" for="preview" ${isPresentationMode ? 'data-presentation-mode' : ''}>
