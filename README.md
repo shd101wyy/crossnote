@@ -92,13 +92,19 @@ const config = {
   //  "default.css",
   //  "atom-dark.css",
   //  "coy.css",
+  //  "darcula.css",
   //  "dark.css",
   //  "funky.css",
   //  "github.css",
+  //  "hopscotch.css"
   //  "monokai.css",
   //  "okaidia.css",
+  //  "onedark.css",
+  //  "pojoaque.css"
   //  "solarized-light.css",
-  //  "twilight.css" 
+  //  "twilight.css"
+  //  "vs.css"
+  //  "xonokai.css" 
 
   // Preview theme
   previewTheme: 'github-light.css',
@@ -135,7 +141,7 @@ const config = {
   printBackground: false,
 
   // PhantomJS executable path
-  phantomjs: 'phantomjs',
+  phantomPath: 'phantomjs',
 
   // Pandoc executable path
   pandocPath: 'pandoc',

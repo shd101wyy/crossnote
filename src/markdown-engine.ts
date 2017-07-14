@@ -658,7 +658,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     }
 
     // check prism 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/prism/themes/${this.config.codeBlockTheme}`)}">`
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.config.codeBlockTheme}`)}">`
 
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${path.resolve(utility.extensionDirectoryPath, './styles/style-template.css')}">`
@@ -912,7 +912,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     let styleCSS = ""
     try{
       // prism *.css
-      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./dependencies/prism/themes/${this.config.codeBlockTheme}`), {encoding:'utf-8'})
+      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.config.codeBlockTheme}`), {encoding:'utf-8'})
       
       if (yamlConfig["isPresentationMode"]) {
         styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`), {encoding:'utf-8'})
@@ -1319,7 +1319,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         // style template
         utility.readFile(path.resolve(extensionDirectoryPath, './styles/style-template.css'), {encoding:'utf-8'}),
         // prism *.css
-        utility.readFile(path.resolve(extensionDirectoryPath, `./dependencies/prism/themes/${this.config.codeBlockTheme}`), {encoding:'utf-8'}),
+        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.config.codeBlockTheme}`), {encoding:'utf-8'}),
         // preview theme
         utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
       ])
