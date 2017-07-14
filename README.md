@@ -167,4 +167,4 @@ Global config files are located at `~/.mume` directory
 
 ## Development
 [Visual Studio Code](https://code.visualstudio.com/) is recommended.    
-Clone this project, open in vscode, then `cmd+shift+b` to build.  
+Clone this project, `npm install`, open in vscode, then `cmd+shift+b` to build.  
