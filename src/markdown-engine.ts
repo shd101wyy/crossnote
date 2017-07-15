@@ -1539,6 +1539,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    */  
   private addLineNumbersIfNecessary($preElement, code:string):void {
     if ($preElement.hasClass('line-numbers')) {
+      if (!code.trim().length) return
       const match = code.match(/\n(?!$)/g)
       const linesNum = match ? (match.length + 1) : 1
       let lines = ''
