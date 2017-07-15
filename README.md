@@ -81,6 +81,9 @@ const config = {
   // By default, the extension for wikilink is `.md`. For example: [[test]] will direct to file path `test.md`.
   wikiLinkFileExtension: '.md'
 
+  // Enable extended table syntax to support merging table cells.  
+  enableExtendedTableSyntax: false
+
   // Front matter rendering option
   frontMatterRenderingOption: 'table', // 'table' | 'code block' | 'none'
 
