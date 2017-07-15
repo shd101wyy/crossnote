@@ -96,14 +96,14 @@ const config = {
   //  "dark.css",
   //  "funky.css",
   //  "github.css",
-  //  "hopscotch.css"
+  //  "hopscotch.css",
   //  "monokai.css",
   //  "okaidia.css",
   //  "onedark.css",
-  //  "pojoaque.css"
+  //  "pojoaque.css",
   //  "solarized-light.css",
-  //  "twilight.css"
-  //  "vs.css"
+  //  "twilight.css",
+  //  "vs.css",
   //  "xonokai.css" 
 
   // Preview theme

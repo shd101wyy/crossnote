@@ -1,8 +1,8 @@
 // modified according to the prism website 
 // http://prismjs.com/#languages-list
 const scopesForLanguageName = {
-  'sh': 'shell',
-  'bash': 'shell',
+  'sh': 'bash',
+  'bash': 'bash',
   'c': 'c',
   'c++': 'cpp',
   'cpp': 'cpp',
@@ -22,7 +22,7 @@ const scopesForLanguageName = {
   'javascript': 'javascript',
   'json': 'json',
   'less': 'less',
-  'objc': 'objc',
+  'objc': 'objectivec',
   'objectivec': 'objectivec',
   'objective-c': 'objectivec',
   'php': 'php',
@@ -31,6 +31,7 @@ const scopesForLanguageName = {
   'rb': 'ruby',
   'ruby': 'ruby',
   'text': 'text',
+  'tex': 'latex',
   'xml': 'xml',
   'yaml': 'yaml',
   'yml': 'yaml',
