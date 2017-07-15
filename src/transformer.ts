@@ -246,18 +246,17 @@ export async function transformMarkdown(inputString:string,
       let subjectMatch, headingMatch, taskListItemMatch
 
       /*
-      // I disabled this because for case like:
-      
+      // I changed this because for case like:
+
       * haha
       ![](image.png)
 
       The image will not be displayed correctly in preview as there will be `anchor` inserted
       between...
-
-      if (line.match(/^(\!\[|@import)/)) {
+      */
+      if (line.match(/^(\!\[|@import)/) && inputString[i - 1] === '\n' && inputString[i - 2] === '\n' ) {
         if (forPreview) outputString += createAnchor(lineNo) // insert anchor for scroll sync
-    } else*/ 
-        if (headingMatch = line.match(/^(\#{1,7})(.+)/)) /* ((headingMatch = line.match(/^(\#{1,7})(.+)$/)) || 
+      } else if (headingMatch = line.match(/^(\#{1,7})(.+)/)) /* ((headingMatch = line.match(/^(\#{1,7})(.+)$/)) || 
                 // the ==== and --- headers don't work well. For example, table and list will affect it, therefore I decide not to support it.  
                  (inputString[end + 1] === '=' && inputString[end + 2] === '=') || 
                  (inputString[end + 1] === '-' && inputString[end + 2] === '-')) */ { // headings
