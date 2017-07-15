@@ -325,9 +325,7 @@ export async function transformMarkdown(inputString:string,
           return helper(end+1, lineNo+1, outputString + `${tag} ${heading} ${optionsStr}` + '\n')
         } else { // markdown-it
           if (!forMarkdownExport) { // convert to <h? ... ></h?>
-            const classesString = classes ? `class="${classes}"` : '',
-                idString = id ? `id="${id}"` : ''
-            line = `<h${level} ${classesString} ${idString}>${heading}</h${level}>`
+            line = `${tag} ${heading}\n<p class="mume-header ${classes}" id="${id}"></p>`
           } else {
             line = `${tag} ${heading}`
           }

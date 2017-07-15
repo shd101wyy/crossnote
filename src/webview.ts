@@ -517,7 +517,9 @@ class PreviewController {
       this.previewElement.style.width = `calc(100% - ${268 / this.config.zoomLevel}px)`
     }
     this.scrollMap = null
-    this.postMessage('setZoomLevel', [this.sourceUri, this.config.zoomLevel])
+    
+    if (!this.config.vscode)
+      this.postMessage('setZoomLevel', [this.sourceUri, this.config.zoomLevel])
   }
 
 

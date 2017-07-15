@@ -1797,6 +1797,18 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       // console.log(this.graphsCache)
     } 
 
+    if (!this.config.usePandocParser) { // check .mume-header in order to add id and class to headers.  
+      $('.mume-header').each((i, e)=> {
+        const classes = e.attribs.class,
+              id = e.attribs.id
+        const $e = $(e),
+              $h = $e.prev()
+        $h.addClass(classes)
+        $h.attr('id', id)
+        $e.remove()
+      })
+    }
+
     return $.html()
   }
 
