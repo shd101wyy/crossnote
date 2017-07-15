@@ -62,7 +62,7 @@ main()
 
 ```js
 const config = {
-  // Enable this option will render markdown by pandoc instead of remarkable.
+  // Enable this option will render markdown by pandoc instead of markdown-it.
   usePandocParser: false,
 
   // In Markdown, a single newline character doesn't cause a line break in the generated HTML. In GitHub Flavored Markdown, that is not true. Enable this config option to insert line breaks in rendered HTML for single newlines in Markdown source.
