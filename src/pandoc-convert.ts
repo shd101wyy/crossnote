@@ -305,6 +305,9 @@ export async function pandocConvert(text,
   // change link path to relative path
   text = processPaths(text, fileDirectoryPath, projectDirectoryPath)
 
+  // add front matter back
+  text = data.frontMatterString + '\n\n' + text
+
   // citation
   if (config['bibliography'] || config['references'])
     args.push('--filter', 'pandoc-citeproc')
