@@ -7,7 +7,6 @@ import {execFile} from "child_process"
 const matter = require('gray-matter')
 
 import * as plantumlAPI from "./puml"
-import {escapeString, unescapeString, readFile} from "./utility"
 import * as utility from "./utility"
 import {scopeForLanguageName} from "./extension-helper"
 import {transformMarkdown, HeadingData} from "./transformer"
@@ -22,7 +21,7 @@ import {CodeChunkData} from "./code-chunk-data"
 
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const katex = require(path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.js'))
-const remarkable = require(path.resolve(extensionDirectoryPath, './dependencies/remarkable/remarkable.js'))
+const MarkdownIt = require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/markdown-it.min.js'))
 const jsonic = require(path.resolve(extensionDirectoryPath, './dependencies/jsonic/jsonic.js'))
 const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 const CryptoJS = require(path.resolve(extensionDirectoryPath, './dependencies/crypto-js/crypto-js.js'))
@@ -233,10 +232,10 @@ export class MarkdownEngine {
     this.headings = []
     this.tocHTML = ''
 
-    this.md = new remarkable('full', 
+    this.md = new MarkdownIt(
       Object.assign({}, defaults, {typographer: this.enableTypographer, breaks: this.breakOnSingleNewLine}))
     
-    this.configureRemarkable()
+    this.configureMarkdownIt()
   }
 
   /**
@@ -304,13 +303,13 @@ export class MarkdownEngine {
     } else if (this.config.mathRenderingOption[0] === 'M') { // MathJax
       const text = (openTag + content + closeTag).replace(/\n/g, '')
       const tag = displayMode ? 'div' : 'span'
-      return `<${tag} class="mathjax-exps">${escapeString(text)}</${tag}>`
+      return `<${tag} class="mathjax-exps">${utility.escapeString(text)}</${tag}>`
     } else {
       return ''
     }
   }
 
-  private configureRemarkable() {
+  private configureMarkdownIt() {
 
     /**
      * math rule
@@ -369,13 +368,11 @@ export class MarkdownEngine {
         return false
 
       if (content && !silent) {
-        state.push({
-          type: 'math',
-          content: content.trim(),
-          openTag: openTag,
-          closeTag: closeTag,
-          displayMode: displayMode
-        })
+        const token = state.push('math')
+        token.content = content.trim()
+        token.openTag = openTag
+        token.closeTag = closeTag
+        token.displayMode = displayMode
 
         state.pos += (content.length + openTag.length + closeTag.length)
         return true
@@ -422,10 +419,9 @@ export class MarkdownEngine {
         return false
 
       if (content && !silent) {
-        state.push({
-          type: 'wikilink',
-          content: content
-        })
+        const token = state.push('wikilink')
+        token.content = content 
+
         state.pos += content.length + 2 * tag.length
         return true
       } else {
@@ -444,46 +440,16 @@ export class MarkdownEngine {
       return `<a href="${wikiLink}">${linkText}</a>`
     }
 
-    // task list 
-    /*
-    this.md.renderer.rules.list_item_open = (tokens, idx)=> {
-      if (tokens[idx + 2]) {
-        let children = tokens[idx + 2].children
-        if (!children || !(children[0] && children[0].content))
-          return '<li>'
-
-        const line = children[0].content
-        if (line.match(/^\[[xX\s]\]\s/)) {
-          children[0].content = line.slice(3)
-          let checked = !(line[1] == ' ')
-          let checkBox = `<input type=\"checkbox\" class=\"task-list-item-checkbox\" ${checked ? 'checked' : ''}>`
-          let level = children[0].level
-          children = [{content: checkBox, type: 'htmltag', level}].concat(children)
-
-          tokens[idx + 2].children = children
-          return '<li class="task-list-item">'
-        }
-        return '<li>'
-      } else {
-        return '<li>'
-      }
-    }
-    */
-
     // code fences 
     // modified to support math block
     // check https://github.com/jonschlinkert/remarkable/blob/875554aedb84c9dd190de8d0b86c65d2572eadd5/lib/rules.js
     this.md.renderer.rules.fence = (tokens, idx, options, env, instance)=> {
       let token = tokens[idx],
-          langClass = '',
-          langPrefix = options.langPrefix,
-          langName = escapeString(token.params)
-
-      if (token.params)
-        langClass = ' class="' + langPrefix + langName + '" ';
+          langName = utility.escapeString(token.info.trim()),
+          langClass = ' class="language-' + langName + '" '
 
       // get code content
-      let content = escapeString(token.content)
+      let content = utility.escapeString(token.content)
 
       // copied from getBreak function.
       let break_ = '\n'
@@ -493,12 +459,11 @@ export class MarkdownEngine {
       if (langName === 'math') {
         const openTag = this.config.mathBlockDelimiters[0][0] || '$$'
         const closeTag = this.config.mathBlockDelimiters[0][1] || '$$'
-        const mathExp = unescapeString(content).trim()
+        const mathExp = utility.unescapeString(content).trim()
         if (!mathExp) return ''
         const mathHtml = this.parseMath({openTag, closeTag, content: mathExp, displayMode: true})
         return `<p>${mathHtml}</p>`
       }
-
       return '<pre><code' + langClass + '>' + content + '</code></pre>' + break_
     }
   }
@@ -2108,7 +2073,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       } catch(error) {
         html = `<pre>${error}</pre>`
       }
-    } else { // remarkable
+    } else { // markdown-it
       html = this.md.render(outputString)
     }
 
