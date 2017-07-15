@@ -1082,7 +1082,6 @@ private initWindowEvents() {
    * Several keyboard events.
    */
   window.addEventListener('keydown', (event)=> {
-    // console.log('keydown!', event)
     if (event.shiftKey && event.ctrlKey && event.which === 83) { // ctrl+shift+s preview sync source
       return this.previewSyncSource()
     } else if ((event.metaKey || event.ctrlKey)) { // ctrl+c copy 
@@ -1095,7 +1094,11 @@ private initWindowEvents() {
       } else if (event.which === 48 && !this.config.vscode) { // [0] reset zoom
         this.resetZoom()
       } else if (event.which === 38) { // [ArrowUp] scroll to the most top
-        this.previewElement.scrollTop = 0
+        if (this.presentationMode) {
+          window['Reveal'].slide(0)
+        } else {
+          this.previewElement.scrollTop = 0
+        }
       } 
     } else if (event.which === 27 && !this.presentationMode) { // [esc] toggle sidebar toc
       this.toolbar.sidebarTOCBtn.click()
@@ -1141,6 +1144,24 @@ private initWindowEvents() {
       this.runAllCodeChunks()
     } else if (data.command === 'runCodeChunk') {
       this.runNearestCodeChunk()
+    } else if (data.command === 'escPressed') {
+      this.toolbar.sidebarTOCBtn.click()
+    } else if (data.command === 'previewSyncSource') {
+      this.previewSyncSource()
+    } else if (data.command === 'copy') {
+      document.execCommand('copy')
+    } else if (data.command === 'zommIn') {
+      this.zoomIn()
+    } else if (data.command === 'zoomOut') {
+      this.zoomOut()
+    } else if (data.command === 'resetZoom') {
+      this.resetZoom()
+    } else if (data.command === 'scrollPreviewToTop') {
+        if (this.presentationMode) {
+          window['Reveal'].slide(0)
+        } else {
+          this.previewElement.scrollTop = 0
+        }
     }
   }, false)
 }

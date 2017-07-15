@@ -24,6 +24,6 @@ window.parent.postMessage = function (msgStr) {
   })
 }
 
-ipcRenderer.on(channelName, function (msgStr) {
+ipcRenderer.on(channelName, function (event, msgStr) {
   dispatch(msgStr, window.parent)
 })
