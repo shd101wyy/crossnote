@@ -8,7 +8,6 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "wavedrom": "1.4.1",
     "reveal": "3.5.0",
     "viz": "v1.8.0",
-    "save-svg-as-png": "v1.1.0",
     "MathJax": "v2.7.1",
     "mpld3": "v0.3.0",
     "jquery": "v3.2.1",
