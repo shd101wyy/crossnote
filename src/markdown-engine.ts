@@ -937,12 +937,13 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     }
 
     // task list script
+    // has to use `var` instead of `let` because `phantomjs` might cause issue.  
     const taskListScript = `<script>
 (function bindTaskListEvent() {
   var taskListItemCheckboxes = document.body.getElementsByClassName('task-list-item-checkbox')
   for (var i = 0; i < taskListItemCheckboxes.length; i++) {
-    let checkbox = taskListItemCheckboxes[i]
-    let li = checkbox.parentElement
+    var checkbox = taskListItemCheckboxes[i]
+    var li = checkbox.parentElement
     if (li.tagName !== 'LI') li = li.parentElement
     if (li.tagName === 'LI') {
       li.classList.add('task-list-item')
@@ -990,7 +991,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       html = $.html()
     }
     
-    return html
+    return html.trim()
   }
 
   /**
