@@ -512,14 +512,15 @@ class PreviewController {
   }
 
   private setZoomLevel () {
-    this.previewElement.style.zoom = (this.config.zoomLevel || 1).toString()
+    const zoomLevel = this.config.zoomLevel || 1
+    this.previewElement.style.zoom = zoomLevel.toString()
     if (this.enableSidebarTOC) {
-      this.previewElement.style.width = `calc(100% - ${268 / this.config.zoomLevel}px)`
+      this.previewElement.style.width = `calc(100% - ${268 / zoomLevel}px)`
     }
     this.scrollMap = null
     
     if (!this.config.vscode)
-      this.postMessage('setZoomLevel', [this.sourceUri, this.config.zoomLevel])
+      this.postMessage('setZoomLevel', [this.sourceUri, zoomLevel])
   }
 
 
