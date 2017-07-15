@@ -59,6 +59,7 @@ export interface MarkdownEngineConfig {
   enableTypographer: boolean
   enableWikiLinkSyntax: boolean
   wikiLinkFileExtension: string
+  enableExtendedTableSyntax: boolean
   protocolsWhiteList: string
   /**
    * "KaTeX", "MathJax", or "None"
@@ -122,6 +123,7 @@ const defaultMarkdownEngineConfig:MarkdownEngineConfig = {
   breakOnSingleNewLine: true,
   enableTypographer: false,
   enableWikiLinkSyntax: true,
+  enableExtendedTableSyntax: false, 
   wikiLinkFileExtension: '.md',
   protocolsWhiteList: 'http, https, atom, file',
   mathRenderingOption: 'KaTeX',
@@ -1743,6 +1745,52 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   }
 
   /**
+   * Extend table syntax to support colspan and rowspan for merging cells
+   * @param $ 
+   */
+  private extendTableSyntax($) {
+    $('table').each((i, table)=> {
+      const $table = $(table)
+      const $thead = $table.children().first()
+      let $prevRow = null
+      $table.children().each((a, head_body)=> {
+        const $head_body = $(head_body)
+        $head_body.children().each((i, row)=> {
+          const $row = $(row)
+          $row.children().each((j, col)=> {
+            const $col = $(col)
+            const text = $col.text()
+            if (!text.length) { // merge to left
+              const $prev = $col.prev()
+              if ($prev.length) {
+                const colspan = parseInt($prev.attr('colspan')) || 1
+                $prev.attr('colspan', colspan+1)
+                $col.remove()
+              }
+            } else if (text.trim() === '^' && $prevRow) { // merge to top
+              const $prev = $($prevRow.children()[j])
+              if ($prev.length) {
+                const rowspan = parseInt($prev.attr('rowspan')) || 1
+                $prev.attr('rowspan', rowspan+1)
+                $col.remove()
+              }
+
+            } else if (text.trim() === '>') { // merge to right 
+              const $next = $col.next()
+              if ($next.length) {
+                const colspan = parseInt($next.attr('colspan')) || 1
+                $next.attr('colspan', colspan+1)
+                $col.remove()
+              }
+            }
+          })
+          $prevRow = $row
+        })
+      })
+    })
+  }
+
+  /**
    * This function resovle image paths and render code blocks
    * @param html the html string that we will analyze 
    * @return html 
@@ -1813,6 +1861,10 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         $h.attr('id', id)
         $e.remove()
       })
+    }
+
+    if (this.config.enableExtendedTableSyntax) { // extend table
+      this.extendTableSyntax($)
     }
 
     return $.html()
