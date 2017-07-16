@@ -55,31 +55,31 @@ export interface MarkdownEngineOutput {
 }
 
 export interface MarkdownEngineConfig {
-  usePandocParser: boolean
-  breakOnSingleNewLine: boolean
-  enableTypographer: boolean
-  enableWikiLinkSyntax: boolean
-  wikiLinkFileExtension: string
-  enableExtendedTableSyntax: boolean
-  protocolsWhiteList: string
+  usePandocParser?: boolean
+  breakOnSingleNewLine?: boolean
+  enableTypographer?: boolean
+  enableWikiLinkSyntax?: boolean
+  wikiLinkFileExtension?: string
+  enableExtendedTableSyntax?: boolean
+  protocolsWhiteList?: string
   /**
    * "KaTeX", "MathJax", or "None"
    */
-  mathRenderingOption: string
-  mathInlineDelimiters: string[][]
-  mathBlockDelimiters: string[][]
-  codeBlockTheme: string
-  previewTheme: string
-  revealjsTheme: string
-  mermaidTheme: string
-  frontMatterRenderingOption: string 
-  imageFolderPath: string
-  printBackground: boolean
-  phantomPath: string 
-  pandocPath: string
-  pandocMarkdownFlavor: string 
-  pandocArguments: string[]
-  latexEngine: string
+  mathRenderingOption?: string
+  mathInlineDelimiters?: string[][]
+  mathBlockDelimiters?: string[][]
+  codeBlockTheme?: string
+  previewTheme?: string
+  revealjsTheme?: string
+  mermaidTheme?: string
+  frontMatterRenderingOption?: string
+  imageFolderPath?: string
+  printBackground?: boolean
+  phantomPath?: string
+  pandocPath?: string
+  pandocMarkdownFlavor?: string
+  pandocArguments?: string[]
+  latexEngine?: string
 }
 
 export interface HTMLTemplateOption {
