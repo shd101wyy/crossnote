@@ -491,7 +491,7 @@ export class MarkdownEngine {
 
       let fileProtocalMatch
       if (fileProtocalMatch = src.match(/^file:\/\/+/)) {
-        src = src.replace(fileProtocalMatch[0], '/')
+        src = utility.removeFileProtocol(src)
         src = src.replace(/\?(\.|\d)+$/, '') // remove cache
         const imageType = path.extname(src).slice(1)
         if (imageType === 'svg') return 
@@ -522,7 +522,7 @@ export class MarkdownEngine {
 
       let fileProtocalMatch
       if (fileProtocalMatch = src.match(/^file:\/\/+/)) {
-        src = src.replace(fileProtocalMatch[0], '/')
+        src = utility.removeFileProtocol(src)
         src = src.replace(/\?(\.|\d)+$/, '') // remove cache
         const imageType = path.extname(src).slice(1)
         if (imageType !== 'svg') return 
@@ -1003,7 +1003,12 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     if ('offline' in htmlConfig) {
         offline = htmlConfig['offline']
     }
-    let embedLocalImages = htmlConfig['embed_local_images']
+    let embedLocalImages = htmlConfig['embed_local_images'] // <= embedLocalImages is disabled by default.
+
+    let embedSVG = true // <= embedSvg is enabled by default.
+    if ('embed_svg' in htmlConfig) {
+      embedSVG = htmlConfig['embed_svg']
+    } 
     
     let dest = this.filePath
     let extname = path.extname(dest) 
@@ -1014,7 +1019,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         isForPrince: false,
         embedLocalImages: embedLocalImages,
         offline: offline,
-        embedSVG: true
+        embedSVG: embedSVG
     })
 
     const htmlFileName = path.basename(dest)
