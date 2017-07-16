@@ -72,7 +72,7 @@ return new Promise<string>((resolve, reject)=> {
               console.log(error, pngFilePath)
             })
             */
-            svgFilePath = svgFilePath.replace(/\.\.\\/g, '../') /* Windows file path issue. "..\..\blabla" doesn't work */
+            svgFilePath = svgFilePath.replace(/\.\.\\/g, '../').replace(/\\/g, '/') /* Windows file path issue. "..\..\blabla" doesn't work */
 
             if (svgZoom || svgWidth || svgHeight)
               svgMarkdown += `<img src=\"${svgFilePath}\" ${svgWidth ? `width="${svgWidth}"` : ""} ${svgHeight ? `height="${svgHeight}"` : ''} ${svgZoom ? `style="zoom:${svgZoom};"` : ""}>`

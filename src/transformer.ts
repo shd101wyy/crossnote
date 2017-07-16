@@ -457,7 +457,7 @@ export async function transformMarkdown(inputString:string,
 
             // enchodeURI(imageSrc) is wrong. It will cause issue on Windows
             // #414: https://github.com/shd101wyy/markdown-preview-enhanced/issues/414
-            imageSrc = imageSrc.replace(/ /g, '%20')
+            imageSrc = imageSrc.replace(/ /g, '%20').replace(/\\/g, '/')
             filesCache[filePath] = imageSrc
           }
 

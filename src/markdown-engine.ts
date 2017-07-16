@@ -1437,7 +1437,8 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     } 
 
     // put front-matter back
-    inputString = matter.stringify(inputString, config)
+    if (Object.keys(config).length)
+      inputString = matter.stringify(inputString, config)
 
     return await markdownConvert(inputString, {
       projectDirectoryPath: this.projectDirectoryPath,
