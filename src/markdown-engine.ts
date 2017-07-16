@@ -1407,30 +1407,37 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       await this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
     }
 
-    let {data:config} = this.processFrontMatter(inputString, false)
+    let config = {}
+    let frontMatterMatch = null
+    if (frontMatterMatch = inputString.match(new RegExp(`^---${EOL}([\\s\\S]+?)${EOL}---${EOL}`))) {
+      let frontMatterString = frontMatterMatch[0]
+      inputString = inputString.replace(frontMatterString, '') // remove front matter
+      config = this.processFrontMatter(frontMatterString, false).data
+    } 
 
-    if (inputString.startsWith('---\n')) {
-      const end = inputString.indexOf('---\n', 4)
-      inputString = inputString.slice(end+4)
+    let markdownConfig = {}
+    if (config['markdown'])
+       markdownConfig = Object.assign({}, config['markdown'])
+
+    if (!markdownConfig['image_dir']) {
+      markdownConfig['image_dir'] = this.config.imageFolderPath
     }
 
-    config = config['markdown'] || {}
-    if (!config['image_dir']) {
-      config['image_dir'] = this.config.imageFolderPath
-    }
-
-    if (!config['path']) {
+    if (!markdownConfig['path']) {
       if (this.filePath.match(/\.src\./)) {
-        config['path'] = this.filePath.replace(/\.src\./, '.')
+        markdownConfig['path'] = this.filePath.replace(/\.src\./, '.')
       } else {
-        config['path'] = this.filePath.replace(new RegExp(path.extname(this.filePath)), '_'+path.extname(this.filePath))
+        markdownConfig['path'] = this.filePath.replace(new RegExp(path.extname(this.filePath)), '_'+path.extname(this.filePath))
       }
-      config['path']  = path.basename(config['path'])
+      markdownConfig['path']  = path.basename(markdownConfig['path'])
     }
 
-    if (config['front_matter']) {
-      inputString = matter.stringify(inputString, config['front-matter'])
-    }
+    if (markdownConfig['ignore_from_front_matter']) { // delete markdown config front-matter from the top front matter
+      delete config['markdown']
+    } 
+
+    // put front-matter back
+    inputString = matter.stringify(inputString, config)
 
     return await markdownConvert(inputString, {
       projectDirectoryPath: this.projectDirectoryPath,
@@ -1442,7 +1449,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       codeChunksData: this.codeChunksData,
       graphsCache: this.graphsCache,
       usePandocParser: this.config.usePandocParser
-    }, config)
+    }, markdownConfig)
   }
 
   /**
