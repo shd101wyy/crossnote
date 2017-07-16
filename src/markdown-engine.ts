@@ -1000,8 +1000,8 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:true, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     const htmlConfig = yamlConfig['html'] || {}
-    if ('cdn' in htmlConfig) {
-        offline = !htmlConfig['cdn']
+    if ('offline' in htmlConfig) {
+        offline = htmlConfig['offline']
     }
     let embedLocalImages = htmlConfig['embed_local_images']
     
@@ -1040,7 +1040,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * Check https://github.com/marcbachmann/node-html-pdf website.  
    * @param fileType the export file type 
    */
-  public async phantomjsExport({fileType="pdf", runAllCodeChunks=false}):Promise<string> {
+  public async phantomjsExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=true}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     let dest = this.filePath
@@ -1080,7 +1080,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
           if (error) {
             return reject(error)
           } else {
-            utility.openFile(dest)
+            if (openFileAfterGeneration) utility.openFile(dest)
             return resolve(dest)
           }
         })
@@ -1098,7 +1098,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * prince pdf file export
    * @return dest if success, error if failure
    */
-  public async princeExport({runAllCodeChunks=false}):Promise<string> {
+  public async princeExport({runAllCodeChunks=false, openFileAfterGeneration=true}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     let dest = this.filePath
@@ -1122,7 +1122,8 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       await princeConvert(info.path, dest)
       
       //  open pdf
-      utility.openFile(dest)
+      if (openFileAfterGeneration)
+        utility.openFile(dest)
       return dest
     }
   }
@@ -1370,7 +1371,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   /**
    * pandoc export
    */
-  public async pandocExport({runAllCodeChunks=false}):Promise<string> {
+  public async pandocExport({runAllCodeChunks=false, openFileAfterGeneration=true}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
 
     if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData
@@ -1393,7 +1394,8 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       latexEngine: this.config.latexEngine
     }, config)
 
-    utility.openFile(outputFilePath)
+    if (openFileAfterGeneration)
+      utility.openFile(outputFilePath)
     return outputFilePath
   }
 
@@ -1435,6 +1437,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     if (markdownConfig['ignore_from_front_matter']) { // delete markdown config front-matter from the top front matter
       delete config['markdown']
     } 
+    if (config['export_on_save']) {
+      delete config['export_on_save']
+    }
 
     // put front-matter back
     if (Object.keys(config).length)
@@ -1451,6 +1456,55 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       graphsCache: this.graphsCache,
       usePandocParser: this.config.usePandocParser
     }, markdownConfig)
+  }
+
+  /**
+   * Eg
+   * ---
+   * export_on_save:
+   *    html: true
+   *    prince: true   
+   *    phantomjs: true  // or pdf | jpeg | png
+   *    pandoc: true
+   *    ebook: true      // or epub | pdf | html | mobi
+   *    markdown: true
+   * ---
+   * @param data 
+   */
+  private exportOnSave(data:object) {
+    for (let exporter in data) {
+      if (exporter === 'markdown') {
+        this.markdownExport({})
+      } else if (exporter === 'html') {
+        this.htmlExport({})
+      } else if (exporter === 'prince') {
+        this.princeExport({openFileAfterGeneration: false})
+      } else if (exporter === 'phantomjs') {
+        const fileTypes = data[exporter]
+        if (fileTypes === true) {
+          this.phantomjsExport({fileType: 'pdf', openFileAfterGeneration: false})
+        } else if (typeof(fileTypes) === 'string') {
+          this.phantomjsExport({fileType: fileTypes, openFileAfterGeneration: false})
+        } else if (fileTypes instanceof Array) {
+          fileTypes.forEach((fileType)=> {
+            this.phantomjsExport({fileType, openFileAfterGeneration: false})
+          })
+        }
+      } else if (exporter === 'pandoc') {
+        this.pandocExport({openFileAfterGeneration: false})
+      } else if (exporter === 'ebook') {
+        const fileTypes = data[exporter]
+        if (fileTypes === true) {
+          this.eBookExport({fileType: 'epub'})
+        } else if (typeof(fileTypes) === 'string') {
+          this.eBookExport({fileType: fileTypes})
+        } else if (fileTypes instanceof Array) {
+          fileTypes.forEach((fileType)=> {
+            this.eBookExport({fileType})
+          })
+        } 
+      }
+    }
   }
 
   /**
@@ -2194,6 +2248,11 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       // this.cachedHTML = html // save to cache
       this.isPreviewInPresentationMode = !!(slideConfigs.length) // check presentation mode
     }
+
+    if (options.triggeredBySave && yamlConfig['export_on_save']) { // export files
+      this.exportOnSave(yamlConfig['export_on_save'])
+    }
+
     return {html, markdown:inputString, tocHTML: this.tocHTML, yamlConfig, JSAndCssFiles}
   }
 }

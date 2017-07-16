@@ -22,7 +22,7 @@ export async function compileLaTeX(content:string, fileDirectoryPath:string, opt
     fs.unlink(texFilePath, (error)=> {})
 
     options['output'] = 'markdown' // set output as markdown
-    return svgMarkdown // path error on Windows
+    return svgMarkdown
   } catch(e) {
     fs.unlink(texFilePath, (error)=> {})
     throw e
