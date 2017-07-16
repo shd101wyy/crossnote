@@ -7,7 +7,7 @@ import * as utility from "./utility"
 import * as LaTeX from "./latex"
 
 export async function compileLaTeX(content:string, fileDirectoryPath:string, options:object):Promise<string> {
-  const latexEngine = options['latex_engine'] || utility.configs.config['latexEngine'] || 'pdflatex'
+  const latexEngine = options['latex_engine'] || 'pdflatex'
   const latexSVGDir = options['latex_svg_dir'] // if not provided, the svg files will be stored in temp folder and will be deleted automatically
   const latexZoom = options['latex_zoom']
   const latexWidth = options['latex_width']
@@ -40,7 +40,7 @@ async function runInVm(code:string, options:object):Promise<string> {
   return script.runInContext(context)
 }
 
-export async function run(content:string, fileDirectoryPath:string, options:object):Promise<string> {
+export async function run(content:string, fileDirectoryPath:string, options:object, latexEngine:string='pdflatex'):Promise<string> {
   const cmd = options['cmd']
   let args = options['args'] || []
   if (typeof(args) === 'string') {
@@ -51,6 +51,7 @@ export async function run(content:string, fileDirectoryPath:string, options:obje
   content = content.replace(/\u00A0/g, ' ')
 
   if (cmd.match(/(la)?tex/) || cmd === 'pdflatex') {
+    options['latex_engine'] = options['latex_engine'] || latexEngine
     return compileLaTeX(content, fileDirectoryPath, options)
   }
 

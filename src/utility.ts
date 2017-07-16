@@ -396,7 +396,7 @@ export const configs:
   phantomjsConfig: object
   parserConfig: object
   /**
-   * MarkdownEngineConfig
+   * Please note that this is not necessarily MarkdownEngineConfig
    */
   config: object } = {
 

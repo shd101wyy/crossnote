@@ -3,6 +3,7 @@ import * as fs from "fs"
 import * as cheerio from "cheerio"
 import * as request from "request"
 import {execFile} from "child_process"
+import {EOL} from "os"
 
 const matter = require('gray-matter')
 
@@ -1377,13 +1378,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     }
 
     const {data:config} = this.processFrontMatter(inputString, false)
-    let content = inputString
-    if (content.match(/\-\-\-\s+/)) {
-      const end = content.indexOf('---\n', 4)
-      content = content.slice(end+4)
-    }
-
-    const outputFilePath = await pandocConvert(content, {
+    const outputFilePath = await pandocConvert(inputString, {
       fileDirectoryPath: this.fileDirectoryPath,
       projectDirectoryPath: this.projectDirectoryPath,
       sourceFilePath: this.filePath,
@@ -1394,7 +1389,8 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       graphsCache: this.graphsCache,
       imageDirectoryPath: this.config.imageFolderPath,
       pandocMarkdownFlavor: this.config.pandocMarkdownFlavor,
-      pandocPath: this.config.pandocPath
+      pandocPath: this.config.pandocPath,
+      latexEngine: this.config.latexEngine
     }, config)
 
     utility.openFile(outputFilePath)
@@ -1501,7 +1497,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         const tocObject = toc(this.headings, {ordered: options['orderedList'], depthFrom: options['depthFrom'], depthTo: options['depthTo'], tab: options['tab'] || '\t'})
         result = tocObject.content
       } else {
-        result = await CodeChunkAPI.run(code, this.fileDirectoryPath, codeChunkData.options)
+        result = await CodeChunkAPI.run(code, this.fileDirectoryPath, codeChunkData.options, this.config.latexEngine)
       }
       codeChunkData.plainResult = result
 

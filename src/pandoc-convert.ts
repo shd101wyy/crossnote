@@ -27,7 +27,7 @@ function getFileExtension(documentType:string) {
 /**
  * eg: process config inside pdf_document block
  */ 
-function processOutputConfig(config:object, args:string[]) {
+function processOutputConfig(config:object, args:string[], latexEngine:string='pdflatex') {
   if (config['toc'])
     args.push('--toc')
 
@@ -77,8 +77,9 @@ function processOutputConfig(config:object, args:string[]) {
 
   if (config['latex_engine'])
     args.push('--latex-engine='+config['latex_engine'])
-  else if (utility.configs['latexEngine'])
-    args.push('--latex-engine='+utility.configs['latexEngine'])
+  else {
+    args.push('--latex-engine='+latexEngine)
+  }
 
   if (config['includes'] && typeof(config['includes']) === 'object') {
     let includesConfig = config['includes']
@@ -229,10 +230,10 @@ callback(err, outputFilePath)
  * @return outputFilePath
  */
 export async function pandocConvert(text, 
-  {fileDirectoryPath, projectDirectoryPath, sourceFilePath, filesCache, protocolsWhiteListRegExp, /*deleteImages=true,*/ codeChunksData, graphsCache, imageDirectoryPath, pandocMarkdownFlavor, pandocPath}, 
+  {fileDirectoryPath, projectDirectoryPath, sourceFilePath, filesCache, protocolsWhiteListRegExp, /*deleteImages=true,*/ codeChunksData, graphsCache, imageDirectoryPath, pandocMarkdownFlavor, pandocPath, latexEngine}, 
   config={}):Promise<string> {
-    
-  config = loadOutputYAML(fileDirectoryPath, config)
+
+    config = loadOutputYAML(fileDirectoryPath, config)
   // TODO =>
   const args = ['-f', pandocMarkdownFlavor.replace(/\-raw\_tex/, '')]
 
@@ -286,17 +287,17 @@ export async function pandocConvert(text,
   // resolve paths in front-matter(yaml)
   // processConfigPaths config, fileDirectoryPath, projectDirectoryPath
 
-  if (outputConfig)
-    processOutputConfig(outputConfig, args)
-
-  // add front-matter(yaml) to text
-  text = matter.stringify(text, config)
+  // process output config
+  processOutputConfig(outputConfig || {}, args, latexEngine)
 
   // import external files
   let data = await transformMarkdown(text, {fileDirectoryPath, projectDirectoryPath, useRelativeFilePath:true, filesCache, protocolsWhiteListRegExp, forPreview: false, usePandocParser: true})
   text = data.outputString
 
-    // replace [MUMETOC]
+  // add front-matter(yaml) back to text
+  text = matter.stringify(text, config)
+
+  // replace [MUMETOC]
   const tocBracketEnabled = data.tocBracketEnabled
   if (tocBracketEnabled) { // [TOC]
     const headings = data.headings
@@ -335,6 +336,6 @@ export async function pandocConvert(text,
     })
 
     // add front matter back to doc.
-    program.stdin.end(data.frontMatterString + '\n\n' + outputString)
+    program.stdin.end(outputString)
   })
 }
