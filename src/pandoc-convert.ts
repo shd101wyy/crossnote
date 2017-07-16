@@ -77,6 +77,8 @@ function processOutputConfig(config:object, args:string[]) {
 
   if (config['latex_engine'])
     args.push('--latex-engine='+config['latex_engine'])
+  else if (utility.configs['latexEngine'])
+    args.push('--latex-engine='+utility.configs['latexEngine'])
 
   if (config['includes'] && typeof(config['includes']) === 'object') {
     let includesConfig = config['includes']

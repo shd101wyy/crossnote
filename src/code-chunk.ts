@@ -7,7 +7,7 @@ import * as utility from "./utility"
 import * as LaTeX from "./latex"
 
 export async function compileLaTeX(content:string, fileDirectoryPath:string, options:object):Promise<string> {
-  const latexEngine = options['latex_engine'] || 'pdflatex'
+  const latexEngine = options['latex_engine'] || utility.configs.config['latexEngine'] || 'pdflatex'
   const latexSVGDir = options['latex_svg_dir'] // if not provided, the svg files will be stored in temp folder and will be deleted automatically
   const latexZoom = options['latex_zoom']
   const latexWidth = options['latex_width']

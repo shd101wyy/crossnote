@@ -395,6 +395,9 @@ export const configs:
   mermaidConfig: string
   phantomjsConfig: object
   parserConfig: object
+  /**
+   * MarkdownEngineConfig
+   */
   config: object } = {
 
   globalStyle: "",

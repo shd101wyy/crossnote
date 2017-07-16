@@ -78,6 +78,7 @@ export interface MarkdownEngineConfig {
   pandocPath: string
   pandocMarkdownFlavor: string 
   pandocArguments: string[]
+  latexEngine: string
 }
 
 export interface HTMLTemplateOption {
@@ -139,7 +140,8 @@ const defaultMarkdownEngineConfig:MarkdownEngineConfig = {
   phantomPath: 'phantomjs',
   pandocPath: 'pandoc',
   pandocMarkdownFlavor: 'markdown-raw_tex+tex_math_single_backslash',
-  pandocArguments: []
+  pandocArguments: [],
+  latexEngine: 'pdflatex'
 }
 
 let MODIFY_SOURCE:(codeChunkData:CodeChunkData, result:string, filePath:string)=>Promise<string> = null

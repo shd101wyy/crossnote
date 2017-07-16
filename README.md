@@ -153,7 +153,10 @@ const config = {
   pandocMarkdownFlavor: "markdown-raw_tex+tex_math_single_backslash",
 
   // Pandoc arguments e.g. ['--smart', '--filter=/bin/exe']. Please use long argument names.
-  pandocArguments: []
+  pandocArguments: [],
+
+  // Default latex engine for Pandoc export and latex code chunk.
+  latexEngine: 'pdflatex'
 }
 
 // Init Engine
