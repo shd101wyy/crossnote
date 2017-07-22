@@ -713,43 +713,40 @@ class PreviewController {
     const helper = (as)=> {
       for (let i = 0; i < as.length; i++) {
         const a = as[i]
-        const href =  a.getAttribute('href')
+        const href = decodeURI(a.getAttribute('href')) // decodeURI here for Chinese like unicode heading
         if (href && href[0] === '#') {
-          if (this.config.vscode) {
-            // anchor, do nothing 
-          } else {
-            const targetElement = this.previewElement.querySelector(`[id=\"${href.slice(1)}\"]`) as HTMLElement // fix number id bug
-            if (targetElement) {
-              a.onclick = (event)=> {
-                event.preventDefault()
-                // jump to tag position
-                let offsetTop = 0
-                let el = targetElement
-                while (el && el != this.previewElement) {
-                  offsetTop += el.offsetTop
-                  el = el.offsetParent as HTMLElement
-                }
+          const targetElement = this.previewElement.querySelector(`[id=\"${href.slice(1)}\"]`) as HTMLElement // fix number id bug
+          if (targetElement) {
+            a.onclick = (event)=> {
+              event.preventDefault()
+              event.stopPropagation()
 
-                if (this.previewElement.scrollTop > offsetTop)
-                  this.previewElement.scrollTop = offsetTop - 32 - targetElement.offsetHeight
-                else
-                  this.previewElement.scrollTop = offsetTop
+              // jump to tag position
+              let offsetTop = 0
+              let el = targetElement
+              while (el && el != this.previewElement) {
+                offsetTop += el.offsetTop
+                el = el.offsetParent as HTMLElement
               }
+
+              if (this.previewElement.scrollTop > offsetTop)
+                this.previewElement.scrollTop = offsetTop - 32 - targetElement.offsetHeight
+              else
+                this.previewElement.scrollTop = offsetTop
             }
           }
         } else {
           a.onclick = (event)=> {
             event.preventDefault()
             event.stopPropagation()
-
-            this.postMessage('clickTagA', [this.sourceUri, encodeURIComponent(href)])
+            this.postMessage('clickTagA', [this.sourceUri, encodeURIComponent(href.replace(/\\/g, '/'))])
           }
         }
       }
     }
     helper(as)
 
-    if (!this.config.vscode && this.sidebarTOC) {
+    if (this.sidebarTOC) {
       const as = this.sidebarTOC.getElementsByTagName('a')
       helper(as)
     }
