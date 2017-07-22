@@ -329,9 +329,12 @@ export async function transformMarkdown(inputString:string,
           }
 
           if (!id) {
-            id = uslug(heading).replace(/^[\d\-]+/, '')
-            if (!id) {
-              id = 'section'
+            id = uslug(heading)
+            if (usePandocParser) {
+              id = id.replace(/^[\d\-]+/, '')
+              if (!id) {
+                id = 'section'
+              }
             }
           }
 
