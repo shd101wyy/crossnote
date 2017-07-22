@@ -1045,7 +1045,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * Check https://github.com/marcbachmann/node-html-pdf website.  
    * @param fileType the export file type 
    */
-  public async phantomjsExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=true}):Promise<string> {
+  public async phantomjsExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     let dest = this.filePath
@@ -1103,7 +1103,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * prince pdf file export
    * @return dest if success, error if failure
    */
-  public async princeExport({runAllCodeChunks=false, openFileAfterGeneration=true}):Promise<string> {
+  public async princeExport({runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     let dest = this.filePath
@@ -1376,7 +1376,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   /**
    * pandoc export
    */
-  public async pandocExport({runAllCodeChunks=false, openFileAfterGeneration=true}):Promise<string> {
+  public async pandocExport({runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
 
     if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData
@@ -1661,8 +1661,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         }
         const html = Prism.highlight(code, Prism.languages[scopeForLanguageName(lang)])
         $preElement.html(html)  
-      } catch(e) {
-        // do nothing
+      } catch(error) {
+        // regarded as plain text
+        $preElement.text(code)
       }
       if (options['class']) {
         $preElement.addClass(options['class'])
@@ -1814,6 +1815,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * @param $ 
    */
   private extendTableSyntax($) {
+    const rowspans:Array<[object, object]> = [], // ^ 
+          colspans:Array<[object, object]> = [], // >
+          colspans2:Array<[object, object]> = []  // empty
     $('table').each((i, table)=> {
       const $table = $(table)
       const $thead = $table.children().first()
@@ -1828,24 +1832,27 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
             if (!text.length) { // merge to left
               const $prev = $col.prev()
               if ($prev.length) {
-                const colspan = parseInt($prev.attr('colspan')) || 1
-                $prev.attr('colspan', colspan+1)
-                $col.remove()
+                colspans2.push([$prev, $col])
+                // const colspan = parseInt($prev.attr('colspan')) || 1
+                // $prev.attr('colspan', colspan+1)
+                // $col.remove()
               }
             } else if (text.trim() === '^' && $prevRow) { // merge to top
               const $prev = $($prevRow.children()[j])
               if ($prev.length) {
-                const rowspan = parseInt($prev.attr('rowspan')) || 1
-                $prev.attr('rowspan', rowspan+1)
-                $col.remove()
+                rowspans.push([$prev, $col])
+                // const rowspan = parseInt($prev.attr('rowspan')) || 1
+                // $prev.attr('rowspan', rowspan+1)
+                // $col.remove()
               }
 
             } else if (text.trim() === '>') { // merge to right 
               const $next = $col.next()
               if ($next.length) {
-                const colspan = parseInt($next.attr('colspan')) || 1
-                $next.attr('colspan', colspan+1)
-                $col.remove()
+                // const colspan = parseInt($next.attr('colspan')) || 1
+                // $next.attr('colspan', colspan+1)
+                // $col.remove()
+                colspans.push([$col, $next])
               }
             }
           })
@@ -1853,6 +1860,25 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         })
       })
     })
+
+    for (let i = rowspans.length - 1; i >= 0; i--) {
+      const [$prev, $col] = rowspans[i]
+      const rowspan = (parseInt($prev['attr']('rowspan')) || 1) + (parseInt($col['attr']('rowspan')) || 1)
+      $prev['attr']('rowspan', rowspan)
+      $col['remove']()
+    }
+    for (let i = 0; i < colspans.length; i++) {
+      const [$prev, $col] = colspans[i]
+      const colspan = (parseInt($prev['attr']('colspan')) || 1) + (parseInt($col['attr']('colspan')) || 1)
+      $col['attr']('colspan', colspan)
+      $prev['remove']()
+    }
+    for (let i = colspans2.length - 1; i >= 0; i--) {
+      const [$prev, $col] = colspans2[i]
+      const colspan = (parseInt($prev['attr']('colspan')) || 1) + (parseInt($col['attr']('colspan')) || 1)
+      $prev['attr']('colspan', colspan)
+      $col['remove']()
+    }
   }
 
   /**
@@ -1878,6 +1904,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         let classes = codeBlock.attr('class')
         if (!classes) classes = 'language-text'
         lang = classes.replace(/^language-/, '')
+        if (!lang) lang = 'text'
         code = codeBlock.text()
         $preElement.attr('class', classes)
         $preElement.children().first().addClass(classes)

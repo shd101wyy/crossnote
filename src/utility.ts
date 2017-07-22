@@ -100,7 +100,7 @@ export function mkdirp(dir:string):Promise<boolean> {
 export function openFile(filePath) {
   let cmd 
   if (process.platform === 'win32')
-    cmd = 'explorer'
+    cmd = 'explorer.exe'
   else if (process.platform === 'darwin')
     cmd = 'open'
   else
@@ -226,7 +226,7 @@ module.exports = config || {}
   return phantomjsConfig
 }
 
-const defaultMathjaxConfig = {
+export const defaultMathjaxConfig = {
   extensions: ['tex2jax.js'],
   jax: ['input/TeX','output/HTML-CSS'],
   messageStyle: 'none',
@@ -401,7 +401,7 @@ export const configs:
   config: object } = {
 
   globalStyle: "",
-  mathjaxConfig: null,
+  mathjaxConfig: defaultMathjaxConfig,
   mermaidConfig: "MERMAID_CONFIG = {startOnLoad: false}",
   phantomjsConfig: {},
   parserConfig: {},
