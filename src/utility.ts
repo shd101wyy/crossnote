@@ -226,7 +226,7 @@ module.exports = config || {}
   return phantomjsConfig
 }
 
-const defaultMathjaxConfig = {
+export const defaultMathjaxConfig = {
   extensions: ['tex2jax.js'],
   jax: ['input/TeX','output/HTML-CSS'],
   messageStyle: 'none',
@@ -401,7 +401,7 @@ export const configs:
   config: object } = {
 
   globalStyle: "",
-  mathjaxConfig: null,
+  mathjaxConfig: defaultMathjaxConfig,
   mermaidConfig: "MERMAID_CONFIG = {startOnLoad: false}",
   phantomjsConfig: {},
   parserConfig: {},
