@@ -1045,7 +1045,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * Check https://github.com/marcbachmann/node-html-pdf website.  
    * @param fileType the export file type 
    */
-  public async phantomjsExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=true}):Promise<string> {
+  public async phantomjsExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     let dest = this.filePath
@@ -1103,7 +1103,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
    * prince pdf file export
    * @return dest if success, error if failure
    */
-  public async princeExport({runAllCodeChunks=false, openFileAfterGeneration=true}):Promise<string> {
+  public async princeExport({runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     let dest = this.filePath
@@ -1376,7 +1376,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   /**
    * pandoc export
    */
-  public async pandocExport({runAllCodeChunks=false, openFileAfterGeneration=true}):Promise<string> {
+  public async pandocExport({runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
 
     if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData
