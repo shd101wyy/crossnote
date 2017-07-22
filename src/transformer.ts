@@ -329,7 +329,7 @@ export async function transformMarkdown(inputString:string,
           }
 
           if (!id) {
-            id = uslug(heading).replace(/^\d+\-?/, '')
+            id = uslug(heading).replace(/^[\d\-]+/, '')
             if (!id) {
               id = 'section'
             }
