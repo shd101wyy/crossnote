@@ -64,6 +64,7 @@ export interface TransformMarkdownOptions {
   notSourceFile?: boolean,
   imageDirectoryPath?: string
   usePandocParser: boolean
+  tocTable?: {[key:string]: number}
 }
 
 const fileExtensionToLanguageMap = {
@@ -205,7 +206,8 @@ export async function transformMarkdown(inputString:string,
                               protocolsWhiteListRegExp = null,
                               notSourceFile = false,
                               imageDirectoryPath = '',
-                              usePandocParser = false }:TransformMarkdownOptions):Promise<TransformMarkdownOutput> {
+                              usePandocParser = false,
+                              tocTable = {} }:TransformMarkdownOptions):Promise<TransformMarkdownOutput> {
     let inBlock = false // inside code block
     let codeChunkOffset = 0
     const tocConfigs = [],
@@ -214,7 +216,6 @@ export async function transformMarkdown(inputString:string,
     let headings = [],
         tocBracketEnabled = false,
         frontMatterString = ''
-    const tocTable:{[key:string]:number} = {}
 
     /**
      * As the recursive version of this function will cause the error:
@@ -621,7 +622,8 @@ export async function transformMarkdown(inputString:string,
                   protocolsWhiteListRegExp,
                   notSourceFile: true, // <= this is not the sourcefile
                   imageDirectoryPath,
-                  usePandocParser
+                  usePandocParser,
+                  tocTable
                 })
                 output = '\n' + output + '  '
                 headings = headings.concat(headings2)
