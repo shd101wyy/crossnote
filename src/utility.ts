@@ -100,7 +100,7 @@ export function mkdirp(dir:string):Promise<boolean> {
 export function openFile(filePath) {
   let cmd 
   if (process.platform === 'win32')
-    cmd = 'explorer'
+    cmd = 'explorer.exe'
   else if (process.platform === 'darwin')
     cmd = 'open'
   else
