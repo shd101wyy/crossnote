@@ -329,7 +329,10 @@ export async function transformMarkdown(inputString:string,
           }
 
           if (!id) {
-            id = uslug(heading)
+            id = uslug(heading).replace(/^\d+\-?/, '')
+            if (!id) {
+              id = 'section'
+            }
           }
 
           if (tocTable[id] >= 0) {
