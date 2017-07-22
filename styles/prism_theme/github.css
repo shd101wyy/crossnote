@@ -28,9 +28,10 @@ pre[class*="language-"] {
 pre[class*="language-"] {
   padding: .8em;
   overflow: auto;
-  border: 1px solid #ddd;
+  /* border: 1px solid #ddd; */
   border-radius: 3px;
-  background: #fff;
+  /* background: #fff; */
+  background: #f6f8fa;
 }
 
 /* Inline code */
