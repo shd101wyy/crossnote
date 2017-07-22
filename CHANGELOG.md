@@ -1,3 +1,6 @@
+# 0.1.5
+* Fixed `webview.ts` `clickTagA` action bug.  
+
 # 0.1.4
 * Fixed header id bug [#516](https://github.com/shd101wyy/markdown-preview-enhanced/issues/516).  
 * Fixed `enableExtendedTableSyntax` bug.  
