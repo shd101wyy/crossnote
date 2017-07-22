@@ -1661,8 +1661,9 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         }
         const html = Prism.highlight(code, Prism.languages[scopeForLanguageName(lang)])
         $preElement.html(html)  
-      } catch(e) {
-        // do nothing
+      } catch(error) {
+        // regarded as plain text
+        $preElement.text(code)
       }
       if (options['class']) {
         $preElement.addClass(options['class'])
@@ -1878,6 +1879,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         let classes = codeBlock.attr('class')
         if (!classes) classes = 'language-text'
         lang = classes.replace(/^language-/, '')
+        if (!lang) lang = 'text'
         code = codeBlock.text()
         $preElement.attr('class', classes)
         $preElement.children().first().addClass(classes)
