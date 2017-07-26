@@ -3,6 +3,7 @@ import * as fs from "fs"
 import * as cheerio from "cheerio"
 
 import * as plantumlAPI from "./puml"
+import * as vegaAPI from "./vega"
 import * as utility from "./utility"
 import {svgElementToPNGFile} from "./magick"
 // import {mermaidToPNG} from "./mermaid"
@@ -141,6 +142,20 @@ export async function processGraphs(text:string,
         if (!(svg = graphsCache[checksum])) {
           const engine = options['engine'] || 'dot'
           svg = Viz(content, {engine})
+        }
+        await convertSVGToPNGFile(svg, lines, start, end, true)
+      } catch(error) {
+        clearCodeBlock(lines, start, end)
+        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
+      }
+    } else if (def.match(/^vega\-lite/)) { // vega-lite
+
+    } else if (def.match(/^vega/)) { // vega
+      try {
+        const checksum = md5(optionsStr + content)
+        let svg 
+        if (!(svg = graphsCache[checksum])) {
+          svg = await vegaAPI.toSVG(content, fileDirectoryPath)
         }
         await convertSVGToPNGFile(svg, lines, start, end, true)
       } catch(error) {

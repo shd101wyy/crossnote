@@ -8,6 +8,7 @@ import {EOL} from "os"
 const matter = require('gray-matter')
 
 import * as plantumlAPI from "./puml"
+import * as vegaAPI from "./vega"
 import * as utility from "./utility"
 import {scopeForLanguageName} from "./extension-helper"
 import {transformMarkdown, HeadingData} from "./transformer"
@@ -1682,7 +1683,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       }
       $preElement.replaceWith(`<p>${svg}</p>`)
       graphsCache[checksum] = svg // store to new cache 
-
+      
     } else if (lang.match(/^mermaid$/)) { // mermaid 
       /*
       // it doesn't work well...
@@ -1709,6 +1710,22 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
           graphsCache[checksum] = svg // store to new cache
         } catch(e) {
           $preElement.replaceWith(`<pre class="language-text">${e.toString()}</pre>`)
+        }
+      } else {
+        $preElement.replaceWith(`<p>${svg}</p>`)
+        graphsCache[checksum] = svg // store to new cache
+      }
+    } else if (lang.match(/^vega$/)) { // vega
+      const checksum = md5(optionsStr + code)
+      let svg:string = this.graphsCache[checksum] 
+      if (!svg) {
+        try {
+          svg = await vegaAPI.toSVG(code, this.fileDirectoryPath)
+
+          $preElement.replaceWith(`<p>${svg}</p>`)
+          graphsCache[checksum] = svg // store to new cache 
+        } catch(error) {
+          $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
         }
       } else {
         $preElement.replaceWith(`<p>${svg}</p>`)
