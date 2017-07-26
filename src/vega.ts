@@ -1,5 +1,4 @@
 import * as path from "path"
-import * as fs from "fs"
 import * as utility from "./utility"
 
 let vega = null

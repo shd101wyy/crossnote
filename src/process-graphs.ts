@@ -4,6 +4,7 @@ import * as cheerio from "cheerio"
 
 import * as plantumlAPI from "./puml"
 import * as vegaAPI from "./vega"
+import * as vegaLiteAPI from "./vega-lite"
 import * as utility from "./utility"
 import {svgElementToPNGFile} from "./magick"
 // import {mermaidToPNG} from "./mermaid"
@@ -149,7 +150,17 @@ export async function processGraphs(text:string,
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
       }
     } else if (def.match(/^vega\-lite/)) { // vega-lite
-
+      try {
+        const checksum = md5(optionsStr + content)
+        let svg 
+        if (!(svg = graphsCache[checksum])) {
+          svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath)
+        }
+        await convertSVGToPNGFile(svg, lines, start, end, true)
+      } catch(error) {
+        clearCodeBlock(lines, start, end)
+        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
+      }
     } else if (def.match(/^vega/)) { // vega
       try {
         const checksum = md5(optionsStr + content)
