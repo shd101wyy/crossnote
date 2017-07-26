@@ -1721,7 +1721,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       let svg:string = this.graphsCache[checksum] 
       if (!svg) {
         try {
-          svg = await vegaAPI.toSVG(code, this.fileDirectoryPath)
+          svg = await vegaAPI.toSVG(code, this.fileDirectoryPath, options)
 
           $preElement.replaceWith(`<p>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache 
@@ -1737,7 +1737,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       let svg:string = this.graphsCache[checksum] 
       if (!svg) {
         try {
-          svg = await vegaLiteAPI.toSVG(code, this.fileDirectoryPath)
+          svg = await vegaLiteAPI.toSVG(code, this.fileDirectoryPath, options)
 
           $preElement.replaceWith(`<p>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache 

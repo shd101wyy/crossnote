@@ -29,7 +29,8 @@
     "mkdirp": "^0.5.1",
     "request": "^2.81.0",
     "temp": "^0.8.3",
-    "uslug": "^1.0.4"
+    "uslug": "^1.0.4",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@types/jquery": "^3.2.6",

@@ -1,9 +1,10 @@
 import * as path from "path"
+import * as YAML from "yamljs"
 import * as utility from "./utility"
 
 let vega = null
 
-async function renderVega(spec:string, baseURL):Promise<string> {
+async function renderVega(spec:object, baseURL):Promise<string> {
   const svgHeader = 
   '<?xml version="1.0" encoding="utf-8"?>\n' +
   '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
@@ -13,7 +14,7 @@ async function renderVega(spec:string, baseURL):Promise<string> {
     baseURL += '/'
   }
 
-  var view = new vega.View(vega.parse(JSON.parse(spec)), {
+  var view = new vega.View(vega.parse(spec), {
       loader: vega.loader({baseURL}),
       logLevel: vega.Warn,
       renderer: 'none'
@@ -27,10 +28,16 @@ async function renderVega(spec:string, baseURL):Promise<string> {
  * Modifed from the `vg2svg` file.  
  * @param spec The vega code.  
  */
-export async function toSVG(spec:string, baseURL:string=null):Promise<string> {
+export async function toSVG(spec:string, baseURL:string='', options={}):Promise<string> {
   if (!vega) {
     vega = require(path.resolve(utility.extensionDirectoryPath, './dependencies/vega/vega.min.js'))
   }
 
-  return renderVega(spec, baseURL)
+  let d
+  if (options['type'] === 'yaml') {
+    d = YAML.parse(spec)
+  } else { // json
+    d = JSON.parse(spec)
+  }
+  return renderVega(d, baseURL)
 }

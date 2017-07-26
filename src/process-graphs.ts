@@ -154,7 +154,7 @@ export async function processGraphs(text:string,
         const checksum = md5(optionsStr + content)
         let svg 
         if (!(svg = graphsCache[checksum])) {
-          svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath)
+          svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath, options)
         }
         await convertSVGToPNGFile(svg, lines, start, end, true)
       } catch(error) {
@@ -166,7 +166,7 @@ export async function processGraphs(text:string,
         const checksum = md5(optionsStr + content)
         let svg 
         if (!(svg = graphsCache[checksum])) {
-          svg = await vegaAPI.toSVG(content, fileDirectoryPath)
+          svg = await vegaAPI.toSVG(content, fileDirectoryPath, options)
         }
         await convertSVGToPNGFile(svg, lines, start, end, true)
       } catch(error) {
