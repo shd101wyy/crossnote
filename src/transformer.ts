@@ -441,7 +441,7 @@ export async function transformMarkdown(inputString:string,
                 outputString = outputString + '<div class="pagebreak"> </div>\n'
                 continue
 
-              } else if (subject === 'slide') { // slide 
+              } else if (subject.match(/^\.?slide\:?$/)) { // slide 
                 slideConfigs.push(options)
                 if (forMarkdownExport) {
                   // return helper(commentEnd, lineNo + newlines, outputString + `<!-- ${content} -->` + '\n')
