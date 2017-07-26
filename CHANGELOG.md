@@ -1,3 +1,9 @@
+# 0.1.6
+* [ ] `vega` and `vega-lite` support.  
+* [ ] Change the key-value pair way of writing attributes to the pandoc way. 
+* [ ] `mindmap` support.  
+
+
 # 0.1.5
 * Fixed `webview.ts` `clickTagA` action bug.  
 
