@@ -25,7 +25,6 @@ import {CodeChunkData} from "./code-chunk-data"
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const katex = require(path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.js'))
 const MarkdownIt = require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/markdown-it.min.js'))
-const jsonic = require(path.resolve(extensionDirectoryPath, './dependencies/jsonic/jsonic.js'))
 const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 const CryptoJS = require(path.resolve(extensionDirectoryPath, './dependencies/crypto-js/crypto-js.js'))
 const Viz = require(path.resolve(extensionDirectoryPath, './dependencies/viz/viz.js'))
@@ -1648,7 +1647,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 
     if (optionsStr) {
       try {
-        options = jsonic('{'+optionsStr+'}')
+        options = utility.parseAttributes(optionsStr)
       } catch (e) {
         return $preElement.replaceWith(`<pre class="language-text">OptionsError: ${'{'+optionsStr+'}'}<br>${e.toString()}</pre>`)
       }

@@ -12,7 +12,6 @@ import {compileLaTeX} from "./code-chunk"
 import {CodeChunkData} from "./code-chunk-data"
 
 const Viz = require(path.resolve(utility.extensionDirectoryPath, './dependencies/viz/viz.js'))
-const jsonic = require(path.resolve(utility.extensionDirectoryPath, './dependencies/jsonic/jsonic.js'))
 const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 export async function processGraphs(text:string, 
@@ -39,7 +38,7 @@ export async function processGraphs(text:string,
               optionsMatch
           if (optionsMatch = trimmedLine.match(/\{(.+)\}$/)) {
             try {
-              options = jsonic(optionsMatch[0])
+              options = utility.parseAttributes(optionsMatch[0])
               optionsStr = optionsMatch[1]
             } catch(error) {
               options = {}

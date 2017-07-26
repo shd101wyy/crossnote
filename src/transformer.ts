@@ -15,7 +15,6 @@ import {EOL} from "os"
 // temp.track()
 import * as utility from "./utility"
 const extensionDirectoryPath = utility.extensionDirectoryPath
-const jsonic = require(path.resolve(extensionDirectoryPath, './dependencies/jsonic/jsonic.js'))
 const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 import {CustomSubjects} from "./custom-subjects"
@@ -318,11 +317,11 @@ export async function transformMarkdown(inputString:string,
             heading = heading.replace(optMatch[0], '')
 
             try {
-              let opt = jsonic(optMatch[0].trim())
+              let opt = utility.parseAttributes(optMatch[0])
               
-              classes = opt.class,
-              id = opt.id,
-              ignore = opt.ignore 
+              classes = opt['class'],
+              id = opt['id'],
+              ignore = opt['ignore']
             } catch(e) {
               heading = "OptionsError: " + optMatch[1]
               ignore = true
@@ -413,26 +412,12 @@ export async function transformMarkdown(inputString:string,
               const newlinesMatch = content.match(/\n/g)
               const newlines = (newlinesMatch ? newlinesMatch.length : 0)
               const optionsMatch = content.match(/^([^\s]+?)\s([\s\S]+)$/)
-              const options = {lineNo}
 
+              let options = {}
               if (optionsMatch && optionsMatch[2]) {
-                const rest = optionsMatch[2]
-                const match = rest.match(/(?:[^\s\n:"']+|"[^"]*"|'[^']*')+/g) // split by space and \newline and : (not in single and double quotezz)
-
-                if (match && match.length % 2 === 0) {
-                  let i = 0
-                  while (i < match.length) {
-                    const key = match[i],
-                          value = match[i+1]
-                    try {
-                      options[key] = JSON.parse(value)
-                    } catch (e) {
-                      null // do nothing
-                    }
-                    i += 2
-                  }
-                } 
+                options = utility.parseAttributes(optionsMatch[2])
               }
+              options['lineNo'] = lineNo
 
               if (subject === 'pagebreak' || subject === 'newpage') { // pagebreak
                 // return helper(commentEnd, lineNo + newlines, outputString + '<div class="pagebreak"> </div>\n')
@@ -506,7 +491,7 @@ export async function transformMarkdown(inputString:string,
             if (rightParen > 0) {
               configStr = line.substring(leftParen+1, rightParen)
               try {
-                config = jsonic(`{${configStr}}`)
+                config = utility.parseAttributes(configStr)
               } catch(error) {
                 // null
               }
