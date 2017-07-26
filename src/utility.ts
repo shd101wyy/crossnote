@@ -425,13 +425,15 @@ export function parseAttributes(text='', asArray=false) {
     let end = start
     while (end < text.length) {
       const char = text[end]
-      if (char.match(/^[,;=\s]$/)) { // end of key
+      if (char.match(/^[,;=\s:]$/)) { // end of key
         break
       }
       end++
     }
-    let val = text.slice(start, end)
-    if (!isNaN(val)) val = parseFloat(val)
+    let val:number|string = text.slice(start, end)
+    let v = parseFloat(val)
+    if (!isNaN(v)) val = v
+
     return [end, val]
   }
 
