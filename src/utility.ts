@@ -430,8 +430,13 @@ export function parseAttributes(text='', asArray=false) {
       }
       end++
     }
-    let val:number|string = text.slice(start, end)
-    if (!isNaN(val as any)) val = parseFloat(val)
+    let val:number|string|boolean = text.slice(start, end)
+
+    // boolean
+    if (val.match(/^true$/i)) val = true
+    else if (val.match(/^false$/i)) val = false
+    // number
+    else if (!isNaN(val as any)) val = parseFloat(val as any)
 
     return [end, val]
   }
