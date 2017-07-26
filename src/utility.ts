@@ -431,8 +431,7 @@ export function parseAttributes(text='', asArray=false) {
       end++
     }
     let val:number|string = text.slice(start, end)
-    let v = parseFloat(val)
-    if (!isNaN(v)) val = v
+    if (!isNaN(val as any)) val = parseFloat(val)
 
     return [end, val]
   }
