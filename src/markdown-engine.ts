@@ -612,6 +612,11 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     'atom-material.css': 'atom-material.css',
     'github-dark.css': 'github.css',
     'github-light.css': 'github.css',
+    'gothic.css': 'github.css',
+    'medium.css': 'github.css',
+    'monokai.css': 'monokai.css',
+    'newsprint.css': 'pen-paper-coffee.css',  // <= this is bad
+    'night.css': 'darcula.css', // <= this is bad
     'one-dark.css': 'one-dark.css',
     'one-light.css': 'one-light.css',
     'solarized-light.css': 'solarized-light.css',
