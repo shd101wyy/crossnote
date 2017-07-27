@@ -123,7 +123,9 @@ export async function processGraphs(text:string,
     const {start, end, content, options, optionsStr} = codeData
     const def = lines[start].trim().slice(3).trim()
 
-    if (def.match(/^(puml|plantuml)/)) { 
+    if (options['code_block']) { 
+      // Do Nothing
+    } else if (def.match(/^(puml|plantuml)/)) { 
       try {
         const checksum = md5(optionsStr + content)
         let svg 

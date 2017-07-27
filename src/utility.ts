@@ -520,3 +520,31 @@ export function parseAttributes(text='', asArray=false) {
 
   return output 
 }
+
+/**
+ * Convert JSON object to attributes string.  
+ * @param obj 
+ */
+export function stringifyAttributes(obj:object):string {
+  let output = ""
+
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      output += `${key}=`
+      const value = obj[key]
+      if (value instanceof Array) {
+        output += '['
+        value.forEach((v, i)=> {
+          output += JSON.stringify(v) 
+          if (i + 1 !== value.length)
+            output += ', '
+        })
+        output += ']'
+      } else {
+        output += JSON.stringify(value)
+      }
+      output += " "
+    }
+  }
+  return '{' + output.trim() + '}'
+}

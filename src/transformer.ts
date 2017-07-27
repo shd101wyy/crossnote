@@ -244,7 +244,7 @@ export async function transformMarkdown(inputString:string,
 
           let match;
           if (!inBlock && !notSourceFile && (match = line.match(/\"?cmd\"?\s*:/)))  { // it's code chunk, so mark its offset
-            line = line.replace('{', `{code_chunk_offset:${codeChunkOffset}, `)
+            line = line.replace('{', `{code_chunk_offset=${codeChunkOffset}, `)
             codeChunkOffset++
           }
           inBlock = !inBlock
@@ -568,7 +568,7 @@ export async function transformMarkdown(inputString:string,
               codeChunkOffset++          
             }
 
-            const output = `\`\`\`text ${JSON.stringify(config)}  \n\`\`\`  `
+            const output = `\`\`\`text ${utility.stringifyAttributes(config)}  \n\`\`\`  `
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end+1
             lineNo = lineNo+1
@@ -582,7 +582,7 @@ export async function transformMarkdown(inputString:string,
 
               if (config && config['code_block']) {
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${JSON.stringify(config)}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${utility.stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
               }
               else if (config && config['cmd']) {
                 if (!config['id']) { // create `id` for code chunk
@@ -593,7 +593,7 @@ export async function transformMarkdown(inputString:string,
                   codeChunkOffset++
                 }
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${JSON.stringify(config)}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${utility.stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
               }
               else if (['.md', '.markdown', '.mmark'].indexOf(extname) >= 0) { // markdown files
                 // this return here is necessary
@@ -697,7 +697,7 @@ export async function transformMarkdown(inputString:string,
               */
               else { // # codeblock
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${config ? JSON.stringify(config) : ''}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${config ? utility.stringifyAttributes(config) : ''}  \n${fileContent}\n\`\`\`  `
               }
 
               // return helper(end+1, lineNo+1, outputString+output+'\n')
