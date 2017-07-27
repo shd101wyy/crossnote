@@ -610,7 +610,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     'atom-dark.css': 'atom-dark.css',
     'atom-light.css': 'atom-light.css',
     'atom-material.css': 'atom-material.css',
-    'github-dark.css': 'github.css',
+    'github-dark.css': 'atom-dark.css',
     'github-light.css': 'github.css',
     'gothic.css': 'github.css',
     'medium.css': 'github.css',
