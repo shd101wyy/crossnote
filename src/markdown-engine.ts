@@ -82,6 +82,7 @@ export interface MarkdownEngineConfig {
   pandocMarkdownFlavor?: string
   pandocArguments?: string[]
   latexEngine?: string
+  enableScriptExecution?: boolean
 }
 
 export interface HTMLTemplateOption {
@@ -144,7 +145,8 @@ const defaultMarkdownEngineConfig:MarkdownEngineConfig = {
   pandocPath: 'pandoc',
   pandocMarkdownFlavor: 'markdown-raw_tex+tex_math_single_backslash',
   pandocArguments: [],
-  latexEngine: 'pdflatex'
+  latexEngine: 'pdflatex',
+  enableScriptExecution: true
 }
 
 let MODIFY_SOURCE:(codeChunkData:CodeChunkData, result:string, filePath:string)=>Promise<string> = null
@@ -1621,6 +1623,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
    * @param id 
    */
   public async runCodeChunk(id):Promise<String> {
+    if (!this.config.enableScriptExecution) return '' // code chunk is disabled.
+
     let codeChunkData = this.codeChunksData[id]
     if (!codeChunkData) return ''
     if (codeChunkData.running) return ''
@@ -1687,6 +1691,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
   }
 
   public async runAllCodeChunks() {
+    if (!this.config.enableScriptExecution) return
+
     const asyncFunctions = []
     for (let id in this.codeChunksData) {
       asyncFunctions.push(this.runCodeChunk(id))
@@ -2412,6 +2418,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     if (options.triggeredBySave && yamlConfig['export_on_save']) { // export files
       this.exportOnSave(yamlConfig['export_on_save'])
+    }
+
+    if (!this.config.enableScriptExecution) { // disable importing js and css files.  
+      JSAndCssFiles = []
     }
 
     return {html, markdown:inputString, tocHTML: this.tocHTML, yamlConfig, JSAndCssFiles}

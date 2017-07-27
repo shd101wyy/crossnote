@@ -7,6 +7,7 @@ interface MarkdownConfig {
   mathRenderingOption?: string,
   imageFolderPath?: string,
   imageUploader?: string,
+  enableScriptExecution?: boolean
   /**
    * Whether this preview is for vscode or not.  
    */
@@ -596,6 +597,8 @@ class PreviewController {
    * @param id 
    */
   private runCodeChunk(id:string) {
+    if (!this.config.enableScriptExecution) return
+
     const codeChunk = document.querySelector(`.code-chunk[data-id="${id}"]`)
     const running = codeChunk.classList.contains('running')
     if (running) return 
@@ -624,6 +627,8 @@ class PreviewController {
    * Run all code chunks
    */
   private runAllCodeChunks() {
+    if (!this.config.enableScriptExecution) return
+
     const codeChunks = this.previewElement.getElementsByClassName('code-chunk')
     for (let i = 0; i < codeChunks.length; i++) {
       codeChunks[i].classList.add('running')

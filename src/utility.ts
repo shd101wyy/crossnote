@@ -498,7 +498,7 @@ export function parseAttributes(text='', asArray=false) {
       }
       arr.push(parseAttributes(text.slice(i+1, j), true))
       i = j
-    } else if (char.match(/^\w$/)) { // key | val
+    } else if (char.match(/^[\w-]$/)) { // key | val
       const [end, x] = findKey(i)
       arr.push(x)
       i = end 

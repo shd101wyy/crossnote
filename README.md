@@ -173,7 +173,11 @@ const config = {
   pandocArguments: [],
 
   // Default latex engine for Pandoc export and latex code chunk.
-  latexEngine: 'pdflatex'
+  latexEngine: 'pdflatex',
+
+  // Whether to enable script execution.
+  // Disable this will disable executing code chunk and importing javascript files.  
+  enableScriptExecution: true
 }
 
 // Init Engine
