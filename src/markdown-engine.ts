@@ -132,7 +132,7 @@ const defaultMarkdownEngineConfig:MarkdownEngineConfig = {
   mathRenderingOption: 'KaTeX',
   mathInlineDelimiters: [["$", "$"], ["\\(", "\\)"]],
   mathBlockDelimiters: [["$$", "$$"], ["\\[", "\\]"]],
-  codeBlockTheme: 'default.css',
+  codeBlockTheme: 'auto.css',
   previewTheme: 'github-light.css',
   revealjsTheme: 'white.css',
   mermaidTheme: 'mermaid.css',
@@ -604,6 +604,36 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
   }
 
   /**
+   * Map preview theme to prism theme.  
+   */
+  static AutoPrismThemeMap = {
+    'atom-dark.css': 'atom-dark.css',
+    'atom-light.css': 'atom-light.css',
+    'atom-material.css': 'atom-material.css',
+    'github-dark.css': 'github.css',
+    'github-light.css': 'github.css',
+    'one-dark.css': 'one-dark.css',
+    'one-light.css': 'one-light.css',
+    'solarized-light.css': 'solarized-light.css',
+    'solarized-dark.css': 'solarized-dark.css'
+  }
+
+  /**
+   * Automatically pick code block theme for preview.  
+   */
+  private getPrismTheme() {
+    if (this.config.codeBlockTheme === 'auto.css') {
+      /**
+       * Automatically pick code block theme for preview.  
+       */
+      return MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] || 'default.css'
+
+    } else {
+      return this.config.codeBlockTheme
+    }
+  }
+
+  /**
    * Generate styles string for preview usage.
    */
   public generateStylesForPreview(isPresentationMode=false) {
@@ -635,7 +665,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     }
 
     // check prism 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.config.codeBlockTheme}`)}">`
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`)}">`
 
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${path.resolve(utility.extensionDirectoryPath, './styles/style-template.css')}">`
@@ -888,7 +918,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     let styleCSS = ""
     try{
       // prism *.css
-      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.config.codeBlockTheme}`), {encoding:'utf-8'})
+      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`), {encoding:'utf-8'})
       
       if (yamlConfig["isPresentationMode"]) {
         styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`), {encoding:'utf-8'})
@@ -1310,7 +1340,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         // style template
         utility.readFile(path.resolve(extensionDirectoryPath, './styles/style-template.css'), {encoding:'utf-8'}),
         // prism *.css
-        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.config.codeBlockTheme}`), {encoding:'utf-8'}),
+        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`), {encoding:'utf-8'}),
         // preview theme
         utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
       ])
