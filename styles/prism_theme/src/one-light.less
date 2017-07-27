@@ -1,0 +1,416 @@
+// out: ../one-light.css
+
+// Config -----------------------------------
+@syntax-hue:          230;
+@syntax-saturation:    1%;
+@syntax-brightness:   98%;
+
+
+// Monochrome -----------------------------------
+@mono-1: hsl(@syntax-hue, 8%, 24%);
+@mono-2: hsl(@syntax-hue, 6%, 44%);
+@mono-3: hsl(@syntax-hue, 4%, 64%);
+
+// Colors -----------------------------------
+@hue-1:   hsl(198, 99%, 37%); // <-cyan
+@hue-2:   hsl(221, 87%, 60%); // <-blue
+@hue-3:   hsl(301, 63%, 40%); // <-purple
+@hue-4:   hsl(119, 34%, 47%); // <-green
+
+@hue-5:   hsl(  5, 74%, 59%); // <-red 1
+@hue-5-2: hsl(344, 84%, 43%); // <-red 2
+
+@hue-6:   hsl(41, 99%, 30%); // <-orange 1
+@hue-6-2: hsl(41, 99%, 38%); // <-orange 2
+
+
+// Base colors -----------------------------------
+@syntax-fg:     @mono-1;
+@syntax-bg:     hsl(@syntax-hue, @syntax-saturation, @syntax-brightness);
+@syntax-gutter: darken(@syntax-bg, 36%);
+@syntax-guide:  fade(@syntax-fg, 20%);
+@syntax-accent: hsl(@syntax-hue, 100%, 66% );
+
+// Official Syntax Variables -----------------------------------
+
+// General colors
+@syntax-text-color:            @syntax-fg;
+@syntax-cursor-color:          @syntax-accent;
+@syntax-selection-color:       darken(@syntax-bg, 8%);
+@syntax-selection-flash-color: @syntax-accent;
+@syntax-background-color:      @syntax-bg;
+
+// Guide colors
+@syntax-wrap-guide-color:          @syntax-guide;
+@syntax-indent-guide-color:        @syntax-guide;
+@syntax-invisible-character-color: @syntax-guide;
+
+// For find and replace markers
+@syntax-result-marker-color:          fade(@syntax-accent, 20%);
+@syntax-result-marker-color-selected: @syntax-accent;
+
+// Gutter colors -----------------------------------
+@syntax-gutter-text-color:                @syntax-gutter;
+@syntax-gutter-text-color-selected:       @syntax-fg;
+@syntax-gutter-background-color:          @syntax-bg; // unused
+@syntax-gutter-background-color-selected: darken(@syntax-bg, 3%);
+
+// Git colors - For git diff info. i.e. in the gutter
+@syntax-color-renamed:  hsl(208, 100%, 66%);
+@syntax-color-added:    hsl(132,  60%, 44%);
+@syntax-color-modified: hsl( 40,  90%, 50%);
+@syntax-color-removed:  hsl(  0, 100%, 54%);
+
+// For language entity colors
+@syntax-color-variable:   @hue-5;
+@syntax-color-constant:   @hue-6;
+@syntax-color-property:   @syntax-fg;
+@syntax-color-value:      @syntax-fg;
+@syntax-color-function:   @hue-2;
+@syntax-color-method:     @hue-2;
+@syntax-color-class:      @hue-6-2;
+@syntax-color-keyword:    @hue-3;
+@syntax-color-tag:        @hue-5;
+@syntax-color-attribute:  @hue-6;
+@syntax-color-import:     @hue-3;
+@syntax-color-snippet:    @hue-4;
+
+
+// Custom Syntax Variables -----------------------------------
+// Don't use in packages
+
+@syntax-cursor-line: fade(@syntax-fg, 5%); // needs to be semi-transparent to show search results
+
+@syntax-deprecated-fg: darken(@syntax-color-modified, 50%);
+@syntax-deprecated-bg: @syntax-color-modified;
+@syntax-illegal-fg:    white;
+@syntax-illegal-bg:    @syntax-color-removed;
+
+pre {
+  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+  word-break: normal;
+  
+  // padding: 16px;
+  padding: 1em;
+  margin: .5em 0;
+  
+  overflow: auto;
+  line-height: 1.5;
+  tab-size: 4;
+  hyphens: none;
+  color: @syntax-text-color;
+  background-color: contrast(@syntax-background-color, lighten(@syntax-background-color, 4%), darken(@syntax-background-color, 6%)) !important;
+  border: contrast(@syntax-background-color, lighten(@syntax-background-color, 16%), darken(@syntax-background-color, 16%));
+  border-radius: 3px;
+}
+
+code[class*="language-"],
+pre[class*="language-"] {
+// Language syntax highlighting
+
+.token.comment {
+  color: @mono-3;
+  font-style: italic;
+
+  .token.markup.token.link {
+    color: @mono-3;
+  }
+}
+
+.token.type {
+  color: @hue-6-2;
+}
+
+.token.other.token.inherited-class {
+  color: @hue-4;
+}
+
+.token.keyword {
+  color: @hue-3;
+
+  &.token.control {
+    color: @hue-3;
+  }
+
+  &.token.operator {
+    color: @mono-1;
+  }
+
+  &.token.other.token.special-method {
+    color: @hue-2;
+  }
+
+  &.token.other.token.unit {
+    color: @hue-6;
+  }
+}
+
+.token.storage {
+  color: @hue-3;
+
+  &.token.type {
+    &.token.annotation,
+    &.token.primitive {
+      color: @hue-3;
+    }
+  }
+
+  &.token.modifier {
+    &.token.package,
+    &.token.import {
+      color: @mono-1;
+    }
+  }
+}
+
+
+
+.token.variable {
+  color: @hue-6;
+}
+
+.token.character.token.escape {
+  color: @hue-1;
+}
+
+.token.numeric {
+  color: @hue-6;
+}
+
+.token.other.token.color {
+  color: @hue-1;
+}
+
+.token.other.token.symbol {
+  color: @hue-1;
+}
+
+
+.token.variable {
+  color: @hue-5;
+
+  &.token.interpolation {
+    color: @hue-5-2;
+  }
+
+  &.token.parameter {
+    color: @mono-1;
+  }
+}
+
+.token.string {
+  color: @hue-4;
+
+  &.token.regexp {
+    color: @hue-1;
+
+    .token.source.token.ruby.token.embedded {
+      color: @hue-6-2;
+    }
+  }
+
+  &.token.other.token.link {
+    color: @hue-5;
+  }
+}
+
+.token.punctuation {
+  &.token.definition {
+    &.token.comment {
+      color: @mono-3;
+    }
+
+    &.token.method-parameters,
+    &.token.function-parameters,
+    &.token.parameters,
+    &.token.separator,
+    &.token.seperator,
+    &.token.array {
+      color: @mono-1;
+    }
+
+    &.token.heading,
+    &.token.identity {
+      color: @hue-2;
+    }
+
+    &.token.bold {
+      color: @hue-6-2;
+      font-weight: bold;
+    }
+
+    &.token.italic {
+      color: @hue-3;
+      font-style: italic;
+    }
+  }
+
+  &.token.section {
+    &.token.embedded {
+      color: @hue-5-2;
+    }
+
+    &.token.method,
+    &.token.class,
+    &.token.inner-class {
+      color: @mono-1;
+    }
+  }
+}
+
+.token.support {
+  &.token.class {
+    color: @hue-6-2;
+  }
+
+  &.token.type {
+    color: @hue-1;
+  }
+
+  &.token.function  {
+    color: @hue-1;
+
+    &.token.any-method {
+      color: @hue-2;
+    }
+  }
+}
+
+
+.token.function {
+  color: @hue-2;
+}
+
+.token.class-name,
+.token.type.token.class-name {
+  color: @hue-6-2;
+}
+
+.token.section {
+  color: @hue-2;
+}
+
+.token.tag {
+  color: @hue-5;
+}
+
+.token.other.token.attribute-name {
+  color: @hue-6;
+
+  &.token.id {
+    color: @hue-2;
+  }
+}
+
+
+.token.meta {
+  &.token.class {
+    color: @hue-6-2;
+
+    &.token.body {
+      color: @mono-1;
+    }
+  }
+
+  &.token.method-call,
+  &.token.method {
+    color: @mono-1;
+  }
+
+  &.token.definition {
+    &.token.variable {
+      color: @hue-5;
+    }
+  }
+
+  &.token.link {
+    color: @hue-6;
+  }
+
+  &.token.require {
+    color: @hue-2;
+  }
+
+  &.token.selector {
+    color: @hue-3;
+  }
+
+  &.token.separator {
+    background-color: #373b41;
+    color: @mono-1;
+  }
+
+  &.token.tag {
+    color: @mono-1;
+  }
+}
+
+.token.underline {
+  text-decoration: underline;
+}
+
+.token.none {
+  color: @mono-1;
+}
+
+.token.invalid {
+  &.token.deprecated {
+    color: @syntax-deprecated-fg !important;
+    background-color: @syntax-deprecated-bg !important;
+  }
+  &.token.illegal {
+    color: @syntax-illegal-fg !important;
+    background-color: @syntax-illegal-bg !important;
+  }
+}
+
+// Languages -------------------------------------------------
+
+.token.markup {
+  &.token.bold {
+    color: @hue-6;
+    font-weight: bold;
+  }
+
+  &.token.changed {
+    color: @hue-3;
+  }
+
+  &.token.deleted {
+    color: @hue-5;
+  }
+
+  &.token.italic {
+    color: @hue-3;
+    font-style: italic;
+  }
+
+  &.token.heading {
+    color: @hue-5;
+
+    .token.punctuation.token.definition.token.heading {
+      color: @hue-2;
+    }
+  }
+
+  &.token.link {
+    color: @hue-1;
+  }
+
+  &.token.inserted {
+    color: @hue-4;
+  }
+
+  &.token.quote {
+    color: @hue-6;
+  }
+
+  &.token.raw {
+    color: @hue-4;
+  }
+}
+}

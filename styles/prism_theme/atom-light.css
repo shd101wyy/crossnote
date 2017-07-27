@@ -6,8 +6,8 @@ Procedures:
 2. Replace `.syntax--` to `.token.`
 3. Remove `.token.entity` block, move everything out, and replace `&.token.name` to ``
 4. Remove `.token.constant` block, move everything out, and replace `&` to ``
-5. Replace `.numeric` to `.number`
-6. Change `.class` to `.class-name`
+6. Replace `.numeric` to `.number`
+7. Change `.class` to `.class-name`
 
 */
 pre {
