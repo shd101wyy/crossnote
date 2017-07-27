@@ -95,12 +95,14 @@ pre[class*="language-"] .token.class-name {
   color: #A6E22E;
 }
 code[class*="language-"] .token.regex,
-pre[class*="language-"] .token.regex,
+pre[class*="language-"] .token.regex {
+  color: #AE81FF;
+}
 code[class*="language-"] .token.important,
 pre[class*="language-"] .token.important,
 code[class*="language-"] .token.variable,
 pre[class*="language-"] .token.variable {
-  color: inherit;
+  color: #A6E22E;
 }
 code[class*="language-"] .token.important,
 pre[class*="language-"] .token.important,
