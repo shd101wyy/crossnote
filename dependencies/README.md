@@ -18,7 +18,8 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "jquery-modal": "0.8.0",
     "node-html-pdf": "commit 543a918d1c11cefc713b2d38983eb63cc1d347fe",
     "vega": "v3.0.0-rc4",
-    "vega-lite": "v2.0.0-beta.10" 
+    "vega-lite": "v2.0.0-beta.10",
+    "ditaa": "0.10" 
 }
 ```  
 

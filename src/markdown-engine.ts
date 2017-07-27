@@ -10,6 +10,7 @@ const matter = require('gray-matter')
 import * as plantumlAPI from "./puml"
 import * as vegaAPI from "./vega"
 import * as vegaLiteAPI from "./vega-lite"
+import * as ditaaAPI from "./ditaa"
 import * as utility from "./utility"
 import {scopeForLanguageName} from "./extension-helper"
 import {transformMarkdown, HeadingData} from "./transformer"
@@ -1599,7 +1600,14 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       if (options['cmd'] === 'toc') { // toc code chunk. <= this is a special code chunk.  
         const tocObject = toc(this.headings, {ordered: options['orderedList'], depthFrom: options['depthFrom'], depthTo: options['depthTo'], tab: options['tab'] || '\t'})
         result = tocObject.content
-      } else {
+      } else if (options['cmd'] === 'ditaa') { // ditaa diagram
+        const filename = options['filename'] || `${md5(this.filePath + options['id'])}.png`
+        let imageFolder = utility.removeFileProtocol(this.resolveFilePath(this.config.imageFolderPath, false))
+        await utility.mkdirp(imageFolder)
+
+        const dest = await ditaaAPI.render(code, options['args'] || [], path.resolve(imageFolder, filename))
+        result = `  \n  \n![](/${path.relative(this.projectDirectoryPath, dest)})  \n  \n`
+      } else { // common code chunk
         result = await CodeChunkAPI.run(code, this.fileDirectoryPath, codeChunkData.options, this.config.latexEngine)
       }
       codeChunkData.plainResult = result
@@ -1705,6 +1713,15 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         $preElement.addClass(options['class'])
         this.addLineNumbersIfNecessary($preElement, code)
       }
+    }
+
+    // check ditaa
+    // convert it to code_chunk.  
+    if (lang === 'ditaa') {
+      options['cmd'] = 'ditaa'
+      options['hide'] = true
+      options['run_on_save'] = true
+      options['output'] = 'markdown'
     }
 
     const codeBlockOnly = options['code_block']

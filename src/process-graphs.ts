@@ -27,7 +27,7 @@ export async function processGraphs(text:string,
     const trimmedLine = line.trim()
 
     if (trimmedLine.match(/^```(.+)\"?cmd\"?\:/) || // code chunk
-        trimmedLine.match(/^```(puml|plantuml|dot|viz|mermaid|vega|vega\-lite)/)) { // graphs
+        trimmedLine.match(/^```(puml|plantuml|dot|viz|mermaid|vega|vega\-lite|ditaa)/)) { // graphs
       const numOfSpacesAhead = line.match(/^\s*/).length
       let j = i + 1
       let content = ''
