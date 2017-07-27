@@ -28,13 +28,14 @@ async function renderVega(spec:object, baseURL):Promise<string> {
  * Modifed from the `vg2svg` file.  
  * @param spec The vega code.  
  */
-export async function toSVG(spec:string, baseURL:string='', options={}):Promise<string> {
+export async function toSVG(spec:string='', baseURL:string=''):Promise<string> {
   if (!vega) {
     vega = require(path.resolve(utility.extensionDirectoryPath, './dependencies/vega/vega.min.js'))
   }
 
+  spec = spec.trim()
   let d
-  if (options['type'] === 'yaml') {
+  if (spec[0] !== '{') { // yaml
     d = YAML.parse(spec)
   } else { // json
     d = JSON.parse(spec)

@@ -1,5 +1,6 @@
 # 0.1.6
 * [ ] Supported [vega](https://vega.github.io/vega/) and [vega-lite](https://vega.github.io/vega-lite/).   
+* [ ] Supported `ditta`.  
 * [ ] Changed the key-value pair way of writing attributes to the pandoc way.   
 * [ ] Supported multiple new preview themes and code block themes ported from atom.    
 * [ ] Seems `presentation write` now has bugs.  

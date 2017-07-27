@@ -8,13 +8,14 @@ import * as utility from "./utility"
 
 let vl = null
 
-export async function toSVG(spec:string, baseURL:string='', options={}) {
+export async function toSVG(spec:string='', baseURL:string='') {
   if (!vl) {
     vl = require(path.resolve(utility.extensionDirectoryPath, './dependencies/vega-lite/vega-lite.min.js'))
   }
 
+  spec = spec.trim()
   let d
-  if (options['type'] === 'yaml') {    
+  if (spec[0] !== '{') {    
     d = YAML.parse(spec)
   } else { // json
     d = JSON.parse(spec)
