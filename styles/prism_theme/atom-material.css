@@ -16,6 +16,15 @@ pre {
   border: #475d69;
   border-radius: 3px;
 }
+code[class*="language-"],
+pre[class*="language-"] {
+  /*
+&.line-numbers {
+  .line-numbers-rows>span:before {
+  }
+}
+*/
+}
 code[class*="language-"] .token.comment,
 pre[class*="language-"] .token.comment,
 code[class*="language-"] .token.prolog,
