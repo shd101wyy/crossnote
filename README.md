@@ -92,9 +92,14 @@ const config = {
   mermaidTheme: 'mermaid.css', // 'mermaid.css' | 'mermaid.dark.css' | 'mermaid.forest.css'
 
   // Code Block theme
-  codeBlockTheme: 'default.css', 
+  // If you choose `auto.css`, then the code block theme will be 
+  // automatically chosen to match the preview theme.  
+  codeBlockTheme: 'auto.css', 
+  //  "auto.css",
   //  "default.css",
   //  "atom-dark.css",
+  //  "atom-light.css",
+  //  "atom-material.css",
   //  "coy.css",
   //  "darcula.css",
   //  "dark.css",
@@ -103,8 +108,11 @@ const config = {
   //  "hopscotch.css",
   //  "monokai.css",
   //  "okaidia.css",
-  //  "onedark.css",
+  //  "one-dark.css",
+  //  "one-light.css",
+  //  "pen-paper-coffee.css",
   //  "pojoaque.css",
+  //  "solarized-dark.css",
   //  "solarized-light.css",
   //  "twilight.css",
   //  "vs.css",
@@ -112,13 +120,21 @@ const config = {
 
   // Preview theme
   previewTheme: 'github-light.css',
-  // "github-light.css",
+  // "atom-dark.css",
+  // "atom-light.css",
+  // "atom-material.css",
   // "github-dark.css",
+  // "github-light.css",
   // "gothic.css",
+  // "medium.css",
+  // "monokai.css",
   // "newsprint.css",
   // "night.css",
-  // "medium.css"
-  // "none.css"
+  // "none.css",
+  // "one-dark.css",
+  // "one-light.css",
+  // "solarized-dark.css",
+  // "solarized-light.css"
 
   // Revealjs presentation theme
   revealjsTheme: "white.css"
