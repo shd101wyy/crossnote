@@ -1,0 +1,267 @@
+/**
+
+Procedures:
+
+1. Add the following `pre`.
+2. Replace `.syntax--` to `.token.`
+3. Remove `.token.entity` block, move everything out, and replace `&.token.name` to ``
+4. Remove `.token.constant` block, move everything out, and replace `&` to ``
+5. Replace `.numeric` to `.number`
+6. Change `.class` to `.class-name`
+
+*/
+pre {
+  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  padding: 1em;
+  margin: .5em 0;
+  overflow: auto;
+  line-height: 1.5;
+  tab-size: 4;
+  hyphens: none;
+  color: #555;
+  background-color: #f0f0f0 !important;
+  border: #d6d6d6;
+  border-radius: 3px;
+}
+code[class*="language-"],
+pre[class*="language-"] {
+  /*
+  .token.constant {
+    &.token.numeric {
+      color: #D14;
+    }
+
+    &.token.language {
+      color: #606aa1;
+    }
+
+    &.token.character,
+    &.token.other {
+      color: #606aa1;
+    }
+
+    &.token.symbol {
+      color: #990073;
+    }
+
+    &.token.numeric.token.line-number.token.find-in-files .token.match {
+      color: rgba(143, 190, 0, 0.63);
+    }
+  }
+  */
+  /*
+  .token.entity {
+    &.token.name.token.class {
+      text-decoration: underline;
+      color: #606aa1;
+    }
+
+    &.token.other.token.inherited-class {
+      text-decoration: underline;
+      color: #606aa1;
+    }
+
+    &.token.name.token.function {
+      color: #900;
+    }
+
+    &.token.name.token.tag {
+      color: #008080;
+    }
+
+    &.token.other.token.attribute-name {
+      color: #458;
+      font-weight: bold;
+    }
+
+    &.token.name.token.filename.token.find-in-files {
+      color: #E6DB74;
+    }
+  }
+  */
+}
+code[class*="language-"] .token.comment,
+pre[class*="language-"] .token.comment {
+  color: #999988;
+  font-style: italic;
+}
+code[class*="language-"] .token.string,
+pre[class*="language-"] .token.string {
+  color: #D14;
+}
+code[class*="language-"] .token.string .token.source,
+pre[class*="language-"] .token.string .token.source,
+code[class*="language-"] .token.string .token.meta.token.embedded.token.line,
+pre[class*="language-"] .token.string .token.meta.token.embedded.token.line {
+  color: #5A5A5A;
+}
+code[class*="language-"] .token.string .token.punctuation.token.section.token.embedded,
+pre[class*="language-"] .token.string .token.punctuation.token.section.token.embedded {
+  color: #920B2D;
+}
+code[class*="language-"] .token.string .token.punctuation.token.section.token.embedded .token.source,
+pre[class*="language-"] .token.string .token.punctuation.token.section.token.embedded .token.source {
+  color: #920B2D;
+}
+code[class*="language-"] .token.number,
+pre[class*="language-"] .token.number {
+  color: #D14;
+}
+code[class*="language-"] .token.language,
+pre[class*="language-"] .token.language {
+  color: #606aa1;
+}
+code[class*="language-"] .token.character,
+pre[class*="language-"] .token.character,
+code[class*="language-"] .token.other,
+pre[class*="language-"] .token.other {
+  color: #606aa1;
+}
+code[class*="language-"] .token.symbol,
+pre[class*="language-"] .token.symbol {
+  color: #990073;
+}
+code[class*="language-"] .token.number.token.line-number.token.find-in-files .token.match,
+pre[class*="language-"] .token.number.token.line-number.token.find-in-files .token.match {
+  color: rgba(143, 190, 0, 0.63);
+}
+code[class*="language-"] .token.variable,
+pre[class*="language-"] .token.variable {
+  color: #008080;
+}
+code[class*="language-"] .token.variable.token.parameter,
+pre[class*="language-"] .token.variable.token.parameter {
+  color: #606aa1;
+}
+code[class*="language-"] .token.keyword,
+pre[class*="language-"] .token.keyword {
+  color: #222;
+  font-weight: bold;
+}
+code[class*="language-"] .token.keyword.token.unit,
+pre[class*="language-"] .token.keyword.token.unit {
+  color: #445588;
+}
+code[class*="language-"] .token.keyword.token.special-method,
+pre[class*="language-"] .token.keyword.token.special-method {
+  color: #0086B3;
+}
+code[class*="language-"] .token.storage,
+pre[class*="language-"] .token.storage {
+  color: #222;
+}
+code[class*="language-"] .token.storage.token.type,
+pre[class*="language-"] .token.storage.token.type {
+  color: #222;
+}
+code[class*="language-"] .token.class-name,
+pre[class*="language-"] .token.class-name {
+  text-decoration: underline;
+  color: #606aa1;
+}
+code[class*="language-"].token.other.token.inherited-class,
+pre[class*="language-"].token.other.token.inherited-class {
+  text-decoration: underline;
+  color: #606aa1;
+}
+code[class*="language-"] .token.function,
+pre[class*="language-"] .token.function {
+  color: #900;
+}
+code[class*="language-"] .token.tag,
+pre[class*="language-"] .token.tag {
+  color: #008080;
+}
+code[class*="language-"].token.other.token.attribute-name,
+pre[class*="language-"].token.other.token.attribute-name {
+  color: #458;
+  font-weight: bold;
+}
+code[class*="language-"] .token.filename.token.find-in-files,
+pre[class*="language-"] .token.filename.token.find-in-files {
+  color: #E6DB74;
+}
+code[class*="language-"] .token.support.token.constant,
+pre[class*="language-"] .token.support.token.constant,
+code[class*="language-"] .token.support.token.function,
+pre[class*="language-"] .token.support.token.function,
+code[class*="language-"] .token.support.token.type,
+pre[class*="language-"] .token.support.token.type {
+  color: #458;
+}
+code[class*="language-"] .token.support.token.class,
+pre[class*="language-"] .token.support.token.class {
+  color: #008080;
+}
+code[class*="language-"] .token.invalid,
+pre[class*="language-"] .token.invalid {
+  color: #F8F8F0;
+  background-color: #00A8C6;
+}
+code[class*="language-"] .token.invalid.token.deprecated,
+pre[class*="language-"] .token.invalid.token.deprecated {
+  color: #F8F8F0;
+  background-color: #8FBE00;
+}
+code[class*="language-"] .token.meta.token.structure.token.dictionary.token.json > .token.string.token.quoted.token.double.token.json,
+pre[class*="language-"] .token.meta.token.structure.token.dictionary.token.json > .token.string.token.quoted.token.double.token.json,
+code[class*="language-"] .token.meta.token.structure.token.dictionary.token.json > .token.string.token.quoted.token.double.token.json .token.punctuation.token.string,
+pre[class*="language-"] .token.meta.token.structure.token.dictionary.token.json > .token.string.token.quoted.token.double.token.json .token.punctuation.token.string {
+  color: #000080;
+}
+code[class*="language-"] .token.meta.token.structure.token.dictionary.token.value.token.json > .token.string.token.quoted.token.double.token.json,
+pre[class*="language-"] .token.meta.token.structure.token.dictionary.token.value.token.json > .token.string.token.quoted.token.double.token.json {
+  color: #d14;
+}
+code[class*="language-"] .token.meta.token.diff,
+pre[class*="language-"] .token.meta.token.diff,
+code[class*="language-"] .token.meta.token.diff.token.header,
+pre[class*="language-"] .token.meta.token.diff.token.header {
+  color: #75715E;
+}
+code[class*="language-"] .token.css.token.support.token.property-name,
+pre[class*="language-"] .token.css.token.support.token.property-name {
+  font-weight: bold;
+  color: #333;
+}
+code[class*="language-"] .token.css.token.constant,
+pre[class*="language-"] .token.css.token.constant {
+  color: #099;
+}
+code[class*="language-"] .token.source.token.gfm,
+pre[class*="language-"] .token.source.token.gfm {
+  color: #444;
+}
+code[class*="language-"] .token.gfm .token.markup.token.heading,
+pre[class*="language-"] .token.gfm .token.markup.token.heading {
+  color: #111;
+}
+code[class*="language-"] .token.gfm .token.link,
+pre[class*="language-"] .token.gfm .token.link {
+  color: #888;
+}
+code[class*="language-"] .token.gfm .token.variable.token.list,
+pre[class*="language-"] .token.gfm .token.variable.token.list {
+  color: #888;
+}
+code[class*="language-"] .token.markdown .token.paragraph,
+pre[class*="language-"] .token.markdown .token.paragraph {
+  color: #444;
+}
+code[class*="language-"] .token.markdown .token.heading,
+pre[class*="language-"] .token.markdown .token.heading {
+  color: #111;
+}
+code[class*="language-"] .token.markdown .token.link,
+pre[class*="language-"] .token.markdown .token.link {
+  color: #888;
+}
+code[class*="language-"] .token.markdown .token.link .token.string,
+pre[class*="language-"] .token.markdown .token.link .token.string {
+  color: #888;
+}

@@ -771,7 +771,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 
     // math style and script
     let mathStyle = ''
-    if (this.config.mathRenderingOption === 'MathJax') {
+    if (this.config.mathRenderingOption === 'MathJax' || this.config.usePandocParser) {
       const inline = this.config.mathInlineDelimiters
       const block = this.config.mathBlockDelimiters
 

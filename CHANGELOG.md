@@ -1,8 +1,7 @@
 # 0.1.6
-* [ ] `vega` and `vega-lite` support.  
-* [ ] Change the key-value pair way of writing attributes to the pandoc way. 
-* [ ] `mindmap` support.  
-
+* [ ] Supported [vega](https://vega.github.io/vega/) and [vega-lite](https://vega.github.io/vega-lite/) diagrams.  
+* [ ] Changed the key-value pair way of writing attributes to the pandoc way. 
+* [ ] Supported multiple new preview themes and code block themes ported from atom.    
 
 # 0.1.5
 * Fixed `webview.ts` `clickTagA` action bug.  

@@ -1,0 +1,328 @@
+// out: ../atom-light.css
+
+// This defines all syntax variables that syntax themes must implement when they
+// include a syntax-variables.less file.
+
+// General colors
+@syntax-text-color: #555;
+@syntax-cursor-color: black;
+@syntax-selection-color: #afc4da;
+@syntax-selection-flash-color: #69c;
+@syntax-background-color: white;
+
+// Guide colors
+@syntax-wrap-guide-color: rgba(85, 85, 85, .2);
+@syntax-indent-guide-color: rgba(85, 85, 85, .2);
+@syntax-invisible-character-color: rgba(85, 85, 85, .2);
+
+// For find and replace markers
+@syntax-result-marker-color: #999;
+@syntax-result-marker-color-selected: black;
+
+// Gutter colors
+@syntax-gutter-text-color: @syntax-text-color;
+@syntax-gutter-text-color-selected: @syntax-gutter-text-color;
+@syntax-gutter-background-color: white;
+@syntax-gutter-background-color-selected: rgba(255, 255, 134, 0.34);
+
+// For git diff info. i.e. in the gutter
+@syntax-color-renamed: #96CBFE;
+@syntax-color-added: #718C00;
+@syntax-color-modified: #ff982d;
+@syntax-color-removed: #D14;
+
+// For language entity colors
+@syntax-color-variable: #008080;
+@syntax-color-constant: #099;
+@syntax-color-property: #333;
+@syntax-color-value: @syntax-color-constant;
+@syntax-color-function: #900;
+@syntax-color-method: @syntax-color-function;
+@syntax-color-class: #606aa1;
+@syntax-color-keyword: #222;
+@syntax-color-tag: #008080;
+@syntax-color-attribute: #458;
+@syntax-color-import: @syntax-color-keyword;
+@syntax-color-snippet: @syntax-color-constant;
+
+/**
+
+Procedures:
+
+1. Add the following `pre`.
+2. Replace `.syntax--` to `.token.`
+3. Remove `.token.entity` block, move everything out, and replace `&.token.name` to ``
+4. Remove `.token.constant` block, move everything out, and replace `&` to ``
+5. Replace `.numeric` to `.number`
+6. Change `.class` to `.class-name`
+
+*/
+pre {
+  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+  word-break: normal;
+  
+  // padding: 16px;
+  padding: 1em;
+  margin: .5em 0;
+  
+  overflow: auto;
+  line-height: 1.5;
+  tab-size: 4;
+  hyphens: none;
+  color: @syntax-text-color;
+  background-color: contrast(@syntax-background-color, lighten(@syntax-background-color, 4%), darken(@syntax-background-color, 6%)) !important;
+  border: contrast(@syntax-background-color, lighten(@syntax-background-color, 16%), darken(@syntax-background-color, 16%));
+  border-radius: 3px;
+}
+
+code[class*="language-"],
+pre[class*="language-"] {
+  .token.comment {
+    color: #999988;
+    font-style: italic;
+  }
+
+  .token.string {
+    color: #D14;
+  }
+
+  // String interpolation in Ruby, CoffeeScript, and others
+  .token.string {
+    .token.source,
+    .token.meta.token.embedded.token.line {
+      color: #5A5A5A;
+    }
+
+    .token.punctuation.token.section.token.embedded {
+      color: #920B2D;
+
+      .token.source {
+        color: #920B2D;  // Required for the end of embedded strings in Ruby #716
+      }
+    }
+  }
+
+  /*
+  .token.constant {
+    &.token.numeric {
+      color: #D14;
+    }
+
+    &.token.language {
+      color: #606aa1;
+    }
+
+    &.token.character,
+    &.token.other {
+      color: #606aa1;
+    }
+
+    &.token.symbol {
+      color: #990073;
+    }
+
+    &.token.numeric.token.line-number.token.find-in-files .token.match {
+      color: rgba(143, 190, 0, 0.63);
+    }
+  }
+  */
+    .token.number {
+      color: #D14;
+    }
+
+    .token.language {
+      color: #606aa1;
+    }
+
+    .token.character,
+    .token.other {
+      color: #606aa1;
+    }
+
+    .token.symbol {
+      color: #990073;
+    }
+
+    .token.number.token.line-number.token.find-in-files .token.match {
+      color: rgba(143, 190, 0, 0.63);
+    }
+
+  .token.variable {
+    color: #008080;
+
+    &.token.parameter {
+      color: #606aa1;
+    }
+  }
+
+  // Keywords
+  .token.keyword {
+    color: #222;
+    font-weight: bold;
+
+    &.token.unit {
+      color: #445588;
+    }
+
+    &.token.special-method {
+      color: #0086B3;
+    }
+  }
+
+  .token.storage {
+    color: #222;
+
+    &.token.type {
+      color: #222;
+    }
+  }
+
+  /*
+  .token.entity {
+    &.token.name.token.class {
+      text-decoration: underline;
+      color: #606aa1;
+    }
+
+    &.token.other.token.inherited-class {
+      text-decoration: underline;
+      color: #606aa1;
+    }
+
+    &.token.name.token.function {
+      color: #900;
+    }
+
+    &.token.name.token.tag {
+      color: #008080;
+    }
+
+    &.token.other.token.attribute-name {
+      color: #458;
+      font-weight: bold;
+    }
+
+    &.token.name.token.filename.token.find-in-files {
+      color: #E6DB74;
+    }
+  }
+  */
+    .token.class-name {
+      text-decoration: underline;
+      color: #606aa1;
+    }
+
+    &.token.other.token.inherited-class {
+      text-decoration: underline;
+      color: #606aa1;
+    }
+
+    .token.function {
+      color: #900;
+    }
+
+    .token.tag {
+      color: #008080;
+    }
+
+    &.token.other.token.attribute-name {
+      color: #458;
+      font-weight: bold;
+    }
+
+    .token.filename.token.find-in-files {
+      color: #E6DB74;
+    }
+
+  .token.support {
+    &.token.constant,
+    &.token.function,
+    &.token.type {
+      color: #458;
+    }
+
+    &.token.class {
+      color: #008080;
+    }
+  }
+
+  .token.invalid {
+    color: #F8F8F0;
+    background-color: #00A8C6;
+
+    &.token.deprecated {
+      color: #F8F8F0;
+      background-color: #8FBE00;
+    }
+  }
+
+
+  .token.meta {
+    &.token.structure.token.dictionary.token.json > .token.string.token.quoted.token.double.token.json,
+    &.token.structure.token.dictionary.token.json > .token.string.token.quoted.token.double.token.json .token.punctuation.token.string {
+      color: #000080;
+    }
+
+    &.token.structure.token.dictionary.token.value.token.json > .token.string.token.quoted.token.double.token.json {
+      color: #d14;
+    }
+
+    &.token.diff,
+    &.token.diff.token.header {
+      color: #75715E;
+    }
+  }
+
+  // CSS Styles
+  .token.css {
+    &.token.support.token.property-name {
+      font-weight: bold;
+      color: #333;
+    }
+
+    &.token.constant {
+      color: #099;
+    }
+  }
+
+  // Markdown
+  .token.source.token.gfm {
+    color: #444;
+  }
+
+  .token.gfm {
+    .token.markup.token.heading {
+      color: #111;
+    }
+
+    & .token.link {
+      color: #888;
+    }
+
+    .token.variable.token.list {
+      color: #888;
+    }
+  }
+
+  .token.markdown {
+    .token.paragraph {
+      color: #444;
+    }
+
+    .token.heading {
+      color: #111;
+    }
+
+    .token.link {
+      color: #888;
+
+      .token.string {
+        color: #888;
+      }
+    }
+  }
+}
