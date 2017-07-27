@@ -468,7 +468,7 @@ class PreviewController {
     const firstSlide = document.querySelector('.reveal .slides .slide') as HTMLElement // fix flickering by hidding the first slide.  
     if (firstSlide) firstSlide.style.visibility = 'hidden'
 
-    window['Reveal'].addEventListener( 'ready', ( event )=> {
+    window['Reveal'].addEventListener('ready', ( event )=> {
       if (firstSlide) firstSlide.style.visibility = 'visible'
 
       this.initSlidesData()

@@ -565,14 +565,6 @@ export class MarkdownEngine {
 
     // mermaid
     scripts += `<script src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/mermaid.min.js`)}"></script>`
-    scripts += `<script>
-${utility.configs.mermaidConfig}
-${isForPresentation ? `if (window['MERMAID_CONFIG']) {
-  window['MERMAID_CONFIG'].startOnLoad = true
-  window['MERMAID_CONFIG'].cloneCssStyles = false 
-}\n` : '' }
-mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
-</script>`
 
     // math 
     if (this.config.mathRenderingOption === 'MathJax' || this.config.usePandocParser) {
@@ -600,6 +592,36 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       </script>
       `
     }
+
+    // mermaid init 
+    scripts += `<script>
+${utility.configs.mermaidConfig}
+if (window['MERMAID_CONFIG']) {
+  window['MERMAID_CONFIG'].startOnLoad = false
+  window['MERMAID_CONFIG'].cloneCssStyles = false 
+}
+mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
+
+if (typeof(window['Reveal']) !== 'undefined') {
+  function mermaidRevealHelper(event) {
+    var currentSlide = event.currentSlide
+    var diagrams = currentSlide.querySelectorAll('.mermaid')
+    for (var i = 0; i < diagrams.length; i++) {
+      var diagram = diagrams[i]
+      if (!diagram.hasAttribute('data-processed')) {
+        mermaid.init(null, diagram, ()=> {
+          Reveal.slide(event.indexh, event.indexv)
+        })
+      }
+    }
+  }
+
+  Reveal.addEventListener('slidechanged', mermaidRevealHelper)
+  Reveal.addEventListener('ready', mermaidRevealHelper)
+} else {
+  mermaid.init(null, document.getElementsByClassName('mermaid'))
+}
+</script>`
     
     return scripts
   }
@@ -844,6 +866,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     // mermaid 
     let mermaidScript = ''
     let mermaidStyle = ''
+    let mermaidInitScript = ''
     if (html.indexOf('<div class="mermaid">') >= 0) {
       if (options.offline) {
         mermaidScript = `<script type="text/javascript" src="file:///${path.resolve(extensionDirectoryPath, './dependencies/mermaid/mermaid.min.js')}"></script>`
@@ -853,13 +876,33 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         mermaidStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.0.0/${this.config.mermaidTheme.replace('.css', '.min.css')}">`
       }
       let mermaidConfig:string = await utility.getMermaidConfig()
-      mermaidScript += `<script>
+      mermaidInitScript += `<script>
 ${mermaidConfig}
 if (window['MERMAID_CONFIG']) {
-  window['MERMAID_CONFIG'].startOnLoad = true
+  window['MERMAID_CONFIG'].startOnLoad = false
   window['MERMAID_CONFIG'].cloneCssStyles = false 
 }
 mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
+
+if (typeof(window['Reveal']) !== 'undefined') {
+  function mermaidRevealHelper(event) {
+    var currentSlide = event.currentSlide
+    var diagrams = currentSlide.querySelectorAll('.mermaid')
+    for (var i = 0; i < diagrams.length; i++) {
+      var diagram = diagrams[i]
+      if (!diagram.hasAttribute('data-processed')) {
+        mermaid.init(null, diagram, ()=> {
+          Reveal.slide(event.indexh, event.indexv)
+        })
+      }
+    }
+  }
+
+  Reveal.addEventListener('slidechanged', mermaidRevealHelper)
+  Reveal.addEventListener('ready', mermaidRevealHelper)
+} else {
+  mermaid.init(null, document.getElementsByClassName('mermaid'))
+}
 </script>`
     }
 
@@ -988,6 +1031,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     ${html}
     </body>
     ${presentationInitScript}
+    ${mermaidInitScript}
     ${taskListScript}
   </html>
     `
