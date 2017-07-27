@@ -5,6 +5,7 @@ pre {
   white-space: pre;
   word-spacing: normal;
   word-break: normal;
+  word-wrap: normal;
   padding: 1em;
   margin: .5em 0;
   overflow: auto;
