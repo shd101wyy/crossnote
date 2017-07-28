@@ -582,7 +582,7 @@ export async function transformMarkdown(inputString:string,
 
               if (config && config['code_block']) {
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${utility.stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${config['as'] || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${utility.stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
               }
               else if (config && config['cmd']) {
                 if (!config['id']) { // create `id` for code chunk
@@ -593,7 +593,7 @@ export async function transformMarkdown(inputString:string,
                   codeChunkOffset++
                 }
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${utility.stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${config['as'] || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${utility.stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
               }
               else if (['.md', '.markdown', '.mmark'].indexOf(extname) >= 0) { // markdown files
                 // this return here is necessary
@@ -696,8 +696,10 @@ export async function transformMarkdown(inputString:string,
                     output = "<script>${fileContent}</script>"
               */
               else { // # codeblock
+                let as_ = null
+                if (config) as_ = config['as']
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${config ? utility.stringifyAttributes(config) : ''}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${as_ || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${config ? utility.stringifyAttributes(config) : ''}  \n${fileContent}\n\`\`\`  `
               }
 
               // return helper(end+1, lineNo+1, outputString+output+'\n')
