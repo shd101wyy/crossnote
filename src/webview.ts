@@ -370,6 +370,11 @@ class PreviewController {
           callback: ()=> this.postMessage('markdownExport', [this.sourceUri])
         },
         "sep2": "---------",
+        "image_helper": {
+          name: "Image Helper",
+          callback: ()=> window['$']('#image-helper-view').modal()
+        },
+        "sep3": "---------",
         "sync_source": {
           name: "Sync Source",
           callback: ()=> this.previewSyncSource()
