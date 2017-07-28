@@ -778,6 +778,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
               </select>
               <span> to upload images</span>
             </div>
+            <a href="#" id="show-uploaded-image-history">Show history</a>
           </div>
         </div>
 

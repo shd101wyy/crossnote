@@ -460,6 +460,15 @@ class PreviewController {
         fileUploader.val('')
       }
     })
+
+    // show image uploaded history
+    const a = imageHelper.querySelector('#show-uploaded-image-history') as HTMLAnchorElement
+    a.onclick = (event)=> {
+      event.preventDefault()
+      event.stopPropagation()
+      $['modal'].close()
+      this.postMessage('showUploadedImageHistory', [this.sourceUri])
+    }
   }
 
   /**
