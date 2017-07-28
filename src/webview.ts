@@ -1096,6 +1096,25 @@ private scrollToRevealSourceLine(line, topRatio=0.372) {
 }
 
 /**
+ * [esc] is pressed.  
+ */
+private escPressed(event=null) {
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+  if (this.config.vscode) {
+    if (!this.presentationMode) this.toolbar.sidebarTOCBtn.click()
+  } else {
+    if (window['$']('#image-helper-view').is(':visible')) { // close image helper
+      $['modal'].close()
+    } else {
+      this.toolbar.sidebarTOCBtn.click()
+    }
+  }
+}
+
+/**
  * Initialize several `window` events.  
  */
 private initWindowEvents() {
@@ -1121,8 +1140,8 @@ private initWindowEvents() {
           this.previewElement.scrollTop = 0
         }
       } 
-    } else if (event.which === 27 && !this.presentationMode) { // [esc] toggle sidebar toc
-      this.toolbar.sidebarTOCBtn.click()
+    } else if (event.which === 27) { // [esc] toggle sidebar toc
+      this.escPressed(event)
     }
   })
 
@@ -1166,7 +1185,7 @@ private initWindowEvents() {
     } else if (data.command === 'runCodeChunk') {
       this.runNearestCodeChunk()
     } else if (data.command === 'escPressed') {
-      this.toolbar.sidebarTOCBtn.click()
+      this.escPressed()
     } else if (data.command === 'previewSyncSource') {
       this.previewSyncSource()
     } else if (data.command === 'copy') {
