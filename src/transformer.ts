@@ -243,7 +243,7 @@ export async function transformMarkdown(inputString:string,
           if (!inBlock && forPreview) outputString += createAnchor(lineNo)
 
           let match;
-          if (!inBlock && !notSourceFile && (match = line.match(/\"?cmd\"?\s*:/)))  { // it's code chunk, so mark its offset
+          if (!inBlock && !notSourceFile && (match = line.match(/\"?cmd\"?\s*[:=]/)))  { // it's code chunk, so mark its offset
             line = line.replace('{', `{code_chunk_offset=${codeChunkOffset}, `)
             codeChunkOffset++
           }

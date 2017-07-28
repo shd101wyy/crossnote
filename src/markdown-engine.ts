@@ -1651,8 +1651,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
         let imageFolder = utility.removeFileProtocol(this.resolveFilePath(this.config.imageFolderPath, false))
         await utility.mkdirp(imageFolder)
 
+        codeChunkData.options['output'] = 'markdown'
         const dest = await ditaaAPI.render(code, options['args'] || [], path.resolve(imageFolder, filename))
-        result = `  \n  \n![](/${path.relative(this.projectDirectoryPath, dest)})  \n  \n`
+        result = `  \n![](${path.relative(this.fileDirectoryPath, dest)})  \n`
       } else { // common code chunk
         // I put this line here because some code chunks like `toc` still need to be run.  
         if (!this.config.enableScriptExecution) return '' // code chunk is disabled.
@@ -1762,15 +1763,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
         $preElement.addClass(options['class'])
         this.addLineNumbersIfNecessary($preElement, code)
       }
-    }
-
-    // check ditaa
-    // convert it to code_chunk.  
-    if (lang === 'ditaa') {
-      options['cmd'] = 'ditaa'
-      options['hide'] = true
-      options['run_on_save'] = true
-      options['output'] = 'markdown'
     }
 
     const codeBlockOnly = options['code_block']
