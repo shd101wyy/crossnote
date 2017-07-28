@@ -568,6 +568,53 @@ export function allowUnsafeEval(fn) {
   }
 }
 
+export async function allowUnsafeEvalAync(fn:()=>Promise<any>) {
+  const previousEval = global.eval
+  try {
+    global.eval = (source) => { 
+      vm.runInThisContext(source)
+    }
+    return await fn()
+  } finally {
+    global.eval = previousEval
+  }
+}
+
+export function allowUnsafeNewFunction(fn) {
+  const previousFunction = global.Function
+  try {
+    global.Function = Function as FunctionConstructor
+    return fn()
+  } finally {
+    global.Function = previousFunction
+  }
+}
+
+export async function allowUnsafeNewFunctionAsync(fn:()=>Promise<any>) {
+  const previousFunction = global.Function
+  try {
+    global.Function = Function as FunctionConstructor
+    return await fn()
+  } finally {
+    global.Function = previousFunction
+  }
+}
+
+export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(fn:()=>Promise<any>) {
+  const previousFunction = global.Function
+  const previousEval = global.eval
+  try {
+    global.Function = Function as FunctionConstructor
+    global.eval = (source) => { 
+      vm.runInThisContext(source)
+    }
+    return await fn()
+  } finally {
+    global.eval = previousEval
+    global.Function = previousFunction
+  }
+}
+
 export function Function(...args:string[]) {
   let body = '', paramLists:string[] = []
   if (args.length) {
@@ -593,13 +640,3 @@ export function Function(...args:string[]) {
   `)
 }
 Function.prototype = global.Function.prototype
-
-export function allowUnsafeNewFunction(fn) {
-  const previousFunction = global.Function
-  try {
-    global.Function = Function as FunctionConstructor
-    return fn()
-  } finally {
-    global.Function = previousFunction
-  }
-}

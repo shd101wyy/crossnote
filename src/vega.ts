@@ -16,18 +16,17 @@ async function renderVega(spec:object, baseURL):Promise<string> {
     baseURL += '/'
   }
 
-  const view = utility.allowUnsafeEval(()=> {
-    return utility.allowUnsafeNewFunction(()=> {
-      return new vega.View(vega.parse(spec), {
-        loader: vega.loader({baseURL}),
-        logLevel: vega.Warn,
-        renderer: 'none'
-      })
-      .initialize()    
+  async function helper():Promise<string> {
+    const view = new vega.View(vega.parse(spec), {
+      loader: vega.loader({baseURL}),
+      // logLevel: vega.Warn, // <= this will cause Atom unsafe eval error.  
+      renderer: 'none'
     })
-  })
+    .initialize()    
+    return svgHeader + await view.toSVG()
+  }
 
-  return svgHeader + await view.toSVG()
+  return await utility.allowUnsafeEvalAndUnsafeNewFunctionAsync(helper)
 }
 
 /**
