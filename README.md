@@ -92,8 +92,7 @@ const config = {
   mermaidTheme: 'mermaid.css', // 'mermaid.css' | 'mermaid.dark.css' | 'mermaid.forest.css'
 
   // Code Block theme
-  // If you choose `auto.css`, then the code block theme will be 
-  // automatically chosen to match the preview theme.  
+  // If `auto.css` is chosen, then the code block theme that best matches the current preview theme will be picked.
   codeBlockTheme: 'auto.css', 
   //  "auto.css",
   //  "default.css",

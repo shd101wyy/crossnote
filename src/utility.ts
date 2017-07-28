@@ -5,6 +5,7 @@ import {exec} from "child_process"
 import * as child_process from "child_process"
 import * as less from "less"
 import * as mkdirp_ from "mkdirp"
+import * as vm from "vm"
 
 import * as temp from "temp"
 temp.track()
@@ -547,4 +548,58 @@ export function stringifyAttributes(obj:object):string {
     }
   }
   return '{' + output.trim() + '}'
+}
+
+/**
+ * Allow unsafed `eval` function
+ * Referred from:
+ *     https://github.com/atom/loophole/blob/master/src/loophole.coffee
+ * @param fn 
+ */
+export function allowUnsafeEval(fn) {
+  const previousEval = global.eval
+  try {
+    global.eval = (source) => { 
+      vm.runInThisContext(source)
+    }
+    return fn()
+  } finally {
+    global.eval = previousEval
+  }
+}
+
+export function Function(...args:string[]) {
+  let body = '', paramLists:string[] = []
+  if (args.length) {
+    body = arguments[args.length - 1]
+    for (let i = 0; i < args.length - 1; i++) {
+      paramLists.push(args[i])
+    }
+  }
+
+  const params = []
+  for (let j = 0, len = paramLists.length; j < len; j++) {
+    let paramList:any = paramLists[j]
+    if (typeof paramList === 'string') {
+      paramList = paramList.split(/\s*,\s*/);
+    }
+    params.push.apply(params, paramList);
+  }
+
+  return vm.runInThisContext(`
+    (function(${params.join(', ')}) {
+      ${body}
+    })
+  `)
+}
+Function.prototype = global.Function.prototype
+
+export function allowUnsafeNewFunction(fn) {
+  const previousFunction = global.Function
+  try {
+    global.Function = Function as FunctionConstructor
+    return fn()
+  } finally {
+    global.Function = previousFunction
+  }
 }

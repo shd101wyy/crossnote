@@ -10,7 +10,8 @@ let vl = null
 
 export async function toSVG(spec:string='', baseURL:string='') {
   if (!vl) {
-    vl = require(path.resolve(utility.extensionDirectoryPath, './dependencies/vega-lite/vega-lite.min.js'))
+    vl = utility.allowUnsafeEval(()=> utility.allowUnsafeNewFunction(()=>
+        require(path.resolve(utility.extensionDirectoryPath, './dependencies/vega-lite/vega-lite.min.js'))))
   }
 
   spec = spec.trim()

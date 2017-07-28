@@ -1,5 +1,7 @@
 import * as path from "path"
 import * as YAML from "yamljs"
+import * as vm from "vm"
+
 import * as utility from "./utility"
 
 let vega = null
@@ -14,13 +16,17 @@ async function renderVega(spec:object, baseURL):Promise<string> {
     baseURL += '/'
   }
 
-  var view = new vega.View(vega.parse(spec), {
-      loader: vega.loader({baseURL}),
-      logLevel: vega.Warn,
-      renderer: 'none'
+  const view = utility.allowUnsafeEval(()=> {
+    return utility.allowUnsafeNewFunction(()=> {
+      return new vega.View(vega.parse(spec), {
+        loader: vega.loader({baseURL}),
+        logLevel: vega.Warn,
+        renderer: 'none'
+      })
+      .initialize()    
     })
-    .initialize()
-  
+  })
+
   return svgHeader + await view.toSVG()
 }
 
@@ -29,8 +35,9 @@ async function renderVega(spec:object, baseURL):Promise<string> {
  * @param spec The vega code.  
  */
 export async function toSVG(spec:string='', baseURL:string=''):Promise<string> {
-  if (!vega) {
-    vega = require(path.resolve(utility.extensionDirectoryPath, './dependencies/vega/vega.min.js'))
+  if (!vega) { // Because `vega.min.js` has `eval` and `new Function`. 
+    vega = utility.allowUnsafeEval(()=> utility.allowUnsafeNewFunction(()=>
+        require(path.resolve(utility.extensionDirectoryPath, './dependencies/vega/vega.min.js'))))
   }
 
   spec = spec.trim()
