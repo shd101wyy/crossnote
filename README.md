@@ -176,7 +176,7 @@ const config = {
   latexEngine: 'pdflatex',
 
   // Whether to enable script execution.
-  // Disable this will disable executing code chunk and importing javascript files.  
+  // Disabling this will prevent executing code chunks and importing javascript files.  
   enableScriptExecution: true
 }
 

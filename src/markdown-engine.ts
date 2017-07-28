@@ -1623,8 +1623,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
    * @param id 
    */
   public async runCodeChunk(id):Promise<String> {
-    if (!this.config.enableScriptExecution) return '' // code chunk is disabled.
-
     let codeChunkData = this.codeChunksData[id]
     if (!codeChunkData) return ''
     if (codeChunkData.running) return ''
@@ -1656,6 +1654,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
         const dest = await ditaaAPI.render(code, options['args'] || [], path.resolve(imageFolder, filename))
         result = `  \n  \n![](/${path.relative(this.projectDirectoryPath, dest)})  \n  \n`
       } else { // common code chunk
+        // I put this line here because some code chunks like `toc` still need to be run.  
+        if (!this.config.enableScriptExecution) return '' // code chunk is disabled.
+
         result = await CodeChunkAPI.run(code, this.fileDirectoryPath, codeChunkData.options, this.config.latexEngine)
       }
       codeChunkData.plainResult = result
@@ -1691,8 +1692,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
   }
 
   public async runAllCodeChunks() {
-    if (!this.config.enableScriptExecution) return
-
     const asyncFunctions = []
     for (let id in this.codeChunksData) {
       asyncFunctions.push(this.runCodeChunk(id))

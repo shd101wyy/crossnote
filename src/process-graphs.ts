@@ -26,7 +26,7 @@ export async function processGraphs(text:string,
     const line = lines[i]
     const trimmedLine = line.trim()
 
-    if (trimmedLine.match(/^```(.+)\"?cmd\"?\:/) || // code chunk
+    if (trimmedLine.match(/^```(.+)\"?cmd\"?[:=]/) || // code chunk
         trimmedLine.match(/^```(puml|plantuml|dot|viz|mermaid|vega|vega\-lite|ditaa)/)) { // graphs
       const numOfSpacesAhead = line.match(/^\s*/).length
       let j = i + 1
@@ -96,8 +96,11 @@ export async function processGraphs(text:string,
     }
   }
 
-  async function convertSVGToPNGFile(svg:string, lines:string[], start:number, end:number, modifyCodeBlock:boolean) {
-    const pngFilePath = path.resolve(imageDirectoryPath, imageFilePrefix+imgCount+'.png')
+  async function convertSVGToPNGFile(outFileName='', svg:string, lines:string[], start:number, end:number, modifyCodeBlock:boolean) {
+    if (!outFileName) 
+      outFileName = imageFilePrefix+imgCount+'.png'
+
+    const pngFilePath = path.resolve(imageDirectoryPath, outFileName)
     await svgElementToPNGFile(svg, pngFilePath)
     let displayPNGFilePath
     if (useRelativeFilePath) {
@@ -132,7 +135,7 @@ export async function processGraphs(text:string,
         if (!(svg = graphsCache[checksum])) { // check whether in cache
           svg = await plantumlAPI.render(content, fileDirectoryPath)
         }
-        await convertSVGToPNGFile(svg, lines, start, end, true)
+        await convertSVGToPNGFile(options['filename'], svg, lines, start, end, true)
       } catch(error) {
         clearCodeBlock(lines, start, end)
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
@@ -145,7 +148,7 @@ export async function processGraphs(text:string,
           const engine = options['engine'] || 'dot'
           svg = Viz(content, {engine})
         }
-        await convertSVGToPNGFile(svg, lines, start, end, true)
+        await convertSVGToPNGFile(options['filename'], svg, lines, start, end, true)
       } catch(error) {
         clearCodeBlock(lines, start, end)
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
@@ -157,7 +160,7 @@ export async function processGraphs(text:string,
         if (!(svg = graphsCache[checksum])) {
           svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath)
         }
-        await convertSVGToPNGFile(svg, lines, start, end, true)
+        await convertSVGToPNGFile(options['filename'], svg, lines, start, end, true)
       } catch(error) {
         clearCodeBlock(lines, start, end)
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
@@ -169,7 +172,7 @@ export async function processGraphs(text:string,
         if (!(svg = graphsCache[checksum])) {
           svg = await vegaAPI.toSVG(content, fileDirectoryPath)
         }
-        await convertSVGToPNGFile(svg, lines, start, end, true)
+        await convertSVGToPNGFile(options['filename'], svg, lines, start, end, true)
       } catch(error) {
         clearCodeBlock(lines, start, end)
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
@@ -214,7 +217,7 @@ export async function processGraphs(text:string,
           const $ = cheerio.load(currentCodeChunk.result, {xmlMode: true}) // xmlMode here is necessary...
           const svg = $('svg')
           if (svg.length === 1) {
-            const pngFilePath = (await convertSVGToPNGFile($.html('svg'), lines, start, end, false)).replace(/\\/g, '/')
+            const pngFilePath = (await convertSVGToPNGFile(options['filename'], $.html('svg'), lines, start, end, false)).replace(/\\/g, '/')
             result = `![](${pngFilePath})  \n`
           }
         } else if (options['cmd'].match(/^(la)?tex$/)) { // for latex, need to run it again to generate svg file in currect directory.
