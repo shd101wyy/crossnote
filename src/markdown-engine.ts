@@ -8,6 +8,9 @@ import {EOL} from "os"
 const matter = require('gray-matter')
 
 import * as plantumlAPI from "./puml"
+import * as vegaAPI from "./vega"
+import * as vegaLiteAPI from "./vega-lite"
+import * as ditaaAPI from "./ditaa"
 import * as utility from "./utility"
 import {scopeForLanguageName} from "./extension-helper"
 import {transformMarkdown, HeadingData} from "./transformer"
@@ -23,7 +26,6 @@ import {CodeChunkData} from "./code-chunk-data"
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const katex = require(path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.js'))
 const MarkdownIt = require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/markdown-it.min.js'))
-const jsonic = require(path.resolve(extensionDirectoryPath, './dependencies/jsonic/jsonic.js'))
 const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 const CryptoJS = require(path.resolve(extensionDirectoryPath, './dependencies/crypto-js/crypto-js.js'))
 const Viz = require(path.resolve(extensionDirectoryPath, './dependencies/viz/viz.js'))
@@ -80,6 +82,7 @@ export interface MarkdownEngineConfig {
   pandocMarkdownFlavor?: string
   pandocArguments?: string[]
   latexEngine?: string
+  enableScriptExecution?: boolean
 }
 
 export interface HTMLTemplateOption {
@@ -131,7 +134,7 @@ const defaultMarkdownEngineConfig:MarkdownEngineConfig = {
   mathRenderingOption: 'KaTeX',
   mathInlineDelimiters: [["$", "$"], ["\\(", "\\)"]],
   mathBlockDelimiters: [["$$", "$$"], ["\\[", "\\]"]],
-  codeBlockTheme: 'default.css',
+  codeBlockTheme: 'auto.css',
   previewTheme: 'github-light.css',
   revealjsTheme: 'white.css',
   mermaidTheme: 'mermaid.css',
@@ -142,7 +145,8 @@ const defaultMarkdownEngineConfig:MarkdownEngineConfig = {
   pandocPath: 'pandoc',
   pandocMarkdownFlavor: 'markdown-raw_tex+tex_math_single_backslash',
   pandocArguments: [],
-  latexEngine: 'pdflatex'
+  latexEngine: 'pdflatex',
+  enableScriptExecution: true
 }
 
 let MODIFY_SOURCE:(codeChunkData:CodeChunkData, result:string, filePath:string)=>Promise<string> = null
@@ -563,14 +567,6 @@ export class MarkdownEngine {
 
     // mermaid
     scripts += `<script src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/mermaid.min.js`)}"></script>`
-    scripts += `<script>
-${utility.configs.mermaidConfig}
-${isForPresentation ? `if (window['MERMAID_CONFIG']) {
-  window['MERMAID_CONFIG'].startOnLoad = true
-  window['MERMAID_CONFIG'].cloneCssStyles = false 
-}\n` : '' }
-mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
-</script>`
 
     // math 
     if (this.config.mathRenderingOption === 'MathJax' || this.config.usePandocParser) {
@@ -598,8 +594,73 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       </script>
       `
     }
+
+    // mermaid init 
+    scripts += `<script>
+${utility.configs.mermaidConfig}
+if (window['MERMAID_CONFIG']) {
+  window['MERMAID_CONFIG'].startOnLoad = false
+  window['MERMAID_CONFIG'].cloneCssStyles = false 
+}
+mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
+
+if (typeof(window['Reveal']) !== 'undefined') {
+  function mermaidRevealHelper(event) {
+    var currentSlide = event.currentSlide
+    var diagrams = currentSlide.querySelectorAll('.mermaid')
+    for (var i = 0; i < diagrams.length; i++) {
+      var diagram = diagrams[i]
+      if (!diagram.hasAttribute('data-processed')) {
+        mermaid.init(null, diagram, ()=> {
+          Reveal.slide(event.indexh, event.indexv)
+        })
+      }
+    }
+  }
+
+  Reveal.addEventListener('slidechanged', mermaidRevealHelper)
+  Reveal.addEventListener('ready', mermaidRevealHelper)
+} else {
+  mermaid.init(null, document.getElementsByClassName('mermaid'))
+}
+</script>`
     
     return scripts
+  }
+
+  /**
+   * Map preview theme to prism theme.  
+   */
+  static AutoPrismThemeMap = {
+    'atom-dark.css': 'atom-dark.css',
+    'atom-light.css': 'atom-light.css',
+    'atom-material.css': 'atom-material.css',
+    'github-dark.css': 'atom-dark.css',
+    'github-light.css': 'github.css',
+    'gothic.css': 'github.css',
+    'medium.css': 'github.css',
+    'monokai.css': 'monokai.css',
+    'newsprint.css': 'pen-paper-coffee.css',  // <= this is bad
+    'night.css': 'darcula.css', // <= this is bad
+    'one-dark.css': 'one-dark.css',
+    'one-light.css': 'one-light.css',
+    'solarized-light.css': 'solarized-light.css',
+    'solarized-dark.css': 'solarized-dark.css'
+  }
+
+  /**
+   * Automatically pick code block theme for preview.  
+   */
+  private getPrismTheme() {
+    if (this.config.codeBlockTheme === 'auto.css') {
+      /**
+       * Automatically pick code block theme for preview.  
+       */
+      return MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] || 'default.css'
+
+    } else {
+      return this.config.codeBlockTheme
+    }
   }
 
   /**
@@ -634,7 +695,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     }
 
     // check prism 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.config.codeBlockTheme}`)}">`
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`)}">`
 
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${path.resolve(utility.extensionDirectoryPath, './styles/style-template.css')}">`
@@ -717,6 +778,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
               </select>
               <span> to upload images</span>
             </div>
+            <a href="#" id="show-uploaded-image-history">Show history</a>
           </div>
         </div>
 
@@ -770,7 +832,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 
     // math style and script
     let mathStyle = ''
-    if (this.config.mathRenderingOption === 'MathJax') {
+    if (this.config.mathRenderingOption === 'MathJax' || this.config.usePandocParser) {
       const inline = this.config.mathInlineDelimiters
       const block = this.config.mathBlockDelimiters
 
@@ -807,6 +869,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     // mermaid 
     let mermaidScript = ''
     let mermaidStyle = ''
+    let mermaidInitScript = ''
     if (html.indexOf('<div class="mermaid">') >= 0) {
       if (options.offline) {
         mermaidScript = `<script type="text/javascript" src="file:///${path.resolve(extensionDirectoryPath, './dependencies/mermaid/mermaid.min.js')}"></script>`
@@ -816,13 +879,33 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         mermaidStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.0.0/${this.config.mermaidTheme.replace('.css', '.min.css')}">`
       }
       let mermaidConfig:string = await utility.getMermaidConfig()
-      mermaidScript += `<script>
+      mermaidInitScript += `<script>
 ${mermaidConfig}
 if (window['MERMAID_CONFIG']) {
-  window['MERMAID_CONFIG'].startOnLoad = true
+  window['MERMAID_CONFIG'].startOnLoad = false
   window['MERMAID_CONFIG'].cloneCssStyles = false 
 }
 mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
+
+if (typeof(window['Reveal']) !== 'undefined') {
+  function mermaidRevealHelper(event) {
+    var currentSlide = event.currentSlide
+    var diagrams = currentSlide.querySelectorAll('.mermaid')
+    for (var i = 0; i < diagrams.length; i++) {
+      var diagram = diagrams[i]
+      if (!diagram.hasAttribute('data-processed')) {
+        mermaid.init(null, diagram, ()=> {
+          Reveal.slide(event.indexh, event.indexv)
+        })
+      }
+    }
+  }
+
+  Reveal.addEventListener('slidechanged', mermaidRevealHelper)
+  Reveal.addEventListener('ready', mermaidRevealHelper)
+} else {
+  mermaid.init(null, document.getElementsByClassName('mermaid'))
+}
 </script>`
     }
 
@@ -887,7 +970,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     let styleCSS = ""
     try{
       // prism *.css
-      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.config.codeBlockTheme}`), {encoding:'utf-8'})
+      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`), {encoding:'utf-8'})
       
       if (yamlConfig["isPresentationMode"]) {
         styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`), {encoding:'utf-8'})
@@ -951,6 +1034,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
     ${html}
     </body>
     ${presentationInitScript}
+    ${mermaidInitScript}
     ${taskListScript}
   </html>
     `
@@ -1309,7 +1393,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
         // style template
         utility.readFile(path.resolve(extensionDirectoryPath, './styles/style-template.css'), {encoding:'utf-8'}),
         // prism *.css
-        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.config.codeBlockTheme}`), {encoding:'utf-8'}),
+        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`), {encoding:'utf-8'}),
         // preview theme
         utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
       ])
@@ -1422,6 +1506,13 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       config = this.processFrontMatter(frontMatterString, false).data
     } 
 
+    /**
+     * markdownConfig has the following properties:
+     *     path:                        destination of the output file
+     *     image_dir:                   where to save the image file
+     *     use_abolute_image_path:      as the name shows.  
+     *     ignore_from_front_matter:    default is true.  
+     */
     let markdownConfig = {}
     if (config['markdown'])
        markdownConfig = Object.assign({}, config['markdown'])
@@ -1439,7 +1530,8 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       markdownConfig['path']  = path.basename(markdownConfig['path'])
     }
 
-    if (markdownConfig['ignore_from_front_matter']) { // delete markdown config front-matter from the top front matter
+    // ignore_from_front_matter is `true` by default
+    if (markdownConfig['ignore_from_front_matter'] || !('ignore_from_front_matter' in markdownConfig)) { // delete markdown config front-matter from the top front matter
       delete config['markdown']
     } 
     if (config['export_on_save']) {
@@ -1563,7 +1655,18 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       if (options['cmd'] === 'toc') { // toc code chunk. <= this is a special code chunk.  
         const tocObject = toc(this.headings, {ordered: options['orderedList'], depthFrom: options['depthFrom'], depthTo: options['depthTo'], tab: options['tab'] || '\t'})
         result = tocObject.content
-      } else {
+      } else if (options['cmd'] === 'ditaa') { // ditaa diagram
+        const filename = options['filename'] || `${md5(this.filePath + options['id'])}.png`
+        let imageFolder = utility.removeFileProtocol(this.resolveFilePath(this.config.imageFolderPath, false))
+        await utility.mkdirp(imageFolder)
+
+        codeChunkData.options['output'] = 'markdown'
+        const dest = await ditaaAPI.render(code, options['args'] || [], path.resolve(imageFolder, filename))
+        result = `  \n![](${path.relative(this.fileDirectoryPath, dest).replace(/\\/g, '/')})  \n` // <= fix windows path issue.
+      } else { // common code chunk
+        // I put this line here because some code chunks like `toc` still need to be run.  
+        if (!this.config.enableScriptExecution) return '' // code chunk is disabled.
+
         result = await CodeChunkAPI.run(code, this.fileDirectoryPath, codeChunkData.options, this.config.latexEngine)
       }
       codeChunkData.plainResult = result
@@ -1646,7 +1749,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 
     if (optionsStr) {
       try {
-        options = jsonic('{'+optionsStr+'}')
+        options = utility.parseAttributes(optionsStr)
       } catch (e) {
         return $preElement.replaceWith(`<pre class="language-text">OptionsError: ${'{'+optionsStr+'}'}<br>${e.toString()}</pre>`)
       }
@@ -1682,7 +1785,7 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
       }
       $preElement.replaceWith(`<p>${svg}</p>`)
       graphsCache[checksum] = svg // store to new cache 
-
+      
     } else if (lang.match(/^mermaid$/)) { // mermaid 
       /*
       // it doesn't work well...
@@ -1709,6 +1812,38 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
           graphsCache[checksum] = svg // store to new cache
         } catch(e) {
           $preElement.replaceWith(`<pre class="language-text">${e.toString()}</pre>`)
+        }
+      } else {
+        $preElement.replaceWith(`<p>${svg}</p>`)
+        graphsCache[checksum] = svg // store to new cache
+      }
+    } else if (lang.match(/^vega$/)) { // vega
+      const checksum = md5(optionsStr + code)
+      let svg:string = this.graphsCache[checksum] 
+      if (!svg) {
+        try {
+          svg = await vegaAPI.toSVG(code, this.fileDirectoryPath)
+
+          $preElement.replaceWith(`<p>${svg}</p>`)
+          graphsCache[checksum] = svg // store to new cache 
+        } catch(error) {
+          $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
+        }
+      } else {
+        $preElement.replaceWith(`<p>${svg}</p>`)
+        graphsCache[checksum] = svg // store to new cache
+      }
+    } else if (lang === 'vega-lite') { // vega-lite
+      const checksum = md5(optionsStr + code)
+      let svg:string = this.graphsCache[checksum] 
+      if (!svg) {
+        try {
+          svg = await vegaLiteAPI.toSVG(code, this.fileDirectoryPath)
+
+          $preElement.replaceWith(`<p>${svg}</p>`)
+          graphsCache[checksum] = svg // store to new cache 
+        } catch(error) {
+          $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
         }
       } else {
         $preElement.replaceWith(`<p>${svg}</p>`)
@@ -2283,6 +2418,10 @@ mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
 
     if (options.triggeredBySave && yamlConfig['export_on_save']) { // export files
       this.exportOnSave(yamlConfig['export_on_save'])
+    }
+
+    if (!this.config.enableScriptExecution) { // disable importing js and css files.  
+      JSAndCssFiles = []
     }
 
     return {html, markdown:inputString, tocHTML: this.tocHTML, yamlConfig, JSAndCssFiles}

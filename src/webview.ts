@@ -7,6 +7,7 @@ interface MarkdownConfig {
   mathRenderingOption?: string,
   imageFolderPath?: string,
   imageUploader?: string,
+  enableScriptExecution?: boolean
   /**
    * Whether this preview is for vscode or not.  
    */
@@ -369,6 +370,11 @@ class PreviewController {
           callback: ()=> this.postMessage('markdownExport', [this.sourceUri])
         },
         "sep2": "---------",
+        "image_helper": {
+          name: "Image Helper",
+          callback: ()=> window['$']('#image-helper-view').modal()
+        },
+        "sep3": "---------",
         "sync_source": {
           name: "Sync Source",
           callback: ()=> this.previewSyncSource()
@@ -459,13 +465,27 @@ class PreviewController {
         fileUploader.val('')
       }
     })
+
+    // show image uploaded history
+    const a = imageHelper.querySelector('#show-uploaded-image-history') as HTMLAnchorElement
+    a.onclick = (event)=> {
+      event.preventDefault()
+      event.stopPropagation()
+      $['modal'].close()
+      this.postMessage('showUploadedImageHistory', [this.sourceUri])
+    }
   }
 
   /**
    * Init several events for presentation mode
    */
   private initPresentationEvent() {
-    window['Reveal'].addEventListener( 'ready', ( event )=> {
+    const firstSlide = document.querySelector('.reveal .slides .slide') as HTMLElement // fix flickering by hidding the first slide.  
+    if (firstSlide) firstSlide.style.visibility = 'hidden'
+
+    window['Reveal'].addEventListener('ready', ( event )=> {
+      if (firstSlide) firstSlide.style.visibility = 'visible'
+
       this.initSlidesData()
 
       // slide to initial position
@@ -591,6 +611,8 @@ class PreviewController {
    * @param id 
    */
   private runCodeChunk(id:string) {
+    if (!this.config.enableScriptExecution) return
+
     const codeChunk = document.querySelector(`.code-chunk[data-id="${id}"]`)
     const running = codeChunk.classList.contains('running')
     if (running) return 
@@ -619,6 +641,8 @@ class PreviewController {
    * Run all code chunks
    */
   private runAllCodeChunks() {
+    if (!this.config.enableScriptExecution) return
+
     const codeChunks = this.previewElement.getElementsByClassName('code-chunk')
     for (let i = 0; i < codeChunks.length; i++) {
       codeChunks[i].classList.add('running')
@@ -1072,6 +1096,25 @@ private scrollToRevealSourceLine(line, topRatio=0.372) {
 }
 
 /**
+ * [esc] is pressed.  
+ */
+private escPressed(event=null) {
+  if (event) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+  if (this.config.vscode) {
+    if (!this.presentationMode) this.toolbar.sidebarTOCBtn.click()
+  } else {
+    if (window['$']('#image-helper-view').is(':visible')) { // close image helper
+      $['modal'].close()
+    } else {
+      this.toolbar.sidebarTOCBtn.click()
+    }
+  }
+}
+
+/**
  * Initialize several `window` events.  
  */
 private initWindowEvents() {
@@ -1097,8 +1140,8 @@ private initWindowEvents() {
           this.previewElement.scrollTop = 0
         }
       } 
-    } else if (event.which === 27 && !this.presentationMode) { // [esc] toggle sidebar toc
-      this.toolbar.sidebarTOCBtn.click()
+    } else if (event.which === 27) { // [esc] toggle sidebar toc
+      this.escPressed(event)
     }
   })
 
@@ -1142,7 +1185,7 @@ private initWindowEvents() {
     } else if (data.command === 'runCodeChunk') {
       this.runNearestCodeChunk()
     } else if (data.command === 'escPressed') {
-      this.toolbar.sidebarTOCBtn.click()
+      this.escPressed()
     } else if (data.command === 'previewSyncSource') {
       this.previewSyncSource()
     } else if (data.command === 'copy') {

@@ -15,7 +15,6 @@ import {EOL} from "os"
 // temp.track()
 import * as utility from "./utility"
 const extensionDirectoryPath = utility.extensionDirectoryPath
-const jsonic = require(path.resolve(extensionDirectoryPath, './dependencies/jsonic/jsonic.js'))
 const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 import {CustomSubjects} from "./custom-subjects"
@@ -244,8 +243,8 @@ export async function transformMarkdown(inputString:string,
           if (!inBlock && forPreview) outputString += createAnchor(lineNo)
 
           let match;
-          if (!inBlock && !notSourceFile && (match = line.match(/\"?cmd\"?\s*:/)))  { // it's code chunk, so mark its offset
-            line = line.replace('{', `{code_chunk_offset:${codeChunkOffset}, `)
+          if (!inBlock && !notSourceFile && (match = line.match(/\"?cmd\"?\s*[:=]/)))  { // it's code chunk, so mark its offset
+            line = line.replace('{', `{code_chunk_offset=${codeChunkOffset}, `)
             codeChunkOffset++
           }
           inBlock = !inBlock
@@ -318,11 +317,11 @@ export async function transformMarkdown(inputString:string,
             heading = heading.replace(optMatch[0], '')
 
             try {
-              let opt = jsonic(optMatch[0].trim())
+              let opt = utility.parseAttributes(optMatch[0])
               
-              classes = opt.class,
-              id = opt.id,
-              ignore = opt.ignore 
+              classes = opt['class'],
+              id = opt['id'],
+              ignore = opt['ignore']
             } catch(e) {
               heading = "OptionsError: " + optMatch[1]
               ignore = true
@@ -413,26 +412,12 @@ export async function transformMarkdown(inputString:string,
               const newlinesMatch = content.match(/\n/g)
               const newlines = (newlinesMatch ? newlinesMatch.length : 0)
               const optionsMatch = content.match(/^([^\s]+?)\s([\s\S]+)$/)
-              const options = {lineNo}
 
+              let options = {}
               if (optionsMatch && optionsMatch[2]) {
-                const rest = optionsMatch[2]
-                const match = rest.match(/(?:[^\s\n:"']+|"[^"]*"|'[^']*')+/g) // split by space and \newline and : (not in single and double quotezz)
-
-                if (match && match.length % 2 === 0) {
-                  let i = 0
-                  while (i < match.length) {
-                    const key = match[i],
-                          value = match[i+1]
-                    try {
-                      options[key] = JSON.parse(value)
-                    } catch (e) {
-                      null // do nothing
-                    }
-                    i += 2
-                  }
-                } 
+                options = utility.parseAttributes(optionsMatch[2])
               }
+              options['lineNo'] = lineNo
 
               if (subject === 'pagebreak' || subject === 'newpage') { // pagebreak
                 // return helper(commentEnd, lineNo + newlines, outputString + '<div class="pagebreak"> </div>\n')
@@ -441,7 +426,7 @@ export async function transformMarkdown(inputString:string,
                 outputString = outputString + '<div class="pagebreak"> </div>\n'
                 continue
 
-              } else if (subject === 'slide') { // slide 
+              } else if (subject.match(/^\.?slide\:?$/)) { // slide 
                 slideConfigs.push(options)
                 if (forMarkdownExport) {
                   // return helper(commentEnd, lineNo + newlines, outputString + `<!-- ${content} -->` + '\n')
@@ -506,7 +491,7 @@ export async function transformMarkdown(inputString:string,
             if (rightParen > 0) {
               configStr = line.substring(leftParen+1, rightParen)
               try {
-                config = jsonic(`{${configStr}}`)
+                config = utility.parseAttributes(configStr)
               } catch(error) {
                 // null
               }
@@ -583,7 +568,7 @@ export async function transformMarkdown(inputString:string,
               codeChunkOffset++          
             }
 
-            const output = `\`\`\`text ${JSON.stringify(config)}  \n\`\`\`  `
+            const output = `\`\`\`text ${utility.stringifyAttributes(config)}  \n\`\`\`  `
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end+1
             lineNo = lineNo+1
@@ -597,7 +582,7 @@ export async function transformMarkdown(inputString:string,
 
               if (config && config['code_block']) {
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${JSON.stringify(config)}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${config['as'] || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${utility.stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
               }
               else if (config && config['cmd']) {
                 if (!config['id']) { // create `id` for code chunk
@@ -608,7 +593,7 @@ export async function transformMarkdown(inputString:string,
                   codeChunkOffset++
                 }
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${JSON.stringify(config)}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${config['as'] || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${utility.stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
               }
               else if (['.md', '.markdown', '.mmark'].indexOf(extname) >= 0) { // markdown files
                 // this return here is necessary
@@ -711,8 +696,10 @@ export async function transformMarkdown(inputString:string,
                     output = "<script>${fileContent}</script>"
               */
               else { // # codeblock
+                let as_ = null
+                if (config) as_ = config['as']
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${fileExtensionToLanguageMap[fileExtension] || fileExtension} ${config ? JSON.stringify(config) : ''}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${as_ || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${config ? utility.stringifyAttributes(config) : ''}  \n${fileContent}\n\`\`\`  `
               }
 
               // return helper(end+1, lineNo+1, outputString+output+'\n')

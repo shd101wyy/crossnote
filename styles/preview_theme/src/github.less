@@ -1,5 +1,5 @@
 // out: false
-.github(@fg, @bg) {
+.github(@fg, @bg, @urlColor) {
   @fg-strong: contrast(@bg, darken(@fg, 32%), lighten(@fg, 32%));
   @fg-subtle: contrast(@fg, lighten(@fg, 16%), darken(@fg, 16%));
   @border: contrast(@bg, lighten(@bg, 16%), darken(@bg, 16%));
@@ -64,12 +64,14 @@
     }
 
     a {
-      color: #08c;
+      // color: #08c;
+      color: @urlColor;
       text-decoration: none;
     }
 
     a:hover {
-      color: #0050a3;
+      // color: #0050a3;
+      color: contrast(@urlColor, lighten(@urlColor, 8%), darken(@urlColor, 6%));
       text-decoration: none;
     }
 
@@ -239,7 +241,7 @@
     .highlight pre,
     pre {
       // font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
-      padding: @margin;
+      padding: 1em;
       overflow: auto;
       font-size: 0.85em !important;
       line-height: 1.45;
@@ -329,14 +331,14 @@
       }
 
       img {
-          display: block;
-          max-width: 100%;
-          max-height: 100%;
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
       }
 
       pre, code {
-          word-wrap: break-word;
-          white-space: normal;
+        word-wrap: break-word;
+        white-space: pre;
       }
     }
   }

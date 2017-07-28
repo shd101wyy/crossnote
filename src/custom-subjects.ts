@@ -4,6 +4,8 @@ export enum CustomSubjects {
   toc,
   tocstop,
   slide,
+  '.slide',
+  '.slide:',
   ebook,
   'toc-bracket'
 }
