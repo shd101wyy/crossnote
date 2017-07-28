@@ -179,6 +179,8 @@ config:object):Promise<string> {
       processGraphs(text, 
       {fileDirectoryPath, projectDirectoryPath, imageDirectoryPath, imageFilePrefix: md5(outputFilePath), useRelativeFilePath, codeChunksData, graphsCache})
       .then(({outputString})=> {
+        outputString = data.frontMatterString + outputString // put the front-matter back.  
+        
         fs.writeFile(outputFilePath, outputString, {encoding: 'utf-8'}, (error)=> {
           if (error) return reject(error.toString())
           return resolve(outputFilePath)

@@ -1505,6 +1505,13 @@ if (typeof(window['Reveal']) !== 'undefined') {
       config = this.processFrontMatter(frontMatterString, false).data
     } 
 
+    /**
+     * markdownConfig has the following properties:
+     *     path:                        destination of the output file
+     *     image_dir:                   where to save the image file
+     *     use_abolute_image_path:      as the name shows.  
+     *     ignore_from_front_matter:    default is true.  
+     */
     let markdownConfig = {}
     if (config['markdown'])
        markdownConfig = Object.assign({}, config['markdown'])
@@ -1522,7 +1529,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
       markdownConfig['path']  = path.basename(markdownConfig['path'])
     }
 
-    if (markdownConfig['ignore_from_front_matter']) { // delete markdown config front-matter from the top front matter
+    // ignore_from_front_matter is `true` by default
+    if (markdownConfig['ignore_from_front_matter'] || !('ignore_from_front_matter' in markdownConfig)) { // delete markdown config front-matter from the top front matter
       delete config['markdown']
     } 
     if (config['export_on_save']) {
