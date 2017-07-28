@@ -1662,7 +1662,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
         codeChunkData.options['output'] = 'markdown'
         const dest = await ditaaAPI.render(code, options['args'] || [], path.resolve(imageFolder, filename))
-        result = `  \n![](${path.relative(this.fileDirectoryPath, dest)})  \n`
+        result = `  \n![](${path.relative(this.fileDirectoryPath, dest).replace(/\\/g, '/')})  \n` // <= fix windows path issue.
       } else { // common code chunk
         // I put this line here because some code chunks like `toc` still need to be run.  
         if (!this.config.enableScriptExecution) return '' // code chunk is disabled.
