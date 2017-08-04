@@ -2187,8 +2187,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     let output = ''
 
+    /*
     const parseAttrString = (slideConfig)=> {
       let attrString = ''
+
+      // let attrString = utility.stringifyAttributes(slideConfig, false)
 
       if (slideConfig['data-background-image'])
         attrString += ` data-background-image='${this.resolveFilePath(slideConfig['data-background-image'], useRelativeFilePath)}'`
@@ -2222,9 +2225,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
       if (slideConfig['data-background-iframe'])
         attrString += ` data-background-iframe='${this.resolveFilePath(slideConfig['data-background-iframe'], useRelativeFilePath)}'`
-      
+
       return attrString
     }
+    */
 
     let i = 0,
         h = -1, // horizontal
@@ -2232,7 +2236,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     while (i < slides.length) { 
       const slide = slides[i] 
       const slideConfig = slideConfigs[i]
-      const attrString = parseAttrString(slideConfig)
+      const attrString = utility.stringifyAttributes(slideConfig, false) // parseAttrString(slideConfig)
       const classString = slideConfig['class'] || ''
       const idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : ''
 
