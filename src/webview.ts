@@ -480,18 +480,19 @@ class PreviewController {
    * Init several events for presentation mode
    */
   private initPresentationEvent() {
-    const firstSlide = document.querySelector('.reveal .slides .slide') as HTMLElement // fix flickering by hidding the first slide.  
+    // analyze slides
+    this.initSlidesData()
+
+    // slide to initial position
+    window['Reveal'].configure({transition: 'none'})
+    this.scrollToRevealSourceLine(this.initialLine)
+    window['Reveal'].configure({transition: 'slide'})
+
+    const firstSlide = window['Reveal'].getCurrentSlide()
     if (firstSlide) firstSlide.style.visibility = 'hidden'
 
     window['Reveal'].addEventListener('ready', ( event )=> {
       if (firstSlide) firstSlide.style.visibility = 'visible'
-
-      this.initSlidesData()
-
-      // slide to initial position
-      window['Reveal'].configure({transition: 'none'})
-      this.scrollToRevealSourceLine(this.initialLine)
-      window['Reveal'].configure({transition: 'slide'})
 
       // several events...
       this.setupCodeChunks()
