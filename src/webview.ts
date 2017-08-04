@@ -480,17 +480,7 @@ class PreviewController {
    * Init several events for presentation mode
    */
   private initPresentationEvent() {
-    // analyze slides
-    this.initSlidesData()
-
-    // slide to initial position
-    window['Reveal'].configure({transition: 'none'})
-    this.scrollToRevealSourceLine(this.initialLine)
-    window['Reveal'].configure({transition: 'slide'})
-
-    const firstSlide = window['Reveal'].getCurrentSlide()
-    if (firstSlide) firstSlide.style.visibility = 'hidden'
-
+    let firstSlide = null
     window['Reveal'].addEventListener('ready', ( event )=> {
       if (firstSlide) firstSlide.style.visibility = 'visible'
 
@@ -512,6 +502,17 @@ class PreviewController {
         }
       })
     })
+
+        // analyze slides
+    this.initSlidesData()
+
+    // slide to initial position
+    window['Reveal'].configure({transition: 'none'})
+    this.scrollToRevealSourceLine(this.initialLine)
+    window['Reveal'].configure({transition: 'slide'})
+
+    firstSlide = window['Reveal'].getCurrentSlide()
+    if (firstSlide) firstSlide.style.visibility = 'hidden'
   }
 
   // zoom in preview
