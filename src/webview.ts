@@ -133,6 +133,11 @@ class PreviewController {
   private sourceUri = null
 
   /**
+   * Caches
+   */
+  private wavedromCache = {}
+
+  /**
    * This controller should be initialized when the html dom is loaded.
    */
   constructor() {
@@ -581,6 +586,39 @@ class PreviewController {
   }
 
   /**
+   * render wavedrom
+   */
+  private async renderWavedrom() {
+    const els = this.hiddenPreviewElement.getElementsByClassName('wavedrom')
+    if (els.length) {
+      const wavedromCache = {}
+      for (let i = 0; i < els.length; i++) {
+        const el = els[i] as HTMLElement
+        el.id = 'wavedrom'+i
+        const text = el.textContent.trim()
+        if (!text.length) continue
+
+        if (text in this.wavedromCache) { // load cache
+          const svg = this.wavedromCache[text]
+          el.innerHTML = svg
+          wavedromCache[text] = svg
+          continue
+        }
+
+        try {
+          const content = eval(`(${text})`)
+          window['WaveDrom'].RenderWaveForm(i, content, 'wavedrom')
+          wavedromCache[text] = el.innerHTML
+        } catch(error) {
+          el.innerText = 'Failed to eval WaveDrom code. ' + error
+        }
+      }
+
+      this.wavedromCache = wavedromCache
+    }
+  }
+
+  /**
    * render MathJax expressions
    */
   private renderMathJax() {
@@ -716,7 +754,8 @@ class PreviewController {
   private async initEvents() {
     await Promise.all([
       this.renderMathJax(), 
-      this.renderMermaid()
+      this.renderMermaid(),
+      this.renderWavedrom()
     ])
     this.previewElement.innerHTML = this.hiddenPreviewElement.innerHTML
     this.hiddenPreviewElement.innerHTML = ""

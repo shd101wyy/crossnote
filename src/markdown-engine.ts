@@ -568,6 +568,10 @@ export class MarkdownEngine {
     // mermaid
     scripts += `<script src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/mermaid.min.js`)}"></script>`
 
+    // wavedrome
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/default.js')}"></script>`
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/wavedrom.min.js')}"></script>`
+
     // math 
     if (this.config.mathRenderingOption === 'MathJax' || this.config.usePandocParser) {
       const mathJaxConfig = utility.configs.mathjaxConfig
@@ -624,6 +628,13 @@ if (typeof(window['Reveal']) !== 'undefined') {
   mermaid.init(null, document.getElementsByClassName('mermaid'))
 }
 </script>`
+
+    // wavedrom init script
+    if (isForPresentation) {
+      scripts += `<script>
+  WaveDrom.ProcessAll()
+      </script>`
+    }
     
     return scripts
   }
@@ -908,6 +919,20 @@ if (typeof(window['Reveal']) !== 'undefined') {
 }
 </script>`
     }
+    // wavedrom 
+    let wavedromScript = ``,
+        wavedromInitScript = ``
+    if (html.indexOf('<div class="wavedrom">') >= 0) {
+      if (options.offline) {
+        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/default.js')}"></script>`
+        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/wavedrom.min.js')}"></script>`
+      } else {
+        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/skins/default.js"></script>`
+        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/wavedrom.min.js"></script>`
+      }
+      wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`
+    }
+
 
     // presentation
     let presentationScript = '',
@@ -1024,6 +1049,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
       ${presentationScript}
       ${mermaidScript}
+      ${wavedromScript}
 
       <style> 
       ${styleCSS} 
@@ -1035,6 +1061,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     </body>
     ${presentationInitScript}
     ${mermaidInitScript}
+    ${wavedromInitScript}
     ${taskListScript}
   </html>
     `
@@ -1800,6 +1827,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
       }
       */
       $preElement.replaceWith(`<div class="mermaid">${code}</div>`)
+    } else if (lang === 'wavedrom') {
+      $preElement.replaceWith(`<div class="wavedrom"><script type="WaveDrom">${code}</script></div>`)
     } else if (lang.match(/^(dot|viz)$/)) { // GraphViz
       const checksum = md5(optionsStr + code)
       let svg = this.graphsCache[checksum]
