@@ -1,6 +1,6 @@
 // out: ../style-template.css, compress:true
 
-html body:not([data-presentation-mode]) {
+.markdown-preview:not([data-presentation-mode]) {
   @media screen and (min-width: 914px) {
     width: 980px;
     margin:10px auto;
@@ -14,7 +14,7 @@ html body:not([data-presentation-mode]) {
   }
 }
 
-html body {
+.markdown-preview {
   .pagebreak, .newpage {
     page-break-before: always;
   }
@@ -76,6 +76,45 @@ html body {
       .output-div {
         margin-bottom: 16px;
       }
+    }
+  }
+}
+
+html body {
+  // sidebar TOC 
+  &.html-show-sidebar-toc {
+    .md-sidebar-toc {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 268px;
+      height: 100%;
+      padding: 32px 0 12px 0;
+      overflow: auto;
+      font-size: 14px;
+      box-shadow: 4px 0px 12px rgba(150, 150, 150, .33);
+      box-sizing: border-box;
+      a {
+        text-decoration: none;
+      }
+      ul {
+        padding: 0 1.6em;
+        margin-top: 0.8em;
+      }
+      li {
+        margin-bottom: 0.8em;
+      }
+      ul {
+        list-style-type: none;
+      }
+    }
+
+    .markdown-preview {
+        position: relative;
+        left: 268px;
+        max-width: 980px;
+        width: calc(~"100% - 268px");
+        margin: 0;        
     }
   }
 }

@@ -1020,6 +1020,20 @@ if (typeof(window['Reveal']) !== 'undefined') {
       // ignore it 
     }
 
+    // sidebar toc
+    let sidebarTOC = '',
+        sidebarTOCScript = ''
+    if (yamlConfig['html'] && yamlConfig['html']['toc']) {
+      sidebarTOC = `<div class="md-sidebar-toc">${this.tocHTML}</div>`
+
+      // TODO: toggle sidebar toc
+      sidebarTOCScript = `
+<script>
+document.body.classList.add('html-show-sidebar-toc')
+</script>
+      `
+    }
+
     // task list script
     // has to use `var` instead of `let` because `phantomjs` might cause issue.  
     const taskListScript = `<script>
@@ -1056,13 +1070,17 @@ if (typeof(window['Reveal']) !== 'undefined') {
       ${globalStyles} 
       </style>
     </head>
-    <body class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
-    ${html}
+    <body>
+      ${sidebarTOC}
+      <div class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
+      ${html}
+      </div>
     </body>
     ${presentationInitScript}
     ${mermaidInitScript}
     ${wavedromInitScript}
     ${taskListScript}
+    ${sidebarTOCScript}
   </html>
     `
 
@@ -1451,8 +1469,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
     </style>
     ${mathStyle}
   </head>
-  <body class="mume markdown-preview">
-  ${outputHTML}
+  <body>
+    <div class="mume markdown-preview">
+    ${outputHTML}
+    </div>
   </body>
 </html>            
 `
