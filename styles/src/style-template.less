@@ -1,6 +1,9 @@
 // out: ../style-template.css, compress:true
 
 .markdown-preview {
+  width: 100%;
+  height: 100%;
+
   .pagebreak, .newpage {
     page-break-before: always;
   }
@@ -157,30 +160,3 @@ html body[for="html-export"] {
     }
   }
 }
-
-/*
-html body[data-presentation-mode] {
-  font-size: 24px;
-  width: 100%;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-
-  h1, h2, h3, h4, h5, h6 {
-    margin-top: 0;
-  }
-  strong {
-    font-weight: bold; // without this line, the output <strong> doesn't have wrong effect.
-  }
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-html body {
-  .slides {
-    text-align: left !important;
-  }
-}
-*/
