@@ -814,7 +814,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         ${head}        
       </head>
       <body class="preview-container">
-        <div class="mume markdown-preview" for="preview" ${isPresentationMode ? 'data-presentation-mode' : ''}>
+        <div id="markdown-preview" class="mume" for="preview" ${isPresentationMode ? 'data-presentation-mode' : ''}>
           ${html}
         </div>
         ${body}
@@ -1056,7 +1056,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       ${globalStyles} 
       </style>
     </head>
-    <body class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
+    <body id="markdown-preview" class="mume ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
     ${html}
     </body>
     ${presentationInitScript}
@@ -1451,7 +1451,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     </style>
     ${mathStyle}
   </head>
-  <body class="mume markdown-preview">
+  <body id="markdown-preview" class="mume">
   ${outputHTML}
   </body>
 </html>            

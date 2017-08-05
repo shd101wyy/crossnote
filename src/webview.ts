@@ -162,6 +162,13 @@ class PreviewController {
     this.config = JSON.parse(document.getElementById('mume-data').getAttribute('data-config'))
     this.sourceUri = this.config['sourceUri']
 
+    if (this.config.vscode) { // remove vscode default styles
+      const defaultStyles = document.getElementById('_defaultStyles')
+      console.log(defaultStyles)
+      if (defaultStyles) defaultStyles.remove()
+      console.log(document.body.parentElement.outerHTML)
+    }
+
     console.log('init webview: ' + this.sourceUri)
 
     // console.log(document.getElementsByTagName('html')[0].innerHTML)
@@ -200,6 +207,7 @@ class PreviewController {
 
       this.postMessage('webviewFinishLoading', [this.sourceUri])
     } else { // TODO: presentation preview to source sync
+      this.config.scrollSync = true // <= force to enable scrollSync for presentation
       this.initPresentationEvent()
     }
     
@@ -485,9 +493,9 @@ class PreviewController {
    * Init several events for presentation mode
    */
   private initPresentationEvent() {
-    let firstSlide = null
+    let initialSlide = null
     window['Reveal'].addEventListener('ready', ( event )=> {
-      if (firstSlide) firstSlide.style.visibility = 'visible'
+      if (initialSlide) initialSlide.style.visibility = 'visible'
 
       // several events...
       this.setupCodeChunks()
@@ -516,8 +524,8 @@ class PreviewController {
     this.scrollToRevealSourceLine(this.initialLine)
     window['Reveal'].configure({transition: 'slide'})
 
-    firstSlide = window['Reveal'].getCurrentSlide()
-    if (firstSlide) firstSlide.style.visibility = 'hidden'
+    initialSlide = window['Reveal'].getCurrentSlide()
+    if (initialSlide) initialSlide.style.visibility = 'hidden'
   }
 
   // zoom in preview
@@ -1202,7 +1210,7 @@ private initWindowEvents() {
       this.sourceUri = data.sourceUri
       this.renderSidebarTOC()
       this.updateHTML(data.html, data.id, data.class)
-    } else if (data.command === 'changeTextEditorSelection') {
+    } else if (data.command === 'changeTextEditorSelection' && this.config.scrollSync) {
       const line = parseInt(data.line)
       let topRatio = parseFloat(data.topRatio)
       if (isNaN(topRatio)) topRatio = 0.372
