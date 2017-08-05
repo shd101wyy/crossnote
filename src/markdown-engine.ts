@@ -566,7 +566,7 @@ export class MarkdownEngine {
     scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/crypto-js/crypto-js.js')}"></script>`
 
     // mermaid
-    scripts += `<script src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/mermaid.min.js`)}"></script>`
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/mermaid.min.js`)}"></script>`
 
     // wavedrome
     scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/default.js')}"></script>`
@@ -814,7 +814,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         ${head}        
       </head>
       <body class="preview-container">
-        <div id="markdown-preview" class="mume" for="preview" ${isPresentationMode ? 'data-presentation-mode' : ''}>
+        <div class="mume markdown-preview" for="preview" ${isPresentationMode ? 'data-presentation-mode' : ''}>
           ${html}
         </div>
         ${body}
@@ -1056,7 +1056,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       ${globalStyles} 
       </style>
     </head>
-    <body id="markdown-preview" class="mume ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
+    <body class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
     ${html}
     </body>
     ${presentationInitScript}
@@ -1451,7 +1451,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     </style>
     ${mathStyle}
   </head>
-  <body id="markdown-preview" class="mume">
+  <body class="mume markdown-preview">
   ${outputHTML}
   </body>
 </html>            

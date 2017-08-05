@@ -147,6 +147,7 @@ class PreviewController {
     const previewElement = document.getElementsByClassName('mume')[0] as HTMLElement
     const hiddenPreviewElement = document.createElement("div")
     hiddenPreviewElement.classList.add('mume')
+    hiddenPreviewElement.classList.add('markdown-preview')
     hiddenPreviewElement.classList.add('hidden-preview')
     hiddenPreviewElement.setAttribute('for', 'preview')
     hiddenPreviewElement.style.zIndex = '0'
@@ -162,12 +163,12 @@ class PreviewController {
     this.config = JSON.parse(document.getElementById('mume-data').getAttribute('data-config'))
     this.sourceUri = this.config['sourceUri']
 
+    /*
     if (this.config.vscode) { // remove vscode default styles
       const defaultStyles = document.getElementById('_defaultStyles')
-      console.log(defaultStyles)
       if (defaultStyles) defaultStyles.remove()
-      console.log(document.body.parentElement.outerHTML)
     }
+    */
 
     console.log('init webview: ' + this.sourceUri)
 
@@ -875,7 +876,6 @@ class PreviewController {
 
     this.hiddenPreviewElement.innerHTML = html
 
-
     const scrollTop = this.previewElement.scrollTop
     // init several events 
     this.initEvents().then(()=> {
@@ -886,7 +886,7 @@ class PreviewController {
 
       // set id and classes
       this.previewElement.id = id || ''
-      this.previewElement.setAttribute('class', `mume ${classes}`)
+      this.previewElement.setAttribute('class', `mume markdown-preview ${classes}`)
       
       // scroll to initial position 
       if (!this.doneLoadingPreview) {
