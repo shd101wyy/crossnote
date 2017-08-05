@@ -7,10 +7,10 @@
   }
 
   // mobile
-  @media screen and (max-width: 400px) {
-    font-size: 14px;
+  @media screen and (max-width: 450px) {
+    font-size: 14px !important; // <= this line is necessary. otherwise #sidebar-toc-btn position will be wrong.  
     margin: 0 auto;
-    padding: 15px;
+    padding: 0 1em;
   }
 }
 
@@ -80,16 +80,36 @@
   }
 }
 
-html body {
-  // sidebar TOC 
-  &.html-show-sidebar-toc {
+// sidebar TOC 
+html body[for="export"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0; // <= this has to be zero; otherwise prince export will have issue.  
+
+  #sidebar-toc-btn { // please note that this is different from the one in preview.less
+    position: fixed;
+    bottom: 8px;
+    left: 8px;
+    font-size: 28px;
+    cursor: pointer;
+    color: inherit;
+    z-index: 99;
+    width: 32px;
+    text-align: center;
+  }
+
+  &[html-show-sidebar-toc] {
     .md-sidebar-toc {
       position: fixed;
       top: 0;
       left: 0;
       width: 268px;
       height: 100%;
-      padding: 32px 0 12px 0;
+      padding: 32px 0 48px 0;
       overflow: auto;
       font-size: 14px;
       box-shadow: 4px 0px 12px rgba(150, 150, 150, .33);
@@ -114,7 +134,21 @@ html body {
         left: 268px;
         max-width: 980px;
         width: calc(~"100% - 268px");
-        margin: 0;        
+        margin: 0;       
+        padding: 0 2em;
+        box-sizing: border-box; 
+    }
+  }
+
+  &:not([html-show-sidebar-toc]) {
+    .md-sidebar-toc {
+      display: none;
+    }
+  }
+
+  @media print {
+    #sidebar-toc-btn {
+      display: none;
     }
   }
 }

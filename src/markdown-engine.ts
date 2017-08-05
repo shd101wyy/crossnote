@@ -1022,14 +1022,27 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // sidebar toc
     let sidebarTOC = '',
-        sidebarTOCScript = ''
-    if (yamlConfig['html'] && yamlConfig['html']['toc']) {
+        sidebarTOCScript = '',
+        sidebarTOCBtn = ''
+    if (!yamlConfig["isPresentationMode"] && !options.isForPrint && ( 
+      (!('html' in yamlConfig)) || 
+      (yamlConfig['html'] && yamlConfig['html']['toc'] !== false))) { // enable sidebar toc by default
       sidebarTOC = `<div class="md-sidebar-toc">${this.tocHTML}</div>`
-
-      // TODO: toggle sidebar toc
+      sidebarTOCBtn = '<a id="sidebar-toc-btn">≡</a>'
+      // toggle sidebar toc
+      // If yamlConfig['html']['toc'], then display sidebar TOC on startup.
       sidebarTOCScript = `
 <script>
-document.body.classList.add('html-show-sidebar-toc')
+${(yamlConfig['html'] && yamlConfig['html']['toc']) ? `document.body.setAttribute('html-show-sidebar-toc', true)` : ''}
+var sidebarTOCBtn = document.getElementById('sidebar-toc-btn')
+sidebarTOCBtn.addEventListener('click', function(event) {
+  event.stopPropagation()
+  if (document.body.hasAttribute('html-show-sidebar-toc')) {
+    document.body.removeAttribute('html-show-sidebar-toc')
+  } else {
+    document.body.setAttribute('html-show-sidebar-toc', true)
+  }
+})
 </script>
       `
     }
@@ -1070,8 +1083,9 @@ document.body.classList.add('html-show-sidebar-toc')
       ${globalStyles} 
       </style>
     </head>
-    <body>
+    <body for="export">
       ${sidebarTOC}
+      ${sidebarTOCBtn}
       <div class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
       ${html}
       </div>
