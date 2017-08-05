@@ -1,19 +1,5 @@
 // out: ../style-template.css, compress:true
 
-.markdown-preview:not([data-presentation-mode]) {
-  @media screen and (min-width: 914px) {
-    width: 980px;
-    margin:10px auto;
-  }
-
-  // mobile
-  @media screen and (max-width: 450px) {
-    font-size: 14px !important; // <= this line is necessary. otherwise #sidebar-toc-btn position will be wrong.  
-    margin: 0 auto;
-    padding: 0 1em;
-  }
-}
-
 .markdown-preview {
   .pagebreak, .newpage {
     page-break-before: always;
@@ -80,8 +66,7 @@
   }
 }
 
-// sidebar TOC 
-html body[for="export"] {
+html body[for="html-export"] {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -89,6 +74,32 @@ html body[for="export"] {
   left: 0;
   margin: 0;
   padding: 0; // <= this has to be zero; otherwise prince export will have issue.  
+
+  .markdown-preview:not([data-presentation-mode]) {
+    @media screen and (min-width: 914px) {
+      width: 980px;
+      margin:10px auto;
+      padding: 0 2em;
+    }
+
+    @media screen and (max-width: 914px) {
+      margin: 0 auto;
+      padding: 0 2em;
+    }
+
+    // mobile
+    @media screen and (max-width: 450px) {
+      font-size: 14px !important; // <= this line is necessary. otherwise #sidebar-toc-btn position will be wrong.  
+      margin: 0 auto;
+      padding: 0 1em;
+    }
+  }
+
+  @media print {
+    #sidebar-toc-btn {
+      display: none;
+    }
+  }
 
   #sidebar-toc-btn { // please note that this is different from the one in preview.less
     position: fixed;
@@ -142,12 +153,6 @@ html body[for="export"] {
 
   &:not([html-show-sidebar-toc]) {
     .md-sidebar-toc {
-      display: none;
-    }
-  }
-
-  @media print {
-    #sidebar-toc-btn {
       display: none;
     }
   }
