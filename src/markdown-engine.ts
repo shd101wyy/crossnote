@@ -770,7 +770,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
             <label class="copy-label">Copy image to root /assets folder</label>
             <div class="drop-area paster">
-              <p class="paster"> Drop image file here or click me </p>
+              <p class="paster"> Click me to browse image file </p>
               <input class="file-uploader paster" type="file" style="display:none;" multiple="multiple" >
             </div>
 
@@ -778,7 +778,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
             <label>Upload</label>
             <div class="drop-area uploader">
-              <p class="uploader">Drop image file here or click me</p>
+              <p class="uploader">Click me to browse image file</p>
               <input class="file-uploader uploader" type="file" style="display:none;" multiple="multiple" >
             </div>
             <div class="uploader-choice">
