@@ -423,7 +423,7 @@ class PreviewController {
     })
 
     const copyLabel = imageHelper.getElementsByClassName('copy-label')[0] as HTMLLabelElement
-    copyLabel.innerText = `Copy image to ${this.config.imageFolderPath[0] == '/' ? 'root' : 'relative'} ${this.config.imageFolderPath} folder`
+    copyLabel.innerText = `Copy image to ${this.config.imageFolderPath[0] == '/' ? 'workspace' : 'relative'} ${this.config.imageFolderPath} folder`
 
     const imageUploaderSelect = imageHelper.getElementsByClassName('uploader-select')[0] as HTMLSelectElement
     imageUploaderSelect.value = this.config.imageUploader
@@ -1210,7 +1210,8 @@ private initWindowEvents() {
       this.sourceUri = data.sourceUri
       this.renderSidebarTOC()
       this.updateHTML(data.html, data.id, data.class)
-    } else if (data.command === 'changeTextEditorSelection' && this.config.scrollSync) {
+    } else if (data.command === 'changeTextEditorSelection' && 
+               (this.config.scrollSync || data.forced)) {
       const line = parseInt(data.line)
       let topRatio = parseFloat(data.topRatio)
       if (isNaN(topRatio)) topRatio = 0.372

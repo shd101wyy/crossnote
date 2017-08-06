@@ -3,6 +3,7 @@
 .markdown-preview {
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
 
   .pagebreak, .newpage {
     page-break-before: always;
@@ -87,32 +88,33 @@
 }
 
 html body[for="html-export"] {
-  position: absolute;
+  @sidebar-toc-width: 268px;
+
+  position: relative;
   width: 100%;
   height: 100%;
   top: 0;
   left: 0;
   margin: 0;
   padding: 0; // <= this has to be zero; otherwise prince export will have issue.  
+  overflow: auto;
 
   .markdown-preview:not([data-presentation-mode]) {
+    position: relative;
+    top: 0;
 
     @media screen and (min-width: 914px) {
-      width: 980px;
-      margin:10px auto;
-      padding: 0 2em;
+      padding: 2em calc(~"50% - 457px");
     }
 
     @media screen and (max-width: 914px) {
-      margin: 0 auto;
-      padding: 0 2em;
+      padding: 2em;
     }
 
     // mobile
     @media screen and (max-width: 450px) {
       font-size: 14px !important; // <= this line is necessary. otherwise #sidebar-toc-btn position will be wrong.  
-      margin: 0 auto;
-      padding: 0 1em;
+      padding: 1em;
     }
   }
 
@@ -132,7 +134,7 @@ html body[for="html-export"] {
     z-index: 99;
     width: 32px;
     text-align: center;
-    opacity: 0.6;
+    opacity: 0.4;
   }
 
   &[html-show-sidebar-toc] {
@@ -146,13 +148,15 @@ html body[for="html-export"] {
       position: fixed;
       top: 0;
       left: 0;
-      width: 268px;
+      width: @sidebar-toc-width;
       height: 100%;
       padding: 32px 0 48px 0;
-      overflow: auto;
       font-size: 14px;
-      box-shadow: 4px 0px 12px rgba(150, 150, 150, .33);
+      box-shadow: 0 0 4px rgba(150,150,150,0.33);
       box-sizing: border-box;
+      overflow: auto;
+      background-color: inherit;
+
       a {
         text-decoration: none;
       }
@@ -169,17 +173,29 @@ html body[for="html-export"] {
     }
 
     .markdown-preview {
-        position: relative;
-        left: 268px;
-        max-width: 980px;
-        width: calc(~"100% - 268px");
-        margin: 0;       
-        padding: 0 2em;
-        box-sizing: border-box; 
+      left: @sidebar-toc-width;
+      width: calc(~"100% - " @sidebar-toc-width);
+      padding: 2em calc(~"50% - 457px - " (@sidebar-toc-width/2));
+      margin: 0;       
+      box-sizing: border-box; 
+
+      @media screen and (max-width: (914px+@sidebar-toc-width+60px)) {
+        padding: 2em;
+      }
+
+      // mobile
+      @media screen and (max-width: 450px) {
+        width: 100%;
+      }
     }
   }
 
   &:not([html-show-sidebar-toc]) {
+    .markdown-preview {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
     .md-sidebar-toc {
       display: none;
     }

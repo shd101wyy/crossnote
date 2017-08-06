@@ -1084,11 +1084,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       </style>
     </head>
     <body ${options.isForPrint ? '' : 'for="html-export"'}>
-      ${sidebarTOC}
-      ${sidebarTOCBtn}
       <div class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
       ${html}
       </div>
+      ${sidebarTOC}
+      ${sidebarTOCBtn}
     </body>
     ${presentationInitScript}
     ${mermaidInitScript}
