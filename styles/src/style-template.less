@@ -69,6 +69,23 @@
   }
 }
 
+.scrollbar-style {
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+        // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+        border-radius: 10px;
+        background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        border-radius: 5px; // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+        background-color: rgba(150, 150, 150, .66);
+        border: 4px solid rgba(150, 150, 150, .66);
+        background-clip: content-box;
+    }
+}
+
 html body[for="html-export"] {
   position: absolute;
   width: 100%;
@@ -79,6 +96,7 @@ html body[for="html-export"] {
   padding: 0; // <= this has to be zero; otherwise prince export will have issue.  
 
   .markdown-preview:not([data-presentation-mode]) {
+
     @media screen and (min-width: 914px) {
       width: 980px;
       margin:10px auto;
@@ -114,10 +132,17 @@ html body[for="html-export"] {
     z-index: 99;
     width: 32px;
     text-align: center;
+    opacity: 0.6;
   }
 
   &[html-show-sidebar-toc] {
+    #sidebar-toc-btn { 
+      opacity: 1.0
+    }
+
     .md-sidebar-toc {
+      .scrollbar-style();
+
       position: fixed;
       top: 0;
       left: 0;
