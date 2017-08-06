@@ -498,7 +498,7 @@ export async function transformMarkdown(inputString:string,
           let index = htmlTagMatch[1].indexOf(' ') 
           if (index < 0) index = htmlTagMatch[1].length
           const tagName = htmlTagMatch[1].slice(0, index)
-          if (!(tagName in selfClosingTag) && tagName[0] !== '/') {
+          if (!(tagName in selfClosingTag) && tagName[0].match(/^\w+$/)) {
             const closeTagName = `</${tagName}>`
             let end = inputString.indexOf(closeTagName, i + htmlTagMatch[0].length)
             if (end < 0) {
