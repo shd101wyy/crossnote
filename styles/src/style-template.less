@@ -1,20 +1,9 @@
 // out: ../style-template.css, compress:true
 
-html body:not([data-presentation-mode]) {
-  @media screen and (min-width: 914px) {
-    width: 980px;
-    margin:10px auto;
-  }
+.markdown-preview {
+  width: 100%;
+  height: 100%;
 
-  // mobile
-  @media screen and (max-width: 400px) {
-    font-size: 14px;
-    margin: 0 auto;
-    padding: 15px;
-  }
-}
-
-html body {
   .pagebreak, .newpage {
     page-break-before: always;
   }
@@ -80,29 +69,119 @@ html body {
   }
 }
 
-/*
-html body[data-presentation-mode] {
-  font-size: 24px;
+.scrollbar-style {
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+        // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+        border-radius: 10px;
+        background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        border-radius: 5px; // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+        background-color: rgba(150, 150, 150, .66);
+        border: 4px solid rgba(150, 150, 150, .66);
+        background-clip: content-box;
+    }
+}
+
+html body[for="html-export"] {
+  position: absolute;
   width: 100%;
-  box-sizing: border-box;
+  height: 100%;
+  top: 0;
+  left: 0;
   margin: 0;
-  padding: 0;
+  padding: 0; // <= this has to be zero; otherwise prince export will have issue.  
 
-  h1, h2, h3, h4, h5, h6 {
-    margin-top: 0;
-  }
-  strong {
-    font-weight: bold; // without this line, the output <strong> doesn't have wrong effect.
+  .markdown-preview:not([data-presentation-mode]) {
+
+    @media screen and (min-width: 914px) {
+      width: 980px;
+      margin:10px auto;
+      padding: 0 2em;
+    }
+
+    @media screen and (max-width: 914px) {
+      margin: 0 auto;
+      padding: 0 2em;
+    }
+
+    // mobile
+    @media screen and (max-width: 450px) {
+      font-size: 14px !important; // <= this line is necessary. otherwise #sidebar-toc-btn position will be wrong.  
+      margin: 0 auto;
+      padding: 0 1em;
+    }
   }
 
-  &::-webkit-scrollbar {
-    display: none;
+  @media print {
+    #sidebar-toc-btn {
+      display: none;
+    }
+  }
+
+  #sidebar-toc-btn { // please note that this is different from the one in preview.less
+    position: fixed;
+    bottom: 8px;
+    left: 8px;
+    font-size: 28px;
+    cursor: pointer;
+    color: inherit;
+    z-index: 99;
+    width: 32px;
+    text-align: center;
+    opacity: 0.6;
+  }
+
+  &[html-show-sidebar-toc] {
+    #sidebar-toc-btn { 
+      opacity: 1.0
+    }
+
+    .md-sidebar-toc {
+      .scrollbar-style();
+
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 268px;
+      height: 100%;
+      padding: 32px 0 48px 0;
+      overflow: auto;
+      font-size: 14px;
+      box-shadow: 4px 0px 12px rgba(150, 150, 150, .33);
+      box-sizing: border-box;
+      a {
+        text-decoration: none;
+      }
+      ul {
+        padding: 0 1.6em;
+        margin-top: 0.8em;
+      }
+      li {
+        margin-bottom: 0.8em;
+      }
+      ul {
+        list-style-type: none;
+      }
+    }
+
+    .markdown-preview {
+        position: relative;
+        left: 268px;
+        max-width: 980px;
+        width: calc(~"100% - 268px");
+        margin: 0;       
+        padding: 0 2em;
+        box-sizing: border-box; 
+    }
+  }
+
+  &:not([html-show-sidebar-toc]) {
+    .md-sidebar-toc {
+      display: none;
+    }
   }
 }
-
-html body {
-  .slides {
-    text-align: left !important;
-  }
-}
-*/

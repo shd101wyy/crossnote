@@ -566,7 +566,11 @@ export class MarkdownEngine {
     scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/crypto-js/crypto-js.js')}"></script>`
 
     // mermaid
-    scripts += `<script src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/mermaid.min.js`)}"></script>`
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/mermaid.min.js`)}"></script>`
+
+    // wavedrome
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/default.js')}"></script>`
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/wavedrom.min.js')}"></script>`
 
     // math 
     if (this.config.mathRenderingOption === 'MathJax' || this.config.usePandocParser) {
@@ -624,6 +628,13 @@ if (typeof(window['Reveal']) !== 'undefined') {
   mermaid.init(null, document.getElementsByClassName('mermaid'))
 }
 </script>`
+
+    // wavedrom init script
+    if (isForPresentation) {
+      scripts += `<script>
+  WaveDrom.ProcessAll()
+      </script>`
+    }
     
     return scripts
   }
@@ -803,7 +814,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         ${head}        
       </head>
       <body class="preview-container">
-        <div class="mume" for="preview" ${isPresentationMode ? 'data-presentation-mode' : ''}>
+        <div class="mume markdown-preview" for="preview" ${isPresentationMode ? 'data-presentation-mode' : ''}>
           ${html}
         </div>
         ${body}
@@ -908,6 +919,20 @@ if (typeof(window['Reveal']) !== 'undefined') {
 }
 </script>`
     }
+    // wavedrom 
+    let wavedromScript = ``,
+        wavedromInitScript = ``
+    if (html.indexOf('<div class="wavedrom">') >= 0) {
+      if (options.offline) {
+        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/default.js')}"></script>`
+        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/wavedrom.min.js')}"></script>`
+      } else {
+        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/skins/default.js"></script>`
+        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/wavedrom.min.js"></script>`
+      }
+      wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`
+    }
+
 
     // presentation
     let presentationScript = '',
@@ -995,6 +1020,33 @@ if (typeof(window['Reveal']) !== 'undefined') {
       // ignore it 
     }
 
+    // sidebar toc
+    let sidebarTOC = '',
+        sidebarTOCScript = '',
+        sidebarTOCBtn = ''
+    if (!yamlConfig["isPresentationMode"] && !options.isForPrint && ( 
+      (!('html' in yamlConfig)) || 
+      (yamlConfig['html'] && yamlConfig['html']['toc'] !== false))) { // enable sidebar toc by default
+      sidebarTOC = `<div class="md-sidebar-toc">${this.tocHTML}</div>`
+      sidebarTOCBtn = '<a id="sidebar-toc-btn">≡</a>'
+      // toggle sidebar toc
+      // If yamlConfig['html']['toc'], then display sidebar TOC on startup.
+      sidebarTOCScript = `
+<script>
+${(yamlConfig['html'] && yamlConfig['html']['toc']) ? `document.body.setAttribute('html-show-sidebar-toc', true)` : ''}
+var sidebarTOCBtn = document.getElementById('sidebar-toc-btn')
+sidebarTOCBtn.addEventListener('click', function(event) {
+  event.stopPropagation()
+  if (document.body.hasAttribute('html-show-sidebar-toc')) {
+    document.body.removeAttribute('html-show-sidebar-toc')
+  } else {
+    document.body.setAttribute('html-show-sidebar-toc', true)
+  }
+})
+</script>
+      `
+    }
+
     // task list script
     // has to use `var` instead of `let` because `phantomjs` might cause issue.  
     const taskListScript = `<script>
@@ -1024,18 +1076,25 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
       ${presentationScript}
       ${mermaidScript}
+      ${wavedromScript}
 
       <style> 
       ${styleCSS} 
       ${globalStyles} 
       </style>
     </head>
-    <body class="mume ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
-    ${html}
+    <body ${options.isForPrint ? '' : 'for="html-export"'}>
+      ${sidebarTOC}
+      ${sidebarTOCBtn}
+      <div class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
+      ${html}
+      </div>
     </body>
     ${presentationInitScript}
     ${mermaidInitScript}
+    ${wavedromInitScript}
     ${taskListScript}
+    ${sidebarTOCScript}
   </html>
     `
 
@@ -1424,8 +1483,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
     </style>
     ${mathStyle}
   </head>
-  <body class="mume">
-  ${outputHTML}
+  <body>
+    <div class="mume markdown-preview">
+    ${outputHTML}
+    </div>
   </body>
 </html>            
 `
@@ -1800,6 +1861,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
       }
       */
       $preElement.replaceWith(`<div class="mermaid">${code}</div>`)
+    } else if (lang === 'wavedrom') {
+      $preElement.replaceWith(`<div class="wavedrom"><script type="WaveDrom">${code}</script></div>`)
     } else if (lang.match(/^(dot|viz)$/)) { // GraphViz
       const checksum = md5(optionsStr + code)
       let svg = this.graphsCache[checksum]
@@ -2187,8 +2250,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     let output = ''
 
+    /*
     const parseAttrString = (slideConfig)=> {
       let attrString = ''
+
+      // let attrString = utility.stringifyAttributes(slideConfig, false)
 
       if (slideConfig['data-background-image'])
         attrString += ` data-background-image='${this.resolveFilePath(slideConfig['data-background-image'], useRelativeFilePath)}'`
@@ -2222,9 +2288,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
       if (slideConfig['data-background-iframe'])
         attrString += ` data-background-iframe='${this.resolveFilePath(slideConfig['data-background-iframe'], useRelativeFilePath)}'`
-      
+
       return attrString
     }
+    */
 
     let i = 0,
         h = -1, // horizontal
@@ -2232,7 +2299,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     while (i < slides.length) { 
       const slide = slides[i] 
       const slideConfig = slideConfigs[i]
-      const attrString = parseAttrString(slideConfig)
+      const attrString = utility.stringifyAttributes(slideConfig, false) // parseAttrString(slideConfig)
       const classString = slideConfig['class'] || ''
       const idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : ''
 

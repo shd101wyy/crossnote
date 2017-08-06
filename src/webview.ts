@@ -133,6 +133,11 @@ class PreviewController {
   private sourceUri = null
 
   /**
+   * Caches
+   */
+  private wavedromCache = {}
+
+  /**
    * This controller should be initialized when the html dom is loaded.
    */
   constructor() {
@@ -142,6 +147,7 @@ class PreviewController {
     const previewElement = document.getElementsByClassName('mume')[0] as HTMLElement
     const hiddenPreviewElement = document.createElement("div")
     hiddenPreviewElement.classList.add('mume')
+    hiddenPreviewElement.classList.add('markdown-preview')
     hiddenPreviewElement.classList.add('hidden-preview')
     hiddenPreviewElement.setAttribute('for', 'preview')
     hiddenPreviewElement.style.zIndex = '0'
@@ -156,6 +162,13 @@ class PreviewController {
     /** load config */
     this.config = JSON.parse(document.getElementById('mume-data').getAttribute('data-config'))
     this.sourceUri = this.config['sourceUri']
+
+    /*
+    if (this.config.vscode) { // remove vscode default styles
+      const defaultStyles = document.getElementById('_defaultStyles')
+      if (defaultStyles) defaultStyles.remove()
+    }
+    */
 
     console.log('init webview: ' + this.sourceUri)
 
@@ -195,6 +208,7 @@ class PreviewController {
 
       this.postMessage('webviewFinishLoading', [this.sourceUri])
     } else { // TODO: presentation preview to source sync
+      this.config.scrollSync = true // <= force to enable scrollSync for presentation
       this.initPresentationEvent()
     }
     
@@ -480,18 +494,9 @@ class PreviewController {
    * Init several events for presentation mode
    */
   private initPresentationEvent() {
-    const firstSlide = document.querySelector('.reveal .slides .slide') as HTMLElement // fix flickering by hidding the first slide.  
-    if (firstSlide) firstSlide.style.visibility = 'hidden'
-
+    let initialSlide = null
     window['Reveal'].addEventListener('ready', ( event )=> {
-      if (firstSlide) firstSlide.style.visibility = 'visible'
-
-      this.initSlidesData()
-
-      // slide to initial position
-      window['Reveal'].configure({transition: 'none'})
-      this.scrollToRevealSourceLine(this.initialLine)
-      window['Reveal'].configure({transition: 'slide'})
+      if (initialSlide) initialSlide.style.visibility = 'visible'
 
       // several events...
       this.setupCodeChunks()
@@ -511,6 +516,17 @@ class PreviewController {
         }
       })
     })
+
+        // analyze slides
+    this.initSlidesData()
+
+    // slide to initial position
+    window['Reveal'].configure({transition: 'none'})
+    this.scrollToRevealSourceLine(this.initialLine)
+    window['Reveal'].configure({transition: 'slide'})
+
+    initialSlide = window['Reveal'].getCurrentSlide()
+    if (initialSlide) initialSlide.style.visibility = 'hidden'
   }
 
   // zoom in preview
@@ -576,6 +592,39 @@ class PreviewController {
         resolve()
       })
     })
+  }
+
+  /**
+   * render wavedrom
+   */
+  private async renderWavedrom() {
+    const els = this.hiddenPreviewElement.getElementsByClassName('wavedrom')
+    if (els.length) {
+      const wavedromCache = {}
+      for (let i = 0; i < els.length; i++) {
+        const el = els[i] as HTMLElement
+        el.id = 'wavedrom'+i
+        const text = el.textContent.trim()
+        if (!text.length) continue
+
+        if (text in this.wavedromCache) { // load cache
+          const svg = this.wavedromCache[text]
+          el.innerHTML = svg
+          wavedromCache[text] = svg
+          continue
+        }
+
+        try {
+          const content = eval(`(${text})`)
+          window['WaveDrom'].RenderWaveForm(i, content, 'wavedrom')
+          wavedromCache[text] = el.innerHTML
+        } catch(error) {
+          el.innerText = 'Failed to eval WaveDrom code. ' + error
+        }
+      }
+
+      this.wavedromCache = wavedromCache
+    }
   }
 
   /**
@@ -714,7 +763,8 @@ class PreviewController {
   private async initEvents() {
     await Promise.all([
       this.renderMathJax(), 
-      this.renderMermaid()
+      this.renderMermaid(),
+      this.renderWavedrom()
     ])
     this.previewElement.innerHTML = this.hiddenPreviewElement.innerHTML
     this.hiddenPreviewElement.innerHTML = ""
@@ -826,7 +876,6 @@ class PreviewController {
 
     this.hiddenPreviewElement.innerHTML = html
 
-
     const scrollTop = this.previewElement.scrollTop
     // init several events 
     this.initEvents().then(()=> {
@@ -837,7 +886,7 @@ class PreviewController {
 
       // set id and classes
       this.previewElement.id = id || ''
-      this.previewElement.setAttribute('class', `mume ${classes}`)
+      this.previewElement.setAttribute('class', `mume markdown-preview ${classes}`)
       
       // scroll to initial position 
       if (!this.doneLoadingPreview) {
@@ -1161,7 +1210,7 @@ private initWindowEvents() {
       this.sourceUri = data.sourceUri
       this.renderSidebarTOC()
       this.updateHTML(data.html, data.id, data.class)
-    } else if (data.command === 'changeTextEditorSelection') {
+    } else if (data.command === 'changeTextEditorSelection' && this.config.scrollSync) {
       const line = parseInt(data.line)
       let topRatio = parseFloat(data.topRatio)
       if (isNaN(topRatio)) topRatio = 0.372

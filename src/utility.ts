@@ -526,7 +526,7 @@ export function parseAttributes(text='', asArray=false) {
  * Convert JSON object to attributes string.  
  * @param obj 
  */
-export function stringifyAttributes(obj:object):string {
+export function stringifyAttributes(obj:object, addCurlyParen=true):string {
   let output = ""
 
   for (let key in obj) {
@@ -547,7 +547,11 @@ export function stringifyAttributes(obj:object):string {
       output += " "
     }
   }
-  return '{' + output.trim() + '}'
+  if (addCurlyParen) {
+    return '{' + output.trim() + '}'
+  } else {
+    return output.trim()
+  }
 }
 
 /**

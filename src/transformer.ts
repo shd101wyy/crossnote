@@ -74,6 +74,25 @@ const fileExtensionToLanguageMap = {
   'viz': 'dot',
 }
 
+const selfClosingTag = {
+  area: 1,
+  base: 1,
+  br: 1,
+  col: 1,
+  command: 1,
+  embed: 1,
+  hr: 1,
+  img: 1,
+  input: 1,
+  keygen: 1,
+  link: 1,
+  meta: 1,
+  param: 1,
+  source: 1,
+  track: 1,
+  wbr: 1
+}
+
 /**
  * Convert 2D array to markdown table.
  * The first row is headings.
@@ -264,7 +283,7 @@ export async function transformMarkdown(inputString:string,
           continue
         }
 
-        let subjectMatch, headingMatch, taskListItemMatch
+        let subjectMatch, headingMatch, taskListItemMatch, htmlTagMatch
 
         /*
         // I changed this because for case like:
@@ -475,6 +494,31 @@ export async function transformMarkdown(inputString:string,
           lineNo = lineNo+1
           outputString = outputString+line+`\n`
           continue
+        } else if (htmlTagMatch = line.match(/^\s*\<(.+?)\>/)) { // escape html tag like <pre>
+          let index = htmlTagMatch[1].indexOf(' ') 
+          if (index < 0) index = htmlTagMatch[1].length
+          const tagName = htmlTagMatch[1].slice(0, index)
+          if (!(tagName in selfClosingTag) && tagName[0].match(/^\w+$/)) {
+            const closeTagName = `</${tagName}>`
+            let end = inputString.indexOf(closeTagName, i + htmlTagMatch[0].length)
+            if (end < 0) {
+              // HTML error. Tag not closed
+              i = inputString.length
+              lineNo = lineNo + 1
+              outputString = outputString + `\n\`\`\`\nHTML error. Tag <${tagName}> not closed. ${closeTagName} is required.\n\`\`\`\n\n`
+              continue
+            } else {
+              const htmlString = inputString.slice(i, end + closeTagName.length)
+              const newlinesMatch = htmlString.match(/\n/g)
+              const newlines = (newlinesMatch ? newlinesMatch.length : 0)
+
+              // return helper(commentEnd, lineNo + newlines, outputString + '\n')
+              i = end + closeTagName.length
+              lineNo = lineNo + newlines
+              outputString = outputString + htmlString + '\n'
+              continue
+            }
+          }
         }
 
         // file import 
