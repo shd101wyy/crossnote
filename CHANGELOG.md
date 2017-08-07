@@ -1,3 +1,7 @@
+# 0.1.8 
+* atom version sync source bug.  
+* check vscode markdown preview scroll sync element highlight logic.  (**<= not done**)
+
 # 0.1.7  
 * ~~https://github.com/hakimel/reveal.js/issues/1949#issuecomment-318869906.~~    
 * ~~Change `fs.watch` to `fs.watchFile`~~.    
