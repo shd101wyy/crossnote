@@ -1865,7 +1865,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (!svg) {
         svg = await plantumlAPI.render(code, this.fileDirectoryPath)
       }
-      $preElement.replaceWith(`<p>${svg}</p>`)
+      $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
       graphsCache[checksum] = svg // store to new cache 
       
     } else if (lang.match(/^mermaid$/)) { // mermaid 
@@ -1881,9 +1881,19 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         graphsCache[checksum] = svg // store to new cache 
       }
       */
-      $preElement.replaceWith(`<div class="mermaid">${code}</div>`)
+      if (options['class']) {
+        options['class'] += ' mermaid'
+      } else {
+        options['class'] = 'mermaid'
+      }
+      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}>${code}</div>`)
     } else if (lang === 'wavedrom') {
-      $preElement.replaceWith(`<div class="wavedrom"><script type="WaveDrom">${code}</script></div>`)
+      if (options['class']) {
+        options['class'] += ' wavedrom'
+      } else {
+        options['class'] = 'wavedrom'
+      }
+      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}><script type="WaveDrom">${code}</script></div>`)
     } else if (lang.match(/^(dot|viz)$/)) { // GraphViz
       const checksum = md5(optionsStr + code)
       let svg = this.graphsCache[checksum]
@@ -1892,13 +1902,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           let engine = options['engine'] || "dot"
           svg = Viz(code, {engine})
           
-          $preElement.replaceWith(`<p>${svg}</p>`)
+          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache
         } catch(e) {
           $preElement.replaceWith(`<pre class="language-text">${e.toString()}</pre>`)
         }
       } else {
-        $preElement.replaceWith(`<p>${svg}</p>`)
+        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
         graphsCache[checksum] = svg // store to new cache
       }
     } else if (lang.match(/^vega$/)) { // vega
@@ -1908,13 +1918,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         try {
           svg = await vegaAPI.toSVG(code, this.fileDirectoryPath)
 
-          $preElement.replaceWith(`<p>${svg}</p>`)
+          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache 
         } catch(error) {
           $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
         }
       } else {
-        $preElement.replaceWith(`<p>${svg}</p>`)
+        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
         graphsCache[checksum] = svg // store to new cache
       }
     } else if (lang === 'vega-lite') { // vega-lite
@@ -1924,13 +1934,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         try {
           svg = await vegaLiteAPI.toSVG(code, this.fileDirectoryPath)
 
-          $preElement.replaceWith(`<p>${svg}</p>`)
+          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache 
         } catch(error) {
           $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
         }
       } else {
-        $preElement.replaceWith(`<p>${svg}</p>`)
+        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
         graphsCache[checksum] = svg // store to new cache
       }
     } else if (options['cmd']) {
