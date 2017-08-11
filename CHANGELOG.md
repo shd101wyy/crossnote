@@ -1,3 +1,9 @@
+# 0.1.9
+* Changed `printBackground` logic.  
+* Fixed presentation export style bug.  
+* Added `style.less` compilation error messages.  
+* Upgraded several dependencies.  
+
 # 0.1.8 
 * atom version sync source bug.  
 * check vscode markdown preview scroll sync element highlight logic.  (**<= not done**)
