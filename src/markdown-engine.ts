@@ -452,7 +452,7 @@ export class MarkdownEngine {
 
       let splits = content.split('|')
       let linkText = splits[0].trim()
-      let wikiLink = splits.length === 2 ? `${splits[1].trim()}${this.config.wikiLinkFileExtension}` : `${linkText.replace(/\s/g, '')}${this.config.wikiLinkFileExtension}`
+      let wikiLink = splits.length === 2 ? `${splits[1].trim()}${this.config.wikiLinkFileExtension}` : `${linkText.replace(/\s/g, '_')}${this.config.wikiLinkFileExtension}`
 
       return `<a href="${wikiLink}">${linkText}</a>`
     }
