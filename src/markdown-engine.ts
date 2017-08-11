@@ -2131,6 +2131,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       const img = $(imgElement)
       const src = img.attr(srcTag)
 
+      // insert anchor for scroll sync.  
+      if (options.isForPreview && img.parent().prev().hasClass('sync-line')) { 
+        const lineNo = parseInt(img.parent().prev().attr('data-line'))
+        if (lineNo)
+          img.parent().after(`<p data-line="${lineNo + 1}" class="sync-line" style="margin:0;"></p>`)
+      }
+
       img.attr(srcTag, this.resolveFilePath(src, options.useRelativeFilePath))
     })
 
