@@ -1001,7 +1001,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`), {encoding:'utf-8'})
       } else {
         // preview theme
-        styleCSS += (options.isForPrint && !this.config.printBackground) ? 
+        styleCSS += (!this.config.printBackground && !yamlConfig['print_background']) ? 
           await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/github-light.css`), {encoding:'utf-8'}) :
           await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
       }
