@@ -249,6 +249,8 @@ export class MarkdownEngine {
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-sub.min.js')))
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-sup.min.js')))
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-deflist.min.js')))
+    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-abbr.min.js')))
+    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-mark.min.js')))
 
     this.configureMarkdownIt()
   }
