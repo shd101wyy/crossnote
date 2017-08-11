@@ -249,6 +249,8 @@ export class MarkdownEngine {
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-sub.min.js')))
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-sup.min.js')))
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-deflist.min.js')))
+    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-abbr.min.js')))
+    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-mark.min.js')))
 
     this.configureMarkdownIt()
   }
@@ -450,7 +452,7 @@ export class MarkdownEngine {
 
       let splits = content.split('|')
       let linkText = splits[0].trim()
-      let wikiLink = splits.length === 2 ? `${splits[1].trim()}${this.config.wikiLinkFileExtension}` : `${linkText.replace(/\s/g, '')}${this.config.wikiLinkFileExtension}`
+      let wikiLink = splits.length === 2 ? `${splits[1].trim()}${this.config.wikiLinkFileExtension}` : `${linkText.replace(/\s/g, '_')}${this.config.wikiLinkFileExtension}`
 
       return `<a href="${wikiLink}">${linkText}</a>`
     }
@@ -659,16 +661,33 @@ if (typeof(window['Reveal']) !== 'undefined') {
     'solarized-dark.css': 'solarized-dark.css'
   }
 
+  static AutoPrismThemeMapForPresentation = {
+    'beige.css': 'pen-paper-coffee.css',
+    'black.css': 'one-dark.css',
+    'blood.css': 'monokai.css',
+    'league.css': 'okaidia.css',
+    'moon.css': 'funky.css',
+    'night.css': 'atom-dark.css',
+    'serif.css': 'github.css',
+    'simple.css': 'github.css',
+    'sky.css': 'default.css',
+    'solarized.css': 'solarized-light.css',
+    'white.css': 'default.css'
+  }
+
   /**
    * Automatically pick code block theme for preview.  
    */
-  private getPrismTheme() {
+  private getPrismTheme(isPresentationMode=false) {
     if (this.config.codeBlockTheme === 'auto.css') {
       /**
        * Automatically pick code block theme for preview.  
        */
-      return MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] || 'default.css'
-
+      if (isPresentationMode) {
+        return MarkdownEngine.AutoPrismThemeMapForPresentation[this.config.revealjsTheme] || 'default.css'
+      } else {
+        return MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] || 'default.css'
+      }
     } else {
       return this.config.codeBlockTheme
     }
@@ -706,7 +725,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
 
     // check prism 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`)}">`
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(isPresentationMode)}`)}">`
 
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${path.resolve(utility.extensionDirectoryPath, './styles/style-template.css')}">`
@@ -995,13 +1014,15 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let styleCSS = ""
     try{
       // prism *.css
-      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`), {encoding:'utf-8'})
+      styleCSS += (!this.config.printBackground && !yamlConfig['print_background'] && !yamlConfig["isPresentationMode"]) ?
+      await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/github.css`), {encoding:'utf-8'}) :
+      await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(yamlConfig["isPresentationMode"])}`), {encoding:'utf-8'})
       
       if (yamlConfig["isPresentationMode"]) {
         styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`), {encoding:'utf-8'})
       } else {
         // preview theme
-        styleCSS += (options.isForPrint && !this.config.printBackground) ? 
+        styleCSS += (!this.config.printBackground && !yamlConfig['print_background']) ? 
           await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/github-light.css`), {encoding:'utf-8'}) :
           await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
       }
@@ -1083,7 +1104,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${globalStyles} 
       </style>
     </head>
-    <body ${options.isForPrint ? '' : 'for="html-export"'}>
+    <body ${options.isForPrint ? '' : 'for="html-export"'} ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''}>
       <div class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
       ${html}
       </div>
@@ -1452,7 +1473,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         // style template
         utility.readFile(path.resolve(extensionDirectoryPath, './styles/style-template.css'), {encoding:'utf-8'}),
         // prism *.css
-        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`), {encoding:'utf-8'}),
+        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(false)}`), {encoding:'utf-8'}),
         // preview theme
         utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
       ])
@@ -1844,7 +1865,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (!svg) {
         svg = await plantumlAPI.render(code, this.fileDirectoryPath)
       }
-      $preElement.replaceWith(`<p>${svg}</p>`)
+      $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
       graphsCache[checksum] = svg // store to new cache 
       
     } else if (lang.match(/^mermaid$/)) { // mermaid 
@@ -1860,9 +1881,19 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         graphsCache[checksum] = svg // store to new cache 
       }
       */
-      $preElement.replaceWith(`<div class="mermaid">${code}</div>`)
+      if (options['class']) {
+        options['class'] += ' mermaid'
+      } else {
+        options['class'] = 'mermaid'
+      }
+      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}>${code}</div>`)
     } else if (lang === 'wavedrom') {
-      $preElement.replaceWith(`<div class="wavedrom"><script type="WaveDrom">${code}</script></div>`)
+      if (options['class']) {
+        options['class'] += ' wavedrom'
+      } else {
+        options['class'] = 'wavedrom'
+      }
+      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}><script type="WaveDrom">${code}</script></div>`)
     } else if (lang.match(/^(dot|viz)$/)) { // GraphViz
       const checksum = md5(optionsStr + code)
       let svg = this.graphsCache[checksum]
@@ -1871,13 +1902,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           let engine = options['engine'] || "dot"
           svg = Viz(code, {engine})
           
-          $preElement.replaceWith(`<p>${svg}</p>`)
+          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache
         } catch(e) {
           $preElement.replaceWith(`<pre class="language-text">${e.toString()}</pre>`)
         }
       } else {
-        $preElement.replaceWith(`<p>${svg}</p>`)
+        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
         graphsCache[checksum] = svg // store to new cache
       }
     } else if (lang.match(/^vega$/)) { // vega
@@ -1887,13 +1918,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         try {
           svg = await vegaAPI.toSVG(code, this.fileDirectoryPath)
 
-          $preElement.replaceWith(`<p>${svg}</p>`)
+          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache 
         } catch(error) {
           $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
         }
       } else {
-        $preElement.replaceWith(`<p>${svg}</p>`)
+        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
         graphsCache[checksum] = svg // store to new cache
       }
     } else if (lang === 'vega-lite') { // vega-lite
@@ -1903,13 +1934,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         try {
           svg = await vegaLiteAPI.toSVG(code, this.fileDirectoryPath)
 
-          $preElement.replaceWith(`<p>${svg}</p>`)
+          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache 
         } catch(error) {
           $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
         }
       } else {
-        $preElement.replaceWith(`<p>${svg}</p>`)
+        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
         graphsCache[checksum] = svg // store to new cache
       }
     } else if (options['cmd']) {
@@ -2130,6 +2161,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
       const img = $(imgElement)
       const src = img.attr(srcTag)
+
+      // insert anchor for scroll sync.  
+      if (options.isForPreview && img.parent().prev().hasClass('sync-line')) { 
+        const lineNo = parseInt(img.parent().prev().attr('data-line'))
+        if (lineNo)
+          img.parent().after(`<p data-line="${lineNo + 1}" class="sync-line" style="margin:0;"></p>`)
+      }
 
       img.attr(srcTag, this.resolveFilePath(src, options.useRelativeFilePath))
     })

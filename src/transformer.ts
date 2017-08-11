@@ -515,7 +515,7 @@ export async function transformMarkdown(inputString:string,
               // return helper(commentEnd, lineNo + newlines, outputString + '\n')
               i = end + closeTagName.length
               lineNo = lineNo + newlines
-              outputString = outputString + htmlString + '\n'
+              outputString = outputString + htmlString
               continue
             }
           }

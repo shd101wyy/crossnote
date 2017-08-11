@@ -28,7 +28,8 @@ async function main() {
     config: {
       previewTheme: "github-light.css",
       // revealjsTheme: "white.css"
-      codeBlockTheme: "default.css" 
+      codeBlockTheme: "default.css",  
+      printBackground: true
     }
   })
 
@@ -156,7 +157,7 @@ const config = {
   // When using Image Helper to copy images, by default images will be copied to root image folder path '/assets'
   imageFolderPath: '/assets',
 
-  // Whether to print background for PDF file export or not. If set to `false`, then `github-light` preview theme will b  used.
+  // Whether to print background for file export or not. If set to `false`, then `github-light` preview theme will b  used. You can also set `print_background` in front-matter for individual files.
   printBackground: false,
 
   // PhantomJS executable path

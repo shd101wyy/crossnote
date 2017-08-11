@@ -4,14 +4,14 @@ I managed many libraries by myself instead of through npm to reduce overall file
 ```json
 {
     "mermaid": "7.0.0",
-    "plantuml": "1.2017.13",
+    "plantuml": "1.2017.15",
     "wavedrom": "1.4.1",
     "reveal": "3.5.0",
     "viz": "v1.8.0",
     "MathJax": "v2.7.1",
     "jquery": "v3.2.1",
     "jquery-contextmenu": "2.5.0",
-    "markdown-it": "8.3.1",
+    "markdown-it": "8.3.2",
     "JavaScript-MD5": "2.7.0",
     "katex": "0.7.1",
     "crypto-js": "3.9.1-1",

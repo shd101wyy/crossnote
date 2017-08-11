@@ -87,7 +87,7 @@
     }
 }
 
-html body[for="html-export"] {
+html body[for="html-export"]:not([data-presentation-mode]) {
   @sidebar-toc-width: 300px;
 
   position: relative;
@@ -99,7 +99,7 @@ html body[for="html-export"] {
   padding: 0; // <= this has to be zero; otherwise prince export will have issue.  
   overflow: auto;
 
-  .markdown-preview:not([data-presentation-mode]) {
+  .markdown-preview {
     position: relative;
     top: 0;
 

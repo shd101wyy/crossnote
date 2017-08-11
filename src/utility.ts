@@ -143,7 +143,11 @@ html body {
 
   return await new Promise<string>((resolve, reject)=> {
     less.render(fileContent, {paths: [path.dirname(globalLessFilePath)]}, (error, output)=> {
-      if (error) return reject(error)
+      if (error) return resolve(`html body:before {
+  content: "Failed to compile \`style.less\`. ${error}" !important;
+  padding: 2em !important;
+}
+.mume.mume { display: none !important; }`)
       return resolve(output.css || '')
     })
   })
