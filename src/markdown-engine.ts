@@ -1014,7 +1014,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let styleCSS = ""
     try{
       // prism *.css
-      styleCSS += (!this.config.printBackground && !yamlConfig['print_background']) ?
+      styleCSS += (!this.config.printBackground && !yamlConfig['print_background'] && !yamlConfig["isPresentationMode"]) ?
       await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/github.css`), {encoding:'utf-8'}) :
       await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(yamlConfig["isPresentationMode"])}`), {encoding:'utf-8'})
       
