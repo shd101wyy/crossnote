@@ -995,7 +995,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let styleCSS = ""
     try{
       // prism *.css
-      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`), {encoding:'utf-8'})
+      styleCSS += (!this.config.printBackground && !yamlConfig['print_background']) ?
+      await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/github.css`), {encoding:'utf-8'}) :
+      await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`), {encoding:'utf-8'})
       
       if (yamlConfig["isPresentationMode"]) {
         styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`), {encoding:'utf-8'})
