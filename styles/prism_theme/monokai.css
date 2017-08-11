@@ -17,6 +17,9 @@ pre {
   border: #515151;
   border-radius: 3px;
 }
+pre[class*="language-"] {
+  padding: 1em;
+}
 code[class*="language-"] .token.comment,
 pre[class*="language-"] .token.comment,
 code[class*="language-"] .token.prolog,

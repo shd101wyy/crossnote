@@ -659,16 +659,33 @@ if (typeof(window['Reveal']) !== 'undefined') {
     'solarized-dark.css': 'solarized-dark.css'
   }
 
+  static AutoPrismThemeMapForPresentation = {
+    'beige.css': 'pen-paper-coffee.css',
+    'black.css': 'one-dark.css',
+    'blood.css': 'monokai.css',
+    'league.css': 'okaidia.css',
+    'moon.css': 'funky.css',
+    'night.css': 'atom-dark.css',
+    'serif.css': 'github.css',
+    'simple.css': 'github.css',
+    'sky.css': 'default.css',
+    'solarized.css': 'solarized-light.css',
+    'white.css': 'default.css'
+  }
+
   /**
    * Automatically pick code block theme for preview.  
    */
-  private getPrismTheme() {
+  private getPrismTheme(isPresentationMode=false) {
     if (this.config.codeBlockTheme === 'auto.css') {
       /**
        * Automatically pick code block theme for preview.  
        */
-      return MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] || 'default.css'
-
+      if (isPresentationMode) {
+        return MarkdownEngine.AutoPrismThemeMapForPresentation[this.config.revealjsTheme] || 'default.css'
+      } else {
+        return MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] || 'default.css'
+      }
     } else {
       return this.config.codeBlockTheme
     }
@@ -706,7 +723,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
 
     // check prism 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`)}">`
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(isPresentationMode)}`)}">`
 
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${path.resolve(utility.extensionDirectoryPath, './styles/style-template.css')}">`
@@ -997,7 +1014,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       // prism *.css
       styleCSS += (!this.config.printBackground && !yamlConfig['print_background']) ?
       await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/github.css`), {encoding:'utf-8'}) :
-      await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`), {encoding:'utf-8'})
+      await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(yamlConfig["isPresentationMode"])}`), {encoding:'utf-8'})
       
       if (yamlConfig["isPresentationMode"]) {
         styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`), {encoding:'utf-8'})
@@ -1454,7 +1471,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         // style template
         utility.readFile(path.resolve(extensionDirectoryPath, './styles/style-template.css'), {encoding:'utf-8'}),
         // prism *.css
-        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme()}`), {encoding:'utf-8'}),
+        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(false)}`), {encoding:'utf-8'}),
         // preview theme
         utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
       ])
