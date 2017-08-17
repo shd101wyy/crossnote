@@ -1220,8 +1220,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       isForPrint: true,
       isForPrince: false,
       embedLocalImages: false,
-      offline: true,
-      phantomjsType: fileType
+      offline: true
     })
 
     if (!puppeteer) {
@@ -1262,6 +1261,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
     browser.close()
 
+    if (openFileAfterGeneration) utility.openFile(dest)      
     return dest
   }
 
