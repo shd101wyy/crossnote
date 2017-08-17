@@ -772,7 +772,7 @@ export async function transformMarkdown(inputString:string,
     }
 
     let frontMatterMatch = null
-    if (frontMatterMatch = inputString.match(new RegExp(`^---${EOL}([\\s\\S]+?)${EOL}---${EOL}`))) {
+    if (frontMatterMatch = inputString.match(new RegExp(`^---\s*${EOL}([\\s\\S]+?)${EOL}---\s*${EOL}`))) {
       frontMatterString = frontMatterMatch[0]
       return await helper(frontMatterString.length, frontMatterString.match(/\n/g).length)
     } else {

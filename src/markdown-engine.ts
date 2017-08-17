@@ -1644,7 +1644,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     let config = {}
     let frontMatterMatch = null
-    if (frontMatterMatch = inputString.match(new RegExp(`^---${EOL}([\\s\\S]+?)${EOL}---${EOL}`))) {
+    if (frontMatterMatch = inputString.match(new RegExp(`^---\s*${EOL}([\\s\\S]+?)${EOL}---\s*${EOL}`))) {
       let frontMatterString = frontMatterMatch[0]
       inputString = inputString.replace(frontMatterString, '') // remove front matter
       config = this.processFrontMatter(frontMatterString, false).data
