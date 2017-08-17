@@ -39,6 +39,18 @@ export function unescapeString(str:string):string {
   return str.replace(/\&(amp|lt|gt|quot|apos|\#x27|\#x2F|\#x5C)\;/g, (whole)=> (TAGS_TO_REPLACE_REVERSE[whole] || whole))
 }
 
+/**
+ * Do nothing and sleep for `ms` milliseconds 
+ * @param ms 
+ */
+export function sleep(ms:number) {
+  return new Promise((resolve, reject)=> {
+    setTimeout(()=> {
+      return resolve()
+    }, ms)
+  })
+}
+
 export function readFile(file:string, options?):Promise<string> {
   return new Promise((resolve, reject)=> {
     fs.readFile(file, options, (error, text)=> {
