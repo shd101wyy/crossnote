@@ -1231,7 +1231,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         const nodeModulePath = await globalNodeModules()
         puppeteer = require(path.resolve(nodeModulePath, './puppeteer'))
       } catch(error) {
-        throw "Puppeteer is required to be installed globally.\n`npm install -g puppeteer`\n"
+        throw "Puppeteer (Headless Chrome) is required to be installed globally.\nPlease run `npm install -g puppeteer` in your terminal.  \n"
       }
     }
 
@@ -1240,19 +1240,23 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
-    await page.goto('file:///'+info.path)
+    let loadPath = 'file:///' + info.path + (yamlConfig['isPresentationMode'] ? '?print-pdf' : '')
+    await page.goto(loadPath)
 
     const puppeteerConfig = Object.assign(
       { 
-        path: dest,
+        path: dest
+      }, 
+      yamlConfig['isPresentationMode'] ? {} : {
         margin: {
           top: '1cm',
           bottom: '1cm',
           left: '1cm',
           right: '1cm'
         }
-      }, 
+      },
       yamlConfig['chrome'] || {})
+
     if (fileType === 'pdf') {
       await page.pdf(puppeteerConfig)
     } else {
