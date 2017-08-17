@@ -34,6 +34,9 @@ const pdf = require(path.resolve(extensionDirectoryPath, './dependencies/node-ht
 // import * as Prism from "prismjs"
 let Prism = null
 
+// Puppeteer
+let puppeteer = null
+
 export interface MarkdownEngineRenderOption {
   useRelativeFilePath: boolean,
   isForPreview: boolean,
@@ -1200,6 +1203,65 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     await utility.writeFile(dest, html)
+    return dest
+  }
+
+  /**
+   * Puppeteer file export
+   */
+  public async puppeteerExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
+    const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
+    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
+    let dest = this.filePath
+    let extname = path.extname(dest)
+    dest = dest.replace(new RegExp(extname + '$'), '.' + fileType)
+
+    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
+      isForPrint: true,
+      isForPrince: false,
+      embedLocalImages: false,
+      offline: true,
+      phantomjsType: fileType
+    })
+
+    if (!puppeteer) {
+      try {
+        // const requireg = require('requireg')
+        // console.log(requireg)
+        const globalNodeModules = require('global-node-modules')
+        const nodeModulePath = await globalNodeModules()
+        puppeteer = require(path.resolve(nodeModulePath, './puppeteer'))
+      } catch(error) {
+        throw "Puppeteer is required to be installed globally.\n`npm install -g puppeteer`\n"
+      }
+    }
+
+    const info = await utility.tempOpen({prefix: 'mume', suffix: '.html'})
+    await utility.writeFile(info.fd, html)
+
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    await page.goto('file:///'+info.path)
+
+    const puppeteerConfig = Object.assign(
+      { path: dest }, 
+      yamlConfig['puppeteer'] || yamlConfig['chrome'] || {}, 
+      {
+        margin: {
+          top: '1cm',
+          bottom: '1cm',
+          left: '1cm',
+          right: '1cm'
+        }
+      })
+    if (fileType === 'pdf') {
+      await page.pdf(puppeteerConfig)
+    } else {
+      puppeteerConfig['fullPage'] = true // <= set to fullPage by default
+      await page.screenshot(puppeteerConfig)      
+    }
+    browser.close()
+
     return dest
   }
 
