@@ -1207,9 +1207,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   /**
-   * Puppeteer file export
+   * Chrome (puppeteer) file export
    */
-  public async puppeteerExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
+  public async chromeExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
     const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
     let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
     let dest = this.filePath
@@ -1243,16 +1243,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     await page.goto('file:///'+info.path)
 
     const puppeteerConfig = Object.assign(
-      { path: dest }, 
-      yamlConfig['puppeteer'] || yamlConfig['chrome'] || {}, 
-      {
+      { 
+        path: dest,
         margin: {
           top: '1cm',
           bottom: '1cm',
           left: '1cm',
           right: '1cm'
         }
-      })
+      }, 
+      yamlConfig['chrome'] || {})
     if (fileType === 'pdf') {
       await page.pdf(puppeteerConfig)
     } else {
@@ -1705,7 +1705,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * export_on_save:
    *    html: true
    *    prince: true   
-   *    phantomjs|chrome|puppeteer: true  // or pdf | jpeg | png
+   *    phantomjs|chrome: true  // or pdf | jpeg | png
    *    pandoc: true
    *    ebook: true      // or epub | pdf | html | mobi
    *    markdown: true
@@ -1720,9 +1720,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         this.htmlExport({})
       } else if (exporter === 'prince') {
         this.princeExport({openFileAfterGeneration: false})
-      } else if (exporter === 'phantomjs' || exporter === 'chrome' || exporter === 'puppeteer') {
+      } else if (exporter === 'phantomjs' || exporter === 'chrome') {
         const fileTypes = data[exporter]
-        let func = (exporter === 'phantomjs' ? this.phantomjsExport : this.puppeteerExport)
+        let func = (exporter === 'phantomjs' ? this.phantomjsExport : this.chromeExport)
         func = func.bind(this)
 
         if (fileTypes === true) {
