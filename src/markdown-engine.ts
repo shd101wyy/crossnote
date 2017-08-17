@@ -1705,7 +1705,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * export_on_save:
    *    html: true
    *    prince: true   
-   *    phantomjs: true  // or pdf | jpeg | png
+   *    phantomjs|chrome|puppeteer: true  // or pdf | jpeg | png
    *    pandoc: true
    *    ebook: true      // or epub | pdf | html | mobi
    *    markdown: true
@@ -1720,15 +1720,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         this.htmlExport({})
       } else if (exporter === 'prince') {
         this.princeExport({openFileAfterGeneration: false})
-      } else if (exporter === 'phantomjs') {
+      } else if (exporter === 'phantomjs' || exporter === 'chrome' || exporter === 'puppeteer') {
         const fileTypes = data[exporter]
+        let func = (exporter === 'phantomjs' ? this.phantomjsExport : this.puppeteerExport)
+        func = func.bind(this)
+        
         if (fileTypes === true) {
-          this.phantomjsExport({fileType: 'pdf', openFileAfterGeneration: false})
+          func({fileType: 'pdf', openFileAfterGeneration: false})
         } else if (typeof(fileTypes) === 'string') {
-          this.phantomjsExport({fileType: fileTypes, openFileAfterGeneration: false})
+          func({fileType: fileTypes, openFileAfterGeneration: false})
         } else if (fileTypes instanceof Array) {
           fileTypes.forEach((fileType)=> {
-            this.phantomjsExport({fileType, openFileAfterGeneration: false})
+            func({fileType, openFileAfterGeneration: false})
           })
         }
       } else if (exporter === 'pandoc') {
