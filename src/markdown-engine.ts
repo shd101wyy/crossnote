@@ -2337,6 +2337,19 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     while (i < slides.length) { 
       const slide = slides[i] 
       const slideConfig = slideConfigs[i]
+
+      // resolve paths in slideConfig
+      if ('data-background-image' in slideConfig) {
+        slideConfig['data-background-image'] = this.resolveFilePath(slideConfig['data-background-image'], useRelativeFilePath)
+      }
+      if ('data-background-video' in slideConfig) {
+        slideConfig['data-background-video'] = this.resolveFilePath(slideConfig['data-background-video'], useRelativeFilePath)
+      }
+      if ('data-background-iframe' in slideConfig) {
+        slideConfig['data-background-iframe'] = this.resolveFilePath(slideConfig['data-background-iframe'], useRelativeFilePath)
+      }
+
+
       const attrString = utility.stringifyAttributes(slideConfig, false) // parseAttrString(slideConfig)
       const classString = slideConfig['class'] || ''
       const idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : ''
