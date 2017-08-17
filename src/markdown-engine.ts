@@ -2442,11 +2442,27 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (i > 0 && slideConfigs[i-1]['vertical']) // end of vertical slides
       output += "</section>"
 
+    // check list item attribtues
+    // issue: https://github.com/shd101wyy/markdown-preview-enhanced/issues/559
+    const $ = cheerio.load(output, {xmlMode: true})
+    $('li').each((i, elem)=> {
+      const $elem = $(elem),
+            html = $elem.html().trim()
+      let attributeMatch 
+      if (attributeMatch = html.match(/<!--(.+?)-->/)) {
+        let attributes = attributeMatch[1].replace(/\.element\:/, '').trim()
+        let attrObj = utility.parseAttributes(attributes)
+        for (let key in attrObj) {
+          $elem.attr(key, attrObj[key])
+        }
+      }
+    })
+
     return `
     <div style="display:none;">${before}</div>
     <div class="reveal">
       <div class="slides">
-        ${output}
+        ${$.html()}
       </div>
     </div>
     `
