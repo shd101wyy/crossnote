@@ -1,3 +1,7 @@
+# 0.2.0
+* Only display the scrollbar of code block when you actually scroll it.  
+* Try [puppeteer](https://github.com/GoogleChrome/puppeteer).  
+
 # 0.1.9
 * Changed `printBackground` logic.  
 * Fixed presentation export style bug.  
