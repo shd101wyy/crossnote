@@ -493,17 +493,23 @@ export async function transformMarkdown(inputString:string,
           lineNo = lineNo+1
           outputString = outputString+line+`\n`
           continue
-        } else if (htmlTagMatch = line.match(/\s*<(?:(\w+)|(\w+)\s+(?:.+?))>/)) { // escape html tag like <pre>
+        } else if (htmlTagMatch = line.match(/^\s*<(?:([a-zA-Z]+)|([a-zA-Z]+)\s+(?:.+?))>/)) { // escape html tag like <pre>
           const tagName = htmlTagMatch[1] || htmlTagMatch[2]
           if (!(tagName in selfClosingTag)) {
             const closeTagName = `</${tagName}>`
             let end = inputString.indexOf(closeTagName, i + htmlTagMatch[0].length)
             if (end < 0) {
               // HTML error. Tag not closed
+              // Do Nothing here. Reason: 
+              //     $$ x
+              //     <y>
+              //     $$
+              /*
               i = inputString.length
               lineNo = lineNo + 1
               outputString = outputString + `\n\`\`\`\nHTML error. Tag <${tagName}> not closed. ${closeTagName} is required.\n\`\`\`\n\n`
               continue
+              */
             } else {
               const htmlString = inputString.slice(i, end + closeTagName.length)
               const newlinesMatch = htmlString.match(/\n/g)
