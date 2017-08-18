@@ -96,6 +96,7 @@ export function toc(tokens, opt:tocOption) {
       smallestLevel = tokens[i].level
   }
 
+  let orderedListNums = []
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]
     const content = token.content
@@ -109,7 +110,20 @@ export function toc(tokens, opt:tocOption) {
       tocTable[slug] = 0
     }
 
-    const listItem = `${nPrefix(tab, level-smallestLevel)}${ordered ? "1." : '*'} ${ignoreLink ? sanitizeContent(content) : `[${sanitizeContent(content)}](#${slug})`}`
+    const n = level - smallestLevel
+    let numStr = '1'
+    if (ordered) { // number for ordered list
+      if (n >= orderedListNums.length) {
+        orderedListNums.push(1)
+      } else if (n === orderedListNums.length - 1) {
+        orderedListNums[orderedListNums.length - 1]++
+      } else {
+        orderedListNums = orderedListNums.slice(0, n + 1)
+        if (orderedListNums.length) orderedListNums[orderedListNums.length - 1]++
+      }
+      numStr = orderedListNums[orderedListNums.length - 1]
+    }
+    const listItem = `${nPrefix(tab, n)}${ordered ? `${numStr}.` : '*'} ${ignoreLink ? sanitizeContent(content) : `[${sanitizeContent(content)}](#${slug})`}`
     outputArr.push(listItem)
   }
 
