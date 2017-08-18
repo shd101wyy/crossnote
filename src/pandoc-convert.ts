@@ -114,8 +114,8 @@ function loadOutputYAML(fileDirectoryPath, config) {
     return Object.assign({}, config)
   }
 
-  let data:any = YAML.parse(yaml)
-  data = data || {}
+  let data = {} 
+  if (yaml) data = utility.parseYAML(yaml)
 
   if (config['output']) {
     if (typeof(config['output']) === 'string' && data[config['output']]) {

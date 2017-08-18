@@ -1608,7 +1608,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       await this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
     }
 
-    const {data:config} = this.processFrontMatter(inputString, false)
+    let config = {}
+    
+    let endFrontMatterOffset = 0
+    if (inputString.startsWith('---') && (endFrontMatterOffset = inputString.indexOf('\n---')) > 0) {
+      let frontMatterString = inputString.slice(0, endFrontMatterOffset + 4)
+      config = this.processFrontMatter(frontMatterString, false).data
+    }
+
     const outputFilePath = await pandocConvert(inputString, {
       fileDirectoryPath: this.fileDirectoryPath,
       projectDirectoryPath: this.projectDirectoryPath,
@@ -2317,7 +2324,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private processFrontMatter(frontMatterString:string, hideFrontMatter=false) {
     if (frontMatterString) {
-      let data:any = YAML.parse(frontMatterString + '\n') // <= '\n' here is necessary.  
+      let data:any = utility.parseYAML(frontMatterString + '\n') // <= '\n' here is necessary.  
 
       if (this.config.usePandocParser) { // use pandoc parser, so don't change inputString
         return {content: frontMatterString, table: '', data: data || {}}

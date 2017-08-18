@@ -6,6 +6,7 @@ import * as child_process from "child_process"
 import * as less from "less"
 import * as mkdirp_ from "mkdirp"
 import * as vm from "vm"
+import * as YAML from "yamljs"
 
 import * as temp from "temp"
 temp.track()
@@ -49,6 +50,14 @@ export function sleep(ms:number) {
       return resolve()
     }, ms)
   })
+}
+
+export function parseYAML(yaml:string="") {
+  try {
+    return YAML.parse(yaml)
+  } catch(error) {
+    return {}
+  }
 }
 
 export function readFile(file:string, options?):Promise<string> {
