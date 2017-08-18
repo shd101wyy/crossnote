@@ -1805,7 +1805,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     try {
       const options = codeChunkData.options
       if (options['cmd'] === 'toc') { // toc code chunk. <= this is a special code chunk.  
-        const tocObject = toc(this.headings, {ordered: options['orderedList'], depthFrom: options['depthFrom'], depthTo: options['depthTo'], tab: options['tab'] || '\t'})
+        const tocObject = toc(this.headings, {ordered: options['orderedList'], depthFrom: options['depthFrom'], depthTo: options['depthTo'], tab: options['tab'] || '\t', ignoreLink: options['ignoreLink']})
         result = tocObject.content
       } else if (options['cmd'] === 'ditaa') { // ditaa diagram
         const filename = options['filename'] || `${md5(this.filePath + options['id'])}.png`

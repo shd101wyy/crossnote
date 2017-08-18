@@ -53,10 +53,11 @@ function sanitizeContent(content) {
  *  tab: string, default `\t`
  */
 export interface tocOption {
-  ordered:boolean,
-  depthFrom:number,
-  depthTo:number,
+  ordered:boolean
+  depthFrom:number
+  depthTo:number
   tab:string
+  ignoreLink?:boolean
 }
 
 /**
@@ -73,6 +74,7 @@ export function toc(tokens, opt:tocOption) {
   const depthFrom = opt.depthFrom || 1
   const depthTo = opt.depthTo || 6
   let tab = opt.tab || '\t'
+  const ignoreLink = opt.ignoreLink || false
 
   if (ordered)
     tab = '    '
@@ -107,7 +109,7 @@ export function toc(tokens, opt:tocOption) {
       tocTable[slug] = 0
     }
 
-    const listItem = `${nPrefix(tab, level-smallestLevel)}${ordered ? "1." : '*'} [${sanitizeContent(content)}](#${slug})`
+    const listItem = `${nPrefix(tab, level-smallestLevel)}${ordered ? "1." : '*'} ${ignoreLink ? sanitizeContent(content) : `[${sanitizeContent(content)}](#${slug})`}`
     outputArr.push(listItem)
   }
 
