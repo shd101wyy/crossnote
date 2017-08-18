@@ -6,7 +6,6 @@ import * as request from "request"
 import * as Baby from "babyparse"
 import * as temp from "temp"
 import * as uslug from "uslug"
-import {EOL} from "os"
 
 // import * as request from 'request'
 // import * as less from "less"
@@ -771,9 +770,9 @@ export async function transformMarkdown(inputString:string,
       return {outputString, slideConfigs, tocBracketEnabled, JSAndCssFiles, headings, frontMatterString}
     }
 
-    let frontMatterMatch = null
-    if (frontMatterMatch = inputString.match(new RegExp(`^---\s*${EOL}([\\s\\S]+?)${EOL}---\s*${EOL}`))) {
-      frontMatterString = frontMatterMatch[0]
+    let endFrontMatterOffset = 0
+    if (inputString.startsWith('---') && (endFrontMatterOffset = inputString.indexOf('\n---')) > 0) {
+      frontMatterString = inputString.slice(0, endFrontMatterOffset + 4)
       return await helper(frontMatterString.length, frontMatterString.match(/\n/g).length)
     } else {
       return await helper(0, 0)

@@ -2,10 +2,8 @@ import * as path from "path"
 import * as fs from "fs"
 import * as cheerio from "cheerio"
 import * as request from "request"
+import * as YAML from "yamljs"
 import {execFile} from "child_process"
-import {EOL} from "os"
-
-const matter = require('gray-matter')
 
 import * as plantumlAPI from "./puml"
 import * as vegaAPI from "./vega"
@@ -1643,12 +1641,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     let config = {}
-    let frontMatterMatch = null
-    if (frontMatterMatch = inputString.match(new RegExp(`^---\s*${EOL}([\\s\\S]+?)${EOL}---\s*${EOL}`))) {
-      let frontMatterString = frontMatterMatch[0]
+
+    let endFrontMatterOffset = 0
+    if (inputString.startsWith('---') && (endFrontMatterOffset = inputString.indexOf('\n---')) > 0) {
+      let frontMatterString = inputString.slice(0, endFrontMatterOffset + 4)
       inputString = inputString.replace(frontMatterString, '') // remove front matter
       config = this.processFrontMatter(frontMatterString, false).data
-    } 
+    }
 
     /**
      * markdownConfig has the following properties:
@@ -1684,7 +1683,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // put front-matter back
     if (Object.keys(config).length)
-      inputString = matter.stringify(inputString, config)
+      inputString = '---\n' + YAML.stringify(config) + '---\n' + inputString
 
     return await markdownConvert(inputString, {
       projectDirectoryPath: this.projectDirectoryPath,
@@ -2319,7 +2318,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private processFrontMatter(frontMatterString:string, hideFrontMatter=false) {
     if (frontMatterString) {
-      let data:any = matter(frontMatterString).data
+      let data:any = YAML.parse(frontMatterString)
 
       if (this.config.usePandocParser) { // use pandoc parser, so don't change inputString
         return {content: frontMatterString, table: '', data: data || {}}
@@ -2335,7 +2334,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
         return {content:'', table, data}
       } else { // # if frontMatterRenderingOption[0] == 'c' # code block
-        const content = frontMatterString.replace(/^---/, '```yaml').replace(/---\n$/, '```\n')
         return {content, table: '', data}
       }
     } else {
@@ -2549,6 +2547,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const fm = this.processFrontMatter(frontMatterString, options.hideFrontMatter)
     const frontMatterTable = fm.table,
           yamlConfig = fm.data || {} 
+    console.log(fm)
     outputString = fm.content + outputString
 
     /**

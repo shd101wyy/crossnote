@@ -2,6 +2,7 @@ import * as path from "path"
 import * as fs from "fs"
 import {execFile} from "child_process"
 import * as mkdirp from "mkdirp"
+import * as YAML from "yamljs"
 import {toc} from "./toc"
 
 const matter = require('gray-matter')
@@ -115,7 +116,7 @@ function loadOutputYAML(fileDirectoryPath, config) {
     return Object.assign({}, config)
   }
 
-  let data:any = matter('---\n'+yaml+'---\n').data
+  let data:any = YAML.parse(yaml)
   data = data || {}
 
   if (config['output']) {

@@ -24,7 +24,6 @@
   "dependencies": {
     "babyparse": "^0.4.6",
     "cheerio": "0.15.0",
-    "gray-matter": "^2.1.1",
     "less": "^2.7.2",
     "mkdirp": "^0.5.1",
     "request": "^2.81.0",
