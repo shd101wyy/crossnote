@@ -1570,7 +1570,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     </style>
     ${mathStyle}
   </head>
-  <body>
+  <body ${path.extname(dest) === '.html' ? 'for="html-export"' : ''}>
     <div class="mume markdown-preview">
     ${outputHTML}
     </div>
