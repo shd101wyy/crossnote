@@ -2318,7 +2318,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private processFrontMatter(frontMatterString:string, hideFrontMatter=false) {
     if (frontMatterString) {
-      let data:any = YAML.parse(frontMatterString)
+      let data:any = YAML.parse(frontMatterString + '\n') // <= '\n' here is necessary.  
 
       if (this.config.usePandocParser) { // use pandoc parser, so don't change inputString
         return {content: frontMatterString, table: '', data: data || {}}

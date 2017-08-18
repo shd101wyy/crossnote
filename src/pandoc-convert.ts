@@ -5,8 +5,6 @@ import * as mkdirp from "mkdirp"
 import * as YAML from "yamljs"
 import {toc} from "./toc"
 
-const matter = require('gray-matter')
-
 import {transformMarkdown} from "./transformer"
 import {processGraphs} from "./process-graphs"
 import * as utility from "./utility"
@@ -296,7 +294,7 @@ export async function pandocConvert(text,
   text = data.outputString
 
   // add front-matter(yaml) back to text
-  text = matter.stringify(text, config)
+  text = '---\n' + YAML.stringify(config) + '---\n' + text
 
   // replace [MUMETOC]
   const tocBracketEnabled = data.tocBracketEnabled
