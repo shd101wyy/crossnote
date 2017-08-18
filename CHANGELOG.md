@@ -1,3 +1,7 @@
+# 0.2.1 
+* Added `ignoreLink` option to TOC [#583](https://github.com/shd101wyy/markdown-preview-enhanced/issues/583).  
+* Fixed issue [#585](https://github.com/shd101wyy/markdown-preview-enhanced/issues/585), [#586](https://github.com/shd101wyy/markdown-preview-enhanced/issues/585).  
+
 # 0.2.0
 * Only display the scrollbar of code block when you actually scroll it.  
 * Try [puppeteer](https://github.com/GoogleChrome/puppeteer).  
