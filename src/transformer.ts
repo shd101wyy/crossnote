@@ -494,8 +494,8 @@ export async function transformMarkdown(inputString:string,
           lineNo = lineNo+1
           outputString = outputString+line+`\n`
           continue
-        } else if (htmlTagMatch = line.match(/^\s*<([a-zA-Z]+)[^>]*>/)) { // escape html tag like <pre>
-          const tagName = htmlTagMatch[1]
+        } else if (htmlTagMatch = line.match(/\s*<(?:(\w+)|(\w+)\s+(?:.+?))>/)) { // escape html tag like <pre>
+          const tagName = htmlTagMatch[1] || htmlTagMatch[2]
           if (!(tagName in selfClosingTag)) {
             const closeTagName = `</${tagName}>`
             let end = inputString.indexOf(closeTagName, i + htmlTagMatch[0].length)
