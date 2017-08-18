@@ -1,3 +1,8 @@
+# 0.2.0
+* Only display the scrollbar of code block when you actually scroll it.  
+* Try [puppeteer](https://github.com/GoogleChrome/puppeteer).  
+* Upgrade KaTeX to `0.8.2` (Check CDN). 
+
 # 0.1.9
 * Changed `printBackground` logic.  
 * Fixed presentation export style bug.  

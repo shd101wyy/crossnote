@@ -6,6 +6,7 @@ import * as child_process from "child_process"
 import * as less from "less"
 import * as mkdirp_ from "mkdirp"
 import * as vm from "vm"
+import * as YAML from "yamljs"
 
 import * as temp from "temp"
 temp.track()
@@ -37,6 +38,26 @@ export function escapeString(str:string):string {
 
 export function unescapeString(str:string):string {
   return str.replace(/\&(amp|lt|gt|quot|apos|\#x27|\#x2F|\#x5C)\;/g, (whole)=> (TAGS_TO_REPLACE_REVERSE[whole] || whole))
+}
+
+/**
+ * Do nothing and sleep for `ms` milliseconds 
+ * @param ms 
+ */
+export function sleep(ms:number) {
+  return new Promise((resolve, reject)=> {
+    setTimeout(()=> {
+      return resolve()
+    }, ms)
+  })
+}
+
+export function parseYAML(yaml:string="") {
+  try {
+    return YAML.parse(yaml)
+  } catch(error) {
+    return {}
+  }
 }
 
 export function readFile(file:string, options?):Promise<string> {

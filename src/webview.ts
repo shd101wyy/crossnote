@@ -331,6 +331,24 @@ class PreviewController {
             }
           }
         },
+        "chrome_export":
+        {
+          name: "Chrome (experimental)",
+          items: {
+            "chrome_pdf": {
+              name: "PDF",
+              callback: ()=> this.postMessage('chromeExport', [this.sourceUri, 'pdf'])              
+            },
+            "chrome_png": {
+              name: "PNG",
+              callback: ()=> this.postMessage('chromeExport', [this.sourceUri, 'png'])
+            },
+            "chrome_jpeg": {
+              name: "JPEG",
+              callback: ()=> this.postMessage('chromeExport', [this.sourceUri, 'jpeg'])
+            }
+          }
+        },
         "phantomjs_export": 
         {
           name: "PhantomJS",

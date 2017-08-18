@@ -2,10 +2,8 @@ import * as path from "path"
 import * as fs from "fs"
 import * as cheerio from "cheerio"
 import * as request from "request"
+import * as YAML from "yamljs"
 import {execFile} from "child_process"
-import {EOL} from "os"
-
-const matter = require('gray-matter')
 
 import * as plantumlAPI from "./puml"
 import * as vegaAPI from "./vega"
@@ -33,6 +31,9 @@ const pdf = require(path.resolve(extensionDirectoryPath, './dependencies/node-ht
 
 // import * as Prism from "prismjs"
 let Prism = null
+
+// Puppeteer
+let puppeteer = null
 
 export interface MarkdownEngineRenderOption {
   useRelativeFilePath: boolean,
@@ -890,7 +891,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       if (options.offline) {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.css')}">`
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">`
+        mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/katex.min.css">`
       }
     } else {
       mathStyle = ''
@@ -1204,6 +1205,67 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   /**
+   * Chrome (puppeteer) file export
+   */
+  public async chromeExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
+    const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
+    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
+    let dest = this.filePath
+    let extname = path.extname(dest)
+    dest = dest.replace(new RegExp(extname + '$'), '.' + fileType)
+
+    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
+      isForPrint: true,
+      isForPrince: false,
+      embedLocalImages: false,
+      offline: true
+    })
+
+    if (!puppeteer) { // require puppeteer from global node_modules
+
+      try {
+        const globalModules = require('global-modules')
+        puppeteer = require(path.resolve(globalModules, 'puppeteer'))
+      } catch(error) {
+        throw "Puppeteer (Headless Chrome) is required to be installed globally. Please run `npm install -g puppeteer` in your terminal.  \n"
+      }
+    }
+
+    const info = await utility.tempOpen({prefix: 'mume', suffix: '.html'})
+    await utility.writeFile(info.fd, html)
+
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    let loadPath = 'file:///' + info.path + (yamlConfig['isPresentationMode'] ? '?print-pdf' : '')
+    await page.goto(loadPath)
+
+    const puppeteerConfig = Object.assign(
+      { 
+        path: dest
+      }, 
+      yamlConfig['isPresentationMode'] ? {} : {
+        margin: {
+          top: '1cm',
+          bottom: '1cm',
+          left: '1cm',
+          right: '1cm'
+        }
+      },
+      yamlConfig['chrome'] || {})
+
+    if (fileType === 'pdf') {
+      await page.pdf(puppeteerConfig)
+    } else {
+      puppeteerConfig['fullPage'] = true // <= set to fullPage by default
+      await page.screenshot(puppeteerConfig)      
+    }
+    browser.close()
+
+    if (openFileAfterGeneration) utility.openFile(dest)      
+    return dest
+  }
+
+  /**
    * Phantomjs file export
    * The config could be set by front-matter. 
    * Check https://github.com/marcbachmann/node-html-pdf website.  
@@ -1350,7 +1412,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (ebookConfig['cover']) { // change cover to absolute path if necessary
       const cover = ebookConfig['cover']
-      ebookConfig['cover'] = this.resolveFilePath(cover, false).replace(/^file\:\/\/+/, '/')
+      ebookConfig['cover'] = utility.removeFileProtocol(this.resolveFilePath(cover, false))
     }
 
     let $ = cheerio.load(`<div>${html}</div>`, {xmlMode: true})
@@ -1407,10 +1469,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // load each markdown files according to `tocStructure`
     const asyncFunctions = tocStructure.map(({heading, id, level, filePath}, offset)=> {
       return new Promise((resolve, reject)=> {
-        let fileProtocalMatch
-        if (fileProtocalMatch = filePath.match(/^file:\/\/+/)) 
-          filePath = filePath.replace(fileProtocalMatch[0], '/')
-        
+        filePath = utility.removeFileProtocol(filePath)
         fs.readFile(filePath, {encoding: 'utf-8'}, (error, text)=> {
           if (error) return reject(error.toString())
           this.parseMD(text, {useRelativeFilePath: false, isForPreview: false, hideFrontMatter:true})
@@ -1460,7 +1519,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let mathStyle = ''
     if (outputHTML.indexOf('class="katex"') > 0) {
       if (path.extname(dest) === '.html' && ebookConfig['html'] && ebookConfig['html'].cdn){
-        mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.7.1/katex.min.css">`
+        mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/katex.min.css">`
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.css')}">`
       }
@@ -1504,7 +1563,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     </style>
     ${mathStyle}
   </head>
-  <body>
+  <body ${path.extname(dest) === '.html' ? 'for="html-export"' : ''}>
     <div class="mume markdown-preview">
     ${outputHTML}
     </div>
@@ -1549,7 +1608,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       await this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
     }
 
-    const {data:config} = this.processFrontMatter(inputString, false)
+    let config = {}
+    
+    let endFrontMatterOffset = 0
+    if (inputString.startsWith('---') && (endFrontMatterOffset = inputString.indexOf('\n---')) > 0) {
+      let frontMatterString = inputString.slice(0, endFrontMatterOffset + 4)
+      config = this.processFrontMatter(frontMatterString, false).data
+    }
+
     const outputFilePath = await pandocConvert(inputString, {
       fileDirectoryPath: this.fileDirectoryPath,
       projectDirectoryPath: this.projectDirectoryPath,
@@ -1581,12 +1647,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     let config = {}
-    let frontMatterMatch = null
-    if (frontMatterMatch = inputString.match(new RegExp(`^---${EOL}([\\s\\S]+?)${EOL}---${EOL}`))) {
-      let frontMatterString = frontMatterMatch[0]
+
+    let endFrontMatterOffset = 0
+    if (inputString.startsWith('---') && (endFrontMatterOffset = inputString.indexOf('\n---')) > 0) {
+      let frontMatterString = inputString.slice(0, endFrontMatterOffset + 4)
       inputString = inputString.replace(frontMatterString, '') // remove front matter
       config = this.processFrontMatter(frontMatterString, false).data
-    } 
+    }
 
     /**
      * markdownConfig has the following properties:
@@ -1622,7 +1689,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // put front-matter back
     if (Object.keys(config).length)
-      inputString = matter.stringify(inputString, config)
+      inputString = '---\n' + YAML.stringify(config) + '---\n' + inputString
 
     return await markdownConvert(inputString, {
       projectDirectoryPath: this.projectDirectoryPath,
@@ -1643,7 +1710,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * export_on_save:
    *    html: true
    *    prince: true   
-   *    phantomjs: true  // or pdf | jpeg | png
+   *    phantomjs|chrome: true  // or pdf | jpeg | png
    *    pandoc: true
    *    ebook: true      // or epub | pdf | html | mobi
    *    markdown: true
@@ -1658,15 +1725,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         this.htmlExport({})
       } else if (exporter === 'prince') {
         this.princeExport({openFileAfterGeneration: false})
-      } else if (exporter === 'phantomjs') {
+      } else if (exporter === 'phantomjs' || exporter === 'chrome') {
         const fileTypes = data[exporter]
+        let func = (exporter === 'phantomjs' ? this.phantomjsExport : this.chromeExport)
+        func = func.bind(this)
+
         if (fileTypes === true) {
-          this.phantomjsExport({fileType: 'pdf', openFileAfterGeneration: false})
+          func({fileType: 'pdf', openFileAfterGeneration: false})
         } else if (typeof(fileTypes) === 'string') {
-          this.phantomjsExport({fileType: fileTypes, openFileAfterGeneration: false})
+          func({fileType: fileTypes, openFileAfterGeneration: false})
         } else if (fileTypes instanceof Array) {
           fileTypes.forEach((fileType)=> {
-            this.phantomjsExport({fileType, openFileAfterGeneration: false})
+            func({fileType, openFileAfterGeneration: false})
           })
         }
       } else if (exporter === 'pandoc') {
@@ -2163,7 +2233,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       const src = img.attr(srcTag)
 
       // insert anchor for scroll sync.  
-      if (options.isForPreview && img.parent().prev().hasClass('sync-line')) { 
+      if (options.isForPreview && imgElement.name !== 'a' && img.parent().prev().hasClass('sync-line')) { 
         const lineNo = parseInt(img.parent().prev().attr('data-line'))
         if (lineNo)
           img.parent().after(`<p data-line="${lineNo + 1}" class="sync-line" style="margin:0;"></p>`)
@@ -2254,7 +2324,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private processFrontMatter(frontMatterString:string, hideFrontMatter=false) {
     if (frontMatterString) {
-      let data:any = matter(frontMatterString).data
+      let data:any = utility.parseYAML(frontMatterString + '\n') // <= '\n' here is necessary.  
 
       if (this.config.usePandocParser) { // use pandoc parser, so don't change inputString
         return {content: frontMatterString, table: '', data: data || {}}
@@ -2270,7 +2340,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
         return {content:'', table, data}
       } else { // # if frontMatterRenderingOption[0] == 'c' # code block
-        const content = frontMatterString.replace(/^---/, '```yaml').replace(/---\n$/, '```\n')
+        const content = frontMatterString.replace(/^---/, '```yaml').replace(/\n---$/, '\n```\n')
         return {content, table: '', data}
       }
     } else {
@@ -2337,6 +2407,19 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     while (i < slides.length) { 
       const slide = slides[i] 
       const slideConfig = slideConfigs[i]
+
+      // resolve paths in slideConfig
+      if ('data-background-image' in slideConfig) {
+        slideConfig['data-background-image'] = this.resolveFilePath(slideConfig['data-background-image'], useRelativeFilePath)
+      }
+      if ('data-background-video' in slideConfig) {
+        slideConfig['data-background-video'] = this.resolveFilePath(slideConfig['data-background-video'], useRelativeFilePath)
+      }
+      if ('data-background-iframe' in slideConfig) {
+        slideConfig['data-background-iframe'] = this.resolveFilePath(slideConfig['data-background-iframe'], useRelativeFilePath)
+      }
+
+
       const attrString = utility.stringifyAttributes(slideConfig, false) // parseAttrString(slideConfig)
       const classString = slideConfig['class'] || ''
       const idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : ''
@@ -2360,11 +2443,27 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (i > 0 && slideConfigs[i-1]['vertical']) // end of vertical slides
       output += "</section>"
 
+    // check list item attribtues
+    // issue: https://github.com/shd101wyy/markdown-preview-enhanced/issues/559
+    const $ = cheerio.load(output, {xmlMode: true})
+    $('li').each((i, elem)=> {
+      const $elem = $(elem),
+            html = $elem.html().trim()
+      let attributeMatch 
+      if (attributeMatch = html.match(/<!--(.+?)-->/)) {
+        let attributes = attributeMatch[1].replace(/\.element\:/, '').trim()
+        let attrObj = utility.parseAttributes(attributes)
+        for (let key in attrObj) {
+          $elem.attr(key, attrObj[key])
+        }
+      }
+    })
+
     return `
     <div style="display:none;">${before}</div>
     <div class="reveal">
       <div class="slides">
-        ${output}
+        ${$.html()}
       </div>
     </div>
     `

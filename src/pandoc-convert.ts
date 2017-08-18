@@ -2,9 +2,8 @@ import * as path from "path"
 import * as fs from "fs"
 import {execFile} from "child_process"
 import * as mkdirp from "mkdirp"
+import * as YAML from "yamljs"
 import {toc} from "./toc"
-
-const matter = require('gray-matter')
 
 import {transformMarkdown} from "./transformer"
 import {processGraphs} from "./process-graphs"
@@ -115,8 +114,8 @@ function loadOutputYAML(fileDirectoryPath, config) {
     return Object.assign({}, config)
   }
 
-  let data:any = matter('---\n'+yaml+'---\n').data
-  data = data || {}
+  let data = {} 
+  if (yaml) data = utility.parseYAML(yaml)
 
   if (config['output']) {
     if (typeof(config['output']) === 'string' && data[config['output']]) {
@@ -295,7 +294,7 @@ export async function pandocConvert(text,
   text = data.outputString
 
   // add front-matter(yaml) back to text
-  text = matter.stringify(text, config)
+  text = '---\n' + YAML.stringify(config) + '---\n' + text
 
   // replace [MUMETOC]
   const tocBracketEnabled = data.tocBracketEnabled

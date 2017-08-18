@@ -6,7 +6,6 @@ import * as request from "request"
 import * as Baby from "babyparse"
 import * as temp from "temp"
 import * as uslug from "uslug"
-import {EOL} from "os"
 
 // import * as request from 'request'
 // import * as less from "less"
@@ -494,11 +493,9 @@ export async function transformMarkdown(inputString:string,
           lineNo = lineNo+1
           outputString = outputString+line+`\n`
           continue
-        } else if (htmlTagMatch = line.match(/^\s*\<(.+?)\>/)) { // escape html tag like <pre>
-          let index = htmlTagMatch[1].indexOf(' ') 
-          if (index < 0) index = htmlTagMatch[1].length
-          const tagName = htmlTagMatch[1].slice(0, index)
-          if (!(tagName in selfClosingTag) && tagName[0].match(/^\w+$/)) {
+        } else if (htmlTagMatch = line.match(/\s*<(?:(\w+)|(\w+)\s+(?:.+?))>/)) { // escape html tag like <pre>
+          const tagName = htmlTagMatch[1] || htmlTagMatch[2]
+          if (!(tagName in selfClosingTag)) {
             const closeTagName = `</${tagName}>`
             let end = inputString.indexOf(closeTagName, i + htmlTagMatch[0].length)
             if (end < 0) {
@@ -773,9 +770,9 @@ export async function transformMarkdown(inputString:string,
       return {outputString, slideConfigs, tocBracketEnabled, JSAndCssFiles, headings, frontMatterString}
     }
 
-    let frontMatterMatch = null
-    if (frontMatterMatch = inputString.match(new RegExp(`^---${EOL}([\\s\\S]+?)${EOL}---${EOL}`))) {
-      frontMatterString = frontMatterMatch[0]
+    let endFrontMatterOffset = 0
+    if (inputString.startsWith('---') && (endFrontMatterOffset = inputString.indexOf('\n---')) > 0) {
+      frontMatterString = inputString.slice(0, endFrontMatterOffset + 4)
       return await helper(frontMatterString.length, frontMatterString.match(/\n/g).length)
     } else {
       return await helper(0, 0)

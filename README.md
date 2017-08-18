@@ -39,6 +39,9 @@ async function main() {
   // html export
   await engine.htmlExport({offline: false, runAllCodeChunks: true})
 
+ // chrome (puppeteer) export 
+  await engine.chromeExport({fileType: 'pdf', runAllCodeChunks: true}) // fileType = 'pdf'|'png'|'jpeg'
+
   // phantomjs export 
   await engine.phantomjsExport({fileType: 'pdf', runAllCodeChunks: true}) // fileType = 'pdf'|'png'|'jpeg'
 
