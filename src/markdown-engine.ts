@@ -1221,9 +1221,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       offline: true
     })
 
-    if (!puppeteer) {
+    if (!puppeteer) { // require puppeteer from global node_modules
+
       try {
-        puppeteer = require('requireg')('puppeteer')
+        const globalModules = require('global-modules')
+        puppeteer = require(path.resolve(globalModules, 'puppeteer'))
       } catch(error) {
         throw "Puppeteer (Headless Chrome) is required to be installed globally. Please run `npm install -g puppeteer` in your terminal.  \n"
       }
