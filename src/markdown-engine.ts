@@ -2334,6 +2334,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
         return {content:'', table, data}
       } else { // # if frontMatterRenderingOption[0] == 'c' # code block
+        const content = frontMatterString.replace(/^---/, '```yaml').replace(/\n---$/, '\n```\n')
         return {content, table: '', data}
       }
     } else {
@@ -2547,7 +2548,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const fm = this.processFrontMatter(frontMatterString, options.hideFrontMatter)
     const frontMatterTable = fm.table,
           yamlConfig = fm.data || {} 
-    console.log(fm)
     outputString = fm.content + outputString
 
     /**
