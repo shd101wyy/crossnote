@@ -1410,7 +1410,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (ebookConfig['cover']) { // change cover to absolute path if necessary
       const cover = ebookConfig['cover']
-      ebookConfig['cover'] = this.resolveFilePath(cover, false).replace(/^file\:\/\/+/, '/')
+      ebookConfig['cover'] = utility.removeFileProtocol(this.resolveFilePath(cover, false))
     }
 
     let $ = cheerio.load(`<div>${html}</div>`, {xmlMode: true})
@@ -1467,10 +1467,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // load each markdown files according to `tocStructure`
     const asyncFunctions = tocStructure.map(({heading, id, level, filePath}, offset)=> {
       return new Promise((resolve, reject)=> {
-        let fileProtocalMatch
-        if (fileProtocalMatch = filePath.match(/^file:\/\/+/)) 
-          filePath = filePath.replace(fileProtocalMatch[0], '/')
-        
+        filePath = utility.removeFileProtocol(filePath)
         fs.readFile(filePath, {encoding: 'utf-8'}, (error, text)=> {
           if (error) return reject(error.toString())
           this.parseMD(text, {useRelativeFilePath: false, isForPreview: false, hideFrontMatter:true})
