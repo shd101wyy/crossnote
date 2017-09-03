@@ -90,7 +90,7 @@ const config = {
   enableExtendedTableSyntax: false
 
   // Enable CriticMarkup syntax. Only works with markdown-it parser.  
-  // http://criticmarkup.com/users-guide.php
+  // Please check http://criticmarkup.com/users-guide.php for more information.  
   enableCriticMarkupSyntax: false
 
   // Front matter rendering option
