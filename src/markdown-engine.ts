@@ -980,7 +980,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       if (options.offline) {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.css')}">`
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/katex.min.css">`
+        mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">`
       }
     } else {
       mathStyle = ''
@@ -1608,7 +1608,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let mathStyle = ''
     if (outputHTML.indexOf('class="katex"') > 0) {
       if (path.extname(dest) === '.html' && ebookConfig['html'] && ebookConfig['html'].cdn){
-        mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.2/katex.min.css">`
+        mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">`
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.css')}">`
       }
