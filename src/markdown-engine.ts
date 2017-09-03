@@ -2669,12 +2669,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     /**
-     * render tocHTML
+     * render tocHTML for [TOC] and sidebar TOC
      */
-    if (!utility.isArrayEqual(headings, this.headings)) {
-      const tocObject = toc(headings, {ordered: false, depthFrom: 1, depthTo: 6, tab: '\t'})
+    // if (!utility.isArrayEqual(headings, this.headings)) { // <== this code is wrong, as it will always be true...
+      const tocConfig = yamlConfig['toc'] || {},
+            depthFrom = tocConfig['depth_from'] || 1,
+            depthTo = tocConfig['depth_to'] || 6,
+            ordered = tocConfig['ordered']
+
+      const tocObject = toc(headings, {ordered, depthFrom, depthTo, tab: '\t'})
       this.tocHTML = this.md.render(tocObject.content)
-    }
+    // }
     this.headings = headings // reset headings information
 
     if (tocBracketEnabled) { // [TOC]
