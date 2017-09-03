@@ -481,7 +481,7 @@ export async function transformMarkdown(inputString:string,
           outputString = outputString + `\n[MUMETOC]\n\n`
           continue
 
-        } else if (taskListItemMatch = line.match(/^\s*(?:[*\-+]|\d+)\s+(\[[xX\s]\])\s/)) { // task list
+        } else if (taskListItemMatch = line.match(/^\s*(?:[*\-+]|\d+\.)\s+(\[[xX\s]\])\s/)) { // task list
           const checked = taskListItemMatch[1] !== '[ ]'
           if (!forMarkdownExport) {
             line = line.replace(
