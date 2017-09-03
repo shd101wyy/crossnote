@@ -89,6 +89,10 @@ const config = {
   // Enable extended table syntax to support merging table cells.  
   enableExtendedTableSyntax: false
 
+  // Enable CriticMarkup syntax. Only works with markdown-it parser.  
+  // http://criticmarkup.com/users-guide.php
+  enableCriticMarkupSyntax: false
+
   // Front matter rendering option
   frontMatterRenderingOption: 'table', // 'table' | 'code block' | 'none'
 
