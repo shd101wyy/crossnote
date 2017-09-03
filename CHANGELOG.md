@@ -1,3 +1,11 @@
+# 0.2.2
+* Added `enableCriticMarkupSyntax` option. enableCriticMarkupSyntax. [Syntax guide](http://criticmarkup.com/users-guide.php).  
+* Added `toc` config to front-matter for `[TOC]` and sidebar TOC.  
+* Fixed ordered list TODO box bug [#592](https://github.com/shd101wyy/markdown-preview-enhanced/issues/592).  
+* Upgraded `KaTeX` to version `0.8.3`.  
+* Changed `MathJax` CDN url.  
+* Fixed markdown export math issue [#606](https://github.com/shd101wyy/markdown-preview-enhanced/issues/606).  
+
 # 0.2.1 
 * Added `ignoreLink` option to TOC [#583](https://github.com/shd101wyy/markdown-preview-enhanced/issues/583).  
 * Fixed issue [#585](https://github.com/shd101wyy/markdown-preview-enhanced/issues/585), [#586](https://github.com/shd101wyy/markdown-preview-enhanced/issues/585).  
