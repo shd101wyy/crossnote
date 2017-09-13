@@ -128,7 +128,7 @@ export function openFile(filePath) {
   else
     cmd = 'xdg-open'
   
-  execFile(cmd, filePath)
+  execFile(cmd, [filePath])
     
 }
 
