@@ -1,3 +1,8 @@
+# 0.2.3 
+* atom editor `dropImageFileInEditor` to `['upload', 'insert relative path', 'do nothing']`
+* Support `Reading mode`.  
+* Support [markdown-it-emoji](https://github.com/markdown-it/markdown-it-emoji) and [markdown-it-fontawesome](https://github.com/nunof07/markdown-it-fontawesome).  
+
 # 0.2.2
 * Added `enableCriticMarkupSyntax` option. enableCriticMarkupSyntax. [Syntax guide](http://criticmarkup.com/users-guide.php).  
 * Added `toc` config to front-matter for `[TOC]` and sidebar TOC [#606](https://github.com/shd101wyy/markdown-preview-enhanced/issues/606).  
