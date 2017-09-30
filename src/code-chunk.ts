@@ -47,7 +47,8 @@ export async function run(content:string, fileDirectoryPath:string, options:obje
     args = [args]
   }
 
-  const savePath = path.resolve(fileDirectoryPath, Math.random().toString(36).substr(2, 9) + '_code_chunk')
+  const fileExtension = getFileExtension(cmd);
+  const savePath = path.resolve(fileDirectoryPath, Math.random().toString(36).substr(2, 9) + '_code_chunk' + fileExtension);
   content = content.replace(/\u00A0/g, ' ')
 
   if (cmd.match(/(la)?tex/) || cmd === 'pdflatex') {
@@ -132,4 +133,13 @@ except Exception:
       return resolve(data)
     })
   })
+}
+
+function  getFileExtension(language : string) : string {
+  const map = {
+    'go': '.go',
+    'javascript': '.js',
+    'python': '.py'
+  }
+  return map[language] || ''
 }

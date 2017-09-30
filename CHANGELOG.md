@@ -1,7 +1,7 @@
 # 0.2.3 
-* atom editor `dropImageFileInEditor` to `['upload', 'insert relative path', 'do nothing']`
-* Support `Reading mode`.  
-* Support [markdown-it-emoji](https://github.com/markdown-it/markdown-it-emoji) and [markdown-it-fontawesome](https://github.com/nunof07/markdown-it-fontawesome).  
+* ~~Support `Reading mode`~~.  
+* Supported [markdown-it-emoji](https://github.com/markdown-it/markdown-it-emoji) and [font-awesome](https://github.com/FortAwesome/Font-Awesome).  
+* Fixed pandoc code block bug.  
 
 # 0.2.2
 * Added `enableCriticMarkupSyntax` option. enableCriticMarkupSyntax. [Syntax guide](http://criticmarkup.com/users-guide.php).  

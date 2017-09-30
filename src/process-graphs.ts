@@ -224,6 +224,8 @@ export async function processGraphs(text:string,
           result = await compileLaTeX(content, fileDirectoryPath, Object.assign({}, options, {latex_svg_dir: imageDirectoryPath}))
         } else if (currentCodeChunk.options['output'] === 'markdown') {
           result = currentCodeChunk.plainResult
+        } else if (!options['output'] || options['output'] === 'text') {
+          result = `\n\`\`\`\n${currentCodeChunk.plainResult}\`\`\`\n` 
         }
 
         lines[end] += ('\n' + result)
