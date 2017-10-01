@@ -1,7 +1,6 @@
 import * as path from "path"
 import * as fs from "fs"
 import * as os from "os"
-import {execFile} from "child_process"
 import * as child_process from "child_process"
 import * as less from "less"
 import * as mkdirp_ from "mkdirp"
@@ -140,7 +139,7 @@ export function openFile(filePath) {
   else
     cmd = 'xdg-open'
   
-  execFile(cmd, [filePath])
+  child_process.execFile(cmd, [filePath])
     
 }
 
