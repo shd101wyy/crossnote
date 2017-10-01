@@ -7,6 +7,7 @@ import * as less from "less"
 import * as mkdirp_ from "mkdirp"
 import * as vm from "vm"
 import * as YAML from "yamljs"
+import * as matter from "gray-matter"
 
 import * as temp from "temp"
 temp.track()
@@ -32,11 +33,11 @@ const TAGS_TO_REPLACE_REVERSE = {
     '&#x5C;': '\\',
 }
 
-export function escapeString(str:string):string {
+export function escapeString(str:string=''):string {
   return str.replace(/[&<>"'\/\\]/g, (tag)=>(TAGS_TO_REPLACE[tag] || tag))
 }
 
-export function unescapeString(str:string):string {
+export function unescapeString(str:string=''):string {
   return str.replace(/\&(amp|lt|gt|quot|apos|\#x27|\#x2F|\#x5C)\;/g, (whole)=> (TAGS_TO_REPLACE_REVERSE[whole] || whole))
 }
 
@@ -53,8 +54,19 @@ export function sleep(ms:number) {
 }
 
 export function parseYAML(yaml:string="") {
+  // YAML doesn't work well with front-matter
+  /*
   try {
     return YAML.parse(yaml)
+  } catch(error) {
+    return {}
+  }
+  */
+  if (!yaml.startsWith('---')) {
+    yaml = '---\n' + yaml.trim() + '\n---\n'
+  }
+  try {
+    return matter(yaml).data    
   } catch(error) {
     return {}
   }

@@ -25,6 +25,7 @@
     "babyparse": "^0.4.6",
     "cheerio": "0.15.0",
     "global-modules": "^1.0.0",
+    "gray-matter": "^3.0.7",
     "less": "^2.7.2",
     "mkdirp": "^0.5.1",
     "request": "^2.81.0",

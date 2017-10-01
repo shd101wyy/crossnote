@@ -136,10 +136,10 @@ except Exception:
 }
 
 function  getFileExtension(language : string) : string {
-  switch(language) {
-    case 'go' :
-      return '.go';
-    default :
-      return ''
+  const map = {
+    'go': '.go',
+    'javascript': '.js',
+    'python': '.py'
   }
+  return map[language] || ''
 }

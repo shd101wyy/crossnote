@@ -86,6 +86,9 @@ const config = {
   // By default, the extension for wikilink is `.md`. For example: [[test]] will direct to file path `test.md`.
   wikiLinkFileExtension: '.md'
 
+  // Enable emoji & font-awesome plugin. This only works for markdown-it parser, but not pandoc parser.  
+  enableEmojiSyntax: true
+
   // Enable extended table syntax to support merging table cells.  
   enableExtendedTableSyntax: false
 

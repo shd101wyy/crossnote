@@ -63,6 +63,7 @@ export interface MarkdownEngineConfig {
   enableTypographer?: boolean
   enableWikiLinkSyntax?: boolean
   wikiLinkFileExtension?: string
+  enableEmojiSyntax?: boolean
   enableExtendedTableSyntax?: boolean
   enableCriticMarkupSyntax?: boolean
   protocolsWhiteList?: string
@@ -130,6 +131,7 @@ const defaultMarkdownEngineConfig:MarkdownEngineConfig = {
   breakOnSingleNewLine: true,
   enableTypographer: false,
   enableWikiLinkSyntax: true,
+  enableEmojiSyntax: true,
   enableExtendedTableSyntax: false, 
   enableCriticMarkupSyntax: false,
   wikiLinkFileExtension: '.md',
@@ -254,6 +256,7 @@ export class MarkdownEngine {
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-deflist.min.js')))
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-abbr.min.js')))
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-mark.min.js')))
+    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-emoji.min.js')))
 
     this.configureMarkdownIt()
   }
@@ -573,6 +576,25 @@ export class MarkdownEngine {
         }
       }
     }
+
+
+    /**
+     * Emoji
+     */
+    this.md.renderer.rules.emoji = (token, idx)=> {
+      if (this.config.enableEmojiSyntax) {
+        const t = token[idx],
+              markup = t['markup']
+        if (markup.startsWith('fa-')) { // font-awesome
+          return `<i class="fa ${markup}" aria-hidden="true"></i>`
+        } else { // emoji
+          return t['content']          
+        }      
+      } else {
+        return ':' + token[idx]['markup'] + ':'
+      }
+    }
+
   }
 
   /**
@@ -806,6 +828,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // check mermaid 
     styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/${this.config.mermaidTheme}`)}">`
 
+    // check font-awesome
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/font-awesome/css/font-awesome.min.css`)}">`    
+
     // check preview theme and revealjs theme
     if (!isPresentationMode) {
       styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`)}">`
@@ -986,6 +1011,16 @@ if (typeof(window['Reveal']) !== 'undefined') {
       mathStyle = ''
     }
 
+    // font-awesome 
+    let fontAwesomeStyle = ''
+    if (html.indexOf('<i class="fa ') >= 0) {
+      if (options.offline) {
+        fontAwesomeStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, `./dependencies/font-awesome/css/font-awesome.min.css`)}">`        
+      } else {
+        fontAwesomeStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">`                
+      }        
+    }
+
     // mermaid 
     let mermaidScript = ''
     let mermaidStyle = ''
@@ -1099,6 +1134,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     let title = path.basename(this.filePath)
     title = title.slice(0, title.length - path.extname(title).length) // remove '.md'
+    if (yamlConfig['title']) title = yamlConfig['title']
 
     // prism and preview theme 
     let styleCSS = ""
@@ -1184,7 +1220,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${presentationStyle}
       ${mathStyle}
       ${mermaidStyle}
-
+      ${fontAwesomeStyle}
+      
       ${presentationScript}
       ${mermaidScript}
       ${wavedromScript}
@@ -1955,7 +1992,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * @param code 
    */  
   private addLineNumbersIfNecessary($preElement, code:string):void {
-    if ($preElement.hasClass('line-numbers')) {
+    if ($preElement.hasClass('line-numbers') || $preElement.hasClass('numberLines')) {
+      $preElement.addClass('line-numbers') // fix for .numberLines class 
       if (!code.trim().length) return
       const match = code.match(/\n(?!$)/g)
       const linesNum = match ? (match.length + 1) : 1
@@ -2289,7 +2327,21 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (preElement.children[0] && preElement.children[0].name === 'code') {
         codeBlock = $preElement.children().first()
         lang = 'text'
-        let classes = codeBlock.attr('class')
+        
+        let classes;
+        if (this.config.usePandocParser) {
+          const dataLang = utility.unescapeString($preElement.attr('data-lang') || '')
+          if (!dataLang && codeBlock.text().startsWith('```{.mpe-code data-lang')) { // Fix indentation issue in pandoc code block
+            classes = 'language-text'
+            const code = codeBlock.text()
+            codeBlock.text(code.replace(/^```{\.mpe\-code\s*data\-lang=\"(.+?)\"}/, ($0, $1)=> `\`\`\`${utility.unescapeString($1)}`))
+          } else {
+            classes = 'language-' + dataLang            
+          }
+        } else {
+          classes = codeBlock.attr('class')          
+        }
+
         if (!classes) classes = 'language-text'
         lang = classes.replace(/^language-/, '')
         if (!lang) lang = 'text'
@@ -2413,7 +2465,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private processFrontMatter(frontMatterString:string, hideFrontMatter=false) {
     if (frontMatterString) {
-      let data:any = utility.parseYAML(frontMatterString + '\n') // <= '\n' here is necessary.  
+      let data:any = utility.parseYAML(frontMatterString)
 
       if (this.config.usePandocParser) { // use pandoc parser, so don't change inputString
         return {content: frontMatterString, table: '', data: data || {}}
@@ -2575,18 +2627,31 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let outputString = ""
     let lines = text.split('\n')
     let i = 0
-    let inCodeBlock = false
+    let inCodeBlock = false,
+        codeBlockSpacesAhead = 0
     while (i < lines.length) {
-      let line = lines[i]
-      if (line.startsWith('```')) {
+      let line = lines[i]      
+      let match = line.match(/(^\s*)```/)
+      if (match) {
         inCodeBlock = !inCodeBlock
 
         if (inCodeBlock) {
-          let lang = utility.escapeString(line.slice(3)).trim()
+          let lang = utility.escapeString(line.slice(match[0].length)).trim()
           if (!lang) lang = 'text'
-          outputString += `<pre><code class="language-${lang}" >`
+
+          // TODO: doesn't work well with code chunk. Fix in the future.  
+          // let cmatch = null
+          // if (cmatch = lang.match(/^\{\s*\.([\w\d]+)/)) { // ``` {.java}
+          // lang = cmatch[1] + ' ' + lang
+          // }
+
+          codeBlockSpacesAhead = match[1].length
+          outputString += `${match[1]}\`\`\`{.mpe-code data-lang="${lang}"}\n`
+        } else if (match[1].length === codeBlockSpacesAhead) {
+          outputString += `${match[1]}\`\`\`\n` 
         } else {
-          outputString += '</code></pre>\n'
+          inCodeBlock = !inCodeBlock
+          outputString += line + '\n'
         }
 
         i += 1

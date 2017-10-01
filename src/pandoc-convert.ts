@@ -40,7 +40,10 @@ function processOutputConfig(config:object, args:string[], latexEngine:string='p
   }
 
   if (config['reference_docx']) { // issue #448
-    args.push('--reference_docx=' + config['reference_docx'])
+    args.push('--reference-docx=' + config['reference_docx'])
+  }
+  if (config['reference_doc']) {
+    args.push('--reference-doc=' + config['reference_doc'])
   }
 
   if (config['highlight'] === null)
