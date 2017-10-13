@@ -6,6 +6,8 @@ import * as path from "path"
 import * as fs from "fs"
 import {spawn} from "child_process"
 import * as temp from "temp"
+import *  as naturalSort from "node-natural-sort"
+
 // import * as gm from "gm"
 // gm.subClass({imageMagick: true})
 
@@ -56,7 +58,9 @@ return new Promise<string>((resolve, reject)=> {
 
         let svgMarkdown = ''
         const r = Math.random()
+        items=items.sort(naturalSort())
         items.forEach((fileName)=> {
+          
           let match 
           if (match = fileName.match(new RegExp(`^${svgFilePrefix}(\\d+)\.svg`))) {
             let svgFilePath = path.relative(markdownDirectoryPath, path.resolve(svgDirectoryPath, fileName))

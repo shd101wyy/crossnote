@@ -75,7 +75,7 @@ export function readFile(file:string, options?):Promise<string> {
   return new Promise((resolve, reject)=> {
     fs.readFile(file, options, (error, text)=> {
       if (error) return reject(error.toString())
-      else return resolve(text)
+      else return resolve(text.toString())
     })
   })
 }
