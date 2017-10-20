@@ -39,7 +39,7 @@ async function main() {
   // html export
   await engine.htmlExport({offline: false, runAllCodeChunks: true})
 
- // chrome (puppeteer) export 
+  // chrome (puppeteer) export 
   await engine.chromeExport({fileType: 'pdf', runAllCodeChunks: true}) // fileType = 'pdf'|'png'|'jpeg'
 
   // phantomjs export 
@@ -147,7 +147,7 @@ const config = {
   // "solarized-light.css"
 
   // Revealjs presentation theme
-  revealjsTheme: "white.css"
+  revealjsTheme: "white.css",
   // "beige.css"
   // "black.css"
   // "blood.css"
