@@ -78,9 +78,9 @@ function processOutputConfig(config:object, args:string[], latexEngine:string='p
     args.push('-V', 'fonttheme:'+config['fonttheme'])
 
   if (config['latex_engine'])
-    args.push('--latex-engine='+config['latex_engine'])
+    args.push('--pdf-engine='+config['latex_engine'])
   else {
-    args.push('--latex-engine='+latexEngine)
+    args.push('--pdf-engine='+latexEngine)
   }
 
   if (config['includes'] && typeof(config['includes']) === 'object') {
