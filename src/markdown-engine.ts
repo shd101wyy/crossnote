@@ -666,6 +666,9 @@ export class MarkdownEngine {
   public generateScriptsForPreview(isForPresentation=false, yamlConfig={}) {
     let scripts = ""
 
+    // prevent `id="exports"` element from linked to `window` object.  
+    scripts += `<script>var exports = undefined</script>`
+
     // jquery 
     scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/jquery/jquery.js')}"></script>`
   
