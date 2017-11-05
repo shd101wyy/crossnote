@@ -1213,6 +1213,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 }())    
 </script>`
 
+    // process styles
+    // move @import ''; to the very start.  
+    let styles = styleCSS + '\n' + globalStyles
+    let imports = ''
+    styles = styles.replace(/\@import\s+url\(([^)]+)\)\s*;/g, function(whole, url) {
+      imports += (whole + '\n')
+      return ''
+    })
+    styles = imports + styles
+
     html = `
   <!DOCTYPE html>
   <html>
@@ -1230,8 +1240,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${wavedromScript}
 
       <style> 
-      ${styleCSS} 
-      ${globalStyles} 
+      ${styles} 
       </style>
     </head>
     <body ${options.isForPrint ? '' : 'for="html-export"'} ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''}>
