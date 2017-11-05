@@ -1581,7 +1581,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         const $a = $li.children('a').first()
         if (!$a.length) return 
 
-        const filePath = $a.attr('href') // markdown file path 
+        const filePath = decodeURIComponent($a.attr('href')) // markdown file path 
         const heading = $a.html()
         const id = 'ebook-heading-id-' + headingOffset
 
