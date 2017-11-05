@@ -2672,7 +2672,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const pandocPath = this.config.pandocPath
     return await new Promise<string>((resolve, reject)=> {
       try {
-        const program = execFile(pandocPath, args, {cwd: this.fileDirectoryPath}, (error, stdout, stderr)=> {
+        const program = execFile(pandocPath, args, {cwd: this.fileDirectoryPath, maxBuffer: Infinity}, (error, stdout, stderr)=> {
           if (error) return reject(error)
           if (stderr) return reject(stderr)
           return resolve(stdout)
