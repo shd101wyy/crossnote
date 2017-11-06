@@ -1,3 +1,10 @@
+# 0.2.4
+* Fixed PDF page import order issue.  
+* Fixed id=`exports` element error [#671](https://github.com/shd101wyy/markdown-preview-enhanced/issues/671).  
+* Fixed `maxBuffer` issue [#660](https://github.com/shd101wyy/markdown-preview-enhanced/issues/660).  
+* Fixed ebook export UTF-8 link issue [#666](https://github.com/shd101wyy/markdown-preview-enhanced/issues/666).
+* Fixed html export font import bug [#655](https://github.com/shd101wyy/markdown-preview-enhanced/issues/655).    
+
 # 0.2.3 
 * ~~Support `Reading mode`~~.  
 * Supported [markdown-it-emoji](https://github.com/markdown-it/markdown-it-emoji) and [font-awesome](https://github.com/FortAwesome/Font-Awesome).  

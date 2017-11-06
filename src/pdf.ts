@@ -56,9 +56,15 @@ return new Promise<string>((resolve, reject)=> {
         if (error)
           return reject(error.toString())
 
+        items = items.sort((a, b)=> {
+          const offsetA = parseInt(a.match(/\_(\d+)\.svg$/)[1]),
+                offsetB = parseInt(b.match(/\_(\d+)\.svg$/)[1])
+          return offsetA - offsetB
+        })
+        
         let svgMarkdown = ''
-        const r = Math.random()
-        items=items.sort(naturalSort())
+        const r = Math.random()        
+
         items.forEach((fileName)=> {
           
           let match 

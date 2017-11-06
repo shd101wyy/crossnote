@@ -666,6 +666,9 @@ export class MarkdownEngine {
   public generateScriptsForPreview(isForPresentation=false, yamlConfig={}) {
     let scripts = ""
 
+    // prevent `id="exports"` element from linked to `window` object.  
+    scripts += `<script>var exports = undefined</script>`
+
     // jquery 
     scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/jquery/jquery.js')}"></script>`
   
@@ -1210,6 +1213,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 }())    
 </script>`
 
+    // process styles
+    // move @import ''; to the very start.  
+    let styles = styleCSS + '\n' + globalStyles
+    let imports = ''
+    styles = styles.replace(/\@import\s+url\(([^)]+)\)\s*;/g, function(whole, url) {
+      imports += (whole + '\n')
+      return ''
+    })
+    styles = imports + styles
+
     html = `
   <!DOCTYPE html>
   <html>
@@ -1227,8 +1240,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${wavedromScript}
 
       <style> 
-      ${styleCSS} 
-      ${globalStyles} 
+      ${styles} 
       </style>
     </head>
     <body ${options.isForPrint ? '' : 'for="html-export"'} ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''}>
@@ -1578,7 +1590,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         const $a = $li.children('a').first()
         if (!$a.length) return 
 
-        const filePath = $a.attr('href') // markdown file path 
+        const filePath = decodeURIComponent($a.attr('href')) // markdown file path 
         const heading = $a.html()
         const id = 'ebook-heading-id-' + headingOffset
 
@@ -2669,7 +2681,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const pandocPath = this.config.pandocPath
     return await new Promise<string>((resolve, reject)=> {
       try {
-        const program = execFile(pandocPath, args, {cwd: this.fileDirectoryPath}, (error, stdout, stderr)=> {
+        const program = execFile(pandocPath, args, {cwd: this.fileDirectoryPath, maxBuffer: Infinity}, (error, stdout, stderr)=> {
           if (error) return reject(error)
           if (stderr) return reject(stderr)
           return resolve(stdout)
