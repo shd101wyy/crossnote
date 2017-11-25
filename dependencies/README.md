@@ -20,7 +20,13 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "vega": "v3.0.0-rc4",
     "vega-lite": "v2.0.0-beta.10",
     "ditaa": "0.10",
-    "font-awesome": "4.7" 
+    "font-awesome": "4.7",
+    "flowchart": "1.7.0",
+    "raphael.js": "2.2.7",
+    "js-sequence-diagrams": "2.0.1",
+    "webfont": "1.6.28",
+    "snap.svg": "0.5.1",
+    "underscore": "1.8.3"
 }
 ```  
 

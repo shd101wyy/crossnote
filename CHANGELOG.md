@@ -1,3 +1,6 @@
+# 0.2.5 
+* Supported two more diagrams: [flow](http://flowchart.js.org/) and [sequence](https://bramp.github.io/js-sequence-diagrams/)
+
 # 0.2.4
 * Fixed PDF page import order issue.  
 * Fixed id=`exports` element error [#671](https://github.com/shd101wyy/markdown-preview-enhanced/issues/671).  
