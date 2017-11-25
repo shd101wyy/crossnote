@@ -760,7 +760,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // sequence diagram
     scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/webfont/webfontloader.js')}'></script>`
-    scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/snap.svg/snap.svg-min.js')}'></script>`
     scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/underscore/underscore.js')}'></script>`
     scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/js-sequence-diagrams/sequence-diagram-min.js')}'></script>`    
 
@@ -1115,7 +1114,7 @@ for (var i = 0; i < flowcharts.length; i++) {
     flow.innerHTML = ''
     diagram.drawSVG(flow.id)
   } catch (error) {
-    flow.innerHTML = '<pre>' + error.toString() + '</pre>'
+    flow.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
   }
 }
 </script>`
@@ -1128,13 +1127,13 @@ for (var i = 0; i < flowcharts.length; i++) {
     if (html.indexOf(' class="sequence') >= 0) {
       if (options.offline) {
         sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/webfont/webfontloader.js')}"></script>`        
-        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/snap.svg/snap.svg-min.js')}"></script>`
+        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/raphael/raphael.js')}"></script>`
         sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/underscore/underscore.js')}"></script>`
         sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/js-sequence-diagrams/sequence-diagram-min.js')}"></script>`        
         sequenceDiagramStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, `./dependencies/js-sequence-diagrams/sequence-diagram-min.css`)}">`        
       } else {
         sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webfont/1.6.28/webfontloader.js"></script>`                
-        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/snap.svg/0.5.1/snap.svg-min.js"></script>`
+        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`
         sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>`
         sequenceDiagramScript += `<script type="text/javascript" src="https://bramp.github.io/js-sequence-diagrams/js/sequence-diagram-min.js"></script>`        
         sequenceDiagramStyle = `<link rel="stylesheet" href="https://bramp.github.io/js-sequence-diagrams/css/sequence-diagram-min.css">`        
@@ -1150,7 +1149,7 @@ for (var i = 0; i < flowcharts.length; i++) {
           sequence.innerHTML = ''
           diagram.drawSVG(sequence.id, {theme: theme})
         } catch (error) {
-          sequence.innerHTML = '<pre>' + error.toString() + '</pre>'
+          sequence.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
         }
       }
       </script>`

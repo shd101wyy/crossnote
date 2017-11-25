@@ -25,7 +25,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "raphael.js": "2.2.7",
     "js-sequence-diagrams": "2.0.1",
     "webfont": "1.6.28",
-    "snap.svg": "0.5.1",
+    // "snap.svg": "0.5.1", // <= Doesn't work well in Preview. Use raphael.js instead
     "underscore": "1.8.3"
 }
 ```  
