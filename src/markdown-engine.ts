@@ -2505,7 +2505,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         const $e = $(e),
               $h = $e.prev()
         $h.addClass(classes)
-        $h.attr('id', id)
+        $h.attr('id', encodeURIComponent(id)) // encodeURIComponent to fix utf-8 header. 
         $e.remove()
       })
     }
