@@ -756,12 +756,46 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // flowchart.js 
     scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/raphael/raphael.js')}'></script>`
     scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/flowchart/flowchart.js')}'></script>`    
-    
+    // flowchart init script
+    if (isForPresentation) {
+      scripts += `<script>
+      var flowcharts = document.getElementsByClassName('flow')
+      for (var i = 0; i < flowcharts.length; i++) {
+        var flow = flowcharts[i]
+        try {
+          var diagram = flowchart.parse(flow.textContent)
+          flow.id = 'flow_' + i
+          flow.innerHTML = ''
+          diagram.drawSVG(flow.id)
+        } catch (error) {
+          flow.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        }
+      }
+      </script>`
+    }
 
     // sequence diagram
     scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/webfont/webfontloader.js')}'></script>`
     scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/underscore/underscore.js')}'></script>`
     scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/js-sequence-diagrams/sequence-diagram-min.js')}'></script>`    
+    // sequence diagram init script
+    if (isForPresentation) {
+      scripts += `<script>
+      var sequenceDiagrams = document.getElementsByClassName('sequence')
+      for (var i = 0; i < sequenceDiagrams.length; i++) {
+        var sequence = sequenceDiagrams[i]
+        try {
+          var diagram = Diagram.parse(sequence.textContent)
+          var theme = sequence.getAttribute('theme') || 'simple'
+          sequence.id = 'sequence_' + i
+          sequence.innerHTML = ''
+          diagram.drawSVG(sequence.id, {theme: theme})
+        } catch (error) {
+          sequence.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        }
+      }
+      </script>`
+    }
 
     return scripts
   }
