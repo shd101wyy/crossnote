@@ -1,4 +1,4 @@
-# 0.2.5
+# 0.2.5 & 0.2.6
 * Supported two more diagrams: [flow](http://flowchart.js.org/) and [sequence](https://bramp.github.io/js-sequence-diagrams/).
 * Upgraded `vega`, `vega-lite`, `plantuml`.
 * Fixed UTF-8 header id bug.
