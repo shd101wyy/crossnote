@@ -1819,7 +1819,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * pandoc export
    */
   public async pandocExport({runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
-    const inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
+    let inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
+    
+    if (utility.configs.parserConfig['onWillParseMarkdown']) {
+      inputString = await utility.configs.parserConfig['onWillParseMarkdown'](inputString)
+    }
 
     if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData
       await this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
