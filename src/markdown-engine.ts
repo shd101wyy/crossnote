@@ -752,7 +752,17 @@ if (typeof(window['Reveal']) !== 'undefined') {
   WaveDrom.ProcessAll()
       </script>`
     }
+
+    // flowchart.js 
+    scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/raphael/raphael.js')}'></script>`
+    scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/flowchart/flowchart.js')}'></script>`    
     
+
+    // sequence diagram
+    scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/webfont/webfontloader.js')}'></script>`
+    scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/underscore/underscore.js')}'></script>`
+    scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/js-sequence-diagrams/sequence-diagram-min.js')}'></script>`    
+
     return scripts
   }
 
@@ -830,6 +840,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // check mermaid 
     styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/${this.config.mermaidTheme}`)}">`
+
+    // check sequence diagram
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/js-sequence-diagrams/sequence-diagram-min.css`)}">`    
 
     // check font-awesome
     styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/font-awesome/css/font-awesome.min.css`)}">`    
@@ -1028,7 +1041,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let mermaidScript = ''
     let mermaidStyle = ''
     let mermaidInitScript = ''
-    if (html.indexOf('<div class="mermaid">') >= 0) {
+    if (html.indexOf(' class="mermaid') >= 0) {
       if (options.offline) {
         mermaidScript = `<script type="text/javascript" src="file:///${path.resolve(extensionDirectoryPath, './dependencies/mermaid/mermaid.min.js')}"></script>`
         mermaidStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, `./dependencies/mermaid/${this.config.mermaidTheme}`)}">`
@@ -1069,7 +1082,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // wavedrom 
     let wavedromScript = ``,
         wavedromInitScript = ``
-    if (html.indexOf('<div class="wavedrom">') >= 0) {
+    if (html.indexOf(' class="wavedrom') >= 0) {
       if (options.offline) {
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/default.js')}"></script>`
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/wavedrom.min.js')}"></script>`
@@ -1080,6 +1093,67 @@ if (typeof(window['Reveal']) !== 'undefined') {
       wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`
     }
 
+    // flowchart 
+    let flowchartScript = ``,
+        flowchartInitScript = ``
+    if (html.indexOf(' class="flow') >= 0) {
+      if (options.offline) {
+        flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/raphael/raphael.js')}"></script>`
+        flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/flowchart/flowchart.js')}"></script>`
+      } else {
+        flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`
+        flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.7.0/flowchart.min.js"></script>`        
+      }
+      flowchartInitScript = `<script>
+var flowcharts = document.getElementsByClassName('flow')
+for (var i = 0; i < flowcharts.length; i++) {
+  var flow = flowcharts[i]
+  try {
+    var diagram = flowchart.parse(flow.textContent)
+    flow.id = 'flow_' + i
+    flow.innerHTML = ''
+    diagram.drawSVG(flow.id)
+  } catch (error) {
+    flow.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+  }
+}
+</script>`
+    }
+
+    // sequence diagrams
+    let sequenceDiagramScript = ``,
+        sequenceDiagramStyle = ``,
+        sequenceDiagramInitScript = ``
+    if (html.indexOf(' class="sequence') >= 0) {
+      if (options.offline) {
+        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/webfont/webfontloader.js')}"></script>`        
+        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/raphael/raphael.js')}"></script>`
+        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/underscore/underscore.js')}"></script>`
+        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/js-sequence-diagrams/sequence-diagram-min.js')}"></script>`        
+        sequenceDiagramStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, `./dependencies/js-sequence-diagrams/sequence-diagram-min.css`)}">`        
+      } else {
+        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webfont/1.6.28/webfontloader.js"></script>`                
+        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`
+        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>`
+        sequenceDiagramScript += `<script type="text/javascript" src="https://bramp.github.io/js-sequence-diagrams/js/sequence-diagram-min.js"></script>`        
+        sequenceDiagramStyle = `<link rel="stylesheet" href="https://bramp.github.io/js-sequence-diagrams/css/sequence-diagram-min.css">`        
+      }
+      sequenceDiagramInitScript = `<script>
+      var sequenceDiagrams = document.getElementsByClassName('sequence')
+      for (var i = 0; i < sequenceDiagrams.length; i++) {
+        var sequence = sequenceDiagrams[i]
+        try {
+          var diagram = Diagram.parse(sequence.textContent)
+          var theme = sequence.getAttribute('theme') || 'simple'
+          sequence.id = 'sequence_' + i
+          sequence.innerHTML = ''
+          diagram.drawSVG(sequence.id, {theme: theme})
+        } catch (error) {
+          sequence.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        }
+      }
+      </script>`
+    }
 
     // presentation
     let presentationScript = '',
@@ -1233,11 +1307,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${presentationStyle}
       ${mathStyle}
       ${mermaidStyle}
+      ${sequenceDiagramStyle}
       ${fontAwesomeStyle}
       
       ${presentationScript}
       ${mermaidScript}
       ${wavedromScript}
+      ${flowchartScript}
+      ${sequenceDiagramScript}
 
       <style> 
       ${styles} 
@@ -1253,6 +1330,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${presentationInitScript}
     ${mermaidInitScript}
     ${wavedromInitScript}
+    ${flowchartInitScript}
+    ${sequenceDiagramInitScript}
     ${taskListScript}
     ${sidebarTOCScript}
   </html>
@@ -1360,10 +1439,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     })
 
     if (!puppeteer) { // require puppeteer from global node_modules
-
       try {
-        const globalModules = require('global-modules')
-        puppeteer = require(path.resolve(globalModules, 'puppeteer'))
+        const globalNodeModulesPath = (await utility.execFile('npm', ['root', '-g'])).trim().split('\n')[0].trim()
+        puppeteer = require(path.resolve(globalNodeModulesPath, './puppeteer')) // trim() function here is very necessary.
       } catch(error) {
         throw "Puppeteer (Headless Chrome) is required to be installed globally. Please run `npm install -g puppeteer` in your terminal.  \n"
       }
@@ -1740,7 +1818,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * pandoc export
    */
   public async pandocExport({runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
-    const inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
+    let inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
+    
+    if (utility.configs.parserConfig['onWillParseMarkdown']) {
+      inputString = await utility.configs.parserConfig['onWillParseMarkdown'](inputString)
+    }
 
     if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData
       await this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
@@ -2091,18 +2173,32 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
       */
       if (options['class']) {
-        options['class'] += ' mermaid'
+        options['class'] = 'mermaid ' + options['class']
       } else {
         options['class'] = 'mermaid'
       }
       $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}>${code}</div>`)
     } else if (lang === 'wavedrom') {
       if (options['class']) {
-        options['class'] += ' wavedrom'
+        options['class'] = 'wavedrom ' + options['class']
       } else {
         options['class'] = 'wavedrom'
       }
       $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}><script type="WaveDrom">${code}</script></div>`)
+    } else if (lang === 'flow') {
+      if (options['class']) {
+        options['class'] = 'flow ' + options['class']
+      } else {
+        options['class'] = 'flow'
+      }
+      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}>${code}</div>`)      
+    } else if (lang === 'sequence') {
+      if (options['class']) {
+        options['class'] = 'sequence ' + options['class']
+      } else {
+        options['class'] = 'sequence'
+      }
+      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}>${code}</div>`)      
     } else if (lang.match(/^(dot|viz)$/)) { // GraphViz
       const checksum = md5(optionsStr + code)
       let svg = this.graphsCache[checksum]
@@ -2409,7 +2505,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         const $e = $(e),
               $h = $e.prev()
         $h.addClass(classes)
-        $h.attr('id', id)
+        $h.attr('id', encodeURIComponent(id)) // encodeURIComponent to fix utf-8 header. 
         $e.remove()
       })
     }

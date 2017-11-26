@@ -4,7 +4,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
 ```json
 {
     "mermaid": "7.0.0",
-    "plantuml": "1.2017.15",
+    "plantuml": "1.2017.19",
     "wavedrom": "1.4.1",
     "reveal": "3.5.0",
     "viz": "v1.8.0",
@@ -17,10 +17,16 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "crypto-js": "3.9.1-1",
     "jquery-modal": "0.8.0",
     "node-html-pdf": "commit 543a918d1c11cefc713b2d38983eb63cc1d347fe",
-    "vega": "v3.0.0-rc4",
-    "vega-lite": "v2.0.0-beta.10",
+    "vega": "3.0.7",
+    "vega-lite": "2.0.1",
     "ditaa": "0.10",
-    "font-awesome": "4.7" 
+    "font-awesome": "4.7",
+    "flowchart": "1.7.0",
+    "raphael.js": "2.2.7",
+    "js-sequence-diagrams": "2.0.1",
+    "webfont": "1.6.28",
+    // "snap.svg": "0.5.1", // <= Doesn't work well in Preview. Use raphael.js instead
+    "underscore": "1.8.3"
 }
 ```  
 

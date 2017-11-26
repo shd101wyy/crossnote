@@ -136,6 +136,8 @@ class PreviewController {
    * Caches
    */
   private wavedromCache = {}
+  private flowchartCache = {}
+  private sequenceDiagramCache = {}
 
   /**
    * This controller should be initialized when the html dom is loaded.
@@ -333,7 +335,7 @@ class PreviewController {
         },
         "chrome_export":
         {
-          name: "Chrome (experimental)",
+          name: "Chrome (Puppeteer)",
           items: {
             "chrome_pdf": {
               name: "PDF",
@@ -613,6 +615,65 @@ class PreviewController {
   }
 
   /**
+   * render flowchart 
+   * This function doesn't work with `hiddenPreviewElement`
+   */
+  private renderFlowchart() {
+    return new Promise((resolve, reject)=> {
+      const flowcharts = this.previewElement.getElementsByClassName('flow')
+      const newFlowchartCache = {}
+      for (let i = 0; i < flowcharts.length; i++) {
+        const flow = flowcharts[i]
+        const text = flow.textContent.trim()
+        if (text in this.flowchartCache) {
+          flow.innerHTML = this.flowchartCache[text]
+        } else {
+          try {
+            const diagram = window['flowchart'].parse(text)
+            flow.innerHTML = ''
+            diagram.drawSVG(flow)
+          } catch (error) {
+            flow.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+          }
+        }
+        newFlowchartCache[text] = flow.innerHTML
+      }
+      this.flowchartCache = newFlowchartCache
+      resolve()      
+    })
+  }
+
+  /**
+   * render sequence diagram
+   */
+  private renderSequenceDiagram() {
+    return new Promise((resolve, reject)=> {
+      const sequenceDiagrams = this.previewElement.getElementsByClassName('sequence')
+      const newSequenceDiagramCache = {}
+      for (let i = 0; i < sequenceDiagrams.length; i++) {
+        const sequence = sequenceDiagrams[i] as HTMLElement
+        const text = sequence.textContent.trim()
+        const theme = sequence.getAttribute('theme') || 'simple'        
+        const cacheKey = (text + '$' + theme)
+        if (cacheKey in this.sequenceDiagramCache) {
+          sequence.innerHTML = this.sequenceDiagramCache[cacheKey]
+        } else {
+          try {
+            const diagram = window['Diagram'].parse(text)
+            sequence.innerHTML = ''
+            diagram.drawSVG(sequence, {theme: theme})
+          } catch (error) {
+            sequence.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+          }
+        }
+        newSequenceDiagramCache[cacheKey] = sequence.innerHTML
+      }
+      this.sequenceDiagramCache = newSequenceDiagramCache
+      resolve()
+    })
+  }
+
+  /**
    * render wavedrom
    */
   private async renderWavedrom() {
@@ -786,6 +847,11 @@ class PreviewController {
     ])
     this.previewElement.innerHTML = this.hiddenPreviewElement.innerHTML
     this.hiddenPreviewElement.innerHTML = ""
+
+    await Promise.all([
+      this.renderFlowchart(),
+      this.renderSequenceDiagram()
+    ])
 
     this.setupCodeChunks()
 
