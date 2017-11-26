@@ -6,7 +6,6 @@ import * as path from "path"
 import * as fs from "fs"
 import {spawn} from "child_process"
 import * as temp from "temp"
-import *  as naturalSort from "node-natural-sort"
 
 // import * as gm from "gm"
 // gm.subClass({imageMagick: true})
