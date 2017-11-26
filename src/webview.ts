@@ -340,7 +340,7 @@ class PreviewController {
         },
         "chrome_export":
         {
-          name: "Chrome (experimental)",
+          name: "Chrome (Puppeteer)",
           items: {
             "chrome_pdf": {
               name: "PDF",
