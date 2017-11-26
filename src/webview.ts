@@ -140,11 +140,6 @@ class PreviewController {
   private sequenceDiagramCache = {}
 
   /**
-   * Counter 
-   */
-  private flowchartCounter = 0
-
-  /**
    * This controller should be initialized when the html dom is loaded.
    */
   constructor() {
