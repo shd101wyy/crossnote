@@ -158,11 +158,11 @@ function qiniuUploadImage(filePath:string, AccessKey:string, SecretKey:string, B
  * @param imageFilePath 
  * @param method 'imgur' or 'sm.ms' 
  */
-export function uploadImage(imageFilePath:string, {method="imgur"}):Promise<string> {
+export function uploadImage(imageFilePath:string, {method="imgur"}, AccessKey?:string, SecretKey?:string, Bucket?:string, Domain?:string):Promise<string> {
   if (method === 'imgur') {
     return imgurUploadImage(imageFilePath)
   }else if (method === 'qiniu'){
-    return qiniuUploadImage(imageFilePath, arguments[2], arguments[3], arguments[4], arguments[5]);
+    return qiniuUploadImage(imageFilePath, AccessKey, SecretKey, Bucket, Domain);
   } else { // sm.ms
     return smmsUploadImage(imageFilePath)
   }
