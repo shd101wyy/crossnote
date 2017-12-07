@@ -30,6 +30,7 @@
     "request": "^2.81.0",
     "temp": "^0.8.3",
     "uslug": "^1.0.4",
+    "qiniu": "=7.1.1",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
