@@ -6,7 +6,8 @@
   "typings": "out/src/mume.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node_modules/.bin/tsc",
+    "build": "tsc -p .",
+    "build:watch": "tsc -w -p .",
     "prepare": "npm run build"
   },
   "files": [
