@@ -970,6 +970,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
               <select class="uploader-select">
                 <option>imgur</option>
                 <option>sm.ms</option>
+                <option>qiniu</option>
               </select>
               <span> to upload images</span>
             </div>

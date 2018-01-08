@@ -117,13 +117,52 @@ function smmsUploadImage(filePath:string):Promise<string> {
 }
 
 /**
+ * Upload image to qiniu
+ * @param filePath
+ * @param AccessKey
+ * @param SecretKey
+ * @param Bucket
+ * @param Domain
+ */
+function qiniuUploadImage(filePath:string, AccessKey:string, SecretKey:string, Bucket:string, Domain:string):Promise<string> {
+  return new Promise((resolve, reject) => {
+      const qiniu = require('qiniu');
+      var mac = new qiniu.auth.digest.Mac(AccessKey, SecretKey);
+      var putPolicy = new qiniu.rs.PutPolicy({scope : Bucket});
+      var uploadToken=putPolicy.uploadToken(mac);
+      var config = new qiniu.conf.Config();
+      var key = path.basename(filePath);
+      var formUploader = new qiniu.form_up.FormUploader(config);
+      var putExtra = new qiniu.form_up.PutExtra();
+
+      return formUploader.putFile(uploadToken, key, filePath, putExtra, function(respErr,respBody, respInfo) {
+          if (respErr) {
+              console.log(respErr);
+              return reject(respErr.message);
+          }
+
+          if (respInfo.statusCode == 200) {
+            var bucketManager = new qiniu.rs.BucketManager(mac, config);
+            var url = bucketManager.publicDownloadUrl(Domain, key);
+            return resolve(url);
+        } else {
+            console.log(respInfo);
+            return reject(respInfo.error);
+        }
+    });
+});
+}
+
+/**
  * Upload image
  * @param imageFilePath 
  * @param method 'imgur' or 'sm.ms' 
  */
-export function uploadImage(imageFilePath:string, {method="imgur"}):Promise<string> {
+export function uploadImage(imageFilePath:string, {method="imgur"}, AccessKey?:string, SecretKey?:string, Bucket?:string, Domain?:string):Promise<string> {
   if (method === 'imgur') {
     return imgurUploadImage(imageFilePath)
+  }else if (method === 'qiniu'){
+    return qiniuUploadImage(imageFilePath, AccessKey, SecretKey, Bucket, Domain);
   } else { // sm.ms
     return smmsUploadImage(imageFilePath)
   }
