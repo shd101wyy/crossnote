@@ -167,10 +167,14 @@ export async function getGlobalStyles():Promise<string> {
   } catch(e) {
         // create style.less file 
     fileContent = `
-html body {
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */ 
+
+.markdown-preview.markdown-preview {
   // modify your style here
-  // eg: background-color: blue;
-}    `
+  // eg: background-color: blue;  
+}
+` 
     await writeFile(globalLessFilePath, fileContent, {encoding: 'utf-8'})
   }
 
