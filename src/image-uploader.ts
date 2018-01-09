@@ -126,43 +126,57 @@ function smmsUploadImage(filePath:string):Promise<string> {
  */
 function qiniuUploadImage(filePath:string, AccessKey:string, SecretKey:string, Bucket:string, Domain:string):Promise<string> {
   return new Promise((resolve, reject) => {
-      const qiniu = require('qiniu');
-      var mac = new qiniu.auth.digest.Mac(AccessKey, SecretKey);
-      var putPolicy = new qiniu.rs.PutPolicy({scope : Bucket});
-      var uploadToken=putPolicy.uploadToken(mac);
-      var config = new qiniu.conf.Config();
-      var key = path.basename(filePath);
-      var formUploader = new qiniu.form_up.FormUploader(config);
-      var putExtra = new qiniu.form_up.PutExtra();
+    if (!AccessKey) {
+      return reject('Error: Qiniu AccessKey is missing')
+    }
+    if (!SecretKey) {
+      return reject('Error: Qiniu SecretKey is missing')
+    } 
+    if (!Bucket) {
+      return reject('Error: Qiniu Bucket is missing')
+    }
+    if (!Domain) {
+      return reject('Error: Qiniu Domain is missing')
+    }
 
-      return formUploader.putFile(uploadToken, key, filePath, putExtra, function(respErr,respBody, respInfo) {
-          if (respErr) {
-              console.log(respErr);
-              return reject(respErr.message);
-          }
+    const qiniu = require('qiniu')
+    const mac = new qiniu.auth.digest.Mac(AccessKey, SecretKey)
+    const putPolicy = new qiniu.rs.PutPolicy({scope : Bucket})
+    const uploadToken=putPolicy.uploadToken(mac)
+    const config = new qiniu.conf.Config()
+    const key = path.basename(filePath)
+    const formUploader = new qiniu.form_up.FormUploader(config)
+    const putExtra = new qiniu.form_up.PutExtra()
 
-          if (respInfo.statusCode == 200) {
-            var bucketManager = new qiniu.rs.BucketManager(mac, config);
-            var url = bucketManager.publicDownloadUrl(Domain, key);
-            return resolve(url);
-        } else {
-            console.log(respInfo);
-            return reject(respInfo.error);
-        }
-    });
-});
+    return formUploader.putFile(uploadToken, key, filePath, putExtra, function(respErr,respBody, respInfo) {
+      if (respErr) {
+        console.log(respErr)
+        return reject(respErr.message)
+      }
+
+      if (respInfo.statusCode == 200) {
+        const bucketManager = new qiniu.rs.BucketManager(mac, config)
+        const url = bucketManager.publicDownloadUrl(Domain, key)
+        return resolve(url);
+      } else {
+        console.log(respInfo)
+        return reject(respInfo.error)
+      }
+    })
+  })
 }
 
 /**
  * Upload image
  * @param imageFilePath 
  * @param method 'imgur' or 'sm.ms' 
+ * @param qiniu {AccessKey, SecretKey, Bucket, Domain}
  */
-export function uploadImage(imageFilePath:string, {method="imgur"}, AccessKey?:string, SecretKey?:string, Bucket?:string, Domain?:string):Promise<string> {
+export function uploadImage(imageFilePath:string, {method="imgur", qiniu={AccessKey:'', SecretKey:'', Bucket: '', Domain:''}}):Promise<string> {
   if (method === 'imgur') {
     return imgurUploadImage(imageFilePath)
   }else if (method === 'qiniu'){
-    return qiniuUploadImage(imageFilePath, AccessKey, SecretKey, Bucket, Domain);
+    return qiniuUploadImage(imageFilePath, qiniu.AccessKey, qiniu.SecretKey, qiniu.Bucket, qiniu.Domain);
   } else { // sm.ms
     return smmsUploadImage(imageFilePath)
   }
