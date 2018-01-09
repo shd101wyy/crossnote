@@ -706,7 +706,9 @@ export class MarkdownEngine {
       scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/reveal/js/reveal.js')}'></script>`
   
       let presentationConfig = yamlConfig['presentation'] || {}
-      let dependencies = presentationConfig['dependencies'] || []
+      if (typeof(presentationConfig) !== 'object') presentationConfig = {}
+      let dependencies = presentationConfig['dependencies']  || []
+      if (!(dependencies instanceof Array)) dependencies = []
       presentationConfig['dependencies'] = dependencies
 
       scripts += `
@@ -838,13 +840,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
   /**
    * Automatically pick code block theme for preview.  
    */
-  private getPrismTheme(isPresentationMode=false) {
+  private getPrismTheme(isPresentationMode=false, yamlConfig={}) {
     if (this.config.codeBlockTheme === 'auto.css') {
       /**
        * Automatically pick code block theme for preview.  
        */
       if (isPresentationMode) {
-        return MarkdownEngine.AutoPrismThemeMapForPresentation[this.config.revealjsTheme] || 'default.css'
+        const presentationTheme = (yamlConfig['presentation'] && typeof(yamlConfig['presentation']) === 'object' && yamlConfig['presentation']['theme']) ? yamlConfig['presentation']['theme'] : this.config.revealjsTheme
+        return MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] || 'default.css'
       } else {
         return MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] || 'default.css'
       }
@@ -856,7 +859,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
   /**
    * Generate styles string for preview usage.
    */
-  public generateStylesForPreview(isPresentationMode=false) {
+  public generateStylesForPreview(isPresentationMode=false, yamlConfig={}) {
     let styles = ''
 
     // loading.css 
@@ -887,11 +890,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
       styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`)}">`
     } else {
       styles += `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, './dependencies/reveal/reveal.css')}" >`
-      styles += `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`)}" >`
+      styles += `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${(yamlConfig['presentation'] && typeof(yamlConfig['presentation']) === 'object' && yamlConfig['presentation']['theme']) ? yamlConfig['presentation']['theme']  : this.config.revealjsTheme}`)}" >`
     }
 
     // check prism 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(isPresentationMode)}`)}">`
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(isPresentationMode, yamlConfig)}`)}">`
 
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${path.resolve(utility.extensionDirectoryPath, './styles/style-template.css')}">`
@@ -992,7 +995,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         <meta id="mume-data" data-config="${utility.escapeString(JSON.stringify(Object.assign({}, this.config, config)))}" data-time="${Date.now()}">
         <meta charset="UTF-8">
 
-        ${this.generateStylesForPreview(isPresentationMode)}
+        ${this.generateStylesForPreview(isPresentationMode, yamlConfig)}
         ${styles}
         <link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath , './styles/preview.css')}">
 
@@ -1255,10 +1258,10 @@ for (var i = 0; i < flowcharts.length; i++) {
       // prism *.css
       styleCSS += (!this.config.printBackground && !yamlConfig['print_background'] && !yamlConfig["isPresentationMode"]) ?
       await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/github.css`), {encoding:'utf-8'}) :
-      await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(yamlConfig["isPresentationMode"])}`), {encoding:'utf-8'})
+      await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(yamlConfig["isPresentationMode"], yamlConfig)}`), {encoding:'utf-8'})
       
       if (yamlConfig["isPresentationMode"]) {
-        styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`), {encoding:'utf-8'})
+        styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${(yamlConfig['presentation'] && typeof(yamlConfig['presentation']) === 'object' && yamlConfig['presentation']['theme']) ? yamlConfig['presentation']['theme'] : this.config.revealjsTheme}`), {encoding:'utf-8'})
       } else {
         // preview theme
         styleCSS += (!this.config.printBackground && !yamlConfig['print_background']) ? 
@@ -2850,8 +2853,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // process front-matter
     const fm = this.processFrontMatter(frontMatterString, options.hideFrontMatter)
-    const frontMatterTable = fm.table,
-          yamlConfig = fm.data || {} 
+    const frontMatterTable = fm.table
+    let yamlConfig = fm.data || {}
+    if (typeof(yamlConfig) !== 'object') {
+      yamlConfig = {}
+    }
+
     outputString = fm.content + outputString
 
     /**
