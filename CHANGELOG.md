@@ -1,3 +1,8 @@
+# 0.2.8
+* Supported `Qiniu` image uploader (Thanks to [@zaixi](https://github.com/zaixi)).
+* Supported configuring presentation theme in individual md files.
+* Added `vue.css` preview theme.
+
 # 0.2.5 & 0.2.6 & 0.2.7
 * Supported two more diagrams: [flow](http://flowchart.js.org/) and [sequence](https://bramp.github.io/js-sequence-diagrams/).
 * Upgraded `vega`, `vega-lite`, `plantuml`.
