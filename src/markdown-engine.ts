@@ -817,7 +817,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
     'one-dark.css': 'one-dark.css',
     'one-light.css': 'one-light.css',
     'solarized-light.css': 'solarized-light.css',
-    'solarized-dark.css': 'solarized-dark.css'
+    'solarized-dark.css': 'solarized-dark.css',
+    'vue.css': 'vue.css'
   }
 
   static AutoPrismThemeMapForPresentation = {

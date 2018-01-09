@@ -123,6 +123,7 @@ const config = {
   //  "solarized-dark.css",
   //  "solarized-light.css",
   //  "twilight.css",
+  //  "vue.css"
   //  "vs.css",
   //  "xonokai.css" 
 
@@ -143,6 +144,7 @@ const config = {
   // "one-light.css",
   // "solarized-dark.css",
   // "solarized-light.css"
+  // "vue.css"
 
   // Revealjs presentation theme
   revealjsTheme: "white.css",
