@@ -34,6 +34,19 @@ const testCases = [{
 }, {
   text: 'cmd=true args=["-i", "$input_file", "-o", "./output.png"] .class1',
   expectedResult: { cmd: true, args: ['-i', '$input_file', '-o', './output.png'], class: 'class1' }
+}, {
+  // shortcuts
+  text: 'cmd hide',
+  expectedResult: { cmd: true, hide: true }
+}, {
+  text: 'cmd output="path.html" hide',
+  expectedResult: { cmd: true, output: 'path.html', hide: true }
+}, {
+  text: 'cmd hide .class1',
+  expectedResult: { cmd: true, hide: true, class: 'class1' }
+}, {
+  text: 'cmd .class1 hide .class2',
+  expectedResult: { cmd: true, hide: true, class: 'class1 class2' }
 }]
 
 describe('code-chunk-attributes', () => {
