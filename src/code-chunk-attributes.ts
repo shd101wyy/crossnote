@@ -90,6 +90,12 @@ export function parseAttributes(text='', asArray=false) {
       const [end, x] = findKey(i)
       arr.push(x)
       i = end 
+      if (asArray || arr.length % 2 || text[end] === '=') {
+        arr.push(x)
+      } else {
+        output[x] = true
+      }
+      i = end
     } else if (char.match(/\W/)) { // not word
       continue
     } else {
