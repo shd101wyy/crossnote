@@ -1,9 +1,9 @@
 /**
- * {#identifier .class .class key=value key=value}
+ * {#identifier .class1 .class2 key1=value1 key2=value2}
  * @param text 
  * @param asArray whether to return as Array or Object, default: false 
  */
-export function parseAttributes(text='', asArray=false) {
+export function parseAttributes(text = '', asArray = false) {
   text = text.trim()
   if (text[0] === '{' && text[text.length - 1] === '}') {
     text = text.slice(1, -1)
@@ -18,7 +18,7 @@ export function parseAttributes(text='', asArray=false) {
       }
       end++
     }
-    let val:number|string|boolean = text.slice(start, end)
+    let val: number | string | boolean = text.slice(start, end)
 
     // boolean
     if (val.match(/^true$/i)) val = true
@@ -42,7 +42,7 @@ export function parseAttributes(text='', asArray=false) {
       }
       end++
     }
-    return [end, text.slice(start+1, end)]
+    return [end, text.slice(start + 1, end)]
   }
 
   const output = {}
@@ -50,11 +50,11 @@ export function parseAttributes(text='', asArray=false) {
   for (let i = 0; i < text.length; i++) {
     const char = text[i]
     if (char === '#') { // id
-      const [end, id] = findKey(i+1)
+      const [end, id] = findKey(i + 1)
       if (id) output['id'] = id
       i = end
     } else if (char === '.') { // class
-      const [end, class_]  = findKey(i+1)
+      const [end, class_] = findKey(i + 1)
       if (class_) {
         if (!output['class']) output['class'] = class_
         else output['class'] += ' ' + class_
@@ -67,7 +67,7 @@ export function parseAttributes(text='', asArray=false) {
     } else if (char === '[') {
       let j = i + 1
       let inString = false,
-          count = 1
+        count = 1
       while (j < text.length) {
         const char = text[j]
         if (char.match(/['"`]/)) {
@@ -84,12 +84,10 @@ export function parseAttributes(text='', asArray=false) {
         if (count === 0) break
         j += 1
       }
-      arr.push(parseAttributes(text.slice(i+1, j), true))
+      arr.push(parseAttributes(text.slice(i + 1, j), true))
       i = j
     } else if (char.match(/^[\w-]$/)) { // key | val
       const [end, x] = findKey(i)
-      arr.push(x)
-      i = end 
       if (asArray || arr.length % 2 || text[end] === '=') {
         arr.push(x)
       } else {
@@ -108,9 +106,9 @@ export function parseAttributes(text='', asArray=false) {
   for (let i = 0; i < arr.length; i += 2) {
     if (i + 1 >= arr.length) break
     const key = arr[i],
-          val = arr[i+1]
+      val = arr[i + 1]
     output[key] = val
   }
 
-  return output 
+  return output
 }
