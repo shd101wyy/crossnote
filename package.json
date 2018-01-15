@@ -37,7 +37,6 @@
   "devDependencies": {
     "@types/jest": "^22.0.1",
     "@types/jquery": "^3.2.6",
-    "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.10",
     "eslint": "^4.2.0",
     "jest": "^22.0.5",
@@ -55,6 +54,10 @@
     },
     "testMatch": [
       "**/__tests__/*.(ts|tsx|js)"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/out/"
     ]
   }
 }
