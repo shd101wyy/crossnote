@@ -28,15 +28,16 @@
     "gray-matter": "^3.0.7",
     "less": "^2.7.2",
     "mkdirp": "^0.5.1",
+    "qiniu": "=7.1.1",
     "request": "^2.81.0",
     "temp": "^0.8.3",
     "uslug": "^1.0.4",
-    "qiniu": "=7.1.1",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@types/jquery": "^3.2.6",
     "@types/mocha": "^2.2.41",
+    "@types/markdown-it": "0.0.4",
     "@types/node": "^8.0.10",
     "eslint": "^4.2.0",
     "typescript": "^2.4.1"
