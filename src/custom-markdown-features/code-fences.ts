@@ -28,7 +28,7 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
       const closeTag = config.mathBlockDelimiters[0][1] || '$$'
       const mathExp = unescapeString(content).trim()
       if (!mathExp) return ''
-      const mathHtml = parseMath({ openTag, closeTag, content: mathExp, displayMode: true, config })
+      const mathHtml = parseMath({ openTag, closeTag, content: mathExp, displayMode: true, renderingOption: config.mathRenderingOption })
       return `<p>${mathHtml}</p>`
     }
     return '<pre><code' + langClass + '>' + content + '</code></pre>' + break_
