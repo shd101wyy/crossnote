@@ -8,6 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p .",
     "build:watch": "tsc -w -p .",
+    "lint:ts": "tslint -c tslint.json 'src/**/*.ts'",
+    "lint": "npm run lint:ts",
     "prepare": "npm run build"
   },
   "files": [
@@ -36,10 +38,13 @@
   },
   "devDependencies": {
     "@types/jquery": "^3.2.6",
-    "@types/mocha": "^2.2.41",
     "@types/markdown-it": "0.0.4",
+    "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.10",
     "eslint": "^4.2.0",
+    "prettier": "^1.10.2",
+    "tslint": "^5.9.1",
+    "tslint-config-prettier": "^1.6.0",
     "typescript": "^2.4.1"
   }
 }
