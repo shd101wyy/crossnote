@@ -21,6 +21,7 @@ import { markdownConvert } from "./markdown-convert"
 import * as CodeChunkAPI from "./code-chunk"
 import { CodeChunkData } from "./code-chunk-data"
 import { MarkdownEngineConfig, defaultMarkdownEngineConfig } from './markdown-engine-config'
+import parseMath from "./parse-math";
 
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const MarkdownIt = require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/markdown-it.min.js'))
@@ -1909,6 +1910,19 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       } else {
         $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : ''}>${svg}</p>`)
         graphsCache[checksum] = svg // store to new cache
+      }
+    } else if (lang.match(/^math$/)) {
+      try {
+        const mathHtml = parseMath({
+          closeTag: '',
+          content: code,
+          displayMode: true,
+          openTag: '',
+          renderingOption: this.config.mathRenderingOption
+        });
+        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : ''}>${mathHtml}</p>`)
+      } catch (error) {
+        $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
       }
     } else if (lang.match(/^vega$/)) { // vega
       const checksum = md5(optionsStr + code)
