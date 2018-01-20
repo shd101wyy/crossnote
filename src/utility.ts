@@ -451,7 +451,7 @@ export const configs:
 }
 
 export {uploadImage} from "./image-uploader"
-export { parseAttributes } from "./code-chunk-attributes"
+export { parseAttributes } from "./lib/attributes"
 
 /**
  * Convert JSON object to attributes string.  

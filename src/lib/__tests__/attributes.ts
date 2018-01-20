@@ -1,4 +1,4 @@
-import { parseAttributes } from '../code-chunk-attributes';
+import { parseAttributes } from '../attributes';
 
 const testCases = [{
   // classic behavior
@@ -49,8 +49,8 @@ const testCases = [{
   expectedAttributes: { cmd: true, hide: true, class: 'class1 class2' }
 }]
 
-describe('code-chunk-attributes', () => {
   testCases.map(({ raw, expectedAttributes }) => {
+describe('lib/attributes', () => {
     const arrayOfTexts = typeof raw === 'string' ? [raw] : raw
     arrayOfTexts.map(text => {
       it(`parseAttributes() correctly parses ${text}`, () => {
