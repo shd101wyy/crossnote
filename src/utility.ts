@@ -451,7 +451,6 @@ export const configs:
 }
 
 export {uploadImage} from "./image-uploader"
-export { parseAttributes, stringifyAttributes } from "./lib/attributes"
 
 /**
  * Allow unsafed `eval` function

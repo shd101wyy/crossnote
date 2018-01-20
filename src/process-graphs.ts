@@ -6,6 +6,7 @@ import * as plantumlAPI from "./puml"
 import * as vegaAPI from "./vega"
 import * as vegaLiteAPI from "./vega-lite"
 import * as utility from "./utility"
+import { parseAttributes } from "./lib/attributes";
 import {svgElementToPNGFile} from "./magick"
 // import {mermaidToPNG} from "./mermaid"
 import {compileLaTeX} from "./code-chunk"
@@ -38,7 +39,7 @@ export async function processGraphs(text:string,
               optionsMatch
           if (optionsMatch = trimmedLine.match(/\{(.+)\}$/)) {
             try {
-              options = utility.parseAttributes(optionsMatch[0])
+              options = parseAttributes(optionsMatch[0])
               optionsStr = optionsMatch[1]
             } catch(error) {
               options = {}

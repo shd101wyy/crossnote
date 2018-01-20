@@ -12,6 +12,7 @@ import * as uslug from "uslug"
 // import * as md5 from "md5"
 // import * as temp from "temp"
 // temp.track()
+import { parseAttributes, stringifyAttributes } from "./lib/attributes";
 import * as utility from "./utility"
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
@@ -335,7 +336,7 @@ export async function transformMarkdown(inputString:string,
             heading = heading.replace(optMatch[0], '')
 
             try {
-              let opt = utility.parseAttributes(optMatch[0])
+              let opt = parseAttributes(optMatch[0])
               
               classes = opt['class'],
               id = opt['id'],
@@ -433,7 +434,7 @@ export async function transformMarkdown(inputString:string,
 
               let options = {}
               if (optionsMatch && optionsMatch[2]) {
-                options = utility.parseAttributes(optionsMatch[2])
+                options = parseAttributes(optionsMatch[2])
               }
               options['lineNo'] = lineNo
 
@@ -538,7 +539,7 @@ export async function transformMarkdown(inputString:string,
             if (rightParen > 0) {
               configStr = line.substring(leftParen+1, rightParen)
               try {
-                config = utility.parseAttributes(configStr)
+                config = parseAttributes(configStr)
               } catch(error) {
                 // null
               }
@@ -615,7 +616,7 @@ export async function transformMarkdown(inputString:string,
               codeChunkOffset++          
             }
 
-            const output = `\`\`\`text ${utility.stringifyAttributes(config)}  \n\`\`\`  `
+            const output = `\`\`\`text ${stringifyAttributes(config)}  \n\`\`\`  `
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end+1
             lineNo = lineNo+1
@@ -629,7 +630,7 @@ export async function transformMarkdown(inputString:string,
 
               if (config && config['code_block']) {
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${config['as'] || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${utility.stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${config['as'] || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
               }
               else if (config && config['cmd']) {
                 if (!config['id']) { // create `id` for code chunk
@@ -640,7 +641,7 @@ export async function transformMarkdown(inputString:string,
                   codeChunkOffset++
                 }
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${config['as'] || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${utility.stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${config['as'] || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${stringifyAttributes(config)}  \n${fileContent}\n\`\`\`  `
               }
               else if (['.md', '.markdown', '.mmark'].indexOf(extname) >= 0) { // markdown files
                 // this return here is necessary
@@ -746,7 +747,7 @@ export async function transformMarkdown(inputString:string,
                 let as_ = null
                 if (config) as_ = config['as']
                 const fileExtension = extname.slice(1, extname.length)
-                output = `\`\`\`${as_ || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${config ? utility.stringifyAttributes(config) : ''}  \n${fileContent}\n\`\`\`  `
+                output = `\`\`\`${as_ || fileExtensionToLanguageMap[fileExtension] || fileExtension} ${config ? stringifyAttributes(config) : ''}  \n${fileContent}\n\`\`\`  `
               }
 
               // return helper(end+1, lineNo+1, outputString+output+'\n')
