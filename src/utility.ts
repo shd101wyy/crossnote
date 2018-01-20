@@ -451,39 +451,7 @@ export const configs:
 }
 
 export {uploadImage} from "./image-uploader"
-export { parseAttributes } from "./lib/attributes"
-
-/**
- * Convert JSON object to attributes string.  
- * @param obj 
- */
-export function stringifyAttributes(obj:object, addCurlyParen=true):string {
-  let output = ""
-
-  for (let key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      output += `${key}=`
-      const value = obj[key]
-      if (value instanceof Array) {
-        output += '['
-        value.forEach((v, i)=> {
-          output += JSON.stringify(v) 
-          if (i + 1 !== value.length)
-            output += ', '
-        })
-        output += ']'
-      } else {
-        output += JSON.stringify(value)
-      }
-      output += " "
-    }
-  }
-  if (addCurlyParen) {
-    return '{' + output.trim() + '}'
-  } else {
-    return output.trim()
-  }
-}
+export { parseAttributes, stringifyAttributes } from "./lib/attributes"
 
 /**
  * Allow unsafed `eval` function
