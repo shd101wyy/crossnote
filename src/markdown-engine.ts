@@ -20,6 +20,7 @@ import {pandocConvert} from "./pandoc-convert"
 import {markdownConvert} from "./markdown-convert"
 import * as CodeChunkAPI from "./code-chunk"
 import {CodeChunkData} from "./code-chunk-data"
+import { parseAttributes, stringifyAttributes } from "./lib/attributes";
 
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const katex = require(path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.js'))
@@ -2161,7 +2162,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (optionsStr) {
       try {
-        options = utility.parseAttributes(optionsStr)
+        options = parseAttributes(optionsStr)
       } catch (e) {
         return $preElement.replaceWith(`<pre class="language-text">OptionsError: ${'{'+optionsStr+'}'}<br>${e.toString()}</pre>`)
       }
@@ -2195,7 +2196,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (!svg) {
         svg = await plantumlAPI.render(code, this.fileDirectoryPath)
       }
-      $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
+      $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
       graphsCache[checksum] = svg // store to new cache 
       
     } else if (lang.match(/^mermaid$/)) { // mermaid 
@@ -2216,28 +2217,28 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       } else {
         options['class'] = 'mermaid'
       }
-      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}>${code}</div>`)
+      $preElement.replaceWith(`<div ${stringifyAttributes(options, false)}>${code}</div>`)
     } else if (lang === 'wavedrom') {
       if (options['class']) {
         options['class'] = 'wavedrom ' + options['class']
       } else {
         options['class'] = 'wavedrom'
       }
-      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}><script type="WaveDrom">${code}</script></div>`)
+      $preElement.replaceWith(`<div ${stringifyAttributes(options, false)}><script type="WaveDrom">${code}</script></div>`)
     } else if (lang === 'flow') {
       if (options['class']) {
         options['class'] = 'flow ' + options['class']
       } else {
         options['class'] = 'flow'
       }
-      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}>${code}</div>`)      
+      $preElement.replaceWith(`<div ${stringifyAttributes(options, false)}>${code}</div>`)      
     } else if (lang === 'sequence') {
       if (options['class']) {
         options['class'] = 'sequence ' + options['class']
       } else {
         options['class'] = 'sequence'
       }
-      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}>${code}</div>`)      
+      $preElement.replaceWith(`<div ${stringifyAttributes(options, false)}>${code}</div>`)      
     } else if (lang.match(/^(dot|viz)$/)) { // GraphViz
       const checksum = md5(optionsStr + code)
       let svg = this.graphsCache[checksum]
@@ -2246,13 +2247,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           let engine = options['engine'] || "dot"
           svg = Viz(code, {engine})
           
-          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
+          $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache
         } catch(e) {
           $preElement.replaceWith(`<pre class="language-text">${e.toString()}</pre>`)
         }
       } else {
-        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
+        $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
         graphsCache[checksum] = svg // store to new cache
       }
     } else if (lang.match(/^vega$/)) { // vega
@@ -2262,13 +2263,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         try {
           svg = await vegaAPI.toSVG(code, this.fileDirectoryPath)
 
-          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
+          $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache 
         } catch(error) {
           $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
         }
       } else {
-        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
+        $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
         graphsCache[checksum] = svg // store to new cache
       }
     } else if (lang === 'vega-lite') { // vega-lite
@@ -2278,13 +2279,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         try {
           svg = await vegaLiteAPI.toSVG(code, this.fileDirectoryPath)
 
-          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
+          $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
           graphsCache[checksum] = svg // store to new cache 
         } catch(error) {
           $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
         }
       } else {
-        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
+        $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
         graphsCache[checksum] = svg // store to new cache
       }
     } else if (options['cmd']) {
@@ -2650,7 +2651,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const parseAttrString = (slideConfig)=> {
       let attrString = ''
 
-      // let attrString = utility.stringifyAttributes(slideConfig, false)
+      // let attrString = stringifyAttributes(slideConfig, false)
 
       if (slideConfig['data-background-image'])
         attrString += ` data-background-image='${this.resolveFilePath(slideConfig['data-background-image'], useRelativeFilePath)}'`
@@ -2708,7 +2709,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
 
 
-      const attrString = utility.stringifyAttributes(slideConfig, false) // parseAttrString(slideConfig)
+      const attrString = stringifyAttributes(slideConfig, false) // parseAttrString(slideConfig)
       const classString = slideConfig['class'] || ''
       const idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : ''
 
@@ -2740,7 +2741,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       let attributeMatch 
       if (attributeMatch = html.match(/<!--(.+?)-->/)) {
         let attributes = attributeMatch[1].replace(/\.element\:/, '').trim()
-        let attrObj = utility.parseAttributes(attributes)
+        let attrObj = parseAttributes(attributes)
         for (let key in attrObj) {
           $elem.attr(key, attrObj[key])
         }
