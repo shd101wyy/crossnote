@@ -8,6 +8,8 @@
     "test": "jest",
     "build": "tsc -p .",
     "build:watch": "tsc -w -p .",
+    "lint:ts": "tslint -c tslint.json 'src/**/*.ts'",
+    "lint": "npm run lint:ts",
     "prepare": "npm run build"
   },
   "files": [
@@ -28,18 +30,22 @@
     "gray-matter": "^3.0.7",
     "less": "^2.7.2",
     "mkdirp": "^0.5.1",
+    "qiniu": "=7.1.1",
     "request": "^2.81.0",
     "temp": "^0.8.3",
     "uslug": "^1.0.4",
-    "qiniu": "=7.1.1",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@types/jest": "^22.0.1",
     "@types/jquery": "^3.2.6",
+    "@types/markdown-it": "0.0.4",
     "@types/node": "^8.0.10",
     "eslint": "^4.2.0",
     "jest": "^22.0.5",
+    "prettier": "^1.10.2",
+    "tslint": "^5.9.1",
+    "tslint-config-prettier": "^1.6.0",
     "ts-jest": "^22.0.1",
     "typescript": "^2.4.1"
   },
