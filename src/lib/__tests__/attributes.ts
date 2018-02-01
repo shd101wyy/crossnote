@@ -79,76 +79,79 @@ const testCases: Array<{
   {
     attributes: {
       cmd: true,
-      // tslint:disable-next-line object-literal-sort-keys
       args: ["-i", "$input_file", "-o", "./output.png"],
       class: "class1"
     },
     raw: [
-     'cmd=true args=["-i", "$input_file", "-o", "./output.png"] .class1',
-     'cmd=true args=[-i, "$input_file", -o, \'./output.png\'] .class1',
-     'cmd=true args=[ -i ,"$input_file" , -o , \'./output.png\' ] .class1'
+      'cmd=true args=["-i", "$input_file", "-o", "./output.png"] .class1',
+      "cmd=true args=[-i, \"$input_file\", -o, './output.png'] .class1",
+      "cmd=true args=[ -i ,\"$input_file\" , -o , './output.png' ] .class1"
     ],
     stringified:
       'cmd=true args=["-i", "$input_file", "-o", "./output.png"] class="class1"'
   },
   {
-    attributes: { quotes: 'h\'e"r`e', hello: "world" },
+    attributes: { quotes: "h'e\"r`e", hello: "world" },
     raw: [
       'quotes="h\'e\\"r`e" hello=world',
       "quotes='h\\'e\"r`e' hello=world",
-      'quotes=`h\'e"r\\`e` hello=world',
+      "quotes=`h'e\"r\\`e` hello=world"
     ],
     stringified: 'quotes="h\'e\\"r`e" hello="world"'
   },
   {
-    attributes: { quotes: ['h\'e"r`e', 'etc.'], hello: "world" },
+    attributes: { quotes: ["h'e\"r`e", "etc."], hello: "world" },
     raw: [
       "quotes=['h\\'e\"r`e', etc.] hello=world",
       'quotes=["h\'e\\"r`e", etc.] hello=world',
-      'quotes=[`h\'e"r\\`e`, etc.] hello=world',
+      "quotes=[`h'e\"r\\`e`, etc.] hello=world"
     ],
     stringified: 'quotes=["h\'e\\"r`e", "etc."] hello="world"'
   },
   {
-    attributes: { nested: ['something', ['something', 'else'], 'etc.'], hello: "world" },
+    attributes: {
+      nested: ["something", ["something", "else"], "etc."],
+      hello: "world"
+    },
     raw: [
       "nested=[something, [something, else], etc.] hello=world",
       "nested=[ something, [ something, else ], etc. ] hello=world",
       "nested=['something', [\"something\", `else`], etc.] hello=world",
-      "nested=[ 'something' ,[\"something\" ,`else`] , etc. ] hello=world",
+      "nested=[ 'something' ,[\"something\" ,`else`] , etc. ] hello=world"
     ],
-    stringified: 'nested=["something", ["something", "else"], "etc."] hello="world"',
+    stringified:
+      'nested=["something", ["something", "else"], "etc."] hello="world"'
   },
   {
     // edge cases
     attributes: {},
-    raw: ["", " ", null, undefined, '#', '.', "['a', 'b', 'c']"],
+    raw: ["", " ", null, undefined, "#", ".", "['a', 'b', 'c']"],
     stringified: ""
   },
   {
-    attributes: {'_hello': 'world_'},
-    raw: ['_hello=world_'],
+    attributes: { _hello: "world_" },
+    raw: ["_hello=world_"],
     stringified: '_hello="world_"'
   },
   {
-    attributes: {'hello[': 'world'},
-    raw: ['hello[=world'],
+    attributes: { "hello[": "world" },
+    raw: ["hello[=world"],
     stringified: 'hello[="world"'
   },
   {
-    attributes: {'hello': 'world'},
+    attributes: { hello: "world" },
     raw: ['hello="world', 'hello="world\\'],
     stringified: 'hello="world"'
   },
   {
-    attributes: {'true': true},
-    raw: ['true=true', '"true"=true', 'true', '"true"'],
-    stringified: 'true=true'
+    attributes: { true: true },
+    raw: ["true=true", '"true"=true', "true", '"true"'],
+    stringified: "true=true"
   },
   {
-    attributes: {'1': 1},
-    raw: ['1=1', '"1"=1'],
-    stringified: '1=1'
+    attributes: { "1": 1 },
+    raw: ["1=1", '"1"=1'],
+    stringified: "1=1"
   },
   {
     // shortcuts
@@ -177,8 +180,10 @@ describe("lib/attributes", () => {
   testCases.map(({ raw, attributes }) => {
     const arrayOfTexts = typeof raw === "string" ? [raw] : raw;
     arrayOfTexts.map(text => {
-      it(`parseAttributes() correctly parses ${text}`, () => {
+      test(`parseAttributes() correctly parses ${text}`, async () => {
+        await new Promise(resolve => setTimeout(resolve, 1));
         const result = parseAttributes(text);
+        await new Promise(resolve => setTimeout(resolve, 1));
         expect(result).toEqual(attributes);
       });
     });
@@ -188,7 +193,7 @@ describe("lib/attributes", () => {
     if (typeof stringified !== "string") {
       return;
     }
-    it(`stringifyAttributes() correctly stringifies ${JSON.stringify(
+    test(`stringifyAttributes() correctly stringifies ${JSON.stringify(
       attributes
     )}`, () => {
       // without curly parentheses
