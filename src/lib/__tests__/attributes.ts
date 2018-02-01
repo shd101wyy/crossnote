@@ -1,10 +1,10 @@
 import { parseAttributes, stringifyAttributes } from "../attributes";
 
-const testCases: {
+const testCases: Array<{
   attributes: any;
   raw: string | string[];
   stringified?: string;
-}[] = [
+}> = [
   {
     // classic behavior
     attributes: { cmd: true },
@@ -22,8 +22,8 @@ const testCases: {
     stringified: "cmd=true hello=true"
   },
   {
-    raw: 'cmd=true hello="true"',
     attributes: { cmd: true, hello: "true" },
+    raw: 'cmd=true hello="true"',
     stringified: 'cmd=true hello="true"'
   },
   {
@@ -59,6 +59,7 @@ const testCases: {
   {
     attributes: {
       cmd: true,
+      // tslint:disable-next-line object-literal-sort-keys
       args: ["-i", "$input_file", "-o", "./output.png"],
       class: "class1"
     },

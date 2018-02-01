@@ -3,7 +3,7 @@
  * @param text
  * @param asArray whether to return as Array or Object, default: false
  */
-export function parseAttributes(text = "", asArray = false) {
+export function parseAttributes(text = "", asArray = false): object | string[] {
   text = text.trim();
   if (text[0] === "{" && text[text.length - 1] === "}") {
     text = text.slice(1, -1);
@@ -22,11 +22,14 @@ export function parseAttributes(text = "", asArray = false) {
     let val: number | string | boolean = text.slice(start, end);
 
     // boolean
-    if (val.match(/^true$/i)) val = true;
-    else if (val.match(/^false$/i)) val = false;
-    else if (!isNaN(val as any))
+    if (val.match(/^true$/i)) {
+      val = true;
+    } else if (val.match(/^false$/i)) {
+      val = false;
+    } else if (!isNaN(val as any)) {
       // number
       val = parseFloat(val as any);
+    }
 
     return [end, val];
   }
@@ -47,21 +50,26 @@ export function parseAttributes(text = "", asArray = false) {
     return [end, text.slice(start + 1, end)];
   }
 
-  const output = {};
+  const output: { [key: string]: any } = {};
   const arr = [];
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     if (char === "#") {
       // id
       const [end, id] = findKey(i + 1);
-      if (id) output["id"] = id;
+      if (id) {
+        output.id = id;
+      }
       i = end;
     } else if (char === ".") {
       // class
-      const [end, class_] = findKey(i + 1);
-      if (class_) {
-        if (!output["class"]) output["class"] = class_;
-        else output["class"] += " " + class_;
+      const [end, className] = findKey(i + 1);
+      if (className) {
+        if (!output.class) {
+          output.class = className;
+        } else {
+          output.class += " " + className;
+        }
       }
       i = end;
     } else if (char.match(/['"`]/)) {
@@ -71,22 +79,24 @@ export function parseAttributes(text = "", asArray = false) {
       i = end;
     } else if (char === "[") {
       let j = i + 1;
-      let inString = false,
-        count = 1;
+      let inString = false;
+      let count = 1;
       while (j < text.length) {
-        const char = text[j];
-        if (char.match(/['"`]/)) {
+        const char2 = text[j];
+        if (char2.match(/['"`]/)) {
           inString = !inString;
-        } else if (inString && char === "\\") {
+        } else if (inString && char2 === "\\") {
           j += 1;
         } else if (!inString) {
-          if (char === "[") {
+          if (char2 === "[") {
             count += 1;
-          } else if (char === "]") {
+          } else if (char2 === "]") {
             count -= 1;
           }
         }
-        if (count === 0) break;
+        if (count === 0) {
+          break;
+        }
         j += 1;
       }
       arr.push(parseAttributes(text.slice(i + 1, j), true));
@@ -104,16 +114,22 @@ export function parseAttributes(text = "", asArray = false) {
       // not word
       continue;
     } else {
-      throw `SyntaxError: Unexpected token ${char} in Attributes at position ${i}`;
+      throw new Error(
+        `SyntaxError: Unexpected token ${char} in Attributes at position ${i}`
+      );
     }
   }
 
-  if (asArray) return arr;
+  if (asArray) {
+    return arr;
+  }
 
   for (let i = 0; i < arr.length; i += 2) {
-    if (i + 1 >= arr.length) break;
-    const key = arr[i],
-      val = arr[i + 1];
+    if (i + 1 >= arr.length) {
+      break;
+    }
+    const key = arr[i];
+    const val = arr[i + 1];
     output[key] = val;
   }
 
@@ -130,7 +146,7 @@ export function stringifyAttributes(
 ): string {
   let output = "";
 
-  for (let key in obj) {
+  for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
       output += `${key}=`;
       const value = obj[key];
@@ -138,7 +154,9 @@ export function stringifyAttributes(
         output += "[";
         value.forEach((v, i) => {
           output += JSON.stringify(v);
-          if (i + 1 !== value.length) output += ", ";
+          if (i + 1 !== value.length) {
+            output += ", ";
+          }
         });
         output += "]";
       } else {
