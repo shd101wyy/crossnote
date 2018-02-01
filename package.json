@@ -6,6 +6,7 @@
   "typings": "out/src/mume.d.ts",
   "scripts": {
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "build": "tsc -p .",
     "build:watch": "tsc -w -p .",
     "lint:ts": "tslint -c tslint.json 'src/**/*.ts'",
@@ -42,21 +43,22 @@
     "@types/markdown-it": "0.0.4",
     "@types/node": "^8.0.10",
     "eslint": "^4.2.0",
-    "jest": "^22.0.5",
+    "jest": "^22.1.4",
     "prettier": "^1.10.2",
+    "ts-jest": "^22.0.2",
     "tslint": "^5.9.1",
     "tslint-config-prettier": "^1.6.0",
-    "ts-jest": "^22.0.1",
     "typescript": "^2.4.1"
   },
   "jest": {
+    "mapCoverage": true,
     "moduleFileExtensions": [
       "ts",
       "tsx",
       "js"
     ],
     "transform": {
-      "^.+\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+      "^.+\\.tsx?$": "ts-jest"
     },
     "testMatch": [
       "**/__tests__/*.(ts|tsx|js)"
