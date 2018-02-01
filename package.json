@@ -49,23 +49,5 @@
     "tslint": "^5.9.1",
     "tslint-config-prettier": "^1.6.0",
     "typescript": "^2.4.1"
-  },
-  "jest": {
-    "mapCoverage": true,
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testMatch": [
-      "**/__tests__/*.(ts|tsx|js)"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/out/"
-    ]
   }
 }
