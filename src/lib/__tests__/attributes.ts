@@ -32,6 +32,21 @@ const testCases: Array<{
     stringified: 'cmd=true hello="true"'
   },
   {
+    attributes: { cmd: true, hello: false },
+    raw: "cmd=true hello=false",
+    stringified: "cmd=true hello=false"
+  },
+  {
+    attributes: { cmd: true, hello: 42 },
+    raw: "cmd=true hello=42",
+    stringified: "cmd=true hello=42"
+  },
+  {
+    attributes: { cmd: true, hello: 42.2 },
+    raw: "cmd=true hello=42.2",
+    stringified: "cmd=true hello=42.2"
+  },
+  {
     attributes: { cmd: true, class: "class1" },
     raw: "cmd=true .class1",
     stringified: 'cmd=true class="class1"'
@@ -40,6 +55,11 @@ const testCases: Array<{
     attributes: { cmd: true, id: "some-id" },
     raw: "cmd=true #some-id",
     stringified: 'cmd=true id="some-id"'
+  },
+  {
+    attributes: { cmd: true, id: "0" },
+    raw: "cmd=true #0",
+    stringified: 'cmd=true id="0"'
   },
   {
     attributes: { cmd: true, class: "class1 class2" },
@@ -63,14 +83,77 @@ const testCases: Array<{
       args: ["-i", "$input_file", "-o", "./output.png"],
       class: "class1"
     },
-    raw: 'cmd=true args=["-i", "$input_file", "-o", "./output.png"] .class1',
+    raw: [
+     'cmd=true args=["-i", "$input_file", "-o", "./output.png"] .class1',
+     'cmd=true args=[-i, "$input_file", -o, \'./output.png\'] .class1',
+     'cmd=true args=[ -i ,"$input_file" , -o , \'./output.png\' ] .class1'
+    ],
     stringified:
       'cmd=true args=["-i", "$input_file", "-o", "./output.png"] class="class1"'
   },
   {
+    attributes: { quotes: 'h\'e"r`e', hello: "world" },
+    raw: [
+      'quotes="h\'e\\"r`e" hello=world',
+      "quotes='h\\'e\"r`e' hello=world",
+      'quotes=`h\'e"r\\`e` hello=world',
+    ],
+    stringified: 'quotes="h\'e\\"r`e" hello="world"'
+  },
+  {
+    attributes: { quotes: ['h\'e"r`e', 'etc.'], hello: "world" },
+    raw: [
+      "quotes=['h\\'e\"r`e', etc.] hello=world",
+      'quotes=["h\'e\\"r`e", etc.] hello=world',
+      'quotes=[`h\'e"r\\`e`, etc.] hello=world',
+    ],
+    stringified: 'quotes=["h\'e\\"r`e", "etc."] hello="world"'
+  },
+  {
+    attributes: { nested: ['something', ['something', 'else'], 'etc.'], hello: "world" },
+    raw: [
+      "nested=[something, [something, else], etc.] hello=world",
+      "nested=[ something, [ something, else ], etc. ] hello=world",
+      "nested=['something', [\"something\", `else`], etc.] hello=world",
+      "nested=[ 'something' ,[\"something\" ,`else`] , etc. ] hello=world",
+    ],
+    stringified: 'nested=["something", ["something", "else"], "etc."] hello="world"',
+  },
+  {
+    // edge cases
+    attributes: {},
+    raw: ["", " ", null, undefined, '#', '.', "['a', 'b', 'c']"],
+    stringified: ""
+  },
+  {
+    attributes: {'_hello': 'world_'},
+    raw: ['_hello=world_'],
+    stringified: '_hello="world_"'
+  },
+  {
+    attributes: {'hello[': 'world'},
+    raw: ['hello[=world'],
+    stringified: 'hello[="world"'
+  },
+  {
+    attributes: {'hello': 'world'},
+    raw: ['hello="world', 'hello="world\\'],
+    stringified: 'hello="world"'
+  },
+  {
+    attributes: {'true': true},
+    raw: ['true=true', '"true"=true', 'true', '"true"'],
+    stringified: 'true=true'
+  },
+  {
+    attributes: {'1': 1},
+    raw: ['1=1', '"1"=1'],
+    stringified: '1=1'
+  },
+  {
     // shortcuts
     attributes: { cmd: true, hide: true },
-    raw: "cmd hide",
+    raw: ["cmd hide", "cmd=true hide"],
     stringified: "cmd=true hide=true"
   },
   {
