@@ -23,6 +23,12 @@ import { CodeChunkData } from "./code-chunk-data"
 import { parseAttributes, stringifyAttributes } from "./lib/attributes"
 import { MarkdownEngineConfig, defaultMarkdownEngineConfig } from './markdown-engine-config'
 import parseMath from "./parse-math"
+import useMarkdownItCodeFences from './custom-markdown-it-features/code-fences';
+import useMarkdownItCriticMarkup from './custom-markdown-it-features/critic-markup';
+import useMarkdownItEmoji from './custom-markdown-it-features/emoji';
+import useMarkdownItMath from './custom-markdown-it-features/math';
+import useMarkdownItWikilink from './custom-markdown-it-features/wikilink';
+
 
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const MarkdownIt = require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/markdown-it.min.js'))
@@ -200,11 +206,11 @@ export class MarkdownEngine {
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-abbr.min.js')))
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-mark.min.js')))
 
-    require('./custom-markdown-features/code-fences').default(this.md, this.config)
-    require('./custom-markdown-features/critic-markup').default(this.md, this.config)
-    require('./custom-markdown-features/emoji').default(this.md, this.config)
-    require('./custom-markdown-features/math').default(this.md, this.config)
-    require('./custom-markdown-features/wikilink').default(this.md, this.config)
+    useMarkdownItCodeFences(this.md, this.config);
+    useMarkdownItCriticMarkup(this.md, this.config);
+    useMarkdownItEmoji(this.md, this.config);
+    useMarkdownItMath(this.md, this.config);
+    useMarkdownItWikilink(this.md, this.config);
   }
 
   /**
