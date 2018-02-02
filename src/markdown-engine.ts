@@ -147,7 +147,7 @@ export class MarkdownEngine {
   private enableTypographer: boolean
   private protocolsWhiteListRegExp: RegExp
 
-  private headings: Array<HeadingData>
+  private headings: HeadingData[]
   private tocHTML: string
 
   private md;
@@ -195,8 +195,7 @@ export class MarkdownEngine {
     this.headings = []
     this.tocHTML = ''
 
-    this.md = new MarkdownIt(
-      Object.assign({}, defaults, { typographer: this.enableTypographer, breaks: this.breakOnSingleNewLine }))
+    this.md = new MarkdownIt({...defaults, typographer: this.enableTypographer, breaks: this.breakOnSingleNewLine });
 
     // markdown-it extensions
     this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-footnote.min.js')))
@@ -218,7 +217,7 @@ export class MarkdownEngine {
    */
   public resetConfig() {
     // Please notice that ~/.mume/config.json has the highest priority.
-    this.config = Object.assign({}, defaultMarkdownEngineConfig, this._originalConfig || {}, utility.configs.config || {}) as MarkdownEngineConfig
+    this.config = {...defaultMarkdownEngineConfig, ...this._originalConfig || {}, ...utility.configs.config || {}}
 
     this.initConfig()
   }
@@ -239,7 +238,7 @@ export class MarkdownEngine {
   }
 
   public updateConfiguration(config) {
-    this.config = Object.assign({}, this.config, config)
+    this.config = {...this.config, ...config}
     this.initConfig()
 
     this.md.set({ breaks: this.breakOnSingleNewLine, typographer: this.enableTypographer })
@@ -256,7 +255,9 @@ export class MarkdownEngine {
 
   public cacheCodeChunkResult(id: string, result: string) {
     const codeChunkData = this.codeChunksData[id]
-    if (!codeChunkData) return
+    if (!codeChunkData) {
+      return;
+    };
     codeChunkData.result = CryptoJS.AES.decrypt(result, 'mume').toString(CryptoJS.enc.Utf8)
   }
 
@@ -376,7 +377,7 @@ export class MarkdownEngine {
 
       scripts += `
       <script>
-        Reveal.initialize(${JSON.stringify(Object.assign({ margin: 0.1 }, presentationConfig))})
+        Reveal.initialize(${JSON.stringify({ margin: 0.1, ...presentationConfig})}
       </script>
       `
     }
@@ -655,7 +656,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       <html>
       <head>
         <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-        <meta id="mume-data" data-config="${utility.escapeString(JSON.stringify(Object.assign({}, this.config, config)))}" data-time="${Date.now()}">
+        <meta id="mume-data" data-config="${utility.escapeString(JSON.stringify({...this.config, ...config}))}" data-time="${Date.now()}">
         <meta charset="UTF-8">
 
         ${this.generateStylesForPreview(isPresentationMode, yamlConfig)}
@@ -890,7 +891,7 @@ for (var i = 0; i < flowcharts.length; i++) {
       `
       presentationInitScript = `
       <script>
-        Reveal.initialize(${JSON.stringify(Object.assign({ margin: 0.1 }, presentationConfig))})
+        Reveal.initialize(${JSON.stringify({ margin: 0.1, ...presentationConfig})})
       </script>
       `
     }
@@ -1157,11 +1158,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let loadPath = 'file:///' + info.path + (yamlConfig['isPresentationMode'] ? '?print-pdf' : '')
     await page.goto(loadPath)
 
-    const puppeteerConfig = Object.assign(
-      {
-        path: dest
-      },
-      yamlConfig['isPresentationMode'] ? {} : {
+    const puppeteerConfig = {
+      path: dest,
+      ...yamlConfig['isPresentationMode'] ? {} : {
         margin: {
           top: '1cm',
           bottom: '1cm',
@@ -1169,7 +1168,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           right: '1cm'
         }
       },
-      yamlConfig['chrome'] || {})
+      ...yamlConfig['chrome'] || {}
+    }
 
     if (fileType === 'pdf') {
       await page.pdf(puppeteerConfig)
@@ -1212,12 +1212,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       return url
     }
 
-    const phantomjsConfig = Object.assign({
+    const phantomjsConfig = {
       type: fileType,
       border: '1cm',
       quality: '75',
-      script: path.join(extensionDirectoryPath, './dependencies/phantomjs/pdf_a4_portrait.js')
-    }, await utility.getPhantomjsConfig(), yamlConfig['phantomjs'] || yamlConfig['phantom'] || {})
+      script: path.join(extensionDirectoryPath, './dependencies/phantomjs/pdf_a4_portrait.js'),
+      ...(await utility.getPhantomjsConfig()),
+      ...yamlConfig['phantomjs'] || yamlConfig['phantom'] || {}
+    }
     if (!phantomjsConfig['phantomPath']) {
       phantomjsConfig['phantomPath'] = this.config.phantomPath
     }
@@ -1303,7 +1305,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       })
     })
 
-    return await Promise.all(asyncFunctions)
+    return Promise.all(asyncFunctions)
   }
 
   /**
@@ -1586,7 +1588,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      */
     let markdownConfig = {}
     if (config['markdown'])
-      markdownConfig = Object.assign({}, config['markdown'])
+      markdownConfig = {...config['markdown']}
 
     if (!markdownConfig['image_dir']) {
       markdownConfig['image_dir'] = this.config.imageFolderPath
@@ -2588,7 +2590,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      */
     if (slideConfigs.length) {
       html = this.parseSlides(html, slideConfigs, options.useRelativeFilePath)
-      if (yamlConfig) yamlConfig['isPresentationMode'] = true // mark as presentation mode
+      if (yamlConfig) {
+        yamlConfig['isPresentationMode'] = true // mark as presentation mode
+      }
     }
 
     if (utility.configs.parserConfig['onDidParseMarkdown']) {
