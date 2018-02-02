@@ -11,8 +11,7 @@ import { escapeString } from "../utility";
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   md.renderer.rules.fence = (tokens, idx, options, env, instance) => {
     const token = tokens[idx];
-    const langName = escapeString(token.info.trim());
-    const langClass = ' class="language-' + langName + '" ';
+    const info = escapeString(token.info.trim());
 
     // get code content
     const content = escapeString(token.content);
@@ -21,8 +20,8 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
     const finalBreak =
       idx < tokens.length && tokens[idx].type === "list_item_close" ? "\n" : "";
 
-    return (
-      "<pre><code" + langClass + ">" + content + "</code></pre>" + finalBreak
-    );
+    return `<pre data-role="codeBlock" data-info="${escapeString(
+      info
+    )}"><code>${content}</code></pre>${finalBreak}`;
   };
 };

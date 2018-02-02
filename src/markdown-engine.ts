@@ -1,3 +1,4 @@
+// tslint:disable member-ordering ordered-imports interface-name no-var-requires
 import * as path from "path"
 import * as fs from "fs"
 import * as cheerio from "cheerio"
@@ -5,30 +6,33 @@ import * as request from "request"
 import * as YAML from "yamljs"
 import { execFile } from "child_process"
 
+import { CodeChunkData } from "./code-chunk-data"
 import * as plantumlAPI from "./puml"
-import * as vegaAPI from "./vega"
-import * as vegaLiteAPI from "./vega-lite"
-import * as ditaaAPI from "./ditaa"
 import * as utility from "./utility"
-import { scopeForLanguageName } from "./extension-helper"
-import { transformMarkdown, HeadingData } from "./transformer"
 import { toc } from "./toc"
+import { transformMarkdown, HeadingData } from "./transformer"
 import { CustomSubjects } from "./custom-subjects"
 import { princeConvert } from "./prince-convert"
 import { ebookConvert } from "./ebook-convert"
 import { pandocConvert } from "./pandoc-convert"
 import { markdownConvert } from "./markdown-convert"
-import * as CodeChunkAPI from "./code-chunk"
-import { CodeChunkData } from "./code-chunk-data"
-import { parseAttributes, stringifyAttributes } from "./lib/attributes"
 import { MarkdownEngineConfig, defaultMarkdownEngineConfig } from './markdown-engine-config'
-import parseMath from "./parse-math"
+import parseMath from "./parse-math";
+
 import useMarkdownItCodeFences from './custom-markdown-it-features/code-fences';
 import useMarkdownItCriticMarkup from './custom-markdown-it-features/critic-markup';
 import useMarkdownItEmoji from './custom-markdown-it-features/emoji';
 import useMarkdownItMath from './custom-markdown-it-features/math';
 import useMarkdownItWikilink from './custom-markdown-it-features/wikilink';
 
+import enhanceWithCodeBlockStyling from './render-enhancers/code-block-styling';
+import enhanceWithEmbeddedLocalImages from './render-enhancers/embedded-local-images';
+import enhanceWithEmbeddedSVGs from './render-enhancers/embedded-svgs';
+import enhanceWithExtendedTableSyntax from './render-enhancers/extended-table-syntax';
+import enhanceWithLiterateCode, { runCodeChunk, runAllCodeChunks } from './render-enhancers/literate-code';
+import enhanceWithResolvedImagePaths from './render-enhancers/resolved-image-paths';
+
+import { parseAttributes, stringifyAttributes } from "./lib/attributes";
 
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const MarkdownIt = require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/markdown-it.min.js'))
@@ -36,9 +40,6 @@ const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascr
 const CryptoJS = require(path.resolve(extensionDirectoryPath, './dependencies/crypto-js/crypto-js.js'))
 const Viz = require(path.resolve(extensionDirectoryPath, './dependencies/viz/viz.js'))
 const pdf = require(path.resolve(extensionDirectoryPath, './dependencies/node-html-pdf/index.js'))
-
-// import * as Prism from "prismjs"
-let Prism = null
 
 // Puppeteer
 let puppeteer = null
@@ -259,69 +260,6 @@ export class MarkdownEngine {
       return;
     };
     codeChunkData.result = CryptoJS.AES.decrypt(result, 'mume').toString(CryptoJS.enc.Utf8)
-  }
-
-  /**
-   * Embed local images. Load the image file and display it in base64 format
-   */
-  private async embedLocalImages($) {
-    const asyncFunctions = []
-
-    $('img').each((i, img) => {
-      const $img = $(img)
-      let src = this.resolveFilePath($img.attr('src'), false)
-
-      let fileProtocalMatch
-      if (fileProtocalMatch = src.match(/^file:\/\/+/)) {
-        src = utility.removeFileProtocol(src)
-        src = src.replace(/\?(\.|\d)+$/, '') // remove cache
-        const imageType = path.extname(src).slice(1)
-        if (imageType === 'svg') return
-        asyncFunctions.push(new Promise((resolve, reject) => {
-          fs.readFile(decodeURI(src), (error, data) => {
-            if (error) return resolve(null)
-            const base64 = new Buffer(data).toString('base64')
-            $img.attr('src', `data:image/${imageType};charset=utf-8;base64,${base64}`)
-            return resolve(base64)
-          })
-        }))
-      }
-    })
-    await Promise.all(asyncFunctions)
-
-    return $
-  }
-
-  /**
-   * Load local svg files and embed them into html directly.  
-   * @param $ 
-   */
-  private async embedSVG($) {
-    const asyncFunctions = []
-    $('img').each((i, img) => {
-      const $img = $(img)
-      let src = this.resolveFilePath($img.attr('src'), false)
-
-      let fileProtocalMatch
-      if (fileProtocalMatch = src.match(/^file:\/\/+/)) {
-        src = utility.removeFileProtocol(src)
-        src = src.replace(/\?(\.|\d)+$/, '') // remove cache
-        const imageType = path.extname(src).slice(1)
-        if (imageType !== 'svg') return
-        asyncFunctions.push(new Promise((resolve, reject) => {
-          fs.readFile(decodeURI(src), (error, data) => {
-            if (error) return resolve(null)
-            const base64 = new Buffer(data).toString('base64')
-            $img.attr('src', `data:image/svg+xml;charset=utf-8;base64,${base64}`)
-            return resolve(base64)
-          })
-        }))
-      }
-    })
-
-    await Promise.all(asyncFunctions)
-
-    return $
   }
 
   /**
@@ -1040,15 +978,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   </html>
     `
 
-    if (options.embedLocalImages) { // embed local images as Data URI
-      let $ = cheerio.load(html, { xmlMode: true })
-      $ = await this.embedLocalImages($)
-      html = $.html()
-    }
-
-    if (options.embedSVG) { // embed svg 
-      let $ = cheerio.load(html, { xmlMode: true })
-      $ = await this.embedSVG($)
+    if (options.embedLocalImages || options.embedSVG) {
+      const $ = cheerio.load(html, { xmlMode: true });
+      if (options.embedLocalImages) {
+        await enhanceWithEmbeddedLocalImages($, this.config, this.resolveFilePath.bind(this))
+      }
+      if (options.embedSVG) {
+        await enhanceWithEmbeddedSVGs($, this.config, this.resolveFilePath.bind(this))
+      }
       html = $.html()
     }
 
@@ -1428,7 +1365,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         $(':root').children().first().prepend(`<img style="display:block; margin-bottom: 24px;" src="${cover}">`)
       }
 
-      $ = await this.embedLocalImages($)
+      await enhanceWithEmbeddedLocalImages($, this.config, this.resolveFilePath.bind(this))
     }
 
     // retrieve html 
@@ -1587,8 +1524,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      *     ignore_from_front_matter:    default is true.  
      */
     let markdownConfig = {}
-    if (config['markdown'])
+    if (config['markdown']) {
       markdownConfig = {...config['markdown']}
+    }
 
     if (!markdownConfig['image_dir']) {
       markdownConfig['image_dir'] = this.config.imageFolderPath
@@ -1701,537 +1639,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       else
         return 'file:///' + path.resolve(this.fileDirectoryPath, filePath)
     }
-  }
-
-  /**
-   * Run code chunk of `id`
-   * @param id 
-   */
-  public async runCodeChunk(id): Promise<String> {
-    let codeChunkData = this.codeChunksData[id]
-    if (!codeChunkData) return ''
-    if (codeChunkData.running) return ''
-
-    let code = codeChunkData.code
-    let cc = codeChunkData
-    while (cc.options['continue']) {
-      let id = cc.options['continue']
-      if (id === true) {
-        id = cc.prev
-      }
-      cc = this.codeChunksData[id]
-      if (!cc) break
-      code = cc.code + code
-    }
-
-    codeChunkData.running = true
-    let result
-    try {
-      const options = codeChunkData.options
-      if (options['cmd'] === 'toc') { // toc code chunk. <= this is a special code chunk.  
-        const tocObject = toc(this.headings, { ordered: options['orderedList'], depthFrom: options['depthFrom'], depthTo: options['depthTo'], tab: options['tab'] || '\t', ignoreLink: options['ignoreLink'] })
-        result = tocObject.content
-      } else if (options['cmd'] === 'ditaa') { // ditaa diagram
-        const filename = options['filename'] || `${md5(this.filePath + options['id'])}.png`
-        let imageFolder = utility.removeFileProtocol(this.resolveFilePath(this.config.imageFolderPath, false))
-        await utility.mkdirp(imageFolder)
-
-        codeChunkData.options['output'] = 'markdown'
-        const dest = await ditaaAPI.render(code, options['args'] || [], path.resolve(imageFolder, filename))
-        result = `  \n![](${path.relative(this.fileDirectoryPath, dest).replace(/\\/g, '/')})  \n` // <= fix windows path issue.
-      } else { // common code chunk
-        // I put this line here because some code chunks like `toc` still need to be run.  
-        if (!this.config.enableScriptExecution) return '' // code chunk is disabled.
-
-        result = await CodeChunkAPI.run(code, this.fileDirectoryPath, codeChunkData.options, this.config.latexEngine)
-      }
-      codeChunkData.plainResult = result
-
-      if (codeChunkData.options['modify_source'] && ('code_chunk_offset' in codeChunkData.options)) {
-        codeChunkData.result = ''
-        return MarkdownEngine.modifySource(codeChunkData, result, this.filePath)
-      }
-
-      const outputFormat = codeChunkData.options['output'] || 'text'
-      if (!result) { // do nothing
-        result = ''
-      } else if (outputFormat === 'html') {
-        result = result
-      } else if (outputFormat === 'png') {
-        const base64 = new Buffer(result).toString('base64')
-        result = `<img src="data:image/png;charset=utf-8;base64,${base64}">`
-      } else if (outputFormat === 'markdown') {
-        const { html } = await this.parseMD(result, { useRelativeFilePath: true, isForPreview: false, hideFrontMatter: true })
-        result = html
-      } else if (outputFormat === 'none') {
-        result = ''
-      } else {
-        result = `<pre class="language-text">${result}</pre>`
-      }
-    } catch (error) {
-      result = `<pre class="language-text">${error}</pre>`
-    }
-
-    codeChunkData.result = result // save result.
-    codeChunkData.running = false
-    return result
-  }
-
-  public async runAllCodeChunks() {
-    const asyncFunctions = []
-    for (let id in this.codeChunksData) {
-      asyncFunctions.push(this.runCodeChunk(id))
-    }
-    return await Promise.all(asyncFunctions)
-  }
-  /**
-   * Add line numbers to code block <pre> element
-   * @param  
-   * @param code 
-   */
-  private addLineNumbersIfNecessary($preElement, code: string): void {
-    if ($preElement.hasClass('line-numbers') || $preElement.hasClass('numberLines')) {
-      $preElement.addClass('line-numbers') // fix for .numberLines class 
-      if (!code.trim().length) return
-      const match = code.match(/\n(?!$)/g)
-      const linesNum = match ? (match.length + 1) : 1
-      let lines = ''
-      for (let i = 0; i < linesNum; i++) {
-        lines += '<span></span>'
-      }
-      $preElement.append(`<span aria-hidden="true" class="line-numbers-rows">${lines}</span>`)
-    }
-  }
-
-  /**
-   * 
-   * @param preElement the cheerio element
-   * @param parameters is in the format of `lang {opt1:val1, opt2:val2}` or just `lang`       
-   * @param text 
-   */
-  private async renderCodeBlock($, $preElement, code, parameters,
-    { graphsCache,
-      codeChunksArray,
-      isForPreview,
-      triggeredBySave }: { graphsCache: object, codeChunksArray: CodeChunkData[], isForPreview: boolean, triggeredBySave: boolean }) {
-
-    let match, lang, optionsStr: string, options: object
-    if (match = parameters.match(/\s*([^\s]+)\s+\{(.+?)\}/)) {
-      lang = match[1]
-      optionsStr = match[2]
-    } else {
-      lang = parameters
-      optionsStr = ''
-    }
-
-    if (optionsStr) {
-      try {
-        options = parseAttributes(optionsStr)
-      } catch (e) {
-        return $preElement.replaceWith(`<pre class="language-text">OptionsError: ${'{' + optionsStr + '}'}<br>${e.toString()}</pre>`)
-      }
-    } else {
-      options = {}
-    }
-
-    const renderPlainCodeBlock = () => {
-      try {
-        if (!Prism) {
-          Prism = require(path.resolve(extensionDirectoryPath, './dependencies/prism/prism.js'))
-        }
-        const html = Prism.highlight(code, Prism.languages[scopeForLanguageName(lang)])
-        $preElement.html(html)
-      } catch (error) {
-        // regarded as plain text
-        $preElement.text(code)
-      }
-      if (options['class']) {
-        $preElement.addClass(options['class'])
-        this.addLineNumbersIfNecessary($preElement, code)
-      }
-    }
-
-    const codeBlockOnly = options['code_block']
-    if (codeBlockOnly) {
-      renderPlainCodeBlock()
-    } else if (lang.match(/^(puml|plantuml)$/)) { // PlantUML 
-      const checksum = md5(optionsStr + code)
-      let svg: string = this.graphsCache[checksum]
-      if (!svg) {
-        svg = await plantumlAPI.render(code, this.fileDirectoryPath)
-      }
-      $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
-      graphsCache[checksum] = svg // store to new cache 
-
-    } else if (lang.match(/^mermaid$/)) { // mermaid 
-      /*
-      // it doesn't work well...
-      // the cache doesn't work well.
-      const checksum = md5(optionsStr + code)
-      let svg:string = this.graphsCache[checksum]
-      if (!svg) {
-        $preElement.replaceWith(`<div class="mermaid">${code}</div>`)
-      } else {
-        $preElement.replaceWith(svg)
-        graphsCache[checksum] = svg // store to new cache 
-      }
-      */
-      if (options['class']) {
-        options['class'] = 'mermaid ' + options['class']
-      } else {
-        options['class'] = 'mermaid'
-      }
-      $preElement.replaceWith(`<div ${stringifyAttributes(options, false)}>${code}</div>`)
-    } else if (lang === 'wavedrom') {
-      if (options['class']) {
-        options['class'] = 'wavedrom ' + options['class']
-      } else {
-        options['class'] = 'wavedrom'
-      }
-      $preElement.replaceWith(`<div ${stringifyAttributes(options, false)}><script type="WaveDrom">${code}</script></div>`)
-    } else if (lang === 'flow') {
-      if (options['class']) {
-        options['class'] = 'flow ' + options['class']
-      } else {
-        options['class'] = 'flow'
-      }
-      $preElement.replaceWith(`<div ${stringifyAttributes(options, false)}>${code}</div>`)      
-    } else if (lang === 'sequence') {
-      if (options['class']) {
-        options['class'] = 'sequence ' + options['class']
-      } else {
-        options['class'] = 'sequence'
-      }
-      $preElement.replaceWith(`<div ${stringifyAttributes(options, false)}>${code}</div>`)      
-    } else if (lang.match(/^(dot|viz)$/)) { // GraphViz
-      const checksum = md5(optionsStr + code)
-      let svg = this.graphsCache[checksum]
-      if (!svg) {
-        try {
-          let engine = options['engine'] || "dot"
-          svg = Viz(code, {engine})
-          
-          $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
-          graphsCache[checksum] = svg // store to new cache
-        } catch (e) {
-          $preElement.replaceWith(`<pre class="language-text">${e.toString()}</pre>`)
-        }
-      } else {
-        $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
-        graphsCache[checksum] = svg // store to new cache
-      }
-    } else if (lang.match(/^math$/)) {
-      try {
-        const mathHtml = parseMath({
-          closeTag: '',
-          content: code,
-          displayMode: true,
-          openTag: '',
-          renderingOption: this.config.mathRenderingOption
-        });
-        $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : ''}>${mathHtml}</p>`)
-      } catch (error) {
-        $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
-      }
-    } else if (lang.match(/^vega$/)) { // vega
-      const checksum = md5(optionsStr + code)
-      let svg: string = this.graphsCache[checksum]
-      if (!svg) {
-        try {
-          svg = await vegaAPI.toSVG(code, this.fileDirectoryPath)
-
-          $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
-          graphsCache[checksum] = svg // store to new cache 
-        } catch (error) {
-          $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
-        }
-      } else {
-        $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
-        graphsCache[checksum] = svg // store to new cache
-      }
-    } else if (lang === 'vega-lite') { // vega-lite
-      const checksum = md5(optionsStr + code)
-      let svg: string = this.graphsCache[checksum]
-      if (!svg) {
-        try {
-          svg = await vegaLiteAPI.toSVG(code, this.fileDirectoryPath)
-
-          $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
-          graphsCache[checksum] = svg // store to new cache 
-        } catch (error) {
-          $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
-        }
-      } else {
-        $preElement.replaceWith(`<p ${optionsStr ? stringifyAttributes(options, false) : '' }>${svg}</p>`)
-        graphsCache[checksum] = svg // store to new cache
-      }
-    } else if (options['cmd']) {
-      const $el = $("<div class=\"code-chunk\"></div>") // create code chunk
-      if (!options['id']) {
-        options['id'] = 'code-chunk-id-' + codeChunksArray.length
-      }
-
-      if (options['cmd'] === true) {
-        options['cmd'] = lang
-      }
-
-      $el.attr({
-        'data-id': options['id'],
-        'data-cmd': options['cmd'],
-        'data-code': options['cmd'] === 'javascript' ? code : ''
-      })
-
-      let highlightedBlock = ''
-      if (!options['hide']) {
-        try {
-          if (!Prism) {
-            Prism = require(path.resolve(extensionDirectoryPath, './dependencies/prism/prism.js'))
-          }
-          highlightedBlock = `<pre class="language-${lang} ${options['class'] || ''}">${Prism.highlight(code, Prism.languages[scopeForLanguageName(lang)])}</pre>`
-        } catch (e) {
-          // do nothing
-          highlightedBlock = `<pre class="language-text ${options['class'] || ''}">${code}</pre>`
-        }
-
-        const $highlightedBlock = $(highlightedBlock)
-        this.addLineNumbersIfNecessary($highlightedBlock, code)
-        highlightedBlock = $.html($highlightedBlock)
-      }
-
-      /*
-      if (!options['id']) { // id is required for code chunk
-        highlightedBlock = `<pre class="language-text">'id' is required for code chunk</pre>`
-      }*/
-
-      let codeChunkData: CodeChunkData = this.codeChunksData[options['id']]
-      let previousCodeChunkDataId = codeChunksArray.length ? codeChunksArray[codeChunksArray.length - 1].id : ''
-      if (!codeChunkData) {
-        codeChunkData = {
-          id: options['id'],
-          code,
-          options: options,
-          result: '',
-          plainResult: '',
-          running: false,
-          prev: previousCodeChunkDataId,
-          next: null
-        }
-        this.codeChunksData[options['id']] = codeChunkData
-      } else {
-        codeChunkData.code = code
-        codeChunkData.options = options
-        codeChunkData.prev = previousCodeChunkDataId
-      }
-      if (previousCodeChunkDataId && this.codeChunksData[previousCodeChunkDataId])
-        this.codeChunksData[previousCodeChunkDataId].next = options['id']
-
-      codeChunksArray.push(codeChunkData) // this line has to be put above the `if` statement.
-
-      if (triggeredBySave && options['run_on_save']) {
-        await this.runCodeChunk(options['id'])
-      }
-
-      let result = codeChunkData.result
-      // element option 
-      if (!result && codeChunkData.options['element']) {
-        result = codeChunkData.options['element']
-        codeChunkData.result = result
-      }
-
-      if (codeChunkData.running) {
-        $el.addClass('running')
-      }
-      const statusDiv = `<div class="status">running...</div>`
-      const buttonGroup = '<div class="btn-group"><div class="run-btn btn"><span>▶︎</span></div><div class=\"run-all-btn btn\">all</div></div>'
-      let outputDiv = `<div class="output-div">${result}</div>`
-
-      // check javascript code chunk
-      if (!isForPreview && options['cmd'] === 'javascript') {
-        outputDiv += `<script>${code}</script>`
-        result = codeChunkData.options['element'] || ''
-      }
-
-      $el.append(highlightedBlock)
-      $el.append(buttonGroup)
-      $el.append(statusDiv)
-      $el.append(outputDiv)
-      $preElement.replaceWith($el)
-    } else { // normal code block  // TODO: code chunk
-      renderPlainCodeBlock()
-    }
-  }
-
-  /**
-   * Extend table syntax to support colspan and rowspan for merging cells
-   * @param $ 
-   */
-  private extendTableSyntax($) {
-    const rowspans: Array<[object, object]> = [], // ^ 
-      colspans: Array<[object, object]> = [], // >
-      colspans2: Array<[object, object]> = []  // empty
-    $('table').each((i, table) => {
-      const $table = $(table)
-      const $thead = $table.children().first()
-      let $prevRow = null
-      $table.children().each((a, head_body) => {
-        const $head_body = $(head_body)
-        $head_body.children().each((i, row) => {
-          const $row = $(row)
-          $row.children().each((j, col) => {
-            const $col = $(col)
-            const text = $col.text()
-            if (!text.length) { // merge to left
-              const $prev = $col.prev()
-              if ($prev.length) {
-                colspans2.push([$prev, $col])
-                // const colspan = parseInt($prev.attr('colspan')) || 1
-                // $prev.attr('colspan', colspan+1)
-                // $col.remove()
-              }
-            } else if (text.trim() === '^' && $prevRow) { // merge to top
-              const $prev = $($prevRow.children()[j])
-              if ($prev.length) {
-                rowspans.push([$prev, $col])
-                // const rowspan = parseInt($prev.attr('rowspan')) || 1
-                // $prev.attr('rowspan', rowspan+1)
-                // $col.remove()
-              }
-
-            } else if (text.trim() === '>') { // merge to right 
-              const $next = $col.next()
-              if ($next.length) {
-                // const colspan = parseInt($next.attr('colspan')) || 1
-                // $next.attr('colspan', colspan+1)
-                // $col.remove()
-                colspans.push([$col, $next])
-              }
-            }
-          })
-          $prevRow = $row
-        })
-      })
-    })
-
-    for (let i = rowspans.length - 1; i >= 0; i--) {
-      const [$prev, $col] = rowspans[i]
-      const rowspan = (parseInt($prev['attr']('rowspan')) || 1) + (parseInt($col['attr']('rowspan')) || 1)
-      $prev['attr']('rowspan', rowspan)
-      $col['remove']()
-    }
-    for (let i = 0; i < colspans.length; i++) {
-      const [$prev, $col] = colspans[i]
-      const colspan = (parseInt($prev['attr']('colspan')) || 1) + (parseInt($col['attr']('colspan')) || 1)
-      $col['attr']('colspan', colspan)
-      $prev['remove']()
-    }
-    for (let i = colspans2.length - 1; i >= 0; i--) {
-      const [$prev, $col] = colspans2[i]
-      const colspan = (parseInt($prev['attr']('colspan')) || 1) + (parseInt($col['attr']('colspan')) || 1)
-      $prev['attr']('colspan', colspan)
-      $col['remove']()
-    }
-  }
-
-  /**
-   * This function resovle image paths and render code blocks
-   * @param html the html string that we will analyze 
-   * @return html 
-   */
-  private async resolveImagePathAndCodeBlock(html, options: MarkdownEngineRenderOption) {
-    let $ = cheerio.load(html, { xmlMode: true })
-
-    // new caches
-    // which will be set when this.renderCodeBlocks is called
-    const newGraphsCache: { [key: string]: string } = {}
-    const codeChunksArray: CodeChunkData[] = []
-
-    const asyncFunctions = []
-    $('pre').each((i, preElement) => {
-      let codeBlock, lang, code
-      const $preElement = $(preElement)
-      if (preElement.children[0] && preElement.children[0].name === 'code') {
-        codeBlock = $preElement.children().first()
-        lang = 'text'
-
-        let classes;
-        if (this.config.usePandocParser) {
-          const dataLang = utility.unescapeString($preElement.attr('data-lang') || '')
-          if (!dataLang && codeBlock.text().startsWith('```{.mpe-code data-lang')) { // Fix indentation issue in pandoc code block
-            classes = 'language-text'
-            const code = codeBlock.text()
-            codeBlock.text(code.replace(/^```{\.mpe\-code\s*data\-lang=\"(.+?)\"}/, ($0, $1) => `\`\`\`${utility.unescapeString($1)}`))
-          } else {
-            classes = 'language-' + dataLang
-          }
-        } else {
-          classes = codeBlock.attr('class')
-        }
-
-        if (!classes) classes = 'language-text'
-        lang = classes.replace(/^language-/, '')
-        if (!lang) lang = 'text'
-        code = codeBlock.text()
-        $preElement.attr('class', classes)
-        $preElement.children().first().addClass(classes)
-      } else {
-        lang = 'text'
-        if (preElement.children[0])
-          code = preElement.children[0].data
-        else
-          code = ''
-        $preElement.attr('class', 'language-text')
-      }
-
-      asyncFunctions.push(this.renderCodeBlock($, $preElement, code, lang,
-        { graphsCache: newGraphsCache, codeChunksArray, isForPreview: options.isForPreview, triggeredBySave: options.triggeredBySave }))
-    })
-
-    await Promise.all(asyncFunctions)
-
-
-    // resolve image paths
-    $('img, a').each((i, imgElement) => {
-      let srcTag = 'src'
-      if (imgElement.name === 'a')
-        srcTag = 'href'
-
-      const img = $(imgElement)
-      const src = img.attr(srcTag)
-
-      // insert anchor for scroll sync.  
-      if (options.isForPreview && imgElement.name !== 'a' && img.parent().prev().hasClass('sync-line')) {
-        const lineNo = parseInt(img.parent().prev().attr('data-line'))
-        if (lineNo)
-          img.parent().after(`<p data-line="${lineNo + 1}" class="sync-line" style="margin:0;"></p>`)
-      }
-
-      img.attr(srcTag, this.resolveFilePath(src, options.useRelativeFilePath))
-    })
-
-    // reset caches 
-    // the line below actually has problem.
-    if (options.isForPreview) {
-      this.graphsCache = newGraphsCache
-      // console.log(this.graphsCache)
-    }
-
-    if (!this.config.usePandocParser) { // check .mume-header in order to add id and class to headers.  
-      $('.mume-header').each((i, e) => {
-        const classes = e.attribs.class,
-          id = e.attribs.id
-        const $e = $(e),
-          $h = $e.prev()
-        $h.addClass(classes)
-        $h.attr('id', encodeURIComponent(id)) // encodeURIComponent to fix utf-8 header. 
-        $e.remove()
-      })
-    }
-
-    if (this.config.enableExtendedTableSyntax) { // extend table
-      this.extendTableSyntax($)
-    }
-
-    return $.html()
   }
 
   /**
@@ -2511,7 +1918,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   public async parseMD(inputString: string, options: MarkdownEngineRenderOption): Promise<MarkdownEngineOutput> {
-    if (!inputString) inputString = await utility.readFile(this.filePath, { encoding: 'utf-8' })
+    if (!inputString) {
+      inputString = await utility.readFile(this.filePath, { encoding: 'utf-8' });
+    }
 
     if (utility.configs.parserConfig['onWillParseMarkdown']) {
       inputString = await utility.configs.parserConfig['onWillParseMarkdown'](inputString)
@@ -2542,15 +1951,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     /**
      * render markdown to html
      */
-    let html
+    let html;
     if (this.config.usePandocParser) { // pandoc
       try {
         let args = yamlConfig['pandoc_args'] || []
-        if (!(args instanceof Array)) args = []
+        if (!(args instanceof Array)) {
+          args = []
+        }
 
         // check bibliography
-        if (yamlConfig['bibliography'] || yamlConfig['references'])
+        if (yamlConfig['bibliography'] || yamlConfig['references']) {
           args.push('--filter', 'pandoc-citeproc')
+        }
 
         args = this.config.pandocArguments.concat(args)
 
@@ -2583,7 +1995,20 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     /**
      * resolve image paths and render code block.
      */
-    html = frontMatterTable + await this.resolveImagePathAndCodeBlock(html, options)
+    const $ = cheerio.load(html, { xmlMode: true });
+    await enhanceWithLiterateCode($, options, this.fileDirectoryPath);
+    await enhanceWithCodeBlockStyling($);
+    await enhanceWithResolvedImagePaths(
+      $,
+      options,
+      this.resolveFilePath.bind(this),
+      this.config.usePandocParser
+    );
+
+    if (this.config.enableExtendedTableSyntax) { // extend table
+      await enhanceWithExtendedTableSyntax($)
+    }
+    html = frontMatterTable + $.html()
 
     /**
      * check slides
@@ -2600,7 +2025,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     if (options.runAllCodeChunks) {
-      await this.runAllCodeChunks()
+      await runAllCodeChunks(this.codeChunksData, this.generateRunOptions())
       options.runAllCodeChunks = false
       return this.parseMD(inputString, options)
     }
@@ -2619,5 +2044,33 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     return { html, markdown: inputString, tocHTML: this.tocHTML, yamlConfig, JSAndCssFiles }
+  }
+
+  /** 
+   * legacy method to support backwards compatibilty
+   */
+  public runAllCodeChunks() {
+    return runAllCodeChunks(this.codeChunksData, this.generateRunOptions())
+  }
+
+  /** 
+   * legacy method to support backwards compatibilty
+   */
+  public runCodeChunk(id: string) {
+    return runCodeChunk(id, this.codeChunksData, this.generateRunOptions())
+  }
+  
+  private generateRunOptions() {
+    return {
+      enableScriptExecution: this.config.enableScriptExecution,
+      fileDirectoryPath: this.fileDirectoryPath,
+      filePath: this.filePath,
+      imageFolderPath: this.config.imageFolderPath,
+      latexEngine: this.config.latexEngine,
+      modifySource: MarkdownEngine.modifySource.bind(this),
+      parseMD: this.parseMD.bind(this),
+      headings: this.headings,
+      resolveFilePath: this.resolveFilePath.bind(this),
+    };
   }
 }

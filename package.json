@@ -38,6 +38,7 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.7",
     "@types/jest": "^22.0.1",
     "@types/jquery": "^3.2.6",
     "@types/markdown-it": "0.0.4",
