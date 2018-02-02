@@ -1,6 +1,6 @@
 import { parseAttributes } from "./attributes";
 
-const liveByDefaultLanguages = [
+const literateByDefaultLanguages = [
   "dot",
   "flow",
   "math",
@@ -49,9 +49,9 @@ export function parseBlockInfo(raw: string): { [key: string]: any } {
 }
 
 export function normalizeCodeBlockInfo({ ...info }): { [key: string]: any } {
-  // imply "live" when cmd is defined
+  // imply "literate" when cmd is defined
   if (info.cmd) {
-    info.live = true;
+    info.literate = true;
   }
 
   // make language lowercase
@@ -59,10 +59,10 @@ export function normalizeCodeBlockInfo({ ...info }): { [key: string]: any } {
     info.lang = info.lang.toLowerCase();
   }
 
-  // default to "live" and "hide" for certain langauges (mostly diagrams)
-  if (liveByDefaultLanguages.indexOf(info.lang) !== -1) {
-    if (!("live" in info)) {
-      info.live = true;
+  // default to "literate" and "hide" for certain langauges (mostly diagrams)
+  if (literateByDefaultLanguages.indexOf(info.lang) !== -1) {
+    if (!("literate" in info)) {
+      info.literate = true;
     }
     if (!("hide" in info)) {
       info.hide = true;

@@ -33,11 +33,11 @@ const testCasesForNormalizeCodeBlockInfo: Array<{
   },
   {
     infos: [{ lang: "js", cmd: true }],
-    normalizedInfo: { lang: "js", cmd: true, live: true }
+    normalizedInfo: { lang: "js", cmd: true, literate: true }
   },
   {
-    infos: [{ lang: "vega" }, { lang: "vega", live: true, hide: true }],
-    normalizedInfo: { lang: "vega", live: true, hide: true }
+    infos: [{ lang: "vega" }, { lang: "vega", literate: true, hide: true }],
+    normalizedInfo: { lang: "vega", literate: true, hide: true }
   }
 ];
 
