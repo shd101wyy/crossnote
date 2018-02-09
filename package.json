@@ -5,8 +5,8 @@
   "main": "out/src/mume.js",
   "typings": "out/src/mume.d.ts",
   "scripts": {
-    "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test": "jest --no-coverage",
+    "test:coverage": "jest",
     "build": "tsc -p .",
     "build:watch": "tsc -w -p .",
     "lint:ts": "tslint -c tslint.json 'src/**/*.ts'",

@@ -1,4 +1,5 @@
 module.exports = {
+  collectCoverage: true,
   mapCoverage: true,
   collectCoverageFrom: [
     "src/**/*.{ts,tsx,js}",
