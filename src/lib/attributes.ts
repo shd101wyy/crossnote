@@ -1,7 +1,7 @@
 enum NodeType {
   QUOTED_STRING,
   WORD,
-  ARRAY
+  ARRAY,
 }
 type Node = [any, number, NodeType];
 
@@ -77,7 +77,7 @@ export function parseAttributes(text?: string): { [key: string]: any } {
  */
 export function stringifyAttributes(
   obj: object,
-  addCurlyParentheses: boolean = true
+  addCurlyParentheses: boolean = true,
 ): string {
   const parts = [];
   for (const key in obj) {

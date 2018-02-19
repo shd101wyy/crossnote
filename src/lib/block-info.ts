@@ -11,7 +11,7 @@ const literateByDefaultLanguages = [
   "vega",
   "vega-lite",
   "viz",
-  "wavedrom"
+  "wavedrom",
 ];
 
 export function parseBlockInfo(raw: string): { [key: string]: any } {

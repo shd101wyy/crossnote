@@ -1,6 +1,6 @@
 import {
   normalizeCodeBlockInfo,
-  parseBlockInfo
+  parseBlockInfo,
 } from "../../src/lib/block-info";
 
 const testCasesForParseBlockInfo: Array<{
@@ -13,17 +13,17 @@ const testCasesForParseBlockInfo: Array<{
       "js cmd=true",
       "js {cmd=true}",
       "js  {  cmd=true  }  ",
-      "js{cmd=true}"
-    ]
+      "js{cmd=true}",
+    ],
   },
   {
     info: { lang: "hello" },
-    raw: ["hello", " hello ", "hello {}", "hello {   }"]
+    raw: ["hello", " hello ", "hello {}", "hello {   }"],
   },
   {
     info: { just: "attribute" },
-    raw: [" {just=attribute}"]
-  }
+    raw: [" {just=attribute}"],
+  },
 ];
 
 const testCasesForNormalizeCodeBlockInfo: Array<{
@@ -32,22 +32,22 @@ const testCasesForNormalizeCodeBlockInfo: Array<{
 }> = [
   {
     infos: [{}],
-    normalizedInfo: {}
+    normalizedInfo: {},
   },
   {
     infos: [{ lang: "js", cmd: true }],
-    normalizedInfo: { lang: "js", cmd: true, literate: true }
+    normalizedInfo: { lang: "js", cmd: true, literate: true },
   },
   {
     infos: [{ lang: "vega" }, { lang: "vega", literate: true, hide: true }],
-    normalizedInfo: { lang: "vega", literate: true, hide: true }
-  }
+    normalizedInfo: { lang: "vega", literate: true, hide: true },
+  },
 ];
 
 describe("lib/block-info", () => {
   testCasesForParseBlockInfo.map(({ raw, info }) => {
     const arrayOfTexts = typeof raw === "string" ? [raw] : raw;
-    arrayOfTexts.map(text => {
+    arrayOfTexts.map((text) => {
       it(`parseBlockInfo() correctly parses ${text}`, () => {
         const result = parseBlockInfo(text);
         expect(result).toEqual(info);
@@ -56,9 +56,9 @@ describe("lib/block-info", () => {
   });
 
   testCasesForNormalizeCodeBlockInfo.map(({ infos, normalizedInfo }) => {
-    infos.map(info => {
+    infos.map((info) => {
       it(`normalizeCodeBlockInfo() correctly normalizes ${JSON.stringify(
-        info
+        info,
       )}`, () => {
         const result = normalizeCodeBlockInfo(info);
         expect(result).toEqual(normalizedInfo);

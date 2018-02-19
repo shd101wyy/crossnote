@@ -7,10 +7,10 @@
   "scripts": {
     "test": "jest --no-coverage",
     "test:coverage": "jest",
-    "build": "tsc -p .",
-    "build:watch": "tsc -w -p .",
-    "lint": "tsc --noEmit && tslint --project . && prettier-check --ignore-path .gitignore \"{.,src/**,test/**}/{*.{j,t}sx?,*.md,ts*.json}\"",
-    "format": "prettier --write --ignore-path .gitignore \"{.,src/**,test/**}/{*.{j,t}sx?,*.md,ts*.json}\"",
+    "build": "tsc --project .",
+    "build:watch": "tsc --project . --watch",
+    "lint": "tsc --project . --noEmit && tslint --project . && prettier-check --ignore-path .gitignore \"{.,src/**,test/**}/{*.{j,t}s,*.md,ts*.json}\"",
+    "format": "prettier --write --ignore-path .gitignore \"{.,src/**,test/**}/{*.{j,t}s,*.md,ts*.json}\"",
     "prepare": "npm run build"
   },
   "files": [
