@@ -1,4 +1,4 @@
-import { parseAttributes, stringifyAttributes } from "../attributes";
+import { parseAttributes, stringifyAttributes } from "../../src/lib/attributes";
 
 const testCases: Array<{
   attributes: any;

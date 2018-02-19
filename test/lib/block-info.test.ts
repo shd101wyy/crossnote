@@ -1,4 +1,7 @@
-import { normalizeCodeBlockInfo, parseBlockInfo } from "../block-info";
+import {
+  normalizeCodeBlockInfo,
+  parseBlockInfo
+} from "../../src/lib/block-info";
 
 const testCasesForParseBlockInfo: Array<{
   info: object;

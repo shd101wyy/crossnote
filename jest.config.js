@@ -1,13 +1,11 @@
 module.exports = {
   collectCoverage: true,
   mapCoverage: true,
-  collectCoverageFrom: [
-    "src/**/*.{ts,tsx,js}",
-  ],
+  collectCoverageFrom: ["src/**/*.{ts,tsx,js}"],
   moduleFileExtensions: ["ts", "tsx", "js"],
   transform: {
-    "^.+\\.tsx?$": "ts-jest"
+    "^.+\\.tsx?$": "ts-jest",
   },
-  testMatch: ["**/__tests__/*.(ts|tsx|js)"],
-  testPathIgnorePatterns: ["/node_modules/", "/out/"]
+  roots: ["test"],
+  testMatch: ["**/?(*.)(spec|test).(j|t)s?(x)"],
 };
