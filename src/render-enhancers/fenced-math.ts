@@ -1,5 +1,6 @@
 import { stringifyAttributes } from "../lib/attributes";
 import { BlockInfo } from "../lib/block-info";
+import { MathRenderingOption } from "../markdown-engine-config";
 import parseMath from "../parse-math";
 
 /**
@@ -7,7 +8,7 @@ import parseMath from "../parse-math";
  * @param html the html string that we will analyze
  * @return html
  */
-export default async function enhance($): Promise<void> {
+export default async function enhance($, renderingOption: MathRenderingOption): Promise<void> {
   const asyncFunctions = [];
   $('[data-role="codeBlock"]').each((i, container) => {
     const $container = $(container);
@@ -25,13 +26,13 @@ export default async function enhance($): Promise<void> {
 
     const code = $container.text();
 
-    $container.after(renderMath(code, normalizedInfo));
+    $container.after(renderMath(code, normalizedInfo, renderingOption));
     $container.data("hidden", true);
   });
   return $;
 }
 
-const renderMath = (code: string, normalizedInfo: BlockInfo): Cheerio => {
+const renderMath = (code: string, normalizedInfo: BlockInfo, renderingOption: MathRenderingOption): Cheerio => {
   let $output = null;
   try {
     const mathHtml = parseMath({
@@ -39,7 +40,7 @@ const renderMath = (code: string, normalizedInfo: BlockInfo): Cheerio => {
       content: code,
       displayMode: true,
       openTag: "",
-      renderingOption: "KaTeX",
+      renderingOption,
     });
     $output = `<p ${stringifyAttributes(
       normalizedInfo.attributes,
