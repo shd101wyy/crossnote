@@ -6,7 +6,7 @@ import { Attributes } from ".";
  */
 export default function(
   attributes: Attributes,
-  addCurlyParentheses: boolean = true,
+  addCurlyBrackets: boolean = false,
 ): string {
   const parts = [];
   for (const key in attributes) {
@@ -22,7 +22,7 @@ export default function(
     }
   }
   parts.shift();
-  if (addCurlyParentheses) {
+  if (addCurlyBrackets) {
     parts.unshift("{");
     parts.push("}");
   }

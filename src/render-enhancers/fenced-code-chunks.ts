@@ -2,7 +2,7 @@ import { relative, resolve } from "path";
 import * as CodeChunkAPI from "../code-chunk";
 import { CodeChunkData } from "../code-chunk-data";
 import * as ditaaAPI from "../ditaa";
-import { normalizeCodeBlockInfo, parseBlockInfo } from "../lib/block-info";
+import { normalizeBlockInfo, parseBlockInfo } from "../lib/block-info";
 import { MarkdownEngineRenderOption } from "../markdown-engine";
 import parseMath from "../parse-math";
 import { toc } from "../toc";
@@ -14,6 +14,20 @@ import {
 } from "../utility";
 import * as vegaAPI from "../vega";
 import * as vegaLiteAPI from "../vega-lite";
+
+const literateByDefaultLanguages = [
+  "dot",
+  "flow",
+  "math",
+  "mermaid",
+  "puml",
+  "plantuml",
+  "sequence",
+  "vega",
+  "vega-lite",
+  "viz",
+  "wavedrom",
+];
 
 // tslint:disable-next-line no-var-requires
 const md5 = require(resolve(
@@ -151,9 +165,9 @@ export async function renderCodeBlock(
     triggeredBySave: boolean;
   },
 ): Promise<void> {
-  const info = normalizeCodeBlockInfo(parseBlockInfo(infoAsString));
+  const info = normalizeBlockInfo(parseBlockInfo(infoAsString));
 
-  if (!info.literate) {
+  if (!info.attributes.literate) {
     return;
   }
   // let match, lang, optionsStr: string;
@@ -184,9 +198,9 @@ export async function renderCodeBlock(
   let $output = null;
 
   $output = `<p><b>${
-    info.lang
+    info.language
   }</b> is not supported or is temporary disabled</p>`;
-  switch (info.lang) {
+  switch (info.language) {
     case "puml":
     case "plantuml":
       break;
@@ -259,7 +273,7 @@ export async function renderCodeBlock(
     }
   }
 
-  if (info.outputFirst) {
+  if (info.attributes.outputFirst) {
     $container.before($output);
   } else {
     $container.after($output);

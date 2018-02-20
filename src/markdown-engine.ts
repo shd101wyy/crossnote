@@ -1,4 +1,4 @@
-// tslint:disable member-ordering ordered-imports interface-name no-var-requires
+// tslint:disable no-var-requires
 import * as path from "path"
 import * as fs from "fs"
 import * as cheerio from "cheerio"
@@ -29,7 +29,10 @@ import enhanceWithCodeBlockStyling from './render-enhancers/code-block-styling';
 import enhanceWithEmbeddedLocalImages from './render-enhancers/embedded-local-images';
 import enhanceWithEmbeddedSVGs from './render-enhancers/embedded-svgs';
 import enhanceWithExtendedTableSyntax from './render-enhancers/extended-table-syntax';
-import enhanceWithLiterateCode, { runCodeChunk, runAllCodeChunks } from './render-enhancers/literate-code';
+import enhanceWithToc from './render-enhancers/toc';
+import enhanceWithFencedMath from './render-enhancers/fenced-math';
+import enhanceWithFencedDiagrams from './render-enhancers/fenced-diagrams';
+import enhanceWithFencedCodeChunks, { runCodeChunk, runAllCodeChunks } from './render-enhancers/fenced-code-chunks';
 import enhanceWithResolvedImagePaths from './render-enhancers/resolved-image-paths';
 
 import { parseAttributes, stringifyAttributes } from "./lib/attributes";
@@ -1996,7 +1999,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * resolve image paths and render code block.
      */
     const $ = cheerio.load(html, { xmlMode: true });
-    await enhanceWithLiterateCode($, options, this.fileDirectoryPath);
+    await enhanceWithFencedMath($);
+    await enhanceWithFencedDiagrams($, options, this.fileDirectoryPath);
+    await enhanceWithFencedCodeChunks($, options, this.fileDirectoryPath);
     await enhanceWithCodeBlockStyling($);
     await enhanceWithResolvedImagePaths(
       $,
