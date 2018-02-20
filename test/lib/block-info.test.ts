@@ -1,5 +1,6 @@
 import {
-  normalizeCodeBlockInfo,
+  BlockInfo,
+  normalizeBlockInfo,
   parseBlockInfo,
 } from "../../src/lib/block-info";
 
@@ -8,20 +9,20 @@ const testCasesForParseBlockInfo: Array<{
   raw: string | string[];
 }> = [
   {
-    info: { lang: "js", cmd: true },
+    info: { language: "js", attributes: { cmd: true } },
     raw: [
       "js cmd=true",
       "js {cmd=true}",
       "js  {  cmd=true  }  ",
-      "js{cmd=true}",
+      "js{cmd=True}",
     ],
   },
   {
-    info: { lang: "hello" },
+    info: { language: "hello", attributes: {} },
     raw: ["hello", " hello ", "hello {}", "hello {   }"],
   },
   {
-    info: { just: "attribute" },
+    info: { language: undefined, attributes: { just: "attribute" } },
     raw: [" {just=attribute}"],
   },
 ];
@@ -32,15 +33,19 @@ const testCasesForNormalizeCodeBlockInfo: Array<{
 }> = [
   {
     infos: [{}],
-    normalizedInfo: {},
+    normalizedInfo: { language: "", attributes: {} },
   },
   {
-    infos: [{ lang: "js", cmd: true }],
-    normalizedInfo: { lang: "js", cmd: true, literate: true },
+    infos: [
+      { language: "js", attributes: { cmd: true } },
+      { language: "js", attributes: { Cmd: true } },
+      { language: "js", attributes: { CMD: true } },
+    ],
+    normalizedInfo: { language: "js", attributes: { cmd: true } },
   },
   {
-    infos: [{ lang: "vega" }, { lang: "vega", literate: true, hide: true }],
-    normalizedInfo: { lang: "vega", literate: true, hide: true },
+    infos: [{ language: "vega" }, { language: "VEGA", attributes: {} }],
+    normalizedInfo: { language: "vega", attributes: {} },
   },
 ];
 
@@ -49,7 +54,7 @@ describe("lib/block-info", () => {
     const arrayOfTexts = typeof raw === "string" ? [raw] : raw;
     arrayOfTexts.map((text) => {
       it(`parseBlockInfo() correctly parses ${text}`, () => {
-        const result = parseBlockInfo(text);
+        const result: object = parseBlockInfo(text);
         expect(result).toEqual(info);
       });
     });
@@ -60,7 +65,7 @@ describe("lib/block-info", () => {
       it(`normalizeCodeBlockInfo() correctly normalizes ${JSON.stringify(
         info,
       )}`, () => {
-        const result = normalizeCodeBlockInfo(info);
+        const result: object = normalizeBlockInfo(info as BlockInfo);
         expect(result).toEqual(normalizedInfo);
       });
     });

@@ -1,3 +1,5 @@
+import { Attributes } from ".";
+
 enum NodeType {
   QUOTED_STRING,
   WORD,
@@ -6,17 +8,17 @@ enum NodeType {
 type Node = [any, number, NodeType];
 
 /**
- * Parses block attributes such as {#identifier .class1 .class2 key1=value1 key2=value2}
- * @param text
+ * Parses block attributes
+ * @param text e.g. {#identifier .class1 .class2 key1=value1 key2=value2}
  */
-export function parseAttributes(text?: string): { [key: string]: any } {
+export default function(text?: string): Attributes {
   // remove surrounding { } if exist
   let textToParse = (text || "").trim();
   if (textToParse[0] === "{" && textToParse[textToParse.length - 1] === "}") {
     textToParse = textToParse.slice(1, -1);
   }
 
-  const output: { [key: string]: any } = {};
+  const output: Attributes = {};
   let pendingKey: string;
   let i = 0;
   while (i < textToParse.length) {
@@ -29,7 +31,7 @@ export function parseAttributes(text?: string): { [key: string]: any } {
       const [rawValue, subEnd, nodeType] = node;
       const value =
         nodeType === NodeType.WORD && keyIsPending
-          ? normalizeValue(rawValue)
+          ? extractValue(rawValue)
           : rawValue;
       i = subEnd;
       if (keyIsPending) {
@@ -69,35 +71,6 @@ export function parseAttributes(text?: string): { [key: string]: any } {
     }
   }
   return output;
-}
-
-/**
- * Convert JSON object to attributes string
- * @param obj
- */
-export function stringifyAttributes(
-  obj: object,
-  addCurlyParentheses: boolean = true,
-): string {
-  const parts = [];
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      parts.push(" ");
-      parts.push(`${key}=`);
-      const value = obj[key];
-      if (value instanceof Array) {
-        parts.push(stringifyArray(value));
-      } else {
-        parts.push(JSON.stringify(value));
-      }
-    }
-  }
-  parts.shift();
-  if (addCurlyParentheses) {
-    parts.unshift("{");
-    parts.push("}");
-  }
-  return parts.join("");
 }
 
 function extractQuotedString(text, start): Node | void {
@@ -170,7 +143,7 @@ function extractArray(text, start): Node | void {
     if (node) {
       const [rawValue, subEnd, nodeType] = node;
       const value =
-        nodeType === NodeType.WORD ? normalizeValue(rawValue) : rawValue;
+        nodeType === NodeType.WORD ? extractValue(rawValue) : rawValue;
       i = subEnd;
       result.push(value);
     } else {
@@ -180,7 +153,7 @@ function extractArray(text, start): Node | void {
   return [result, i, NodeType.ARRAY];
 }
 
-function normalizeValue(value: string): boolean | number | string {
+function extractValue(value: string): boolean | number | string {
   // boolean
   if (value.toLowerCase() === "true") {
     return true;
@@ -191,20 +164,4 @@ function normalizeValue(value: string): boolean | number | string {
     return parseFloat(value as any);
   }
   return value;
-}
-
-function stringifyArray(value: any[]) {
-  const parts = ["["];
-  value.forEach((v, i) => {
-    if (v instanceof Array) {
-      parts.push(stringifyArray(v));
-    } else {
-      parts.push(JSON.stringify(v));
-    }
-    if (i + 1 !== value.length) {
-      parts.push(", ");
-    }
-  });
-  parts.push("]");
-  return parts.join("");
 }
