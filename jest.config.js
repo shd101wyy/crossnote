@@ -1,6 +1,5 @@
 module.exports = {
   collectCoverage: true,
-  mapCoverage: true,
   collectCoverageFrom: ["src/**/*.{ts,tsx,js}"],
   moduleFileExtensions: ["ts", "tsx", "js"],
   transform: {
