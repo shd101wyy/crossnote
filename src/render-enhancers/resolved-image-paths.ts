@@ -1,13 +1,15 @@
+import { MarkdownEngineRenderOption } from "../markdown-engine";
+
 /**
- * This function resovles image paths
+ * This function resolves image paths
  * @param $ cheerio object that we will analyze
  * @return cheerio object
  */
 export default async function enhance(
   $,
-  options /*: MarkdownEngineRenderOption */,
+  options: MarkdownEngineRenderOption,
   resolveFilePath: (path: string, useRelativeFilePath: boolean) => string,
-  usePandocParser
+  usePandocParser,
 ): Promise<void> {
   // resolve image paths
   $("img, a").each((i, imgElement) => {
@@ -33,14 +35,14 @@ export default async function enhance(
           .parent()
           .prev()
           .attr("data-line"),
-        10
+        10,
       );
       if (lineNo) {
         img
           .parent()
           .after(
             `<p data-line="${lineNo +
-              1}" class="sync-line" style="margin:0;"></p>`
+              1}" class="sync-line" style="margin:0;"></p>`,
           );
       }
     }

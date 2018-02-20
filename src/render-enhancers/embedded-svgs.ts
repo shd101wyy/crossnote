@@ -1,5 +1,6 @@
 import { readFile } from "fs";
 import { extname } from "path";
+import { MarkdownEngineConfig } from "../mume";
 import { removeFileProtocol } from "../utility";
 
 /**
@@ -8,8 +9,8 @@ import { removeFileProtocol } from "../utility";
  */
 export default async function enhance(
   $: CheerioStatic,
-  options /*: MarkdownEngineRenderOption */,
-  resolveFilePath: (path: string, useRelativeFilePath: boolean) => string
+  options: MarkdownEngineConfig,
+  resolveFilePath: (path: string, useRelativeFilePath: boolean) => string,
 ): Promise<void> {
   const asyncFunctions = [];
   $("img").each((i, img) => {
@@ -33,11 +34,11 @@ export default async function enhance(
             const base64 = new Buffer(data).toString("base64");
             $img.attr(
               "src",
-              `data:image/svg+xml;charset=utf-8;base64,${base64}`
+              `data:image/svg+xml;charset=utf-8;base64,${base64}`,
             );
             return resolve(base64);
           });
-        })
+        }),
       );
     }
   });

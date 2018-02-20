@@ -1,32 +1,38 @@
 import { relative, resolve } from "path";
-import * as CodeChunkAPI from "../code-chunk"
+import * as CodeChunkAPI from "../code-chunk";
 import { CodeChunkData } from "../code-chunk-data";
-import * as ditaaAPI from "../ditaa"
+import * as ditaaAPI from "../ditaa";
 import { normalizeCodeBlockInfo, parseBlockInfo } from "../lib/block-info";
+import { MarkdownEngineRenderOption } from "../markdown-engine";
 import parseMath from "../parse-math";
-import { toc } from "../toc"
-import { extensionDirectoryPath, mkdirp, removeFileProtocol, unescapeString } from "../utility";
+import { toc } from "../toc";
+import {
+  extensionDirectoryPath,
+  mkdirp,
+  removeFileProtocol,
+  unescapeString,
+} from "../utility";
 import * as vegaAPI from "../vega";
 import * as vegaLiteAPI from "../vega-lite";
 
 // tslint:disable-next-line no-var-requires
 const md5 = require(resolve(
   extensionDirectoryPath,
-  "./dependencies/javascript-md5/md5.js"
+  "./dependencies/javascript-md5/md5.js",
 ));
 
 export interface CodeChunksData {
   [key: string]: CodeChunkData;
 }
 /**
- * This function resovle image paths and render code blocks
+ * This function resolves image paths and render code blocks
  * @param html the html string that we will analyze
  * @return html
  */
 export default async function enhance(
   $,
-  options /*: MarkdownEngineRenderOption */,
-  fileDirectoryPath
+  options: MarkdownEngineRenderOption,
+  fileDirectoryPath,
 ): Promise<void> {
   // new caches
   // which will be set when this.renderCodeBlocks is called
@@ -37,7 +43,7 @@ export default async function enhance(
   $('[data-role="codeBlock"]').each((i, container) => {
     const $container = $(container);
 
-    // skip code block execution if it's already been executied by another executor
+    // skip code block execution if it's already been executed by another executor
     if ($container.data("executor")) {
       return;
     }
@@ -105,8 +111,8 @@ export default async function enhance(
         codeChunksArray,
         graphsCache: newGraphsCache,
         isForPreview: options.isForPreview,
-        triggeredBySave: options.triggeredBySave
-      })
+        triggeredBySave: options.triggeredBySave,
+      }),
     );
   });
 
@@ -137,13 +143,13 @@ export async function renderCodeBlock(
     graphsCache,
     codeChunksArray,
     isForPreview,
-    triggeredBySave
+    triggeredBySave,
   }: {
     graphsCache: object;
     codeChunksArray: CodeChunkData[];
     isForPreview: boolean;
     triggeredBySave: boolean;
-  }
+  },
 ): Promise<void> {
   const info = normalizeCodeBlockInfo(parseBlockInfo(infoAsString));
 
@@ -192,7 +198,7 @@ export async function renderCodeBlock(
           content: code,
           displayMode: true,
           openTag: "",
-          renderingOption: "KaTeX"
+          renderingOption: "KaTeX",
         });
         $output = `<p ${
           ""
@@ -534,22 +540,26 @@ export async function renderCodeBlock(
 }
 
 export interface RunCodeChunkOptions {
-  enableScriptExecution: boolean,
-  fileDirectoryPath: string,
-  filePath: string,
-  imageFolderPath: string,
-  latexEngine: any,
-  modifySource: any,
-  parseMD: any,
-  headings: any,
-  resolveFilePath: any,
+  enableScriptExecution: boolean;
+  fileDirectoryPath: string;
+  filePath: string;
+  imageFolderPath: string;
+  latexEngine: any;
+  modifySource: any;
+  parseMD: any;
+  headings: any;
+  resolveFilePath: any;
 }
 
 /**
  * Run code chunk of `id`
  * @param id
  */
-export async function runCodeChunk(id: string, codeChunksData: CodeChunksData, runOptions: RunCodeChunkOptions): Promise<string> {
+export async function runCodeChunk(
+  id: string,
+  codeChunksData: CodeChunksData,
+  runOptions: RunCodeChunkOptions,
+): Promise<string> {
   const {
     headings,
     enableScriptExecution,
@@ -591,7 +601,7 @@ export async function runCodeChunk(id: string, codeChunksData: CodeChunksData, r
         depthFrom: options["depthFrom"],
         depthTo: options["depthTo"],
         tab: options["tab"] || "\t",
-        ignoreLink: options["ignoreLink"]
+        ignoreLink: options["ignoreLink"],
       });
       result = tocObject.content;
     } else if (options["cmd"] === "ditaa") {
@@ -599,7 +609,7 @@ export async function runCodeChunk(id: string, codeChunksData: CodeChunksData, r
       const filename =
         options["filename"] || `${md5(filePath + options["id"])}.png`;
       const imageFolder = removeFileProtocol(
-        resolveFilePath(imageFolderPath, false)
+        resolveFilePath(imageFolderPath, false),
       );
       await mkdirp(imageFolder);
 
@@ -607,10 +617,12 @@ export async function runCodeChunk(id: string, codeChunksData: CodeChunksData, r
       const dest = await ditaaAPI.render(
         code,
         options["args"] || [],
-        resolve(imageFolder, filename)
+        resolve(imageFolder, filename),
       );
-      result = `  \n![](${relative(fileDirectoryPath, dest)
-        .replace(/\\/g, "/")})  \n`; // <= fix windows path issue.
+      result = `  \n![](${relative(fileDirectoryPath, dest).replace(
+        /\\/g,
+        "/",
+      )})  \n`; // <= fix windows path issue.
     } else {
       // common code chunk
       // I put this line here because some code chunks like `toc` still need to be run.
@@ -622,7 +634,7 @@ export async function runCodeChunk(id: string, codeChunksData: CodeChunksData, r
         code,
         fileDirectoryPath,
         codeChunkData.options,
-        latexEngine
+        latexEngine,
       );
     }
     codeChunkData.plainResult = result;
@@ -648,7 +660,7 @@ export async function runCodeChunk(id: string, codeChunksData: CodeChunksData, r
       const { html } = await parseMD(result, {
         useRelativeFilePath: true,
         isForPreview: false,
-        hideFrontMatter: true
+        hideFrontMatter: true,
       });
       result = html;
     } else if (outputFormat === "none") {
@@ -665,7 +677,10 @@ export async function runCodeChunk(id: string, codeChunksData: CodeChunksData, r
   return result;
 }
 
-export async function runAllCodeChunks(codeChunksData: CodeChunksData, runOptions: RunCodeChunkOptions) {
+export async function runAllCodeChunks(
+  codeChunksData: CodeChunksData,
+  runOptions: RunCodeChunkOptions,
+) {
   const asyncFunctions = [];
   for (const id in codeChunksData) {
     if (codeChunksData.hasOwnProperty(id)) {

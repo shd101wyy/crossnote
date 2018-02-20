@@ -15,7 +15,7 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
     let displayMode = true;
     const {
       mathBlockDelimiters: blockDelimiters,
-      mathInlineDelimiters: inlineDelimiters
+      mathInlineDelimiters: inlineDelimiters,
     } = config;
 
     for (const tagPair of blockDelimiters) {

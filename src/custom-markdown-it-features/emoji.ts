@@ -8,8 +8,8 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   md.use(
     require(resolve(
       extensionDirectoryPath,
-      "./dependencies/markdown-it/extensions/markdown-it-emoji.min.js"
-    ))
+      "./dependencies/markdown-it/extensions/markdown-it-emoji.min.js",
+    )),
   );
 
   md.renderer.rules.emoji = (tokens, idx) => {

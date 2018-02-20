@@ -21,7 +21,7 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
       idx < tokens.length && tokens[idx].type === "list_item_close" ? "\n" : "";
 
     return `<pre data-role="codeBlock" data-info="${escapeString(
-      info
+      info,
     )}"><code>${content}</code></pre>${finalBreak}`;
   };
 };

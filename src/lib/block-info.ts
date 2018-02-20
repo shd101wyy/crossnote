@@ -59,7 +59,7 @@ export function normalizeCodeBlockInfo({ ...info }): { [key: string]: any } {
     info.lang = info.lang.toLowerCase();
   }
 
-  // default to "literate" and "hide" for certain langauges (mostly diagrams)
+  // default to "literate" and "hide" for certain languages (mostly diagrams)
   if (literateByDefaultLanguages.indexOf(info.lang) !== -1) {
     if (!("literate" in info)) {
       info.literate = true;

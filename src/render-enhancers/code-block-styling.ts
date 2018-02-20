@@ -34,7 +34,7 @@ export default async function enhance($: CheerioStatic): Promise<void> {
       if (!Prism) {
         Prism = require(resolve(
           extensionDirectoryPath,
-          "./dependencies/prism/prism.js"
+          "./dependencies/prism/prism.js",
         ));
       }
       const html = Prism.highlight(code, Prism.languages[language]);
@@ -67,13 +67,13 @@ function addLineNumbersIfNecessary($container, code: string): void {
       return;
     }
     const match = code.match(/\n(?!$)/g);
-    const linesNum = match ? match.length + 1 : 1;
+    const lineCount = match ? match.length + 1 : 1;
     let lines = "";
-    for (let i = 0; i < linesNum; i++) {
+    for (let i = 0; i < lineCount; i++) {
       lines += "<span></span>";
     }
     $container.append(
-      `<span aria-hidden="true" class="line-numbers-rows">${lines}</span>`
+      `<span aria-hidden="true" class="line-numbers-rows">${lines}</span>`,
     );
   }
 }
