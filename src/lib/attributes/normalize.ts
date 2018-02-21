@@ -1,7 +1,8 @@
+import * as snakeCase from "lodash/snakeCase";
 import { Attributes } from ".";
 
 /**
- * Walks through attribute keys and makes them lowercase if needed
+ * Walks through attribute keys and makes them snakeCase if needed
  * @param attributes
  */
 export default function(attributes: Attributes): Attributes {
@@ -13,7 +14,7 @@ export default function(attributes: Attributes): Attributes {
 
   for (const key in attributes) {
     if (attributes.hasOwnProperty(key)) {
-      const normalizedKey = key.toLowerCase();
+      const normalizedKey = snakeCase(key);
       if (normalizedKey !== key) {
         result[normalizedKey] = result[key];
         delete result[key];

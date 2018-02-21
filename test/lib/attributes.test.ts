@@ -1,8 +1,13 @@
-import { parseAttributes, stringifyAttributes } from "../../src/lib/attributes";
+import {
+  normalizeAttributes,
+  parseAttributes,
+  stringifyAttributes,
+} from "../../src/lib/attributes";
 
 const testCases: Array<{
-  attributes: any;
-  raw: string | string[];
+  attributes?: any;
+  normalizedAttributes?: any;
+  raw?: string | string[];
   stringified?: string;
 }> = [
   {
@@ -174,38 +179,76 @@ const testCases: Array<{
     raw: "cmd .class1 hide .class2",
     stringified: 'cmd=true hide=true class="class1 class2"',
   },
+  {
+    // normalization
+    attributes: { hello_world: "test" },
+    normalizedAttributes: { hello_world: "test" },
+  },
+  {
+    attributes: { HELLO_WORLD: true },
+    normalizedAttributes: { hello_world: true },
+  },
+  {
+    attributes: { HelloWorld: "test" },
+    normalizedAttributes: { hello_world: "test" },
+  },
 ];
 
 describe("lib/attributes", () => {
   testCases.map(({ raw, attributes }) => {
+    if (!raw || !attributes) {
+      return;
+    }
     const arrayOfTexts = typeof raw === "string" ? [raw] : raw;
     arrayOfTexts.map((text) => {
-      test(`parseAttributes() correctly parses ${text}`, async () => {
-        await new Promise((resolve) => setTimeout(resolve, 1));
+      test(`parseAttributes() correctly parses ${text}`, () => {
         const result = parseAttributes(text);
-        await new Promise((resolve) => setTimeout(resolve, 1));
         expect(result).toEqual(attributes);
       });
     });
   });
 
-  testCases.map(({ attributes, stringified = null }) => {
-    if (typeof stringified !== "string") {
+  testCases.map(({ attributes = null, normalizedAttributes = null }) => {
+    if (!attributes || !normalizedAttributes) {
       return;
     }
-    test(`stringifyAttributes() correctly stringifies ${JSON.stringify(
+    test(`normalizeAttributes() correctly normalizes ${JSON.stringify(
       attributes,
     )}`, () => {
-      // without curly parentheses
-      const resultWithoutCurlyParentheses = stringifyAttributes(
-        attributes,
-        false,
-      );
-      expect(resultWithoutCurlyParentheses).toEqual(stringified);
-
-      // with curly parentheses (default)
-      const resultWithCurlyParentheses = stringifyAttributes(attributes);
-      expect(resultWithCurlyParentheses).toEqual(`{${stringified}}`);
+      const result = normalizeAttributes(attributes);
+      expect(result).toEqual(normalizedAttributes);
     });
   });
+
+  testCases.map(
+    ({
+      attributes = null,
+      normalizedAttributes = null,
+      stringified = null,
+    }) => {
+      if (typeof stringified !== "string") {
+        return;
+      }
+      const attributesToTest = [];
+      if (typeof attributes === "string") {
+        attributesToTest.push(attributes);
+      }
+      if (typeof normalizedAttributes === "string") {
+        attributesToTest.push(normalizedAttributes);
+      }
+      attributesToTest.map((attrs) => {
+        test(`stringifyAttributes() correctly stringifies ${JSON.stringify(
+          attrs,
+        )}`, () => {
+          // without curly parentheses
+          const resultWithoutCurlyParentheses = stringifyAttributes(attrs);
+          expect(resultWithoutCurlyParentheses).toEqual(stringified);
+
+          // with curly parentheses (default)
+          const resultWithCurlyParentheses = stringifyAttributes(attrs, true);
+          expect(resultWithCurlyParentheses).toEqual(`{${stringified}}`);
+        });
+      });
+    },
+  );
 });
