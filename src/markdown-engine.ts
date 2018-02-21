@@ -36,6 +36,7 @@ import enhanceWithFencedCodeChunks, { runCodeChunk, runAllCodeChunks } from './r
 import enhanceWithResolvedImagePaths from './render-enhancers/resolved-image-paths';
 
 import { parseAttributes, stringifyAttributes } from "./lib/attributes";
+import { removeFileProtocol } from "./utility";
 
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const MarkdownIt = require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/markdown-it.min.js'))
@@ -2000,7 +2001,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      */
     const $ = cheerio.load(html, { xmlMode: true });
     await enhanceWithFencedMath($, this.config.mathRenderingOption);
-    await enhanceWithFencedDiagrams($, options, this.fileDirectoryPath);
+    await enhanceWithFencedDiagrams(
+      $,
+      this.graphsCache,
+      this.fileDirectoryPath,
+      removeFileProtocol(
+        this.resolveFilePath(this.config.imageFolderPath, false),
+      ),
+    );
     await enhanceWithFencedCodeChunks($, options, this.fileDirectoryPath);
     await enhanceWithCodeBlockStyling($);
     await enhanceWithResolvedImagePaths(

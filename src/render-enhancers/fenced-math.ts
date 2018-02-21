@@ -27,7 +27,11 @@ export default async function enhance(
     }
 
     const normalizedInfo: BlockInfo = $container.data("normalizedInfo");
-    if (supportedLanguages.indexOf(normalizedInfo.language) !== -1) {
+    if (
+      normalizedInfo.attributes["literate"] === false ||
+      normalizedInfo.attributes["cmd"] === false ||
+      supportedLanguages.indexOf(normalizedInfo.language) === -1
+    ) {
       return;
     }
 
