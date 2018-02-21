@@ -3,36 +3,58 @@ import { BlockInfo } from "../lib/block-info";
 import { MathRenderingOption } from "../markdown-engine-config";
 import parseMath from "../parse-math";
 
+const supportedLanguages = ["math"];
+
 /**
- * This function resolves image paths and render code blocks
- * @param html the html string that we will analyze
- * @return html
+ * Enhances the document with literate fenced math
+ * Attributes supported:
+ * - literate [=true] if false, no math rendering happens
+ * - hide [=true] if set to false, both code and output are shown
+ * - output_first [=false] if true, math output shows before the code block (requires hide=false)
+ *
+ * @param renderingOption which math engine to use
+ * @param $ cheerio element containing the entire document
  */
-export default async function enhance($, renderingOption: MathRenderingOption): Promise<void> {
+export default async function enhance(
+  $,
+  renderingOption: MathRenderingOption,
+): Promise<void> {
   const asyncFunctions = [];
   $('[data-role="codeBlock"]').each((i, container) => {
     const $container = $(container);
-
     if ($container.data("executor")) {
       return;
     }
 
     const normalizedInfo: BlockInfo = $container.data("normalizedInfo");
-    if (normalizedInfo.language !== "math") {
+    if (supportedLanguages.indexOf(normalizedInfo.language) !== -1) {
       return;
     }
 
     $container.data("executor", "math");
 
-    const code = $container.text();
+    if (normalizedInfo.attributes["literate"] === false) {
+      return;
+    }
 
-    $container.after(renderMath(code, normalizedInfo, renderingOption));
-    $container.data("hidden", true);
+    const code = $container.text();
+    const $renderedMath = renderMath(code, normalizedInfo, renderingOption);
+    normalizedInfo.attributes["output_first"] === true
+      ? $container.before($renderedMath)
+      : $container.after($renderedMath);
+
+    if (normalizedInfo.attributes["hide"] !== false) {
+      $container.data("hiddenByEnhancer", true);
+    }
   });
   return $;
 }
 
-const renderMath = (code: string, normalizedInfo: BlockInfo, renderingOption: MathRenderingOption): Cheerio => {
+const renderMath = (
+  code: string,
+  normalizedInfo: BlockInfo,
+  renderingOption: MathRenderingOption,
+): Cheerio => {
   let $output = null;
   try {
     const mathHtml = parseMath({

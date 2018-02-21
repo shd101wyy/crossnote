@@ -9,8 +9,11 @@ export default async function enhance($: CheerioStatic): Promise<void> {
   $('[data-role="codeBlock"]').each((i, container) => {
     const $container = $(container);
 
-    // hide this code block if any of the previous enhances
-    const hidden = $container.data("hidden");
+    // hide this code block if hide=true in options or if any of previous enhances told so
+    const hidden =
+      $container.data("hiddenByEnhancer") ||
+      ($container.data("normalizedInfo") as BlockInfo).attributes["hide"] ===
+        true;
     if (hidden) {
       $container.remove();
       return;
@@ -42,8 +45,8 @@ export default async function enhance($: CheerioStatic): Promise<void> {
     }
 
     $container.addClass(`language-${language}`);
-    if (info.attributes.class) {
-      $container.addClass(info.attributes.class);
+    if (info.attributes["class"]) {
+      $container.addClass(info.attributes["class"]);
       addLineNumbersIfNecessary($container, code);
     }
 
