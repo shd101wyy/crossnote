@@ -1,16 +1,16 @@
-import * as path from "path"
-import * as fs from "fs"
 import * as cheerio from "cheerio"
+import * as fs from "fs"
+import * as path from "path"
 
+// import {mermaidToPNG} from "./mermaid"
+import { compileLaTeX } from "./code-chunk"
+import { CodeChunkData } from "./code-chunk-data"
+import { parseAttributes } from "./lib/attributes";
+import { svgElementToPNGFile } from "./magick"
 import * as plantumlAPI from "./puml"
+import * as utility from "./utility"
 import * as vegaAPI from "./vega"
 import * as vegaLiteAPI from "./vega-lite"
-import * as utility from "./utility"
-import { parseAttributes } from "./lib/attributes";
-import {svgElementToPNGFile} from "./magick"
-// import {mermaidToPNG} from "./mermaid"
-import {compileLaTeX} from "./code-chunk"
-import {CodeChunkData} from "./code-chunk-data"
 
 const Viz = require(path.resolve(utility.extensionDirectoryPath, './dependencies/viz/viz.js'))
 const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))

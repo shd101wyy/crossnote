@@ -3,11 +3,7 @@ import { resolve } from "path";
 import { render as renderDitaa } from "../ditaa";
 import { render as renderPlantuml } from "../puml";
 
-import {
-  extensionDirectoryPath,
-  mkdirp,
-  readFile,
-} from "../utility";
+import { extensionDirectoryPath, mkdirp, readFile } from "../utility";
 import { toSVG as vegaToSvg } from "../vega";
 import { toSVG as vegaLiteToSvg } from "../vega-lite";
 const Viz = require(resolve(
@@ -27,6 +23,7 @@ const ensureClassInAttributes = (attributes: Attributes, className: string) => {
     };
   }
 };
+
 // same order as in docs
 const supportedLanguages = [
   "flow",

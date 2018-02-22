@@ -1,13 +1,14 @@
-import * as path from "path"
+import { execFile } from "child_process"
 import * as fs from "fs"
-import {execFile} from "child_process"
 import * as mkdirp from "mkdirp"
+import * as path from "path"
 import * as YAML from "yamljs"
-import {toc} from "./toc"
+import { toc } from "./toc"
 
-import {transformMarkdown} from "./transformer"
 import {processGraphs} from "./process-graphs"
+import {transformMarkdown} from "./transformer"
 import * as utility from "./utility"
+
 const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 function getFileExtension(documentType:string) {

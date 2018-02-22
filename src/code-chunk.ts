@@ -1,10 +1,10 @@
-import * as path from "path"
-import * as fs from "fs"
 import {spawn} from "child_process"
+import * as fs from "fs"
+import * as path from "path"
 import * as vm from "vm"
 
-import * as utility from "./utility"
 import * as LaTeX from "./latex"
+import * as utility from "./utility"
 
 export async function compileLaTeX(content:string, fileDirectoryPath:string, options:object):Promise<string> {
   const latexEngine = options['latex_engine'] || 'pdflatex'

@@ -2,9 +2,9 @@
 // http://www.cityinthesky.co.uk/opensource/pdf2svg/
 //
 
-import * as path from "path"
-import * as fs from "fs"
 import {spawn} from "child_process"
+import * as fs from "fs"
+import * as path from "path"
 import * as temp from "temp"
 
 // import * as gm from "gm"

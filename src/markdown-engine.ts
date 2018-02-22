@@ -1,20 +1,20 @@
 // tslint:disable no-var-requires
-import * as path from "path"
-import * as fs from "fs"
 import * as cheerio from "cheerio"
+import { execFile } from "child_process"
+import * as fs from "fs"
+import * as path from "path"
 import * as request from "request"
 import * as YAML from "yamljs"
-import { execFile } from "child_process"
 
 import { CodeChunkData } from "./code-chunk-data"
-import * as utility from "./utility"
-import { toc } from "./toc"
-import { transformMarkdown, HeadingData } from "./transformer"
-import { princeConvert } from "./prince-convert"
 import { ebookConvert } from "./ebook-convert"
-import { pandocConvert } from "./pandoc-convert"
 import { markdownConvert } from "./markdown-convert"
-import { MarkdownEngineConfig, defaultMarkdownEngineConfig } from './markdown-engine-config'
+import { defaultMarkdownEngineConfig, MarkdownEngineConfig } from './markdown-engine-config'
+import { pandocConvert } from "./pandoc-convert"
+import { princeConvert } from "./prince-convert"
+import { toc } from "./toc"
+import { HeadingData, transformMarkdown } from "./transformer"
+import * as utility from "./utility"
 
 import useMarkdownItCodeFences from './custom-markdown-it-features/code-fences';
 import useMarkdownItCriticMarkup from './custom-markdown-it-features/critic-markup';
@@ -26,10 +26,9 @@ import enhanceWithCodeBlockStyling from './render-enhancers/code-block-styling';
 import enhanceWithEmbeddedLocalImages from './render-enhancers/embedded-local-images';
 import enhanceWithEmbeddedSVGs from './render-enhancers/embedded-svgs';
 import enhanceWithExtendedTableSyntax from './render-enhancers/extended-table-syntax';
-import enhanceWithToc from './render-enhancers/toc';
-import enhanceWithFencedMath from './render-enhancers/fenced-math';
+import enhanceWithFencedCodeChunks, { runAllCodeChunks, runCodeChunk } from './render-enhancers/fenced-code-chunks';
 import enhanceWithFencedDiagrams from './render-enhancers/fenced-diagrams';
-import enhanceWithFencedCodeChunks, { runCodeChunk, runAllCodeChunks } from './render-enhancers/fenced-code-chunks';
+import enhanceWithFencedMath from './render-enhancers/fenced-math';
 import enhanceWithResolvedImagePaths from './render-enhancers/resolved-image-paths';
 
 import { parseAttributes, stringifyAttributes } from "./lib/attributes";

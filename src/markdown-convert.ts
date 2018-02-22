@@ -2,14 +2,14 @@
  * Convert Mume markdown to Githb Flavored Markdown
  */
 
-import * as path from "path"
 import * as fs from "fs"
 import * as mkdirp from "mkdirp"
-import {transformMarkdown} from "./transformer"
+import * as path from "path"
+import { CodeChunkData } from "./code-chunk-data"
+import { processGraphs } from "./process-graphs"
+import { toc } from "./toc"
+import { transformMarkdown } from "./transformer"
 import * as utility from "./utility"
-import {processGraphs} from "./process-graphs"
-import {CodeChunkData} from "./code-chunk-data"
-import {toc} from "./toc"
 
 const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
