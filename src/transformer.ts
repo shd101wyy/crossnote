@@ -721,13 +721,13 @@ export async function transformMarkdown(inputString:string,
                 }
               }
               else if (extname === '.dot' || extname === '.gv' || extname === '.viz') { // graphviz
-                output = `\`\`\`dot\n${fileContent}\n\`\`\`  `
+                output = `\`\`\`dot ${stringifyAttributes(config, true)}\n${fileContent}\n\`\`\`  `
               }
               else if (extname === '.mermaid') { // mermaid
-                output = `\`\`\`mermaid\n${fileContent}\n\`\`\`  `
+                output = `\`\`\`mermaid ${stringifyAttributes(config, true)}\n${fileContent}\n\`\`\`  `
               }
               else if (extname === '.plantuml' || extname === '.puml') { // PlantUML
-                output = `\`\`\`puml\n' @mume_file_directory_path:${path.dirname(absoluteFilePath)}\n${fileContent}\n\`\`\`  `
+                output = `\`\`\`puml ${stringifyAttributes(config, true)}\n' @mume_file_directory_path:${path.dirname(absoluteFilePath)}\n${fileContent}\n\`\`\`  `
               }
               /*
               else if extname in ['.wavedrom']
