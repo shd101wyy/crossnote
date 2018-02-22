@@ -1,11 +1,12 @@
 // tslint:disable:ban-types no-var-requires
 import { resolve } from "path";
 import { render as renderDitaa } from "../ditaa";
+import computeChecksum from '../lib/compute-checksum';
 import { render as renderPlantuml } from "../puml";
-
 import { extensionDirectoryPath, mkdirp, readFile } from "../utility";
 import { toSVG as vegaToSvg } from "../vega";
 import { toSVG as vegaLiteToSvg } from "../vega-lite";
+
 const Viz = require(resolve(
   extensionDirectoryPath,
   "./dependencies/viz/viz.js",
@@ -38,12 +39,6 @@ const supportedLanguages = [
   "vega-lite",
   "ditaa",
 ];
-
-// tslint:disable-next-line no-var-requires
-const md5 = require(resolve(
-  extensionDirectoryPath,
-  "./dependencies/javascript-md5/md5.js",
-));
 
 /**
  * This function resolves image paths and render code blocks
@@ -103,7 +98,7 @@ async function renderDiagram(
   let $output = null;
 
   const code = $container.text();
-  const checksum = md5(JSON.stringify(normalizedInfo) + code);
+  const checksum = computeChecksum(JSON.stringify(normalizedInfo) + code);
   const diagramInCache: string = graphsCache[checksum];
   try {
     switch (normalizedInfo.language) {
@@ -178,7 +173,7 @@ async function renderDiagram(
         const args = normalizedInfo.attributes["args"] || [];
         const filename =
           normalizedInfo.attributes["filename"] ||
-          `${md5(JSON.stringify(args), code)}.png`;
+          `${computeChecksum(`${JSON.stringify(args)} ${code}`)}.png`;
         await mkdirp(imageDirectoryPath);
 
         const pathToPng = await renderDitaa(

@@ -6,16 +6,15 @@ import * as path from "path"
 import * as request from "request"
 import * as temp from "temp"
 import * as uslug from "uslug"
+import { parseAttributes, stringifyAttributes } from "./lib/attributes";
+import computeChecksum from './lib/compute-checksum';
+import * as utility from "./utility"
+const extensionDirectoryPath = utility.extensionDirectoryPath
 
 // import * as request from 'request'
 // import * as less from "less"
-// import * as md5 from "md5"
 // import * as temp from "temp"
 // temp.track()
-import { parseAttributes, stringifyAttributes } from "./lib/attributes";
-import * as utility from "./utility"
-const extensionDirectoryPath = utility.extensionDirectoryPath
-const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 import {CustomSubjects} from "./custom-subjects"
 import * as PDF from "./pdf"
@@ -141,7 +140,7 @@ function downloadFileIfNecessary(filePath:string):Promise<string> {
       if (error)
         return reject(error)
       else {
-        const localFilePath = path.resolve(DOWNLOADS_TEMP_FOLDER, md5(filePath)) + path.extname(filePath)
+        const localFilePath = path.resolve(DOWNLOADS_TEMP_FOLDER, computeChecksum(filePath)) + path.extname(filePath)
         fs.writeFile(localFilePath, body, 'binary', (error)=> {
           if (error)
             return reject(error)
@@ -634,7 +633,7 @@ export async function transformMarkdown(inputString:string,
               }
               else if (config && config['cmd']) {
                 if (!config['id']) { // create `id` for code chunk
-                  config['id'] = md5(absoluteFilePath)
+                  config['id'] = computeChecksum(absoluteFilePath)
                 }
                 if (!notSourceFile) { // mark code_chunk_offset
                   config['code_chunk_offset'] = codeChunkOffset

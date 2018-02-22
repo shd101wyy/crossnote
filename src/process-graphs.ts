@@ -2,10 +2,10 @@ import * as cheerio from "cheerio"
 import * as fs from "fs"
 import * as path from "path"
 
-// import {mermaidToPNG} from "./mermaid"
 import { compileLaTeX } from "./code-chunk"
 import { CodeChunkData } from "./code-chunk-data"
 import { parseAttributes } from "./lib/attributes";
+import computeChecksum from './lib/compute-checksum';
 import { svgElementToPNGFile } from "./magick"
 import * as plantumlAPI from "./puml"
 import * as utility from "./utility"
@@ -13,7 +13,6 @@ import * as vegaAPI from "./vega"
 import * as vegaLiteAPI from "./vega-lite"
 
 const Viz = require(path.resolve(utility.extensionDirectoryPath, './dependencies/viz/viz.js'))
-const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 export async function processGraphs(text:string, 
 {fileDirectoryPath, projectDirectoryPath, imageDirectoryPath, imageFilePrefix, useRelativeFilePath, codeChunksData, graphsCache}:
@@ -131,7 +130,7 @@ export async function processGraphs(text:string,
       // Do Nothing
     } else if (def.match(/^(puml|plantuml)/)) { 
       try {
-        const checksum = md5(optionsStr + content)
+        const checksum = computeChecksum(optionsStr + content)
         let svg 
         if (!(svg = graphsCache[checksum])) { // check whether in cache
           svg = await plantumlAPI.render(content, fileDirectoryPath)
@@ -143,7 +142,7 @@ export async function processGraphs(text:string,
       }
     } else if (def.match(/^(viz|dot)/)) {
       try {
-        const checksum = md5(optionsStr + content)
+        const checksum = computeChecksum(optionsStr + content)
         let svg 
         if (!(svg = graphsCache[checksum])) {
           const engine = options['engine'] || 'dot'
@@ -156,7 +155,7 @@ export async function processGraphs(text:string,
       }
     } else if (def.match(/^vega\-lite/)) { // vega-lite
       try {
-        const checksum = md5(optionsStr + content)
+        const checksum = computeChecksum(optionsStr + content)
         let svg 
         if (!(svg = graphsCache[checksum])) {
           svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath)
@@ -168,7 +167,7 @@ export async function processGraphs(text:string,
       }
     } else if (def.match(/^vega/)) { // vega
       try {
-        const checksum = md5(optionsStr + content)
+        const checksum = computeChecksum(optionsStr + content)
         let svg 
         if (!(svg = graphsCache[checksum])) {
           svg = await vegaAPI.toSVG(content, fileDirectoryPath)
