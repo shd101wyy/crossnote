@@ -19,7 +19,6 @@ export default async function enhance(
   $,
   renderingOption: MathRenderingOption,
 ): Promise<void> {
-  const asyncFunctions = [];
   $('[data-role="codeBlock"]').each((i, container) => {
     const $container = $(container);
     if ($container.data("executor")) {

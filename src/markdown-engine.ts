@@ -7,17 +7,14 @@ import * as YAML from "yamljs"
 import { execFile } from "child_process"
 
 import { CodeChunkData } from "./code-chunk-data"
-import * as plantumlAPI from "./puml"
 import * as utility from "./utility"
 import { toc } from "./toc"
 import { transformMarkdown, HeadingData } from "./transformer"
-import { CustomSubjects } from "./custom-subjects"
 import { princeConvert } from "./prince-convert"
 import { ebookConvert } from "./ebook-convert"
 import { pandocConvert } from "./pandoc-convert"
 import { markdownConvert } from "./markdown-convert"
 import { MarkdownEngineConfig, defaultMarkdownEngineConfig } from './markdown-engine-config'
-import parseMath from "./parse-math";
 
 import useMarkdownItCodeFences from './custom-markdown-it-features/code-fences';
 import useMarkdownItCriticMarkup from './custom-markdown-it-features/critic-markup';
@@ -40,9 +37,7 @@ import { removeFileProtocol } from "./utility";
 
 const extensionDirectoryPath = utility.extensionDirectoryPath
 const MarkdownIt = require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/markdown-it.min.js'))
-const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 const CryptoJS = require(path.resolve(extensionDirectoryPath, './dependencies/crypto-js/crypto-js.js'))
-const Viz = require(path.resolve(extensionDirectoryPath, './dependencies/viz/viz.js'))
 const pdf = require(path.resolve(extensionDirectoryPath, './dependencies/node-html-pdf/index.js'))
 
 // Puppeteer

@@ -1,6 +1,5 @@
 import * as path from "path"
 import * as YAML from "yamljs"
-import * as vm from "vm"
 
 import * as utility from "./utility"
 

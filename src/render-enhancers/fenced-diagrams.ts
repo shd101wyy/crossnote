@@ -91,7 +91,6 @@ export default async function enhance(
         imageDirectoryPath,
       ),
     );
-    const code = $container.text();
   });
   await Promise.all(asyncFunctions);
 }

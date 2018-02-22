@@ -1,4 +1,4 @@
-import { Attributes, parseAttributes } from "../attributes";
+import { Attributes } from "../attributes";
 
 export interface BlockInfo {
   attributes: Attributes;

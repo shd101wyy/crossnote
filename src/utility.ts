@@ -5,7 +5,6 @@ import * as child_process from "child_process"
 import * as less from "less"
 import * as mkdirp_ from "mkdirp"
 import * as vm from "vm"
-import * as YAML from "yamljs"
 import * as matter from "gray-matter"
 
 import * as temp from "temp"
