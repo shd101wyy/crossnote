@@ -13,7 +13,13 @@ const testCases: Array<{
   {
     // classic behavior
     attributes: { cmd: true },
-    raw: ["cmd=true", "{cmd=true}", "  {  cmd=true  }  ", "{cmd:true}", "cmd:true"],
+    raw: [
+      "cmd=true",
+      "{cmd=true}",
+      "  {  cmd=true  }  ",
+      "{cmd:true}",
+      "cmd:true",
+    ],
     stringified: "cmd=true",
   },
   {
@@ -230,11 +236,10 @@ describe("lib/attributes", () => {
         return;
       }
       const attributesToTest = [];
-      if (typeof attributes === "string") {
-        attributesToTest.push(attributes);
-      }
-      if (typeof normalizedAttributes === "string") {
+      if (normalizedAttributes) {
         attributesToTest.push(normalizedAttributes);
+      } else if (attributes) {
+        attributesToTest.push(attributes);
       }
       attributesToTest.map((attrs) => {
         test(`stringifyAttributes() correctly stringifies ${JSON.stringify(
