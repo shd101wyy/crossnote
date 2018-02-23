@@ -1,3 +1,6 @@
+import { Attributes } from "./lib/attributes";
+import { BlockInfo } from "./lib/block-info";
+
 export interface CodeChunkData {
   /**
    * id of the code chunk
@@ -8,9 +11,9 @@ export interface CodeChunkData {
    */
   code: string,
   /**
-   * code chunk options
+   * code block info (normalized in advance)
    */
-  options: object,
+  normalizedInfo: BlockInfo,
   /**
    * result after running code chunk
    */
@@ -32,4 +35,8 @@ export interface CodeChunkData {
    * next code chunk
    */
   next: string,
+}
+
+export interface CodeChunksData {
+  [key: string]: CodeChunkData;
 }

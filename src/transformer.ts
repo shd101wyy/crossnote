@@ -600,10 +600,10 @@ export async function transformMarkdown(inputString:string,
           }
           else if (filePath === '[TOC]') {
             if (!config) {
-              config = {
-                depthFrom: 1,
-                depthTo: 6,
-                orderedList: true
+              config = { // same case as in normalized attributes
+                ["depth_from"]: 1,
+                ["depth_to"]: 6,
+                ["ordered_list"]: true
               }
             }
             config['cmd'] = 'toc'

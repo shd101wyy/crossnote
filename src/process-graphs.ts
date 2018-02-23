@@ -202,7 +202,7 @@ export async function processGraphs(text:string,
       }
       */
     } else if (currentCodeChunk) { // code chunk
-      if (currentCodeChunk.options['hide']) { // remove code block
+      if (currentCodeChunk.normalizedInfo.attributes['hide']) { // remove code block
         clearCodeBlock(lines, start, end)
       } else { // remove {...} after ```lang  
         const line = lines[start]
@@ -212,19 +212,19 @@ export async function processGraphs(text:string,
 
       if (currentCodeChunk.result) { // append result
         let result = currentCodeChunk.result
-        const options = currentCodeChunk.options
-        if (options['output'] === 'html' || options['matplotlib']) { // check svg and convert it to png
+        const attributes = currentCodeChunk.normalizedInfo.attributes
+        if (attributes['output'] === 'html' || attributes['matplotlib']) { // check svg and convert it to png
           const $ = cheerio.load(currentCodeChunk.result, {xmlMode: true}) // xmlMode here is necessary...
           const svg = $('svg')
           if (svg.length === 1) {
-            const pngFilePath = (await convertSVGToPNGFile(options['filename'], $.html('svg'), lines, start, end, false)).replace(/\\/g, '/')
+            const pngFilePath = (await convertSVGToPNGFile(attributes['filename'], $.html('svg'), lines, start, end, false)).replace(/\\/g, '/')
             result = `![](${pngFilePath})  \n`
           }
-        } else if (options['cmd'].match(/^(la)?tex$/)) { // for latex, need to run it again to generate svg file in currect directory.
-          result = await compileLaTeX(content, fileDirectoryPath, Object.assign({}, options, {latex_svg_dir: imageDirectoryPath}))
-        } else if (currentCodeChunk.options['output'] === 'markdown') {
+        } else if (attributes['cmd'].match(/^(la)?tex$/)) { // for latex, need to run it again to generate svg file in currect directory.
+          result = await compileLaTeX(content, fileDirectoryPath, Object.assign({}, attributes, {latex_svg_dir: imageDirectoryPath}))
+        } else if (currentCodeChunk.normalizedInfo.attributes['output'] === 'markdown') {
           result = currentCodeChunk.plainResult
-        } else if (!options['output'] || options['output'] === 'text') {
+        } else if (!attributes['output'] || attributes['output'] === 'text') {
           result = `\n\`\`\`\n${currentCodeChunk.plainResult}\`\`\`\n` 
         }
 

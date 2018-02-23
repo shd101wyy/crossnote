@@ -1,556 +1,153 @@
-import { relative, resolve } from "path";
-import * as CodeChunkAPI from "../code-chunk";
-import { CodeChunkData } from "../code-chunk-data";
-import * as ditaaAPI from "../ditaa";
-import { normalizeBlockInfo, parseBlockInfo } from "../lib/block-info";
+// tslint:disable:ban-types no-var-requires
+import { resolve } from "path";
+import { run } from "../code-chunk";
+import { CodeChunkData, CodeChunksData } from "../code-chunk-data";
+import { Attributes, stringifyAttributes } from "../lib/attributes";
+import { BlockInfo } from "../lib/block-info";
+import computeChecksum from "../lib/compute-checksum";
 import { MarkdownEngineRenderOption } from "../markdown-engine";
-import parseMath from "../parse-math";
+import { render as renderPlantuml } from "../puml";
 import { toc } from "../toc";
-import {
-  extensionDirectoryPath,
-  mkdirp,
-  removeFileProtocol,
-  unescapeString,
-} from "../utility";
-import * as vegaAPI from "../vega";
-import * as vegaLiteAPI from "../vega-lite";
+import { extensionDirectoryPath, mkdirp, readFile } from "../utility";
 
-const literateByDefaultLanguages = [
-  "dot",
-  "flow",
-  "math",
-  "mermaid",
-  "puml",
-  "plantuml",
-  "sequence",
-  "vega",
-  "vega-lite",
-  "viz",
-  "wavedrom",
-];
+const ensureClassInAttributes = (attributes: Attributes, className: string) => {
+  const existingClassNames: string = attributes["class"] || "";
+  if (existingClassNames.split(" ").indexOf(className) === -1) {
+    return {
+      ...attributes,
+      ["class"]: `${existingClassNames} ${className}`.trim(),
+    };
+  }
+};
 
-// tslint:disable-next-line no-var-requires
-const md5 = require(resolve(
-  extensionDirectoryPath,
-  "./dependencies/javascript-md5/md5.js",
-));
-
-export interface CodeChunksData {
-  [key: string]: CodeChunkData;
-}
-/**
- * This function resolves image paths and render code blocks
- * @param html the html string that we will analyze
- * @return html
- */
 export default async function enhance(
   $,
-  options: MarkdownEngineRenderOption,
-  fileDirectoryPath,
+  codeChunksData: CodeChunksData,
+  renderOptions: MarkdownEngineRenderOption,
+  runOptions: RunCodeChunkOptions,
 ): Promise<void> {
-  // new caches
-  // which will be set when this.renderCodeBlocks is called
-  const newGraphsCache: { [key: string]: string } = {};
-  const codeChunksArray: CodeChunkData[] = [];
-
   const asyncFunctions = [];
+  const arrayOfCodeChunkData = [];
   $('[data-role="codeBlock"]').each((i, container) => {
     const $container = $(container);
-
-    // skip code block execution if it's already been executed by another executor
     if ($container.data("executor")) {
       return;
     }
 
-    const infoAsString = $container.data("info");
-    const code = $container
-      .children()
-      .first()
-      .text();
+    const normalizedInfo: BlockInfo = $container.data("normalizedInfo");
+    if (!normalizedInfo.attributes["cmd"]) {
+      return;
+    }
 
-    // let codeBlock;
-    // let lang;
-    // let code;
-    // const $container = $(preElement);
-    // if (preElement.children[0] && preElement.children[0].name === "code") {
-    //   codeBlock = $container.children().first();
-    //   lang = "text";
-    //
-    //   let classes;
-    //   if (this.config.usePandocParser) {
-    //     const dataLang = unescapeString(
-    //       $container.attr("data-lang") || ""
-    //     );
-    //     if (
-    //       !dataLang &&
-    //       codeBlock.text().startsWith("```{.mpe-code data-lang")
-    //     ) {
-    //       // Fix indentation issue in pandoc code block
-    //       classes = "language-text";
-    //       code = codeBlock.text();
-    //       codeBlock.text(
-    //         code.replace(
-    //           /^```{\.mpe\-code\s*data\-lang=\"(.+?)\"}/,
-    //           ($0, $1) => `\`\`\`${unescapeString($1)}`
-    //         )
-    //       );
-    //     } else {
-    //       classes = "language-" + dataLang;
-    //     }
-    //   } else {
-    //     classes = codeBlock.attr("class");
-    //   }
-    //
-    //   if (!classes) {
-    //     classes = "language-text";
-    //   }
-    //   lang = classes.replace(/^language-/, "");
-    //   if (!lang) {
-    //     lang = "text";
-    //   }
-    //   code = codeBlock.text();
-    //   $container.attr("class", classes);
-    //   $container
-    //     .children()
-    //     .first()
-    //     .addClass(classes);
-    // } else {
-    //   lang = "text";
-    //   code = preElement.children[0] ? preElement.children[0].data : "";
-    //   $container.attr("class", "language-text");
-    // }
+    $container.data("executor", "fenced-code-chunks");
 
     asyncFunctions.push(
-      renderCodeBlock($, $container, code, infoAsString, fileDirectoryPath, {
-        codeChunksArray,
-        graphsCache: newGraphsCache,
-        isForPreview: options.isForPreview,
-        triggeredBySave: options.triggeredBySave,
-      }),
+      renderCodeBlock(
+        $container,
+        normalizedInfo,
+        $,
+        codeChunksData,
+        arrayOfCodeChunkData,
+        renderOptions,
+        runOptions,
+      ),
     );
   });
-
   await Promise.all(asyncFunctions);
-
-  // reset caches
-  // the line below actually has problem.
-  // if (options.isForPreview) {
-  //   graphsCache = newGraphsCache;
-  //   // console.log(graphsCache)
-  // }
-  return $;
 }
 
-/**
- *
- * @param preElement the cheerio element
- * @param info is in the format of `lang {opt1:val1, opt2:val2}` or just `lang`
- * @param text
- */
 export async function renderCodeBlock(
-  $: CheerioStatic,
   $container: Cheerio,
-  code: string,
-  infoAsString: string,
-  fileDirectoryPath,
-  {
-    graphsCache,
-    codeChunksArray,
-    isForPreview,
-    triggeredBySave,
-  }: {
-    graphsCache: object;
-    codeChunksArray: CodeChunkData[];
-    isForPreview: boolean;
-    triggeredBySave: boolean;
-  },
+  normalizedInfo: BlockInfo,
+  $: CheerioStatic,
+  codeChunksData: CodeChunksData,
+  arrayOfCodeChunkData: CodeChunkData[],
+  renderOptions: MarkdownEngineRenderOption,
+  runOptions: RunCodeChunkOptions,
 ): Promise<void> {
-  const info = normalizeBlockInfo(parseBlockInfo(infoAsString));
+  const code = $container.text();
+  const id =
+    normalizedInfo.attributes["id"] ||
+    "code-chunk-id-" + arrayOfCodeChunkData.length;
 
-  if (!info.attributes.literate) {
-    return;
+  const cmd = extractCommandFromBlockInfo(normalizedInfo);
+  const isJavascript = ["js", "javascript"].indexOf(cmd) !== -1;
+
+  const $codeAndOutputWrapper = $('<div class="code-chunk"></div>');
+  $codeAndOutputWrapper.attr("data-id", id);
+  $codeAndOutputWrapper.attr("data-cmd", cmd);
+  if (isJavascript) {
+    $codeAndOutputWrapper.attr("data-code", code);
   }
-  // let match, lang, optionsStr: string;
-  // let options: object;
-  // if ((match = info.match(/\s*([^\s]+)\s+\{(.+?)\}/))) {
-  //   lang = match[1];
-  //   optionsStr = match[2];
-  // } else {
-  //   lang = info;
-  //   optionsStr = "";
-  // }
+  $container.replaceWith($codeAndOutputWrapper);
 
-  //
-  // if (optionsStr) {
-  //   try {
-  //     options = utility.parseAttributes(optionsStr);
-  //   } catch (e) {
-  //     return $container.replaceWith(
-  //       `<pre class="language-text">OptionsError: ${"{" +
-  //         optionsStr +
-  //         "}"}<br>${e.toString()}</pre>`
-  //     );
-  //   }
-  // } else {
-  //   options = {};
-  // }
+  const $codeWrapper = $('<div class="input-div"/>');
+  $codeWrapper.append($container);
+  $codeAndOutputWrapper.append($codeWrapper);
 
-  let $output = null;
-
-  $output = `<p><b>${
-    info.language
-  }</b> is not supported or is temporary disabled</p>`;
-  switch (info.language) {
-    case "puml":
-    case "plantuml":
-      break;
-
-    case "math":
-      try {
-        const mathHtml = parseMath({
-          closeTag: "",
-          content: code,
-          displayMode: true,
-          openTag: "",
-          renderingOption: "KaTeX",
-        });
-        $output = `<p ${
-          ""
-          // optionsStr ? utility.stringifyAttributes(options, false) : ""
-        }>${mathHtml}</p>`;
-      } catch (error) {
-        $output = `<pre class="language-text">${error.toString()}</pre>`;
-      }
-      break;
-
-    case "vega": {
-      const checksum = md5(infoAsString + code);
-      let svg: string = graphsCache[checksum];
-      if (!svg) {
-        try {
-          svg = await vegaAPI.toSVG(code, fileDirectoryPath);
-
-          $output = `<p ${
-            ""
-            // optionsStr ? utility.stringifyAttributes(options, false) : ""
-          }>${svg}</p>`;
-          graphsCache[checksum] = svg; // store to new cache
-        } catch (error) {
-          $output = `<pre class="language-text">${error.toString()}</pre>`;
-        }
-      } else {
-        $output = `<p ${
-          ""
-          // optionsStr ? utility.stringifyAttributes(options, false) : ""
-        }>${svg}</p>`;
-        graphsCache[checksum] = svg; // store to new cache
-      }
-      break;
-    }
-    case "vega-lite": {
-      // vega-lite
-      const checksum = md5(infoAsString + code);
-      let svg: string = graphsCache[checksum];
-      if (!svg) {
-        try {
-          svg = await vegaLiteAPI.toSVG(code, fileDirectoryPath);
-
-          $output = `<p ${
-            ""
-            // optionsStr ? utility.stringifyAttributes(options, false) : ""
-          }>${svg}</p>`;
-          graphsCache[checksum] = svg; // store to new cache
-        } catch (error) {
-          $output = `<pre class="language-text">${error.toString()}</pre>`;
-        }
-      } else {
-        $output = `<p ${
-          ""
-          // optionsStr ? utility.stringifyAttributes(options, false) : ""
-        }>${svg}</p>`;
-        graphsCache[checksum] = svg; // store to new cache
-      }
-    }
-  }
-
-  if (info.attributes.outputFirst) {
-    $container.before($output);
+  let codeChunkData: CodeChunkData = codeChunksData[id];
+  const prev = arrayOfCodeChunkData.length
+    ? arrayOfCodeChunkData[arrayOfCodeChunkData.length - 1].id
+    : "";
+  if (!codeChunkData) {
+    codeChunkData = {
+      id,
+      code,
+      normalizedInfo,
+      result: "",
+      plainResult: "",
+      running: false,
+      prev,
+      next: null,
+    };
+    codeChunksData[id] = codeChunkData;
   } else {
-    $container.after($output);
+    codeChunkData.code = code;
+    codeChunkData.normalizedInfo = normalizedInfo;
+    codeChunkData.prev = prev;
+  }
+  if (prev && codeChunksData[prev]) {
+    codeChunksData[prev].next = id;
   }
 
-  // } else if (lang.match(/^(puml|plantuml)$/)) {
-  //   // PlantUML
-  //   const checksum = md5(infoAsString + code);
-  //   let svg: string = graphsCache[checksum];
-  //   if (!svg) {
-  //     svg = await plantumlAPI.render(code, this.fileDirectoryPath);
-  //   }
-  //   $container.replaceWith(
-  //     `<p ${
-  //       optionsStr ? utility.stringifyAttributes(options, false) : ""
-  //     }>${svg}</p>`
-  //   );
-  //   graphsCache[checksum] = svg; // store to new cache
-  // } else if (lang.match(/^mermaid$/)) {
-  //   // mermaid
-  //   /*
-  //     // it doesn't work well...
-  //     // the cache doesn't work well.
-  //     const checksum = md5(infoAsString + code)
-  //     let svg:string = graphsCache[checksum]
-  //     if (!svg) {
-  //       $container.replaceWith(`<div class="mermaid">${code}</div>`)
-  //     } else {
-  //       $container.replaceWith(svg)
-  //       graphsCache[checksum] = svg // store to new cache
-  //     }
-  //     */
-  //   if (options["class"]) {
-  //     options["class"] = "mermaid " + options["class"];
-  //   } else {
-  //     options["class"] = "mermaid";
-  //   }
-  //   $container.replaceWith(
-  //     `<div ${utility.stringifyAttributes(options, false)}>${code}</div>`
-  //   );
-  // } else if (lang === "wavedrom") {
-  //   if (options["class"]) {
-  //     options["class"] = "wavedrom " + options["class"];
-  //   } else {
-  //     options["class"] = "wavedrom";
-  //   }
-  //   $container.replaceWith(
-  //     `<div ${utility.stringifyAttributes(
-  //       options,
-  //       false
-  //     )}><script type="WaveDrom">${code}</script></div>`
-  //   );
-  // } else if (lang === "flow") {
-  //   if (options["class"]) {
-  //     options["class"] = "flow " + options["class"];
-  //   } else {
-  //     options["class"] = "flow";
-  //   }
-  //   $container.replaceWith(
-  //     `<div ${utility.stringifyAttributes(options, false)}>${code}</div>`
-  //   );
-  // } else if (lang === "sequence") {
-  //   if (options["class"]) {
-  //     options["class"] = "sequence " + options["class"];
-  //   } else {
-  //     options["class"] = "sequence";
-  //   }
-  //   $container.replaceWith(
-  //     `<div ${utility.stringifyAttributes(options, false)}>${code}</div>`
-  //   );
-  // } else if (lang.match(/^(dot|viz)$/)) {
-  //   // GraphViz
-  //   const checksum = md5(infoAsString + code);
-  //   let svg = graphsCache[checksum];
-  //   if (!svg) {
-  //     try {
-  //       let engine = options["engine"] || "dot";
-  //       svg = Viz(code, { engine });
-  //
-  //       $container.replaceWith(
-  //         `<p ${
-  //           optionsStr ? utility.stringifyAttributes(options, false) : ""
-  //         }>${svg}</p>`
-  //       );
-  //       graphsCache[checksum] = svg; // store to new cache
-  //     } catch (e) {
-  //       $container.replaceWith(
-  //         `<pre class="language-text">${e.toString()}</pre>`
-  //       );
-  //     }
-  //   } else {
-  //     $container.replaceWith(
-  //       `<p ${
-  //         optionsStr ? utility.stringifyAttributes(options, false) : ""
-  //       }>${svg}</p>`
-  //     );
-  //     graphsCache[checksum] = svg; // store to new cache
-  //   }
-  // } else if (lang.match(/^math$/)) {
-  //   try {
-  //     const mathHtml = parseMath({
-  //       closeTag: "",
-  //       content: code,
-  //       displayMode: true,
-  //       openTag: "",
-  //       renderingOption: this.config.mathRenderingOption
-  //     });
-  //     $container.replaceWith(
-  //       `<p ${
-  //         optionsStr ? utility.stringifyAttributes(options, false) : ""
-  //       }>${mathHtml}</p>`
-  //     );
-  //   } catch (error) {
-  //     $container.replaceWith(
-  //       `<pre class="language-text">${error.toString()}</pre>`
-  //     );
-  //   }
-  // } else if (lang.match(/^vega$/)) {
-  //   // vega
-  //   const checksum = md5(infoAsString + code);
-  //   let svg: string = graphsCache[checksum];
-  //   if (!svg) {
-  //     try {
-  //       svg = await vegaAPI.toSVG(code, this.fileDirectoryPath);
-  //
-  //       $container.replaceWith(
-  //         `<p ${
-  //           optionsStr ? utility.stringifyAttributes(options, false) : ""
-  //         }>${svg}</p>`
-  //       );
-  //       graphsCache[checksum] = svg; // store to new cache
-  //     } catch (error) {
-  //       $container.replaceWith(
-  //         `<pre class="language-text">${error.toString()}</pre>`
-  //       );
-  //     }
-  //   } else {
-  //     $container.replaceWith(
-  //       `<p ${
-  //         optionsStr ? utility.stringifyAttributes(options, false) : ""
-  //       }>${svg}</p>`
-  //     );
-  //     graphsCache[checksum] = svg; // store to new cache
-  //   }
-  // } else if (lang === "vega-lite") {
-  //   // vega-lite
-  //   const checksum = md5(infoAsString + code);
-  //   let svg: string = graphsCache[checksum];
-  //   if (!svg) {
-  //     try {
-  //       svg = await vegaLiteAPI.toSVG(code, this.fileDirectoryPath);
-  //
-  //       $container.replaceWith(
-  //         `<p ${
-  //           optionsStr ? utility.stringifyAttributes(options, false) : ""
-  //         }>${svg}</p>`
-  //       );
-  //       graphsCache[checksum] = svg; // store to new cache
-  //     } catch (error) {
-  //       $container.replaceWith(
-  //         `<pre class="language-text">${error.toString()}</pre>`
-  //       );
-  //     }
-  //   } else {
-  //     $container.replaceWith(
-  //       `<p ${
-  //         optionsStr ? utility.stringifyAttributes(options, false) : ""
-  //       }>${svg}</p>`
-  //     );
-  //     graphsCache[checksum] = svg; // store to new cache
-  //   }
-  // } else if (options["cmd"]) {
-  //   const $el = $('<div class="code-chunk"></div>'); // create code chunk
-  //   if (!options["id"]) {
-  //     options["id"] = "code-chunk-id-" + codeChunksArray.length;
-  //   }
-  //
-  //   if (options["cmd"] === true) {
-  //     options["cmd"] = lang;
-  //   }
-  //
-  //   $el.attr({
-  //     "data-id": options["id"],
-  //     "data-cmd": options["cmd"],
-  //     "data-code": options["cmd"] === "javascript" ? code : ""
-  //   });
-  //
-  //   let highlightedBlock = "";
-  //   if (!options["hide"]) {
-  //     try {
-  //       if (!Prism) {
-  //         Prism = require(path.resolve(
-  //           extensionDirectoryPath,
-  //           "./dependencies/prism/prism.js"
-  //         ));
-  //       }
-  //       highlightedBlock = `<pre class="language-${lang} ${options["class"] ||
-  //         ""}">${Prism.highlight(
-  //         code,
-  //         Prism.languages[scopeForLanguageName(lang)]
-  //       )}</pre>`;
-  //     } catch (e) {
-  //       // do nothing
-  //       highlightedBlock = `<pre class="language-text ${options["class"] ||
-  //         ""}">${code}</pre>`;
-  //     }
-  //
-  //     const $highlightedBlock = $(highlightedBlock);
-  //     this.addLineNumbersIfNecessary($highlightedBlock, code);
-  //     highlightedBlock = $.html($highlightedBlock);
-  //   }
-  //
-  //   /*
-  //     if (!options['id']) { // id is required for code chunk
-  //       highlightedBlock = `<pre class="language-text">'id' is required for code chunk</pre>`
-  //     }*/
-  //
-  //   let codeChunkData: CodeChunkData = this.codeChunksData[options["id"]];
-  //   let previousCodeChunkDataId = codeChunksArray.length
-  //     ? codeChunksArray[codeChunksArray.length - 1].id
-  //     : "";
-  //   if (!codeChunkData) {
-  //     codeChunkData = {
-  //       id: options["id"],
-  //       code,
-  //       options: options,
-  //       result: "",
-  //       plainResult: "",
-  //       running: false,
-  //       prev: previousCodeChunkDataId,
-  //       next: null
-  //     };
-  //     this.codeChunksData[options["id"]] = codeChunkData;
-  //   } else {
-  //     codeChunkData.code = code;
-  //     codeChunkData.options = options;
-  //     codeChunkData.prev = previousCodeChunkDataId;
-  //   }
-  //   if (previousCodeChunkDataId && this.codeChunksData[previousCodeChunkDataId])
-  //     this.codeChunksData[previousCodeChunkDataId].next = options["id"];
-  //
-  //   codeChunksArray.push(codeChunkData); // this line has to be put above the `if` statement.
-  //
-  //   if (triggeredBySave && options["run_on_save"]) {
-  //     await this.runCodeChunk(options["id"]);
-  //   }
-  //
-  //   let result = codeChunkData.result;
-  //   // element option
-  //   if (!result && codeChunkData.options["element"]) {
-  //     result = codeChunkData.options["element"];
-  //     codeChunkData.result = result;
-  //   }
-  //
-  //   if (codeChunkData.running) {
-  //     $el.addClass("running");
-  //   }
-  //   const statusDiv = `<div class="status">running...</div>`;
-  //   const buttonGroup =
-  //     '<div class="btn-group"><div class="run-btn btn"><span>▶︎</span></div><div class="run-all-btn btn">all</div></div>';
-  //   let outputDiv = `<div class="output-div">${result}</div>`;
-  //
-  //   // check javascript code chunk
-  //   if (!isForPreview && options["cmd"] === "javascript") {
-  //     outputDiv += `<script>${code}</script>`;
-  //     result = codeChunkData.options["element"] || "";
-  //   }
-  //
-  //   $el.append(highlightedBlock);
-  //   $el.append(buttonGroup);
-  //   $el.append(statusDiv);
-  //   $el.append(outputDiv);
-  //   $container.replaceWith($el);
-  // } else {
-  //   // normal code block  // TODO: code chunk
-  //   renderPlainCodeBlock();
-  // }
+  // this line has to be put above the `if` statement.
+  arrayOfCodeChunkData.push(codeChunkData);
+
+  if (
+    renderOptions.triggeredBySave &&
+    normalizedInfo.attributes["run_on_save"]
+  ) {
+    await runCodeChunk(id, codeChunksData, runOptions);
+  }
+
+  let result = codeChunkData.result;
+
+  // element attribute
+  if (!result && codeChunkData.normalizedInfo.attributes["element"]) {
+    result = codeChunkData.normalizedInfo.attributes["element"];
+    codeChunkData.result = result;
+  }
+
+  if (codeChunkData.running) {
+    $codeAndOutputWrapper.addClass("running");
+  }
+  const statusDiv = `<div class="status">running...</div>`;
+  const buttonGroup =
+    '<div class="btn-group"><div class="run-btn btn"><span>▶︎</span></div><div class="run-all-btn btn">all</div></div>';
+  let outputDiv = `<div class="output-div">${result}</div>`;
+
+  // check javascript code chunk
+  if (!renderOptions.isForPreview && isJavascript) {
+    outputDiv += `<script>${code}</script>`;
+    result = codeChunkData.normalizedInfo.attributes["element"] || "";
+  }
+
+  $codeWrapper.append(buttonGroup);
+  $codeWrapper.append(statusDiv);
+
+  normalizedInfo.attributes["output_first"] === true
+    ? $codeAndOutputWrapper.prepend(outputDiv)
+    : $codeAndOutputWrapper.append(outputDiv);
 }
 
 export interface RunCodeChunkOptions {
@@ -565,10 +162,6 @@ export interface RunCodeChunkOptions {
   resolveFilePath: any;
 }
 
-/**
- * Run code chunk of `id`
- * @param id
- */
 export async function runCodeChunk(
   id: string,
   codeChunksData: CodeChunksData,
@@ -590,53 +183,41 @@ export async function runCodeChunk(
     return "";
   }
 
-  let code = codeChunkData.code;
-  let cc = codeChunkData;
-  while (cc.options["continue"]) {
-    let parentId = cc.options["continue"];
+  const combinedCodeAsArray = [codeChunkData.code];
+  let patentCodeChunkData = codeChunkData;
+  while (patentCodeChunkData.normalizedInfo.attributes["continue"]) {
+    let parentId = patentCodeChunkData.normalizedInfo.attributes["continue"];
     if (parentId === true) {
-      parentId = cc.prev;
+      parentId = patentCodeChunkData.prev;
     }
-    cc = codeChunksData[parentId];
-    if (!cc) {
+    patentCodeChunkData = codeChunksData[parentId];
+    if (!patentCodeChunkData) {
       break;
     }
-    code = cc.code + code;
+    combinedCodeAsArray.unshift(patentCodeChunkData.code);
   }
+  const code = combinedCodeAsArray.join("\n");
+  const cmd = extractCommandFromBlockInfo(codeChunkData.normalizedInfo);
 
   codeChunkData.running = true;
   let result;
+  let outputFormat = "text";
+  let blockModifiesSource =
+    codeChunkData.normalizedInfo.attributes["modify_source"];
   try {
-    const options = codeChunkData.options;
-    if (options["cmd"] === "toc") {
+    const normalizedAttributes = codeChunkData.normalizedInfo.attributes;
+    if (cmd === "toc") {
       // toc code chunk. <= this is a special code chunk.
       const tocObject = toc(headings, {
-        ordered: options["orderedList"],
-        depthFrom: options["depthFrom"],
-        depthTo: options["depthTo"],
-        tab: options["tab"] || "\t",
-        ignoreLink: options["ignoreLink"],
+        ordered: normalizedAttributes["ordered_list"],
+        depthFrom: normalizedAttributes["depth_from"],
+        depthTo: normalizedAttributes["depth_to"],
+        tab: normalizedAttributes["tab"] || "\t",
+        ignoreLink: normalizedAttributes["ignore_link"],
       });
       result = tocObject.content;
-    } else if (options["cmd"] === "ditaa") {
-      // ditaa diagram
-      const filename =
-        options["filename"] || `${md5(filePath + options["id"])}.png`;
-      const imageFolder = removeFileProtocol(
-        resolveFilePath(imageFolderPath, false),
-      );
-      await mkdirp(imageFolder);
-
-      codeChunkData.options["output"] = "markdown";
-      const dest = await ditaaAPI.render(
-        code,
-        options["args"] || [],
-        resolve(imageFolder, filename),
-      );
-      result = `  \n![](${relative(fileDirectoryPath, dest).replace(
-        /\\/g,
-        "/",
-      )})  \n`; // <= fix windows path issue.
+      outputFormat = "markdown";
+      blockModifiesSource = true;
     } else {
       // common code chunk
       // I put this line here because some code chunks like `toc` still need to be run.
@@ -644,24 +225,36 @@ export async function runCodeChunk(
         return ""; // code chunk is disabled.
       }
 
-      result = await CodeChunkAPI.run(
+      result = await run(
         code,
         fileDirectoryPath,
-        codeChunkData.options,
+        cmd,
+        codeChunkData.normalizedInfo.attributes,
         latexEngine,
       );
     }
     codeChunkData.plainResult = result;
 
     if (
-      codeChunkData.options["modify_source"] &&
-      "code_chunk_offset" in codeChunkData.options
+      blockModifiesSource &&
+      "code_chunk_offset" in codeChunkData.normalizedInfo
     ) {
       codeChunkData.result = "";
-      return modifySource(codeChunkData, result, this.filePath);
+      return modifySource(codeChunkData, result, filePath);
     }
 
-    const outputFormat = codeChunkData.options["output"] || "text";
+    // set output format for a few special cases
+    if (cmd.match(/(la)?tex/) || cmd === "pdflatex") {
+      outputFormat = "markdown";
+    } else if (
+      cmd.match(/python/) &&
+      (normalizedAttributes["matplotlib"] || normalizedAttributes["mpl"])
+    ) {
+      outputFormat = "markdown";
+    } else if (codeChunkData.normalizedInfo.attributes["output"]) {
+      outputFormat = codeChunkData.normalizedInfo.attributes["output"];
+    }
+
     if (!result) {
       // do nothing
       result = "";
@@ -703,3 +296,6 @@ export async function runAllCodeChunks(
   }
   return Promise.all(asyncFunctions);
 }
+
+const extractCommandFromBlockInfo = (info: BlockInfo) =>
+  info.attributes["cmd"] === true ? info.language : info.attributes["cmd"];

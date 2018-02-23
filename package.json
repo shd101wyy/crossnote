@@ -28,6 +28,7 @@
   "dependencies": {
     "babyparse": "^0.4.6",
     "cheerio": "0.15.0",
+    "fs-extra": "^5.0.0",
     "gray-matter": "^3.0.7",
     "less": "^2.7.2",
     "lodash": "^4.17.5",

@@ -1,4 +1,5 @@
-// tslint:disable no-var-requires
+// tslint:disable no-var-requires member-ordering
+
 import * as cheerio from "cheerio"
 import { execFile } from "child_process"
 import * as fs from "fs"
@@ -6,7 +7,7 @@ import * as path from "path"
 import * as request from "request"
 import * as YAML from "yamljs"
 
-import { CodeChunkData } from "./code-chunk-data"
+import { CodeChunkData, CodeChunksData } from "./code-chunk-data"
 import { ebookConvert } from "./ebook-convert"
 import { markdownConvert } from "./markdown-convert"
 import { defaultMarkdownEngineConfig, MarkdownEngineConfig } from './markdown-engine-config'
@@ -24,9 +25,9 @@ import useMarkdownItWikilink from './custom-markdown-it-features/wikilink';
 
 import enhanceWithCodeBlockStyling from './render-enhancers/code-block-styling';
 import enhanceWithEmbeddedLocalImages from './render-enhancers/embedded-local-images';
-import enhanceWithEmbeddedSVGs from './render-enhancers/embedded-svgs';
+import enhanceWithEmbeddedSvgs from './render-enhancers/embedded-svgs';
 import enhanceWithExtendedTableSyntax from './render-enhancers/extended-table-syntax';
-import enhanceWithFencedCodeChunks, { runAllCodeChunks, runCodeChunk } from './render-enhancers/fenced-code-chunks';
+import enhanceWithFencedCodeChunks, { runAllCodeChunks, runCodeChunk, RunCodeChunkOptions } from './render-enhancers/fenced-code-chunks';
 import enhanceWithFencedDiagrams from './render-enhancers/fenced-diagrams';
 import enhanceWithFencedMath from './render-enhancers/fenced-math';
 import enhanceWithResolvedImagePaths from './render-enhancers/resolved-image-paths';
@@ -117,7 +118,7 @@ export class MarkdownEngine {
     if (MODIFY_SOURCE) {
       await MODIFY_SOURCE(codeChunkData, result, filePath)
     } else {
-      // TODO: direcly modify the local file.
+      // TODO: directly modify the local file.
     }
 
     codeChunkData.running = false
@@ -982,7 +983,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         await enhanceWithEmbeddedLocalImages($, this.config, this.resolveFilePath.bind(this))
       }
       if (options.embedSVG) {
-        await enhanceWithEmbeddedSVGs($, this.config, this.resolveFilePath.bind(this))
+        await enhanceWithEmbeddedSvgs($, this.config, this.resolveFilePath.bind(this))
       }
       html = $.html()
     }
@@ -2003,7 +2004,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         this.resolveFilePath(this.config.imageFolderPath, false),
       ),
     );
-    await enhanceWithFencedCodeChunks($, options, this.fileDirectoryPath);
+    await enhanceWithFencedCodeChunks($, this.codeChunksData, options, this.generateRunOptions());
     await enhanceWithCodeBlockStyling($);
     await enhanceWithResolvedImagePaths(
       $,
@@ -2054,20 +2055,20 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   /** 
-   * legacy method to support backwards compatibilty
+   * legacy method to support backwards compatibility
    */
   public runAllCodeChunks() {
     return runAllCodeChunks(this.codeChunksData, this.generateRunOptions())
   }
 
   /** 
-   * legacy method to support backwards compatibilty
+   * legacy method to support backwards compatibility
    */
   public runCodeChunk(id: string) {
     return runCodeChunk(id, this.codeChunksData, this.generateRunOptions())
   }
   
-  private generateRunOptions() {
+  private generateRunOptions(): RunCodeChunkOptions {
     return {
       enableScriptExecution: this.config.enableScriptExecution,
       fileDirectoryPath: this.fileDirectoryPath,
