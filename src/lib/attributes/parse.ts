@@ -37,7 +37,7 @@ export default function(text?: string): Attributes {
       if (keyIsPending) {
         output[pendingKey] = value;
         pendingKey = undefined;
-      } else if (textToParse[i] === "=") {
+      } else if (textToParse[i] === "=" || textToParse[i] === ":") {
         pendingKey = value;
       } else {
         const firstChar = value[0];
