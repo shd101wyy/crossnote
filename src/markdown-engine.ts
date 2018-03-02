@@ -377,6 +377,33 @@ if (typeof(window['Reveal']) !== 'undefined') {
       </script>`
     }
 
+    // vega and vega-lite with vega-embed
+    // https://vega.github.io/vega/usage/#embed
+    scripts += `<script src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/vega/vega.min.js`)}"></script>`
+    scripts += `<script src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/vega-lite/vega-lite.min.js`)}"></script>`
+    scripts += `<script src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/vega-embed/vega-embed.min.js`)}"></script>`
+
+    if (isForPresentation) {
+      scripts += `<script>
+      var vegaEls = document.querySelectorAll('.vega, .vega-lite');
+      function reportVegaError(el, error) {
+        el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+      }
+      for (var i = 0; i < vegaEls.length; i++) {
+        const vegaEl = vegaEls[i]
+        try {
+          var spec = JSON.parse(vegaEl.textContent);
+          vegaEmbed(vegaEl, spec, { actions: false, renderer: 'svg' })
+          .catch(function(error) {
+            reportVegaError(vegaEl, error);
+          })
+        } catch (error) {
+          reportVegaError(vegaEl, error);
+        }
+      }
+      </script>`
+    }
+    
     // sequence diagram
     scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/webfont/webfontloader.js')}'></script>`
     scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/underscore/underscore.js')}'></script>`
@@ -733,6 +760,40 @@ if (typeof(window['Reveal']) !== 'undefined') {
       wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`
     }
 
+    // vega and vega-lite with vega-embed
+    // https://vega.github.io/vega/usage/#embed
+    let vegaScript = ``;
+    let vegaInitScript = ``;
+    if (html.indexOf(' class="vega') >= 0 || html.indexOf(' class="vega-lite') >= 0) {
+      if (options.offline) {
+        vegaScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/vega/vega.min.js`)}"></script>`
+        vegaScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/vega-lite/vega-lite.min.js`)}"></script>`
+        vegaScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/vega-embed/vega-embed.min.js`)}"></script>`
+      } else {
+        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega/3.1.0/vega.min.js"></script>`
+        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega-lite/2.1.3/vega-lite.min.js"></script>`
+        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega-embed/3.0.0/vega-embed.min.js"></script>`
+      }
+      vegaInitScript += `<script>
+      var vegaEls = document.querySelectorAll('.vega, .vega-lite');
+      function reportVegaError(el, error) {
+        el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+      }
+      for (var i = 0; i < vegaEls.length; i++) {
+        const vegaEl = vegaEls[i]
+        try {
+          var spec = JSON.parse(vegaEl.textContent);
+          vegaEmbed(vegaEl, spec, { actions: false, renderer: 'svg' })
+          .catch(function(error) {
+            reportVegaError(vegaEl, error);
+          })
+        } catch (error) {
+          reportVegaError(vegaEl, error);
+        }
+      }
+      </script>`
+    }
+ 
     // flowchart 
     let flowchartScript = ``,
       flowchartInitScript = ``
@@ -953,6 +1014,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${presentationScript}
       ${mermaidScript}
       ${wavedromScript}
+      ${vegaScript}
       ${flowchartScript}
       ${sequenceDiagramScript}
 
@@ -970,6 +1032,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${presentationInitScript}
     ${mermaidInitScript}
     ${wavedromInitScript}
+    ${vegaInitScript}
     ${flowchartInitScript}
     ${sequenceDiagramInitScript}
     ${taskListScript}

@@ -213,7 +213,12 @@ class PreviewController {
       this.config.scrollSync = true // <= force to enable scrollSync for presentation
       this.initPresentationEvent()
     }
-    
+
+    // make it possible for interactive vega to load local data files
+    const base = document.createElement('base');
+    base.href=this.sourceUri
+    document.head.appendChild(base);
+
     // console.log(document.getElementsByTagName('html')[0].outerHTML)
   }
 
@@ -615,6 +620,32 @@ class PreviewController {
   }
 
   /**
+   * render interactive vega and vega lite 
+   * This function is copied from render flowchart
+   */
+  private renderInteractiveVega() {
+    return new Promise((resolve, reject)=> {
+      const vegaElements = this.previewElement.querySelectorAll('.vega, .vega-lite')
+      function reportVegaError(el, error) {
+        el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+      }
+      for (let i = 0; i < vegaElements.length; i++) {
+        const vegaElement = vegaElements[i];
+        try {
+          const spec = JSON.parse(vegaElement.textContent.trim());
+          window['vegaEmbed'](vegaElement, spec, { actions: false })
+            .catch((error) => {
+              reportVegaError(vegaElement, error);
+            })
+        } catch (error) {
+          reportVegaError(vegaElement, error);
+        }
+      }
+      resolve()      
+    })
+  }
+
+  /**
    * render flowchart 
    * This function doesn't work with `hiddenPreviewElement`
    */
@@ -850,6 +881,7 @@ class PreviewController {
 
     await Promise.all([
       this.renderFlowchart(),
+      this.renderInteractiveVega(),
       this.renderSequenceDiagram()
     ])
 
