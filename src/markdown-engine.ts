@@ -314,7 +314,7 @@ export class MarkdownEngine {
 
       scripts += `
       <script>
-        Reveal.initialize(${JSON.stringify({ margin: 0.1, ...presentationConfig})}
+        Reveal.initialize(${JSON.stringify({ margin: 0.1, ...presentationConfig})})
       </script>
       `
     }
