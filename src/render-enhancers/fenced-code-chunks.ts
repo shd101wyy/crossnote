@@ -237,7 +237,7 @@ export async function runCodeChunk(
 
     if (
       blockModifiesSource &&
-      "code_chunk_offset" in codeChunkData.normalizedInfo
+      "code_chunk_offset" in codeChunkData.normalizedInfo.attributes
     ) {
       codeChunkData.result = "";
       return modifySource(codeChunkData, result, filePath);
