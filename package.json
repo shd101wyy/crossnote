@@ -1,6 +1,6 @@
 {
   "name": "@shd101wyy/mume",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "description": "A powerful markdown tool",
   "main": "out/src/mume.js",
   "typings": "out/src/mume.d.ts",
@@ -22,7 +22,10 @@
   "keywords": [
     "markdown"
   ],
-  "author": "shd101wyy",
+  "contributors": [
+    "shd101wyy",
+    "kachkaev"
+  ],
   "license": "NCSA",
   "repository": "https://github.com/shd101wyy/mume",
   "dependencies": {

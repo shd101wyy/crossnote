@@ -4,9 +4,9 @@ import { escapeString, extensionDirectoryPath } from "./utility";
 
 // tslint:disable-next-line interface-over-type-literal
 export type ParseMathArgs = {
-  content?: string;
-  openTag?: string;
-  closeTag?: string;
+  content: string;
+  openTag: string;
+  closeTag: string;
   displayMode?: boolean;
   renderingOption: MathRenderingOption;
 };
@@ -19,7 +19,7 @@ let katex;
  * @param openTag the open tag, eg: '\('
  * @param closeTag the close tag, eg: '\)'
  * @param displayMode whether to be rendered in display mode
- * @param config
+ * @param renderingOption the math engine to use: KaTeX | MathJax | None
  */
 export default ({
   content,

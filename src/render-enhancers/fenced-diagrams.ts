@@ -106,11 +106,9 @@ async function renderDiagram(
       case "sequence":
       case "mermaid": {
         // these diagrams are rendered on the client
-        $output = hiddenCode(
-          code,
-          normalizedInfo.attributes,
-          normalizedInfo.language,
-        );
+        $output = `<div ${stringifyAttributes(
+          ensureClassInAttributes(normalizedInfo.attributes, normalizedInfo.language),
+        )}>${code}</div>`
         break;
       }
       case "wavedrom": {
@@ -203,8 +201,3 @@ async function renderDiagram(
     $container.data("hiddenByEnhancer", true);
   }
 }
-
-const hiddenCode = (code, attributes, language) =>
-  `<div ${stringifyAttributes(
-    ensureClassInAttributes(attributes, language),
-  )}><div style="display: none">${code}</div></div>`;
