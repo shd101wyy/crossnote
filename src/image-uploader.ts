@@ -1,7 +1,7 @@
 // sm.ms api
-import * as request from "request"
 import * as fs from "fs"
 import * as path from "path"
+import * as request from "request"
 import * as utility from "./utility"
 
 // imgur api

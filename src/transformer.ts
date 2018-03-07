@@ -1,21 +1,20 @@
 // import * as Baby from "babyparse"
-import * as path from "path"
+import * as Baby from "babyparse"
 import * as fs from "fs"
 import * as less from "less"
+import * as path from "path"
 import * as request from "request"
-import * as Baby from "babyparse"
 import * as temp from "temp"
 import * as uslug from "uslug"
+import { parseAttributes, stringifyAttributes } from "./lib/attributes";
+import computeChecksum from './lib/compute-checksum';
+import * as utility from "./utility"
+const extensionDirectoryPath = utility.extensionDirectoryPath
 
 // import * as request from 'request'
 // import * as less from "less"
-// import * as md5 from "md5"
 // import * as temp from "temp"
 // temp.track()
-import { parseAttributes, stringifyAttributes } from "./lib/attributes";
-import * as utility from "./utility"
-const extensionDirectoryPath = utility.extensionDirectoryPath
-const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 import {CustomSubjects} from "./custom-subjects"
 import * as PDF from "./pdf"
@@ -141,7 +140,7 @@ function downloadFileIfNecessary(filePath:string):Promise<string> {
       if (error)
         return reject(error)
       else {
-        const localFilePath = path.resolve(DOWNLOADS_TEMP_FOLDER, md5(filePath)) + path.extname(filePath)
+        const localFilePath = path.resolve(DOWNLOADS_TEMP_FOLDER, computeChecksum(filePath)) + path.extname(filePath)
         fs.writeFile(localFilePath, body, 'binary', (error)=> {
           if (error)
             return reject(error)
@@ -601,10 +600,10 @@ export async function transformMarkdown(inputString:string,
           }
           else if (filePath === '[TOC]') {
             if (!config) {
-              config = {
-                depthFrom: 1,
-                depthTo: 6,
-                orderedList: true
+              config = { // same case as in normalized attributes
+                ["depth_from"]: 1,
+                ["depth_to"]: 6,
+                ["ordered_list"]: true
               }
             }
             config['cmd'] = 'toc'
@@ -634,7 +633,7 @@ export async function transformMarkdown(inputString:string,
               }
               else if (config && config['cmd']) {
                 if (!config['id']) { // create `id` for code chunk
-                  config['id'] = md5(absoluteFilePath)
+                  config['id'] = computeChecksum(absoluteFilePath)
                 }
                 if (!notSourceFile) { // mark code_chunk_offset
                   config['code_chunk_offset'] = codeChunkOffset
@@ -721,13 +720,13 @@ export async function transformMarkdown(inputString:string,
                 }
               }
               else if (extname === '.dot' || extname === '.gv' || extname === '.viz') { // graphviz
-                output = `\`\`\`dot\n${fileContent}\n\`\`\`  `
+                output = `\`\`\`dot ${stringifyAttributes(config, true)}\n${fileContent}\n\`\`\`  `
               }
               else if (extname === '.mermaid') { // mermaid
-                output = `\`\`\`mermaid\n${fileContent}\n\`\`\`  `
+                output = `\`\`\`mermaid ${stringifyAttributes(config, true)}\n${fileContent}\n\`\`\`  `
               }
               else if (extname === '.plantuml' || extname === '.puml') { // PlantUML
-                output = `\`\`\`puml\n' @mume_file_directory_path:${path.dirname(absoluteFilePath)}\n${fileContent}\n\`\`\`  `
+                output = `\`\`\`puml ${stringifyAttributes(config, true)}\n' @mume_file_directory_path:${path.dirname(absoluteFilePath)}\n${fileContent}\n\`\`\`  `
               }
               /*
               else if extname in ['.wavedrom']

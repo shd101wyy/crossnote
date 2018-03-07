@@ -1,18 +1,16 @@
 /**
  * Convert Mume markdown to Githb Flavored Markdown
  */
-
-import * as path from "path"
+ 
 import * as fs from "fs"
 import * as mkdirp from "mkdirp"
-import {transformMarkdown} from "./transformer"
+import * as path from "path"
+import { CodeChunkData } from "./code-chunk-data"
+import computeChecksum from './lib/compute-checksum'
+import { processGraphs } from "./process-graphs"
+import { toc } from "./toc"
+import { transformMarkdown } from "./transformer"
 import * as utility from "./utility"
-import {processGraphs} from "./process-graphs"
-import {CodeChunkData} from "./code-chunk-data"
-import {toc} from "./toc"
-
-const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
-
 
 /**
  * Convert all math expressions inside markdown to images.  
@@ -177,7 +175,7 @@ config:object):Promise<string> {
       if (error) return reject(error.toString())
 
       processGraphs(text, 
-      {fileDirectoryPath, projectDirectoryPath, imageDirectoryPath, imageFilePrefix: md5(outputFilePath), useRelativeFilePath, codeChunksData, graphsCache})
+      {fileDirectoryPath, projectDirectoryPath, imageDirectoryPath, imageFilePrefix: computeChecksum(outputFilePath), useRelativeFilePath, codeChunksData, graphsCache})
       .then(({outputString})=> {
         outputString = data.frontMatterString + outputString // put the front-matter back.  
         

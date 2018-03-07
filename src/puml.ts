@@ -1,6 +1,6 @@
+import { spawn } from "child_process"
 import * as path from "path"
-import {extensionDirectoryPath} from './utility'
-import {spawn} from "child_process"
+import { extensionDirectoryPath } from './utility'
 
 const PlantUMLJarPath = path.resolve(extensionDirectoryPath, './dependencies/plantuml/plantuml.jar')
 

@@ -1,0 +1,301 @@
+// tslint:disable:ban-types no-var-requires
+import { resolve } from "path";
+import { run } from "../code-chunk";
+import { CodeChunkData, CodeChunksData } from "../code-chunk-data";
+import { Attributes, stringifyAttributes } from "../lib/attributes";
+import { BlockInfo } from "../lib/block-info";
+import computeChecksum from "../lib/compute-checksum";
+import { MarkdownEngineRenderOption } from "../markdown-engine";
+import { render as renderPlantuml } from "../puml";
+import { toc } from "../toc";
+import { extensionDirectoryPath, mkdirp, readFile } from "../utility";
+
+const ensureClassInAttributes = (attributes: Attributes, className: string) => {
+  const existingClassNames: string = attributes["class"] || "";
+  if (existingClassNames.split(" ").indexOf(className) === -1) {
+    return {
+      ...attributes,
+      ["class"]: `${existingClassNames} ${className}`.trim(),
+    };
+  }
+};
+
+export default async function enhance(
+  $,
+  codeChunksData: CodeChunksData,
+  renderOptions: MarkdownEngineRenderOption,
+  runOptions: RunCodeChunkOptions,
+): Promise<void> {
+  const asyncFunctions = [];
+  const arrayOfCodeChunkData = [];
+  $('[data-role="codeBlock"]').each((i, container) => {
+    const $container = $(container);
+    if ($container.data("executor")) {
+      return;
+    }
+
+    const normalizedInfo: BlockInfo = $container.data("normalizedInfo");
+    if (!normalizedInfo.attributes["cmd"]) {
+      return;
+    }
+
+    $container.data("executor", "fenced-code-chunks");
+
+    asyncFunctions.push(
+      renderCodeBlock(
+        $container,
+        normalizedInfo,
+        $,
+        codeChunksData,
+        arrayOfCodeChunkData,
+        renderOptions,
+        runOptions,
+      ),
+    );
+  });
+  await Promise.all(asyncFunctions);
+}
+
+export async function renderCodeBlock(
+  $container: Cheerio,
+  normalizedInfo: BlockInfo,
+  $: CheerioStatic,
+  codeChunksData: CodeChunksData,
+  arrayOfCodeChunkData: CodeChunkData[],
+  renderOptions: MarkdownEngineRenderOption,
+  runOptions: RunCodeChunkOptions,
+): Promise<void> {
+  const code = $container.text();
+  const id =
+    normalizedInfo.attributes["id"] ||
+    "code-chunk-id-" + arrayOfCodeChunkData.length;
+
+  const cmd = extractCommandFromBlockInfo(normalizedInfo);
+  const isJavascript = ["js", "javascript"].indexOf(cmd) !== -1;
+
+  const $codeAndOutputWrapper = $('<div class="code-chunk"></div>');
+  $codeAndOutputWrapper.attr("data-id", id);
+  $codeAndOutputWrapper.attr("data-cmd", cmd);
+  if (isJavascript) {
+    $codeAndOutputWrapper.attr("data-code", code);
+  }
+  $container.replaceWith($codeAndOutputWrapper);
+
+  const $codeWrapper = $('<div class="input-div"/>');
+  $codeWrapper.append($container);
+  $codeAndOutputWrapper.append($codeWrapper);
+
+  let codeChunkData: CodeChunkData = codeChunksData[id];
+  const prev = arrayOfCodeChunkData.length
+    ? arrayOfCodeChunkData[arrayOfCodeChunkData.length - 1].id
+    : "";
+  if (!codeChunkData) {
+    codeChunkData = {
+      id,
+      code,
+      normalizedInfo,
+      result: "",
+      plainResult: "",
+      running: false,
+      prev,
+      next: null,
+    };
+    codeChunksData[id] = codeChunkData;
+  } else {
+    codeChunkData.code = code;
+    codeChunkData.normalizedInfo = normalizedInfo;
+    codeChunkData.prev = prev;
+  }
+  if (prev && codeChunksData[prev]) {
+    codeChunksData[prev].next = id;
+  }
+
+  // this line has to be put above the `if` statement.
+  arrayOfCodeChunkData.push(codeChunkData);
+
+  if (
+    renderOptions.triggeredBySave &&
+    normalizedInfo.attributes["run_on_save"]
+  ) {
+    await runCodeChunk(id, codeChunksData, runOptions);
+  }
+
+  let result = codeChunkData.result;
+
+  // element attribute
+  if (!result && codeChunkData.normalizedInfo.attributes["element"]) {
+    result = codeChunkData.normalizedInfo.attributes["element"];
+    codeChunkData.result = result;
+  }
+
+  if (codeChunkData.running) {
+    $codeAndOutputWrapper.addClass("running");
+  }
+  const statusDiv = `<div class="status">running...</div>`;
+  const buttonGroup =
+    '<div class="btn-group"><div class="run-btn btn"><span>▶︎</span></div><div class="run-all-btn btn">all</div></div>';
+  let outputDiv = `<div class="output-div">${result}</div>`;
+
+  // check javascript code chunk
+  if (!renderOptions.isForPreview && isJavascript) {
+    outputDiv += `<script>${code}</script>`;
+    result = codeChunkData.normalizedInfo.attributes["element"] || "";
+  }
+
+  $codeWrapper.append(buttonGroup);
+  $codeWrapper.append(statusDiv);
+
+  normalizedInfo.attributes["output_first"] === true
+    ? $codeAndOutputWrapper.prepend(outputDiv)
+    : $codeAndOutputWrapper.append(outputDiv);
+}
+
+export interface RunCodeChunkOptions {
+  enableScriptExecution: boolean;
+  fileDirectoryPath: string;
+  filePath: string;
+  imageFolderPath: string;
+  latexEngine: any;
+  modifySource: any;
+  parseMD: any;
+  headings: any;
+  resolveFilePath: any;
+}
+
+export async function runCodeChunk(
+  id: string,
+  codeChunksData: CodeChunksData,
+  runOptions: RunCodeChunkOptions,
+): Promise<string> {
+  const {
+    headings,
+    enableScriptExecution,
+    filePath,
+    fileDirectoryPath,
+    imageFolderPath,
+    latexEngine,
+    modifySource,
+    parseMD,
+    resolveFilePath,
+  } = runOptions;
+  const codeChunkData = codeChunksData[id];
+  if (!codeChunkData || codeChunkData.running) {
+    return "";
+  }
+
+  const combinedCodeAsArray = [codeChunkData.code];
+  let patentCodeChunkData = codeChunkData;
+  while (patentCodeChunkData.normalizedInfo.attributes["continue"]) {
+    let parentId = patentCodeChunkData.normalizedInfo.attributes["continue"];
+    if (parentId === true) {
+      parentId = patentCodeChunkData.prev;
+    }
+    patentCodeChunkData = codeChunksData[parentId];
+    if (!patentCodeChunkData) {
+      break;
+    }
+    combinedCodeAsArray.unshift(patentCodeChunkData.code);
+  }
+  const code = combinedCodeAsArray.join("\n");
+  const cmd = extractCommandFromBlockInfo(codeChunkData.normalizedInfo);
+
+  codeChunkData.running = true;
+  let result;
+  let outputFormat = "text";
+  let blockModifiesSource =
+    codeChunkData.normalizedInfo.attributes["modify_source"];
+  try {
+    const normalizedAttributes = codeChunkData.normalizedInfo.attributes;
+    if (cmd === "toc") {
+      // toc code chunk. <= this is a special code chunk.
+      const tocObject = toc(headings, {
+        ordered: normalizedAttributes["ordered_list"],
+        depthFrom: normalizedAttributes["depth_from"],
+        depthTo: normalizedAttributes["depth_to"],
+        tab: normalizedAttributes["tab"] || "\t",
+        ignoreLink: normalizedAttributes["ignore_link"],
+      });
+      result = tocObject.content;
+      outputFormat = "markdown";
+      blockModifiesSource = true;
+    } else {
+      // common code chunk
+      // I put this line here because some code chunks like `toc` still need to be run.
+      if (!enableScriptExecution) {
+        return ""; // code chunk is disabled.
+      }
+
+      result = await run(
+        code,
+        fileDirectoryPath,
+        cmd,
+        codeChunkData.normalizedInfo.attributes,
+        latexEngine,
+      );
+    }
+    codeChunkData.plainResult = result;
+
+    if (
+      blockModifiesSource &&
+      "code_chunk_offset" in codeChunkData.normalizedInfo
+    ) {
+      codeChunkData.result = "";
+      return modifySource(codeChunkData, result, filePath);
+    }
+
+    // set output format for a few special cases
+    if (cmd.match(/(la)?tex/) || cmd === "pdflatex") {
+      outputFormat = "markdown";
+    } else if (
+      cmd.match(/python/) &&
+      (normalizedAttributes["matplotlib"] || normalizedAttributes["mpl"])
+    ) {
+      outputFormat = "markdown";
+    } else if (codeChunkData.normalizedInfo.attributes["output"]) {
+      outputFormat = codeChunkData.normalizedInfo.attributes["output"];
+    }
+
+    if (!result) {
+      // do nothing
+      result = "";
+    } else if (outputFormat === "html") {
+      result = result;
+    } else if (outputFormat === "png") {
+      const base64 = new Buffer(result).toString("base64");
+      result = `<img src="data:image/png;charset=utf-8;base64,${base64}">`;
+    } else if (outputFormat === "markdown") {
+      const { html } = await parseMD(result, {
+        useRelativeFilePath: true,
+        isForPreview: false,
+        hideFrontMatter: true,
+      });
+      result = html;
+    } else if (outputFormat === "none") {
+      result = "";
+    } else {
+      result = `<pre class="language-text">${result}</pre>`;
+    }
+  } catch (error) {
+    result = `<pre class="language-text">${error}</pre>`;
+  }
+
+  codeChunkData.result = result; // save result.
+  codeChunkData.running = false;
+  return result;
+}
+
+export async function runAllCodeChunks(
+  codeChunksData: CodeChunksData,
+  runOptions: RunCodeChunkOptions,
+) {
+  const asyncFunctions = [];
+  for (const id in codeChunksData) {
+    if (codeChunksData.hasOwnProperty(id)) {
+      asyncFunctions.push(runCodeChunk(id, codeChunksData, runOptions));
+    }
+  }
+  return Promise.all(asyncFunctions);
+}
+
+const extractCommandFromBlockInfo = (info: BlockInfo) =>
+  info.attributes["cmd"] === true ? info.language : info.attributes["cmd"];

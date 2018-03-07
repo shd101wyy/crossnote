@@ -1,6 +1,9 @@
 {
-  "extends": [
-    "tslint:latest",
-    "tslint-config-prettier"
-  ]
+  "defaultSeverity": "error",
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "rules": {
+    "interface-name" : [true, "never-prefix"],
+    "no-string-literal": false,
+    "object-literal-sort-keys": false
+  }
 }

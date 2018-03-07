@@ -1,5 +1,5 @@
+import { execFile } from "child_process"
 import * as path from "path"
-import {execFile} from "child_process"
 
 export function princeConvert(src, dest):Promise<string> {
   return new Promise((resolve, reject)=> {

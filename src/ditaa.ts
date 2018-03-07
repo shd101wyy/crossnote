@@ -45,6 +45,6 @@ export async function render(code:string='', args=[], dest:string=''):Promise<st
 
     return outputDest
   } catch(error) {
-    throw `Java is required to be installed.\n${error.toString}`
+    throw new Error(`Java is required to be installed.\n${error.toString()}`)
   }
 }

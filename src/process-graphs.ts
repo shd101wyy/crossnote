@@ -1,19 +1,18 @@
-import * as path from "path"
-import * as fs from "fs"
 import * as cheerio from "cheerio"
+import * as fs from "fs"
+import * as path from "path"
 
+import { compileLaTeX } from "./code-chunk"
+import { CodeChunkData } from "./code-chunk-data"
+import { parseAttributes } from "./lib/attributes";
+import computeChecksum from './lib/compute-checksum';
+import { svgElementToPNGFile } from "./magick"
 import * as plantumlAPI from "./puml"
+import * as utility from "./utility"
 import * as vegaAPI from "./vega"
 import * as vegaLiteAPI from "./vega-lite"
-import * as utility from "./utility"
-import { parseAttributes } from "./lib/attributes";
-import {svgElementToPNGFile} from "./magick"
-// import {mermaidToPNG} from "./mermaid"
-import {compileLaTeX} from "./code-chunk"
-import {CodeChunkData} from "./code-chunk-data"
 
 const Viz = require(path.resolve(utility.extensionDirectoryPath, './dependencies/viz/viz.js'))
-const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 export async function processGraphs(text:string, 
 {fileDirectoryPath, projectDirectoryPath, imageDirectoryPath, imageFilePrefix, useRelativeFilePath, codeChunksData, graphsCache}:
@@ -131,7 +130,7 @@ export async function processGraphs(text:string,
       // Do Nothing
     } else if (def.match(/^(puml|plantuml)/)) { 
       try {
-        const checksum = md5(optionsStr + content)
+        const checksum = computeChecksum(optionsStr + content)
         let svg 
         if (!(svg = graphsCache[checksum])) { // check whether in cache
           svg = await plantumlAPI.render(content, fileDirectoryPath)
@@ -143,7 +142,7 @@ export async function processGraphs(text:string,
       }
     } else if (def.match(/^(viz|dot)/)) {
       try {
-        const checksum = md5(optionsStr + content)
+        const checksum = computeChecksum(optionsStr + content)
         let svg 
         if (!(svg = graphsCache[checksum])) {
           const engine = options['engine'] || 'dot'
@@ -156,7 +155,7 @@ export async function processGraphs(text:string,
       }
     } else if (def.match(/^vega\-lite/)) { // vega-lite
       try {
-        const checksum = md5(optionsStr + content)
+        const checksum = computeChecksum(optionsStr + content)
         let svg 
         if (!(svg = graphsCache[checksum])) {
           svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath)
@@ -168,7 +167,7 @@ export async function processGraphs(text:string,
       }
     } else if (def.match(/^vega/)) { // vega
       try {
-        const checksum = md5(optionsStr + content)
+        const checksum = computeChecksum(optionsStr + content)
         let svg 
         if (!(svg = graphsCache[checksum])) {
           svg = await vegaAPI.toSVG(content, fileDirectoryPath)
@@ -203,7 +202,7 @@ export async function processGraphs(text:string,
       }
       */
     } else if (currentCodeChunk) { // code chunk
-      if (currentCodeChunk.options['hide']) { // remove code block
+      if (currentCodeChunk.normalizedInfo.attributes['hide']) { // remove code block
         clearCodeBlock(lines, start, end)
       } else { // remove {...} after ```lang  
         const line = lines[start]
@@ -213,19 +212,19 @@ export async function processGraphs(text:string,
 
       if (currentCodeChunk.result) { // append result
         let result = currentCodeChunk.result
-        const options = currentCodeChunk.options
-        if (options['output'] === 'html' || options['matplotlib']) { // check svg and convert it to png
+        const attributes = currentCodeChunk.normalizedInfo.attributes
+        if (attributes['output'] === 'html' || attributes['matplotlib']) { // check svg and convert it to png
           const $ = cheerio.load(currentCodeChunk.result, {xmlMode: true}) // xmlMode here is necessary...
           const svg = $('svg')
           if (svg.length === 1) {
-            const pngFilePath = (await convertSVGToPNGFile(options['filename'], $.html('svg'), lines, start, end, false)).replace(/\\/g, '/')
+            const pngFilePath = (await convertSVGToPNGFile(attributes['filename'], $.html('svg'), lines, start, end, false)).replace(/\\/g, '/')
             result = `![](${pngFilePath})  \n`
           }
-        } else if (options['cmd'].match(/^(la)?tex$/)) { // for latex, need to run it again to generate svg file in currect directory.
-          result = await compileLaTeX(content, fileDirectoryPath, Object.assign({}, options, {latex_svg_dir: imageDirectoryPath}))
-        } else if (currentCodeChunk.options['output'] === 'markdown') {
+        } else if (attributes['cmd'].match(/^(la)?tex$/)) { // for latex, need to run it again to generate svg file in currect directory.
+          result = await compileLaTeX(content, fileDirectoryPath, Object.assign({}, attributes, {latex_svg_dir: imageDirectoryPath}))
+        } else if (currentCodeChunk.normalizedInfo.attributes['output'] === 'markdown') {
           result = currentCodeChunk.plainResult
-        } else if (!options['output'] || options['output'] === 'text') {
+        } else if (!attributes['output'] || attributes['output'] === 'text') {
           result = `\n\`\`\`\n${currentCodeChunk.plainResult}\`\`\`\n` 
         }
 

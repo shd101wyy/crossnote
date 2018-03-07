@@ -1,14 +1,13 @@
-import * as path from "path"
+import { execFile } from "child_process"
 import * as fs from "fs"
-import {execFile} from "child_process"
 import * as mkdirp from "mkdirp"
+import * as path from "path"
 import * as YAML from "yamljs"
-import {toc} from "./toc"
-
-import {transformMarkdown} from "./transformer"
+import computeChecksum from './lib/compute-checksum';
 import {processGraphs} from "./process-graphs"
+import { toc } from "./toc"
+import {transformMarkdown} from "./transformer"
 import * as utility from "./utility"
-const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 function getFileExtension(documentType:string) {
   if (documentType === 'pdf_document' || documentType === 'beamer_presentation')
@@ -321,7 +320,7 @@ export async function pandocConvert(text,
   await utility.mkdirp(imageDirectoryPath) // create imageDirectoryPath
 
   const {outputString, imagePaths} = await processGraphs(text, 
-      {fileDirectoryPath, projectDirectoryPath, imageDirectoryPath, imageFilePrefix: md5(outputFilePath), useRelativeFilePath:true, codeChunksData, graphsCache})    
+      {fileDirectoryPath, projectDirectoryPath, imageDirectoryPath, imageFilePrefix: computeChecksum(outputFilePath), useRelativeFilePath:true, codeChunksData, graphsCache})    
   
   // pandoc will cause error if directory doesn't exist,
   // therefore I will create directory first.

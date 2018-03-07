@@ -3,8 +3,8 @@
  */
 import * as path from "path"
 import * as YAML from "yamljs"
-import * as vega from "./vega"
 import * as utility from "./utility"
+import * as vega from "./vega"
 
 let vl = null
 

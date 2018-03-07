@@ -6,8 +6,6 @@
 
 import * as fs from "fs"
 import * as path from "path"
-import {execFile} from "child_process"
-import * as temp from "temp"
 
 import * as utility from "./utility"
 
@@ -22,9 +20,9 @@ export async function mermaidToPNG(mermaidCode:string, pngFilePath:string, css="
                             ])
     console.log(info.path)
     fs.createReadStream(info.path + '.png').pipe(fs.createWriteStream(pngFilePath))
-    fs.unlink(info.path + '.png', ()=>{})
+    fs.unlink(info.path + '.png', ()=>{ /**/ })
     return pngFilePath
   } catch(error) {
-    throw "mermaid CLI is required to be installed.\nCheck http://knsv.github.io/mermaid/#mermaid-cli for more information.\n\n" + error.toString()
+    throw new Error("mermaid CLI is required to be installed.\nCheck http://knsv.github.io/mermaid/#mermaid-cli for more information.\n\n" + error.toString());
   }
 }

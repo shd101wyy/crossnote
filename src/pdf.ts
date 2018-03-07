@@ -2,17 +2,12 @@
 // http://www.cityinthesky.co.uk/opensource/pdf2svg/
 //
 
-import * as path from "path"
-import * as fs from "fs"
 import {spawn} from "child_process"
+import * as fs from "fs"
+import * as path from "path"
 import * as temp from "temp"
-
-// import * as gm from "gm"
-// gm.subClass({imageMagick: true})
-
+import computeChecksum from './lib/compute-checksum';
 import * as utility from "./utility"
-const extensionDirectoryPath = utility.extensionDirectoryPath
-const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
 
 let SVG_DIRECTORY_PATH:string = null 
 
@@ -30,7 +25,7 @@ return new Promise<string>((resolve, reject)=> {
     svgDirectoryPath = SVG_DIRECTORY_PATH
   }
 
-  const svgFilePrefix = md5(pdfFilePath) + '_'
+  const svgFilePrefix = computeChecksum(pdfFilePath) + '_'
 
   const task = spawn('pdf2svg', [pdfFilePath, path.resolve(svgDirectoryPath, svgFilePrefix + '%d.svg'), 'all'])
   const chunks = []
