@@ -1995,7 +1995,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * resolve image paths and render code block.
      */
     const $ = cheerio.load(html, { xmlMode: true });
-    await enhanceWithFencedMath($, this.config.mathRenderingOption);
+    await enhanceWithFencedMath($, this.config.mathRenderingOption, this.config.mathBlockDelimiters);
     await enhanceWithFencedDiagrams(
       $,
       this.graphsCache,

@@ -18,6 +18,7 @@ const supportedLanguages = ["math"];
 export default async function enhance(
   $,
   renderingOption: MathRenderingOption,
+  mathBlockDelimiters: string[][]
 ): Promise<void> {
   $('[data-role="codeBlock"]').each((i, container) => {
     const $container = $(container);
@@ -41,7 +42,7 @@ export default async function enhance(
     }
 
     const code = $container.text();
-    const $renderedMath = renderMath(code, normalizedInfo, renderingOption);
+    const $renderedMath = renderMath(code, normalizedInfo, renderingOption, mathBlockDelimiters);
     normalizedInfo.attributes["output_first"] === true
       ? $container.before($renderedMath)
       : $container.after($renderedMath);
@@ -57,14 +58,15 @@ const renderMath = (
   code: string,
   normalizedInfo: BlockInfo,
   renderingOption: MathRenderingOption,
+  mathBlockDelimiters: string[][]
 ): Cheerio => {
   let $output = null;
   try {
     const mathHtml = parseMath({
-      closeTag: "",
       content: code,
       displayMode: true,
-      openTag: "",
+      openTag:  mathBlockDelimiters.length ? mathBlockDelimiters[0][0] : "",
+      closeTag: mathBlockDelimiters.length ? mathBlockDelimiters[0][1] : "",
       renderingOption,
     });
     $output = `<p ${stringifyAttributes(

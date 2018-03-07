@@ -77,6 +77,8 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
     const content: string = tokens[idx] ? tokens[idx].content : null;
     return parseMath({
       content,
+      openTag: (tokens[idx] as any).openTag,
+      closeTag: (tokens[idx] as any).closeTag,
       renderingOption: config.mathRenderingOption,
       displayMode: (tokens[idx] as any).displayMode,
     });
