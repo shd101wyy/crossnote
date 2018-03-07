@@ -1,3 +1,7 @@
+# 0.3.1 & 0.3.0 & 0.2.9
+* Refactor code. Big thanks to [@kachkaev](https://github.com/kachkaev).  
+* Upgrade several dependencies, such as vega/vega-lite, katex, plantuml.  
+
 # 0.2.8
 * Supported `Qiniu` image uploader (Thanks to [@zaixi](https://github.com/zaixi)).
 * Supported configuring presentation theme in individual md files.

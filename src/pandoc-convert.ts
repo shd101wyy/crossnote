@@ -76,9 +76,11 @@ function processOutputConfig(config:object, args:string[], latexEngine:string='p
   if (config['fonttheme'])
     args.push('-V', 'fonttheme:'+config['fonttheme'])
 
-  if (config['latex_engine'])
+  if (config['latex_engine']) {
     args.push('--pdf-engine='+config['latex_engine'])
-  else {
+  } else if (config['pdf_engine']) {
+    args.push('--pdf-engine='+config['pdf_engine'])
+  } else {
     args.push('--pdf-engine='+latexEngine)
   }
 
