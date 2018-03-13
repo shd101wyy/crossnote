@@ -13,18 +13,12 @@ const testCases: Array<{
   {
     // classic behavior
     attributes: { cmd: true },
-    raw: [
-      "cmd=true",
-      "{cmd=true}",
-      "  {  cmd=true  }  ",
-      "{cmd:true}",
-      "cmd:true",
-    ],
+    raw: ["cmd=true", "{cmd=true}", "  {  cmd=true  }  "],
     stringified: "cmd=true",
   },
   {
     attributes: { cmd: true, hello: "world" },
-    raw: ["cmd=true hello=world", "cmd:true hello:world"],
+    raw: "cmd=true hello=world",
     stringified: 'cmd=true hello="world"',
   },
   {
