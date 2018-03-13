@@ -98,7 +98,7 @@ function extractQuotedString(text, start): Node | void {
   return [chars.join(""), end, NodeType.QUOTED_STRING];
 }
 
-const wordCharRegExp = /^[^,;=\s:]$/;
+const wordCharRegExp = /^[^,;=\s]$/;
 function extractWord(text: string, start: number): Node | void {
   let i = start;
   let bracketDepth = 0;
