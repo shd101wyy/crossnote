@@ -1,3 +1,6 @@
+# next
+* Implement client-rendered ` ```vega {interactive}` and ` ```vega-lite {interactive}` ([#42](https://github.com/shd101wyy/mume/pull/42)).
+
 # 0.3.1 & 0.3.0 & 0.2.9
 * Refactor code. Big thanks to [@kachkaev](https://github.com/kachkaev).  
 * Upgrade several dependencies, such as vega/vega-lite, katex, plantuml.  
