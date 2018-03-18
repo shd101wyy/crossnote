@@ -37,7 +37,7 @@ export default function(text?: string): Attributes {
       if (keyIsPending) {
         output[pendingKey] = value;
         pendingKey = undefined;
-      } else if (textToParse[i] === "=" || textToParse[i] === ":") {
+      } else if (textToParse[i] === "=") {
         pendingKey = value;
       } else {
         const firstChar = value[0];
@@ -98,7 +98,7 @@ function extractQuotedString(text, start): Node | void {
   return [chars.join(""), end, NodeType.QUOTED_STRING];
 }
 
-const wordCharRegExp = /^[^,;=\s:]$/;
+const wordCharRegExp = /^[^,;=\s]$/;
 function extractWord(text: string, start: number): Node | void {
   let i = start;
   let bracketDepth = 0;

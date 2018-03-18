@@ -198,10 +198,15 @@ const engine = new mume.MarkdownEngine({
 })
 ```
 
-
 ## Global Configuration
+
 Global config files are located at `~/.mume` directory
 
 ## Development
-[Visual Studio Code](https://code.visualstudio.com/) is recommended.    
-Clone this project, `npm install`, open in vscode, then `cmd+shift+b` to build.  
+
+[Visual Studio Code](https://code.visualstudio.com/) is recommended.
+
+1. Clone this project
+2. Run `npm install` from shell
+3. Open in vscode, then `cmd+shift+b` to build
+4. Run the tests with `npm run test`

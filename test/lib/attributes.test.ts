@@ -13,18 +13,12 @@ const testCases: Array<{
   {
     // classic behavior
     attributes: { cmd: true },
-    raw: [
-      "cmd=true",
-      "{cmd=true}",
-      "  {  cmd=true  }  ",
-      "{cmd:true}",
-      "cmd:true",
-    ],
+    raw: ["cmd=true", "{cmd=true}", "  {  cmd=true  }  "],
     stringified: "cmd=true",
   },
   {
     attributes: { cmd: true, hello: "world" },
-    raw: ["cmd=true hello=world", "cmd:true hello:world"],
+    raw: "cmd=true hello=world",
     stringified: 'cmd=true hello="world"',
   },
   {
@@ -66,6 +60,16 @@ const testCases: Array<{
     attributes: { cmd: true, id: "some-id" },
     raw: "cmd=true #some-id",
     stringified: 'cmd=true id="some-id"',
+  },
+  {
+    attributes: { cmd: true, id: "some-id:with-colon" },
+    raw: "cmd=true #some-id:with-colon",
+    stringified: 'cmd=true id="some-id:with-colon"',
+  },
+  {
+    attributes: { id: "some-id:with-colon", class: "class1 class2", key1: "value1", key2: "value2"},
+    raw: "#some-id:with-colon .class1 .class2 key1=value1 key2=value2",
+    stringified: 'id="some-id:with-colon" class="class1 class2" key1="value1" key2="value2"',
   },
   {
     attributes: { cmd: true, id: "0" },
