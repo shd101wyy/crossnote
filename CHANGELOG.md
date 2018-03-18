@@ -1,4 +1,4 @@
-# next
+# 0.3.2
 * Implement client-rendered ` ```vega {interactive}` and ` ```vega-lite {interactive}` ([#42](https://github.com/shd101wyy/mume/pull/42)).
 * Upgrade `vega` to `3.2.1`  and `vega-lite` to `2.3.1` ([#47](https://github.com/shd101wyy/mume/pull/47)).
 
