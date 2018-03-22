@@ -26,7 +26,7 @@ export default ({
   openTag,
   closeTag,
   displayMode = false,
-  renderingOption
+  renderingOption,
 }: ParseMathArgs) => {
   if (!content) {
     return "";
@@ -36,7 +36,7 @@ export default ({
       if (!katex) {
         katex = require(path.resolve(
           extensionDirectoryPath,
-          "./dependencies/katex/katex.min.js"
+          "./dependencies/katex/katex.min.js",
         ));
       }
       return katex.renderToString(content, { displayMode });

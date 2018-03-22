@@ -8,7 +8,6 @@ export default async function enhance($): Promise<void> {
   const colspans2: Array<[Cheerio, Cheerio]> = []; // empty
   $("table").each((i, table) => {
     const $table = $(table);
-    const $thead = $table.children().first();
     let $prevRow = null;
     $table.children().each((a, headBody) => {
       const $headBody = $(headBody);

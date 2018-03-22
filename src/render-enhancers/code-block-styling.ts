@@ -7,12 +7,12 @@ let Prism;
 
 export default async function enhance($: CheerioStatic): Promise<void> {
   // spaced code blocks
-  $('pre>code').each((i, codeElement) => {
+  $("pre>code").each((i, codeElement) => {
     const $codeElement = $(codeElement);
     const code = $codeElement.text();
     const $container = $codeElement.parent();
     $codeElement.replaceWith(code);
-    $container.addClass('language-text');
+    $container.addClass("language-text");
   });
 
   // fenced code blocks

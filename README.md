@@ -1,4 +1,5 @@
 # MUME
+
 This library powers:
 
 * [markdown preview enhanced for atom](https://github.com/shd101wyy/markdown-preview-enhanced)
@@ -8,57 +9,56 @@ This library powers:
 npm install --save @shd101wyy/mume
 ```
 
-
 ## Example
 
-```javascript 
-// node.js 
-const mume = require('@shd101wyy/mume')
+```javascript
+// node.js
+const mume = require("@shd101wyy/mume");
 
 // es6
 // import * as mume from "@shd101wyy/mume"
 
 async function main() {
-  await mume.init()
+  await mume.init();
 
   const engine = new mume.MarkdownEngine({
     filePath: "/Users/wangyiyi/Desktop/markdown-example/test3.md",
     config: {
       previewTheme: "github-light.css",
       // revealjsTheme: "white.css"
-      codeBlockTheme: "default.css",  
-      printBackground: true
-    }
-  })
+      codeBlockTheme: "default.css",
+      printBackground: true,
+    },
+  });
 
   // open in browser
-  await engine.openInBrowser({runAllCodeChunks: true})
+  await engine.openInBrowser({ runAllCodeChunks: true });
 
   // html export
-  await engine.htmlExport({offline: false, runAllCodeChunks: true})
+  await engine.htmlExport({ offline: false, runAllCodeChunks: true });
 
-  // chrome (puppeteer) export 
-  await engine.chromeExport({fileType: 'pdf', runAllCodeChunks: true}) // fileType = 'pdf'|'png'|'jpeg'
+  // chrome (puppeteer) export
+  await engine.chromeExport({ fileType: "pdf", runAllCodeChunks: true }); // fileType = 'pdf'|'png'|'jpeg'
 
-  // phantomjs export 
-  await engine.phantomjsExport({fileType: 'pdf', runAllCodeChunks: true}) // fileType = 'pdf'|'png'|'jpeg'
+  // phantomjs export
+  await engine.phantomjsExport({ fileType: "pdf", runAllCodeChunks: true }); // fileType = 'pdf'|'png'|'jpeg'
 
   // prince export
-  await engine.princeExport({runAllCodeChunks: true})
+  await engine.princeExport({ runAllCodeChunks: true });
 
-  // ebook export 
-  await engine.eBookExport({fileType: 'epub'}) // fileType=`epub`|`pdf`|`mobi`|`html`
-  
-  // pandoc export 
-  await engine.pandocExport({runAllCodeChunks: true})
+  // ebook export
+  await engine.eBookExport({ fileType: "epub" }); // fileType=`epub`|`pdf`|`mobi`|`html`
 
-  // markdown(gfm) export 
-  await engine.markdownExport({runAllCodeChunks: true})
+  // pandoc export
+  await engine.pandocExport({ runAllCodeChunks: true });
 
-  return process.exit()
+  // markdown(gfm) export
+  await engine.markdownExport({ runAllCodeChunks: true });
+
+  return process.exit();
 }
 
-main()
+main();
 ```
 
 ## Markdown Engine Configuration
@@ -79,7 +79,7 @@ const config = {
   mathInlineDelimiters: [["$", "$"], ["\\(", "\\)"]],
   mathBlockDelimiters: [["$$", "$$"], ["\\[", "\\]"]],
 
-  // Enable Wiki Link syntax support. More information can be found a  https://help.github.com/articles/adding-links-to-wikis/ 
+  // Enable Wiki Link syntax support. More information can be found a  https://help.github.com/articles/adding-links-to-wikis/
   enableWikiLinkSyntax: true,
   // By default, the extension for wikilink is `.md`. For example: [[test]] will direct to file path `test.md`.
   wikiLinkFileExtension: '.md'
@@ -97,12 +97,12 @@ const config = {
   // Front matter rendering option
   frontMatterRenderingOption: 'table', // 'table' | 'code block' | 'none'
 
-  // Mermaid theme 
+  // Mermaid theme
   mermaidTheme: 'mermaid.css', // 'mermaid.css' | 'mermaid.dark.css' | 'mermaid.forest.css'
 
   // Code Block theme
   // If `auto.css` is chosen, then the code block theme that best matches the current preview theme will be picked.
-  codeBlockTheme: 'auto.css', 
+  codeBlockTheme: 'auto.css',
   //  "auto.css",
   //  "default.css",
   //  "atom-dark.css",
@@ -125,7 +125,7 @@ const config = {
   //  "twilight.css",
   //  "vue.css"
   //  "vs.css",
-  //  "xonokai.css" 
+  //  "xonokai.css"
 
   // Preview theme
   previewTheme: 'github-light.css',
@@ -206,7 +206,7 @@ Global config files are located at `~/.mume` directory
 
 [Visual Studio Code](https://code.visualstudio.com/) is recommended.
 
-1. Clone this project
-2. Run `npm install` from shell
-3. Open in vscode, then `cmd+shift+b` to build
-4. Run the tests with `npm run test`
+1.  Clone this project
+2.  Run `npm install` from shell
+3.  Open in vscode, then `cmd+shift+b` to build
+4.  Run the tests with `npm run test`
