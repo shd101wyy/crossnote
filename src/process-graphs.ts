@@ -65,8 +65,8 @@ export async function processGraphs(
           lines[j].trim() === "```" &&
           lines[j].match(/^\s*/).length === numOfSpacesAhead
         ) {
-          let options = {},
-            optionsStr = "";
+          let options = {};
+          let optionsStr = "";
           const optionsMatch = trimmedLine.match(/\{(.+)\}$/);
           if (optionsMatch) {
             try {
@@ -115,8 +115,8 @@ export async function processGraphs(
 
   let imgCount = 0;
 
-  const asyncFunctions = [],
-    imagePaths = [];
+  const asyncFunctions = [];
+  const imagePaths = [];
 
   let currentCodeChunk: CodeChunkData = null;
   for (const key in codeChunksData) {

@@ -257,11 +257,11 @@ export async function transformMarkdown(
 ): Promise<TransformMarkdownOutput> {
   let inBlock = false; // inside code block
   let codeChunkOffset = 0;
-  const slideConfigs = [],
-    JSAndCssFiles = [];
-  let headings = [],
-    tocBracketEnabled = false,
-    frontMatterString = "";
+  const slideConfigs = [];
+  const JSAndCssFiles = [];
+  let headings = [];
+  let tocBracketEnabled = false;
+  let frontMatterString = "";
 
   /**
    * As the recursive version of this function will cause the error:
@@ -316,7 +316,9 @@ export async function transformMarkdown(
         continue;
       }
 
-      let headingMatch, taskListItemMatch, htmlTagMatch;
+      let headingMatch;
+      let taskListItemMatch;
+      let htmlTagMatch;
 
       /*
         // I changed this because for case like:
@@ -345,7 +347,9 @@ export async function transformMarkdown(
         if (forPreview) {
           outputString += createAnchor(lineNo);
         }
-        let heading, level, tag;
+        let heading;
+        let level;
+        let tag;
         // if (headingMatch) {
         heading = headingMatch[2].trim();
         tag = headingMatch[1];
@@ -375,9 +379,9 @@ export async function transformMarkdown(
 
         // check {class:string, id:string, ignore:boolean}
         const optMatch = heading.match(/[^\\]\{(.+?)\}(\s*)$/);
-        let classes = "",
-          id = "",
-          ignore = false;
+        let classes = "";
+        let id = "";
+        let ignore = false;
         if (optMatch) {
           heading = heading.replace(optMatch[0], "");
 
@@ -761,7 +765,8 @@ export async function transformMarkdown(
             } else if ([".md", ".markdown", ".mmark"].indexOf(extname) >= 0) {
               // markdown files
               // this return here is necessary
-              let output, headings2;
+              let output;
+              let headings2;
               ({
                 outputString: output,
                 headings: headings2,

@@ -70,10 +70,10 @@ function processAppearance(config = {}, args) {
     args.push("--line-height=" + config["line-height"]);
   }
 
-  let marginTop = 72,
-    marginRight = 72,
-    marginBottom = 72,
-    marginLeft = 72;
+  let marginTop = 72;
+  let marginRight = 72;
+  let marginBottom = 72;
+  let marginLeft = 72;
   if (config["margin"]) {
     const margin: number[] | number = config["margin"];
     if (margin instanceof Array) {

@@ -5,7 +5,6 @@
     "interface-name": [true, "never-prefix"],
     "no-string-literal": false,
     "object-literal-sort-keys": false,
-    "one-variable-per-declaration": false,
     "no-shadowed-variable": false,
     "no-var-requires": false,
     "prefer-for-of": false,

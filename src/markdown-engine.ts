@@ -1012,8 +1012,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
 </script>`;
     }
     // wavedrom
-    let wavedromScript = ``,
-      wavedromInitScript = ``;
+    let wavedromScript = ``;
+    let wavedromInitScript = ``;
     if (html.indexOf(' class="wavedrom') >= 0) {
       if (options.offline) {
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
@@ -1078,8 +1078,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
 
     // flowchart
-    let flowchartScript = ``,
-      flowchartInitScript = ``;
+    let flowchartScript = ``;
+    let flowchartInitScript = ``;
     if (html.indexOf(' class="flow') >= 0) {
       if (options.offline) {
         flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(
@@ -1111,9 +1111,9 @@ for (var i = 0; i < flowcharts.length; i++) {
     }
 
     // sequence diagrams
-    let sequenceDiagramScript = ``,
-      sequenceDiagramStyle = ``,
-      sequenceDiagramInitScript = ``;
+    let sequenceDiagramScript = ``;
+    let sequenceDiagramStyle = ``;
+    let sequenceDiagramInitScript = ``;
     if (html.indexOf(' class="sequence') >= 0) {
       if (options.offline) {
         sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
@@ -1161,9 +1161,9 @@ for (var i = 0; i < flowcharts.length; i++) {
     }
 
     // presentation
-    let presentationScript = "",
-      presentationStyle = "",
-      presentationInitScript = "";
+    let presentationScript = "";
+    let presentationStyle = "";
+    let presentationInitScript = "";
     if (yamlConfig["isPresentationMode"]) {
       if (options.offline) {
         presentationScript = `
@@ -1328,9 +1328,9 @@ for (var i = 0; i < flowcharts.length; i++) {
     }
 
     // sidebar toc
-    let sidebarTOC = "",
-      sidebarTOCScript = "",
-      sidebarTOCBtn = "";
+    let sidebarTOC = "";
+    let sidebarTOCScript = "";
+    let sidebarTOCBtn = "";
     if (
       !yamlConfig["isPresentationMode"] &&
       !options.isForPrint &&
@@ -1463,7 +1463,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const inputString = await utility.readFile(this.filePath, {
       encoding: "utf-8",
     });
-    let html, yamlConfig;
+    let html;
+    let yamlConfig;
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1501,7 +1502,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const inputString = await utility.readFile(this.filePath, {
       encoding: "utf-8",
     });
-    let html, yamlConfig;
+    let html;
+    let yamlConfig;
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: true,
       hideFrontMatter: true,
@@ -1574,7 +1576,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const inputString = await utility.readFile(this.filePath, {
       encoding: "utf-8",
     });
-    let html, yamlConfig;
+    let html;
+    let yamlConfig;
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1664,7 +1667,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const inputString = await utility.readFile(this.filePath, {
       encoding: "utf-8",
     });
-    let html, yamlConfig;
+    let html;
+    let yamlConfig;
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1740,7 +1744,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const inputString = await utility.readFile(this.filePath, {
       encoding: "utf-8",
     });
-    let html, yamlConfig;
+    let html;
+    let yamlConfig;
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1828,7 +1833,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const inputString = await utility.readFile(this.filePath, {
       encoding: "utf-8",
     });
-    let html, yamlConfig;
+    let html;
+    let yamlConfig;
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -2491,9 +2497,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
     */
 
-    let i = 0,
-      h = -1, // horizontal
-      v = 0; // vertical
+    let i = 0;
+    let h = -1; // horizontal
+    let v = 0; // vertical
     while (i < slides.length) {
       const slide = slides[i];
       const slideConfig = slideConfigs[i];
@@ -2552,8 +2558,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // issue: https://github.com/shd101wyy/markdown-preview-enhanced/issues/559
     const $ = cheerio.load(output, { xmlMode: true });
     $("li").each((i, elem) => {
-      const $elem = $(elem),
-        html = $elem.html().trim();
+      const $elem = $(elem);
+      const html = $elem.html().trim();
       const attributeMatch = html.match(/<!--(.+?)-->/);
       if (attributeMatch) {
         const attributes = attributeMatch[1].replace(/\.element\:/, "").trim();
@@ -2601,8 +2607,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let outputString = "";
     const lines = text.split("\n");
     let i = 0;
-    let inCodeBlock = false,
-      codeBlockSpacesAhead = 0;
+    let inCodeBlock = false;
+    let codeBlockSpacesAhead = 0;
     while (i < lines.length) {
       let line = lines[i];
       const match = line.match(/(^\s*)```/);
@@ -2687,12 +2693,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     // import external files and insert anchors if necessary
-    let outputString,
-      slideConfigs,
-      tocBracketEnabled,
-      JSAndCssFiles,
-      headings,
-      frontMatterString;
+    let outputString;
+    let slideConfigs;
+    let tocBracketEnabled;
+    let JSAndCssFiles;
+    let headings;
+    let frontMatterString;
     ({
       outputString,
       slideConfigs,
@@ -2755,10 +2761,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * render tocHTML for [TOC] and sidebar TOC
      */
     // if (!utility.isArrayEqual(headings, this.headings)) { // <== this code is wrong, as it will always be true...
-    const tocConfig = yamlConfig["toc"] || {},
-      depthFrom = tocConfig["depth_from"] || 1,
-      depthTo = tocConfig["depth_to"] || 6,
-      ordered = tocConfig["ordered"];
+    const tocConfig = yamlConfig["toc"] || {};
+    const depthFrom = tocConfig["depth_from"] || 1;
+    const depthTo = tocConfig["depth_to"] || 6;
+    const ordered = tocConfig["ordered"];
 
     const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "\t" });
     this.tocHTML = this.md.render(tocObject.content);

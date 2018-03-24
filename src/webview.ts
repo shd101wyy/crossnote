@@ -954,8 +954,8 @@
       }
 
       for (let i = 0; i < codeChunks.length; i++) {
-        const codeChunk = codeChunks[i],
-          id = codeChunk.getAttribute("data-id");
+        const codeChunk = codeChunks[i];
+        const id = codeChunk.getAttribute("data-id");
 
         // bind click event
         const runBtn = codeChunk.getElementsByClassName("run-btn")[0];
@@ -1166,8 +1166,8 @@
       if (!this.totalLineCount) {
         return null;
       }
-      const scrollMap = [],
-        nonEmptyList = [];
+      const scrollMap = [];
+      const nonEmptyList = [];
 
       for (let i = 0; i < this.totalLineCount; i++) {
         scrollMap.push(-1);
@@ -1311,9 +1311,9 @@
       for (let i = 0; i < slideElements.length; i++) {
         const slide = slideElements[i];
         if (slide.hasAttribute("data-line")) {
-          const line = parseInt(slide.getAttribute("data-line"), 10),
-            h = parseInt(slide.getAttribute("data-h"), 10),
-            v = parseInt(slide.getAttribute("data-v"), 10);
+          const line = parseInt(slide.getAttribute("data-line"), 10);
+          const h = parseInt(slide.getAttribute("data-h"), 10);
+          const v = parseInt(slide.getAttribute("data-v"), 10);
           this.slidesData.push({ line, h, v, offset });
           offset += 1;
         }

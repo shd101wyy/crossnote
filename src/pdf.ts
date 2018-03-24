@@ -65,8 +65,8 @@ export function toSVGMarkdown(
           }
 
           items = items.sort((a, b) => {
-            const offsetA = parseInt(a.match(/\_(\d+)\.svg$/)[1], 10),
-              offsetB = parseInt(b.match(/\_(\d+)\.svg$/)[1], 10);
+            const offsetA = parseInt(a.match(/\_(\d+)\.svg$/)[1], 10);
+            const offsetB = parseInt(b.match(/\_(\d+)\.svg$/)[1], 10);
             return offsetA - offsetB;
           });
 
