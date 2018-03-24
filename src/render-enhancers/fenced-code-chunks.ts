@@ -1,24 +1,9 @@
 // tslint:disable:ban-types no-var-requires
-import { resolve } from "path";
 import { run } from "../code-chunk";
 import { CodeChunkData, CodeChunksData } from "../code-chunk-data";
-import { Attributes, stringifyAttributes } from "../lib/attributes";
 import { BlockInfo } from "../lib/block-info";
-import computeChecksum from "../lib/compute-checksum";
 import { MarkdownEngineRenderOption } from "../markdown-engine";
-import { render as renderPlantuml } from "../puml";
 import { toc } from "../toc";
-import { extensionDirectoryPath, mkdirp, readFile } from "../utility";
-
-const ensureClassInAttributes = (attributes: Attributes, className: string) => {
-  const existingClassNames: string = attributes["class"] || "";
-  if (existingClassNames.split(" ").indexOf(className) === -1) {
-    return {
-      ...attributes,
-      ["class"]: `${existingClassNames} ${className}`.trim(),
-    };
-  }
-};
 
 export default async function enhance(
   $,
@@ -172,11 +157,9 @@ export async function runCodeChunk(
     enableScriptExecution,
     filePath,
     fileDirectoryPath,
-    imageFolderPath,
     latexEngine,
     modifySource,
     parseMD,
-    resolveFilePath,
   } = runOptions;
   const codeChunkData = codeChunksData[id];
   if (!codeChunkData || codeChunkData.running) {
@@ -284,7 +267,7 @@ export async function runCodeChunk(
   return result;
 }
 
-export async function runAllCodeChunks(
+export async function runCodeChunks(
   codeChunksData: CodeChunksData,
   runOptions: RunCodeChunkOptions,
 ) {

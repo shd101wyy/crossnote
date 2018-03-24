@@ -5,7 +5,6 @@ import * as vm from "vm";
 
 import * as LaTeX from "./latex";
 import { Attributes } from "./lib/attributes";
-import { BlockInfo } from "./lib/block-info";
 import * as utility from "./utility";
 
 export async function compileLaTeX(

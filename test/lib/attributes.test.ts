@@ -67,9 +67,15 @@ const testCases: Array<{
     stringified: 'cmd=true id="some-id:with-colon"',
   },
   {
-    attributes: { id: "some-id:with-colon", class: "class1 class2", key1: "value1", key2: "value2"},
+    attributes: {
+      id: "some-id:with-colon",
+      class: "class1 class2",
+      key1: "value1",
+      key2: "value2",
+    },
     raw: "#some-id:with-colon .class1 .class2 key1=value1 key2=value2",
-    stringified: 'id="some-id:with-colon" class="class1 class2" key1="value1" key2="value2"',
+    stringified:
+      'id="some-id:with-colon" class="class1 class2" key1="value1" key2="value2"',
   },
   {
     attributes: { cmd: true, id: "0" },

@@ -1,6 +1,7 @@
 ## [Flow Charts](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=flow-charts)
 
 `flow`
+
 ```flow
 st=>start: Start|past:>http://www.google.com[blank]
 e=>end: End|future:>http://www.google.com
@@ -22,6 +23,7 @@ c2(no)->op2->e
 ## [Sequence Diagrams](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=sequence-diagrams)
 
 `sequence`
+
 ```sequence
 Title: Here is a title
 A->B: Normal line
@@ -31,7 +33,9 @@ D-->>A: Dashed open arrow
 ```
 
 ---
+
 `sequence {theme=hand}`
+
 ```sequence {theme=hand}
 Title: Here is a title
 A->B: Normal line
@@ -43,6 +47,7 @@ D-->>A: Dashed open arrow
 ## [Mermaid](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=mermaid)
 
 `mermaid`
+
 ```mermaid
 graph TD;
     A-->B;
@@ -54,6 +59,7 @@ graph TD;
 ---
 
 `mermaid {code_block=true}`
+
 ```mermaid {code_block=true}
 graph TD;
     A-->B;
@@ -65,6 +71,7 @@ graph TD;
 ## [PlantUML](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=plantuml)
 
 `puml`
+
 ```puml
 @startuml
 Alice -> Bob: Authentication Request
@@ -77,7 +84,8 @@ Alice <-- Bob: another authentication Response
 
 ---
 
- `puml {align="center"}`
+`puml {align="center"}`
+
 ```puml {align="center"}
 a->b
 ```
@@ -85,6 +93,7 @@ a->b
 ---
 
 `plantuml`
+
 ```plantuml
 @startuml
 Alice -> Bob: Authentication Request
@@ -98,6 +107,7 @@ Alice <-- Bob: another authentication Response
 ## [WaveDrom](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=sequence-diagrams)
 
 `wavedrom`
+
 ```wavedrom
 { signal : [
   { name: "clk",  wave: "p......" },
@@ -109,6 +119,7 @@ Alice <-- Bob: another authentication Response
 ## [GraphViz](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=graphviz)
 
 `viz`
+
 ```viz
 digraph G {
   A -> B
@@ -120,6 +131,7 @@ digraph G {
 ---
 
 `dot {engine=circo}`
+
 ```dot {engine=circo}
 digraph G {
   A -> B
@@ -131,6 +143,7 @@ digraph G {
 ## Vega
 
 `vega` + json
+
 ```vega
 {
   "$schema": "https://vega.github.io/schema/vega/v3.0.json",
@@ -232,6 +245,7 @@ digraph G {
 ## Vega lite
 
 `vega-lite` + json
+
 ```vega-lite
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
@@ -254,6 +268,7 @@ digraph G {
 ---
 
 `vega-lite` + yaml
+
 ```vega-lite
 "$schema": https://vega.github.io/schema/vega-lite/v2.json
 description: A simple bar chart with embedded data.
@@ -276,6 +291,7 @@ encoding:
 ---
 
 `vega-lite {hide=false}` + json
+
 ```vega-lite {hide=false}
 "$schema": https://vega.github.io/schema/vega-lite/v2.json
 description: A simple bar chart with embedded data.
@@ -298,6 +314,7 @@ encoding:
 ---
 
 `vega-lite {cmd=false}`
+
 ```vega-lite {cmd=false}
 "$schema": https://vega.github.io/schema/vega-lite/v2.json
 description: A simple bar chart with embedded data.
@@ -320,6 +337,7 @@ encoding:
 ---
 
 `vega-lite` + json (geo)
+
 ```vega-lite
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v2.1.json",
@@ -358,6 +376,7 @@ encoding:
 ## [Ditaa](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=ditaa)
 
 `ditaa {cmd=true args=["-E"]}`
+
 ```ditaa {cmd=true args=["-E"]}
 +--------+   +-------+    +-------+
 |        | --+ ditaa +--> |       |

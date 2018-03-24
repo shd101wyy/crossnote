@@ -2,14 +2,15 @@ Here is some `inline` code!
 
 ---
 
-spaced code block 
+spaced code block
 
     var greeting = 'Hello world!';
     console.log(greeting);
 
 ---
 
-fenced code block 
+fenced code block
+
 ```
 var greeting = 'Hello world!';
 console.log(greeting);
@@ -20,13 +21,14 @@ console.log(greeting);
 fenced plus language `js`
 
 ```js
-var greeting = 'Hello world!';
+var greeting = "Hello world!";
 console.log(greeting);
 ```
 
 ---
 
 `js .line-numbers`
+
 ```js .line-numbers
 var greeting = 'Hello world!';
 console.log(greeting);
@@ -44,6 +46,7 @@ console.log(greeting4);
 ---
 
 `js {hide=true}`
+
 ```js {hide=true}
 this should not be seen
 ```
@@ -51,6 +54,7 @@ this should not be seen
 ---
 
 `js {cmd=false}`
+
 ```js {cmd=false}
 var greeting = 'Hello world!';
 console.log(greeting);
@@ -59,6 +63,7 @@ console.log(greeting);
 ---
 
 `js {literate=false}`
+
 ```js {literate=false}
 var greeting = 'Hello world!';
 console.log(greeting);
