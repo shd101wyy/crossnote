@@ -11,6 +11,7 @@ import * as utility from "./utility";
 import * as vegaAPI from "./vega";
 import * as vegaLiteAPI from "./vega-lite";
 
+/* tslint:disable-next-line:no-var-requires */
 const Viz = require(path.resolve(
   utility.extensionDirectoryPath,
   "./dependencies/viz/viz.js",

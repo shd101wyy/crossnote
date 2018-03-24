@@ -6,9 +6,7 @@
     "no-string-literal": false,
     "object-literal-sort-keys": false,
     "no-shadowed-variable": false,
-    "no-var-requires": false,
     "prefer-for-of": false,
-    "no-eval": false,
-    "no-unused-expression": false
+    "no-eval": false
   }
 }
