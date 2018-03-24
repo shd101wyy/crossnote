@@ -932,7 +932,9 @@
           elements[i + 1] &&
           elements[i + 1].classList.contains("code-chunk")
         ) {
-          if (currentLine >= parseInt(elements[i].getAttribute("data-line"))) {
+          if (
+            currentLine >= parseInt(elements[i].getAttribute("data-line"), 10)
+          ) {
             const codeChunkId = elements[i + 1].getAttribute("data-id");
             return this.runCodeChunk(codeChunkId);
           }
@@ -1094,7 +1096,7 @@
               checkbox.removeAttribute("checked");
             }
 
-            const dataLine = parseInt(checkbox.getAttribute("data-line"));
+            const dataLine = parseInt(checkbox.getAttribute("data-line"), 10);
             if (!isNaN(dataLine)) {
               this.postMessage("clickTaskListCheckbox", [
                 this.sourceUri,
@@ -1186,7 +1188,7 @@
           continue;
         }
 
-        t = parseInt(t);
+        t = parseInt(t, 10);
         if (!t) {
           continue;
         }
@@ -1309,9 +1311,9 @@
       for (let i = 0; i < slideElements.length; i++) {
         const slide = slideElements[i];
         if (slide.hasAttribute("data-line")) {
-          const line = parseInt(slide.getAttribute("data-line")),
-            h = parseInt(slide.getAttribute("data-h")),
-            v = parseInt(slide.getAttribute("data-v"));
+          const line = parseInt(slide.getAttribute("data-line"), 10),
+            h = parseInt(slide.getAttribute("data-h"), 10),
+            v = parseInt(slide.getAttribute("data-v"), 10);
           this.slidesData.push({ line, h, v, offset });
           offset += 1;
         }
@@ -1516,7 +1518,7 @@
             data.command === "changeTextEditorSelection" &&
             (this.config.scrollSync || data.forced)
           ) {
-            const line = parseInt(data.line);
+            const line = parseInt(data.line, 10);
             let topRatio = parseFloat(data.topRatio);
             if (isNaN(topRatio)) {
               topRatio = 0.372;

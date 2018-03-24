@@ -66,9 +66,9 @@ export async function processGraphs(
           lines[j].match(/^\s*/).length === numOfSpacesAhead
         ) {
           let options = {},
-            optionsStr = "",
-            optionsMatch;
-          if ((optionsMatch = trimmedLine.match(/\{(.+)\}$/))) {
+            optionsStr = "";
+          const optionsMatch = trimmedLine.match(/\{(.+)\}$/);
+          if (optionsMatch) {
             try {
               options = parseAttributes(optionsMatch[0]);
               optionsStr = optionsMatch[1];
@@ -185,8 +185,8 @@ export async function processGraphs(
     } else if (def.match(/^(puml|plantuml)/)) {
       try {
         const checksum = computeChecksum(optionsStr + content);
-        let svg;
-        if (!(svg = graphsCache[checksum])) {
+        let svg = graphsCache[checksum];
+        if (!svg) {
           // check whether in cache
           svg = await plantumlAPI.render(content, fileDirectoryPath);
         }
@@ -205,8 +205,8 @@ export async function processGraphs(
     } else if (def.match(/^(viz|dot)/)) {
       try {
         const checksum = computeChecksum(optionsStr + content);
-        let svg;
-        if (!(svg = graphsCache[checksum])) {
+        let svg = graphsCache[checksum];
+        if (!svg) {
           const engine = options["engine"] || "dot";
           svg = Viz(content, { engine });
         }
@@ -226,8 +226,8 @@ export async function processGraphs(
       // vega-lite
       try {
         const checksum = computeChecksum(optionsStr + content);
-        let svg;
-        if (!(svg = graphsCache[checksum])) {
+        let svg = graphsCache[checksum];
+        if (!svg) {
           svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath);
         }
         await convertSVGToPNGFile(
@@ -246,8 +246,8 @@ export async function processGraphs(
       // vega
       try {
         const checksum = computeChecksum(optionsStr + content);
-        let svg;
-        if (!(svg = graphsCache[checksum])) {
+        let svg = graphsCache[checksum];
+        if (!svg) {
           svg = await vegaAPI.toSVG(content, fileDirectoryPath);
         }
         await convertSVGToPNGFile(

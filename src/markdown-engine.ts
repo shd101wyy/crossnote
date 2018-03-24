@@ -1880,7 +1880,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
       $("h1, h2, h3, h4, h5, h6").each((offset, h) => {
         const $h = $(h);
-        const level = parseInt($h[0].name.slice(1)) - 1;
+        const level = parseInt($h[0].name.slice(1), 10) - 1;
 
         // $h.attr('id', id)
         $h.attr("ebook-toc-level-" + (level + 1), "");
@@ -2122,13 +2122,15 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     let config = {};
 
-    let endFrontMatterOffset = 0;
-    if (
-      inputString.startsWith("---") &&
-      (endFrontMatterOffset = inputString.indexOf("\n---")) > 0
-    ) {
-      const frontMatterString = inputString.slice(0, endFrontMatterOffset + 4);
-      config = this.processFrontMatter(frontMatterString, false).data;
+    if (inputString.startsWith("---")) {
+      const endFrontMatterOffset = inputString.indexOf("\n---");
+      if (endFrontMatterOffset > 0) {
+        const frontMatterString = inputString.slice(
+          0,
+          endFrontMatterOffset + 4,
+        );
+        config = this.processFrontMatter(frontMatterString, false).data;
+      }
     }
 
     const outputFilePath = await pandocConvert(
@@ -2176,14 +2178,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     let config = {};
 
-    let endFrontMatterOffset = 0;
-    if (
-      inputString.startsWith("---") &&
-      (endFrontMatterOffset = inputString.indexOf("\n---")) > 0
-    ) {
-      const frontMatterString = inputString.slice(0, endFrontMatterOffset + 4);
-      inputString = inputString.replace(frontMatterString, ""); // remove front matter
-      config = this.processFrontMatter(frontMatterString, false).data;
+    if (inputString.startsWith("---")) {
+      const endFrontMatterOffset = inputString.indexOf("\n---");
+      if (endFrontMatterOffset > 0) {
+        const frontMatterString = inputString.slice(
+          0,
+          endFrontMatterOffset + 4,
+        );
+        inputString = inputString.replace(frontMatterString, ""); // remove front matter
+        config = this.processFrontMatter(frontMatterString, false).data;
+      }
     }
 
     /**
@@ -2550,8 +2554,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     $("li").each((i, elem) => {
       const $elem = $(elem),
         html = $elem.html().trim();
-      let attributeMatch;
-      if ((attributeMatch = html.match(/<!--(.+?)-->/))) {
+      const attributeMatch = html.match(/<!--(.+?)-->/);
+      if (attributeMatch) {
         const attributes = attributeMatch[1].replace(/\.element\:/, "").trim();
         const attrObj = parseAttributes(attributes);
         for (const key in attrObj) {

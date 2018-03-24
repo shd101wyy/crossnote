@@ -65,8 +65,8 @@ export function toSVGMarkdown(
           }
 
           items = items.sort((a, b) => {
-            const offsetA = parseInt(a.match(/\_(\d+)\.svg$/)[1]),
-              offsetB = parseInt(b.match(/\_(\d+)\.svg$/)[1]);
+            const offsetA = parseInt(a.match(/\_(\d+)\.svg$/)[1], 10),
+              offsetB = parseInt(b.match(/\_(\d+)\.svg$/)[1], 10);
             return offsetA - offsetB;
           });
 
@@ -74,12 +74,10 @@ export function toSVGMarkdown(
           const r = Math.random();
 
           items.forEach((fileName) => {
-            let match;
-            if (
-              (match = fileName.match(
-                new RegExp(`^${svgFilePrefix}(\\d+)\.svg`),
-              ))
-            ) {
+            const match = fileName.match(
+              new RegExp(`^${svgFilePrefix}(\\d+)\.svg`),
+            );
+            if (match) {
               let svgFilePath = path.relative(
                 markdownDirectoryPath,
                 path.resolve(svgDirectoryPath, fileName),

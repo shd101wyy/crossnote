@@ -293,12 +293,8 @@ export async function transformMarkdown(
           outputString += createAnchor(lineNo);
         }
 
-        let match;
-        if (
-          !inBlock &&
-          !notSourceFile &&
-          (match = line.match(/\"?cmd\"?\s*[:=]/))
-        ) {
+        const match = line.match(/\"?cmd\"?\s*[:=]/);
+        if (!inBlock && !notSourceFile && match) {
           // it's code chunk, so mark its offset
           line = line.replace("{", `{code_chunk_offset=${codeChunkOffset}, `);
           codeChunkOffset++;
@@ -339,6 +335,7 @@ export async function transformMarkdown(
         if (forPreview) {
           outputString += createAnchor(lineNo); // insert anchor for scroll sync
         }
+        /* tslint:disable-next-line:no-conditional-assignment */
       } else if ((headingMatch = line.match(/^(\#{1,7})(.+)/))) {
         /* ((headingMatch = line.match(/^(\#{1,7})(.+)$/)) || 
                   // the ==== and --- headers don't work well. For example, table and list will affect it, therefore I decide not to support it.  
@@ -377,11 +374,11 @@ export async function transformMarkdown(
         }
 
         // check {class:string, id:string, ignore:boolean}
-        let optMatch = null,
-          classes = "",
+        const optMatch = heading.match(/[^\\]\{(.+?)\}(\s*)$/);
+        let classes = "",
           id = "",
           ignore = false;
-        if ((optMatch = heading.match(/[^\\]\{(.+?)\}(\s*)$/))) {
+        if (optMatch) {
           heading = heading.replace(optMatch[0], "");
 
           try {
@@ -546,6 +543,7 @@ export async function transformMarkdown(
         outputString = outputString + `\n[MUMETOC]\n\n`;
         continue;
       } else if (
+        /* tslint:disable-next-line:no-conditional-assignment */
         (taskListItemMatch = line.match(
           /^\s*(?:[*\-+]|\d+\.)\s+(\[[xX\s]\])\s/,
         ))
@@ -568,6 +566,7 @@ export async function transformMarkdown(
         outputString = outputString + line + `\n`;
         continue;
       } else if (
+        /* tslint:disable-next-line:no-conditional-assignment */
         (htmlTagMatch = line.match(
           /^\s*<(?:([a-zA-Z]+)|([a-zA-Z]+)\s+(?:.+?))>/,
         ))
@@ -607,8 +606,8 @@ export async function transformMarkdown(
       }
 
       // file import
-      let importMatch;
-      if ((importMatch = line.match(/^(\s*)\@import(\s+)\"([^\"]+)\";?/))) {
+      const importMatch = line.match(/^(\s*)\@import(\s+)\"([^\"]+)\";?/);
+      if (importMatch) {
         outputString += importMatch[1];
         const filePath = importMatch[3].trim();
 
@@ -830,7 +829,7 @@ export async function transformMarkdown(
               if (config && config["page_no"]) {
                 // only disply the nth page. 1-indexed
                 const pages = fileContent.split("\n");
-                let pageNo = parseInt(config["page_no"]) - 1;
+                let pageNo = parseInt(config["page_no"], 10) - 1;
                 if (pageNo < 0) {
                   pageNo = 0;
                 }
@@ -840,7 +839,7 @@ export async function transformMarkdown(
                 (config["page_begin"] || config["page_end"])
               ) {
                 const pages = fileContent.split("\n");
-                let pageBegin = parseInt(config["page_begin"]) - 1 || 0;
+                let pageBegin = parseInt(config["page_begin"], 10) - 1 || 0;
                 const pageEnd = config["page_end"] || pages.length - 1;
                 if (pageBegin < 0) {
                   pageBegin = 0;
@@ -938,6 +937,7 @@ export async function transformMarkdown(
   let endFrontMatterOffset = 0;
   if (
     inputString.startsWith("---") &&
+    /* tslint:disable-next-line:no-conditional-assignment */
     (endFrontMatterOffset = inputString.indexOf("\n---")) > 0
   ) {
     frontMatterString = inputString.slice(0, endFrontMatterOffset + 4);

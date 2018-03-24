@@ -27,6 +27,7 @@ function sanitizeContent(content) {
   // test [^footnote]
   const r = /\!?\[([^\]]*)\]\(([^)]*)\)|<([^>]*)>([^<]*)<\/([^>]*)>|\[\^([^\]]*)\]/g;
   let match = null;
+  // tslint:disable-next-line:no-conditional-assignment
   while ((match = r.exec(content))) {
     output += content.slice(offset, match.index);
     offset = match.index + match[0].length;
