@@ -267,7 +267,7 @@ export async function runCodeChunk(
   return result;
 }
 
-export async function runAllCodeChunks(
+export async function runCodeChunks(
   codeChunksData: CodeChunksData,
   runOptions: RunCodeChunkOptions,
 ) {

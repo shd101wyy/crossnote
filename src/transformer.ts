@@ -146,9 +146,9 @@ function downloadFileIfNecessary(filePath: string): Promise<string> {
           const localFilePath =
             path.resolve(DOWNLOADS_TEMP_FOLDER, computeChecksum(filePath)) +
             path.extname(filePath);
-          fs.writeFile(localFilePath, body, "binary", (error) => {
-            if (error) {
-              return reject(error);
+          fs.writeFile(localFilePath, body, "binary", (error2) => {
+            if (error2) {
+              return reject(error2);
             } else {
               return resolve(localFilePath);
             }
@@ -484,9 +484,9 @@ export async function transformMarkdown(
         } else {
           const subject = subjectMatch[1];
           if (subject === "@import") {
-            const commentEnd = line.lastIndexOf("-->");
-            if (commentEnd > 0) {
-              line = line.slice(4, commentEnd).trim();
+            const commentEnd2 = line.lastIndexOf("-->");
+            if (commentEnd2 > 0) {
+              line = line.slice(4, commentEnd2).trim();
             }
           } else if (subject in CustomSubjects) {
             const content = inputString.slice(i + 4, commentEnd - 3).trim();
@@ -579,11 +579,11 @@ export async function transformMarkdown(
         const tagName = htmlTagMatch[1] || htmlTagMatch[2];
         if (!(tagName in selfClosingTag)) {
           const closeTagName = `</${tagName}>`;
-          const end = inputString.indexOf(
+          const end2 = inputString.indexOf(
             closeTagName,
             i + htmlTagMatch[0].length,
           );
-          if (end < 0) {
+          if (end2 < 0) {
             // HTML error. Tag not closed
             // Do Nothing here. Reason:
             //     $$ x
@@ -596,12 +596,12 @@ export async function transformMarkdown(
               continue
               */
           } else {
-            const htmlString = inputString.slice(i, end + closeTagName.length);
+            const htmlString = inputString.slice(i, end2 + closeTagName.length);
             const newlinesMatch = htmlString.match(/\n/g);
             const newlines = newlinesMatch ? newlinesMatch.length : 0;
 
             // return helper(commentEnd, lineNo + newlines, outputString + '\n')
-            i = end + closeTagName.length;
+            i = end2 + closeTagName.length;
             lineNo = lineNo + newlines;
             outputString = outputString + htmlString;
             continue;
@@ -722,13 +722,13 @@ export async function transformMarkdown(
             codeChunkOffset++;
           }
 
-          const output = `\`\`\`text ${stringifyAttributes(
+          const output2 = `\`\`\`text ${stringifyAttributes(
             config,
           )}  \n\`\`\`  `;
           // return helper(end+1, lineNo+1, outputString+output+'\n')
           i = end + 1;
           lineNo = lineNo + 1;
-          outputString = outputString + output + "\n";
+          outputString = outputString + output2 + "\n";
           continue;
         } else {
           try {
@@ -765,10 +765,10 @@ export async function transformMarkdown(
             } else if ([".md", ".markdown", ".mmark"].indexOf(extname) >= 0) {
               // markdown files
               // this return here is necessary
-              let output;
+              let output2;
               let headings2;
               ({
-                outputString: output,
+                outputString: output2,
                 headings: headings2,
               } = await transformMarkdown(fileContent, {
                 fileDirectoryPath: path.dirname(absoluteFilePath),
@@ -783,13 +783,13 @@ export async function transformMarkdown(
                 usePandocParser,
                 tocTable,
               }));
-              output = "\n" + output + "  ";
+              output2 = "\n" + output2 + "  ";
               headings = headings.concat(headings2);
 
               // return helper(end+1, lineNo+1, outputString+output+'\n')
               i = end + 1;
               lineNo = lineNo + 1;
-              outputString = outputString + output + "\n";
+              outputString = outputString + output2 + "\n";
               continue;
             } else if (extname === ".html") {
               // html file

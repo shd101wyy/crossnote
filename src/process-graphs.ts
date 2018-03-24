@@ -128,17 +128,19 @@ export async function processGraphs(
     }
   }
 
+  /* tslint:disable-next-line:no-shadowed-variable */
   function clearCodeBlock(lines: string[], start: number, end: number) {
-    let i = start;
-    while (i <= end) {
-      lines[i] = "";
-      i += 1;
+    let s = start;
+    while (s <= end) {
+      lines[s] = "";
+      s += 1;
     }
   }
 
   async function convertSVGToPNGFile(
     outFileName = "",
     svg: string,
+    /* tslint:disable-next-line:no-shadowed-variable */
     lines: string[],
     start: number,
     end: number,

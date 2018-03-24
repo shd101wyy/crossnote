@@ -31,7 +31,8 @@ import enhanceWithEmbeddedLocalImages from "./render-enhancers/embedded-local-im
 import enhanceWithEmbeddedSvgs from "./render-enhancers/embedded-svgs";
 import enhanceWithExtendedTableSyntax from "./render-enhancers/extended-table-syntax";
 import enhanceWithFencedCodeChunks, {
-  runAllCodeChunks,
+/* tslint:disable-next-line:ordered-imports */
+  runCodeChunks,
   runCodeChunk,
   RunCodeChunkOptions,
 } from "./render-enhancers/fenced-code-chunks";
@@ -1937,6 +1938,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
               useRelativeFilePath: false,
               isForPreview: false,
               hideFrontMatter: true,
+              /* tslint:disable-next-line:no-shadowed-variable */
             }).then(({ html }) => {
               return resolve({ heading, id, level, filePath, html, offset });
             });
@@ -1949,7 +1951,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let results = await Promise.all(asyncFunctions);
     results = results.sort((a, b) => a["offset"] - b["offset"]);
 
+    /* tslint:disable-next-line:no-shadowed-variable */
     results.forEach(({ heading, id, level, filePath, html }) => {
+      /* tslint:disable-next-line:no-shadowed-variable */
       const $ = cheerio.load(`<div>${html}</div>`, { xmlMode: true });
       const $firstChild = $(":root")
         .children()
@@ -2557,10 +2561,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // check list item attribtues
     // issue: https://github.com/shd101wyy/markdown-preview-enhanced/issues/559
     const $ = cheerio.load(output, { xmlMode: true });
-    $("li").each((i, elem) => {
+    $("li").each((j, elem) => {
       const $elem = $(elem);
-      const html = $elem.html().trim();
-      const attributeMatch = html.match(/<!--(.+?)-->/);
+      const html2 = $elem.html().trim();
+      const attributeMatch = html2.match(/<!--(.+?)-->/);
       if (attributeMatch) {
         const attributes = attributeMatch[1].replace(/\.element\:/, "").trim();
         const attrObj = parseAttributes(attributes);
@@ -2830,7 +2834,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     if (options.runAllCodeChunks) {
-      await runAllCodeChunks(this.codeChunksData, this.generateRunOptions());
+      await runCodeChunks(this.codeChunksData, this.generateRunOptions());
       options.runAllCodeChunks = false;
       return this.parseMD(inputString, options);
     }
@@ -2862,8 +2866,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   /**
    * legacy method to support backwards compatibility
    */
-  public runAllCodeChunks() {
-    return runAllCodeChunks(this.codeChunksData, this.generateRunOptions());
+  public runCodeChunks() {
+    return runCodeChunks(this.codeChunksData, this.generateRunOptions());
   }
 
   /**

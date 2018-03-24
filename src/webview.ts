@@ -590,12 +590,12 @@
         this.bindTaskListEvent();
 
         // scroll slides
-        window["Reveal"].addEventListener("slidechanged", (event) => {
+        window["Reveal"].addEventListener("slidechanged", (event2) => {
           if (Date.now() < this.previewScrollDelay) {
             return;
           }
 
-          const { indexh, indexv } = event;
+          const { indexh, indexv } = event2;
           for (const slideData of this.slidesData) {
             const { h, v, line } = slideData;
             if (h === indexh && v === indexv) {
@@ -1018,8 +1018,6 @@
      * Bind <a href="..."></a> click events.
      */
     private bindTagAClickEvent() {
-      const as = this.previewElement.getElementsByTagName("a");
-
       const helper = (as) => {
         for (let i = 0; i < as.length; i++) {
           const a = as[i];
@@ -1061,11 +1059,10 @@
           }
         }
       };
-      helper(as);
+      helper(this.previewElement.getElementsByTagName("a"));
 
       if (this.sidebarTOC) {
-        const as = this.sidebarTOC.getElementsByTagName("a");
-        helper(as);
+        helper(this.sidebarTOC.getElementsByTagName("a"));
       }
     }
 

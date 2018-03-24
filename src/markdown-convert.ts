@@ -292,9 +292,9 @@ export async function markdownConvert(
           outputFilePath,
           outputString,
           { encoding: "utf-8" },
-          (error) => {
-            if (error) {
-              return reject(error.toString());
+          (error2) => {
+            if (error2) {
+              return reject(error2.toString());
             }
             return resolve(outputFilePath);
           },
