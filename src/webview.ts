@@ -1021,10 +1021,10 @@
       const helper = (as) => {
         for (let i = 0; i < as.length; i++) {
           const a = as[i];
-          const href = decodeURI(a.getAttribute("href")); // decodeURI here for Chinese like unicode heading
+          const href = decodeURIComponent(a.getAttribute("href")); // decodeURI here for Chinese like unicode heading
           if (href && href[0] === "#") {
             const targetElement = this.previewElement.querySelector(
-              `[id=\"${href.slice(1)}\"]`,
+              `[id=\"${encodeURIComponent(href.slice(1))}\"]`,
             ) as HTMLElement; // fix number id bug
             if (targetElement) {
               a.onclick = (event) => {
@@ -1045,6 +1045,12 @@
                 } else {
                   this.previewElement.scrollTop = offsetTop;
                 }
+              };
+            } else {
+              // without the `else` here, mpe package on Atom will fail to render preview (issue #824 and #827).
+              a.onclick = (event) => {
+                event.preventDefault();
+                event.stopPropagation();
               };
             }
           } else {
