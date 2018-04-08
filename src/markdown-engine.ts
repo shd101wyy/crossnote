@@ -2649,7 +2649,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         line = "[MUMETOC]";
       }
 
-      outputString += (inCodeBlock ? utility.escapeString(line) : line) + "\n";
+      outputString += line + "\n";
       i += 1;
     }
 

@@ -1,17 +1,18 @@
 import { resolve } from "path";
 import { scopeForLanguageName } from "../extension-helper";
 import { BlockInfo } from "../lib/block-info";
-import { extensionDirectoryPath } from "../utility";
+import { extensionDirectoryPath, escapeString } from "../utility";
 
 let Prism;
 
 export default async function enhance($: CheerioStatic): Promise<void> {
   // spaced code blocks
+  // this is for pandoc parser
   $("pre>code").each((i, codeElement) => {
     const $codeElement = $(codeElement);
     const code = $codeElement.text();
     const $container = $codeElement.parent();
-    $codeElement.replaceWith(code);
+    $codeElement.replaceWith(escapeString(code));
     $container.addClass("language-text");
   });
 
