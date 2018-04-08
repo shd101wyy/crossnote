@@ -41,6 +41,7 @@ import enhanceWithFencedMath from "./render-enhancers/fenced-math";
 import enhanceWithResolvedImagePaths from "./render-enhancers/resolved-image-paths";
 
 import { parseAttributes, stringifyAttributes } from "./lib/attributes";
+import { normalizeBlockInfo, parseBlockInfo } from "./lib/block-info";
 import { removeFileProtocol } from "./utility";
 
 const extensionDirectoryPath = utility.extensionDirectoryPath;
@@ -2602,12 +2603,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       .filter((arg) => arg.length);
 
     /*
-    convert code block
-    ```python {id:"haha"}
-    to
-    ```{.python data-code-block:"{id: haha}"}
+      convert pandoc code block to markdown-it code block
     */
-
     let outputString = "";
     const lines = text.split("\n");
     let i = 0;
@@ -2620,19 +2617,23 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         inCodeBlock = !inCodeBlock;
 
         if (inCodeBlock) {
-          let lang = utility.escapeString(line.slice(match[0].length)).trim();
-          if (!lang) {
-            lang = "text";
+          let info = line.slice(match[0].length).trim();
+          if (!info) {
+            info = "text";
           }
-
-          // TODO: doesn't work well with code chunk. Fix in the future.
-          // let cmatch = null
-          // if (cmatch = lang.match(/^\{\s*\.([\w\d]+)/)) { // ``` {.java}
-          // lang = cmatch[1] + ' ' + lang
-          // }
+          const parsedInfo = parseBlockInfo(info);
+          const normalizedInfo = normalizeBlockInfo(parsedInfo);
 
           codeBlockSpacesAhead = match[1].length;
-          outputString += `${match[1]}\`\`\`{.mpe-code data-lang="${lang}"}\n`;
+          outputString += `${
+            match[1]
+          }\`\`\`{.text data-role="codeBlock" data-info="${utility.escapeString(
+            info,
+          )}" data-parsed-info="${utility.escapeString(
+            JSON.stringify(parsedInfo),
+          )}" data-normalized-info="${utility.escapeString(
+            JSON.stringify(normalizedInfo),
+          )}"}\n`;
         } else if (match[1].length === codeBlockSpacesAhead) {
           outputString += `${match[1]}\`\`\`\n`;
         } else {
@@ -2648,7 +2649,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         line = "[MUMETOC]";
       }
 
-      outputString += line + "\n";
+      outputString += (inCodeBlock ? utility.escapeString(line) : line) + "\n";
       i += 1;
     }
 
