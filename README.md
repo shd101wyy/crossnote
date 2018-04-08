@@ -95,7 +95,7 @@ const config = {
   enableCriticMarkupSyntax: false
 
   // Front matter rendering option
-  frontMatterRenderingOption: 'table', // 'table' | 'code block' | 'none'
+  frontMatterRenderingOption: 'none', // 'none' | 'table' | 'code block'
 
   // Mermaid theme
   mermaidTheme: 'mermaid.css', // 'mermaid.css' | 'mermaid.dark.css' | 'mermaid.forest.css'
@@ -161,8 +161,8 @@ const config = {
   // "white.css"
   // "none.css"
 
-  // Accepted protocols followed by `://` for links.
-  protocolsWhiteList: "http, https, atom, file",
+  // Accepted protocols for links.
+  protocolsWhiteList: "http://, https://, atom://, file://, mailto:, tel:",
 
   // When using Image Helper to copy images, by default images will be copied to root image folder path '/assets'
   imageFolderPath: '/assets',

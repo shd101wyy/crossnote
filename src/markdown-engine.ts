@@ -305,10 +305,17 @@ export class MarkdownEngine {
     // protocal whitelist
     const protocolsWhiteList = this.config.protocolsWhiteList
       .split(",")
-      .map((x) => x.trim()) || ["http", "https", "atom", "file"];
+      .map((x) => x.trim()) || [
+      "http://",
+      "https://",
+      "atom://",
+      "file://",
+      "mailto:",
+      "tel:",
+    ];
     this.protocolsWhiteListRegExp = new RegExp(
-      "^(" + protocolsWhiteList.join("|") + ")://",
-    ); // eg /^(http|https|atom|file)\:\/\//
+      "^(" + protocolsWhiteList.join("|") + ")",
+    ); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
   }
 
   public updateConfiguration(config) {
