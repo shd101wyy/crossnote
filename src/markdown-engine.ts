@@ -304,12 +304,12 @@ export class MarkdownEngine {
     this.enableTypographer = this.config.enableTypographer;
 
     // protocal whitelist
-    const protocolsWhiteList = this.config.protocolsWhiteList
+    const protocolsWhiteList = (this.config.protocolsWhiteList || defaultMarkdownEngineConfig.protocolsWhiteList)
       .split(",")
-      .map((x) => x.trim()) || ["http", "https", "atom", "file"];
+      .map((x) => x.trim());
     this.protocolsWhiteListRegExp = new RegExp(
-      "^(" + protocolsWhiteList.join("|") + ")://",
-    ); // eg /^(http|https|atom|file)\:\/\//
+      "^(" + protocolsWhiteList.join("|") + ")",
+    ); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
   }
 
   public updateConfiguration(config) {
