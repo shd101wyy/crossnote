@@ -187,7 +187,7 @@ const config = {
 
   // Whether to enable script execution.
   // Disabling this will prevent executing code chunks and importing javascript files.  
-  enableScriptExecution: true
+  enableScriptExecution: false
 }
 
 // Init Engine

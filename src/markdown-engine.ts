@@ -1334,6 +1334,7 @@ for (var i = 0; i < flowcharts.length; i++) {
     let sidebarTOCScript = "";
     let sidebarTOCBtn = "";
     if (
+      this.config.enableScriptExecution &&
       !yamlConfig["isPresentationMode"] &&
       !options.isForPrint &&
       (!("html" in yamlConfig) ||
@@ -1365,20 +1366,22 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     // task list script
-    // has to use `var` instead of `let` because `phantomjs` might cause issue.
-    const taskListScript = `<script>
-(function bindTaskListEvent() {
-  var taskListItemCheckboxes = document.body.getElementsByClassName('task-list-item-checkbox')
-  for (var i = 0; i < taskListItemCheckboxes.length; i++) {
-    var checkbox = taskListItemCheckboxes[i]
-    var li = checkbox.parentElement
-    if (li.tagName !== 'LI') li = li.parentElement
-    if (li.tagName === 'LI') {
-      li.classList.add('task-list-item')
+    if (html.indexOf("task-list-item-checkbox") >= 0) {
+      const $ = cheerio.load("<div>" + html + "</div>");
+      $(".task-list-item-checkbox").each(
+        (index: number, elem: CheerioElement) => {
+          const $elem = $(elem);
+          let $li = $elem.parent();
+          if (!$li[0].name.match(/^li$/i)) {
+            $li = $li.parent();
+          }
+          if ($li[0].name.match(/^li$/i)) {
+            $li.addClass("task-list-item");
+          }
+        },
+      );
+      html = $.html();
     }
-  }
-}())    
-</script>`;
 
     // process styles
     // move @import ''; to the very start.
@@ -1431,7 +1434,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${vegaInitScript}
     ${flowchartInitScript}
     ${sequenceDiagramInitScript}
-    ${taskListScript}
     ${sidebarTOCScript}
   </html>
     `;

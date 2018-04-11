@@ -53,5 +53,5 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   pandocMarkdownFlavor: "markdown-raw_tex+tex_math_single_backslash",
   pandocArguments: [],
   latexEngine: "pdflatex",
-  enableScriptExecution: true,
+  enableScriptExecution: false,
 };
