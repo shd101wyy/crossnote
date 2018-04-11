@@ -27,7 +27,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "webfont": "1.6.28",
     // "snap.svg": "0.5.1", // <= Doesn't work well in Preview. Use raphael.js instead
     "underscore": "1.8.3",
-    "prism": "1.13.0"
+    "prism": "1.14.0"
 }
 ```  
 
