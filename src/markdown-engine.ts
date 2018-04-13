@@ -31,10 +31,9 @@ import enhanceWithEmbeddedLocalImages from "./render-enhancers/embedded-local-im
 import enhanceWithEmbeddedSvgs from "./render-enhancers/embedded-svgs";
 import enhanceWithExtendedTableSyntax from "./render-enhancers/extended-table-syntax";
 import enhanceWithFencedCodeChunks, {
-/* tslint:disable-next-line:ordered-imports */
-  runCodeChunks,
   runCodeChunk,
   RunCodeChunkOptions,
+  runCodeChunks,
 } from "./render-enhancers/fenced-code-chunks";
 import enhanceWithFencedDiagrams from "./render-enhancers/fenced-diagrams";
 import enhanceWithFencedMath from "./render-enhancers/fenced-math";
@@ -304,7 +303,10 @@ export class MarkdownEngine {
     this.enableTypographer = this.config.enableTypographer;
 
     // protocal whitelist
-    const protocolsWhiteList = (this.config.protocolsWhiteList || defaultMarkdownEngineConfig.protocolsWhiteList)
+    const protocolsWhiteList = (
+      this.config.protocolsWhiteList ||
+      defaultMarkdownEngineConfig.protocolsWhiteList
+    )
       .split(",")
       .map((x) => x.trim());
     this.protocolsWhiteListRegExp = new RegExp(
