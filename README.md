@@ -28,6 +28,7 @@ async function main() {
       // revealjsTheme: "white.css"
       codeBlockTheme: "default.css",
       printBackground: true,
+      enableScriptExecution: true, // <= for running code chunks
     },
   });
 

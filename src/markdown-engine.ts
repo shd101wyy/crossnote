@@ -1640,7 +1640,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
               right: "1cm",
             },
           }),
-      ...(yamlConfig["chrome"] || {}),
+      printBackground: this.config.printBackground,
+      ...(yamlConfig["chrome"] || yamlConfig["puppeteer"] || {}),
     };
 
     if (fileType === "pdf") {
