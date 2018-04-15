@@ -1,3 +1,13 @@
+# 0.3.3
+
+* Disable `enableScriptExecution` by default.
+* Fix pandoc parser code block syntax highlighting issue.
+* Set default `frontMatterRenderingOption` to none.
+* Change `protocolsWhiteList` value.
+* Upgrade `prism.js` to `0.14.0`
+* Fix toc header anchor issue [mpe #827](https://github.com/shd101wyy/markdown-preview-enhanced/issues/827) and [mpe #824](https://github.com/shd101wyy/markdown-preview-enhanced/issues/824).
+* Continue to refactor the code.
+
 # 0.3.2
 
 * Implement client-rendered ` ```vega {interactive} ` and ` ```vega-lite {interactive} ` ([#42](https://github.com/shd101wyy/mume/pull/42)).

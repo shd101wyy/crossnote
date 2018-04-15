@@ -304,7 +304,10 @@ export class MarkdownEngine {
     this.enableTypographer = this.config.enableTypographer;
 
     // protocal whitelist
-    const protocolsWhiteList = (this.config.protocolsWhiteList || defaultMarkdownEngineConfig.protocolsWhiteList)
+    const protocolsWhiteList = (
+      this.config.protocolsWhiteList ||
+      defaultMarkdownEngineConfig.protocolsWhiteList
+    )
       .split(",")
       .map((x) => x.trim());
     this.protocolsWhiteListRegExp = new RegExp(
@@ -1640,7 +1643,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
               right: "1cm",
             },
           }),
-      ...(yamlConfig["chrome"] || {}),
+      printBackground: this.config.printBackground,
+      ...(yamlConfig["chrome"] || yamlConfig["puppeteer"] || {}),
     };
 
     if (fileType === "pdf") {
