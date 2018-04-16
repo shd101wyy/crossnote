@@ -1,5 +1,7 @@
 # MUME
 
+[![Build Status](https://travis-ci.org/shd101wyy/mume.svg?branch=master)](https://travis-ci.org/shd101wyy/mume)
+
 This library powers:
 
 * [markdown preview enhanced for atom](https://github.com/shd101wyy/markdown-preview-enhanced)
@@ -186,8 +188,9 @@ const config = {
   // Default latex engine for Pandoc export and latex code chunk.
   latexEngine: 'pdflatex',
 
-  // Whether to enable script execution.
-  // Disabling this will prevent executing code chunks and importing javascript files.  
+  // Enables executing code chunks and importing javascript files.
+  // ⚠ ️ Please use this feature with caution because it may put your security at risk!
+  //    Your machine can get hacked if someone makes you open a markdown with malicious code while script execution is enabled.
   enableScriptExecution: false
 }
 
