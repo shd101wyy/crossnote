@@ -29,8 +29,8 @@ ls .
 `js {cmd=node output=html}`
 
 ```js {cmd=node output=html}
-const date = Date.now()
-console.log(date.toString())
+const date = Date.now();
+console.log(date.toString());
 ```
 
 ---
@@ -38,7 +38,7 @@ console.log(date.toString())
 `js {cmd=node output=markdown}`
 
 ```js {cmd=node output=markdown}
-var greeting = 'Hello _world_';
+var greeting = "Hello _world_";
 console.log(greeting);
 ```
 
@@ -47,7 +47,7 @@ console.log(greeting);
 `js {cmd=node output=markdown output_first}`
 
 ```js {cmd=node output=markdown output_first}
-var greeting = 'Hello _world_';
+var greeting = "Hello _world_";
 console.log(greeting);
 ```
 
@@ -56,7 +56,7 @@ console.log(greeting);
 `js {cmd=node output=none}`
 
 ```js {cmd=node output=none}
-var greeting = 'Hello world!';
+var greeting = "Hello world!";
 console.log(greeting);
 ```
 
@@ -65,7 +65,7 @@ console.log(greeting);
 `js {cmd=node output=txt modify_source}`
 
 ```js {cmd=node output=txt modify_source}
-var greeting = 'Hello world!';
+var greeting = "Hello world!";
 console.log(greeting);
 ```
 
@@ -74,7 +74,7 @@ console.log(greeting);
 `js {cmd=node output=txt modify_source run_on_save}`
 
 ```js {cmd=node output=txt modify_source run_on_save}
-var greeting = 'Hello world!!!';
+var greeting = "Hello world!!!";
 console.log(greeting);
 ```
 
@@ -135,8 +135,8 @@ print(x) # will print 1
 `js {cmd=node output=text .line-numbers}`
 
 ```js {cmd=node output=text .line-numbers}
-const date = Date.now()
-console.log(date.toString())
+const date = Date.now();
+console.log(date.toString());
 ```
 
 ---
