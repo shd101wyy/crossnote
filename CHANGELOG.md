@@ -1,3 +1,7 @@
+# next
+
+* Upgrade `vega` to `3.3.1`, `vega-lite` to `2.4.0` and `vega-embed` to `3.7.2` ([#65](https://github.com/shd101wyy/mume/pull/65)).
+
 # 0.3.3
 
 * Disable `enableScriptExecution` by default.
