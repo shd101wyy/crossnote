@@ -5,6 +5,7 @@ import { execFile } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import * as request from "request";
+import { VFile } from "vfile";
 import * as YAML from "yamljs";
 
 import { CodeChunkData } from "./code-chunk-data";
@@ -31,10 +32,9 @@ import enhanceWithEmbeddedLocalImages from "./render-enhancers/embedded-local-im
 import enhanceWithEmbeddedSvgs from "./render-enhancers/embedded-svgs";
 import enhanceWithExtendedTableSyntax from "./render-enhancers/extended-table-syntax";
 import enhanceWithFencedCodeChunks, {
-/* tslint:disable-next-line:ordered-imports */
-  runCodeChunks,
   runCodeChunk,
   RunCodeChunkOptions,
+  runCodeChunks,
 } from "./render-enhancers/fenced-code-chunks";
 import enhanceWithFencedDiagrams from "./render-enhancers/fenced-diagrams";
 import enhanceWithFencedMath from "./render-enhancers/fenced-math";
@@ -127,6 +127,8 @@ let MODIFY_SOURCE: (
   filePath: string,
 ) => Promise<string> = null;
 
+let UPDATE_LINTING_REPORT: (vFiles: Array<VFile<{}>>) => void = null;
+
 /**
  * The markdown engine that can be used to parse markdown and export files
  */
@@ -163,6 +165,16 @@ export class MarkdownEngine {
     ) => Promise<string>,
   ) {
     MODIFY_SOURCE = cb;
+  }
+
+  public static async updateLintingReport(vFiles: Array<VFile<{}>>) {
+    if (UPDATE_LINTING_REPORT) {
+      await UPDATE_LINTING_REPORT(vFiles);
+    }
+  }
+
+  public static onUpdateLintingReport(cb: (vFiles: Array<VFile<{}>>) => void) {
+    UPDATE_LINTING_REPORT = cb;
   }
 
   /**
