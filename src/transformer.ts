@@ -255,7 +255,7 @@ export async function transformMarkdown(
     tocTable = {},
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
-  let inBlock = false; // inside code block
+  let lastOpeningCodeBlockFence: string = null;
   let codeChunkOffset = 0;
   const slideConfigs = [];
   const JSAndCssFiles = [];
@@ -288,18 +288,27 @@ export async function transformMarkdown(
       }
       let line = inputString.substring(i, end);
 
-      if (line.match(/^```/)) {
-        if (!inBlock && forPreview) {
+      const inCodeBlock = !!lastOpeningCodeBlockFence;
+
+      const currentCodeBlockFence = (line.match(/^[`]{3,}/) || [])[0];
+      if (currentCodeBlockFence) {
+        if (!inCodeBlock && forPreview) {
           outputString += createAnchor(lineNo);
         }
 
-        const match = line.match(/\"?cmd\"?\s*[:=\s}]/);
-        if (!inBlock && !notSourceFile && match) {
+        const containsCmd = !!line.match(/\"?cmd\"?\s*[:=\s}]/);
+        if (!inCodeBlock && !notSourceFile && containsCmd) {
           // it's code chunk, so mark its offset
           line = line.replace("{", `{code_chunk_offset=${codeChunkOffset}, `);
           codeChunkOffset++;
         }
-        inBlock = !inBlock;
+        if (!inCodeBlock) {
+          lastOpeningCodeBlockFence = currentCodeBlockFence;
+        } else if (
+          currentCodeBlockFence.length >= lastOpeningCodeBlockFence.length
+        ) {
+          lastOpeningCodeBlockFence = null;
+        }
 
         // return helper(end+1, lineNo+1, outputString+line+'\n')
         i = end + 1;
@@ -308,7 +317,7 @@ export async function transformMarkdown(
         continue;
       }
 
-      if (inBlock) {
+      if (inCodeBlock) {
         // return helper(end+1, lineNo+1, outputString+line+'\n')
         i = end + 1;
         lineNo = lineNo + 1;
