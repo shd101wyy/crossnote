@@ -4,8 +4,8 @@
 
 This library powers:
 
-* [markdown preview enhanced for atom](https://github.com/shd101wyy/markdown-preview-enhanced)
-* [markdown preview enhanced for vscode](https://github.com/shd101wyy/vscode-markdown-preview-enhanced)
+- [markdown preview enhanced for atom](https://github.com/shd101wyy/markdown-preview-enhanced)
+- [markdown preview enhanced for vscode](https://github.com/shd101wyy/vscode-markdown-preview-enhanced)
 
 ```sh
 npm install --save @shd101wyy/mume
@@ -87,14 +87,14 @@ const config = {
   // By default, the extension for wikilink is `.md`. For example: [[test]] will direct to file path `test.md`.
   wikiLinkFileExtension: '.md'
 
-  // Enable emoji & font-awesome plugin. This only works for markdown-it parser, but not pandoc parser.  
+  // Enable emoji & font-awesome plugin. This only works for markdown-it parser, but not pandoc parser.
   enableEmojiSyntax: true
 
-  // Enable extended table syntax to support merging table cells.  
+  // Enable extended table syntax to support merging table cells.
   enableExtendedTableSyntax: false
 
-  // Enable CriticMarkup syntax. Only works with markdown-it parser.  
-  // Please check http://criticmarkup.com/users-guide.php for more information.  
+  // Enable CriticMarkup syntax. Only works with markdown-it parser.
+  // Please check http://criticmarkup.com/users-guide.php for more information.
   enableCriticMarkupSyntax: false
 
   // Front matter rendering option

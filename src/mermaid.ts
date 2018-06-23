@@ -32,9 +32,9 @@ export async function mermaidToPNG(
       ),
     ]);
     // console.log(info.path);
-    fs
-      .createReadStream(info.path + ".png")
-      .pipe(fs.createWriteStream(pngFilePath));
+    fs.createReadStream(info.path + ".png").pipe(
+      fs.createWriteStream(pngFilePath),
+    );
     fs.unlink(info.path + ".png", () => {
       /**/
     });
