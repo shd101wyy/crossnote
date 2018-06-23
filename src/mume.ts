@@ -1,5 +1,5 @@
 /**
- * The core of mumei package.
+ * The core of mume package.
  */
 import * as fs from "fs";
 import * as os from "os";
