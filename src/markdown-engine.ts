@@ -1562,22 +1562,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (!fs.existsSync(depsDirName)) {
         fs.mkdirSync(depsDirName);
       }
-      fs
-        .createReadStream(
-          path.resolve(
-            extensionDirectoryPath,
-            "./dependencies/reveal/plugin/notes/notes.js",
-          ),
-        )
-        .pipe(fs.createWriteStream(path.resolve(depsDirName, "notes.js")));
-      fs
-        .createReadStream(
-          path.resolve(
-            extensionDirectoryPath,
-            "./dependencies/reveal/plugin/notes/notes.html",
-          ),
-        )
-        .pipe(fs.createWriteStream(path.resolve(depsDirName, "notes.html")));
+      fs.createReadStream(
+        path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/reveal/plugin/notes/notes.js",
+        ),
+      ).pipe(fs.createWriteStream(path.resolve(depsDirName, "notes.js")));
+      fs.createReadStream(
+        path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/reveal/plugin/notes/notes.html",
+        ),
+      ).pipe(fs.createWriteStream(path.resolve(depsDirName, "notes.html")));
     }
 
     await utility.writeFile(dest, html);

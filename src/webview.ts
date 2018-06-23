@@ -1397,7 +1397,7 @@
 
           const difference = scrollTop - this.previewElement.scrollTop;
 
-          const perTick = difference / duration * delay;
+          const perTick = (difference / duration) * delay;
 
           // disable preview onscroll
           this.previewScrollDelay = Date.now() + 500;
