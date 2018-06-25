@@ -369,45 +369,45 @@ export class MarkdownEngine {
     scripts += `<script type="text/javascript" src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/jquery/jquery.js",
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
 
     // jquery contextmenu
     scripts += `<script type="text/javascript" src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/jquery-contextmenu/jquery.ui.position.min.js",
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
     scripts += `<script type="text/javascript" src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/jquery-contextmenu/jquery.contextMenu.min.js",
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
 
     // jquery modal
     scripts += `<script type="text/javascript" src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/jquery-modal/jquery.modal.min.js",
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
 
     // crpto-js
     scripts += `<script type="text/javascript" src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/crypto-js/crypto-js.js",
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
 
     // mermaid
     scripts += `<script type="text/javascript" src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/mermaid/mermaid.min.js`,
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
 
     // wavedrome
     scripts += `<script type="text/javascript" src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/wavedrom/default.js",
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
     scripts += `<script type="text/javascript" src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/wavedrom/wavedrom.min.js",
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
 
     // math
     if (
@@ -422,7 +422,7 @@ export class MarkdownEngine {
       scripts += `<script type="text/javascript" async src="file:///${path.resolve(
         utility.extensionDirectoryPath,
         "./dependencies/mathjax/MathJax.js",
-      )}"></script>`;
+      )}" charset="UTF-8"></script>`;
       scripts += `<script type="text/x-mathjax-config"> MathJax.Hub.Config(${JSON.stringify(
         mathJaxConfig,
       )}); </script>`;
@@ -528,15 +528,15 @@ if (typeof(window['Reveal']) !== 'undefined') {
     scripts += `<script src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/vega/vega.min.js`,
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
     scripts += `<script src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/vega-lite/vega-lite.min.js`,
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
     scripts += `<script src="file:///${path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/vega-embed/vega-embed.min.js`,
-    )}"></script>`;
+    )}" charset="UTF-8"></script>`;
 
     if (isForPresentation) {
       scripts += `<script>
@@ -941,7 +941,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         <script type="text/javascript" async src="file:///${path.resolve(
           extensionDirectoryPath,
           "./dependencies/mathjax/MathJax.js",
-        )}"></script>
+        )}" charset="UTF-8"></script>
         `;
       } else {
         mathStyle = `
@@ -986,7 +986,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         mermaidScript = `<script type="text/javascript" src="file:///${path.resolve(
           extensionDirectoryPath,
           "./dependencies/mermaid/mermaid.min.js",
-        )}"></script>`;
+        )}" charset="UTF-8"></script>`;
         mermaidStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           extensionDirectoryPath,
           `./dependencies/mermaid/${this.config.mermaidTheme}`,
@@ -1036,11 +1036,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
           "./dependencies/wavedrom/default.js",
-        )}"></script>`;
+        )}" charset="UTF-8"></script>`;
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
           "./dependencies/wavedrom/wavedrom.min.js",
-        )}"></script>`;
+        )}" charset="UTF-8"></script>`;
       } else {
         wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/skins/default.js"></script>`;
         wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/wavedrom.min.js"></script>`;
@@ -1059,19 +1059,19 @@ if (typeof(window['Reveal']) !== 'undefined') {
       if (options.offline) {
         vegaScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
-          `./dependencies/vega/vega.min.js`,
-        )}"></script>`;
+          `./dependencies/vega/vega.js`,
+        )}" charset="UTF-8"></script>`;
         vegaScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
-          `./dependencies/vega-lite/vega-lite.min.js`,
-        )}"></script>`;
+          `./dependencies/vega-lite/vega-lite.js`,
+        )}" charset="UTF-8"></script>`;
         vegaScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
-          `./dependencies/vega-embed/vega-embed.min.js`,
-        )}"></script>`;
+          `./dependencies/vega-embed/vega-embed.js`,
+        )}" charset="UTF-8"></script>`;
       } else {
         vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega/3.3.1/vega.min.js"></script>`;
-        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega-lite/2.4.0/vega-lite.min.js"></script>`;
+        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega-lite/2.4.1/vega-lite.min.js"></script>`;
         vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega-embed/3.7.2/vega-embed.min.js"></script>`;
       }
       vegaInitScript += `<script>
@@ -1102,11 +1102,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
         flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
           "./dependencies/raphael/raphael.js",
-        )}"></script>`;
+        )}" charset="UTF-8"></script>`;
         flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
           "./dependencies/flowchart/flowchart.js",
-        )}"></script>`;
+        )}" charset="UTF-8"></script>`;
       } else {
         flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`;
         flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.7.0/flowchart.min.js"></script>`;
@@ -1136,19 +1136,19 @@ for (var i = 0; i < flowcharts.length; i++) {
         sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
           "./dependencies/webfont/webfontloader.js",
-        )}"></script>`;
+        )}" charset="UTF-8"></script>`;
         sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
           "./dependencies/raphael/raphael.js",
-        )}"></script>`;
+        )}" charset="UTF-8"></script>`;
         sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
           "./dependencies/underscore/underscore.js",
-        )}"></script>`;
+        )}" charset="UTF-8"></script>`;
         sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
           "./dependencies/js-sequence-diagrams/sequence-diagram-min.js",
-        )}"></script>`;
+        )}" charset="UTF-8"></script>`;
         sequenceDiagramStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           extensionDirectoryPath,
           `./dependencies/js-sequence-diagrams/sequence-diagram-min.css`,
