@@ -1376,6 +1376,33 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     document.body.setAttribute('html-show-sidebar-toc', true)
   }
 })
+
+function scrollSmooth(htmlElement) {
+  let anchor = document.getElementById(htmlElement.getAttribute("href").substring(1));
+  window.scrollTo({ "behavior": "smooth", "top": anchor.offsetTop });
+}
+
+function setSelectionStyle(htmlElement) {
+  htmlElement.setAttribute("style", "border-left: 4px solid #2089C4; padding-left: 5px")
+}
+
+function rmSelectionStyle() {
+  document.querySelectorAll("a[style]").forEach(function (element) {
+    element.removeAttribute("style");
+  });
+}
+
+(function () {
+  document.querySelectorAll("a[href^='#']").forEach(function (element) {
+    element.addEventListener("click", function (mouseEvent) {
+      mouseEvent.preventDefault();
+      scrollSmooth(element);
+      rmSelectionStyle();
+      setSelectionStyle(element);
+    });
+  })
+})();
+
 </script>
       `;
     }
