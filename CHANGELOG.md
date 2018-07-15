@@ -1,6 +1,6 @@
 # next
 
-- Upgrade `vega` to `3.3.1`, `vega-lite` to `2.4.0` and `vega-embed` to `3.7.2` ([#65](https://github.com/shd101wyy/mume/pull/65)).
+- Upgrade `vega` to `4.1.0`, `vega-lite` to `2.6.0` and `vega-embed` to `3.18.1` ([#79](https://github.com/shd101wyy/mume/pull/79)).
 
 # 0.3.3
 
