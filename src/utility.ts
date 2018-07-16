@@ -10,13 +10,6 @@ import * as vm from "vm";
 import * as temp from "temp";
 temp.track();
 
-// polyfill XMLHttpRequest to load vega data from remote URLs
-// (needed in barebone mume and VSCode)
-if (!global["XMLHttpRequest"]) {
-  // tslint:disable-next-line:no-var-requires
-  global["XMLHttpRequest"] = require("xmlhttprequest").XMLHttpRequest;
-}
-
 const TAGS_TO_REPLACE = {
   "&": "&amp;",
   "<": "&lt;",
