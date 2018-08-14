@@ -1949,6 +1949,15 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             if (error) {
               return reject(error.toString());
             }
+
+            // Fix image paths that are relative to the child documents
+            let rootPath = path.dirname(this.filePath);
+            text = text.replace(/(!\[[^\]]*\]\()(\.[^\)\s]*)/g, function(whole, a, b) {
+              let fullPath = path.resolve(path.dirname(filePath), b);
+              let relativePath = path.relative(rootPath, fullPath);
+              return a + relativePath;
+            });
+
             this.parseMD(text, {
               useRelativeFilePath: false,
               isForPreview: false,
