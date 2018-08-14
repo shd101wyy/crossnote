@@ -7,4 +7,5 @@ module.exports = {
   },
   roots: ["test"],
   testMatch: ["**/?(*.)(spec|test).(j|t)s?(x)"],
+  testEnvironment: "node",
 };
