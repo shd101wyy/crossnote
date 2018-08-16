@@ -3,6 +3,24 @@ import { MarkdownIt } from "markdown-it";
 import { resolve } from "path";
 import { MarkdownEngineConfig } from "../markdown-engine-config";
 import { extensionDirectoryPath } from "../utility";
+import * as twemoji from "twemoji";
+
+export const twemojiParse = (content: string) => twemoji.parse(content, {
+  callback: (icon) => {
+    return (
+      "file://" +
+      resolve(__dirname, "../../../node_modules/twemoji/2/svg") +
+      "/" +
+      icon +
+      ".svg"
+    );
+  },
+  attributes: () => {
+    return {
+      style: "width:1.2em; height: 1.2em;",
+    };
+  },
+});
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   md.use(
@@ -21,7 +39,7 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
         return `<i class="fa ${markup}" aria-hidden="true"></i>`;
       } else {
         // emoji
-        return token.content;
+        return twemojiParse(token.content);
       }
     } else {
       return `:${token.markup}:`;
