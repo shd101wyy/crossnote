@@ -30,6 +30,7 @@ import useMarkdownItWikilink from "./custom-markdown-it-features/wikilink";
 import enhanceWithCodeBlockStyling from "./render-enhancers/code-block-styling";
 import enhanceWithEmbeddedLocalImages from "./render-enhancers/embedded-local-images";
 import enhanceWithEmbeddedSvgs from "./render-enhancers/embedded-svgs";
+import enhanceWithEmojiToSvg from "./render-enhancers/emoji-to-svg";
 import enhanceWithExtendedTableSyntax from "./render-enhancers/extended-table-syntax";
 import enhanceWithFencedCodeChunks, {
   runCodeChunk,
@@ -2845,6 +2846,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       // extend table
       await enhanceWithExtendedTableSyntax($);
     }
+
+    enhanceWithEmojiToSvg($);
+
     html = frontMatterTable + $.html();
 
     /**
