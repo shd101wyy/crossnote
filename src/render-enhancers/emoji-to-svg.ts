@@ -5,7 +5,7 @@ import * as twemoji from "twemoji";
  * Replace emoji with svg.
  * @param $
  */
-export default async function enhance($: CheerioStatic): Promise<void> {
+export default function enhance($: CheerioStatic): void {
   const html = twemoji.parse($.html(), {
     callback: (icon) => {
       return (
@@ -15,11 +15,6 @@ export default async function enhance($: CheerioStatic): Promise<void> {
         icon +
         ".svg"
       );
-    },
-    attributes: () => {
-      return {
-        height: "0.8em",
-      };
     },
   });
 

@@ -2066,6 +2066,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           ),
           { encoding: "utf-8" },
         ),
+        // twemoji css style
+        utility.readFile(
+          path.resolve(extensionDirectoryPath, "./styles/twemoji.css"),
+          { encoding: "utf-8" },
+        ),
         // preview theme
         utility.readFile(
           path.resolve(
@@ -2852,7 +2857,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     if (options.emojiToSvg) {
-      await enhanceWithEmojiToSvg($);
+      enhanceWithEmojiToSvg($);
     }
 
     html = frontMatterTable + $.html();
