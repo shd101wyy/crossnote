@@ -1,26 +1,27 @@
 // tslint:disable-next-line no-implicit-dependencies
 import { MarkdownIt } from "markdown-it";
 import { resolve } from "path";
+import * as twemoji from "twemoji";
 import { MarkdownEngineConfig } from "../markdown-engine-config";
 import { extensionDirectoryPath } from "../utility";
-import * as twemoji from "twemoji";
 
-export const twemojiParse = (content: string) => twemoji.parse(content, {
-  callback: (icon) => {
-    return (
-      "file://" +
-      resolve(__dirname, "../../../node_modules/twemoji/2/svg") +
-      "/" +
-      icon +
-      ".svg"
-    );
-  },
-  attributes: () => {
-    return {
-      style: "width:1.2em; height: 1.2em;",
-    };
-  },
-});
+export const twemojiParse = (content: string) =>
+  twemoji.parse(content, {
+    callback: (icon) => {
+      return (
+        "file://" +
+        resolve(__dirname, "../../../node_modules/twemoji/2/svg") +
+        "/" +
+        icon +
+        ".svg"
+      );
+    },
+    attributes: () => {
+      return {
+        style: "width:1.2em; height: 1.2em;",
+      };
+    },
+  });
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   md.use(

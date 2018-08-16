@@ -1,9 +1,9 @@
-import {twemojiParse} from "../custom-markdown-it-features/emoji";
+import { twemojiParse } from "../custom-markdown-it-features/emoji";
 
 /**
  * Replace emoji with svg.
  * @param $
  */
-export default function enhance($: CheerioStatic):void {
+export default function enhance($: CheerioStatic): void {
   $.root().html(twemojiParse($.html()));
 }
