@@ -30,6 +30,7 @@ import useMarkdownItWikilink from "./custom-markdown-it-features/wikilink";
 import enhanceWithCodeBlockStyling from "./render-enhancers/code-block-styling";
 import enhanceWithEmbeddedLocalImages from "./render-enhancers/embedded-local-images";
 import enhanceWithEmbeddedSvgs from "./render-enhancers/embedded-svgs";
+import enhanceWithEmojiToSvg from "./render-enhancers/emoji-to-svg";
 import enhanceWithExtendedTableSyntax from "./render-enhancers/extended-table-syntax";
 import enhanceWithFencedCodeChunks, {
   runCodeChunk,
@@ -67,6 +68,7 @@ export interface MarkdownEngineRenderOption {
   hideFrontMatter: boolean;
   triggeredBySave?: boolean;
   runAllCodeChunks?: boolean;
+  emojiToSvg?: boolean;
 }
 
 export interface MarkdownEngineOutput {
@@ -1849,6 +1851,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const inputString = await utility.readFile(this.filePath, {
       encoding: "utf-8",
     });
+    const emojiToSvg = fileType === "pdf";
     let html;
     let yamlConfig;
     ({ html, yamlConfig } = await this.parseMD(inputString, {
@@ -1856,6 +1859,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       hideFrontMatter: true,
       isForPreview: false,
       runAllCodeChunks,
+      emojiToSvg,
     }));
 
     let dest = this.filePath;
@@ -1968,6 +1972,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
               useRelativeFilePath: false,
               isForPreview: false,
               hideFrontMatter: true,
+              emojiToSvg,
               /* tslint:disable-next-line:no-shadowed-variable */
             }).then(({ html }) => {
               return resolve({ heading, id, level, filePath, html, offset });
@@ -2059,6 +2064,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             extensionDirectoryPath,
             `./styles/prism_theme/${this.getPrismTheme(false)}`,
           ),
+          { encoding: "utf-8" },
+        ),
+        // twemoji css style
+        utility.readFile(
+          path.resolve(extensionDirectoryPath, "./styles/twemoji.css"),
           { encoding: "utf-8" },
         ),
         // preview theme
@@ -2845,6 +2855,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       // extend table
       await enhanceWithExtendedTableSyntax($);
     }
+
+    if (options.emojiToSvg) {
+      enhanceWithEmojiToSvg($);
+    }
+
     html = frontMatterTable + $.html();
 
     /**
