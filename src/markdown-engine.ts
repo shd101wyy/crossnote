@@ -506,7 +506,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     )}'></script>`;
     scripts += `<script src='file:///${path.resolve(
       utility.extensionDirectoryPath,
-      "./dependencies/flowchart/flowchart.js",
+      "./dependencies/flowchart/flowchart.min.js",
     )}'></script>`;
     // flowchart init script
     if (isForPresentation) {
@@ -976,7 +976,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // mermaid
     let mermaidScript = "";
-    let mermaidStyle = "";
     let mermaidInitScript = "";
     if (html.indexOf(' class="mermaid') >= 0) {
       if (options.offline) {
@@ -1095,7 +1094,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         )}" charset="UTF-8"></script>`;
         flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.extensionDirectoryPath,
-          "./dependencies/flowchart/flowchart.js",
+          "./dependencies/flowchart/flowchart.min.js",
         )}" charset="UTF-8"></script>`;
       } else {
         flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`;
@@ -1407,7 +1406,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       ${presentationStyle}
       ${mathStyle}
-      ${mermaidStyle}
       ${sequenceDiagramStyle}
       ${fontAwesomeStyle}
       

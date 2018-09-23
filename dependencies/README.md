@@ -22,7 +22,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "vega-embed": "3.18.1",
     "ditaa": "0.10",
     "font-awesome": "4.7",
-    "flowchart": "1.7.0",
+    "flowchart": "1.11.3",
     "raphael.js": "2.2.7",
     "js-sequence-diagrams": "2.0.1",
     "webfont": "1.6.28",
