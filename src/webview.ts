@@ -661,13 +661,12 @@
         );
 
         const validMermaidGraphs = [];
-        // const mermaidCodes = []
         for (let i = 0; i < mermaidGraphs.length; i++) {
           const mermaidGraph = mermaidGraphs[i] as HTMLElement;
           try {
-            mermaid.parse(mermaidGraph.textContent.trim())
+            mermaid.parse(mermaidGraph.textContent.trim());
             validMermaidGraphs.push(mermaidGraph);
-          } catch(error) {
+          } catch (error) {
             mermaidGraph.innerHTML = `<pre class="language-text">${error.str.toString()}</pre>`;
           }
         }
@@ -679,10 +678,8 @@
           mermaid.init(null, validMermaidGraphs, () => {
             resolve();
           });
-        } catch(error) {
-          console.log("renderMermaid error" )
-          console.log(error)
-          return resolve()
+        } catch (error) {
+          return resolve();
         }
       });
     }
