@@ -307,7 +307,7 @@ export async function processGraphs(
         const attributes = currentCodeChunk.normalizedInfo.attributes;
         if (attributes["output"] === "html" || attributes["matplotlib"]) {
           // check svg and convert it to png
-          const $ = cheerio.load(currentCodeChunk.result, { xmlMode: true }); // xmlMode here is necessary...
+          const $ = cheerio.load(currentCodeChunk.result); // xmlMode here is necessary...
           const svg = $("svg");
           if (svg.length === 1) {
             const pngFilePath = (await convertSVGToPNGFile(

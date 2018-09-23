@@ -467,8 +467,9 @@ ${utility.configs.mermaidConfig}
 if (window['MERMAID_CONFIG']) {
   window['MERMAID_CONFIG'].startOnLoad = false
   window['MERMAID_CONFIG'].cloneCssStyles = false 
+  window['MERMAID_CONFIG'].theme = "${this.config.mermaidTheme}"
 }
-mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
+mermaid.initialize(window['MERMAID_CONFIG'] || {})
 
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
@@ -695,12 +696,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
         "./dependencies/katex/katex.min.css",
       )}">`;
     }
-
-    // check mermaid
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(
-      utility.extensionDirectoryPath,
-      `./dependencies/mermaid/${this.config.mermaidTheme}`,
-    )}">`;
 
     // check sequence diagram
     styles += `<link rel="stylesheet" href="file:///${path.resolve(
@@ -989,25 +984,18 @@ if (typeof(window['Reveal']) !== 'undefined') {
           extensionDirectoryPath,
           "./dependencies/mermaid/mermaid.min.js",
         )}" charset="UTF-8"></script>`;
-        mermaidStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          extensionDirectoryPath,
-          `./dependencies/mermaid/${this.config.mermaidTheme}`,
-        )}">`;
       } else {
-        mermaidScript = `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.0.0/mermaid.min.js"></script>`;
-        mermaidStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.0.0/${this.config.mermaidTheme.replace(
-          ".css",
-          ".min.css",
-        )}">`;
+        mermaidScript = `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@8.0.0-rc.8/dist/mermaid.min.js"></script>`;
       }
       const mermaidConfig: string = await utility.getMermaidConfig();
       mermaidInitScript += `<script>
 ${mermaidConfig}
 if (window['MERMAID_CONFIG']) {
   window['MERMAID_CONFIG'].startOnLoad = false
-  window['MERMAID_CONFIG'].cloneCssStyles = false 
+  window['MERMAID_CONFIG'].cloneCssStyles = false
+  window['MERMAID_CONFIG'].theme = "${this.config.mermaidTheme}"
 }
-mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
+mermaid.initialize(window['MERMAID_CONFIG'] || {})
 
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
@@ -1456,7 +1444,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     `;
 
     if (options.embedLocalImages || options.embedSVG) {
-      const $ = cheerio.load(html, { xmlMode: true });
+      const $ = cheerio.load(html);
       if (options.embedLocalImages) {
         await enhanceWithEmbeddedLocalImages(
           $,
@@ -1884,7 +1872,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       );
     }
 
-    let $ = cheerio.load(`<div>${html}</div>`, { xmlMode: true });
+    let $ = cheerio.load(`<div>${html}</div>`);
 
     const tocStructure: Array<{
       level: number;
@@ -1989,7 +1977,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     /* tslint:disable-next-line:no-shadowed-variable */
     results.forEach(({ heading, id, level, filePath, html }) => {
       /* tslint:disable-next-line:no-shadowed-variable */
-      const $ = cheerio.load(`<div>${html}</div>`, { xmlMode: true });
+      const $ = cheerio.load(`<div>${html}</div>`);
       const $firstChild = $(":root")
         .children()
         .first();
@@ -2002,7 +1990,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       outputHTML += $.html().replace(/^<div>(.+)<\/div>$/, "$1"); // append new content
     });
 
-    $ = cheerio.load(outputHTML, { xmlMode: true });
+    $ = cheerio.load(outputHTML);
     const downloadedImagePaths = await this.eBookDownloadImages($, dest);
 
     // convert image to base64 if output html
@@ -2497,50 +2485,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     slides = slides.slice(1);
 
     let output = "";
-
-    /*
-    const parseAttrString = (slideConfig)=> {
-      let attrString = ''
-
-      // let attrString = stringifyAttributes(slideConfig, false)
-
-      if (slideConfig['data-background-image'])
-        attrString += ` data-background-image='${this.resolveFilePath(slideConfig['data-background-image'], useRelativeFilePath)}'`
-
-      if (slideConfig['data-background-size'])
-        attrString += ` data-background-size='${slideConfig['data-background-size']}'`
-
-      if (slideConfig['data-background-position'])
-        attrString += ` data-background-position='${slideConfig['data-background-position']}'`
-
-      if (slideConfig['data-background-repeat'])
-        attrString += ` data-background-repeat='${slideConfig['data-background-repeat']}'`
-
-      if (slideConfig['data-background-color'])
-        attrString += ` data-background-color='${slideConfig['data-background-color']}'`
-
-      if (slideConfig['data-notes'])
-        attrString += ` data-notes='${slideConfig['data-notes']}'`
-
-      if (slideConfig['data-background-video'])
-        attrString += ` data-background-video='${this.resolveFilePath(slideConfig['data-background-video'], useRelativeFilePath)}'`
-
-      if (slideConfig['data-background-video-loop'])
-        attrString += ` data-background-video-loop`
-
-      if (slideConfig['data-background-video-muted'])
-        attrString += ` data-background-video-muted`
-
-      if (slideConfig['data-transition'])
-        attrString += ` data-transition='${slideConfig['data-transition']}'`
-
-      if (slideConfig['data-background-iframe'])
-        attrString += ` data-background-iframe='${this.resolveFilePath(slideConfig['data-background-iframe'], useRelativeFilePath)}'`
-
-      return attrString
-    }
-    */
-
     let i = 0;
     let h = -1; // horizontal
     let v = 0; // vertical
@@ -2600,7 +2544,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // check list item attribtues
     // issue: https://github.com/shd101wyy/markdown-preview-enhanced/issues/559
-    const $ = cheerio.load(output, { xmlMode: true });
+    const $ = cheerio.load(output);
     $("li").each((j, elem) => {
       const $elem = $(elem);
       const html2 = $elem.html().trim();
@@ -2823,7 +2767,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     /**
      * resolve image paths and render code block.
      */
-    const $ = cheerio.load(html, { xmlMode: true });
+    const $ = cheerio.load(html);
     await enhanceWithFencedMath(
       $,
       this.config.mathRenderingOption,
