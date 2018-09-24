@@ -7,7 +7,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "plantuml": "1.2018.11",
     "wavedrom": "1.4.1",
     "reveal": "3.5.0",
-    "viz": "v1.8.0",
+    "viz": "v2.0.0",
     "MathJax": "v2.7.1",
     "jquery": "v3.2.1",
     "jquery-contextmenu": "2.6.3",
