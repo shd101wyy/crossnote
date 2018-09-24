@@ -7,7 +7,7 @@
 		var a = factory();
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(this, function() {
+})((typeof self !== 'undefined' ? self : this), function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -46,12 +46,32 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -69,57 +89,29 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__copy_tex_css__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__copy_tex_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__copy_tex_css__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__katex2tex__ = __webpack_require__(2);
-
-
-
-// Global copy handler to modify behavior on .katex elements.
-document.addEventListener('copy', function (event) {
-    var selection = window.getSelection();
-    if (selection.isCollapsed) {
-        return; // default action OK if selection is empty
-    }
-    var fragment = selection.getRangeAt(0).cloneContents();
-    if (!fragment.querySelector('.katex-mathml')) {
-        return; // default action OK if no .katex-mathml elements
-    }
-    // Preserve usual HTML copy/paste behavior.
-    var html = [];
-    for (var i = 0; i < fragment.childNodes.length; i++) {
-        html.push(fragment.childNodes[i].outerHTML);
-    }
-    event.clipboardData.setData('text/html', html.join(''));
-    // Rewrite plain-text version.
-    event.clipboardData.setData('text/plain', Object(__WEBPACK_IMPORTED_MODULE_1__katex2tex__["a" /* default */])(fragment).textContent);
-    // Prevent normal copy handling.
-    event.preventDefault();
-});
+// extracted by mini-css-extract-plugin
 
 /***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
+/* 1 */,
 /* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* unused harmony export defaultCopyDelimiters */
-/* unused harmony export katexReplaceWithTex */
+__webpack_require__.r(__webpack_exports__);
+
+// EXTERNAL MODULE: ./contrib/copy-tex/copy-tex.css
+var copy_tex = __webpack_require__(0);
+
+// CONCATENATED MODULE: ./contrib/copy-tex/katex2tex.js
 // Set these to how you want inline and display math to be delimited.
 var defaultCopyDelimiters = {
     inline: ['$', '$'], // alternative: ['\(', '\)']
@@ -167,7 +159,32 @@ var katexReplaceWithTex = function katexReplaceWithTex(fragment) {
     return fragment;
 };
 
-/* harmony default export */ __webpack_exports__["a"] = (katexReplaceWithTex);
+/* harmony default export */ var katex2tex = (katexReplaceWithTex);
+// CONCATENATED MODULE: ./contrib/copy-tex/copy-tex.js
+
+
+
+// Global copy handler to modify behavior on .katex elements.
+document.addEventListener('copy', function (event) {
+    var selection = window.getSelection();
+    if (selection.isCollapsed) {
+        return; // default action OK if selection is empty
+    }
+    var fragment = selection.getRangeAt(0).cloneContents();
+    if (!fragment.querySelector('.katex-mathml')) {
+        return; // default action OK if no .katex-mathml elements
+    }
+    // Preserve usual HTML copy/paste behavior.
+    var html = [];
+    for (var i = 0; i < fragment.childNodes.length; i++) {
+        html.push(fragment.childNodes[i].outerHTML);
+    }
+    event.clipboardData.setData('text/html', html.join(''));
+    // Rewrite plain-text version.
+    event.clipboardData.setData('text/plain', katex2tex(fragment).textContent);
+    // Prevent normal copy handling.
+    event.preventDefault();
+});
 
 /***/ })
 /******/ ])["default"];

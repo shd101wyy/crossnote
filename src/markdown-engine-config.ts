@@ -44,7 +44,7 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   codeBlockTheme: "auto.css",
   previewTheme: "github-light.css",
   revealjsTheme: "white.css",
-  mermaidTheme: "mermaid.css",
+  mermaidTheme: "default",
   frontMatterRenderingOption: "none",
   imageFolderPath: "/assets",
   printBackground: false,

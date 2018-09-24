@@ -1,6 +1,6 @@
 {
   "name": "@shd101wyy/mume",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "A powerful markdown tool",
   "main": "out/src/mume.js",
   "typings": "out/src/mume.d.ts",
@@ -30,7 +30,7 @@
   "repository": "https://github.com/shd101wyy/mume",
   "dependencies": {
     "babyparse": "^0.4.6",
-    "cheerio": "0.15.0",
+    "cheerio": "^1.0.0-rc.2",
     "fs-extra": "^5.0.0",
     "gray-matter": "^3.0.7",
     "less": "^2.7.2",

@@ -656,34 +656,31 @@
     private renderMermaid() {
       return new Promise((resolve, reject) => {
         const mermaid = window["mermaid"]; // window.mermaid doesn't work, has to be written as window['mermaid']
-        const mermaidAPI = window["mermaidAPI"];
         const mermaidGraphs = this.hiddenPreviewElement.getElementsByClassName(
           "mermaid",
         );
 
         const validMermaidGraphs = [];
-        // const mermaidCodes = []
         for (let i = 0; i < mermaidGraphs.length; i++) {
           const mermaidGraph = mermaidGraphs[i] as HTMLElement;
-          // if (mermaidGraph.getAttribute('data-processed') === 'true') continue
-
-          mermaid.parseError = (err) => {
-            mermaidGraph.innerHTML = `<pre class="language-text">${err.toString()}</pre>`;
-          };
-
-          if (mermaidAPI.parse(mermaidGraph.textContent.trim())) {
+          try {
+            mermaid.parse(mermaidGraph.textContent.trim());
             validMermaidGraphs.push(mermaidGraph);
-            // mermaidCodes.push(mermaidGraph.textContent)
+          } catch (error) {
+            mermaidGraph.innerHTML = `<pre class="language-text">${error.str.toString()}</pre>`;
           }
         }
 
         if (!validMermaidGraphs.length) {
           return resolve();
         }
-
-        mermaid.init(null, validMermaidGraphs, () => {
-          resolve();
-        });
+        try {
+          mermaid.init(null, validMermaidGraphs, () => {
+            resolve();
+          });
+        } catch (error) {
+          return resolve();
+        }
       });
     }
 
