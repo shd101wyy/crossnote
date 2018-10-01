@@ -1,137 +1,170 @@
-import * as path from "path"
-import * as fs from "fs"
-import {execFile} from "child_process"
-import * as mkdirp from "mkdirp"
-import * as YAML from "yamljs"
-import {toc} from "./toc"
+import { execFile } from "child_process";
+import * as fs from "fs";
+import * as path from "path";
+import * as YAML from "yamljs";
+import computeChecksum from "./lib/compute-checksum";
+import { processGraphs } from "./process-graphs";
+import { toc } from "./toc";
+import { transformMarkdown } from "./transformer";
+import * as utility from "./utility";
 
-import {transformMarkdown} from "./transformer"
-import {processGraphs} from "./process-graphs"
-import * as utility from "./utility"
-const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
-
-function getFileExtension(documentType:string) {
-  if (documentType === 'pdf_document' || documentType === 'beamer_presentation')
-    return 'pdf'
-  else if (documentType === 'word_document')
-    return 'docx'
-  else if (documentType === 'rtf_document')
-    return 'rtf'
-  else if (documentType === 'custom_document')
-    return '*'
-  else
-    return null
+function getFileExtension(documentType: string) {
+  if (
+    documentType === "pdf_document" ||
+    documentType === "beamer_presentation"
+  ) {
+    return "pdf";
+  } else if (documentType === "word_document") {
+    return "docx";
+  } else if (documentType === "rtf_document") {
+    return "rtf";
+  } else if (documentType === "custom_document") {
+    return "*";
+  } else {
+    return null;
+  }
 }
 
 /**
  * eg: process config inside pdf_document block
- */ 
-function processOutputConfig(config:object, args:string[], latexEngine:string='pdflatex') {
-  if (config['toc'])
-    args.push('--toc')
+ */
 
-  if (config['toc_depth'])
-    args.push('--toc-depth='+config['toc_depth'])
-
-  if (config['highlight']) {
-    if (config['highlight'] == 'default')
-      config['highlight'] = 'pygments'
-    args.push('--highlight-style='+config['highlight'])
+function processOutputConfig(
+  config: object,
+  args: string[],
+  latexEngine: string = "pdflatex",
+) {
+  if (config["toc"]) {
+    args.push("--toc");
   }
 
-  if (config['reference_docx']) { // issue #448
-    args.push('--reference-docx=' + config['reference_docx'])
-  }
-  if (config['reference_doc']) {
-    args.push('--reference-doc=' + config['reference_doc'])
+  if (config["toc_depth"]) {
+    args.push("--toc-depth=" + config["toc_depth"]);
   }
 
-  if (config['highlight'] === null)
-    args.push('--no-highlight')
-
-  if (config['pandoc_args']) 
-    config['pandoc_args'].forEach((arg)=> args.push(arg))
-
-  if (config['citation_package']) {
-    if (config['citation_package'] === 'natbib')
-      args.push('--natbib')
-    else if (config['citation_package'] == 'biblatex')
-      args.push('--biblatex')
-  }
-
-  if (config['number_sections'])
-    args.push('--number-sections')
-
-  if (config['incremental'])
-    args.push('--incremental')
-
-  if (config['slide_level'])
-    args.push('--slide-level='+config['slide_level'])
-
-  if (config['theme'])
-    args.push('-V', 'theme:'+config['theme'])
-
-  if (config['colortheme'])
-    args.push('-V', 'colortheme:'+config['colortheme'])
-
-  if (config['fonttheme'])
-    args.push('-V', 'fonttheme:'+config['fonttheme'])
-
-  if (config['latex_engine'])
-    args.push('--latex-engine='+config['latex_engine'])
-  else {
-    args.push('--latex-engine='+latexEngine)
-  }
-
-  if (config['includes'] && typeof(config['includes']) === 'object') {
-    let includesConfig = config['includes']
-    const helper = (prefix, data)=> {
-      if (typeof(data) == 'string')
-        args.push(prefix+data)
-      else if (data.constructor === Array) {
-        data.forEach((d)=> args.push(prefix+d))
-      }
-      else
-        args.push(prefix+data)
+  if (config["highlight"]) {
+    if (config["highlight"] === "default") {
+      config["highlight"] = "pygments";
     }
+    args.push("--highlight-style=" + config["highlight"]);
+  }
+
+  if (config["reference_docx"]) {
+    // issue #448
+    args.push("--reference-docx=" + config["reference_docx"]);
+  }
+  if (config["reference_doc"]) {
+    args.push("--reference-doc=" + config["reference_doc"]);
+  }
+
+  if (config["highlight"] === null) {
+    args.push("--no-highlight");
+  }
+
+  if (config["pandoc_args"]) {
+    config["pandoc_args"].forEach((arg) => args.push(arg));
+  }
+
+  if (config["citation_package"]) {
+    if (config["citation_package"] === "natbib") {
+      args.push("--natbib");
+    } else if (config["citation_package"] === "biblatex") {
+      args.push("--biblatex");
+    }
+  }
+
+  if (config["number_sections"]) {
+    args.push("--number-sections");
+  }
+
+  if (config["incremental"]) {
+    args.push("--incremental");
+  }
+
+  if (config["slide_level"]) {
+    args.push("--slide-level=" + config["slide_level"]);
+  }
+
+  if (config["theme"]) {
+    args.push("-V", "theme:" + config["theme"]);
+  }
+
+  if (config["colortheme"]) {
+    args.push("-V", "colortheme:" + config["colortheme"]);
+  }
+
+  if (config["fonttheme"]) {
+    args.push("-V", "fonttheme:" + config["fonttheme"]);
+  }
+
+  if (config["latex_engine"]) {
+    args.push("--pdf-engine=" + config["latex_engine"]);
+  } else if (config["pdf_engine"]) {
+    args.push("--pdf-engine=" + config["pdf_engine"]);
+  } else {
+    args.push("--pdf-engine=" + latexEngine);
+  }
+
+  if (config["includes"] && typeof config["includes"] === "object") {
+    const includesConfig = config["includes"];
+    const helper = (prefix, data) => {
+      if (typeof data === "string") {
+        args.push(prefix + data);
+      } else if (data.constructor === Array) {
+        data.forEach((d) => args.push(prefix + d));
+      } else {
+        args.push(prefix + data);
+      }
+    };
 
     // TODO: includesConfig['in_header'] is array
-    if (includesConfig['in_header'])
-      helper('--include-in-header=', includesConfig['in_header'])
-    if (includesConfig['before_body'])
-      helper('--include-before-body=', includesConfig['before_body'])
-    if (includesConfig['after_body'])
-      helper('--include-after-body=', includesConfig['after_body'])
+    if (includesConfig["in_header"]) {
+      helper("--include-in-header=", includesConfig["in_header"]);
+    }
+    if (includesConfig["before_body"]) {
+      helper("--include-before-body=", includesConfig["before_body"]);
+    }
+    if (includesConfig["after_body"]) {
+      helper("--include-after-body=", includesConfig["after_body"]);
+    }
   }
 
-  if (config['template'])
-    args.push('--template=' + config['template'])
+  if (config["template"]) {
+    args.push("--template=" + config["template"]);
+  }
 }
 
 function loadOutputYAML(fileDirectoryPath, config) {
-  const yamlPath = path.resolve(fileDirectoryPath, '_output.yaml')
-  let yaml:string = ""
+  const yamlPath = path.resolve(fileDirectoryPath, "_output.yaml");
+  let yaml: string = "";
   try {
-    yaml = fs.readFileSync(yamlPath, {encoding: 'utf-8'})
+    yaml = fs.readFileSync(yamlPath, { encoding: "utf-8" });
   } catch (error) {
-    return Object.assign({}, config)
+    return Object.assign({}, config);
   }
 
-  let data = {} 
-  if (yaml) data = utility.parseYAML(yaml)
+  let data = {};
+  if (yaml) {
+    data = utility.parseYAML(yaml);
+  }
 
-  if (config['output']) {
-    if (typeof(config['output']) === 'string' && data[config['output']]) {
-      const format = config['output']
-      config['output'] = {}
-      config['output'][format] = data[format]
+  if (config["output"]) {
+    if (typeof config["output"] === "string" && data[config["output"]]) {
+      const format = config["output"];
+      config["output"] = {};
+      config["output"][format] = data[format];
     } else {
-      const format = Object.keys(config['output'])[0]
-      if (data[format])
-        config['output'][format] = Object.assign({}, data[format], config['output'][format])
+      const format = Object.keys(config["output"])[0];
+      if (data[format]) {
+        config["output"][format] = Object.assign(
+          {},
+          data[format],
+          config["output"][format],
+        );
+      }
     }
   }
-  return Object.assign({}, data, config)
+  return Object.assign({}, data, config);
 }
 
 /*
@@ -177,47 +210,47 @@ function processConfigPaths(config, fileDirectoryPath, projectDirectoryPath)->
 */
 
 function processPaths(text, fileDirectoryPath, projectDirectoryPath) {
-  let match = null,
-      offset = 0,
-      output = ''
-
   function resolvePath(src) {
-    if (src.startsWith('/'))
-      return path.relative(fileDirectoryPath, path.resolve(projectDirectoryPath, '.'+src))
-    else // ./test.png or test.png
-      return src
+    if (src.startsWith("/")) {
+      return path.relative(
+        fileDirectoryPath,
+        path.resolve(projectDirectoryPath, "." + src),
+      ); // ./test.png or test.png
+    } else {
+      return src;
+    }
   }
 
-  let inBlock = false
-  let lines = text.split('\n')
-  lines = lines.map((line)=> {
+  let inBlock = false;
+  let lines = text.split("\n");
+  lines = lines.map((line) => {
     if (line.match(/^\s*```/)) {
-      inBlock = !inBlock
-      return line
+      inBlock = !inBlock;
+      return line;
     } else if (inBlock) {
-      return line
+      return line;
     } else {
       // replace path in ![](...) and []()
-      let r = /(\!?\[.*?]\()([^\)|^'|^"]*)(.*?\))/gi
-      line = line.replace(r, (whole, a, b, c)=> {
-        if (b[0] === '<') {
-          b = b.slice(1, b.length-1)
-          return a + '<' + resolvePath(b.trim()) + '> ' + c
+      let r = /(\!?\[.*?]\()([^\)|^'|^"]*)(.*?\))/gi;
+      line = line.replace(r, (whole, a, b, c) => {
+        if (b[0] === "<") {
+          b = b.slice(1, b.length - 1);
+          return a + "<" + resolvePath(b.trim()) + "> " + c;
         } else {
-          return a + resolvePath(b.trim()) + ' ' + c
+          return a + resolvePath(b.trim()) + " " + c;
         }
-      })
+      });
 
       // replace path in tag
-      r = /(<[img|a|iframe].*?[src|href]=['"])(.+?)(['"].*?>)/gi
-      line = line.replace(r, (whole, a, b, c)=> {
-        return a + resolvePath(b) + c
-      })
-      return line
+      r = /(<[img|a|iframe].*?[src|href]=['"])(.+?)(['"].*?>)/gi;
+      line = line.replace(r, (whole, a, b, c) => {
+        return a + resolvePath(b) + c;
+      });
+      return line;
     }
-  })
+  });
 
-  return lines.join('\n')
+  return lines.join("\n");
 }
 
 /*
@@ -231,57 +264,95 @@ callback(err, outputFilePath)
 /**
  * @return outputFilePath
  */
-export async function pandocConvert(text, 
-  {fileDirectoryPath, projectDirectoryPath, sourceFilePath, filesCache, protocolsWhiteListRegExp, /*deleteImages=true,*/ codeChunksData, graphsCache, imageDirectoryPath, pandocMarkdownFlavor, pandocPath, latexEngine}, 
-  config={}):Promise<string> {
-
-    config = loadOutputYAML(fileDirectoryPath, config)
+export async function pandocConvert(
+  text,
+  {
+    fileDirectoryPath,
+    projectDirectoryPath,
+    sourceFilePath,
+    filesCache,
+    protocolsWhiteListRegExp,
+    /*deleteImages=true,*/ codeChunksData,
+    graphsCache,
+    imageDirectoryPath,
+    pandocMarkdownFlavor,
+    pandocPath,
+    latexEngine,
+  },
+  config = {},
+): Promise<string> {
+  config = loadOutputYAML(fileDirectoryPath, config);
   // TODO =>
-  const args = ['-f', pandocMarkdownFlavor.replace(/\-raw\_tex/, '')]
+  const args = ["-f", pandocMarkdownFlavor.replace(/\-raw\_tex/, "")];
 
-  let extension = null
-  let outputConfig = null
-  let documentFormat = null
-  if (config['output']) {
-    if (typeof(config['output']) == 'string') {
-      documentFormat = config['output']
-      extension = getFileExtension(documentFormat)
-    }
-    else {
-      documentFormat = Object.keys(config['output'])[0]
-      extension = getFileExtension(documentFormat)
-      outputConfig = config['output'][documentFormat]
+  let extension = null;
+  let outputConfig = null;
+  let documentFormat = null;
+  if (config["output"]) {
+    if (typeof config["output"] === "string") {
+      documentFormat = config["output"];
+      extension = getFileExtension(documentFormat);
+    } else {
+      documentFormat = Object.keys(config["output"])[0];
+      extension = getFileExtension(documentFormat);
+      outputConfig = config["output"][documentFormat];
     }
   } else {
-    throw "Output format needs to be specified."
+    throw new Error("Output format needs to be specified.");
   }
 
-  if (extension === null) throw "Invalid document type."
+  if (extension === null) {
+    throw new Error("Invalid document type.");
+  }
 
   // custom_document requires path to be defined
-  if (documentFormat == 'custom_document' && (!outputConfig || !outputConfig['path']))
-    throw 'custom_document requires path to be defined.'
+  if (
+    documentFormat === "custom_document" &&
+    (!outputConfig || !outputConfig["path"])
+  ) {
+    throw new Error("custom_document requires path to be defined.");
+  }
 
-  if (documentFormat === 'beamer_presentation')
-    args.push('-t', 'beamer')
+  if (documentFormat === "beamer_presentation") {
+    args.push("-t", "beamer");
+  }
 
   // dest
-  let outputFilePath
-  if (outputConfig && outputConfig['path']) {
-    outputFilePath = outputConfig['path']
-    if (outputFilePath.startsWith('/'))
-      outputFilePath = path.resolve(projectDirectoryPath, '.'+outputFilePath)
-    else
-      outputFilePath = path.resolve(fileDirectoryPath, outputFilePath)
+  let outputFilePath;
+  if (outputConfig && outputConfig["path"]) {
+    outputFilePath = outputConfig["path"];
+    if (outputFilePath.startsWith("/")) {
+      outputFilePath = path.resolve(projectDirectoryPath, "." + outputFilePath);
+    } else {
+      outputFilePath = path.resolve(fileDirectoryPath, outputFilePath);
+    }
 
-    if (documentFormat !== 'custom_document' && path.extname(outputFilePath) !== '.' + extension)
-      throw ('Invalid extension for ' + documentFormat + '. Extension .' + extension + ' is required, but ' + path.extname(outputFilePath) + ' was provided.')
+    if (
+      documentFormat !== "custom_document" &&
+      path.extname(outputFilePath) !== "." + extension
+    ) {
+      throw new Error(
+        "Invalid extension for " +
+          documentFormat +
+          ". Extension ." +
+          extension +
+          " is required, but " +
+          path.extname(outputFilePath) +
+          " was provided.",
+      );
+    }
 
-    args.push('-o', outputFilePath)
+    args.push("-o", outputFilePath);
   } else {
-    outputFilePath = sourceFilePath
-    outputFilePath = outputFilePath.slice(0, outputFilePath.length - path.extname(outputFilePath).length) + '.' + extension
-    args.push('-o', outputFilePath)
+    outputFilePath = sourceFilePath;
+    outputFilePath =
+      outputFilePath.slice(
+        0,
+        outputFilePath.length - path.extname(outputFilePath).length,
+      ) +
+      "." +
+      extension;
+    args.push("-o", outputFilePath);
   }
 
   // NOTE: 0.12.4 No need to resolve paths.
@@ -290,54 +361,88 @@ export async function pandocConvert(text,
   // processConfigPaths config, fileDirectoryPath, projectDirectoryPath
 
   // process output config
-  processOutputConfig(outputConfig || {}, args, latexEngine)
+  processOutputConfig(outputConfig || {}, args, latexEngine);
 
   // import external files
-  let data = await transformMarkdown(text, {fileDirectoryPath, projectDirectoryPath, useRelativeFilePath:true, filesCache, protocolsWhiteListRegExp, forPreview: false, usePandocParser: true})
-  text = data.outputString
+  const data = await transformMarkdown(text, {
+    fileDirectoryPath,
+    projectDirectoryPath,
+    useRelativeFilePath: true,
+    filesCache,
+    protocolsWhiteListRegExp,
+    forPreview: false,
+    usePandocParser: true,
+  });
+  text = data.outputString;
 
   // add front-matter(yaml) back to text
-  text = '---\n' + YAML.stringify(config) + '---\n' + text
+  text = "---\n" + YAML.stringify(config) + "---\n" + text;
 
   // replace [MUMETOC]
-  const tocBracketEnabled = data.tocBracketEnabled
-  if (tocBracketEnabled) { // [TOC]
-    const headings = data.headings
-    const {content:tocMarkdown} = toc(headings, {ordered: false, depthFrom: 1, depthTo: 6, tab: '\t'})
-    text = text.replace(/^\s*\[MUMETOC\]\s*/gm, '\n\n'+tocMarkdown+'\n\n')
+  const tocBracketEnabled = data.tocBracketEnabled;
+  if (tocBracketEnabled) {
+    // [TOC]
+    const headings = data.headings;
+    const { content: tocMarkdown } = toc(headings, {
+      ordered: false,
+      depthFrom: 1,
+      depthTo: 6,
+      tab: "\t",
+    });
+    text = text.replace(/^\s*\[MUMETOC\]\s*/gm, "\n\n" + tocMarkdown + "\n\n");
   }
 
   // change link path to relative path
-  text = processPaths(text, fileDirectoryPath, projectDirectoryPath)
+  text = processPaths(text, fileDirectoryPath, projectDirectoryPath);
 
   // citation
-  if (config['bibliography'] || config['references'])
-    args.push('--filter', 'pandoc-citeproc')
+  if (config["bibliography"] || config["references"]) {
+    args.push("--filter", "pandoc-citeproc");
+  }
 
-  if (imageDirectoryPath[0] === '/') 
-    imageDirectoryPath = path.resolve(projectDirectoryPath, '.' + imageDirectoryPath)
-  else 
-    imageDirectoryPath = path.resolve(fileDirectoryPath, imageDirectoryPath)
-  await utility.mkdirp(imageDirectoryPath) // create imageDirectoryPath
+  if (imageDirectoryPath[0] === "/") {
+    imageDirectoryPath = path.resolve(
+      projectDirectoryPath,
+      "." + imageDirectoryPath,
+    );
+  } else {
+    imageDirectoryPath = path.resolve(fileDirectoryPath, imageDirectoryPath);
+  }
+  await utility.mkdirp(imageDirectoryPath); // create imageDirectoryPath
 
-  const {outputString, imagePaths} = await processGraphs(text, 
-      {fileDirectoryPath, projectDirectoryPath, imageDirectoryPath, imageFilePrefix: md5(outputFilePath), useRelativeFilePath:true, codeChunksData, graphsCache})    
-  
+  const { outputString } = await processGraphs(text, {
+    fileDirectoryPath,
+    projectDirectoryPath,
+    imageDirectoryPath,
+    imageFilePrefix: computeChecksum(outputFilePath),
+    useRelativeFilePath: true,
+    codeChunksData,
+    graphsCache,
+  });
+
   // pandoc will cause error if directory doesn't exist,
   // therefore I will create directory first.
-  await utility.mkdirp(path.dirname(outputFilePath))
+  await utility.mkdirp(path.dirname(outputFilePath));
 
-  return await new Promise<string>((resolve, reject)=> {
-    const program = execFile(pandocPath, args, {cwd: fileDirectoryPath}, (error)=> {
-      /*if (deleteImages) {
+  return await new Promise<string>((resolve, reject) => {
+    const program = execFile(
+      pandocPath,
+      args,
+      { cwd: fileDirectoryPath },
+      (error) => {
+        /*if (deleteImages) {
         imagePaths.forEach((p)=> fs.unlink(p, (error)=>{}))
       }*/
 
-      if (error) return reject(error.toString())
-      return resolve(outputFilePath)
-    })
+        if (error) {
+          return reject(error.toString());
+        } else {
+          return resolve(outputFilePath);
+        }
+      },
+    );
 
     // add front matter back to doc.
-    program.stdin.end(outputString)
-  })
+    program.stdin.end(outputString);
+  });
 }

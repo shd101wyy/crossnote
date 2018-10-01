@@ -1,160 +1,135 @@
-import * as path from "path"
-import * as fs from "fs"
-import * as cheerio from "cheerio"
-import * as request from "request"
-import * as YAML from "yamljs"
-import {execFile} from "child_process"
+// tslint:disable no-var-requires member-ordering
 
-import * as plantumlAPI from "./puml"
-import * as vegaAPI from "./vega"
-import * as vegaLiteAPI from "./vega-lite"
-import * as ditaaAPI from "./ditaa"
-import * as utility from "./utility"
-import {scopeForLanguageName} from "./extension-helper"
-import {transformMarkdown, HeadingData} from "./transformer"
-import {toc} from "./toc"
-import {CustomSubjects} from "./custom-subjects"
-import {princeConvert} from "./prince-convert"
-import {ebookConvert} from "./ebook-convert"
-import {pandocConvert} from "./pandoc-convert"
-import {markdownConvert} from "./markdown-convert"
-import * as CodeChunkAPI from "./code-chunk"
-import {CodeChunkData} from "./code-chunk-data"
+import * as cheerio from "cheerio";
+import { execFile } from "child_process";
+import * as fs from "fs";
+import * as path from "path";
+import * as request from "request";
+import { VFile } from "vfile";
+import * as YAML from "yamljs";
 
-const extensionDirectoryPath = utility.extensionDirectoryPath
-const katex = require(path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.js'))
-const MarkdownIt = require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/markdown-it.min.js'))
-const md5 = require(path.resolve(extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
-const CryptoJS = require(path.resolve(extensionDirectoryPath, './dependencies/crypto-js/crypto-js.js'))
-const Viz = require(path.resolve(extensionDirectoryPath, './dependencies/viz/viz.js'))
-const pdf = require(path.resolve(extensionDirectoryPath, './dependencies/node-html-pdf/index.js'))
+import { CodeChunkData } from "./code-chunk-data";
+import { ebookConvert } from "./ebook-convert";
+import { markdownConvert } from "./markdown-convert";
+import {
+  defaultMarkdownEngineConfig,
+  MarkdownEngineConfig,
+} from "./markdown-engine-config";
+import { pandocConvert } from "./pandoc-convert";
+import { princeConvert } from "./prince-convert";
+import { toc } from "./toc";
+import { HeadingData, transformMarkdown } from "./transformer";
+import * as utility from "./utility";
 
-// import * as Prism from "prismjs"
-let Prism = null
+import useMarkdownItCodeFences from "./custom-markdown-it-features/code-fences";
+import useMarkdownItCriticMarkup from "./custom-markdown-it-features/critic-markup";
+import useMarkdownItEmoji from "./custom-markdown-it-features/emoji";
+import useMarkdownItMath from "./custom-markdown-it-features/math";
+import useMarkdownItWikilink from "./custom-markdown-it-features/wikilink";
+
+import enhanceWithCodeBlockStyling from "./render-enhancers/code-block-styling";
+import enhanceWithEmbeddedLocalImages from "./render-enhancers/embedded-local-images";
+import enhanceWithEmbeddedSvgs from "./render-enhancers/embedded-svgs";
+import enhanceWithEmojiToSvg from "./render-enhancers/emoji-to-svg";
+import enhanceWithExtendedTableSyntax from "./render-enhancers/extended-table-syntax";
+import enhanceWithFencedCodeChunks, {
+  runCodeChunk,
+  RunCodeChunkOptions,
+  runCodeChunks,
+} from "./render-enhancers/fenced-code-chunks";
+import enhanceWithFencedDiagrams from "./render-enhancers/fenced-diagrams";
+import enhanceWithFencedMath from "./render-enhancers/fenced-math";
+import enhanceWithResolvedImagePaths from "./render-enhancers/resolved-image-paths";
+
+import { parseAttributes, stringifyAttributes } from "./lib/attributes";
+import { normalizeBlockInfo, parseBlockInfo } from "./lib/block-info";
+import { removeFileProtocol } from "./utility";
+
+const extensionDirectoryPath = utility.extensionDirectoryPath;
+const MarkdownIt = require(path.resolve(
+  extensionDirectoryPath,
+  "./dependencies/markdown-it/markdown-it.min.js",
+));
+const CryptoJS = require(path.resolve(
+  extensionDirectoryPath,
+  "./dependencies/crypto-js/crypto-js.js",
+));
+const pdf = require(path.resolve(
+  extensionDirectoryPath,
+  "./dependencies/node-html-pdf/index.js",
+));
 
 // Puppeteer
-let puppeteer = null
+let puppeteer = null;
 
 export interface MarkdownEngineRenderOption {
-  useRelativeFilePath: boolean,
-  isForPreview: boolean,
-  hideFrontMatter: boolean,
-  triggeredBySave?: boolean,
-  runAllCodeChunks?: boolean
+  useRelativeFilePath: boolean;
+  isForPreview: boolean;
+  hideFrontMatter: boolean;
+  triggeredBySave?: boolean;
+  runAllCodeChunks?: boolean;
+  emojiToSvg?: boolean;
 }
 
 export interface MarkdownEngineOutput {
-  html:string,
-  markdown:string,
-  tocHTML:string,
-  yamlConfig: any,
+  html: string;
+  markdown: string;
+  tocHTML: string;
+  yamlConfig: any;
   /**
    * imported javascript and css files
    * convert .js file to <script src='...'></script>
    * convert .css file to <link href='...'></link>
    */
-  JSAndCssFiles: string[]
- // slideConfigs: Array<object>
-}
-
-export interface MarkdownEngineConfig {
-  usePandocParser?: boolean
-  breakOnSingleNewLine?: boolean
-  enableTypographer?: boolean
-  enableWikiLinkSyntax?: boolean
-  wikiLinkFileExtension?: string
-  enableEmojiSyntax?: boolean
-  enableExtendedTableSyntax?: boolean
-  enableCriticMarkupSyntax?: boolean
-  protocolsWhiteList?: string
-  /**
-   * "KaTeX", "MathJax", or "None"
-   */
-  mathRenderingOption?: string
-  mathInlineDelimiters?: string[][]
-  mathBlockDelimiters?: string[][]
-  codeBlockTheme?: string
-  previewTheme?: string
-  revealjsTheme?: string
-  mermaidTheme?: string
-  frontMatterRenderingOption?: string
-  imageFolderPath?: string
-  printBackground?: boolean
-  phantomPath?: string
-  pandocPath?: string
-  pandocMarkdownFlavor?: string
-  pandocArguments?: string[]
-  latexEngine?: string
-  enableScriptExecution?: boolean
+  JSAndCssFiles: string[];
+  // slideConfigs: Array<object>
 }
 
 export interface HTMLTemplateOption {
   /**
-   * whether is for print. 
+   * whether is for print.
    */
-  isForPrint: boolean
+  isForPrint: boolean;
   /**
-   * whether is for prince export. 
+   * whether is for prince export.
    */
-  isForPrince: boolean
+  isForPrince: boolean;
   /**
    * if it's for phantomjs export, what is the export file type.
    * `pdf`, `jpeg`, and `png` are available.
    */
-  phantomjsType?: string
+  phantomjsType?: string;
   /**
    * whether for offline use
    */
-  offline: boolean
+  offline: boolean;
   /**
    * whether to embed local images as base64
    */
-  embedLocalImages: boolean
+  embedLocalImages: boolean;
   /**
    * whether to embed svg images
    */
-  embedSVG?: boolean
+  embedSVG?: boolean;
 }
 
 const defaults = {
-  html:         true,        // Enable HTML tags in source
-  xhtmlOut:     false,       // Use '/' to close single tags (<br />)
-  breaks:       true,        // Convert '\n' in paragraphs into <br>
-  langPrefix:   'language-', // CSS language prefix for fenced blocks
-  linkify:      true,        // autoconvert URL-like texts to links
-  linkTarget:   '',          // set target to open link in
-  typographer:  true,        // Enable smartypants and other sweet transforms
-}
+  html: true, // Enable HTML tags in source
+  xhtmlOut: false, // Use '/' to close single tags (<br />)
+  breaks: true, // Convert '\n' in paragraphs into <br>
+  langPrefix: "language-", // CSS language prefix for fenced blocks
+  linkify: true, // autoconvert URL-like texts to links
+  linkTarget: "", // set target to open link in
+  typographer: true, // Enable smartypants and other sweet transforms
+};
 
-const defaultMarkdownEngineConfig:MarkdownEngineConfig = {
-  usePandocParser: false,
-  breakOnSingleNewLine: true,
-  enableTypographer: false,
-  enableWikiLinkSyntax: true,
-  enableEmojiSyntax: true,
-  enableExtendedTableSyntax: false, 
-  enableCriticMarkupSyntax: false,
-  wikiLinkFileExtension: '.md',
-  protocolsWhiteList: 'http, https, atom, file',
-  mathRenderingOption: 'KaTeX',
-  mathInlineDelimiters: [["$", "$"], ["\\(", "\\)"]],
-  mathBlockDelimiters: [["$$", "$$"], ["\\[", "\\]"]],
-  codeBlockTheme: 'auto.css',
-  previewTheme: 'github-light.css',
-  revealjsTheme: 'white.css',
-  mermaidTheme: 'mermaid.css',
-  frontMatterRenderingOption: 'table',
-  imageFolderPath: '/assets',
-  printBackground: false,
-  phantomPath: 'phantomjs',
-  pandocPath: 'pandoc',
-  pandocMarkdownFlavor: 'markdown-raw_tex+tex_math_single_backslash',
-  pandocArguments: [],
-  latexEngine: 'pdflatex',
-  enableScriptExecution: true
-}
+let MODIFY_SOURCE: (
+  codeChunkData: CodeChunkData,
+  result: string,
+  filePath: string,
+) => Promise<string> = null;
 
-let MODIFY_SOURCE:(codeChunkData:CodeChunkData, result:string, filePath:string)=>Promise<string> = null
+let UPDATE_LINTING_REPORT: (vFiles: Array<VFile<{}>>) => void = null;
 
 /**
  * The markdown engine that can be used to parse markdown and export files
@@ -162,103 +137,160 @@ let MODIFY_SOURCE:(codeChunkData:CodeChunkData, result:string, filePath:string)=
 export class MarkdownEngine {
   /**
    * Modify markdown source, append `result` after corresponding code chunk.
-   * @param codeChunkData 
-   * @param result 
+   * @param codeChunkData
+   * @param result
    */
-  public static async modifySource(codeChunkData:CodeChunkData, result:string, filePath:string) {
+  public static async modifySource(
+    codeChunkData: CodeChunkData,
+    result: string,
+    filePath: string,
+  ) {
     if (MODIFY_SOURCE) {
-      await MODIFY_SOURCE(codeChunkData, result, filePath)
+      await MODIFY_SOURCE(codeChunkData, result, filePath);
     } else {
-      // TODO: direcly modify the local file.
+      // TODO: directly modify the local file.
     }
 
-    codeChunkData.running = false
-    return result
+    codeChunkData.running = false;
+    return result;
   }
 
   /**
    * Bind cb to MODIFY_SOURCE
-   * @param cb 
+   * @param cb
    */
-  public static onModifySource(cb:(codeChunkData:CodeChunkData, result:string, filePath:string)=>Promise<string>) {
-    MODIFY_SOURCE = cb
+  public static onModifySource(
+    cb: (
+      codeChunkData: CodeChunkData,
+      result: string,
+      filePath: string,
+    ) => Promise<string>,
+  ) {
+    MODIFY_SOURCE = cb;
+  }
+
+  public static async updateLintingReport(vFiles: Array<VFile<{}>>) {
+    if (UPDATE_LINTING_REPORT) {
+      await UPDATE_LINTING_REPORT(vFiles);
+    }
+  }
+
+  public static onUpdateLintingReport(cb: (vFiles: Array<VFile<{}>>) => void) {
+    UPDATE_LINTING_REPORT = cb;
   }
 
   /**
-   * markdown file path 
+   * markdown file path
    */
-  private readonly filePath: string 
-  private readonly fileDirectoryPath: string
-  private readonly projectDirectoryPath: string
+  private readonly filePath: string;
+  private readonly fileDirectoryPath: string;
+  private readonly projectDirectoryPath: string;
 
-  private _originalConfig: MarkdownEngineConfig
-  private config: MarkdownEngineConfig
+  private originalConfig: MarkdownEngineConfig;
+  private config: MarkdownEngineConfig;
 
-  private breakOnSingleNewLine: boolean
-  private enableTypographer: boolean
-  private protocolsWhiteListRegExp:RegExp
+  private breakOnSingleNewLine: boolean;
+  private enableTypographer: boolean;
+  private protocolsWhiteListRegExp: RegExp;
 
-  private headings: Array<HeadingData>
-  private tocHTML: string
+  private headings: HeadingData[];
+  private tocHTML: string;
 
   private md;
 
-  // caches 
-  private graphsCache:{[key:string]:string} = {}
+  // caches
+  private graphsCache: { [key: string]: string } = {};
 
-  // code chunks 
-  private codeChunksData:{[key:string]:CodeChunkData} = {}
+  // code chunks
+  private codeChunksData: { [key: string]: CodeChunkData } = {};
 
-  // files cache 
-  private filesCache:{[key:string]:string} = {}
+  // files cache
+  private filesCache: { [key: string]: string } = {};
 
   /**
-   * cachedHTML is the cache of html generated from the markdown file.  
+   * cachedHTML is the cache of html generated from the markdown file.
    */
   // private cachedHTML:string = '';
 
   /**
-   * Check whether the preview is in presentation mode.  
+   * Check whether the preview is in presentation mode.
    */
-  public isPreviewInPresentationMode:boolean = false
+  public isPreviewInPresentationMode: boolean = false;
 
-  constructor(args:{
+  constructor(args: {
     /**
-     * The markdown file path.  
+     * The markdown file path.
      */
-    filePath: string,
+    filePath: string;
     /**
-     * The project directory path.  
+     * The project directory path.
      */
-    projectDirectoryPath: string,
+    projectDirectoryPath: string;
     /**
      * Markdown Engine configuration.
      */
-    config ?: MarkdownEngineConfig
+    config?: MarkdownEngineConfig;
   }) {
-    this.filePath = args.filePath
-    this.fileDirectoryPath = path.dirname(this.filePath)
-    this.projectDirectoryPath = args.projectDirectoryPath || this.fileDirectoryPath
-    
-    this._originalConfig = args.config
-    this.resetConfig()
+    this.filePath = args.filePath;
+    this.fileDirectoryPath = path.dirname(this.filePath);
+    this.projectDirectoryPath =
+      args.projectDirectoryPath || this.fileDirectoryPath;
 
-    this.headings = []
-    this.tocHTML = ''
+    this.originalConfig = args.config;
+    this.resetConfig();
 
-    this.md = new MarkdownIt(
-      Object.assign({}, defaults, {typographer: this.enableTypographer, breaks: this.breakOnSingleNewLine}))
-    
+    this.headings = [];
+    this.tocHTML = "";
+
+    this.md = new MarkdownIt({
+      ...defaults,
+      typographer: this.enableTypographer,
+      breaks: this.breakOnSingleNewLine,
+    });
+
     // markdown-it extensions
-    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-footnote.min.js')))
-    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-sub.min.js')))
-    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-sup.min.js')))
-    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-deflist.min.js')))
-    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-abbr.min.js')))
-    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-mark.min.js')))
-    this.md.use(require(path.resolve(extensionDirectoryPath, './dependencies/markdown-it/extensions/markdown-it-emoji.min.js')))
+    this.md.use(
+      require(path.resolve(
+        extensionDirectoryPath,
+        "./dependencies/markdown-it/extensions/markdown-it-footnote.min.js",
+      )),
+    );
+    this.md.use(
+      require(path.resolve(
+        extensionDirectoryPath,
+        "./dependencies/markdown-it/extensions/markdown-it-sub.min.js",
+      )),
+    );
+    this.md.use(
+      require(path.resolve(
+        extensionDirectoryPath,
+        "./dependencies/markdown-it/extensions/markdown-it-sup.min.js",
+      )),
+    );
+    this.md.use(
+      require(path.resolve(
+        extensionDirectoryPath,
+        "./dependencies/markdown-it/extensions/markdown-it-deflist.min.js",
+      )),
+    );
+    this.md.use(
+      require(path.resolve(
+        extensionDirectoryPath,
+        "./dependencies/markdown-it/extensions/markdown-it-abbr.min.js",
+      )),
+    );
+    this.md.use(
+      require(path.resolve(
+        extensionDirectoryPath,
+        "./dependencies/markdown-it/extensions/markdown-it-mark.min.js",
+      )),
+    );
 
-    this.configureMarkdownIt()
+    useMarkdownItCodeFences(this.md, this.config);
+    useMarkdownItCriticMarkup(this.md, this.config);
+    useMarkdownItEmoji(this.md, this.config);
+    useMarkdownItMath(this.md, this.config);
+    useMarkdownItWikilink(this.md, this.config);
   }
 
   /**
@@ -266,31 +298,45 @@ export class MarkdownEngine {
    */
   public resetConfig() {
     // Please notice that ~/.mume/config.json has the highest priority.
-    this.config = Object.assign({}, defaultMarkdownEngineConfig, this._originalConfig || {}, utility.configs.config || {}) as MarkdownEngineConfig
+    this.config = {
+      ...defaultMarkdownEngineConfig,
+      ...(this.originalConfig || {}),
+      ...(utility.configs.config || {}),
+    };
 
-    this.initConfig()
+    this.initConfig();
   }
 
   /**
-   * Set default values 
+   * Set default values
    */
   private initConfig() {
     // break on single newline
-    this.breakOnSingleNewLine = this.config.breakOnSingleNewLine
+    this.breakOnSingleNewLine = this.config.breakOnSingleNewLine;
 
     // enable typographer
-    this.enableTypographer = this.config.enableTypographer
+    this.enableTypographer = this.config.enableTypographer;
 
     // protocal whitelist
-    const protocolsWhiteList = this.config.protocolsWhiteList.split(',').map((x)=>x.trim()) || ['http', 'https', 'atom', 'file']
-    this.protocolsWhiteListRegExp = new RegExp('^(' + protocolsWhiteList.join('|')+')\:\/\/')  // eg /^(http|https|atom|file)\:\/\//
+    const protocolsWhiteList = (
+      this.config.protocolsWhiteList ||
+      defaultMarkdownEngineConfig.protocolsWhiteList
+    )
+      .split(",")
+      .map((x) => x.trim());
+    this.protocolsWhiteListRegExp = new RegExp(
+      "^(" + protocolsWhiteList.join("|") + ")",
+    ); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
   }
 
   public updateConfiguration(config) {
-    this.config = Object.assign({}, this.config, config) 
-    this.initConfig()
+    this.config = { ...this.config, ...config };
+    this.initConfig();
 
-    this.md.set({breaks: this.breakOnSingleNewLine, typographer: this.enableTypographer})
+    this.md.set({
+      breaks: this.breakOnSingleNewLine,
+      typographer: this.enableTypographer,
+    });
   }
 
   /*
@@ -302,425 +348,128 @@ export class MarkdownEngine {
   }
   */
 
-  public cacheCodeChunkResult(id:string, result:string) {
-    const codeChunkData = this.codeChunksData[id]
-    if (!codeChunkData) return
-    codeChunkData.result = CryptoJS.AES.decrypt(result, 'mume').toString(CryptoJS.enc.Utf8)
-  }
-
-  /**
-   * 
-   * @param content the math expression 
-   * @param openTag the open tag, eg: '\('
-   * @param closeTag the close tag, eg: '\)'
-   * @param displayMode whether to be rendered in display mode
-   */
-  private parseMath({content, openTag, closeTag, displayMode}) {
-    if (!content) return ''
-    if (this.config.mathRenderingOption[0] === 'K') { // KaTeX
-      try {
-        return katex.renderToString(content, {displayMode})
-      } catch(error) {
-        return `<span style=\"color: #ee7f49; font-weight: 500;\">${error.toString()}</span>`
-      }
-    } else if (this.config.mathRenderingOption[0] === 'M') { // MathJax
-      const text = (openTag + content + closeTag).replace(/\n/g, '')
-      const tag = displayMode ? 'div' : 'span'
-      return `<${tag} class="mathjax-exps">${utility.escapeString(text)}</${tag}>`
-    } else {
-      return ''
+  public cacheCodeChunkResult(id: string, result: string) {
+    const codeChunkData = this.codeChunksData[id];
+    if (!codeChunkData) {
+      return;
     }
-  }
-
-  private configureMarkdownIt() {
-
-    /**
-     * math rule
-     */
-    this.md.inline.ruler.before('escape', 'math', (state, silent)=> {
-      if (this.config.mathRenderingOption[0] === 'N')
-        return false
-
-      let openTag = null,
-          closeTag = null,
-          displayMode = true,
-          inline = this.config.mathInlineDelimiters,
-          block = this.config.mathBlockDelimiters
-
-      for (let a = 0; a < block.length; a++) {
-        const b = block[a]
-        if (state.src.startsWith(b[0], state.pos)) {
-          openTag = b[0]
-          closeTag = b[1]
-          displayMode = true
-          break
-        }
-      }
-
-      if (!openTag) {
-        for (let a = 0; a < inline.length; a++) {
-          const i = inline[a]
-          if (state.src.startsWith(i[0], state.pos)) {
-            openTag = i[0]
-            closeTag = i[1]
-            displayMode = false
-            break
-          }
-        }
-      }
-
-      if (!openTag) return false // not math
-
-      let content = null,
-          end = -1
-
-      let i = state.pos + openTag.length
-      while (i < state.src.length) {
-        if (state.src.startsWith(closeTag, i)) {
-          end = i
-          break
-        } else if (state.src[i] === '\\') {
-          i += 1
-        }
-        i += 1
-      }
-
-      if (end >= 0)
-        content = state.src.slice(state.pos + openTag.length, end)
-      else
-        return false
-
-      if (content && !silent) {
-        const token = state.push('math')
-        token.content = content.trim()
-        token.openTag = openTag
-        token.closeTag = closeTag
-        token.displayMode = displayMode
-
-        state.pos += (content.length + openTag.length + closeTag.length)
-        return true
-      } else {
-        return false
-      }
-    })
-
-    /**
-     * math renderer 
-     */
-    this.md.renderer.rules.math = (tokens, idx)=> {
-      return this.parseMath(tokens[idx] || {})
-    }
-
-    /**
-     * wikilink rule
-     * inline [[]] 
-     * [[...]]
-     */
-    this.md.inline.ruler.before('autolink', 'wikilink',
-    (state, silent)=> {
-      if (!this.config.enableWikiLinkSyntax || !state.src.startsWith('[[', state.pos))
-        return false
-
-      let content = null,
-          tag = ']]',
-          end = -1
-
-      let i = state.pos + tag.length
-      while (i < state.src.length) {
-        if (state.src[i] === '\\') {
-          i += 1
-        } else if (state.src.startsWith(tag, i)) {
-          end = i
-          break
-        }
-        i += 1
-      }
-
-      if (end >= 0) // found ]]
-        content = state.src.slice(state.pos + tag.length, end)
-      else
-        return false
-
-      if (content && !silent) {
-        const token = state.push('wikilink')
-        token.content = content 
-
-        state.pos += content.length + 2 * tag.length
-        return true
-      } else {
-        return false
-      }
-    })
-
-    this.md.renderer.rules.wikilink = (tokens, idx)=> {
-      let {content} = tokens[idx]
-      if (!content) return
-
-      let splits = content.split('|')
-      let linkText = splits[0].trim()
-      let wikiLink = splits.length === 2 ? `${splits[1].trim()}${this.config.wikiLinkFileExtension}` : `${linkText.replace(/\s/g, '_')}${this.config.wikiLinkFileExtension}`
-
-      return `<a href="${wikiLink}">${linkText}</a>`
-    }
-
-    // code fences 
-    // modified to support math block
-    // check https://github.com/jonschlinkert/remarkable/blob/875554aedb84c9dd190de8d0b86c65d2572eadd5/lib/rules.js
-    this.md.renderer.rules.fence = (tokens, idx, options, env, instance)=> {
-      let token = tokens[idx],
-          langName = utility.escapeString(token.info.trim()),
-          langClass = ' class="language-' + langName + '" '
-
-      // get code content
-      let content = utility.escapeString(token.content)
-
-      // copied from getBreak function.
-      let break_ = '\n'
-      if (idx < tokens.length && tokens[idx].type === 'list_item_close')
-        break_ = ''
-
-      if (langName === 'math') {
-        const openTag = this.config.mathBlockDelimiters[0][0] || '$$'
-        const closeTag = this.config.mathBlockDelimiters[0][1] || '$$'
-        const mathExp = utility.unescapeString(content).trim()
-        if (!mathExp) return ''
-        const mathHtml = this.parseMath({openTag, closeTag, content: mathExp, displayMode: true})
-        return `<p>${mathHtml}</p>`
-      }
-      return '<pre><code' + langClass + '>' + content + '</code></pre>' + break_
-    }
-
-    /**
-     * critic markup	              HTML         	          LaTeX
-       {--[text]--}	          <del>[text]</del>	                    \st{[text]}
-        {++[text]++}          	<ins>[text]</ins>	                    \underline{[text]}
-        {~~[text1]~>[text2]~~}	<del>[text1]</del><ins>[text2]</ins>	\st{[text1]}\underline{[text2]}
-        {==[text]==}          	<mark>[text]</mark>	                  \hl{[text]}
-        {>>[text]<<}          	<aside>[text]</aside>                	\marginpar{[text]}
-      */
-    /**
-     * CriticMarkup rule
-     */
-    this.md.inline.ruler.before('strikethrough', 'critic-markup', (state, silent)=> {
-      if (!this.config.enableCriticMarkupSyntax) return false 
-
-      const src = state.src,
-            pos = state.pos
-      if (src[pos] === '{' && (
-        (src[pos + 1] === '-' && src[pos + 2] === '-') ||
-        (src[pos + 1] === '+' && src[pos + 2] === '+') ||
-        (src[pos + 1] === '~' && src[pos + 2] === '~') ||
-        (src[pos + 1] === '=' && src[pos + 2] === '=') ||
-        (src[pos + 1] === '>' && src[pos + 2] === '>')
-      )) {
-        let tag = src.slice(pos+1, pos+3)
-        let closeTag = tag
-        if (closeTag[0] === '>') 
-          closeTag = '<<}'
-        else 
-          closeTag = closeTag + '}'
-
-        let i = pos + 3,
-            end = -1,
-            content = null 
-        while(i < src.length) {
-          if (src.startsWith(closeTag, i)) {
-            end = i 
-            break
-          }
-
-          i += 1
-        }
-
-        if (end >= 0) 
-          content = src.slice(pos + 3, end)
-        else 
-          return false
-
-        if (content && !silent) {
-          const token = state.push('critic-markup')
-          token.content = content
-          token.tag = tag 
-
-          state.pos = end + closeTag.length
-          return true
-        } else {
-          return false
-        } 
-      } else {
-        return false
-      }
-    })
-
-    /**
-     * CriticMarkup renderer
-     */
-    this.md.renderer.rules['critic-markup'] = (tokens, idx)=> {
-      const token = tokens[idx],
-            tag = token['tag'],
-            content = token['content']
-      if (tag === '--') {
-        return `<del>${content}</del>`
-      } else if (tag === '++') {
-        return `<ins>${content}</ins>`
-      } else if (tag === '==') {
-        return `<mark>${content}</mark>`
-      } else if (tag === '>>') {
-        return `<span style="display:none">${content}</span>`
-      } else { // {~~[text1]~>[text2]~~}
-        const arr = content.split('~>')
-        if (arr.length === 2) { 
-          return `<del>${arr[0]}</del><ins>${arr[1]}</ins>`
-        } else {
-          return `<code>Error: ~> not found.</code>`
-        }
-      }
-    }
-
-
-    /**
-     * Emoji
-     */
-    this.md.renderer.rules.emoji = (token, idx)=> {
-      if (this.config.enableEmojiSyntax) {
-        const t = token[idx],
-              markup = t['markup']
-        if (markup.startsWith('fa-')) { // font-awesome
-          return `<i class="fa ${markup}" aria-hidden="true"></i>`
-        } else { // emoji
-          return t['content']          
-        }      
-      } else {
-        return ':' + token[idx]['markup'] + ':'
-      }
-    }
-
-  }
-
-  /**
-   * Embed local images. Load the image file and display it in base64 format
-   */
-  private async embedLocalImages($) {
-    const asyncFunctions = [] 
-
-    $('img').each((i, img)=> {
-      const $img = $(img)
-      let src = this.resolveFilePath($img.attr('src'), false)
-
-      let fileProtocalMatch
-      if (fileProtocalMatch = src.match(/^file:\/\/+/)) {
-        src = utility.removeFileProtocol(src)
-        src = src.replace(/\?(\.|\d)+$/, '') // remove cache
-        const imageType = path.extname(src).slice(1)
-        if (imageType === 'svg') return 
-        asyncFunctions.push(new Promise((resolve, reject)=> {
-          fs.readFile(decodeURI(src), (error, data)=> {
-            if (error) return resolve(null)
-            const base64 = new Buffer(data).toString('base64')
-            $img.attr('src', `data:image/${imageType};charset=utf-8;base64,${base64}`)
-            return resolve(base64)
-          })
-        }))
-      }
-    })
-    await Promise.all(asyncFunctions)
-
-    return $
-  }
-
-  /**
-   * Load local svg files and embed them into html directly.  
-   * @param $ 
-   */
-  private async embedSVG($) {
-    const asyncFunctions = []
-    $('img').each((i, img)=> {
-      const $img = $(img)
-      let src = this.resolveFilePath($img.attr('src'), false)
-
-      let fileProtocalMatch
-      if (fileProtocalMatch = src.match(/^file:\/\/+/)) {
-        src = utility.removeFileProtocol(src)
-        src = src.replace(/\?(\.|\d)+$/, '') // remove cache
-        const imageType = path.extname(src).slice(1)
-        if (imageType !== 'svg') return 
-          asyncFunctions.push(new Promise((resolve, reject)=> {
-            fs.readFile(decodeURI(src), (error, data)=> {
-              if (error) return resolve(null)
-              const base64 = new Buffer(data).toString('base64')
-              $img.attr('src', `data:image/svg+xml;charset=utf-8;base64,${base64}`)
-              return resolve(base64)
-            })
-        }))
-      }
-    })
-
-    await Promise.all(asyncFunctions)
-
-    return $
+    codeChunkData.result = CryptoJS.AES.decrypt(result, "mume").toString(
+      CryptoJS.enc.Utf8,
+    );
   }
 
   /**
    * Generate scripts string for preview usage.
    */
-  public generateScriptsForPreview(isForPresentation=false, yamlConfig={}) {
-    let scripts = ""
+  public generateScriptsForPreview(isForPresentation = false, yamlConfig = {}) {
+    let scripts = "";
 
-    // jquery 
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/jquery/jquery.js')}"></script>`
-  
+    // prevent `id="exports"` element from linked to `window` object.
+    scripts += `<script>var exports = undefined</script>`;
+
+    // jquery
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/jquery/jquery.js",
+    )}" charset="UTF-8"></script>`;
+
     // jquery contextmenu
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/jquery-contextmenu/jquery.ui.position.min.js')}"></script>`
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/jquery-contextmenu/jquery.contextMenu.min.js')}"></script>`
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/jquery-contextmenu/jquery.ui.position.min.js",
+    )}" charset="UTF-8"></script>`;
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/jquery-contextmenu/jquery.contextMenu.min.js",
+    )}" charset="UTF-8"></script>`;
 
-    // jquery modal 
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/jquery-modal/jquery.modal.min.js')}"></script>`
+    // jquery modal
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/jquery-modal/jquery.modal.min.js",
+    )}" charset="UTF-8"></script>`;
 
     // crpto-js
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/crypto-js/crypto-js.js')}"></script>`
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/crypto-js/crypto-js.js",
+    )}" charset="UTF-8"></script>`;
 
     // mermaid
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/mermaid.min.js`)}"></script>`
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      `./dependencies/mermaid/mermaid.min.js`,
+    )}" charset="UTF-8"></script>`;
 
     // wavedrome
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/default.js')}"></script>`
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/wavedrom.min.js')}"></script>`
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/wavedrom/default.js",
+    )}" charset="UTF-8"></script>`;
+    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/wavedrom/wavedrom.min.js",
+    )}" charset="UTF-8"></script>`;
 
-    // math 
-    if (this.config.mathRenderingOption === 'MathJax' || this.config.usePandocParser) {
-      const mathJaxConfig = utility.configs.mathjaxConfig
-      mathJaxConfig['tex2jax'] = mathJaxConfig['tex2jax'] || {}
-      mathJaxConfig['tex2jax']['inlineMath'] = this.config.mathInlineDelimiters
-      mathJaxConfig['tex2jax']['displayMath'] = this.config.mathBlockDelimiters
+    // math
+    if (
+      this.config.mathRenderingOption === "MathJax" ||
+      this.config.usePandocParser
+    ) {
+      const mathJaxConfig = utility.configs.mathjaxConfig;
+      mathJaxConfig["tex2jax"] = mathJaxConfig["tex2jax"] || {};
+      mathJaxConfig["tex2jax"]["inlineMath"] = this.config.mathInlineDelimiters;
+      mathJaxConfig["tex2jax"]["displayMath"] = this.config.mathBlockDelimiters;
 
-      scripts += `<script type="text/javascript" async src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/mathjax/MathJax.js')}"></script>`
-      scripts += `<script type="text/x-mathjax-config"> MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)}); </script>`
+      scripts += `<script type="text/javascript" async src="file:///${path.resolve(
+        utility.extensionDirectoryPath,
+        "./dependencies/mathjax/MathJax.js",
+      )}" charset="UTF-8"></script>`;
+      scripts += `<script type="text/x-mathjax-config"> MathJax.Hub.Config(${JSON.stringify(
+        mathJaxConfig,
+      )}); </script>`;
     }
 
     // reveal.js
     if (isForPresentation) {
-      scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/reveal/lib/js/head.min.js')}'></script>`
-      scripts += `<script src='file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/reveal/js/reveal.js')}'></script>`
-  
-      let presentationConfig = yamlConfig['presentation'] || {}
-      let dependencies = presentationConfig['dependencies'] || []
-      presentationConfig['dependencies'] = dependencies
+      scripts += `<script src='file:///${path.resolve(
+        utility.extensionDirectoryPath,
+        "./dependencies/reveal/lib/js/head.min.js",
+      )}'></script>`;
+      scripts += `<script src='file:///${path.resolve(
+        utility.extensionDirectoryPath,
+        "./dependencies/reveal/js/reveal.js",
+      )}'></script>`;
+
+      let presentationConfig = yamlConfig["presentation"] || {};
+      if (typeof presentationConfig !== "object") {
+        presentationConfig = {};
+      }
+      let dependencies = presentationConfig["dependencies"] || [];
+      if (!(dependencies instanceof Array)) {
+        dependencies = [];
+      }
+      presentationConfig["dependencies"] = dependencies;
 
       scripts += `
       <script>
-        Reveal.initialize(${JSON.stringify(Object.assign({margin: 0.1}, presentationConfig))})
+        Reveal.initialize(${JSON.stringify({
+          margin: 0.1,
+          ...presentationConfig,
+        })})
       </script>
-      `
+      `;
     }
 
-    // mermaid init 
+    // mermaid init
     scripts += `<script>
 ${utility.configs.mermaidConfig}
 if (window['MERMAID_CONFIG']) {
   window['MERMAID_CONFIG'].startOnLoad = false
   window['MERMAID_CONFIG'].cloneCssStyles = false 
+  window['MERMAID_CONFIG'].theme = "${this.config.mermaidTheme}"
 }
-mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
+mermaid.initialize(window['MERMAID_CONFIG'] || {})
 
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
@@ -741,150 +490,324 @@ if (typeof(window['Reveal']) !== 'undefined') {
 } else {
   mermaid.init(null, document.getElementsByClassName('mermaid'))
 }
-</script>`
+</script>`;
 
     // wavedrom init script
     if (isForPresentation) {
       scripts += `<script>
   WaveDrom.ProcessAll()
-      </script>`
+      </script>`;
     }
-    
-    return scripts
+
+    // flowchart.js
+    scripts += `<script src='file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/raphael/raphael.js",
+    )}'></script>`;
+    scripts += `<script src='file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/flowchart/flowchart.min.js",
+    )}'></script>`;
+    // flowchart init script
+    if (isForPresentation) {
+      scripts += `<script>
+      var flowcharts = document.getElementsByClassName('flow')
+      for (var i = 0; i < flowcharts.length; i++) {
+        var flow = flowcharts[i]
+        try {
+          var diagram = flowchart.parse(flow.textContent)
+          flow.id = 'flow_' + i
+          flow.innerHTML = ''
+          diagram.drawSVG(flow.id)
+        } catch (error) {
+          flow.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        }
+      }
+      </script>`;
+    }
+
+    // vega and vega-lite with vega-embed
+    // https://vega.github.io/vega/usage/#embed
+    scripts += `<script src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      `./dependencies/vega/vega.min.js`,
+    )}" charset="UTF-8"></script>`;
+    scripts += `<script src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      `./dependencies/vega-lite/vega-lite.min.js`,
+    )}" charset="UTF-8"></script>`;
+    scripts += `<script src="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      `./dependencies/vega-embed/vega-embed.min.js`,
+    )}" charset="UTF-8"></script>`;
+
+    if (isForPresentation) {
+      scripts += `<script>
+      var vegaEls = document.querySelectorAll('.vega, .vega-lite');
+      function reportVegaError(el, error) {
+        el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+      }
+      for (var i = 0; i < vegaEls.length; i++) {
+        const vegaEl = vegaEls[i]
+        try {
+          var spec = JSON.parse(vegaEl.textContent);
+          vegaEmbed(vegaEl, spec, { actions: false, renderer: 'svg' })
+          .catch(function(error) {
+            reportVegaError(vegaEl, error);
+          })
+        } catch (error) {
+          reportVegaError(vegaEl, error);
+        }
+      }
+      </script>`;
+    }
+
+    // sequence diagram
+    scripts += `<script src='file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/webfont/webfontloader.js",
+    )}'></script>`;
+    scripts += `<script src='file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/underscore/underscore.js",
+    )}'></script>`;
+    scripts += `<script src='file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./dependencies/js-sequence-diagrams/sequence-diagram-min.js",
+    )}'></script>`;
+    // sequence diagram init script
+    if (isForPresentation) {
+      scripts += `<script>
+      var sequenceDiagrams = document.getElementsByClassName('sequence')
+      for (var i = 0; i < sequenceDiagrams.length; i++) {
+        var sequence = sequenceDiagrams[i]
+        try {
+          var diagram = Diagram.parse(sequence.textContent)
+          var theme = sequence.getAttribute('theme') || 'simple'
+          sequence.id = 'sequence_' + i
+          sequence.innerHTML = ''
+          diagram.drawSVG(sequence.id, {theme: theme})
+        } catch (error) {
+          sequence.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        }
+      }
+      </script>`;
+    }
+
+    return scripts;
   }
 
   /**
-   * Map preview theme to prism theme.  
+   * Map preview theme to prism theme.
    */
-  static AutoPrismThemeMap = {
-    'atom-dark.css': 'atom-dark.css',
-    'atom-light.css': 'atom-light.css',
-    'atom-material.css': 'atom-material.css',
-    'github-dark.css': 'atom-dark.css',
-    'github-light.css': 'github.css',
-    'gothic.css': 'github.css',
-    'medium.css': 'github.css',
-    'monokai.css': 'monokai.css',
-    'newsprint.css': 'pen-paper-coffee.css',  // <= this is bad
-    'night.css': 'darcula.css', // <= this is bad
-    'one-dark.css': 'one-dark.css',
-    'one-light.css': 'one-light.css',
-    'solarized-light.css': 'solarized-light.css',
-    'solarized-dark.css': 'solarized-dark.css'
-  }
+  private static AutoPrismThemeMap = {
+    "atom-dark.css": "atom-dark.css",
+    "atom-light.css": "atom-light.css",
+    "atom-material.css": "atom-material.css",
+    "github-dark.css": "atom-dark.css",
+    "github-light.css": "github.css",
+    "gothic.css": "github.css",
+    "medium.css": "github.css",
+    "monokai.css": "monokai.css",
+    "newsprint.css": "pen-paper-coffee.css", // <= this is bad
+    "night.css": "darcula.css", // <= this is bad
+    "one-dark.css": "one-dark.css",
+    "one-light.css": "one-light.css",
+    "solarized-light.css": "solarized-light.css",
+    "solarized-dark.css": "solarized-dark.css",
+    "vue.css": "vue.css",
+  };
 
-  static AutoPrismThemeMapForPresentation = {
-    'beige.css': 'pen-paper-coffee.css',
-    'black.css': 'one-dark.css',
-    'blood.css': 'monokai.css',
-    'league.css': 'okaidia.css',
-    'moon.css': 'funky.css',
-    'night.css': 'atom-dark.css',
-    'serif.css': 'github.css',
-    'simple.css': 'github.css',
-    'sky.css': 'default.css',
-    'solarized.css': 'solarized-light.css',
-    'white.css': 'default.css'
-  }
+  private static AutoPrismThemeMapForPresentation = {
+    "beige.css": "pen-paper-coffee.css",
+    "black.css": "one-dark.css",
+    "blood.css": "monokai.css",
+    "league.css": "okaidia.css",
+    "moon.css": "funky.css",
+    "night.css": "atom-dark.css",
+    "serif.css": "github.css",
+    "simple.css": "github.css",
+    "sky.css": "default.css",
+    "solarized.css": "solarized-light.css",
+    "white.css": "default.css",
+  };
 
   /**
-   * Automatically pick code block theme for preview.  
+   * Automatically pick code block theme for preview.
    */
-  private getPrismTheme(isPresentationMode=false) {
-    if (this.config.codeBlockTheme === 'auto.css') {
+  private getPrismTheme(isPresentationMode = false, yamlConfig = {}) {
+    if (this.config.codeBlockTheme === "auto.css") {
       /**
-       * Automatically pick code block theme for preview.  
+       * Automatically pick code block theme for preview.
        */
       if (isPresentationMode) {
-        return MarkdownEngine.AutoPrismThemeMapForPresentation[this.config.revealjsTheme] || 'default.css'
+        const presentationTheme =
+          yamlConfig["presentation"] &&
+          typeof yamlConfig["presentation"] === "object" &&
+          yamlConfig["presentation"]["theme"]
+            ? yamlConfig["presentation"]["theme"]
+            : this.config.revealjsTheme;
+        return (
+          MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] ||
+          "default.css"
+        );
       } else {
-        return MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] || 'default.css'
+        return (
+          MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] ||
+          "default.css"
+        );
       }
     } else {
-      return this.config.codeBlockTheme
+      return this.config.codeBlockTheme;
     }
   }
 
   /**
    * Generate styles string for preview usage.
    */
-  public generateStylesForPreview(isPresentationMode=false) {
-    let styles = ''
+  public generateStylesForPreview(isPresentationMode = false, yamlConfig = {}) {
+    let styles = "";
 
-    // loading.css 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, './styles/loading.css')}">`
-  
+    // loading.css
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      "./styles/loading.css",
+    )}">`;
+
     // jquery-contextmenu
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/jquery-contextmenu/jquery.contextMenu.min.css`)}">`
-  
-    // jquery-modal 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/jquery-modal/jquery.modal.min.css`)}">`
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      `./dependencies/jquery-contextmenu/jquery.contextMenu.min.css`,
+    )}">`;
 
-    // check math 
-    if (this.config.mathRenderingOption === "KaTeX" && !this.config.usePandocParser) {
-      styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/katex/katex.min.css')}">`
+    // jquery-modal
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      `./dependencies/jquery-modal/jquery.modal.min.css`,
+    )}">`;
+
+    // check math
+    if (
+      this.config.mathRenderingOption === "KaTeX" &&
+      !this.config.usePandocParser
+    ) {
+      styles += `<link rel="stylesheet" href="file:///${path.resolve(
+        utility.extensionDirectoryPath,
+        "./dependencies/katex/katex.min.css",
+      )}">`;
     }
 
-    // check mermaid 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/mermaid/${this.config.mermaidTheme}`)}">`
+    // check sequence diagram
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      `./dependencies/js-sequence-diagrams/sequence-diagram-min.css`,
+    )}">`;
 
     // check font-awesome
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./dependencies/font-awesome/css/font-awesome.min.css`)}">`    
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      `./dependencies/font-awesome/css/font-awesome.min.css`,
+    )}">`;
 
     // check preview theme and revealjs theme
     if (!isPresentationMode) {
-      styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`)}">`
+      styles += `<link rel="stylesheet" href="file:///${path.resolve(
+        utility.extensionDirectoryPath,
+        `./styles/preview_theme/${this.config.previewTheme}`,
+      )}">`;
     } else {
-      styles += `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, './dependencies/reveal/reveal.css')}" >`
-      styles += `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`)}" >`
+      styles += `<link rel="stylesheet" href="file:///${path.resolve(
+        extensionDirectoryPath,
+        "./dependencies/reveal/reveal.css",
+      )}" >`;
+      styles += `<link rel="stylesheet" href="file:///${path.resolve(
+        extensionDirectoryPath,
+        `./styles/revealjs_theme/${
+          yamlConfig["presentation"] &&
+          typeof yamlConfig["presentation"] === "object" &&
+          yamlConfig["presentation"]["theme"]
+            ? yamlConfig["presentation"]["theme"]
+            : this.config.revealjsTheme
+        }`,
+      )}" >`;
     }
 
-    // check prism 
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(isPresentationMode)}`)}">`
+    // check prism
+    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+      utility.extensionDirectoryPath,
+      `./styles/prism_theme/${this.getPrismTheme(
+        isPresentationMode,
+        yamlConfig,
+      )}`,
+    )}">`;
 
     // style template
-    styles += `<link rel="stylesheet" media="screen" href="${path.resolve(utility.extensionDirectoryPath, './styles/style-template.css')}">`
+    styles += `<link rel="stylesheet" media="screen" href="${path.resolve(
+      utility.extensionDirectoryPath,
+      "./styles/style-template.css",
+    )}">`;
 
     // global styles
-    styles += `<style>${utility.configs.globalStyle}</style>`
+    styles += `<style>${utility.configs.globalStyle}</style>`;
 
-    return styles  
+    return styles;
   }
 
   /**
    * Generate <style> and <link> string from an array of file paths.
-   * @param JSAndCssFiles 
+   * @param JSAndCssFiles
    */
-  private generateJSAndCssFilesForPreview(JSAndCssFiles=[]) {
-    let output = ''
-    JSAndCssFiles.forEach((sourcePath)=> {
-      let absoluteFilePath = sourcePath
-      if (sourcePath[0] === '/') {
-        absoluteFilePath = 'file:///' + path.resolve(this.projectDirectoryPath, '.' + sourcePath)
-      } else if (sourcePath.match(/^file:\/\//) || sourcePath.match(/^https?\:\/\//)) {
-        // do nothing 
+  private generateJSAndCssFilesForPreview(JSAndCssFiles = []) {
+    let output = "";
+    JSAndCssFiles.forEach((sourcePath) => {
+      let absoluteFilePath = sourcePath;
+      if (sourcePath[0] === "/") {
+        absoluteFilePath =
+          "file:///" +
+          path.resolve(this.projectDirectoryPath, "." + sourcePath);
+      } else if (
+        sourcePath.match(/^file:\/\//) ||
+        sourcePath.match(/^https?\:\/\//)
+      ) {
+        // do nothing
       } else {
-        absoluteFilePath = 'file:///' + path.resolve(this.fileDirectoryPath, sourcePath)
+        absoluteFilePath =
+          "file:///" + path.resolve(this.fileDirectoryPath, sourcePath);
       }
 
-      if (absoluteFilePath.endsWith('.js')) {
-        output += `<script type="text/javascript" src="${absoluteFilePath}"></script>`
-      } else { // css
-        output += `<link rel="stylesheet" href="${absoluteFilePath}">`
+      if (absoluteFilePath.endsWith(".js")) {
+        output += `<script type="text/javascript" src="${absoluteFilePath}"></script>`;
+      } else {
+        // css
+        output += `<link rel="stylesheet" href="${absoluteFilePath}">`;
       }
-    })
-    return output
+    });
+    return output;
   }
 
   /**
    * Generate html template for preview.
    */
-  public async generateHTMLTemplateForPreview({inputString="", body='', webviewScript='', scripts="", styles="", head=`<base href="${this.filePath}">`, config={}}):Promise<string> {
-    if (!inputString)  
-      inputString = fs.readFileSync(this.filePath, {encoding:'utf-8'})
-    if (!webviewScript) 
-      webviewScript = path.resolve(utility.extensionDirectoryPath, './out/src/webview.js')
-    if (!body) // default body
+  public async generateHTMLTemplateForPreview({
+    inputString = "",
+    body = "",
+    webviewScript = "",
+    scripts = "",
+    styles = "",
+    head = `<base href="${this.filePath}">`,
+    config = {},
+  }): Promise<string> {
+    if (!inputString) {
+      inputString = fs.readFileSync(this.filePath, { encoding: "utf-8" });
+    }
+    if (!webviewScript) {
+      webviewScript = path.resolve(
+        utility.extensionDirectoryPath,
+        "./out/src/webview.js",
+      );
+    }
+    if (!body) {
+      // default body
       body = `
         <div class="refreshing-icon"></div>
 
@@ -920,6 +843,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
               <select class="uploader-select">
                 <option>imgur</option>
                 <option>sm.ms</option>
+                <option>qiniu</option>
               </select>
               <span> to upload images</span>
             </div>
@@ -928,27 +852,42 @@ if (typeof(window['Reveal']) !== 'undefined') {
         </div>
 
         <!-- <div class="markdown-spinner"> Loading Markdown\u2026 </div> -->
-    `
+    `;
+    }
 
-    const {yamlConfig, JSAndCssFiles, html} = await this.parseMD(inputString, {isForPreview: true, useRelativeFilePath: false, hideFrontMatter: false})
-    const isPresentationMode = yamlConfig['isPresentationMode']
+    const { yamlConfig, JSAndCssFiles, html } = await this.parseMD(
+      inputString,
+      {
+        isForPreview: true,
+        useRelativeFilePath: false,
+        hideFrontMatter: false,
+      },
+    );
+    const isPresentationMode = yamlConfig["isPresentationMode"];
 
     const htmlTemplate = `<!DOCTYPE html>
       <html>
       <head>
         <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-        <meta id="mume-data" data-config="${utility.escapeString(JSON.stringify(Object.assign({}, this.config, config)))}" data-time="${Date.now()}">
+        <meta id="mume-data" data-config="${utility.escapeString(
+          JSON.stringify({ ...this.config, ...config }),
+        )}" data-time="${Date.now()}">
         <meta charset="UTF-8">
 
-        ${this.generateStylesForPreview(isPresentationMode)}
+        ${this.generateStylesForPreview(isPresentationMode, yamlConfig)}
         ${styles}
-        <link rel="stylesheet" href="file:///${path.resolve(utility.extensionDirectoryPath , './styles/preview.css')}">
+        <link rel="stylesheet" href="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          "./styles/preview.css",
+        )}">
 
         ${this.generateJSAndCssFilesForPreview(JSAndCssFiles)}
         ${head}        
       </head>
       <body class="preview-container">
-        <div class="mume markdown-preview" for="preview" ${isPresentationMode ? 'data-presentation-mode' : ''}>
+        <div class="mume markdown-preview" for="preview" ${
+          isPresentationMode ? "data-presentation-mode" : ""
+        }>
           ${html}
         </div>
         ${body}
@@ -956,91 +895,106 @@ if (typeof(window['Reveal']) !== 'undefined') {
       ${this.generateScriptsForPreview(isPresentationMode, yamlConfig)}
       ${scripts}
       <script src="${webviewScript}"></script>
-      </html>`
-    
-      return htmlTemplate
+      </html>`;
+
+    return htmlTemplate;
   }
 
   /**
    * Generate HTML content
-   * @param html: this is the final content you want to put. 
+   * @param html: this is the final content you want to put.
    * @param yamlConfig: this is the front matter.
    * @param option: HTMLTemplateOption
    */
-  public async generateHTMLTemplateForExport(html:string, yamlConfig={}, options:HTMLTemplateOption):Promise<string> {
+  public async generateHTMLTemplateForExport(
+    html: string,
+    yamlConfig = {},
+    options: HTMLTemplateOption,
+  ): Promise<string> {
     // get `id` and `class`
-    const elementId = yamlConfig['id'] || ''
-    let elementClass = yamlConfig['class'] || []
-    if (typeof(elementClass) === 'string')
-      elementClass = [elementClass]
-    elementClass = elementClass.join(' ')
+    const elementId = yamlConfig["id"] || "";
+    let elementClass = yamlConfig["class"] || [];
+    if (typeof elementClass === "string") {
+      elementClass = [elementClass];
+    }
+    elementClass = elementClass.join(" ");
 
     // math style and script
-    let mathStyle = ''
-    if (this.config.mathRenderingOption === 'MathJax' || this.config.usePandocParser) {
-      const inline = this.config.mathInlineDelimiters
-      const block = this.config.mathBlockDelimiters
-
+    let mathStyle = "";
+    if (
+      this.config.mathRenderingOption === "MathJax" ||
+      this.config.usePandocParser
+    ) {
       // TODO
-      const mathJaxConfig = await utility.getMathJaxConfig()
-      mathJaxConfig['tex2jax']['inlineMath'] = this.config.mathInlineDelimiters
-      mathJaxConfig['tex2jax']['displayMath'] = this.config.mathBlockDelimiters
+      const mathJaxConfig = await utility.getMathJaxConfig();
+      mathJaxConfig["tex2jax"]["inlineMath"] = this.config.mathInlineDelimiters;
+      mathJaxConfig["tex2jax"]["displayMath"] = this.config.mathBlockDelimiters;
 
       if (options.offline) {
         mathStyle = `
         <script type="text/x-mathjax-config">
           MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)});
         </script>
-        <script type="text/javascript" async src="file:///${path.resolve(extensionDirectoryPath, './dependencies/mathjax/MathJax.js')}"></script>
-        `
+        <script type="text/javascript" async src="file:///${path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/mathjax/MathJax.js",
+        )}" charset="UTF-8"></script>
+        `;
       } else {
         mathStyle = `
         <script type="text/x-mathjax-config">
           MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)});
         </script>
         <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js"></script>
-        `
+        `;
       }
-    } else if (this.config.mathRenderingOption === 'KaTeX') {
+    } else if (this.config.mathRenderingOption === "KaTeX") {
       if (options.offline) {
-        mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.css')}">`
+        mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/katex/katex.min.css",
+        )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">`
+        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css">`;
       }
     } else {
-      mathStyle = ''
+      mathStyle = "";
     }
 
-    // font-awesome 
-    let fontAwesomeStyle = ''
+    // font-awesome
+    let fontAwesomeStyle = "";
     if (html.indexOf('<i class="fa ') >= 0) {
       if (options.offline) {
-        fontAwesomeStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, `./dependencies/font-awesome/css/font-awesome.min.css`)}">`        
+        fontAwesomeStyle = `<link rel="stylesheet" href="file:///${path.resolve(
+          extensionDirectoryPath,
+          `./dependencies/font-awesome/css/font-awesome.min.css`,
+        )}">`;
       } else {
-        fontAwesomeStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">`                
-      }        
+        fontAwesomeStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">`;
+      }
     }
 
-    // mermaid 
-    let mermaidScript = ''
-    let mermaidStyle = ''
-    let mermaidInitScript = ''
-    if (html.indexOf('<div class="mermaid">') >= 0) {
+    // mermaid
+    let mermaidScript = "";
+    let mermaidInitScript = "";
+    if (html.indexOf(' class="mermaid') >= 0) {
       if (options.offline) {
-        mermaidScript = `<script type="text/javascript" src="file:///${path.resolve(extensionDirectoryPath, './dependencies/mermaid/mermaid.min.js')}"></script>`
-        mermaidStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, `./dependencies/mermaid/${this.config.mermaidTheme}`)}">`
+        mermaidScript = `<script type="text/javascript" src="file:///${path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/mermaid/mermaid.min.js",
+        )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.0.0/mermaid.min.js"></script>`
-        mermaidStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mermaid/7.0.0/${this.config.mermaidTheme.replace('.css', '.min.css')}">`
+        mermaidScript = `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@8.0.0-rc.8/dist/mermaid.min.js"></script>`;
       }
-      let mermaidConfig:string = await utility.getMermaidConfig()
+      const mermaidConfig: string = await utility.getMermaidConfig();
       mermaidInitScript += `<script>
 ${mermaidConfig}
 if (window['MERMAID_CONFIG']) {
   window['MERMAID_CONFIG'].startOnLoad = false
-  window['MERMAID_CONFIG'].cloneCssStyles = false 
+  window['MERMAID_CONFIG'].cloneCssStyles = false
+  window['MERMAID_CONFIG'].theme = "${this.config.mermaidTheme}"
 }
-mermaidAPI.initialize(window['MERMAID_CONFIG'] || {})
+mermaid.initialize(window['MERMAID_CONFIG'] || {})
 
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
@@ -1061,126 +1015,347 @@ if (typeof(window['Reveal']) !== 'undefined') {
 } else {
   mermaid.init(null, document.getElementsByClassName('mermaid'))
 }
-</script>`
+</script>`;
     }
-    // wavedrom 
-    let wavedromScript = ``,
-        wavedromInitScript = ``
-    if (html.indexOf('<div class="wavedrom">') >= 0) {
+    // wavedrom
+    let wavedromScript = ``;
+    let wavedromInitScript = ``;
+    if (html.indexOf(' class="wavedrom') >= 0) {
       if (options.offline) {
-        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/default.js')}"></script>`
-        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(utility.extensionDirectoryPath, './dependencies/wavedrom/wavedrom.min.js')}"></script>`
+        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          "./dependencies/wavedrom/default.js",
+        )}" charset="UTF-8"></script>`;
+        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          "./dependencies/wavedrom/wavedrom.min.js",
+        )}" charset="UTF-8"></script>`;
       } else {
-        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/skins/default.js"></script>`
-        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/wavedrom.min.js"></script>`
+        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/skins/default.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/wavedrom.min.js"></script>`;
       }
-      wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`
+      wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`;
     }
 
+    // vega and vega-lite with vega-embed
+    // https://vega.github.io/vega/usage/#embed
+    let vegaScript = ``;
+    let vegaInitScript = ``;
+    if (
+      html.indexOf(' class="vega') >= 0 ||
+      html.indexOf(' class="vega-lite') >= 0
+    ) {
+      if (options.offline) {
+        vegaScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          `./dependencies/vega/vega.js`,
+        )}" charset="UTF-8"></script>`;
+        vegaScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          `./dependencies/vega-lite/vega-lite.js`,
+        )}" charset="UTF-8"></script>`;
+        vegaScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          `./dependencies/vega-embed/vega-embed.js`,
+        )}" charset="UTF-8"></script>`;
+      } else {
+        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega/4.1.0/vega.min.js"></script>`;
+        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega-lite/2.6.0/vega-lite.min.js"></script>`;
+        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega-embed/3.18.1/vega-embed.min.js"></script>`;
+      }
+      vegaInitScript += `<script>
+      var vegaEls = document.querySelectorAll('.vega, .vega-lite');
+      function reportVegaError(el, error) {
+        el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+      }
+      for (var i = 0; i < vegaEls.length; i++) {
+        const vegaEl = vegaEls[i]
+        try {
+          var spec = JSON.parse(vegaEl.textContent);
+          vegaEmbed(vegaEl, spec, { actions: false, renderer: 'svg' })
+          .catch(function(error) {
+            reportVegaError(vegaEl, error);
+          })
+        } catch (error) {
+          reportVegaError(vegaEl, error);
+        }
+      }
+      </script>`;
+    }
+
+    // flowchart
+    let flowchartScript = ``;
+    let flowchartInitScript = ``;
+    if (html.indexOf(' class="flow') >= 0) {
+      if (options.offline) {
+        flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          "./dependencies/raphael/raphael.js",
+        )}" charset="UTF-8"></script>`;
+        flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          "./dependencies/flowchart/flowchart.min.js",
+        )}" charset="UTF-8"></script>`;
+      } else {
+        flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`;
+        flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.7.0/flowchart.min.js"></script>`;
+      }
+      flowchartInitScript = `<script>
+var flowcharts = document.getElementsByClassName('flow')
+for (var i = 0; i < flowcharts.length; i++) {
+  var flow = flowcharts[i]
+  try {
+    var diagram = flowchart.parse(flow.textContent)
+    flow.id = 'flow_' + i
+    flow.innerHTML = ''
+    diagram.drawSVG(flow.id)
+  } catch (error) {
+    flow.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+  }
+}
+</script>`;
+    }
+
+    // sequence diagrams
+    let sequenceDiagramScript = ``;
+    let sequenceDiagramStyle = ``;
+    let sequenceDiagramInitScript = ``;
+    if (html.indexOf(' class="sequence') >= 0) {
+      if (options.offline) {
+        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          "./dependencies/webfont/webfontloader.js",
+        )}" charset="UTF-8"></script>`;
+        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          "./dependencies/raphael/raphael.js",
+        )}" charset="UTF-8"></script>`;
+        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          "./dependencies/underscore/underscore.js",
+        )}" charset="UTF-8"></script>`;
+        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.extensionDirectoryPath,
+          "./dependencies/js-sequence-diagrams/sequence-diagram-min.js",
+        )}" charset="UTF-8"></script>`;
+        sequenceDiagramStyle = `<link rel="stylesheet" href="file:///${path.resolve(
+          extensionDirectoryPath,
+          `./dependencies/js-sequence-diagrams/sequence-diagram-min.css`,
+        )}">`;
+      } else {
+        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webfont/1.6.28/webfontloader.js"></script>`;
+        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`;
+        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>`;
+        sequenceDiagramScript += `<script type="text/javascript" src="https://bramp.github.io/js-sequence-diagrams/js/sequence-diagram-min.js"></script>`;
+        sequenceDiagramStyle = `<link rel="stylesheet" href="https://bramp.github.io/js-sequence-diagrams/css/sequence-diagram-min.css">`;
+      }
+      sequenceDiagramInitScript = `<script>
+      var sequenceDiagrams = document.getElementsByClassName('sequence')
+      for (var i = 0; i < sequenceDiagrams.length; i++) {
+        var sequence = sequenceDiagrams[i]
+        try {
+          var diagram = Diagram.parse(sequence.textContent)
+          var theme = sequence.getAttribute('theme') || 'simple'
+          sequence.id = 'sequence_' + i
+          sequence.innerHTML = ''
+          diagram.drawSVG(sequence.id, {theme: theme})
+        } catch (error) {
+          sequence.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        }
+      }
+      </script>`;
+    }
 
     // presentation
-    let presentationScript = '',
-        presentationStyle = '',
-        presentationInitScript = ''
+    let presentationScript = "";
+    let presentationStyle = "";
+    let presentationInitScript = "";
     if (yamlConfig["isPresentationMode"]) {
       if (options.offline) {
         presentationScript = `
-        <script src='file:///${path.resolve(extensionDirectoryPath, './dependencies/reveal/lib/js/head.min.js')}'></script>
-        <script src='file:///${path.resolve(extensionDirectoryPath, './dependencies/reveal/js/reveal.js')}'></script>`
+        <script src='file:///${path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/reveal/lib/js/head.min.js",
+        )}'></script>
+        <script src='file:///${path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/reveal/js/reveal.js",
+        )}'></script>`;
       } else {
         presentationScript = `
         <script src='https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/lib/js/head.min.js'></script>
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/js/reveal.min.js'></script>`
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/js/reveal.min.js'></script>`;
       }
 
-      let presentationConfig = yamlConfig['presentation'] || {}
-      let dependencies = presentationConfig['dependencies'] || []
-      if (presentationConfig['enableSpeakerNotes']) {
-        if (options.offline)
-          dependencies.push({src: path.resolve(extensionDirectoryPath, './dependencies/reveal/plugin/notes/notes.js'), async: true})
-        else
-          dependencies.push({src: 'revealjs_deps/notes.js', async: true}) // TODO: copy notes.js file to corresponding folder
+      const presentationConfig = yamlConfig["presentation"] || {};
+      const dependencies = presentationConfig["dependencies"] || [];
+      if (presentationConfig["enableSpeakerNotes"]) {
+        if (options.offline) {
+          dependencies.push({
+            src: path.resolve(
+              extensionDirectoryPath,
+              "./dependencies/reveal/plugin/notes/notes.js",
+            ),
+            async: true,
+          });
+        } else {
+          dependencies.push({ src: "revealjs_deps/notes.js", async: true }); // TODO: copy notes.js file to corresponding folder
+        }
       }
-      presentationConfig['dependencies'] = dependencies
+      presentationConfig["dependencies"] = dependencies;
 
       presentationStyle = `
       <style>
-      ${fs.readFileSync(path.resolve(extensionDirectoryPath, './dependencies/reveal/reveal.css'))}
-      ${options.isForPrint ? fs.readFileSync(path.resolve(extensionDirectoryPath, './dependencies/reveal/pdf.css')) : ''}
+      ${fs.readFileSync(
+        path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/reveal/reveal.css",
+        ),
+      )}
+      ${
+        options.isForPrint
+          ? fs.readFileSync(
+              path.resolve(
+                extensionDirectoryPath,
+                "./dependencies/reveal/pdf.css",
+              ),
+            )
+          : ""
+      }
       </style>
-      `
+      `;
       presentationInitScript = `
       <script>
-        Reveal.initialize(${JSON.stringify(Object.assign({margin: 0.1}, presentationConfig))})
+        Reveal.initialize(${JSON.stringify({
+          margin: 0.1,
+          ...presentationConfig,
+        })})
       </script>
-      `
+      `;
     }
 
-    // prince 
-    let princeClass = ""
+    // prince
+    let princeClass = "";
     if (options.isForPrince) {
-      princeClass = "prince"
+      princeClass = "prince";
     }
 
-    // phantomjs 
-    let phantomjsClass = ""
+    // phantomjs
+    let phantomjsClass = "";
     if (options.phantomjsType) {
-      if (options.phantomjsType === 'pdf') {
-        phantomjsClass = 'phantomjs-pdf'
+      if (options.phantomjsType === "pdf") {
+        phantomjsClass = "phantomjs-pdf";
       } else {
-        phantomjsClass = 'phantomjs-image'
+        phantomjsClass = "phantomjs-image";
       }
     }
 
-    let title = path.basename(this.filePath)
-    title = title.slice(0, title.length - path.extname(title).length) // remove '.md'
-    if (yamlConfig['title']) title = yamlConfig['title']
+    let title = path.basename(this.filePath);
+    title = title.slice(0, title.length - path.extname(title).length); // remove '.md'
+    if (yamlConfig["title"]) {
+      title = yamlConfig["title"];
+    }
 
-    // prism and preview theme 
-    let styleCSS = ""
-    try{
+    // prism and preview theme
+    let styleCSS = "";
+    try {
       // prism *.css
-      styleCSS += (!this.config.printBackground && !yamlConfig['print_background'] && !yamlConfig["isPresentationMode"]) ?
-      await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/github.css`), {encoding:'utf-8'}) :
-      await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(yamlConfig["isPresentationMode"])}`), {encoding:'utf-8'})
-      
+      styleCSS +=
+        !this.config.printBackground &&
+        !yamlConfig["print_background"] &&
+        !yamlConfig["isPresentationMode"]
+          ? await utility.readFile(
+              path.resolve(
+                extensionDirectoryPath,
+                `./styles/prism_theme/github.css`,
+              ),
+              { encoding: "utf-8" },
+            )
+          : await utility.readFile(
+              path.resolve(
+                extensionDirectoryPath,
+                `./styles/prism_theme/${this.getPrismTheme(
+                  yamlConfig["isPresentationMode"],
+                  yamlConfig,
+                )}`,
+              ),
+              { encoding: "utf-8" },
+            );
+
       if (yamlConfig["isPresentationMode"]) {
-        styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/revealjs_theme/${this.config.revealjsTheme}`), {encoding:'utf-8'})
+        styleCSS += await utility.readFile(
+          path.resolve(
+            extensionDirectoryPath,
+            `./styles/revealjs_theme/${
+              yamlConfig["presentation"] &&
+              typeof yamlConfig["presentation"] === "object" &&
+              yamlConfig["presentation"]["theme"]
+                ? yamlConfig["presentation"]["theme"]
+                : this.config.revealjsTheme
+            }`,
+          ),
+          { encoding: "utf-8" },
+        );
       } else {
         // preview theme
-        styleCSS += (!this.config.printBackground && !yamlConfig['print_background']) ? 
-          await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/github-light.css`), {encoding:'utf-8'}) :
-          await utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
+        styleCSS +=
+          !this.config.printBackground && !yamlConfig["print_background"]
+            ? await utility.readFile(
+                path.resolve(
+                  extensionDirectoryPath,
+                  `./styles/preview_theme/github-light.css`,
+                ),
+                { encoding: "utf-8" },
+              )
+            : await utility.readFile(
+                path.resolve(
+                  extensionDirectoryPath,
+                  `./styles/preview_theme/${this.config.previewTheme}`,
+                ),
+                { encoding: "utf-8" },
+              );
       }
-      
+
       // style template
-      styleCSS += await utility.readFile(path.resolve(extensionDirectoryPath, './styles/style-template.css'), {encoding:'utf-8'})
-    } catch(e) {
-      styleCSS = ''
+      styleCSS += await utility.readFile(
+        path.resolve(extensionDirectoryPath, "./styles/style-template.css"),
+        { encoding: "utf-8" },
+      );
+    } catch (e) {
+      styleCSS = "";
     }
 
-    // global styles 
-    let globalStyles = ""
+    // global styles
+    let globalStyles = "";
     try {
-      globalStyles = await utility.getGlobalStyles()
-    } catch(error) {
-      // ignore it 
+      globalStyles = await utility.getGlobalStyles();
+    } catch (error) {
+      // ignore it
     }
 
     // sidebar toc
-    let sidebarTOC = '',
-        sidebarTOCScript = '',
-        sidebarTOCBtn = ''
-    if (!yamlConfig["isPresentationMode"] && !options.isForPrint && ( 
-      (!('html' in yamlConfig)) || 
-      (yamlConfig['html'] && yamlConfig['html']['toc'] !== false))) { // enable sidebar toc by default
-      sidebarTOC = `<div class="md-sidebar-toc">${this.tocHTML}</div>`
-      sidebarTOCBtn = '<a id="sidebar-toc-btn">≡</a>'
+    let sidebarTOC = "";
+    let sidebarTOCScript = "";
+    let sidebarTOCBtn = "";
+    if (
+      this.config.enableScriptExecution &&
+      !yamlConfig["isPresentationMode"] &&
+      !options.isForPrint &&
+      (!("html" in yamlConfig) ||
+        (yamlConfig["html"] && yamlConfig["html"]["toc"] !== false))
+    ) {
+      // enable sidebar toc by default
+      sidebarTOC = `<div class="md-sidebar-toc">${this.tocHTML}</div>`;
+      sidebarTOCBtn = '<a id="sidebar-toc-btn">≡</a>';
       // toggle sidebar toc
       // If yamlConfig['html']['toc'], then display sidebar TOC on startup.
       sidebarTOCScript = `
 <script>
-${(yamlConfig['html'] && yamlConfig['html']['toc']) ? `document.body.setAttribute('html-show-sidebar-toc', true)` : ''}
+${
+        yamlConfig["html"] && yamlConfig["html"]["toc"]
+          ? `document.body.setAttribute('html-show-sidebar-toc', true)`
+          : ""
+      }
 var sidebarTOCBtn = document.getElementById('sidebar-toc-btn')
 sidebarTOCBtn.addEventListener('click', function(event) {
   event.stopPropagation()
@@ -1191,24 +1366,36 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 })
 </script>
-      `
+      `;
     }
 
     // task list script
-    // has to use `var` instead of `let` because `phantomjs` might cause issue.  
-    const taskListScript = `<script>
-(function bindTaskListEvent() {
-  var taskListItemCheckboxes = document.body.getElementsByClassName('task-list-item-checkbox')
-  for (var i = 0; i < taskListItemCheckboxes.length; i++) {
-    var checkbox = taskListItemCheckboxes[i]
-    var li = checkbox.parentElement
-    if (li.tagName !== 'LI') li = li.parentElement
-    if (li.tagName === 'LI') {
-      li.classList.add('task-list-item')
+    if (html.indexOf("task-list-item-checkbox") >= 0) {
+      const $ = cheerio.load("<div>" + html + "</div>");
+      $(".task-list-item-checkbox").each(
+        (index: number, elem: CheerioElement) => {
+          const $elem = $(elem);
+          let $li = $elem.parent();
+          if (!$li[0].name.match(/^li$/i)) {
+            $li = $li.parent();
+          }
+          if ($li[0].name.match(/^li$/i)) {
+            $li.addClass("task-list-item");
+          }
+        },
+      );
+      html = $.html();
     }
-  }
-}())    
-</script>`
+
+    // process styles
+    // move @import ''; to the very start.
+    let styles = styleCSS + "\n" + globalStyles;
+    let imports = "";
+    styles = styles.replace(/\@import\s+url\(([^)]+)\)\s*;/g, (whole, url) => {
+      imports += whole + "\n";
+      return "";
+    });
+    styles = imports + styles;
 
     html = `
   <!DOCTYPE html>
@@ -1219,20 +1406,26 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       ${presentationStyle}
       ${mathStyle}
-      ${mermaidStyle}
+      ${sequenceDiagramStyle}
       ${fontAwesomeStyle}
       
       ${presentationScript}
       ${mermaidScript}
       ${wavedromScript}
+      ${vegaScript}
+      ${flowchartScript}
+      ${sequenceDiagramScript}
 
       <style> 
-      ${styleCSS} 
-      ${globalStyles} 
+      ${styles} 
       </style>
     </head>
-    <body ${options.isForPrint ? '' : 'for="html-export"'} ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''}>
-      <div class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${yamlConfig["isPresentationMode"] ? 'data-presentation-mode' : ''} ${elementId ? `id="${elementId}"` : ''}>
+    <body ${options.isForPrint ? "" : 'for="html-export"'} ${
+      yamlConfig["isPresentationMode"] ? "data-presentation-mode" : ""
+    }>
+      <div class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${
+      yamlConfig["isPresentationMode"] ? "data-presentation-mode" : ""
+    } ${elementId ? `id="${elementId}"` : ""}>
       ${html}
       </div>
       ${sidebarTOC}
@@ -1241,438 +1434,649 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${presentationInitScript}
     ${mermaidInitScript}
     ${wavedromInitScript}
-    ${taskListScript}
+    ${vegaInitScript}
+    ${flowchartInitScript}
+    ${sequenceDiagramInitScript}
     ${sidebarTOCScript}
   </html>
-    `
+    `;
 
-    if (options.embedLocalImages) { // embed local images as Data URI
-      let $ = cheerio.load(html, {xmlMode: true})
-      $ = await this.embedLocalImages($)
-      html = $.html()
+    if (options.embedLocalImages || options.embedSVG) {
+      const $ = cheerio.load(html);
+      if (options.embedLocalImages) {
+        await enhanceWithEmbeddedLocalImages(
+          $,
+          this.config,
+          this.resolveFilePath.bind(this),
+        );
+      }
+      if (options.embedSVG) {
+        await enhanceWithEmbeddedSvgs(
+          $,
+          this.config,
+          this.resolveFilePath.bind(this),
+        );
+      }
+      html = $.html();
     }
 
-    if (options.embedSVG) { // embed svg 
-      let $ = cheerio.load(html, {xmlMode: true})
-      $ = await this.embedSVG($)
-      html = $.html()
-    }
-    
-    return html.trim()
+    return html.trim();
   }
 
   /**
    * generate HTML file and open it in browser
    */
-  public async openInBrowser({runAllCodeChunks=false}):Promise<void> {
-    const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath: false, hideFrontMatter: true, isForPreview: false, runAllCodeChunks})
-    html = await this.generateHTMLTemplateForExport(html, yamlConfig, 
-                                    {isForPrint: false, isForPrince: false, offline: true, embedLocalImages: false} )   
+  public async openInBrowser({ runAllCodeChunks = false }): Promise<void> {
+    const inputString = await utility.readFile(this.filePath, {
+      encoding: "utf-8",
+    });
+    let html;
+    let yamlConfig;
+    ({ html, yamlConfig } = await this.parseMD(inputString, {
+      useRelativeFilePath: false,
+      hideFrontMatter: true,
+      isForPreview: false,
+      runAllCodeChunks,
+    }));
+    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
+      isForPrint: false,
+      isForPrince: false,
+      offline: true,
+      embedLocalImages: false,
+    });
     // create temp file
     const info = await utility.tempOpen({
-      prefix: 'mume',
-      suffix: '.html'
-    })
+      prefix: "mume",
+      suffix: ".html",
+    });
 
-    await utility.write(info.fd, html)
-    
+    await utility.write(info.fd, html);
+
     // open in browser
-    utility.openFile(info.path)
-    return 
+    utility.openFile(info.path);
+    return;
   }
 
   /**
-   * 
-   * @param filePath 
+   *
+   * @param filePath
    * @return dest if success, error if failure
    */
-  public async htmlExport({offline=false, runAllCodeChunks=false}):Promise<string> {
-    const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:true, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
-    const htmlConfig = yamlConfig['html'] || {}
-    if ('offline' in htmlConfig) {
-        offline = htmlConfig['offline']
+  public async htmlExport({
+    offline = false,
+    runAllCodeChunks = false,
+  }): Promise<string> {
+    const inputString = await utility.readFile(this.filePath, {
+      encoding: "utf-8",
+    });
+    let html;
+    let yamlConfig;
+    ({ html, yamlConfig } = await this.parseMD(inputString, {
+      useRelativeFilePath: true,
+      hideFrontMatter: true,
+      isForPreview: false,
+      runAllCodeChunks,
+    }));
+    const htmlConfig = yamlConfig["html"] || {};
+    if ("offline" in htmlConfig) {
+      offline = htmlConfig["offline"];
     }
-    let embedLocalImages = htmlConfig['embed_local_images'] // <= embedLocalImages is disabled by default.
+    const embedLocalImages = htmlConfig["embed_local_images"]; // <= embedLocalImages is disabled by default.
 
-    let embedSVG = true // <= embedSvg is enabled by default.
-    if ('embed_svg' in htmlConfig) {
-      embedSVG = htmlConfig['embed_svg']
-    } 
-    
-    let dest = this.filePath
-    let extname = path.extname(dest) 
-    dest = dest.replace(new RegExp(extname+'$'), '.html')
+    let embedSVG = true; // <= embedSvg is enabled by default.
+    if ("embed_svg" in htmlConfig) {
+      embedSVG = htmlConfig["embed_svg"];
+    }
+
+    let dest = this.filePath;
+    const extname = path.extname(dest);
+    dest = dest.replace(new RegExp(extname + "$"), ".html");
 
     html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
-        isForPrint: false, 
-        isForPrince: false,
-        embedLocalImages: embedLocalImages,
-        offline: offline,
-        embedSVG: embedSVG
-    })
-
-    const htmlFileName = path.basename(dest)
+      isForPrint: false,
+      isForPrince: false,
+      embedLocalImages,
+      offline,
+      embedSVG,
+    });
 
     // presentation speaker notes
     // copy dependency files
-    if (!offline && html.indexOf('[{"src":"revealjs_deps/notes.js","async":true}]') >= 0) {
-      const depsDirName = path.resolve(path.dirname(dest), 'revealjs_deps')
+    if (
+      !offline &&
+      html.indexOf('[{"src":"revealjs_deps/notes.js","async":true}]') >= 0
+    ) {
+      const depsDirName = path.resolve(path.dirname(dest), "revealjs_deps");
       if (!fs.existsSync(depsDirName)) {
-        fs.mkdirSync(depsDirName)
+        fs.mkdirSync(depsDirName);
       }
-      fs.createReadStream(path.resolve(extensionDirectoryPath, './dependencies/reveal/plugin/notes/notes.js')).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.js')))
-      fs.createReadStream(path.resolve(extensionDirectoryPath, './dependencies/reveal/plugin/notes/notes.html')).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.html')))
+      fs.createReadStream(
+        path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/reveal/plugin/notes/notes.js",
+        ),
+      ).pipe(fs.createWriteStream(path.resolve(depsDirName, "notes.js")));
+      fs.createReadStream(
+        path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/reveal/plugin/notes/notes.html",
+        ),
+      ).pipe(fs.createWriteStream(path.resolve(depsDirName, "notes.html")));
     }
 
-    await utility.writeFile(dest, html)
-    return dest
+    await utility.writeFile(dest, html);
+    return dest;
   }
 
   /**
    * Chrome (puppeteer) file export
    */
-  public async chromeExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
-    const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
-    let dest = this.filePath
-    let extname = path.extname(dest)
-    dest = dest.replace(new RegExp(extname + '$'), '.' + fileType)
-
-    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
-      isForPrint: true,
-      isForPrince: false,
-      embedLocalImages: false,
-      offline: true
-    })
-
-    if (!puppeteer) { // require puppeteer from global node_modules
-
-      try {
-        const globalModules = require('global-modules')
-        puppeteer = require(path.resolve(globalModules, 'puppeteer'))
-      } catch(error) {
-        throw "Puppeteer (Headless Chrome) is required to be installed globally. Please run `npm install -g puppeteer` in your terminal.  \n"
-      }
-    }
-
-    const info = await utility.tempOpen({prefix: 'mume', suffix: '.html'})
-    await utility.writeFile(info.fd, html)
-
-    const browser = await puppeteer.launch()
-    const page = await browser.newPage()
-    let loadPath = 'file:///' + info.path + (yamlConfig['isPresentationMode'] ? '?print-pdf' : '')
-    await page.goto(loadPath)
-
-    const puppeteerConfig = Object.assign(
-      { 
-        path: dest
-      }, 
-      yamlConfig['isPresentationMode'] ? {} : {
-        margin: {
-          top: '1cm',
-          bottom: '1cm',
-          left: '1cm',
-          right: '1cm'
-        }
-      },
-      yamlConfig['chrome'] || {})
-
-    if (fileType === 'pdf') {
-      await page.pdf(puppeteerConfig)
-    } else {
-      puppeteerConfig['fullPage'] = true // <= set to fullPage by default
-      await page.screenshot(puppeteerConfig)      
-    }
-    browser.close()
-
-    if (openFileAfterGeneration) utility.openFile(dest)      
-    return dest
-  }
-
-  /**
-   * Phantomjs file export
-   * The config could be set by front-matter. 
-   * Check https://github.com/marcbachmann/node-html-pdf website.  
-   * @param fileType the export file type 
-   */
-  public async phantomjsExport({fileType="pdf", runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
-    const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
-    let dest = this.filePath
-    let extname = path.extname(dest)
-    dest = dest.replace(new RegExp(extname + '$'), '.' + fileType)
+  public async chromeExport({
+    fileType = "pdf",
+    runAllCodeChunks = false,
+    openFileAfterGeneration = false,
+  }): Promise<string> {
+    const inputString = await utility.readFile(this.filePath, {
+      encoding: "utf-8",
+    });
+    let html;
+    let yamlConfig;
+    ({ html, yamlConfig } = await this.parseMD(inputString, {
+      useRelativeFilePath: false,
+      hideFrontMatter: true,
+      isForPreview: false,
+      runAllCodeChunks,
+    }));
+    let dest = this.filePath;
+    const extname = path.extname(dest);
+    dest = dest.replace(new RegExp(extname + "$"), "." + fileType);
 
     html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
       isForPrint: true,
       isForPrince: false,
       embedLocalImages: false,
       offline: true,
-      phantomjsType: fileType
-    })
+    });
+
+    if (!puppeteer) {
+      // require puppeteer from global node_modules
+      try {
+        const globalNodeModulesPath = (await utility.execFile(
+          process.platform === "win32" ? "npm.cmd" : "npm",
+          ["root", "-g"],
+        ))
+          .trim()
+          .split("\n")[0]
+          .trim();
+        puppeteer = require(path.resolve(globalNodeModulesPath, "./puppeteer")); // trim() function here is very necessary.
+      } catch (error) {
+        throw new Error(
+          "Puppeteer (Headless Chrome) is required to be installed globally. Please run `npm install -g puppeteer` in your terminal.  \n",
+        );
+      }
+    }
+
+    const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
+    await utility.writeFile(info.fd, html);
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    const loadPath =
+      "file:///" +
+      info.path +
+      (yamlConfig["isPresentationMode"] ? "?print-pdf" : "");
+    await page.goto(loadPath);
+
+    const puppeteerConfig = {
+      path: dest,
+      ...(yamlConfig["isPresentationMode"]
+        ? {}
+        : {
+            margin: {
+              top: "1cm",
+              bottom: "1cm",
+              left: "1cm",
+              right: "1cm",
+            },
+          }),
+      printBackground: this.config.printBackground,
+      ...(yamlConfig["chrome"] || yamlConfig["puppeteer"] || {}),
+    };
+
+    if (fileType === "pdf") {
+      await page.pdf(puppeteerConfig);
+    } else {
+      puppeteerConfig["fullPage"] = true; // <= set to fullPage by default
+      await page.screenshot(puppeteerConfig);
+    }
+    browser.close();
+
+    if (openFileAfterGeneration) {
+      utility.openFile(dest);
+    }
+    return dest;
+  }
+
+  /**
+   * Phantomjs file export
+   * The config could be set by front-matter.
+   * Check https://github.com/marcbachmann/node-html-pdf website.
+   * @param fileType the export file type
+   */
+  public async phantomjsExport({
+    fileType = "pdf",
+    runAllCodeChunks = false,
+    openFileAfterGeneration = false,
+  }): Promise<string> {
+    const inputString = await utility.readFile(this.filePath, {
+      encoding: "utf-8",
+    });
+    let html;
+    let yamlConfig;
+    ({ html, yamlConfig } = await this.parseMD(inputString, {
+      useRelativeFilePath: false,
+      hideFrontMatter: true,
+      isForPreview: false,
+      runAllCodeChunks,
+    }));
+    let dest = this.filePath;
+    const extname = path.extname(dest);
+    dest = dest.replace(new RegExp(extname + "$"), "." + fileType);
+
+    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
+      isForPrint: true,
+      isForPrince: false,
+      embedLocalImages: false,
+      offline: true,
+      phantomjsType: fileType,
+    });
 
     // TODO: phantomjs reveal.js export directly.
-    if (yamlConfig['isPresentationMode']) { // reveal.js presentation
-      const info = await utility.tempOpen({prefix: 'mume', suffix: '.html'})
-      await utility.writeFile(info.fd, html)
-      const url = 'file:///' + info.path + '?print-pdf'
-      return url
+    if (yamlConfig["isPresentationMode"]) {
+      // reveal.js presentation
+      const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
+      await utility.writeFile(info.fd, html);
+      const url = "file:///" + info.path + "?print-pdf";
+      return url;
     }
 
-    const phantomjsConfig = Object.assign({
+    const phantomjsConfig = {
       type: fileType,
-      border: '1cm',
-      quality: '75',
-      script: path.join(extensionDirectoryPath, './dependencies/phantomjs/pdf_a4_portrait.js')
-    }, await utility.getPhantomjsConfig(), yamlConfig['phantomjs'] || yamlConfig['phantom'] || {})
-    if (!phantomjsConfig['phantomPath']) {
-      phantomjsConfig['phantomPath'] = this.config.phantomPath
+      border: "1cm",
+      quality: "75",
+      script: path.join(
+        extensionDirectoryPath,
+        "./dependencies/phantomjs/pdf_a4_portrait.js",
+      ),
+      ...(await utility.getPhantomjsConfig()),
+      ...(yamlConfig["phantomjs"] || yamlConfig["phantom"] || {}),
+    };
+    if (!phantomjsConfig["phantomPath"]) {
+      phantomjsConfig["phantomPath"] = this.config.phantomPath;
     }
 
-    return await new Promise<string>((resolve, reject)=> {
+    return await new Promise<string>((resolve, reject) => {
       try {
-        pdf.create(html, phantomjsConfig)
-        .toFile(dest, (error, res)=> {
+        pdf.create(html, phantomjsConfig).toFile(dest, (error, res) => {
           if (error) {
-            return reject(error)
+            return reject(error);
           } else {
-            if (openFileAfterGeneration) utility.openFile(dest)
-            return resolve(dest)
+            if (openFileAfterGeneration) {
+              utility.openFile(dest);
+            }
+            return resolve(dest);
           }
-        })
-      } catch(error) {
-        let errorMessage = error.toString()
+        });
+      } catch (error) {
+        let errorMessage = error.toString();
         if (errorMessage.indexOf("Error: write EPIPE") >= 0) {
-          errorMessage = `"phantomjs" is required to be installed.`
+          errorMessage = `"phantomjs" is required to be installed.`;
         }
-        return reject(errorMessage)
+        return reject(errorMessage);
       }
-    })
+    });
   }
 
   /**
    * prince pdf file export
    * @return dest if success, error if failure
    */
-  public async princeExport({runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
-    const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
-    let dest = this.filePath
-    let extname = path.extname(dest) 
-    dest = dest.replace(new RegExp(extname+'$'), '.pdf')
+  public async princeExport({
+    runAllCodeChunks = false,
+    openFileAfterGeneration = false,
+  }): Promise<string> {
+    const inputString = await utility.readFile(this.filePath, {
+      encoding: "utf-8",
+    });
+    let html;
+    let yamlConfig;
+    ({ html, yamlConfig } = await this.parseMD(inputString, {
+      useRelativeFilePath: false,
+      hideFrontMatter: true,
+      isForPreview: false,
+      runAllCodeChunks,
+    }));
+    let dest = this.filePath;
+    const extname = path.extname(dest);
+    dest = dest.replace(new RegExp(extname + "$"), ".pdf");
 
     html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
-        isForPrint: true, 
-        isForPrince: true,
-        embedLocalImages: false, 
-        offline: true
-    })
+      isForPrint: true,
+      isForPrince: true,
+      embedLocalImages: false,
+      offline: true,
+    });
 
-    const info = await utility.tempOpen({prefix: 'mume', suffix: '.html'})
-    await utility.writeFile(info.fd, html)
+    const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
+    await utility.writeFile(info.fd, html);
 
-    if (yamlConfig['isPresentationMode']) {
-      const url = 'file:///' + info.path + '?print-pdf'
-      return url
+    if (yamlConfig["isPresentationMode"]) {
+      const url = "file:///" + info.path + "?print-pdf";
+      return url;
     } else {
-      await princeConvert(info.path, dest)
-      
+      await princeConvert(info.path, dest);
+
       //  open pdf
-      if (openFileAfterGeneration)
-        utility.openFile(dest)
-      return dest
+      if (openFileAfterGeneration) {
+        utility.openFile(dest);
+      }
+      return dest;
     }
   }
 
-  private async eBookDownloadImages($, dest):Promise<Array<string>> {
-    const imagesToDownload = []
-    if (path.extname(dest) === '.epub' || path.extname('dest') === '.mobi') {
-      $('img').each((offset, img)=> {
-        const $img = $(img)
-        const src = $img.attr('src') || ''
-        if (src.match(/^https?\:\/\//)) 
-          imagesToDownload.push($img)
-      })
+  private async eBookDownloadImages($, dest): Promise<string[]> {
+    const imagesToDownload = [];
+    if (path.extname(dest) === ".epub" || path.extname("dest") === ".mobi") {
+      $("img").each((offset, img) => {
+        const $img = $(img);
+        const src = $img.attr("src") || "";
+        if (src.match(/^https?\:\/\//)) {
+          imagesToDownload.push($img);
+        }
+      });
     }
 
-    const asyncFunctions = imagesToDownload.map(($img)=> {
-      return new Promise<string>((resolve, reject)=> {
-        const httpSrc = $img.attr('src')
-        let savePath = Math.random().toString(36).substr(2, 9) + '_' + path.basename(httpSrc)
-        savePath = path.resolve(this.fileDirectoryPath, savePath)
+    const asyncFunctions = imagesToDownload.map(($img) => {
+      return new Promise<string>((resolve, reject) => {
+        const httpSrc = $img.attr("src");
+        let savePath =
+          Math.random()
+            .toString(36)
+            .substr(2, 9) +
+          "_" +
+          path.basename(httpSrc);
+        savePath = path.resolve(this.fileDirectoryPath, savePath);
 
-        const stream = request(httpSrc).pipe(fs.createWriteStream(savePath))
+        const stream = request(httpSrc).pipe(fs.createWriteStream(savePath));
 
-        stream.on('finish', ()=> {
-          $img.attr('src', 'file:///' + savePath) 
-          return resolve(savePath)
-        })
-      })
-    })
+        stream.on("finish", () => {
+          $img.attr("src", "file:///" + savePath);
+          return resolve(savePath);
+        });
+      });
+    });
 
-    return await Promise.all(asyncFunctions)
+    return Promise.all(asyncFunctions);
   }
 
   /**
-   * 
-   * 
+   *
+   *
    * @return dest if success, error if failure
    */
-  public async eBookExport({fileType='epub', runAllCodeChunks=false}:{
+  public async eBookExport({
+    fileType = "epub",
+    runAllCodeChunks = false,
+  }: {
     /**
      * fileType: 'epub', 'pdf', 'mobi' or 'html'
      */
-    fileType:string,
-    runAllCodeChunks?:boolean
-  }):Promise<string> {
-    const inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-    let {html, yamlConfig} = await this.parseMD(inputString, {useRelativeFilePath:false, hideFrontMatter:true, isForPreview: false, runAllCodeChunks})
+    fileType: string;
+    runAllCodeChunks?: boolean;
+  }): Promise<string> {
+    const inputString = await utility.readFile(this.filePath, {
+      encoding: "utf-8",
+    });
+    const emojiToSvg = fileType === "pdf";
+    let html;
+    let yamlConfig;
+    ({ html, yamlConfig } = await this.parseMD(inputString, {
+      useRelativeFilePath: false,
+      hideFrontMatter: true,
+      isForPreview: false,
+      runAllCodeChunks,
+      emojiToSvg,
+    }));
 
-    let dest = this.filePath
-    let extname = path.extname(dest) 
-    dest = dest.replace(new RegExp(extname+'$'), '.'+fileType.toLowerCase())
+    let dest = this.filePath;
+    const extname = path.extname(dest);
+    dest = dest.replace(
+      new RegExp(extname + "$"),
+      "." + fileType.toLowerCase(),
+    );
 
-    let ebookConfig = yamlConfig['ebook']
-    if (!ebookConfig) throw 'eBook config not found. Please insert ebook front-matter to your markdown file.'
-
-    if (ebookConfig['cover']) { // change cover to absolute path if necessary
-      const cover = ebookConfig['cover']
-      ebookConfig['cover'] = utility.removeFileProtocol(this.resolveFilePath(cover, false))
+    const ebookConfig = yamlConfig["ebook"];
+    if (!ebookConfig) {
+      throw new Error(
+        "eBook config not found. Please insert ebook front-matter to your markdown file.",
+      );
     }
 
-    let $ = cheerio.load(`<div>${html}</div>`, {xmlMode: true})
+    if (ebookConfig["cover"]) {
+      // change cover to absolute path if necessary
+      const cover = ebookConfig["cover"];
+      ebookConfig["cover"] = utility.removeFileProtocol(
+        this.resolveFilePath(cover, false),
+      );
+    }
 
-    const tocStructure:Array<{level:number, filePath:string, heading:string, id:string}> = []
-    let headingOffset = 0
+    let $ = cheerio.load(`<div>${html}</div>`);
 
-    const $toc = $(':root > ul').last()
+    const tocStructure: Array<{
+      level: number;
+      filePath: string;
+      heading: string;
+      id: string;
+    }> = [];
+    let headingOffset = 0;
+
+    const $toc = $(":root > ul").last();
     if ($toc.length) {
-      if (ebookConfig['include_toc'] === false) { // remove itself and the heading ahead
-        const $prev = $toc.prev()
+      if (ebookConfig["include_toc"] === false) {
+        // remove itself and the heading ahead
+        const $prev = $toc.prev();
         if ($prev.length && $prev[0].name.match(/^h\d$/i)) {
-          $prev.remove()
+          $prev.remove();
         }
       }
 
-      $('h1, h2, h3, h4, h5, h6').each((offset, h)=> {
-        const $h = $(h)
-        const level = parseInt($h[0].name.slice(1)) - 1
+      $("h1, h2, h3, h4, h5, h6").each((offset, h) => {
+        const $h = $(h);
+        const level = parseInt($h[0].name.slice(1), 10) - 1;
 
         // $h.attr('id', id)
-        $h.attr('ebook-toc-level-'+(level+1), '')
-        $h.attr('heading', $h.html())
-      })
+        $h.attr("ebook-toc-level-" + (level + 1), "");
+        $h.attr("heading", $h.html());
+      });
 
-      getStructure($toc, 0) // analyze TOC
+      getStructure($toc, 0); // analyze TOC
 
-      if (ebookConfig['include_toc'] === false) { // remove itself and the heading ahead
-        $toc.remove()
+      if (ebookConfig["include_toc"] === false) {
+        // remove itself and the heading ahead
+        $toc.remove();
       }
     }
 
-    // load the last ul as TOC, analyze toc links 
+    // load the last ul as TOC, analyze toc links
     function getStructure($ul, level) {
-      $ul.children('li').each((offset, li)=> {
-        const $li = $(li)
-        const $a = $li.children('a').first()
-        if (!$a.length) return 
-
-        const filePath = $a.attr('href') // markdown file path 
-        const heading = $a.html()
-        const id = 'ebook-heading-id-' + headingOffset
-
-        tocStructure.push({level, filePath, heading, id})
-        headingOffset += 1
-
-        $a.attr('href', '#'+id) // change id 
-        if ($li.children().length > 1) {
-          getStructure($li.children().last(), level+1)
+      $ul.children("li").each((offset, li) => {
+        const $li = $(li);
+        const $a = $li.children("a").first();
+        if (!$a.length) {
+          return;
         }
-      })
+
+        const filePath = decodeURIComponent($a.attr("href")); // markdown file path
+        const heading = $a.html();
+        const id = "ebook-heading-id-" + headingOffset;
+
+        tocStructure.push({ level, filePath, heading, id });
+        headingOffset += 1;
+
+        $a.attr("href", "#" + id); // change id
+        if ($li.children().length > 1) {
+          getStructure($li.children().last(), level + 1);
+        }
+      });
     }
 
     // load each markdown files according to `tocStructure`
-    const asyncFunctions = tocStructure.map(({heading, id, level, filePath}, offset)=> {
-      return new Promise((resolve, reject)=> {
-        filePath = utility.removeFileProtocol(filePath)
-        fs.readFile(filePath, {encoding: 'utf-8'}, (error, text)=> {
-          if (error) return reject(error.toString())
-          this.parseMD(text, {useRelativeFilePath: false, isForPreview: false, hideFrontMatter:true})
-          .then(({html})=> {
-            return resolve({heading, id, level, filePath, html, offset})
-          })
-        })
-      })
-    })
+    const asyncFunctions = tocStructure.map(
+      ({ heading, id, level, filePath }, offset) => {
+        return new Promise((resolve, reject) => {
+          filePath = utility.removeFileProtocol(filePath);
+          fs.readFile(filePath, { encoding: "utf-8" }, (error, text) => {
+            if (error) {
+              return reject(error.toString());
+            }
 
-    let outputHTML = $.html().replace(/^<div>(.+)<\/div>$/, '$1')
-    let results = await Promise.all(asyncFunctions)
-    results = results.sort((a, b)=> a['offset'] - b['offset'])
+            // Fix image paths that are relative to the child documents
+            const rootPath = path.dirname(this.filePath);
+            text = text.replace(
+              /(!\[[^\]]*\]\()(\.[^\)\s]*)/g,
+              (whole, openTag, imageLink) => {
+                const fullPath = path.resolve(
+                  path.dirname(filePath),
+                  imageLink,
+                );
+                const relativePath = path.relative(rootPath, fullPath);
+                return openTag + relativePath;
+              },
+            );
 
-    results.forEach(({heading, id, level, filePath, html})=> {
-      const $ = cheerio.load(`<div>${html}</div>`, {xmlMode: true})
-      const $firstChild = $(':root').children().first()
+            this.parseMD(text, {
+              useRelativeFilePath: false,
+              isForPreview: false,
+              hideFrontMatter: true,
+              emojiToSvg,
+              /* tslint:disable-next-line:no-shadowed-variable */
+            }).then(({ html }) => {
+              return resolve({ heading, id, level, filePath, html, offset });
+            });
+          });
+        });
+      },
+    );
+
+    let outputHTML = $.html().replace(/^<div>(.+)<\/div>$/, "$1");
+    let results = await Promise.all(asyncFunctions);
+    results = results.sort((a, b) => a["offset"] - b["offset"]);
+
+    /* tslint:disable-next-line:no-shadowed-variable */
+    results.forEach(({ heading, id, level, filePath, html }) => {
+      /* tslint:disable-next-line:no-shadowed-variable */
+      const $ = cheerio.load(`<div>${html}</div>`);
+      const $firstChild = $(":root")
+        .children()
+        .first();
       if ($firstChild.length) {
-        $firstChild.attr('id', id)
-        $firstChild.attr('ebook-toc-level-'+(level+1), '')
-        $firstChild.attr('heading', heading)
+        $firstChild.attr("id", id);
+        $firstChild.attr("ebook-toc-level-" + (level + 1), "");
+        $firstChild.attr("heading", heading);
       }
 
-      outputHTML += $.html().replace(/^<div>(.+)<\/div>$/, '$1') // append new content
-    })
+      outputHTML += $.html().replace(/^<div>(.+)<\/div>$/, "$1"); // append new content
+    });
 
-    $ = cheerio.load(outputHTML, {xmlMode: true})
-    const downloadedImagePaths = await this.eBookDownloadImages($, dest)
+    $ = cheerio.load(outputHTML);
+    const downloadedImagePaths = await this.eBookDownloadImages($, dest);
 
-    // convert image to base64 if output html 
-    if (path.extname(dest) === '.html') {
-      // check cover 
-      let coverImage = ''
-      if (ebookConfig['cover']) {
-        const cover = ebookConfig['cover'][0] === '/' ? ('file:///' + ebookConfig['cover']) : ebookConfig['cover']
-        $(':root').children().first().prepend(`<img style="display:block; margin-bottom: 24px;" src="${cover}">`)
+    // convert image to base64 if output html
+    if (path.extname(dest) === ".html") {
+      // check cover
+      if (ebookConfig["cover"]) {
+        const cover =
+          ebookConfig["cover"][0] === "/"
+            ? "file:///" + ebookConfig["cover"]
+            : ebookConfig["cover"];
+        $(":root")
+          .children()
+          .first()
+          .prepend(
+            `<img style="display:block; margin-bottom: 24px;" src="${cover}">`,
+          );
       }
 
-      $ = await this.embedLocalImages($)
+      await enhanceWithEmbeddedLocalImages(
+        $,
+        this.config,
+        this.resolveFilePath.bind(this),
+      );
     }
 
-    // retrieve html 
-    outputHTML = $.html()
-    const title = ebookConfig['title'] || 'no title'
+    // retrieve html
+    outputHTML = $.html();
+    const title = ebookConfig["title"] || "no title";
 
     // math
-    let mathStyle = ''
+    let mathStyle = "";
     if (outputHTML.indexOf('class="katex"') > 0) {
-      if (path.extname(dest) === '.html' && ebookConfig['html'] && ebookConfig['html'].cdn){
-        mathStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">`
+      if (
+        path.extname(dest) === ".html" &&
+        ebookConfig["html"] &&
+        ebookConfig["html"].cdn
+      ) {
+        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-rc.1/dist/katex.min.css">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(extensionDirectoryPath, './dependencies/katex/katex.min.css')}">`
+        mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/katex/katex.min.css",
+        )}">`;
       }
     }
-    
-    // prism and preview theme 
-    let styleCSS = ""
-    try{
+
+    // prism and preview theme
+    let styleCSS = "";
+    try {
       const styles = await Promise.all([
         // style template
-        utility.readFile(path.resolve(extensionDirectoryPath, './styles/style-template.css'), {encoding:'utf-8'}),
+        utility.readFile(
+          path.resolve(extensionDirectoryPath, "./styles/style-template.css"),
+          { encoding: "utf-8" },
+        ),
         // prism *.css
-        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/prism_theme/${this.getPrismTheme(false)}`), {encoding:'utf-8'}),
+        utility.readFile(
+          path.resolve(
+            extensionDirectoryPath,
+            `./styles/prism_theme/${this.getPrismTheme(false)}`,
+          ),
+          { encoding: "utf-8" },
+        ),
+        // twemoji css style
+        utility.readFile(
+          path.resolve(extensionDirectoryPath, "./styles/twemoji.css"),
+          { encoding: "utf-8" },
+        ),
         // preview theme
-        utility.readFile(path.resolve(extensionDirectoryPath, `./styles/preview_theme/${this.config.previewTheme}`), {encoding:'utf-8'})
-      ])
-      styleCSS = styles.join('')
-    } catch(e) {
-      styleCSS = ''
+        utility.readFile(
+          path.resolve(
+            extensionDirectoryPath,
+            `./styles/preview_theme/${this.config.previewTheme}`,
+          ),
+          { encoding: "utf-8" },
+        ),
+      ]);
+      styleCSS = styles.join("");
+    } catch (e) {
+      styleCSS = "";
     }
 
-    // global styles 
-    let globalStyles = ""
+    // global styles
+    let globalStyles = "";
     try {
-      globalStyles = await utility.getGlobalStyles()
-    } catch(error) {
-      // ignore it 
+      globalStyles = await utility.getGlobalStyles();
+    } catch (error) {
+      // ignore it
     }
 
     // only use github-light style for ebook
@@ -1689,145 +2093,199 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     </style>
     ${mathStyle}
   </head>
-  <body ${path.extname(dest) === '.html' ? 'for="html-export"' : ''}>
+  <body ${path.extname(dest) === ".html" ? 'for="html-export"' : ""}>
     <div class="mume markdown-preview">
     ${outputHTML}
     </div>
   </body>
 </html>            
-`
-    const fileName = path.basename(dest)
+`;
 
-    // save as html 
-    if (path.extname(dest) === '.html') {
-      await utility.writeFile(dest, html)
-      return dest
+    // save as html
+    if (path.extname(dest) === ".html") {
+      await utility.writeFile(dest, html);
+      return dest;
     }
 
-    // this function will be called later 
+    // this function will be called later
     function deleteDownloadedImages() {
-      downloadedImagePaths.forEach((imagePath)=> {
-        fs.unlink(imagePath, (error)=> {})
-      })
+      downloadedImagePaths.forEach((imagePath) => {
+        fs.unlink(imagePath, (error) => {
+          return;
+        });
+      });
     }
 
     try {
-      const info = await utility.tempOpen({prefix: 'mume', suffix: '.html'})
+      const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
 
-      await utility.write(info.fd, html)
-      await ebookConvert(info.path, dest, ebookConfig)
-      deleteDownloadedImages()
-      return dest 
-    } catch(error) {
-      deleteDownloadedImages()
-      throw error
+      await utility.write(info.fd, html);
+      await ebookConvert(info.path, dest, ebookConfig);
+      deleteDownloadedImages();
+      return dest;
+    } catch (error) {
+      deleteDownloadedImages();
+      throw error;
     }
   }
 
   /**
    * pandoc export
    */
-  public async pandocExport({runAllCodeChunks=false, openFileAfterGeneration=false}):Promise<string> {
-    const inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
+  public async pandocExport({
+    runAllCodeChunks = false,
+    openFileAfterGeneration = false,
+  }): Promise<string> {
+    let inputString = await utility.readFile(this.filePath, {
+      encoding: "utf-8",
+    });
 
-    if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData
-      await this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
+    if (utility.configs.parserConfig["onWillParseMarkdown"]) {
+      inputString = await utility.configs.parserConfig["onWillParseMarkdown"](
+        inputString,
+      );
     }
 
-    let config = {}
-    
-    let endFrontMatterOffset = 0
-    if (inputString.startsWith('---') && (endFrontMatterOffset = inputString.indexOf('\n---')) > 0) {
-      let frontMatterString = inputString.slice(0, endFrontMatterOffset + 4)
-      config = this.processFrontMatter(frontMatterString, false).data
+    if (runAllCodeChunks) {
+      // this line of code is only used to get this.codeChunksData
+      await this.parseMD(inputString, {
+        useRelativeFilePath: true,
+        isForPreview: false,
+        hideFrontMatter: false,
+        runAllCodeChunks,
+      });
     }
 
-    const outputFilePath = await pandocConvert(inputString, {
-      fileDirectoryPath: this.fileDirectoryPath,
-      projectDirectoryPath: this.projectDirectoryPath,
-      sourceFilePath: this.filePath,
-      protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
-      // deleteImages: true,
-      filesCache: this.filesCache,
-      codeChunksData: this.codeChunksData,
-      graphsCache: this.graphsCache,
-      imageDirectoryPath: this.config.imageFolderPath,
-      pandocMarkdownFlavor: this.config.pandocMarkdownFlavor,
-      pandocPath: this.config.pandocPath,
-      latexEngine: this.config.latexEngine
-    }, config)
+    let config = {};
 
-    if (openFileAfterGeneration)
-      utility.openFile(outputFilePath)
-    return outputFilePath
+    if (inputString.startsWith("---")) {
+      const endFrontMatterOffset = inputString.indexOf("\n---");
+      if (endFrontMatterOffset > 0) {
+        const frontMatterString = inputString.slice(
+          0,
+          endFrontMatterOffset + 4,
+        );
+        config = this.processFrontMatter(frontMatterString, false).data;
+      }
+    }
+
+    const outputFilePath = await pandocConvert(
+      inputString,
+      {
+        fileDirectoryPath: this.fileDirectoryPath,
+        projectDirectoryPath: this.projectDirectoryPath,
+        sourceFilePath: this.filePath,
+        protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
+        // deleteImages: true,
+        filesCache: this.filesCache,
+        codeChunksData: this.codeChunksData,
+        graphsCache: this.graphsCache,
+        imageDirectoryPath: this.config.imageFolderPath,
+        pandocMarkdownFlavor: this.config.pandocMarkdownFlavor,
+        pandocPath: this.config.pandocPath,
+        latexEngine: this.config.latexEngine,
+      },
+      config,
+    );
+
+    if (openFileAfterGeneration) {
+      utility.openFile(outputFilePath);
+    }
+    return outputFilePath;
   }
 
   /**
-   * markdown(gfm) export 
+   * markdown(gfm) export
    */
-  public async markdownExport({runAllCodeChunks=false}):Promise<string> {
-    let inputString = await utility.readFile(this.filePath, {encoding: 'utf-8'})
-    
-    if (runAllCodeChunks) { // this line of code is only used to get this.codeChunksData
-      await this.parseMD(inputString, { useRelativeFilePath:true, isForPreview:false, hideFrontMatter:false, runAllCodeChunks})
+  public async markdownExport({ runAllCodeChunks = false }): Promise<string> {
+    let inputString = await utility.readFile(this.filePath, {
+      encoding: "utf-8",
+    });
+
+    if (runAllCodeChunks) {
+      // this line of code is only used to get this.codeChunksData
+      await this.parseMD(inputString, {
+        useRelativeFilePath: true,
+        isForPreview: false,
+        hideFrontMatter: false,
+        runAllCodeChunks,
+      });
     }
 
-    let config = {}
+    let config = {};
 
-    let endFrontMatterOffset = 0
-    if (inputString.startsWith('---') && (endFrontMatterOffset = inputString.indexOf('\n---')) > 0) {
-      let frontMatterString = inputString.slice(0, endFrontMatterOffset + 4)
-      inputString = inputString.replace(frontMatterString, '') // remove front matter
-      config = this.processFrontMatter(frontMatterString, false).data
+    if (inputString.startsWith("---")) {
+      const endFrontMatterOffset = inputString.indexOf("\n---");
+      if (endFrontMatterOffset > 0) {
+        const frontMatterString = inputString.slice(
+          0,
+          endFrontMatterOffset + 4,
+        );
+        inputString = inputString.replace(frontMatterString, ""); // remove front matter
+        config = this.processFrontMatter(frontMatterString, false).data;
+      }
     }
 
     /**
      * markdownConfig has the following properties:
      *     path:                        destination of the output file
      *     image_dir:                   where to save the image file
-     *     use_abolute_image_path:      as the name shows.  
-     *     ignore_from_front_matter:    default is true.  
+     *     use_abolute_image_path:      as the name shows.
+     *     ignore_from_front_matter:    default is true.
      */
-    let markdownConfig = {}
-    if (config['markdown'])
-       markdownConfig = Object.assign({}, config['markdown'])
-
-    if (!markdownConfig['image_dir']) {
-      markdownConfig['image_dir'] = this.config.imageFolderPath
+    let markdownConfig = {};
+    if (config["markdown"]) {
+      markdownConfig = { ...config["markdown"] };
     }
 
-    if (!markdownConfig['path']) {
+    if (!markdownConfig["image_dir"]) {
+      markdownConfig["image_dir"] = this.config.imageFolderPath;
+    }
+
+    if (!markdownConfig["path"]) {
       if (this.filePath.match(/\.src\./)) {
-        markdownConfig['path'] = this.filePath.replace(/\.src\./, '.')
+        markdownConfig["path"] = this.filePath.replace(/\.src\./, ".");
       } else {
-        markdownConfig['path'] = this.filePath.replace(new RegExp(path.extname(this.filePath)), '_'+path.extname(this.filePath))
+        markdownConfig["path"] = this.filePath.replace(
+          new RegExp(path.extname(this.filePath)),
+          "_" + path.extname(this.filePath),
+        );
       }
-      markdownConfig['path']  = path.basename(markdownConfig['path'])
+      markdownConfig["path"] = path.basename(markdownConfig["path"]);
     }
 
     // ignore_from_front_matter is `true` by default
-    if (markdownConfig['ignore_from_front_matter'] || !('ignore_from_front_matter' in markdownConfig)) { // delete markdown config front-matter from the top front matter
-      delete config['markdown']
-    } 
-    if (config['export_on_save']) {
-      delete config['export_on_save']
+    if (
+      markdownConfig["ignore_from_front_matter"] ||
+      !("ignore_from_front_matter" in markdownConfig)
+    ) {
+      // delete markdown config front-matter from the top front matter
+      delete config["markdown"];
+    }
+    if (config["export_on_save"]) {
+      delete config["export_on_save"];
     }
 
     // put front-matter back
-    if (Object.keys(config).length)
-      inputString = '---\n' + YAML.stringify(config) + '---\n' + inputString
+    if (Object.keys(config).length) {
+      inputString = "---\n" + YAML.stringify(config) + "---\n" + inputString;
+    }
 
-    return await markdownConvert(inputString, {
-      projectDirectoryPath: this.projectDirectoryPath,
-      fileDirectoryPath: this.fileDirectoryPath,
-      protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
-      filesCache: this.filesCache,
-      mathInlineDelimiters: this.config.mathInlineDelimiters,
-      mathBlockDelimiters: this.config.mathBlockDelimiters,
-      codeChunksData: this.codeChunksData,
-      graphsCache: this.graphsCache,
-      usePandocParser: this.config.usePandocParser
-    }, markdownConfig)
+    return await markdownConvert(
+      inputString,
+      {
+        projectDirectoryPath: this.projectDirectoryPath,
+        fileDirectoryPath: this.fileDirectoryPath,
+        protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
+        filesCache: this.filesCache,
+        mathInlineDelimiters: this.config.mathInlineDelimiters,
+        mathBlockDelimiters: this.config.mathBlockDelimiters,
+        codeChunksData: this.codeChunksData,
+        graphsCache: this.graphsCache,
+        usePandocParser: this.config.usePandocParser,
+      },
+      markdownConfig,
+    );
   }
 
   /**
@@ -1835,578 +2293,84 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * ---
    * export_on_save:
    *    html: true
-   *    prince: true   
+   *    prince: true
    *    phantomjs|chrome: true  // or pdf | jpeg | png
    *    pandoc: true
    *    ebook: true      // or epub | pdf | html | mobi
    *    markdown: true
    * ---
-   * @param data 
+   * @param data
    */
-  private exportOnSave(data:object) {
-    for (let exporter in data) {
-      if (exporter === 'markdown') {
-        this.markdownExport({})
-      } else if (exporter === 'html') {
-        this.htmlExport({})
-      } else if (exporter === 'prince') {
-        this.princeExport({openFileAfterGeneration: false})
-      } else if (exporter === 'phantomjs' || exporter === 'chrome') {
-        const fileTypes = data[exporter]
-        let func = (exporter === 'phantomjs' ? this.phantomjsExport : this.chromeExport)
-        func = func.bind(this)
+  private exportOnSave(data: object) {
+    for (const exporter in data) {
+      if (exporter === "markdown") {
+        this.markdownExport({});
+      } else if (exporter === "html") {
+        this.htmlExport({});
+      } else if (exporter === "prince") {
+        this.princeExport({ openFileAfterGeneration: false });
+      } else if (exporter === "phantomjs" || exporter === "chrome") {
+        const fileTypes = data[exporter];
+        let func =
+          exporter === "phantomjs" ? this.phantomjsExport : this.chromeExport;
+        func = func.bind(this);
 
         if (fileTypes === true) {
-          func({fileType: 'pdf', openFileAfterGeneration: false})
-        } else if (typeof(fileTypes) === 'string') {
-          func({fileType: fileTypes, openFileAfterGeneration: false})
+          func({ fileType: "pdf", openFileAfterGeneration: false });
+        } else if (typeof fileTypes === "string") {
+          func({ fileType: fileTypes, openFileAfterGeneration: false });
         } else if (fileTypes instanceof Array) {
-          fileTypes.forEach((fileType)=> {
-            func({fileType, openFileAfterGeneration: false})
-          })
+          fileTypes.forEach((fileType) => {
+            func({ fileType, openFileAfterGeneration: false });
+          });
         }
-      } else if (exporter === 'pandoc') {
-        this.pandocExport({openFileAfterGeneration: false})
-      } else if (exporter === 'ebook') {
-        const fileTypes = data[exporter]
+      } else if (exporter === "pandoc") {
+        this.pandocExport({ openFileAfterGeneration: false });
+      } else if (exporter === "ebook") {
+        const fileTypes = data[exporter];
         if (fileTypes === true) {
-          this.eBookExport({fileType: 'epub'})
-        } else if (typeof(fileTypes) === 'string') {
-          this.eBookExport({fileType: fileTypes})
+          this.eBookExport({ fileType: "epub" });
+        } else if (typeof fileTypes === "string") {
+          this.eBookExport({ fileType: fileTypes });
         } else if (fileTypes instanceof Array) {
-          fileTypes.forEach((fileType)=> {
-            this.eBookExport({fileType})
-          })
-        } 
+          fileTypes.forEach((fileType) => {
+            this.eBookExport({ fileType });
+          });
+        }
       }
     }
   }
 
   /**
-   * 
-   * @param filePath 
-   * @param relative: whether to use the path relative to filePath or not.  
+   *
+   * @param filePath
+   * @param relative: whether to use the path relative to filePath or not.
    */
-  private resolveFilePath(filePath:string='', relative:boolean) {
-    if (  filePath.match(this.protocolsWhiteListRegExp) ||
-          filePath.startsWith('data:image/') ||
-          filePath[0] === '#') {
-      return filePath
-    } else if (filePath[0] === '/') {
-      if (relative)
-        return path.relative(this.fileDirectoryPath, path.resolve(this.projectDirectoryPath, '.'+filePath))
-      else
-        return 'file:///' + path.resolve(this.projectDirectoryPath, '.'+filePath)
-    } else {
-      if (relative)
-        return filePath
-      else
-        return 'file:///' + path.resolve(this.fileDirectoryPath, filePath)
-    }
-  }
-
-  /**
-   * Run code chunk of `id`
-   * @param id 
-   */
-  public async runCodeChunk(id):Promise<String> {
-    let codeChunkData = this.codeChunksData[id]
-    if (!codeChunkData) return ''
-    if (codeChunkData.running) return ''
-
-    let code = codeChunkData.code
-    let cc = codeChunkData
-    while (cc.options['continue']) {
-      let id = cc.options['continue']
-      if (id === true) {
-        id = cc.prev
-      }
-      cc = this.codeChunksData[id]
-      if (!cc) break 
-      code = cc.code + code
-    }
-
-    codeChunkData.running = true
-    let result
-    try {
-      const options = codeChunkData.options
-      if (options['cmd'] === 'toc') { // toc code chunk. <= this is a special code chunk.  
-        const tocObject = toc(this.headings, {ordered: options['orderedList'], depthFrom: options['depthFrom'], depthTo: options['depthTo'], tab: options['tab'] || '\t', ignoreLink: options['ignoreLink']})
-        result = tocObject.content
-      } else if (options['cmd'] === 'ditaa') { // ditaa diagram
-        const filename = options['filename'] || `${md5(this.filePath + options['id'])}.png`
-        let imageFolder = utility.removeFileProtocol(this.resolveFilePath(this.config.imageFolderPath, false))
-        await utility.mkdirp(imageFolder)
-
-        codeChunkData.options['output'] = 'markdown'
-        const dest = await ditaaAPI.render(code, options['args'] || [], path.resolve(imageFolder, filename))
-        result = `  \n![](${path.relative(this.fileDirectoryPath, dest).replace(/\\/g, '/')})  \n` // <= fix windows path issue.
-      } else { // common code chunk
-        // I put this line here because some code chunks like `toc` still need to be run.  
-        if (!this.config.enableScriptExecution) return '' // code chunk is disabled.
-
-        result = await CodeChunkAPI.run(code, this.fileDirectoryPath, codeChunkData.options, this.config.latexEngine)
-      }
-      codeChunkData.plainResult = result
-
-      if (codeChunkData.options['modify_source'] && ('code_chunk_offset' in codeChunkData.options)) {
-        codeChunkData.result = ''
-        return MarkdownEngine.modifySource(codeChunkData, result, this.filePath)
-      } 
-      
-      const outputFormat = codeChunkData.options['output'] || 'text'
-      if (!result) { // do nothing
-        result = ''
-      } else if (outputFormat === 'html') {
-        result = result 
-      } else if (outputFormat === 'png') {
-        const base64 = new Buffer(result).toString('base64')
-        result = `<img src="data:image/png;charset=utf-8;base64,${base64}">`
-      } else if (outputFormat === 'markdown') {
-        const {html} = await this.parseMD(result, {useRelativeFilePath:true, isForPreview:false, hideFrontMatter: true} )
-        result = html 
-      } else if (outputFormat === 'none') {
-        result = ''
+  private resolveFilePath(filePath: string = "", relative: boolean) {
+    if (
+      filePath.match(this.protocolsWhiteListRegExp) ||
+      filePath.startsWith("data:image/") ||
+      filePath[0] === "#"
+    ) {
+      return filePath;
+    } else if (filePath[0] === "/") {
+      if (relative) {
+        return path.relative(
+          this.fileDirectoryPath,
+          path.resolve(this.projectDirectoryPath, "." + filePath),
+        );
       } else {
-        result = `<pre class="language-text">${result}</pre>`
-      }
-    } catch(error) {
-      result = `<pre class="language-text">${error}</pre>`
-    }
-
-    codeChunkData.result = result // save result.
-    codeChunkData.running = false 
-    return result
-  }
-
-  public async runAllCodeChunks() {
-    const asyncFunctions = []
-    for (let id in this.codeChunksData) {
-      asyncFunctions.push(this.runCodeChunk(id))
-    }
-    return await Promise.all(asyncFunctions)
-  }
-  /**
-   * Add line numbers to code block <pre> element
-   * @param  
-   * @param code 
-   */  
-  private addLineNumbersIfNecessary($preElement, code:string):void {
-    if ($preElement.hasClass('line-numbers') || $preElement.hasClass('numberLines')) {
-      $preElement.addClass('line-numbers') // fix for .numberLines class 
-      if (!code.trim().length) return
-      const match = code.match(/\n(?!$)/g)
-      const linesNum = match ? (match.length + 1) : 1
-      let lines = ''
-      for (let i = 0; i < linesNum; i++) {
-        lines += '<span></span>'
-      }
-      $preElement.append(`<span aria-hidden="true" class="line-numbers-rows">${lines}</span>`)
-    }
-  }
-  
-  /**
-   * 
-   * @param preElement the cheerio element
-   * @param parameters is in the format of `lang {opt1:val1, opt2:val2}` or just `lang`       
-   * @param text 
-   */
-  private async renderCodeBlock($, $preElement, code, parameters, 
-  { graphsCache, 
-    codeChunksArray, 
-    isForPreview,
-    triggeredBySave }:{graphsCache:object, codeChunksArray:CodeChunkData[], isForPreview:boolean, triggeredBySave:boolean}) {
-    
-    let match, lang, optionsStr:string, options:object 
-    if (match = parameters.match(/\s*([^\s]+)\s+\{(.+?)\}/)) {
-      lang = match[1]
-      optionsStr = match[2]
-    } else {
-      lang = parameters
-      optionsStr = ''
-    }
-
-    if (optionsStr) {
-      try {
-        options = utility.parseAttributes(optionsStr)
-      } catch (e) {
-        return $preElement.replaceWith(`<pre class="language-text">OptionsError: ${'{'+optionsStr+'}'}<br>${e.toString()}</pre>`)
+        return (
+          "file:///" + path.resolve(this.projectDirectoryPath, "." + filePath)
+        );
       }
     } else {
-      options = {}
-    }
-
-    const renderPlainCodeBlock = ()=> {
-      try {
-        if (!Prism) {
-          Prism = require(path.resolve(extensionDirectoryPath, './dependencies/prism/prism.js'))
-        }
-        const html = Prism.highlight(code, Prism.languages[scopeForLanguageName(lang)])
-        $preElement.html(html)  
-      } catch(error) {
-        // regarded as plain text
-        $preElement.text(code)
-      }
-      if (options['class']) {
-        $preElement.addClass(options['class'])
-        this.addLineNumbersIfNecessary($preElement, code)
+      if (relative) {
+        return filePath;
+      } else {
+        return "file:///" + path.resolve(this.fileDirectoryPath, filePath);
       }
     }
-
-    const codeBlockOnly = options['code_block']
-    if (codeBlockOnly) {
-      renderPlainCodeBlock()
-    } else if (lang.match(/^(puml|plantuml)$/)) { // PlantUML 
-      const checksum = md5(optionsStr + code)
-      let svg:string = this.graphsCache[checksum] 
-      if (!svg) {
-        svg = await plantumlAPI.render(code, this.fileDirectoryPath)
-      }
-      $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
-      graphsCache[checksum] = svg // store to new cache 
-      
-    } else if (lang.match(/^mermaid$/)) { // mermaid 
-      /*
-      // it doesn't work well...
-      // the cache doesn't work well.
-      const checksum = md5(optionsStr + code)
-      let svg:string = this.graphsCache[checksum]
-      if (!svg) {
-        $preElement.replaceWith(`<div class="mermaid">${code}</div>`)
-      } else {
-        $preElement.replaceWith(svg)
-        graphsCache[checksum] = svg // store to new cache 
-      }
-      */
-      if (options['class']) {
-        options['class'] += ' mermaid'
-      } else {
-        options['class'] = 'mermaid'
-      }
-      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}>${code}</div>`)
-    } else if (lang === 'wavedrom') {
-      if (options['class']) {
-        options['class'] += ' wavedrom'
-      } else {
-        options['class'] = 'wavedrom'
-      }
-      $preElement.replaceWith(`<div ${utility.stringifyAttributes(options, false)}><script type="WaveDrom">${code}</script></div>`)
-    } else if (lang.match(/^(dot|viz)$/)) { // GraphViz
-      const checksum = md5(optionsStr + code)
-      let svg = this.graphsCache[checksum]
-      if (!svg) {        
-        try {
-          let engine = options['engine'] || "dot"
-          svg = Viz(code, {engine})
-          
-          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
-          graphsCache[checksum] = svg // store to new cache
-        } catch(e) {
-          $preElement.replaceWith(`<pre class="language-text">${e.toString()}</pre>`)
-        }
-      } else {
-        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
-        graphsCache[checksum] = svg // store to new cache
-      }
-    } else if (lang.match(/^vega$/)) { // vega
-      const checksum = md5(optionsStr + code)
-      let svg:string = this.graphsCache[checksum] 
-      if (!svg) {
-        try {
-          svg = await vegaAPI.toSVG(code, this.fileDirectoryPath)
-
-          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
-          graphsCache[checksum] = svg // store to new cache 
-        } catch(error) {
-          $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
-        }
-      } else {
-        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
-        graphsCache[checksum] = svg // store to new cache
-      }
-    } else if (lang === 'vega-lite') { // vega-lite
-      const checksum = md5(optionsStr + code)
-      let svg:string = this.graphsCache[checksum] 
-      if (!svg) {
-        try {
-          svg = await vegaLiteAPI.toSVG(code, this.fileDirectoryPath)
-
-          $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
-          graphsCache[checksum] = svg // store to new cache 
-        } catch(error) {
-          $preElement.replaceWith(`<pre class="language-text">${error.toString()}</pre>`)
-        }
-      } else {
-        $preElement.replaceWith(`<p ${optionsStr ? utility.stringifyAttributes(options, false) : '' }>${svg}</p>`)
-        graphsCache[checksum] = svg // store to new cache
-      }
-    } else if (options['cmd']) {
-      const $el = $("<div class=\"code-chunk\"></div>") // create code chunk
-      if (!options['id']) {
-        options['id'] = 'code-chunk-id-' + codeChunksArray.length
-      }
-
-      if (options['cmd'] === true) {
-        options['cmd'] = lang
-      }
-
-      $el.attr({
-        'data-id': options['id'],
-        'data-cmd': options['cmd'],
-        'data-code': options['cmd'] === 'javascript' ? code : '' 
-      })
-
-      let highlightedBlock = ''
-      if (!options['hide']) {
-        try {
-          if (!Prism) {
-            Prism = require(path.resolve(extensionDirectoryPath, './dependencies/prism/prism.js'))
-          }
-          highlightedBlock = `<pre class="language-${lang} ${options['class'] || ''}">${Prism.highlight(code, Prism.languages[scopeForLanguageName(lang)])}</pre>`
-        } catch(e) {
-          // do nothing
-          highlightedBlock = `<pre class="language-text ${options['class'] || ''}">${code}</pre>`
-        }
-
-        const $highlightedBlock = $(highlightedBlock)
-        this.addLineNumbersIfNecessary($highlightedBlock, code)
-        highlightedBlock = $.html($highlightedBlock)
-      }
-
-      /*
-      if (!options['id']) { // id is required for code chunk
-        highlightedBlock = `<pre class="language-text">'id' is required for code chunk</pre>`
-      }*/
-
-      let codeChunkData:CodeChunkData = this.codeChunksData[options['id']]
-      let previousCodeChunkDataId = codeChunksArray.length ? codeChunksArray[codeChunksArray.length - 1].id : ''
-      if (!codeChunkData) {
-        codeChunkData = {
-          id: options['id'],
-          code,
-          options: options,
-          result: '',
-          plainResult: '',
-          running: false,
-          prev: previousCodeChunkDataId,
-          next: null
-        }
-        this.codeChunksData[options['id']] = codeChunkData
-      } else {
-        codeChunkData.code = code 
-        codeChunkData.options = options
-        codeChunkData.prev = previousCodeChunkDataId
-      }
-      if (previousCodeChunkDataId && this.codeChunksData[previousCodeChunkDataId]) 
-        this.codeChunksData[previousCodeChunkDataId].next = options['id']
-
-      codeChunksArray.push(codeChunkData) // this line has to be put above the `if` statement.
-
-      if (triggeredBySave && options['run_on_save']) {
-        await this.runCodeChunk(options['id'])
-      }
-
-      let result = codeChunkData.result
-      // element option 
-      if (!result && codeChunkData.options['element']) {
-        result = codeChunkData.options['element']
-        codeChunkData.result = result 
-      }
-
-      if (codeChunkData.running) {
-        $el.addClass('running')
-      }
-      const statusDiv = `<div class="status">running...</div>`
-      const buttonGroup = '<div class="btn-group"><div class="run-btn btn"><span>▶︎</span></div><div class=\"run-all-btn btn\">all</div></div>'
-      let outputDiv = `<div class="output-div">${result}</div>`
-
-      // check javascript code chunk
-      if (!isForPreview && options['cmd'] === 'javascript') {
-        outputDiv += `<script>${code}</script>`
-        result = codeChunkData.options['element'] || ''
-      }
-
-      $el.append(highlightedBlock)
-      $el.append(buttonGroup)
-      $el.append(statusDiv)
-      $el.append(outputDiv)
-      $preElement.replaceWith($el)
-    } else { // normal code block  // TODO: code chunk
-      renderPlainCodeBlock()
-    }
-  }
-
-  /**
-   * Extend table syntax to support colspan and rowspan for merging cells
-   * @param $ 
-   */
-  private extendTableSyntax($) {
-    const rowspans:Array<[object, object]> = [], // ^ 
-          colspans:Array<[object, object]> = [], // >
-          colspans2:Array<[object, object]> = []  // empty
-    $('table').each((i, table)=> {
-      const $table = $(table)
-      const $thead = $table.children().first()
-      let $prevRow = null
-      $table.children().each((a, head_body)=> {
-        const $head_body = $(head_body)
-        $head_body.children().each((i, row)=> {
-          const $row = $(row)
-          $row.children().each((j, col)=> {
-            const $col = $(col)
-            const text = $col.text()
-            if (!text.length) { // merge to left
-              const $prev = $col.prev()
-              if ($prev.length) {
-                colspans2.push([$prev, $col])
-                // const colspan = parseInt($prev.attr('colspan')) || 1
-                // $prev.attr('colspan', colspan+1)
-                // $col.remove()
-              }
-            } else if (text.trim() === '^' && $prevRow) { // merge to top
-              const $prev = $($prevRow.children()[j])
-              if ($prev.length) {
-                rowspans.push([$prev, $col])
-                // const rowspan = parseInt($prev.attr('rowspan')) || 1
-                // $prev.attr('rowspan', rowspan+1)
-                // $col.remove()
-              }
-
-            } else if (text.trim() === '>') { // merge to right 
-              const $next = $col.next()
-              if ($next.length) {
-                // const colspan = parseInt($next.attr('colspan')) || 1
-                // $next.attr('colspan', colspan+1)
-                // $col.remove()
-                colspans.push([$col, $next])
-              }
-            }
-          })
-          $prevRow = $row
-        })
-      })
-    })
-
-    for (let i = rowspans.length - 1; i >= 0; i--) {
-      const [$prev, $col] = rowspans[i]
-      const rowspan = (parseInt($prev['attr']('rowspan')) || 1) + (parseInt($col['attr']('rowspan')) || 1)
-      $prev['attr']('rowspan', rowspan)
-      $col['remove']()
-    }
-    for (let i = 0; i < colspans.length; i++) {
-      const [$prev, $col] = colspans[i]
-      const colspan = (parseInt($prev['attr']('colspan')) || 1) + (parseInt($col['attr']('colspan')) || 1)
-      $col['attr']('colspan', colspan)
-      $prev['remove']()
-    }
-    for (let i = colspans2.length - 1; i >= 0; i--) {
-      const [$prev, $col] = colspans2[i]
-      const colspan = (parseInt($prev['attr']('colspan')) || 1) + (parseInt($col['attr']('colspan')) || 1)
-      $prev['attr']('colspan', colspan)
-      $col['remove']()
-    }
-  }
-
-  /**
-   * This function resovle image paths and render code blocks
-   * @param html the html string that we will analyze 
-   * @return html 
-   */
-  private async resolveImagePathAndCodeBlock(html, options:MarkdownEngineRenderOption) {
-    let $ = cheerio.load(html, {xmlMode:true})
-    
-    // new caches
-    // which will be set when this.renderCodeBlocks is called
-    const newGraphsCache:{[key:string]:string} = {}
-    const codeChunksArray:CodeChunkData[] = []
-
-    const asyncFunctions = []
-    $('pre').each((i, preElement)=> {
-      let codeBlock, lang, code 
-      const $preElement = $(preElement)
-      if (preElement.children[0] && preElement.children[0].name === 'code') {
-        codeBlock = $preElement.children().first()
-        lang = 'text'
-        
-        let classes;
-        if (this.config.usePandocParser) {
-          const dataLang = utility.unescapeString($preElement.attr('data-lang') || '')
-          if (!dataLang && codeBlock.text().startsWith('```{.mpe-code data-lang')) { // Fix indentation issue in pandoc code block
-            classes = 'language-text'
-            const code = codeBlock.text()
-            codeBlock.text(code.replace(/^```{\.mpe\-code\s*data\-lang=\"(.+?)\"}/, ($0, $1)=> `\`\`\`${utility.unescapeString($1)}`))
-          } else {
-            classes = 'language-' + dataLang            
-          }
-        } else {
-          classes = codeBlock.attr('class')          
-        }
-
-        if (!classes) classes = 'language-text'
-        lang = classes.replace(/^language-/, '')
-        if (!lang) lang = 'text'
-        code = codeBlock.text()
-        $preElement.attr('class', classes)
-        $preElement.children().first().addClass(classes)
-      } else {
-        lang = 'text'
-        if (preElement.children[0])
-          code = preElement.children[0].data
-        else
-          code = ''
-        $preElement.attr('class', 'language-text')
-      }
-      
-      asyncFunctions.push(this.renderCodeBlock($, $preElement, code, lang, 
-        {graphsCache: newGraphsCache, codeChunksArray, isForPreview:options.isForPreview, triggeredBySave: options.triggeredBySave}))
-    })
-
-    await Promise.all(asyncFunctions)
-
-
-    // resolve image paths
-    $('img, a').each((i, imgElement)=> {
-      let srcTag = 'src'
-      if (imgElement.name === 'a')
-        srcTag = 'href'
-
-      const img = $(imgElement)
-      const src = img.attr(srcTag)
-
-      // insert anchor for scroll sync.  
-      if (options.isForPreview && imgElement.name !== 'a' && img.parent().prev().hasClass('sync-line')) { 
-        const lineNo = parseInt(img.parent().prev().attr('data-line'))
-        if (lineNo)
-          img.parent().after(`<p data-line="${lineNo + 1}" class="sync-line" style="margin:0;"></p>`)
-      }
-
-      img.attr(srcTag, this.resolveFilePath(src, options.useRelativeFilePath))
-    })
-
-    // reset caches 
-    // the line below actually has problem.
-    if (options.isForPreview) {
-      this.graphsCache = newGraphsCache
-      // console.log(this.graphsCache)
-    } 
-
-    if (!this.config.usePandocParser) { // check .mume-header in order to add id and class to headers.  
-      $('.mume-header').each((i, e)=> {
-        const classes = e.attribs.class,
-              id = e.attribs.id
-        const $e = $(e),
-              $h = $e.prev()
-        $h.addClass(classes)
-        $h.attr('id', id)
-        $e.remove()
-      })
-    }
-
-    if (this.config.enableExtendedTableSyntax) { // extend table
-      this.extendTableSyntax($)
-    }
-
-    return $.html()
   }
 
   /**
@@ -2422,30 +2386,34 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * clearCaches will clear filesCache, codeChunksData, graphsCache
    */
   public clearCaches() {
-    this.filesCache = {}
-    this.codeChunksData = {}
-    this.graphsCache = {}
+    this.filesCache = {};
+    this.codeChunksData = {};
+    this.graphsCache = {};
   }
 
   private frontMatterToTable(arg) {
     if (arg instanceof Array) {
-      let tbody = "<tbody><tr>"
-      arg.forEach((item)=> tbody += `<td>${this.frontMatterToTable(item)}</td>` )
-      tbody += "</tr></tbody>"
-      return `<table>${tbody}</table>`
-    } else if (typeof(arg) === 'object') {
-      let thead = "<thead><tr>"
-      let tbody = "<tbody><tr>"
-      for (let key in arg) {
-        thead += `<th>${key}</th>`
-        tbody += `<td>${this.frontMatterToTable(arg[key])}</td>`
+      let tbody = "<tbody><tr>";
+      arg.forEach(
+        (item) => (tbody += `<td>${this.frontMatterToTable(item)}</td>`),
+      );
+      tbody += "</tr></tbody>";
+      return `<table>${tbody}</table>`;
+    } else if (typeof arg === "object") {
+      let thead = "<thead><tr>";
+      let tbody = "<tbody><tr>";
+      for (const key in arg) {
+        if (arg.hasOwnProperty(key)) {
+          thead += `<th>${key}</th>`;
+          tbody += `<td>${this.frontMatterToTable(arg[key])}</td>`;
+        }
       }
-      thead += "</tr></thead>"
-      tbody += "</tr></tbody>"
+      thead += "</tr></thead>";
+      tbody += "</tr></tbody>";
 
-      return `<table>${thead}${tbody}</table>`
+      return `<table>${thead}${tbody}</table>`;
     } else {
-      return arg
+      return arg;
     }
   }
 
@@ -2461,144 +2429,134 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * else return {
    *      content: replace ---\n with ```yaml
    * }
-   * 
+   *
    */
-  private processFrontMatter(frontMatterString:string, hideFrontMatter=false) {
+  private processFrontMatter(
+    frontMatterString: string,
+    hideFrontMatter = false,
+  ) {
     if (frontMatterString) {
-      let data:any = utility.parseYAML(frontMatterString)
+      const data: any = utility.parseYAML(frontMatterString);
 
-      if (this.config.usePandocParser) { // use pandoc parser, so don't change inputString
-        return {content: frontMatterString, table: '', data: data || {}}
-      } else if (hideFrontMatter || this.config.frontMatterRenderingOption[0] === 'n') { // hide
-        return {content:'', table: '', data}
-      } else if (this.config.frontMatterRenderingOption[0] === 't') { // table
+      if (this.config.usePandocParser) {
+        // use pandoc parser, so don't change inputString
+        return { content: frontMatterString, table: "", data: data || {} };
+      } else if (
+        hideFrontMatter ||
+        this.config.frontMatterRenderingOption[0] === "n"
+      ) {
+        // hide
+        return { content: "", table: "", data };
+      } else if (this.config.frontMatterRenderingOption[0] === "t") {
+        // table
         // to table
-        let table 
-        if (typeof(data) === 'object')
-          table = this.frontMatterToTable(data)
-        else
-          table = "<pre>Failed to parse YAML.</pre>"
+        let table;
+        if (typeof data === "object") {
+          table = this.frontMatterToTable(data);
+        } else {
+          table = "<pre>Failed to parse YAML.</pre>";
+        }
 
-        return {content:'', table, data}
-      } else { // # if frontMatterRenderingOption[0] == 'c' # code block
-        const content = frontMatterString.replace(/^---/, '```yaml').replace(/\n---$/, '\n```\n')
-        return {content, table: '', data}
+        return { content: "", table, data };
+      } else {
+        // # if frontMatterRenderingOption[0] == 'c' # code block
+        const content = frontMatterString
+          .replace(/^---/, "```yaml")
+          .replace(/\n---$/, "\n```\n");
+        return { content, table: "", data };
       }
     } else {
-      return {content: frontMatterString, table: '', data:{}}
+      return { content: frontMatterString, table: "", data: {} };
     }
   }
 
   /**
    * Parse `html` to generate slides
    */
-  private parseSlides(html:string, slideConfigs:Array<object>, useRelativeFilePath:boolean) {
-    let slides = html.split('<p>[MUMESLIDE]</p>')
-    let before = slides[0]
-    slides = slides.slice(1)
+  private parseSlides(
+    html: string,
+    slideConfigs: object[],
+    useRelativeFilePath: boolean,
+  ) {
+    let slides = html.split("<p>[MUMESLIDE]</p>");
+    const before = slides[0];
+    slides = slides.slice(1);
 
-    let output = ''
-
-    /*
-    const parseAttrString = (slideConfig)=> {
-      let attrString = ''
-
-      // let attrString = utility.stringifyAttributes(slideConfig, false)
-
-      if (slideConfig['data-background-image'])
-        attrString += ` data-background-image='${this.resolveFilePath(slideConfig['data-background-image'], useRelativeFilePath)}'`
-
-      if (slideConfig['data-background-size'])
-        attrString += ` data-background-size='${slideConfig['data-background-size']}'`
-
-      if (slideConfig['data-background-position'])
-        attrString += ` data-background-position='${slideConfig['data-background-position']}'`
-
-      if (slideConfig['data-background-repeat'])
-        attrString += ` data-background-repeat='${slideConfig['data-background-repeat']}'`
-
-      if (slideConfig['data-background-color'])
-        attrString += ` data-background-color='${slideConfig['data-background-color']}'`
-
-      if (slideConfig['data-notes'])
-        attrString += ` data-notes='${slideConfig['data-notes']}'`
-
-      if (slideConfig['data-background-video'])
-        attrString += ` data-background-video='${this.resolveFilePath(slideConfig['data-background-video'], useRelativeFilePath)}'`
-
-      if (slideConfig['data-background-video-loop'])
-        attrString += ` data-background-video-loop`
-
-      if (slideConfig['data-background-video-muted'])
-        attrString += ` data-background-video-muted`
-
-      if (slideConfig['data-transition'])
-        attrString += ` data-transition='${slideConfig['data-transition']}'`
-
-      if (slideConfig['data-background-iframe'])
-        attrString += ` data-background-iframe='${this.resolveFilePath(slideConfig['data-background-iframe'], useRelativeFilePath)}'`
-
-      return attrString
-    }
-    */
-
-    let i = 0,
-        h = -1, // horizontal
-        v = 0  // vertical
-    while (i < slides.length) { 
-      const slide = slides[i] 
-      const slideConfig = slideConfigs[i]
+    let output = "";
+    let i = 0;
+    let h = -1; // horizontal
+    let v = 0; // vertical
+    while (i < slides.length) {
+      const slide = slides[i];
+      const slideConfig = slideConfigs[i];
 
       // resolve paths in slideConfig
-      if ('data-background-image' in slideConfig) {
-        slideConfig['data-background-image'] = this.resolveFilePath(slideConfig['data-background-image'], useRelativeFilePath)
+      if ("data-background-image" in slideConfig) {
+        slideConfig["data-background-image"] = this.resolveFilePath(
+          slideConfig["data-background-image"],
+          useRelativeFilePath,
+        );
       }
-      if ('data-background-video' in slideConfig) {
-        slideConfig['data-background-video'] = this.resolveFilePath(slideConfig['data-background-video'], useRelativeFilePath)
+      if ("data-background-video" in slideConfig) {
+        slideConfig["data-background-video"] = this.resolveFilePath(
+          slideConfig["data-background-video"],
+          useRelativeFilePath,
+        );
       }
-      if ('data-background-iframe' in slideConfig) {
-        slideConfig['data-background-iframe'] = this.resolveFilePath(slideConfig['data-background-iframe'], useRelativeFilePath)
+      if ("data-background-iframe" in slideConfig) {
+        slideConfig["data-background-iframe"] = this.resolveFilePath(
+          slideConfig["data-background-iframe"],
+          useRelativeFilePath,
+        );
       }
 
+      const attrString = stringifyAttributes(slideConfig, false); // parseAttrString(slideConfig)
+      const classString = slideConfig["class"] || "";
+      const idString = slideConfig["id"] ? `id="${slideConfig["id"]}"` : "";
 
-      const attrString = utility.stringifyAttributes(slideConfig, false) // parseAttrString(slideConfig)
-      const classString = slideConfig['class'] || ''
-      const idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : ''
-
-      if (!slideConfig['vertical']) {
-        h += 1
-        if (i > 0 && slideConfigs[i-1]['vertical']) { // end of vertical slides
-          output += '</section>'
-          v = 0
+      if (!slideConfig["vertical"]) {
+        h += 1;
+        if (i > 0 && slideConfigs[i - 1]["vertical"]) {
+          // end of vertical slides
+          output += "</section>";
+          v = 0;
         }
-        if (i < slides.length - 1 && slideConfigs[i+1]['vertical']) { // start of vertical slides
-          output += "<section>"
+        if (i < slides.length - 1 && slideConfigs[i + 1]["vertical"]) {
+          // start of vertical slides
+          output += "<section>";
         }
-      } else { // vertical slide
-        v += 1
+      } else {
+        // vertical slide
+        v += 1;
       }
 
-      output += `<section ${attrString} ${idString}  class=\"slide ${classString}\" data-line="${slideConfig['lineNo']}" data-h=\"${h}\" data-v="${v}">${slide}</section>`
-      i += 1
+      output += `<section ${attrString} ${idString}  class=\"slide ${classString}\" data-line="${
+        slideConfig["lineNo"]
+      }" data-h=\"${h}\" data-v="${v}">${slide}</section>`;
+      i += 1;
     }
-    if (i > 0 && slideConfigs[i-1]['vertical']) // end of vertical slides
-      output += "</section>"
+    if (i > 0 && slideConfigs[i - 1]["vertical"]) {
+      // end of vertical slides
+      output += "</section>";
+    }
 
     // check list item attribtues
     // issue: https://github.com/shd101wyy/markdown-preview-enhanced/issues/559
-    const $ = cheerio.load(output, {xmlMode: true})
-    $('li').each((i, elem)=> {
-      const $elem = $(elem),
-            html = $elem.html().trim()
-      let attributeMatch 
-      if (attributeMatch = html.match(/<!--(.+?)-->/)) {
-        let attributes = attributeMatch[1].replace(/\.element\:/, '').trim()
-        let attrObj = utility.parseAttributes(attributes)
-        for (let key in attrObj) {
-          $elem.attr(key, attrObj[key])
+    const $ = cheerio.load(output);
+    $("li").each((j, elem) => {
+      const $elem = $(elem);
+      const html2 = $elem.html().trim();
+      const attributeMatch = html2.match(/<!--(.+?)-->/);
+      if (attributeMatch) {
+        const attributes = attributeMatch[1].replace(/\.element\:/, "").trim();
+        const attrObj = parseAttributes(attributes);
+        for (const key in attrObj) {
+          if (attrObj.hasOwnProperty(key)) {
+            $elem.attr(key, attrObj[key]);
+          }
         }
       }
-    })
+    });
 
     return `
     <div style="display:none;">${before}</div>
@@ -2607,186 +2565,316 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ${$.html()}
       </div>
     </div>
-    `
+    `;
   }
 
-  public async pandocRender(text:string='', args:string[]):Promise<string> {
-    args = args || []
-    args = ['-f', this.config.pandocMarkdownFlavor, // -tex_math_dollars doesn't work properly
-            '-t', 'html',
-            '--mathjax']
-            .concat(args).filter((arg)=>arg.length)
+  public async pandocRender(
+    text: string = "",
+    args: string[],
+  ): Promise<string> {
+    args = args || [];
+    args = [
+      "-f",
+      this.config.pandocMarkdownFlavor, // -tex_math_dollars doesn't work properly
+      "-t",
+      "html",
+      "--mathjax",
+    ]
+      .concat(args)
+      .filter((arg) => arg.length);
 
     /*
-    convert code block
-    ```python {id:"haha"}
-    to
-    ```{.python data-code-block:"{id: haha}"}
+      convert pandoc code block to markdown-it code block
     */
-
-    let outputString = ""
-    let lines = text.split('\n')
-    let i = 0
-    let inCodeBlock = false,
-        codeBlockSpacesAhead = 0
+    let outputString = "";
+    const lines = text.split("\n");
+    let i = 0;
+    let inCodeBlock = false;
+    let codeBlockSpacesAhead = 0;
     while (i < lines.length) {
-      let line = lines[i]      
-      let match = line.match(/(^\s*)```/)
+      let line = lines[i];
+      const match = line.match(/(^\s*)```/);
       if (match) {
-        inCodeBlock = !inCodeBlock
+        inCodeBlock = !inCodeBlock;
 
         if (inCodeBlock) {
-          let lang = utility.escapeString(line.slice(match[0].length)).trim()
-          if (!lang) lang = 'text'
+          let info = line.slice(match[0].length).trim();
+          if (!info) {
+            info = "text";
+          }
+          const parsedInfo = parseBlockInfo(info);
+          const normalizedInfo = normalizeBlockInfo(parsedInfo);
 
-          // TODO: doesn't work well with code chunk. Fix in the future.  
-          // let cmatch = null
-          // if (cmatch = lang.match(/^\{\s*\.([\w\d]+)/)) { // ``` {.java}
-          // lang = cmatch[1] + ' ' + lang
-          // }
-
-          codeBlockSpacesAhead = match[1].length
-          outputString += `${match[1]}\`\`\`{.mpe-code data-lang="${lang}"}\n`
+          codeBlockSpacesAhead = match[1].length;
+          outputString += `${
+            match[1]
+          }\`\`\`{.text data-role="codeBlock" data-info="${utility.escapeString(
+            info,
+          )}" data-parsed-info="${utility.escapeString(
+            JSON.stringify(parsedInfo),
+          )}" data-normalized-info="${utility.escapeString(
+            JSON.stringify(normalizedInfo),
+          )}"}\n`;
         } else if (match[1].length === codeBlockSpacesAhead) {
-          outputString += `${match[1]}\`\`\`\n` 
+          outputString += `${match[1]}\`\`\`\n`;
         } else {
-          inCodeBlock = !inCodeBlock
-          outputString += line + '\n'
+          inCodeBlock = !inCodeBlock;
+          outputString += line + "\n";
         }
 
-        i += 1
-        continue
+        i += 1;
+        continue;
       }
 
       if (line.match(/^\[toc\]/i) && !inCodeBlock) {
-        line = '[MUMETOC]'
+        line = "[MUMETOC]";
       }
 
-      outputString += line + '\n'
-      i += 1
+      outputString += line + "\n";
+      i += 1;
     }
 
-    const pandocPath = this.config.pandocPath
-    return await new Promise<string>((resolve, reject)=> {
+    const pandocPath = this.config.pandocPath;
+    return await new Promise<string>((resolve, reject) => {
       try {
-        const program = execFile(pandocPath, args, {cwd: this.fileDirectoryPath}, (error, stdout, stderr)=> {
-          if (error) return reject(error)
-          if (stderr) return reject(stderr)
-          return resolve(stdout)
-        })
-        program.stdin.end(outputString, 'utf-8')
-      } catch(error) {
-        let errorMessage = error.toString()
+        const program = execFile(
+          pandocPath,
+          args,
+          { cwd: this.fileDirectoryPath, maxBuffer: Infinity },
+          (error, stdout, stderr) => {
+            if (error) {
+              return reject(error);
+            } else if (stderr) {
+              return reject(stderr);
+            } else {
+              return resolve(stdout);
+            }
+          },
+        );
+        program.stdin.end(outputString, "utf-8");
+      } catch (error) {
+        let errorMessage = error.toString();
         if (errorMessage.indexOf("Error: write EPIPE") >= 0) {
-          errorMessage = `"pandoc" is required to be installed.\nCheck "http://pandoc.org/installing.html" website.`
+          errorMessage = `"pandoc" is required to be installed.\nCheck "http://pandoc.org/installing.html" website.`;
         }
-        return reject(errorMessage)
+        return reject(errorMessage);
       }
-    })
+    });
   }
 
-  public async parseMD(inputString:string, options:MarkdownEngineRenderOption):Promise<MarkdownEngineOutput> {
-    if (!inputString) inputString = await utility.readFile(this.filePath, {encoding:'utf-8'})
-
-    if (utility.configs.parserConfig['onWillParseMarkdown']) {
-      inputString = await utility.configs.parserConfig['onWillParseMarkdown'](inputString)
+  public async parseMD(
+    inputString: string,
+    options: MarkdownEngineRenderOption,
+  ): Promise<MarkdownEngineOutput> {
+    if (!inputString) {
+      inputString = await utility.readFile(this.filePath, {
+        encoding: "utf-8",
+      });
     }
 
-    // import external files and insert anchors if necessary 
-    let {outputString, slideConfigs, tocBracketEnabled, JSAndCssFiles, headings, frontMatterString} = await transformMarkdown(inputString, 
-    {
-      fileDirectoryPath: this.fileDirectoryPath, 
+    if (utility.configs.parserConfig["onWillParseMarkdown"]) {
+      inputString = await utility.configs.parserConfig["onWillParseMarkdown"](
+        inputString,
+      );
+    }
+
+    // import external files and insert anchors if necessary
+    let outputString;
+    let slideConfigs;
+    let tocBracketEnabled;
+    let JSAndCssFiles;
+    let headings;
+    let frontMatterString;
+    ({
+      outputString,
+      slideConfigs,
+      tocBracketEnabled,
+      JSAndCssFiles,
+      headings,
+      frontMatterString,
+    } = await transformMarkdown(inputString, {
+      fileDirectoryPath: this.fileDirectoryPath,
       projectDirectoryPath: this.projectDirectoryPath,
       forPreview: options.isForPreview,
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
-      usePandocParser: this.config.usePandocParser
-    })
+      usePandocParser: this.config.usePandocParser,
+    }));
 
     // process front-matter
-    const fm = this.processFrontMatter(frontMatterString, options.hideFrontMatter)
-    const frontMatterTable = fm.table,
-          yamlConfig = fm.data || {} 
-    outputString = fm.content + outputString
+    const fm = this.processFrontMatter(
+      frontMatterString,
+      options.hideFrontMatter,
+    );
+    const frontMatterTable = fm.table;
+    let yamlConfig = fm.data || {};
+    if (typeof yamlConfig !== "object") {
+      yamlConfig = {};
+    }
+
+    outputString = fm.content + outputString;
 
     /**
      * render markdown to html
      */
-    let html
-    if (this.config.usePandocParser) { // pandoc
+    let html;
+    if (this.config.usePandocParser) {
+      // pandoc
       try {
-        let args = yamlConfig['pandoc_args'] || []
-        if (!(args instanceof Array)) args = []
+        let args = yamlConfig["pandoc_args"] || [];
+        if (!(args instanceof Array)) {
+          args = [];
+        }
 
         // check bibliography
-        if (yamlConfig['bibliography'] || yamlConfig['references'])
-          args.push('--filter', 'pandoc-citeproc')
-        
-        args = this.config.pandocArguments.concat(args)
+        if (yamlConfig["bibliography"] || yamlConfig["references"]) {
+          args.push("--filter", "pandoc-citeproc");
+        }
 
-        html = await this.pandocRender(outputString, args)
-      } catch(error) {
-        html = `<pre>${error}</pre>`
+        args = this.config.pandocArguments.concat(args);
+
+        html = await this.pandocRender(outputString, args);
+      } catch (error) {
+        html = `<pre>${error}</pre>`;
       }
-    } else { // markdown-it
-      html = this.md.render(outputString)
+    } else {
+      // markdown-it
+      html = this.md.render(outputString);
     }
 
     /**
      * render tocHTML for [TOC] and sidebar TOC
      */
     // if (!utility.isArrayEqual(headings, this.headings)) { // <== this code is wrong, as it will always be true...
-      const tocConfig = yamlConfig['toc'] || {},
-            depthFrom = tocConfig['depth_from'] || 1,
-            depthTo = tocConfig['depth_to'] || 6,
-            ordered = tocConfig['ordered']
+    const tocConfig = yamlConfig["toc"] || {};
+    const depthFrom = tocConfig["depth_from"] || 1;
+    const depthTo = tocConfig["depth_to"] || 6;
+    const ordered = tocConfig["ordered"];
 
-      const tocObject = toc(headings, {ordered, depthFrom, depthTo, tab: '\t'})
-      this.tocHTML = this.md.render(tocObject.content)
+    const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "\t" });
+    this.tocHTML = this.md.render(tocObject.content);
     // }
-    this.headings = headings // reset headings information
+    this.headings = headings; // reset headings information
 
-    if (tocBracketEnabled) { // [TOC]
-      html = html.replace(/^\s*<p>\[MUMETOC\]<\/p>\s*/gm, this.tocHTML)
+    if (tocBracketEnabled) {
+      // [TOC]
+      html = html.replace(/^\s*<p>\[MUMETOC\]<\/p>\s*/gm, this.tocHTML);
     }
 
     /**
      * resolve image paths and render code block.
      */
-    html = frontMatterTable + await this.resolveImagePathAndCodeBlock(html, options)
+    const $ = cheerio.load(html);
+    await enhanceWithFencedMath(
+      $,
+      this.config.mathRenderingOption,
+      this.config.mathBlockDelimiters,
+    );
+    await enhanceWithFencedDiagrams(
+      $,
+      this.graphsCache,
+      this.fileDirectoryPath,
+      removeFileProtocol(
+        this.resolveFilePath(this.config.imageFolderPath, false),
+      ),
+    );
+    await enhanceWithFencedCodeChunks(
+      $,
+      this.codeChunksData,
+      options,
+      this.generateRunOptions(),
+    );
+    await enhanceWithCodeBlockStyling($);
+    await enhanceWithResolvedImagePaths(
+      $,
+      options,
+      this.resolveFilePath.bind(this),
+      this.config.usePandocParser,
+    );
+
+    if (this.config.enableExtendedTableSyntax) {
+      // extend table
+      await enhanceWithExtendedTableSyntax($);
+    }
+
+    if (options.emojiToSvg) {
+      enhanceWithEmojiToSvg($);
+    }
+
+    html = frontMatterTable + $.html();
 
     /**
      * check slides
      */
     if (slideConfigs.length) {
-      html = this.parseSlides(html, slideConfigs, options.useRelativeFilePath)
-      if (yamlConfig) yamlConfig['isPresentationMode'] = true // mark as presentation mode
+      html = this.parseSlides(html, slideConfigs, options.useRelativeFilePath);
+      if (yamlConfig) {
+        yamlConfig["isPresentationMode"] = true; // mark as presentation mode
+      }
     }
 
-    if (utility.configs.parserConfig['onDidParseMarkdown']) {
-      html = await utility.configs.parserConfig['onDidParseMarkdown'](html, {cheerio})
+    if (utility.configs.parserConfig["onDidParseMarkdown"]) {
+      html = await utility.configs.parserConfig["onDidParseMarkdown"](html, {
+        cheerio,
+      });
     }
 
     if (options.runAllCodeChunks) {
-      await this.runAllCodeChunks()
-      options.runAllCodeChunks = false
-      return this.parseMD(inputString, options)
+      await runCodeChunks(this.codeChunksData, this.generateRunOptions());
+      options.runAllCodeChunks = false;
+      return this.parseMD(inputString, options);
     }
 
     if (options.isForPreview) {
       // this.cachedHTML = html // save to cache
-      this.isPreviewInPresentationMode = !!(slideConfigs.length) // check presentation mode
+      this.isPreviewInPresentationMode = !!slideConfigs.length; // check presentation mode
     }
 
-    if (options.triggeredBySave && yamlConfig['export_on_save']) { // export files
-      this.exportOnSave(yamlConfig['export_on_save'])
+    if (options.triggeredBySave && yamlConfig["export_on_save"]) {
+      // export files
+      this.exportOnSave(yamlConfig["export_on_save"]);
     }
 
-    if (!this.config.enableScriptExecution) { // disable importing js and css files.  
-      JSAndCssFiles = []
+    if (!this.config.enableScriptExecution) {
+      // disable importing js and css files.
+      JSAndCssFiles = [];
     }
 
-    return {html, markdown:inputString, tocHTML: this.tocHTML, yamlConfig, JSAndCssFiles}
+    return {
+      html,
+      markdown: inputString,
+      tocHTML: this.tocHTML,
+      yamlConfig,
+      JSAndCssFiles,
+    };
+  }
+
+  /**
+   * legacy method to support backwards compatibility
+   */
+  public runCodeChunks() {
+    return runCodeChunks(this.codeChunksData, this.generateRunOptions());
+  }
+
+  /**
+   * legacy method to support backwards compatibility
+   */
+  public runCodeChunk(id: string) {
+    return runCodeChunk(id, this.codeChunksData, this.generateRunOptions());
+  }
+
+  private generateRunOptions(): RunCodeChunkOptions {
+    return {
+      enableScriptExecution: this.config.enableScriptExecution,
+      fileDirectoryPath: this.fileDirectoryPath,
+      filePath: this.filePath,
+      imageFolderPath: this.config.imageFolderPath,
+      latexEngine: this.config.latexEngine,
+      modifySource: MarkdownEngine.modifySource.bind(this),
+      parseMD: this.parseMD.bind(this),
+      headings: this.headings,
+      resolveFilePath: this.resolveFilePath.bind(this),
+    };
   }
 }

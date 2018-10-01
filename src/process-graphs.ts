@@ -1,183 +1,265 @@
-import * as path from "path"
-import * as fs from "fs"
-import * as cheerio from "cheerio"
+import * as cheerio from "cheerio";
+import * as path from "path";
 
-import * as plantumlAPI from "./puml"
-import * as vegaAPI from "./vega"
-import * as vegaLiteAPI from "./vega-lite"
-import * as utility from "./utility"
-import {svgElementToPNGFile} from "./magick"
-// import {mermaidToPNG} from "./mermaid"
-import {compileLaTeX} from "./code-chunk"
-import {CodeChunkData} from "./code-chunk-data"
+import { compileLaTeX } from "./code-chunk";
+import { CodeChunkData } from "./code-chunk-data";
+import { parseAttributes } from "./lib/attributes";
+import computeChecksum from "./lib/compute-checksum";
+import { svgElementToPNGFile } from "./magick";
+import * as plantumlAPI from "./puml";
+import * as vegaAPI from "./vega";
+import * as vegaLiteAPI from "./vega-lite";
+import { Viz } from "./viz";
 
-const Viz = require(path.resolve(utility.extensionDirectoryPath, './dependencies/viz/viz.js'))
-const md5 = require(path.resolve(utility.extensionDirectoryPath, './dependencies/javascript-md5/md5.js'))
+export async function processGraphs(
+  text: string,
+  {
+    fileDirectoryPath,
+    projectDirectoryPath,
+    imageDirectoryPath,
+    imageFilePrefix,
+    useRelativeFilePath,
+    codeChunksData,
+    graphsCache,
+  }: {
+    fileDirectoryPath: string;
+    projectDirectoryPath: string;
+    imageDirectoryPath: string;
+    imageFilePrefix: string;
+    useRelativeFilePath: boolean;
+    codeChunksData: { [key: string]: CodeChunkData };
+    graphsCache: { [key: string]: string };
+  },
+): Promise<{ outputString: string; imagePaths: string[] }> {
+  const lines = text.split("\n");
+  const codes: Array<{
+    start: number;
+    end: number;
+    content: string;
+    options: object;
+    optionsStr: string;
+  }> = [];
 
-export async function processGraphs(text:string, 
-{fileDirectoryPath, projectDirectoryPath, imageDirectoryPath, imageFilePrefix, useRelativeFilePath, codeChunksData, graphsCache}:
-{fileDirectoryPath:string, projectDirectoryPath:string, imageDirectoryPath:string, imageFilePrefix:string, useRelativeFilePath:boolean, codeChunksData: {[key:string]: CodeChunkData}, graphsCache:{[key:string]:string}})
-:Promise<{outputString:string, imagePaths: string[]}> {
-  let lines = text.split('\n')
-  const codes:Array<{start:number, end:number, content:string, options:object, optionsStr:string}> = []
-
-  let i = 0
+  let i = 0;
   while (i < lines.length) {
-    const line = lines[i]
-    const trimmedLine = line.trim()
+    const line = lines[i];
+    const trimmedLine = line.trim();
 
-    if (trimmedLine.match(/^```(.+)\"?cmd\"?[:=]/) || // code chunk
-        trimmedLine.match(/^```(puml|plantuml|dot|viz|mermaid|vega|vega\-lite|ditaa)/)) { // graphs
-      const numOfSpacesAhead = line.match(/^\s*/).length
-      let j = i + 1
-      let content = ''
+    if (
+      trimmedLine.match(/^```(.+)\"?cmd\"?[:=]/) || // code chunk
+      trimmedLine.match(
+        /^```(puml|plantuml|dot|viz|mermaid|vega|vega\-lite|ditaa)/,
+      )
+    ) {
+      // graphs
+      const numOfSpacesAhead = line.match(/^\s*/).length;
+      let j = i + 1;
+      let content = "";
       while (j < lines.length) {
-        if (lines[j].trim() == '```' && lines[j].match(/^\s*/).length == numOfSpacesAhead) {
-          let options = {},
-              optionsStr = '',
-              optionsMatch
-          if (optionsMatch = trimmedLine.match(/\{(.+)\}$/)) {
+        if (
+          lines[j].trim() === "```" &&
+          lines[j].match(/^\s*/).length === numOfSpacesAhead
+        ) {
+          let options = {};
+          let optionsStr = "";
+          const optionsMatch = trimmedLine.match(/\{(.+)\}$/);
+          if (optionsMatch) {
             try {
-              options = utility.parseAttributes(optionsMatch[0])
-              optionsStr = optionsMatch[1]
-            } catch(error) {
-              options = {}
+              options = parseAttributes(optionsMatch[0]);
+              optionsStr = optionsMatch[1];
+            } catch (error) {
+              options = {};
             }
           }
 
           codes.push({
-            start: i, 
-            end: j, 
+            start: i,
+            end: j,
             content,
             options,
-            optionsStr
-          })
-          i = j
-          break
+            optionsStr,
+          });
+          i = j;
+          break;
         }
-        content += (lines[j]+'\n')
-        j += 1
+        content += lines[j] + "\n";
+        j += 1;
       }
-    } else if (trimmedLine.match(/^```\S/)) { // remove {...} after ```lang
-      const indexOfFirstSpace = line.indexOf(' ', line.indexOf('```'))
-      if (indexOfFirstSpace > 0)
-        lines[i] = line.slice(0, indexOfFirstSpace)
+    } else if (trimmedLine.match(/^```\S/)) {
+      // remove {...} after ```lang
+      const indexOfFirstSpace = line.indexOf(" ", line.indexOf("```"));
+      if (indexOfFirstSpace > 0) {
+        lines[i] = line.slice(0, indexOfFirstSpace);
+      }
     } else if (!trimmedLine) {
-      lines[i] = '  '
-    } 
+      lines[i] = "  ";
+    }
 
-    i += 1
-  }  
+    i += 1;
+  }
 
-  if (!imageFilePrefix) 
-    imageFilePrefix = (Math.random().toString(36).substr(2, 9) + '_')
-  
-  imageFilePrefix = imageFilePrefix.replace(/[\/&]/g, '_ss_')
-  imageFilePrefix = encodeURIComponent(imageFilePrefix)
+  if (!imageFilePrefix) {
+    imageFilePrefix =
+      Math.random()
+        .toString(36)
+        .substr(2, 9) + "_";
+  }
 
-  let imgCount = 0
+  imageFilePrefix = imageFilePrefix.replace(/[\/&]/g, "_ss_");
+  imageFilePrefix = encodeURIComponent(imageFilePrefix);
 
-  const asyncFunctions = [],
-        imagePaths = []
+  let imgCount = 0;
 
-  let currentCodeChunk:CodeChunkData = null 
-  for (let key in codeChunksData) { // get the first code chunk.
+  const asyncFunctions = [];
+  const imagePaths = [];
+
+  let currentCodeChunk: CodeChunkData = null;
+  for (const key in codeChunksData) {
+    // get the first code chunk.
     if (!codeChunksData[key].prev) {
-      currentCodeChunk = codeChunksData[key]
-      break
+      currentCodeChunk = codeChunksData[key];
+      break;
     }
   }
 
-  function clearCodeBlock(lines:string[], start:number, end:number) {
-    let i = start
-    while (i <= end) {
-      lines[i] = ''
-      i += 1
+  /* tslint:disable-next-line:no-shadowed-variable */
+  function clearCodeBlock(lines: string[], start: number, end: number) {
+    let s = start;
+    while (s <= end) {
+      lines[s] = "";
+      s += 1;
     }
   }
 
-  async function convertSVGToPNGFile(outFileName='', svg:string, lines:string[], start:number, end:number, modifyCodeBlock:boolean) {
-    if (!outFileName) 
-      outFileName = imageFilePrefix+imgCount+'.png'
+  async function convertSVGToPNGFile(
+    outFileName = "",
+    svg: string,
+    /* tslint:disable-next-line:no-shadowed-variable */
+    lines: string[],
+    start: number,
+    end: number,
+    modifyCodeBlock: boolean,
+  ) {
+    if (!outFileName) {
+      outFileName = imageFilePrefix + imgCount + ".png";
+    }
 
-    const pngFilePath = path.resolve(imageDirectoryPath, outFileName)
-    await svgElementToPNGFile(svg, pngFilePath)
-    let displayPNGFilePath
+    const pngFilePath = path.resolve(imageDirectoryPath, outFileName);
+    await svgElementToPNGFile(svg, pngFilePath);
+    let displayPNGFilePath;
     if (useRelativeFilePath) {
-      displayPNGFilePath = path.relative(fileDirectoryPath, pngFilePath) + '?' + Math.random()
+      displayPNGFilePath =
+        path.relative(fileDirectoryPath, pngFilePath) + "?" + Math.random();
     } else {
-      displayPNGFilePath = '/' + path.relative(projectDirectoryPath, pngFilePath) + '?' + Math.random()
+      displayPNGFilePath =
+        "/" +
+        path.relative(projectDirectoryPath, pngFilePath) +
+        "?" +
+        Math.random();
     }
-    displayPNGFilePath = displayPNGFilePath.replace(/\\/g, '/') // fix windows path error.
+    displayPNGFilePath = displayPNGFilePath.replace(/\\/g, "/"); // fix windows path error.
 
-    imgCount++
-  
+    imgCount++;
+
     if (modifyCodeBlock) {
-      clearCodeBlock(lines, start, end)
-      lines[end] += '\n' + `![](${displayPNGFilePath})  `
+      clearCodeBlock(lines, start, end);
+      lines[end] += "\n" + `![](${displayPNGFilePath})  `;
     }
 
-    imagePaths.push(pngFilePath)
-    return displayPNGFilePath
+    imagePaths.push(pngFilePath);
+    return displayPNGFilePath;
   }
 
-  for (let i = 0; i < codes.length; i++) {
-    const codeData = codes[i]
-    const {start, end, content, options, optionsStr} = codeData
-    const def = lines[start].trim().slice(3).trim()
+  for (const codeData of codes) {
+    const { start, end, content, options, optionsStr } = codeData;
+    const def = lines[start]
+      .trim()
+      .slice(3)
+      .trim();
 
-    if (options['code_block']) { 
+    if (options["code_block"]) {
       // Do Nothing
-    } else if (def.match(/^(puml|plantuml)/)) { 
+    } else if (def.match(/^(puml|plantuml)/)) {
       try {
-        const checksum = md5(optionsStr + content)
-        let svg 
-        if (!(svg = graphsCache[checksum])) { // check whether in cache
-          svg = await plantumlAPI.render(content, fileDirectoryPath)
+        const checksum = computeChecksum(optionsStr + content);
+        let svg = graphsCache[checksum];
+        if (!svg) {
+          // check whether in cache
+          svg = await plantumlAPI.render(content, fileDirectoryPath);
         }
-        await convertSVGToPNGFile(options['filename'], svg, lines, start, end, true)
-      } catch(error) {
-        clearCodeBlock(lines, start, end)
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
+        await convertSVGToPNGFile(
+          options["filename"],
+          svg,
+          lines,
+          start,
+          end,
+          true,
+        );
+      } catch (error) {
+        clearCodeBlock(lines, start, end);
+        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
       }
     } else if (def.match(/^(viz|dot)/)) {
       try {
-        const checksum = md5(optionsStr + content)
-        let svg 
-        if (!(svg = graphsCache[checksum])) {
-          const engine = options['engine'] || 'dot'
-          svg = Viz(content, {engine})
+        const checksum = computeChecksum(optionsStr + content);
+        let svg = graphsCache[checksum];
+        if (!svg) {
+          const engine = options["engine"] || "dot";
+          svg = await Viz(content, { engine });
         }
-        await convertSVGToPNGFile(options['filename'], svg, lines, start, end, true)
-      } catch(error) {
-        clearCodeBlock(lines, start, end)
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
+        await convertSVGToPNGFile(
+          options["filename"],
+          svg,
+          lines,
+          start,
+          end,
+          true,
+        );
+      } catch (error) {
+        clearCodeBlock(lines, start, end);
+        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
       }
-    } else if (def.match(/^vega\-lite/)) { // vega-lite
+    } else if (def.match(/^vega\-lite/)) {
+      // vega-lite
       try {
-        const checksum = md5(optionsStr + content)
-        let svg 
-        if (!(svg = graphsCache[checksum])) {
-          svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath)
+        const checksum = computeChecksum(optionsStr + content);
+        let svg = graphsCache[checksum];
+        if (!svg) {
+          svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath);
         }
-        await convertSVGToPNGFile(options['filename'], svg, lines, start, end, true)
-      } catch(error) {
-        clearCodeBlock(lines, start, end)
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
+        await convertSVGToPNGFile(
+          options["filename"],
+          svg,
+          lines,
+          start,
+          end,
+          true,
+        );
+      } catch (error) {
+        clearCodeBlock(lines, start, end);
+        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
       }
-    } else if (def.match(/^vega/)) { // vega
+    } else if (def.match(/^vega/)) {
+      // vega
       try {
-        const checksum = md5(optionsStr + content)
-        let svg 
-        if (!(svg = graphsCache[checksum])) {
-          svg = await vegaAPI.toSVG(content, fileDirectoryPath)
+        const checksum = computeChecksum(optionsStr + content);
+        let svg = graphsCache[checksum];
+        if (!svg) {
+          svg = await vegaAPI.toSVG(content, fileDirectoryPath);
         }
-        await convertSVGToPNGFile(options['filename'], svg, lines, start, end, true)
-      } catch(error) {
-        clearCodeBlock(lines, start, end)
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
+        await convertSVGToPNGFile(
+          options["filename"],
+          svg,
+          lines,
+          start,
+          end,
+          true,
+        );
+      } catch (error) {
+        clearCodeBlock(lines, start, end);
+        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
       }
-    } else if (def.match(/^mermaid/))  {
+    } else if (def.match(/^mermaid/)) {
       // do nothing as it doesn't work well...
       /*
       try {
@@ -201,41 +283,62 @@ export async function processGraphs(text:string,
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
       }
       */
-    } else if (currentCodeChunk) { // code chunk
-      if (currentCodeChunk.options['hide']) { // remove code block
-        clearCodeBlock(lines, start, end)
-      } else { // remove {...} after ```lang  
-        const line = lines[start]
-        const indexOfFirstSpace = line.indexOf(' ', line.indexOf('```'))
-        lines[start] = line.slice(0, indexOfFirstSpace)
+    } else if (currentCodeChunk) {
+      // code chunk
+      if (currentCodeChunk.normalizedInfo.attributes["hide"]) {
+        // remove code block
+        clearCodeBlock(lines, start, end);
+      } else {
+        // remove {...} after ```lang
+        const line = lines[start];
+        const indexOfFirstSpace = line.indexOf(" ", line.indexOf("```"));
+        lines[start] = line.slice(0, indexOfFirstSpace);
       }
 
-      if (currentCodeChunk.result) { // append result
-        let result = currentCodeChunk.result
-        const options = currentCodeChunk.options
-        if (options['output'] === 'html' || options['matplotlib']) { // check svg and convert it to png
-          const $ = cheerio.load(currentCodeChunk.result, {xmlMode: true}) // xmlMode here is necessary...
-          const svg = $('svg')
+      if (currentCodeChunk.result) {
+        // append result
+        let result = currentCodeChunk.result;
+        const attributes = currentCodeChunk.normalizedInfo.attributes;
+        if (attributes["output"] === "html" || attributes["matplotlib"]) {
+          // check svg and convert it to png
+          const $ = cheerio.load(currentCodeChunk.result); // xmlMode here is necessary...
+          const svg = $("svg");
           if (svg.length === 1) {
-            const pngFilePath = (await convertSVGToPNGFile(options['filename'], $.html('svg'), lines, start, end, false)).replace(/\\/g, '/')
-            result = `![](${pngFilePath})  \n`
+            const pngFilePath = (await convertSVGToPNGFile(
+              attributes["filename"],
+              $.html("svg"),
+              lines,
+              start,
+              end,
+              false,
+            )).replace(/\\/g, "/");
+            result = `![](${pngFilePath})  \n`;
           }
-        } else if (options['cmd'].match(/^(la)?tex$/)) { // for latex, need to run it again to generate svg file in currect directory.
-          result = await compileLaTeX(content, fileDirectoryPath, Object.assign({}, options, {latex_svg_dir: imageDirectoryPath}))
-        } else if (currentCodeChunk.options['output'] === 'markdown') {
-          result = currentCodeChunk.plainResult
-        } else if (!options['output'] || options['output'] === 'text') {
-          result = `\n\`\`\`\n${currentCodeChunk.plainResult}\`\`\`\n` 
+        } else if (attributes["cmd"].match(/^(la)?tex$/)) {
+          // for latex, need to run it again to generate svg file in currect directory.
+          result = await compileLaTeX(
+            content,
+            fileDirectoryPath,
+            Object.assign({}, attributes, {
+              latex_svg_dir: imageDirectoryPath,
+            }),
+          );
+        } else if (
+          currentCodeChunk.normalizedInfo.attributes["output"] === "markdown"
+        ) {
+          result = currentCodeChunk.plainResult;
+        } else if (!attributes["output"] || attributes["output"] === "text") {
+          result = `\n\`\`\`\n${currentCodeChunk.plainResult}\`\`\`\n`;
         }
 
-        lines[end] += ('\n' + result)
+        lines[end] += "\n" + result;
       }
-      currentCodeChunk = codeChunksData[currentCodeChunk.next]
+      currentCodeChunk = codeChunksData[currentCodeChunk.next];
     }
   }
 
-  await Promise.all(asyncFunctions)
+  await Promise.all(asyncFunctions);
 
-  const outputString = lines.filter((line)=> line).join('\n')
-  return {outputString, imagePaths}
+  const outputString = lines.filter((line) => line).join("\n");
+  return { outputString, imagePaths };
 }
