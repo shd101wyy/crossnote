@@ -50,7 +50,7 @@ async function main() {
   await engine.princeExport({ runAllCodeChunks: true });
 
   // ebook export
-  await engine.eBookExport({ fileType: "epub" }); // fileType=`epub`|`pdf`|`mobi`|`html`
+  await engine.eBookExport({ fileType: "epub" }); // fileType = 'epub'|'pdf'|'mobi'|'html'
 
   // pandoc export
   await engine.pandocExport({ runAllCodeChunks: true });
@@ -126,7 +126,7 @@ const config = {
   //  "solarized-dark.css",
   //  "solarized-light.css",
   //  "twilight.css",
-  //  "vue.css"
+  //  "vue.css",
   //  "vs.css",
   //  "xonokai.css"
 
@@ -146,22 +146,22 @@ const config = {
   // "one-dark.css",
   // "one-light.css",
   // "solarized-dark.css",
-  // "solarized-light.css"
+  // "solarized-light.css",
   // "vue.css"
 
   // Revealjs presentation theme
   revealjsTheme: "white.css",
-  // "beige.css"
-  // "black.css"
-  // "blood.css"
-  // "league.css"
-  // "moon.css"
-  // "night.css"
-  // "serif.css"
-  // "simple.css"
-  // "sky.css"
-  // "solarized.css"
-  // "white.css"
+  // "beige.css",
+  // "black.css",
+  // "blood.css",
+  // "league.css",
+  // "moon.css",
+  // "night.css",
+  // "serif.css",
+  // "simple.css",
+  // "sky.css",
+  // "solarized.css",
+  // "white.css",
   // "none.css"
 
   // Accepted protocols for links.
