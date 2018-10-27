@@ -191,6 +191,7 @@ export class MarkdownEngine {
 
   private breakOnSingleNewLine: boolean;
   private enableTypographer: boolean;
+  private enableLinkify: boolean;
   private protocolsWhiteListRegExp: RegExp;
 
   private headings: HeadingData[];
@@ -246,6 +247,7 @@ export class MarkdownEngine {
       ...defaults,
       typographer: this.enableTypographer,
       breaks: this.breakOnSingleNewLine,
+      linkify: this.enableLinkify
     });
 
     // markdown-it extensions
@@ -317,6 +319,9 @@ export class MarkdownEngine {
     // enable typographer
     this.enableTypographer = this.config.enableTypographer;
 
+    // enable linkify
+    this.enableLinkify = this.config.enableLinkify;
+
     // protocal whitelist
     const protocolsWhiteList = (
       this.config.protocolsWhiteList ||
@@ -336,6 +341,7 @@ export class MarkdownEngine {
     this.md.set({
       breaks: this.breakOnSingleNewLine,
       typographer: this.enableTypographer,
+      linkify: this.enableLinkify
     });
   }
 
