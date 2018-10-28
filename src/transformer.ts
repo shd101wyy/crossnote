@@ -906,12 +906,17 @@ export async function transformMarkdown(
               if (config) {
                 aS = config["as"];
               }
-              const fileExtension = extname.slice(1, extname.length);
-              output = `\`\`\`${aS ||
-                fileExtensionToLanguageMap[fileExtension] ||
-                fileExtension} ${
-                config ? stringifyAttributes(config) : ""
-              }  \n${fileContent}\n\`\`\`  `;
+              if (config && config["code_block"] === false) {
+                // https://github.com/shd101wyy/markdown-preview-enhanced/issues/916
+                output = fileContent;
+              } else {
+                const fileExtension = extname.slice(1, extname.length);
+                output = `\`\`\`${aS ||
+                  fileExtensionToLanguageMap[fileExtension] ||
+                  fileExtension} ${
+                  config ? stringifyAttributes(config) : ""
+                }  \n${fileContent}\n\`\`\`  `;
+              }
             }
 
             // return helper(end+1, lineNo+1, outputString+output+'\n')

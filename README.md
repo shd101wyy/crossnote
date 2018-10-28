@@ -77,6 +77,9 @@ const config = {
   // Enable smartypants and other sweet transforms.
   enableTypographer: false,
 
+  // Enable conversion of URL-like text to links in the markdown preview.
+  enableLinkify: true,
+
   // Math
   mathRenderingOption: "KaTeX",  // "KaTeX" | "MathJax" | "None"
   mathInlineDelimiters: [["$", "$"], ["\\(", "\\)"]],

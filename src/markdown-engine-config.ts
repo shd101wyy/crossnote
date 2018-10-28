@@ -5,6 +5,7 @@ export interface MarkdownEngineConfig {
   breakOnSingleNewLine?: boolean;
   enableTypographer?: boolean;
   enableWikiLinkSyntax?: boolean;
+  enableLinkify?: boolean;
   wikiLinkFileExtension?: string;
   enableEmojiSyntax?: boolean;
   enableExtendedTableSyntax?: boolean;
@@ -33,6 +34,7 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   breakOnSingleNewLine: true,
   enableTypographer: false,
   enableWikiLinkSyntax: true,
+  enableLinkify: true,
   enableEmojiSyntax: true,
   enableExtendedTableSyntax: false,
   enableCriticMarkupSyntax: false,

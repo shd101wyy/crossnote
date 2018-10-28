@@ -155,17 +155,22 @@ export function mkdirp(dir: string): Promise<boolean> {
  * open html file in browser or open pdf file in reader ... etc
  * @param filePath
  */
-export function openFile(filePath) {
-  let cmd;
+export function openFile(filePath: string) {
   if (process.platform === "win32") {
-    cmd = "explorer.exe";
+    if (filePath.match(/^[a-zA-Z]:\\/)) {
+      // C:\ like url.
+      filePath = "file:///" + filePath;
+    }
+    if (filePath.startsWith("file:///")) {
+      return child_process.execFile("explorer.exe", [filePath]);
+    } else {
+      return child_process.exec(`start ${filePath}`);
+    }
   } else if (process.platform === "darwin") {
-    cmd = "open";
+    child_process.execFile("open", [filePath]);
   } else {
-    cmd = "xdg-open";
+    child_process.execFile("xdg-open", [filePath]);
   }
-
-  child_process.execFile(cmd, [filePath]);
 }
 
 /**

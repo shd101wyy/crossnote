@@ -1,7 +1,7 @@
 // tslint:disable:ban-types no-var-requires
 import { run } from "../code-chunk";
 import { CodeChunkData, CodeChunksData } from "../code-chunk-data";
-import { BlockInfo } from "../lib/block-info";
+import { BlockInfo, extractCommandFromBlockInfo } from "../lib/block-info";
 import { MarkdownEngineRenderOption } from "../markdown-engine";
 import { toc } from "../toc";
 
@@ -279,6 +279,3 @@ export async function runCodeChunks(
   }
   return Promise.all(asyncFunctions);
 }
-
-const extractCommandFromBlockInfo = (info: BlockInfo) =>
-  info.attributes["cmd"] === true ? info.language : info.attributes["cmd"];
