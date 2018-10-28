@@ -10,7 +10,7 @@ export async function svgElementToPNGFile(
   const info = await tempOpen({ prefix: "mume-svg", suffix: ".svg" });
   await write(info.fd, svgElement); // write svgElement to temp .svg file
   try {
-    await execFile("magick", [info.path, pngFilePath]);
+    await execFile("convert", [info.path, pngFilePath]);
   } catch (error) {
     throw new Error(
       "ImageMagick is required to be installed to convert svg to png.\n" +
