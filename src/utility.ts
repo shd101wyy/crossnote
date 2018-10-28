@@ -155,10 +155,11 @@ export function mkdirp(dir: string): Promise<boolean> {
  * open html file in browser or open pdf file in reader ... etc
  * @param filePath
  */
-export function openFile(filePath:string) {
+export function openFile(filePath: string) {
   if (process.platform === "win32") {
-    if (filePath.match(/^[a-zA-Z]:\\/)) { // C:\ like url. 
-      filePath = "file:///" + filePath
+    if (filePath.match(/^[a-zA-Z]:\\/)) {
+      // C:\ like url.
+      filePath = "file:///" + filePath;
     }
     if (filePath.startsWith("file:///")) {
       return child_process.execFile("explorer.exe", [filePath]);

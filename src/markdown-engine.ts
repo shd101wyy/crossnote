@@ -247,7 +247,7 @@ export class MarkdownEngine {
       ...defaults,
       typographer: this.enableTypographer,
       breaks: this.breakOnSingleNewLine,
-      linkify: this.enableLinkify
+      linkify: this.enableLinkify,
     });
 
     // markdown-it extensions
@@ -341,7 +341,7 @@ export class MarkdownEngine {
     this.md.set({
       breaks: this.breakOnSingleNewLine,
       typographer: this.enableTypographer,
-      linkify: this.enableLinkify
+      linkify: this.enableLinkify,
     });
   }
 
