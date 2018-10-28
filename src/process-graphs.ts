@@ -3,8 +3,8 @@ import * as path from "path";
 
 import { compileLaTeX } from "./code-chunk";
 import { CodeChunkData } from "./code-chunk-data";
-import { extractCommandFromBlockInfo } from "./lib/block-info"
 import { parseAttributes } from "./lib/attributes";
+import { extractCommandFromBlockInfo } from "./lib/block-info";
 import computeChecksum from "./lib/compute-checksum";
 import { svgElementToPNGFile } from "./magick";
 import * as plantumlAPI from "./puml";
@@ -315,7 +315,11 @@ export async function processGraphs(
             )).replace(/\\/g, "/");
             result = `![](${pngFilePath})  \n`;
           }
-        } else if (( extractCommandFromBlockInfo(currentCodeChunk.normalizedInfo) || "").match(/^(la)?tex$/)) {
+        } else if (
+          (
+            extractCommandFromBlockInfo(currentCodeChunk.normalizedInfo) || ""
+          ).match(/^(la)?tex$/)
+        ) {
           // for latex, need to run it again to generate svg file in currect directory.
           result = await compileLaTeX(
             content,
