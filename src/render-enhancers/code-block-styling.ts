@@ -113,22 +113,26 @@ function addLineNumbersIfNecessary($container, code: string): void {
 
 /**
  * https://github.com/shd101wyy/mume/issues/97
- * @param $container 
- * @param code 
+ * @param $container
+ * @param code
  * @param highlight
  */
-function highlightLines($container: Cheerio, code: string, highlight: string | string[]): void {
+function highlightLines(
+  $container: Cheerio,
+  code: string,
+  highlight: string | string[],
+): void {
   if (!code.trim().length) {
     return;
   }
-  if (typeof(highlight) === "string" || typeof(highlight) === "number") {
+  if (typeof highlight === "string" || typeof highlight === "number") {
     highlight = [highlight.toString()];
   }
-  const highlightLines = [];
-  highlight.forEach((h)=> {
+  const highlightElements = [];
+  highlight.forEach((h) => {
     h = h.toString();
     if (h.indexOf("-") > 0) {
-      const [start, end] = h.split("-").map((x)=> parseInt(x));
+      const [start, end] = h.split("-").map((x) => parseInt(x, 10));
       let lineBreaks = "";
       for (let i = start; i <= end; i++) {
         lineBreaks += "\n";
@@ -137,16 +141,20 @@ function highlightLines($container: Cheerio, code: string, highlight: string | s
       for (let i = 0; i < start - 1; i++) {
         preLineBreaks += "\n";
       }
-      highlightLines.push(`<div class="line-highlight-wrapper">${preLineBreaks}<div aria-hidden="true" class="line-highlight" data-range="${start}-${end}" data-start="${start}" data-end="${end}">${lineBreaks}</div></div>`);
+      highlightElements.push(
+        `<div class="line-highlight-wrapper">${preLineBreaks}<div aria-hidden="true" class="line-highlight" data-range="${start}-${end}" data-start="${start}" data-end="${end}">${lineBreaks}</div></div>`,
+      );
     } else {
       let preLineBreaks = "";
-      const start = parseInt(h);
+      const start = parseInt(h, 10);
       for (let i = 0; i < start - 1; i++) {
         preLineBreaks += "\n";
       }
-      highlightLines.push(`<div class="line-highlight-wrapper">${preLineBreaks}<div aria-hidden="true" class="line-highlight" data-range="${h}" data-start="${h}">${"\n"}</div></div>`);
+      highlightElements.push(
+        `<div class="line-highlight-wrapper">${preLineBreaks}<div aria-hidden="true" class="line-highlight" data-range="${h}" data-start="${h}">${"\n"}</div></div>`,
+      );
     }
-  })
-  $container.append(highlightLines.join(""));
+  });
+  $container.append(highlightElements.join(""));
   $container.attr("data-line", highlight.join(","));
 }
