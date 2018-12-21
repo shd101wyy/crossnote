@@ -120,19 +120,24 @@ function addLineNumbersIfNecessary($container, code: string): void {
 function highlightLines(
   $container: Cheerio,
   code: string,
-  highlight: string | string[],
+  highlight: string | string[] | number,
 ): void {
   if (!code.trim().length) {
     return;
   }
-  if (typeof highlight === "string" || typeof highlight === "number") {
+  if (typeof highlight === "number") {
     highlight = [highlight.toString()];
+  } else if (typeof highlight === "string") {
+    highlight = highlight.split(",");
   }
   const highlightElements = [];
   highlight.forEach((h) => {
     h = h.toString();
     if (h.indexOf("-") > 0) {
       const [start, end] = h.split("-").map((x) => parseInt(x, 10));
+      if (isNaN(start) || isNaN(end)) {
+        return;
+      }
       let lineBreaks = "";
       for (let i = start; i <= end; i++) {
         lineBreaks += "\n";
@@ -147,6 +152,9 @@ function highlightLines(
     } else {
       let preLineBreaks = "";
       const start = parseInt(h, 10);
+      if (isNaN(start)) {
+        return;
+      }
       for (let i = 0; i < start - 1; i++) {
         preLineBreaks += "\n";
       }
