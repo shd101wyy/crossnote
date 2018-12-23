@@ -60,6 +60,10 @@ export default async function enhance($: CheerioStatic): Promise<void> {
       $container.addClass(info.attributes["class"]);
       addLineNumbersIfNecessary($container, code);
     }
+    // check highlight
+    if (info.attributes["highlight"]) {
+      highlightLines($container, code, info.attributes["highlight"]);
+    }
 
     // previously used data is no longer needed, so removing it to reduce output size
     $container.removeAttr("data-parsed-info");
@@ -105,4 +109,68 @@ function addLineNumbersIfNecessary($container, code: string): void {
       `<span aria-hidden="true" class="line-numbers-rows">${lines}</span>`,
     );
   }
+}
+
+/**
+ * https://github.com/shd101wyy/mume/issues/97
+ * @param $container
+ * @param code
+ * @param highlight
+ */
+function highlightLines(
+  $container: Cheerio,
+  code: string,
+  highlight: string | string[] | number,
+): void {
+  if (!code.trim().length) {
+    return;
+  }
+  if (typeof highlight === "number") {
+    highlight = [highlight.toString()];
+  } else if (typeof highlight === "string") {
+    highlight = highlight.split(",");
+  }
+  const match = code.match(/\n(?!$)/g);
+  const lineCount = match ? match.length + 1 : 1;
+  const highlightElements = [];
+  highlight.forEach((h) => {
+    h = h.toString();
+    if (h.indexOf("-") > 0) {
+      let [start, end] = h.split("-").map((x) => parseInt(x, 10));
+      if (isNaN(start) || isNaN(end) || start < 0 || end < 0) {
+        return;
+      }
+      if (start > end) {
+        [start, end] = [end, start];
+      }
+      if (end > lineCount) {
+        return;
+      }
+      let lineBreaks = "";
+      for (let i = start; i <= end; i++) {
+        lineBreaks += "\n";
+      }
+      let preLineBreaks = "";
+      for (let i = 0; i < start - 1; i++) {
+        preLineBreaks += "\n";
+      }
+      highlightElements.push(
+        `<div class="line-highlight-wrapper">${preLineBreaks}<div aria-hidden="true" class="line-highlight" data-range="${start}-${end}" data-start="${start}" data-end="${end}">${lineBreaks}</div></div>`,
+      );
+    } else {
+      let preLineBreaks = "";
+      const start = parseInt(h, 10);
+      if (isNaN(start) || start < 0 || start > lineCount) {
+        return;
+      }
+      for (let i = 0; i < start - 1; i++) {
+        preLineBreaks += "\n";
+      }
+      highlightElements.push(
+        `<div class="line-highlight-wrapper">${preLineBreaks}<div aria-hidden="true" class="line-highlight" data-range="${h}" data-start="${h}">${"\n"}</div></div>`,
+      );
+    }
+  });
+  $container.append(highlightElements.join(""));
+  $container.attr("data-line", highlight.join(","));
 }

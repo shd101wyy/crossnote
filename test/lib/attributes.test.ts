@@ -196,6 +196,27 @@ const testCases: Array<{
     stringified: 'cmd=true hide=true class="class1 class2"',
   },
   {
+    // highlight
+    attributes: { highlight: "10-20" },
+    raw: "highlight=10-20",
+    stringified: 'highlight="10-20"',
+  },
+  {
+    attributes: { highlight: ["1-10", 15, "20-22"] },
+    raw: "highlight=[1-10,15,20-22]",
+    stringified: 'highlight=["1-10", 15, "20-22"]',
+  },
+  {
+    attributes: { highlight: ["1-10", 15, "20-22"], a: 12 },
+    raw: "highlight=[1-10,15,20-22] a=12",
+    stringified: 'highlight=["1-10", 15, "20-22"] a=12',
+  },
+  {
+    attributes: { highlight: "1-10,15,20-22", a: 12 },
+    raw: 'highlight="1-10,15,20-22" a=12',
+    stringified: 'highlight="1-10,15,20-22" a=12',
+  },
+  {
     // normalization
     attributes: { hello_world: "test" },
     normalizedAttributes: { hello_world: "test" },
