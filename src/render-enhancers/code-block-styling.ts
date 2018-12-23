@@ -130,12 +130,20 @@ function highlightLines(
   } else if (typeof highlight === "string") {
     highlight = highlight.split(",");
   }
+  const match = code.match(/\n(?!$)/g);
+  const lineCount = match ? match.length + 1 : 1;
   const highlightElements = [];
   highlight.forEach((h) => {
     h = h.toString();
     if (h.indexOf("-") > 0) {
-      const [start, end] = h.split("-").map((x) => parseInt(x, 10));
-      if (isNaN(start) || isNaN(end)) {
+      let [start, end] = h.split("-").map((x) => parseInt(x, 10));
+      if (isNaN(start) || isNaN(end) || start < 0 || end < 0) {
+        return;
+      }
+      if (start > end) {
+        [start, end] = [end, start];
+      }
+      if (end > lineCount) {
         return;
       }
       let lineBreaks = "";
@@ -152,7 +160,7 @@ function highlightLines(
     } else {
       let preLineBreaks = "";
       const start = parseInt(h, 10);
-      if (isNaN(start)) {
+      if (isNaN(start) || start < 0 || start > lineCount) {
         return;
       }
       for (let i = 0; i < start - 1; i++) {

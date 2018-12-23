@@ -212,6 +212,11 @@ const testCases: Array<{
     stringified: 'highlight=["1-10", 15, "20-22"] a=12',
   },
   {
+    attributes: { highlight: "1-10,15,20-22", a: 12 },
+    raw: 'highlight="1-10,15,20-22" a=12',
+    stringified: 'highlight="1-10,15,20-22" a=12',
+  },
+  {
     // normalization
     attributes: { hello_world: "test" },
     normalizedAttributes: { hello_world: "test" },
