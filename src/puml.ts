@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import * as path from "path";
-import { extensionDirectoryPath, extensionConfigDirectoryPath } from "./utility";
+import { extensionConfigDirectoryPath, extensionDirectoryPath } from "./utility";
 
 const PlantUMLJarPath = path.resolve(
   extensionDirectoryPath,
