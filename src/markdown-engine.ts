@@ -1358,10 +1358,10 @@ for (var i = 0; i < flowcharts.length; i++) {
       sidebarTOCScript = `
 <script>
 ${
-        yamlConfig["html"] && yamlConfig["html"]["toc"]
-          ? `document.body.setAttribute('html-show-sidebar-toc', true)`
-          : ""
-      }
+  yamlConfig["html"] && yamlConfig["html"]["toc"]
+    ? `document.body.setAttribute('html-show-sidebar-toc', true)`
+    : ""
+}
 var sidebarTOCBtn = document.getElementById('sidebar-toc-btn')
 sidebarTOCBtn.addEventListener('click', function(event) {
   event.stopPropagation()

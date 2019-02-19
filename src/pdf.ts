@@ -36,11 +36,15 @@ export function toSVGMarkdown(
 
     const svgFilePrefix = computeChecksum(pdfFilePath) + "_";
 
-    const task = spawn("pdf2svg", [
-      `"${pdfFilePath}"`,
-      `"${path.resolve(svgDirectoryPath, svgFilePrefix + "%d.svg")}"`,
-      "all",
-    ], {shell: true});
+    const task = spawn(
+      "pdf2svg",
+      [
+        `"${pdfFilePath}"`,
+        `"${path.resolve(svgDirectoryPath, svgFilePrefix + "%d.svg")}"`,
+        "all",
+      ],
+      { shell: true },
+    );
     const chunks = [];
     task.stdout.on("data", (chunk) => {
       chunks.push(chunk);
