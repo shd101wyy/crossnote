@@ -45,8 +45,9 @@ export function toSVGMarkdown(
   },
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const task = spawn(latexEngine, [texFilePath], {
+    const task = spawn(latexEngine, [`"${texFilePath}"`], {
       cwd: path.dirname(texFilePath),
+      shell: true,
     });
 
     const chunks = [];
