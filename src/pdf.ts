@@ -40,7 +40,7 @@ export function toSVGMarkdown(
       `"${pdfFilePath}"`,
       `"${path.resolve(svgDirectoryPath, svgFilePrefix + "%d.svg")}"`,
       "all",
-    ], {shell: True});
+    ], {shell: true});
     const chunks = [];
     task.stdout.on("data", (chunk) => {
       chunks.push(chunk);
@@ -86,8 +86,8 @@ export function toSVGMarkdown(
               // nvm, the converted result looks so ugly
               /*
             const pngFilePath = svgFilePath.replace(/\.svg$/, '.png')
-            
-            // convert svg to png 
+
+            // convert svg to png
             gm(svgFilePath)
             .noProfile()
             .write(pngFilePath, function(error) {
