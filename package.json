@@ -33,6 +33,7 @@
     "cheerio": "^1.0.0-rc.2",
     "fs-extra": "^7.0.1",
     "gray-matter": "^4.0.1",
+    "imagemagick-cli": "^0.3.0",
     "less": "^3.9.0",
     "lodash": "^4.17.5",
     "mkdirp": "^0.5.1",

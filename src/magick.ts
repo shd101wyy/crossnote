@@ -1,7 +1,9 @@
 /**
  * ImageMagick magick command wrapper
  */
-import { execFile, tempOpen, write } from "./utility";
+import imagemagickCli from "imagemagick-cli";
+
+import { tempOpen, write } from "./utility";
 
 export async function svgElementToPNGFile(
   svgElement: string,
@@ -9,13 +11,12 @@ export async function svgElementToPNGFile(
 ): Promise<string> {
   const info = await tempOpen({ prefix: "mume-svg", suffix: ".svg" });
   await write(info.fd, svgElement); // write svgElement to temp .svg file
+  const args = [info.path, pngFilePath];
   try {
-    await execFile("convert", [info.path, pngFilePath]);
+    await imagemagickCli.exec(`convert ${args.join(" ")}`);
   } catch (error) {
-    throw new Error(
-      "ImageMagick is required to be installed to convert svg to png.\n" +
-        error.toString(),
-    );
+    throw new Error("imagemagick-cli failure\n" + error.toString());
   }
+
   return pngFilePath;
 }
