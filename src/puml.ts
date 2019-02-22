@@ -66,7 +66,11 @@ class PlantUMLTask {
     this.task.stdout.on("data", (chunk) => {
       let data = chunk.toString().trimRight(); // `trimRight()` here is necessary.
       this.chunks += data;
-      if (this.chunks.endsWith("</svg>") && this.chunks.match(/<svg/g).length === this.chunks.match(/<\/svg>/g).length) {
+      if (
+        this.chunks.endsWith("</svg>") &&
+        this.chunks.match(/<svg/g).length ===
+          this.chunks.match(/<\/svg>/g).length
+      ) {
         data = this.chunks;
         this.chunks = ""; // clear CHUNKS
         const diagrams = data.split("<?xml ");
