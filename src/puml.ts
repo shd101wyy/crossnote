@@ -64,10 +64,10 @@ class PlantUMLTask {
     ]);
 
     this.task.stdout.on("data", (chunk) => {
-      let data = chunk.toString().trimRight(); // `trimRight()` here is necessary.
+      let data = chunk.toString();
       this.chunks += data;
       if (
-        this.chunks.endsWith("</svg>") &&
+        this.chunks.trimRight().endsWith("</svg>") &&
         this.chunks.match(/<svg/g).length ===
           this.chunks.match(/<\/svg>/g).length
       ) {
