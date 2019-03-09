@@ -460,12 +460,18 @@ export function isArrayEqual(x, y) {
  * If it's for VSCode preview, add vscode-resource:/// to file path
  * @param filePath
  */
-export function addFileProtocol(filePath: string, isForVSCodePreview?: boolean): string {
+export function addFileProtocol(
+  filePath: string,
+  isForVSCodePreview?: boolean,
+): string {
   if (isForVSCodePreview) {
     if (!filePath.startsWith("vscode-resource://")) {
       filePath = "vscode-resource:///" + filePath;
     }
-    filePath = filePath.replace(/^vscode\-resource\:\/+/, "vscode-resource:///");
+    filePath = filePath.replace(
+      /^vscode\-resource\:\/+/,
+      "vscode-resource:///",
+    );
   } else {
     if (!filePath.startsWith("file://")) {
       filePath = "file:///" + filePath;

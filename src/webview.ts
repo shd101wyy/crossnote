@@ -256,12 +256,10 @@
           this.vscodeAPI = acquireVsCodeApi();
         }
         // post message to vscode
-        this.vscodeAPI.postMessage(
-          {
-            command,
-            args,
-          }
-        );
+        this.vscodeAPI.postMessage({
+          command,
+          args,
+        });
       } else {
         window.parent.postMessage(
           {
