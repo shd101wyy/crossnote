@@ -456,14 +456,22 @@ export function isArrayEqual(x, y) {
 }
 
 /**
- * Add file:// to file path
+ * Add file:/// to file path
+ * If it's for VSCode preview, add vscode-resource:/// to file path
  * @param filePath
  */
-export function addFileProtocol(filePath: string): string {
-  if (!filePath.startsWith("file://")) {
-    filePath = "file:///" + filePath;
+export function addFileProtocol(filePath: string, isForVSCodePreview?: boolean): string {
+  if (isForVSCodePreview) {
+    if (!filePath.startsWith("vscode-resource://")) {
+      filePath = "vscode-resource:///" + filePath;
+    }
+    filePath = filePath.replace(/^vscode\-resource\:\/+/, "vscode-resource:///");
+  } else {
+    if (!filePath.startsWith("file://")) {
+      filePath = "file:///" + filePath;
+    }
+    filePath = filePath.replace(/^file\:\/+/, "file:///");
   }
-  filePath = filePath.replace(/^file\:\/+/, "file:///");
   return filePath;
 }
 
@@ -488,6 +496,7 @@ export function removeFileProtocol(filePath: string): string {
  *
  * files
  */
+// @ts-ignore
 export const configs: {
   globalStyle: string;
   mathjaxConfig: object;

@@ -32,6 +32,11 @@
 
   class PreviewController {
     /**
+     * VSCode API object got from acquireVsCodeApi
+     */
+    private vscodeAPI = null;
+
+    /**
      * Whether finished loading preview
      */
     private doneLoadingPreview: boolean = false;
@@ -246,13 +251,16 @@
      */
     private postMessage(command: string, args: any[] = []) {
       if (this.config.vscode) {
+        if (!this.vscodeAPI) {
+          // @ts-ignore
+          this.vscodeAPI = acquireVsCodeApi();
+        }
         // post message to vscode
-        window.parent.postMessage(
+        this.vscodeAPI.postMessage(
           {
-            command: "did-click-link",
-            data: `command:_mume.${command}?${JSON.stringify(args)}`,
-          },
-          "file://",
+            command,
+            args,
+          }
         );
       } else {
         window.parent.postMessage(

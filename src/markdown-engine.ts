@@ -68,6 +68,7 @@ export interface MarkdownEngineRenderOption {
   triggeredBySave?: boolean;
   runAllCodeChunks?: boolean;
   emojiToSvg?: boolean;
+  isForVSCodePreview?: boolean;
 }
 
 export interface MarkdownEngineOutput {
@@ -185,6 +186,11 @@ export class MarkdownEngine {
   private tocHTML: string;
 
   private md;
+
+  /**
+   * Dirty variable just made for VSCode preview.
+   */
+  private isForVSCodePreview: boolean;
 
   // caches
   private graphsCache: { [key: string]: string } = {};
@@ -354,55 +360,55 @@ export class MarkdownEngine {
   /**
    * Generate scripts string for preview usage.
    */
-  public generateScriptsForPreview(isForPresentation = false, yamlConfig = {}) {
+  public generateScriptsForPreview(isForPresentation = false, yamlConfig = {}, isForVSCode = false) {
     let scripts = "";
 
     // prevent `id="exports"` element from linked to `window` object.
     scripts += `<script>var exports = undefined</script>`;
 
     // jquery
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/jquery/jquery.js",
-    )}" charset="UTF-8"></script>`;
+    ), isForVSCode)}" charset="UTF-8"></script>`;
 
     // jquery contextmenu
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/jquery-contextmenu/jquery.ui.position.min.js",
-    )}" charset="UTF-8"></script>`;
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+    ), isForVSCode)}" charset="UTF-8"></script>`;
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/jquery-contextmenu/jquery.contextMenu.min.js",
-    )}" charset="UTF-8"></script>`;
+    ), isForVSCode)}" charset="UTF-8"></script>`;
 
     // jquery modal
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/jquery-modal/jquery.modal.min.js",
-    )}" charset="UTF-8"></script>`;
+    ), isForVSCode)}" charset="UTF-8"></script>`;
 
     // crpto-js
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/crypto-js/crypto-js.js",
-    )}" charset="UTF-8"></script>`;
+    ),isForVSCode)}" charset="UTF-8"></script>`;
 
     // mermaid
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/mermaid/mermaid.min.js`,
-    )}" charset="UTF-8"></script>`;
+    ), isForVSCode)}" charset="UTF-8"></script>`;
 
     // wavedrome
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/wavedrom/default.js",
-    )}" charset="UTF-8"></script>`;
-    scripts += `<script type="text/javascript" src="file:///${path.resolve(
+    ), isForVSCode)}" charset="UTF-8"></script>`;
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/wavedrom/wavedrom.min.js",
-    )}" charset="UTF-8"></script>`;
+    ), isForVSCode)}" charset="UTF-8"></script>`;
 
     // math
     if (
@@ -414,10 +420,10 @@ export class MarkdownEngine {
       mathJaxConfig["tex2jax"]["inlineMath"] = this.config.mathInlineDelimiters;
       mathJaxConfig["tex2jax"]["displayMath"] = this.config.mathBlockDelimiters;
 
-      scripts += `<script type="text/javascript" async src="file:///${path.resolve(
+      scripts += `<script type="text/javascript" async src="${utility.addFileProtocol( path.resolve(
         utility.extensionDirectoryPath,
         "./dependencies/mathjax/MathJax.js",
-      )}" charset="UTF-8"></script>`;
+      ), isForVSCode)}" charset="UTF-8"></script>`;
       scripts += `<script type="text/x-mathjax-config"> MathJax.Hub.Config(${JSON.stringify(
         mathJaxConfig,
       )}); </script>`;
@@ -425,14 +431,14 @@ export class MarkdownEngine {
 
     // reveal.js
     if (isForPresentation) {
-      scripts += `<script src='file:///${path.resolve(
+      scripts += `<script src='${utility.addFileProtocol( path.resolve(
         utility.extensionDirectoryPath,
         "./dependencies/reveal/lib/js/head.min.js",
-      )}'></script>`;
-      scripts += `<script src='file:///${path.resolve(
+      ), isForVSCode)}'></script>`;
+      scripts += `<script src='${utility.addFileProtocol( path.resolve(
         utility.extensionDirectoryPath,
         "./dependencies/reveal/js/reveal.js",
-      )}'></script>`;
+      ), isForVSCode)}'></script>`;
 
       let presentationConfig = yamlConfig["presentation"] || {};
       if (typeof presentationConfig !== "object") {
@@ -493,14 +499,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
 
     // flowchart.js
-    scripts += `<script src='file:///${path.resolve(
+    scripts += `<script src='${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/raphael/raphael.js",
-    )}'></script>`;
-    scripts += `<script src='file:///${path.resolve(
+    ), isForVSCode)}'></script>`;
+    scripts += `<script src='${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/flowchart/flowchart.min.js",
-    )}'></script>`;
+    ), isForVSCode)}'></script>`;
     // flowchart init script
     if (isForPresentation) {
       scripts += `<script>
@@ -521,18 +527,18 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // vega and vega-lite with vega-embed
     // https://vega.github.io/vega/usage/#embed
-    scripts += `<script src="file:///${path.resolve(
+    scripts += `<script src="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/vega/vega.min.js`,
-    )}" charset="UTF-8"></script>`;
-    scripts += `<script src="file:///${path.resolve(
+    ), isForVSCode)}" charset="UTF-8"></script>`;
+    scripts += `<script src="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/vega-lite/vega-lite.min.js`,
-    )}" charset="UTF-8"></script>`;
-    scripts += `<script src="file:///${path.resolve(
+    ), isForVSCode)}" charset="UTF-8"></script>`;
+    scripts += `<script src="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/vega-embed/vega-embed.min.js`,
-    )}" charset="UTF-8"></script>`;
+    ), isForVSCode)}" charset="UTF-8"></script>`;
 
     if (isForPresentation) {
       scripts += `<script>
@@ -556,18 +562,18 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
 
     // sequence diagram
-    scripts += `<script src='file:///${path.resolve(
+    scripts += `<script src='${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/webfont/webfontloader.js",
-    )}'></script>`;
-    scripts += `<script src='file:///${path.resolve(
+    ), isForVSCode)}'></script>`;
+    scripts += `<script src='${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/underscore/underscore.js",
-    )}'></script>`;
-    scripts += `<script src='file:///${path.resolve(
+    ), isForVSCode)}'></script>`;
+    scripts += `<script src='${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       "./dependencies/js-sequence-diagrams/sequence-diagram-min.js",
-    )}'></script>`;
+    ), isForVSCode)}'></script>`;
     // sequence diagram init script
     if (isForPresentation) {
       scripts += `<script>
@@ -658,62 +664,62 @@ if (typeof(window['Reveal']) !== 'undefined') {
   /**
    * Generate styles string for preview usage.
    */
-  public generateStylesForPreview(isPresentationMode = false, yamlConfig = {}) {
+  public generateStylesForPreview(isPresentationMode = false, yamlConfig = {}, isForVSCode = false) {
     let styles = "";
 
     // loading.css
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+    styles += `<link rel="stylesheet" href="${utility.addFileProtocol(path.resolve(
       utility.extensionDirectoryPath,
       "./styles/loading.css",
-    )}">`;
+    ), isForVSCode)}">`;
 
     // jquery-contextmenu
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+    styles += `<link rel="stylesheet" href="${utility.addFileProtocol(path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/jquery-contextmenu/jquery.contextMenu.min.css`,
-    )}">`;
+    ), isForVSCode)}">`;
 
     // jquery-modal
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+    styles += `<link rel="stylesheet" href="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/jquery-modal/jquery.modal.min.css`,
-    )}">`;
+    ), isForVSCode)}">`;
 
     // check math
     if (
       this.config.mathRenderingOption === "KaTeX" &&
       !this.config.usePandocParser
     ) {
-      styles += `<link rel="stylesheet" href="file:///${path.resolve(
+      styles += `<link rel="stylesheet" href="${utility.addFileProtocol(path.resolve(
         utility.extensionDirectoryPath,
         "./dependencies/katex/katex.min.css",
-      )}">`;
+      ), isForVSCode)}">`;
     }
 
     // check sequence diagram
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+    styles += `<link rel="stylesheet" href="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/js-sequence-diagrams/sequence-diagram-min.css`,
-    )}">`;
+    ), isForVSCode)}">`;
 
     // check font-awesome
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+    styles += `<link rel="stylesheet" href="${utility.addFileProtocol( path.resolve(
       utility.extensionDirectoryPath,
       `./dependencies/font-awesome/css/font-awesome.min.css`,
-    )}">`;
+    ), isForVSCode)}">`;
 
     // check preview theme and revealjs theme
     if (!isPresentationMode) {
-      styles += `<link rel="stylesheet" href="file:///${path.resolve(
+      styles += `<link rel="stylesheet" href="${utility.addFileProtocol(path.resolve(
         utility.extensionDirectoryPath,
         `./styles/preview_theme/${this.config.previewTheme}`,
-      )}">`;
+      ), isForVSCode)}">`;
     } else {
-      styles += `<link rel="stylesheet" href="file:///${path.resolve(
+      styles += `<link rel="stylesheet" href="${utility.addFileProtocol(path.resolve(
         extensionDirectoryPath,
         "./dependencies/reveal/reveal.css",
-      )}" >`;
-      styles += `<link rel="stylesheet" href="file:///${path.resolve(
+      ), isForVSCode)}" >`;
+      styles += `<link rel="stylesheet" href="${utility.addFileProtocol(path.resolve(
         extensionDirectoryPath,
         `./styles/revealjs_theme/${
           yamlConfig["presentation"] &&
@@ -722,23 +728,23 @@ if (typeof(window['Reveal']) !== 'undefined') {
             ? yamlConfig["presentation"]["theme"]
             : this.config.revealjsTheme
         }`,
-      )}" >`;
+      ), isForVSCode)}" >`;
     }
 
     // check prism
-    styles += `<link rel="stylesheet" href="file:///${path.resolve(
+    styles += `<link rel="stylesheet" href="${utility.addFileProtocol(path.resolve(
       utility.extensionDirectoryPath,
       `./styles/prism_theme/${this.getPrismTheme(
         isPresentationMode,
         yamlConfig,
       )}`,
-    )}">`;
+    ), isForVSCode)}">`;
 
     // style template
-    styles += `<link rel="stylesheet" media="screen" href="${path.resolve(
+    styles += `<link rel="stylesheet" media="screen" href="${utility.addFileProtocol(path.resolve(
       utility.extensionDirectoryPath,
       "./styles/style-template.css",
-    )}">`;
+    ), isForVSCode)}">`;
 
     // global styles
     styles += `<style>${utility.configs.globalStyle}</style>`;
@@ -750,14 +756,13 @@ if (typeof(window['Reveal']) !== 'undefined') {
    * Generate <style> and <link> string from an array of file paths.
    * @param JSAndCssFiles
    */
-  private generateJSAndCssFilesForPreview(JSAndCssFiles = []) {
+  private generateJSAndCssFilesForPreview(JSAndCssFiles = [], isForVSCode = false) {
     let output = "";
     JSAndCssFiles.forEach((sourcePath) => {
       let absoluteFilePath = sourcePath;
       if (sourcePath[0] === "/") {
         absoluteFilePath =
-          "file:///" +
-          path.resolve(this.projectDirectoryPath, "." + sourcePath);
+          utility.addFileProtocol(path.resolve(this.projectDirectoryPath, "." + sourcePath), isForVSCode);
       } else if (
         sourcePath.match(/^file:\/\//) ||
         sourcePath.match(/^https?\:\/\//)
@@ -765,7 +770,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         // do nothing
       } else {
         absoluteFilePath =
-          "file:///" + path.resolve(this.fileDirectoryPath, sourcePath);
+          utility.addFileProtocol(path.resolve(this.fileDirectoryPath, sourcePath), isForVSCode);
       }
 
       if (absoluteFilePath.endsWith(".js")) {
@@ -789,15 +794,17 @@ if (typeof(window['Reveal']) !== 'undefined') {
     styles = "",
     head = `<base href="${this.filePath}">`,
     config = {},
+    isForVSCode = false,
+    contentSecurityPolicy = ""
   }): Promise<string> {
     if (!inputString) {
       inputString = fs.readFileSync(this.filePath, { encoding: "utf-8" });
     }
     if (!webviewScript) {
-      webviewScript = path.resolve(
+      webviewScript = utility.addFileProtocol(path.resolve(
         utility.extensionDirectoryPath,
         "./out/src/webview.js",
-      );
+      ), isForVSCode);
     }
     if (!body) {
       // default body
@@ -854,6 +861,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         isForPreview: true,
         useRelativeFilePath: false,
         hideFrontMatter: false,
+        isForVSCodePreview: isForVSCode
       },
     );
     const isPresentationMode = yamlConfig["isPresentationMode"];
@@ -866,15 +874,20 @@ if (typeof(window['Reveal']) !== 'undefined') {
           JSON.stringify({ ...this.config, ...config }),
         )}" data-time="${Date.now()}">
         <meta charset="UTF-8">
+        ${contentSecurityPolicy ? 
+        `<meta
+          http-equiv="Content-Security-Policy"
+          content="${contentSecurityPolicy}"
+        />`: ""}
 
-        ${this.generateStylesForPreview(isPresentationMode, yamlConfig)}
+        ${this.generateStylesForPreview(isPresentationMode, yamlConfig, isForVSCode)}
         ${styles}
-        <link rel="stylesheet" href="file:///${path.resolve(
+        <link rel="stylesheet" href="${utility.addFileProtocol(path.resolve(
           utility.extensionDirectoryPath,
           "./styles/preview.css",
-        )}">
+        ), isForVSCode)}">
 
-        ${this.generateJSAndCssFilesForPreview(JSAndCssFiles)}
+        ${this.generateJSAndCssFilesForPreview(JSAndCssFiles, isForVSCode)}
         ${head}        
       </head>
       <body class="preview-container">
@@ -885,7 +898,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         </div>
         ${body}
       </body>
-      ${this.generateScriptsForPreview(isPresentationMode, yamlConfig)}
+      ${this.generateScriptsForPreview(isPresentationMode, yamlConfig, isForVSCode)}
       ${scripts}
       <script src="${webviewScript}"></script>
       </html>`;
@@ -2354,14 +2367,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         );
       } else {
         return (
-          "file:///" + path.resolve(this.projectDirectoryPath, "." + filePath)
+          utility.addFileProtocol(path.resolve(this.projectDirectoryPath, "." + filePath), this.isForVSCodePreview)
         );
       }
     } else {
       if (relative) {
         return filePath;
       } else {
-        return "file:///" + path.resolve(this.fileDirectoryPath, filePath);
+        return utility.addFileProtocol(path.resolve(this.fileDirectoryPath, filePath), this.isForVSCodePreview);
       }
     }
   }
@@ -2664,6 +2677,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         encoding: "utf-8",
       });
     }
+
+    this.isForVSCodePreview = options.isForVSCodePreview;
 
     if (utility.configs.parserConfig["onWillParseMarkdown"]) {
       inputString = await utility.configs.parserConfig["onWillParseMarkdown"](
