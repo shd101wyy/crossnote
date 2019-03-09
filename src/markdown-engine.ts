@@ -5,7 +5,6 @@ import { execFile } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import * as request from "request";
-import { VFile } from "vfile";
 import * as YAML from "yamljs";
 
 import { CodeChunkData } from "./code-chunk-data";
@@ -129,8 +128,6 @@ let MODIFY_SOURCE: (
   filePath: string,
 ) => Promise<string> = null;
 
-let UPDATE_LINTING_REPORT: (vFiles: Array<VFile<{}>>) => void = null;
-
 /**
  * The markdown engine that can be used to parse markdown and export files
  */
@@ -167,16 +164,6 @@ export class MarkdownEngine {
     ) => Promise<string>,
   ) {
     MODIFY_SOURCE = cb;
-  }
-
-  public static async updateLintingReport(vFiles: Array<VFile<{}>>) {
-    if (UPDATE_LINTING_REPORT) {
-      await UPDATE_LINTING_REPORT(vFiles);
-    }
-  }
-
-  public static onUpdateLintingReport(cb: (vFiles: Array<VFile<{}>>) => void) {
-    UPDATE_LINTING_REPORT = cb;
   }
 
   /**
