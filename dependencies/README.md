@@ -11,7 +11,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "MathJax": "v2.7.1",
     "jquery": "v3.2.1",
     "jquery-contextmenu": "2.6.3",
-    "markdown-it": "8.3.2",
+    "markdown-it": "8.4.2",
     "JavaScript-MD5": "2.7.0",
     "katex": "v0.10.1",
     "crypto-js": "3.9.1-1",
