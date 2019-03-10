@@ -662,7 +662,7 @@
     private renderMermaid() {
       return new Promise((resolve, reject) => {
         const mermaid = window["mermaid"]; // window.mermaid doesn't work, has to be written as window['mermaid']
-        const mermaidGraphs = this.hiddenPreviewElement.getElementsByClassName(
+        const mermaidGraphs = this.previewElement.getElementsByClassName(
           "mermaid",
         );
 
@@ -679,12 +679,22 @@
 
         if (!validMermaidGraphs.length) {
           return resolve();
-        }
-        try {
-          mermaid.init(null, validMermaidGraphs, () => {
-            resolve();
+        } else {
+          validMermaidGraphs.forEach((mermaidGraph, offset) => {
+            const svgId = "svg-mermaid-" + Date.now() + "-" + offset;
+            const code = mermaidGraph.textContent.trim();
+            try {
+              mermaid.render(svgId, code, (svgCode) => {
+                mermaidGraph.innerHTML = svgCode;
+              });
+            } catch (error) {
+              const noiseElement = document.getElementById("d" + svgId);
+              if (noiseElement) {
+                noiseElement.style.display = "none";
+              }
+              mermaidGraph.innerHTML = `<pre class="language-text">${error.toString()}</pre>`;
+            }
           });
-        } catch (error) {
           return resolve();
         }
       });
@@ -994,11 +1004,7 @@
      * init several preview events
      */
     private async initEvents() {
-      await Promise.all([
-        this.renderMathJax(),
-        this.renderMermaid(),
-        this.renderWavedrom(),
-      ]);
+      await Promise.all([this.renderMathJax(), this.renderWavedrom()]);
       this.previewElement.innerHTML = this.hiddenPreviewElement.innerHTML;
       this.hiddenPreviewElement.innerHTML = "";
 
@@ -1006,6 +1012,7 @@
         this.renderFlowchart(),
         this.renderInteractiveVega(),
         this.renderSequenceDiagram(),
+        this.renderMermaid(),
       ]);
 
       this.setupCodeChunks();

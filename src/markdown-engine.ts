@@ -524,7 +524,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
   Reveal.addEventListener('slidechanged', mermaidRevealHelper)
   Reveal.addEventListener('ready', mermaidRevealHelper)
 } else {
-  mermaid.init(null, document.getElementsByClassName('mermaid'))
+  // The line below will cause mermaid bug in preview.
+  // mermaid.init(null, document.getElementsByClassName('mermaid'))
 }
 </script>`;
 
