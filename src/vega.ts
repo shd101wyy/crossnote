@@ -5,6 +5,12 @@ import * as utility from "./utility";
 
 let vega = null;
 
+// Vega5 uses a dependency injection approach for fetch. Its pre-bundled version
+// is targeting browsers, which assumes that fetch is globally available.
+// @ts-ignore
+// tslint:disable-next-line:no-var-requires
+global.fetch = require("node-fetch");
+
 async function renderVega(spec: object, baseURL): Promise<string> {
   const svgHeader =
     '<?xml version="1.0" encoding="utf-8"?>\n' +
