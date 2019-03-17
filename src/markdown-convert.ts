@@ -192,7 +192,7 @@ export async function markdownConvert(
     filesCache: { [key: string]: string };
     mathInlineDelimiters: string[][];
     mathBlockDelimiters: string[][];
-    mathRenderingOnLineService: string,
+    mathRenderingOnLineService: string;
     codeChunksData: { [key: string]: CodeChunkData };
     graphsCache: { [key: string]: string };
     usePandocParser: boolean;
@@ -271,7 +271,11 @@ export async function markdownConvert(
     protocolsWhiteListRegExp,
   );
 
-  text = processMath(text, { mathInlineDelimiters, mathBlockDelimiters, mathRenderingOnLineService });
+  text = processMath(text, {
+    mathInlineDelimiters,
+    mathBlockDelimiters,
+    mathRenderingOnLineService,
+  });
 
   return await new Promise<string>((resolve, reject) => {
     mkdirp(imageDirectoryPath, (error, made) => {
