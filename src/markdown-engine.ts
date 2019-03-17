@@ -2350,7 +2350,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * markdownConfig has the following properties:
      *     path:                        destination of the output file
      *     image_dir:                   where to save the image file
-     *     use_abolute_image_path:      as the name shows.
+     *     use_absolute_image_path:      as the name shows.
      *     ignore_from_front_matter:    default is true.
      */
     let markdownConfig = {};
@@ -2400,6 +2400,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         filesCache: this.filesCache,
         mathInlineDelimiters: this.config.mathInlineDelimiters,
         mathBlockDelimiters: this.config.mathBlockDelimiters,
+        mathRenderingOnLineService: this.config.mathRenderingOnLineService,
         codeChunksData: this.codeChunksData,
         graphsCache: this.graphsCache,
         usePandocParser: this.config.usePandocParser,

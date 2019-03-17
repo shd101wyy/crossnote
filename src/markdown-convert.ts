@@ -19,7 +19,7 @@ import * as utility from "./utility";
  */
 function processMath(
   text: string,
-  { mathInlineDelimiters, mathBlockDelimiters },
+  { mathInlineDelimiters, mathBlockDelimiters, mathRenderingOnLineService },
 ): string {
   let line = text.replace(/\\\$/g, "#slash_dollarsign#");
 
@@ -72,7 +72,7 @@ function processMath(
       let math = $2;
       math = math.replace(/\n/g, "").replace(/\#slash\_dollarsign\#/g, "\\$");
       math = utility.escapeString(math);
-      return `<p align="center"><img src=\"https://latex.codecogs.com/gif.latex?${math
+      return `<p align="center"><img src=\"${mathRenderingOnLineService}?${math
         .trim()
         .replace(/ /g, "%20")}\"/></p>  \n`;
     },
@@ -91,7 +91,7 @@ function processMath(
       let math = $2;
       math = math.replace(/\n/g, "").replace(/\#slash\_dollarsign\#/g, "\\$");
       math = utility.escapeString(math);
-      return `<img src=\"https://latex.codecogs.com/gif.latex?${math
+      return `<img src=\"${mathRenderingOnLineService}?${math
         .trim()
         .replace(/ /g, "%20")}\"/>`;
     },
@@ -181,6 +181,7 @@ export async function markdownConvert(
     filesCache,
     mathInlineDelimiters,
     mathBlockDelimiters,
+    mathRenderingOnLineService,
     codeChunksData,
     graphsCache,
     usePandocParser,
@@ -191,6 +192,7 @@ export async function markdownConvert(
     filesCache: { [key: string]: string };
     mathInlineDelimiters: string[][];
     mathBlockDelimiters: string[][];
+    mathRenderingOnLineService: string,
     codeChunksData: { [key: string]: CodeChunkData };
     graphsCache: { [key: string]: string };
     usePandocParser: boolean;
@@ -260,7 +262,7 @@ export async function markdownConvert(
   }
 
   // change link path to project '/' path
-  // this is actually differnet from pandoc-convert.coffee
+  // this is actually different from pandoc-convert.coffee
   text = processPaths(
     text,
     fileDirectoryPath,
@@ -269,7 +271,7 @@ export async function markdownConvert(
     protocolsWhiteListRegExp,
   );
 
-  text = processMath(text, { mathInlineDelimiters, mathBlockDelimiters });
+  text = processMath(text, { mathInlineDelimiters, mathBlockDelimiters, mathRenderingOnLineService });
 
   return await new Promise<string>((resolve, reject) => {
     mkdirp(imageDirectoryPath, (error, made) => {
