@@ -449,8 +449,16 @@ export class MarkdownEngine {
       mathJaxConfig["tex2jax"]["inlineMath"] = this.config.mathInlineDelimiters;
       mathJaxConfig["tex2jax"]["displayMath"] = this.config.mathBlockDelimiters;
       mathJaxConfig["HTML-CSS"]["imageFont"] = null; // Disable image font, otherwise the preview will only display black color image.
-      mathJaxConfig["root"] = utility.addFileProtocol(slash(path.resolve(utility.extensionDirectoryPath, "./dependencies/mathjax")), isForVSCode);
-      
+      mathJaxConfig["root"] = utility.addFileProtocol(
+        slash(
+          path.resolve(
+            utility.extensionDirectoryPath,
+            "./dependencies/mathjax",
+          ),
+        ),
+        isForVSCode,
+      );
+
       scripts += `<script type="text/javascript" async src="${utility.addFileProtocol(
         path.resolve(
           utility.extensionDirectoryPath,
@@ -1406,11 +1414,12 @@ for (var i = 0; i < flowcharts.length; i++) {
             );
 
       if (yamlConfig["isPresentationMode"]) {
-        const theme = yamlConfig["presentation"] &&
-        typeof yamlConfig["presentation"] === "object" &&
-        yamlConfig["presentation"]["theme"]
-          ? yamlConfig["presentation"]["theme"]
-          : this.config.revealjsTheme;
+        const theme =
+          yamlConfig["presentation"] &&
+          typeof yamlConfig["presentation"] === "object" &&
+          yamlConfig["presentation"]["theme"]
+            ? yamlConfig["presentation"]["theme"]
+            : this.config.revealjsTheme;
 
         if (options.offline) {
           presentationStyle += `<link rel="stylesheet" href="file:///${path.resolve(
@@ -1418,7 +1427,7 @@ for (var i = 0; i < flowcharts.length; i++) {
             `./dependencies/reveal/css/theme/${theme}`,
           )}">`;
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/css/theme/${theme}">`
+          presentationStyle += `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/css/theme/${theme}">`;
         }
       } else {
         // preview theme
