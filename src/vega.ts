@@ -1,15 +1,8 @@
 import * as path from "path";
+import { loader } from "vega-loader";
 import * as YAML from "yamljs";
-
 import * as utility from "./utility";
-
 let vega = null;
-
-// Vega5 uses a dependency injection approach for fetch. Its pre-bundled version
-// is targeting browsers, which assumes that fetch is globally available.
-// @ts-ignore
-// tslint:disable-next-line:no-var-requires
-global.fetch = require("node-fetch");
 
 async function renderVega(spec: object, baseURL): Promise<string> {
   const svgHeader =
@@ -23,7 +16,7 @@ async function renderVega(spec: object, baseURL): Promise<string> {
 
   async function helper(): Promise<string> {
     const view = new vega.View(vega.parse(spec), {
-      loader: vega.loader({ baseURL }),
+      loader: loader({ baseURL }),
       // logLevel: vega.Warn, // <= this will cause Atom unsafe eval error.
       renderer: "none",
     }).initialize();
