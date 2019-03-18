@@ -17,7 +17,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "crypto-js": "3.9.1-1",
     "jquery-modal": "0.8.0",
     "node-html-pdf": "commit 543a918d1c11cefc713b2d38983eb63cc1d347fe",
-    "vega": "5.0.0",
+    "vega": "5.3.0",
     "vega-lite": "3.0.0-rc14",
     "vega-embed": "4.0.0-rc1",
     "ditaa": "0.10",
