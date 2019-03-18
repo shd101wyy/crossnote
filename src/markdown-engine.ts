@@ -805,14 +805,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
           extensionDirectoryPath,
-          "./dependencies/reveal/reveal.css",
+          "./dependencies/reveal/css/reveal.css",
         ),
         isForVSCode,
       )}" >`;
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
           extensionDirectoryPath,
-          `./styles/revealjs_theme/${
+          `./dependencies/reveal/css/theme/${
             yamlConfig["presentation"] &&
             typeof yamlConfig["presentation"] === "object" &&
             yamlConfig["presentation"]["theme"]
@@ -1306,8 +1306,8 @@ for (var i = 0; i < flowcharts.length; i++) {
         )}'></script>`;
       } else {
         presentationScript = `
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/lib/js/head.min.js'></script>
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/js/reveal.min.js'></script>`;
+        <script src='https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/lib/js/head.min.js'></script>
+        <script src='https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/js/reveal.js'></script>`;
       }
 
       const presentationConfig = yamlConfig["presentation"] || {};
@@ -1332,7 +1332,7 @@ for (var i = 0; i < flowcharts.length; i++) {
       ${fs.readFileSync(
         path.resolve(
           extensionDirectoryPath,
-          "./dependencies/reveal/reveal.css",
+          "./dependencies/reveal/css/reveal.css",
         ),
       )}
       ${
@@ -1340,7 +1340,7 @@ for (var i = 0; i < flowcharts.length; i++) {
           ? fs.readFileSync(
               path.resolve(
                 extensionDirectoryPath,
-                "./dependencies/reveal/pdf.css",
+                "./dependencies/reveal/css/print/pdf.css",
               ),
             )
           : ""
@@ -1406,19 +1406,20 @@ for (var i = 0; i < flowcharts.length; i++) {
             );
 
       if (yamlConfig["isPresentationMode"]) {
-        styleCSS += await utility.readFile(
-          path.resolve(
+        const theme = yamlConfig["presentation"] &&
+        typeof yamlConfig["presentation"] === "object" &&
+        yamlConfig["presentation"]["theme"]
+          ? yamlConfig["presentation"]["theme"]
+          : this.config.revealjsTheme;
+
+        if (options.offline) {
+          presentationStyle += `<link rel="stylesheet" href="file:///${path.resolve(
             extensionDirectoryPath,
-            `./styles/revealjs_theme/${
-              yamlConfig["presentation"] &&
-              typeof yamlConfig["presentation"] === "object" &&
-              yamlConfig["presentation"]["theme"]
-                ? yamlConfig["presentation"]["theme"]
-                : this.config.revealjsTheme
-            }`,
-          ),
-          { encoding: "utf-8" },
-        );
+            `./dependencies/reveal/css/theme/${theme}`,
+          )}">`;
+        } else {
+          presentationStyle += `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/css/theme/${theme}">`
+        }
       } else {
         // preview theme
         styleCSS +=

@@ -6,7 +6,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "mermaid": "8.0.0",
     "plantuml": "1.2019.3",
     "wavedrom": "1.4.1",
-    "reveal": "3.5.0",
+    "reveal": "3.7.0",
     "viz": "v2.0.0",
     "MathJax": "v2.7.5",
     "jquery": "v3.2.1",
@@ -34,7 +34,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
 
 *Attention*: Need to add `window.WaveSkin = WaveSkin` at the end of **wavedrom/default.js**
 
-*Attention*: Need to remove `font: inherit;` from `reveal.css`. Otherwise `KaTeX` and `MathJax` will have trouble rendering.
+*Attention*: Need to remove `font: inherit;` from `reveal.css`. Otherwise `KaTeX` and `MathJax` will have trouble rendering. Also don't forget to add the empty file `none.css`.
 
 **cheerio 0.20.0** has bug rendering subgraph html(). `div` inside `svg` will be self-closed automatically, which is wrong. Therefore I downgrade it to 0.15.0
 
