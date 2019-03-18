@@ -1,6 +1,6 @@
 {
   "name": "@shd101wyy/mume",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "A powerful markdown tool",
   "main": "out/src/mume.js",
   "typings": "out/src/mume.d.ts",
@@ -40,9 +40,11 @@
     "node-fetch": "^2.1.2",
     "qiniu": "^7.2.1",
     "request": "^2.81.0",
+    "slash": "^2.0.0",
     "temp": "^0.9.0",
     "twemoji": "^11.0.1",
     "uslug": "^1.0.4",
+    "vega-loader": "^4.0.0",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {

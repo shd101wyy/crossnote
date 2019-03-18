@@ -4,11 +4,11 @@ I managed many libraries by myself instead of through npm to reduce overall file
 ```json
 {
     "mermaid": "8.0.0",
-    "plantuml": "1.2019.2",
+    "plantuml": "1.2019.3",
     "wavedrom": "1.4.1",
-    "reveal": "3.5.0",
+    "reveal": "3.7.0",
     "viz": "v2.0.0",
-    "MathJax": "v2.7.1",
+    "MathJax": "v2.7.5",
     "jquery": "v3.2.1",
     "jquery-contextmenu": "2.6.3",
     "markdown-it": "8.4.2",
@@ -17,7 +17,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "crypto-js": "3.9.1-1",
     "jquery-modal": "0.8.0",
     "node-html-pdf": "commit 543a918d1c11cefc713b2d38983eb63cc1d347fe",
-    "vega": "5.0.0",
+    "vega": "5.3.0",
     "vega-lite": "3.0.0-rc14",
     "vega-embed": "4.0.0-rc1",
     "ditaa": "0.10",
@@ -34,7 +34,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
 
 *Attention*: Need to add `window.WaveSkin = WaveSkin` at the end of **wavedrom/default.js**
 
-*Attention*: Need to remove `font: inherit;` from `reveal.css`. Otherwise `KaTeX` and `MathJax` will have trouble rendering.
+*Attention*: Need to remove `font: inherit;` from `reveal.css`. Otherwise `KaTeX` and `MathJax` will have trouble rendering. Also don't forget to add the empty file `none.css`.
 
 **cheerio 0.20.0** has bug rendering subgraph html(). `div` inside `svg` will be self-closed automatically, which is wrong. Therefore I downgrade it to 0.15.0
 

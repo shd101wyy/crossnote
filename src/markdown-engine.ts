@@ -5,6 +5,7 @@ import { execFile } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import * as request from "request";
+import * as slash from "slash";
 import * as YAML from "yamljs";
 
 import { CodeChunkData } from "./code-chunk-data";
@@ -447,6 +448,16 @@ export class MarkdownEngine {
       mathJaxConfig["tex2jax"] = mathJaxConfig["tex2jax"] || {};
       mathJaxConfig["tex2jax"]["inlineMath"] = this.config.mathInlineDelimiters;
       mathJaxConfig["tex2jax"]["displayMath"] = this.config.mathBlockDelimiters;
+      mathJaxConfig["HTML-CSS"]["imageFont"] = null; // Disable image font, otherwise the preview will only display black color image.
+      mathJaxConfig["root"] = utility.addFileProtocol(
+        slash(
+          path.resolve(
+            utility.extensionDirectoryPath,
+            "./dependencies/mathjax",
+          ),
+        ),
+        isForVSCode,
+      );
 
       scripts += `<script type="text/javascript" async src="${utility.addFileProtocol(
         path.resolve(
@@ -802,14 +813,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
           extensionDirectoryPath,
-          "./dependencies/reveal/reveal.css",
+          "./dependencies/reveal/css/reveal.css",
         ),
         isForVSCode,
       )}" >`;
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
           extensionDirectoryPath,
-          `./styles/revealjs_theme/${
+          `./dependencies/reveal/css/theme/${
             yamlConfig["presentation"] &&
             typeof yamlConfig["presentation"] === "object" &&
             yamlConfig["presentation"]["theme"]
@@ -1065,7 +1076,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         <script type="text/x-mathjax-config">
           MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)});
         </script>
-        <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js"></script>
+        <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"></script>
         `;
       }
     } else if (this.config.mathRenderingOption === "KaTeX") {
@@ -1303,8 +1314,8 @@ for (var i = 0; i < flowcharts.length; i++) {
         )}'></script>`;
       } else {
         presentationScript = `
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/lib/js/head.min.js'></script>
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/reveal.js/3.4.1/js/reveal.min.js'></script>`;
+        <script src='https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/lib/js/head.min.js'></script>
+        <script src='https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/js/reveal.js'></script>`;
       }
 
       const presentationConfig = yamlConfig["presentation"] || {};
@@ -1329,7 +1340,7 @@ for (var i = 0; i < flowcharts.length; i++) {
       ${fs.readFileSync(
         path.resolve(
           extensionDirectoryPath,
-          "./dependencies/reveal/reveal.css",
+          "./dependencies/reveal/css/reveal.css",
         ),
       )}
       ${
@@ -1337,7 +1348,7 @@ for (var i = 0; i < flowcharts.length; i++) {
           ? fs.readFileSync(
               path.resolve(
                 extensionDirectoryPath,
-                "./dependencies/reveal/pdf.css",
+                "./dependencies/reveal/css/print/pdf.css",
               ),
             )
           : ""
@@ -1403,19 +1414,21 @@ for (var i = 0; i < flowcharts.length; i++) {
             );
 
       if (yamlConfig["isPresentationMode"]) {
-        styleCSS += await utility.readFile(
-          path.resolve(
+        const theme =
+          yamlConfig["presentation"] &&
+          typeof yamlConfig["presentation"] === "object" &&
+          yamlConfig["presentation"]["theme"]
+            ? yamlConfig["presentation"]["theme"]
+            : this.config.revealjsTheme;
+
+        if (options.offline) {
+          presentationStyle += `<link rel="stylesheet" href="file:///${path.resolve(
             extensionDirectoryPath,
-            `./styles/revealjs_theme/${
-              yamlConfig["presentation"] &&
-              typeof yamlConfig["presentation"] === "object" &&
-              yamlConfig["presentation"]["theme"]
-                ? yamlConfig["presentation"]["theme"]
-                : this.config.revealjsTheme
-            }`,
-          ),
-          { encoding: "utf-8" },
-        );
+            `./dependencies/reveal/css/theme/${theme}`,
+          )}">`;
+        } else {
+          presentationStyle += `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/css/theme/${theme}">`;
+        }
       } else {
         // preview theme
         styleCSS +=
@@ -2400,7 +2413,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         filesCache: this.filesCache,
         mathInlineDelimiters: this.config.mathInlineDelimiters,
         mathBlockDelimiters: this.config.mathBlockDelimiters,
-        mathRenderingOnLineService: this.config.mathRenderingOnLineService,
+        mathRenderingOnlineService: this.config.mathRenderingOnlineService,
         codeChunksData: this.codeChunksData,
         graphsCache: this.graphsCache,
         usePandocParser: this.config.usePandocParser,

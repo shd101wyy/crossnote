@@ -19,7 +19,7 @@ import * as utility from "./utility";
  */
 function processMath(
   text: string,
-  { mathInlineDelimiters, mathBlockDelimiters, mathRenderingOnLineService },
+  { mathInlineDelimiters, mathBlockDelimiters, mathRenderingOnlineService },
 ): string {
   let line = text.replace(/\\\$/g, "#slash_dollarsign#");
 
@@ -72,7 +72,7 @@ function processMath(
       let math = $2;
       math = math.replace(/\n/g, "").replace(/\#slash\_dollarsign\#/g, "\\$");
       math = utility.escapeString(math);
-      return `<p align="center"><img src=\"${mathRenderingOnLineService}?${math
+      return `<p align="center"><img src=\"${mathRenderingOnlineService}?${math
         .trim()
         .replace(/ /g, "%20")}\"/></p>  \n`;
     },
@@ -91,7 +91,7 @@ function processMath(
       let math = $2;
       math = math.replace(/\n/g, "").replace(/\#slash\_dollarsign\#/g, "\\$");
       math = utility.escapeString(math);
-      return `<img src=\"${mathRenderingOnLineService}?${math
+      return `<img src=\"${mathRenderingOnlineService}?${math
         .trim()
         .replace(/ /g, "%20")}\"/>`;
     },
@@ -181,7 +181,7 @@ export async function markdownConvert(
     filesCache,
     mathInlineDelimiters,
     mathBlockDelimiters,
-    mathRenderingOnLineService,
+    mathRenderingOnlineService,
     codeChunksData,
     graphsCache,
     usePandocParser,
@@ -192,7 +192,7 @@ export async function markdownConvert(
     filesCache: { [key: string]: string };
     mathInlineDelimiters: string[][];
     mathBlockDelimiters: string[][];
-    mathRenderingOnLineService: string;
+    mathRenderingOnlineService: string;
     codeChunksData: { [key: string]: CodeChunkData };
     graphsCache: { [key: string]: string };
     usePandocParser: boolean;
@@ -274,7 +274,7 @@ export async function markdownConvert(
   text = processMath(text, {
     mathInlineDelimiters,
     mathBlockDelimiters,
-    mathRenderingOnLineService,
+    mathRenderingOnlineService,
   });
 
   return await new Promise<string>((resolve, reject) => {
