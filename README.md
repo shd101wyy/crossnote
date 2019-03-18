@@ -84,6 +84,7 @@ const config = {
   mathRenderingOption: "KaTeX",  // "KaTeX" | "MathJax" | "None"
   mathInlineDelimiters: [["$", "$"], ["\\(", "\\)"]],
   mathBlockDelimiters: [["$$", "$$"], ["\\[", "\\]"]],
+  mathRenderingOnLineService: "https://latex.codecogs.com/gif.latex", // "https://latex.codecogs.com/svg.latex", "https://latex.codecogs.com/png.latex"
 
   // Enable Wiki Link syntax support. More information can be found a  https://help.github.com/articles/adding-links-to-wikis/
   enableWikiLinkSyntax: true,
