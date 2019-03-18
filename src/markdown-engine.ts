@@ -5,6 +5,7 @@ import { execFile } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import * as request from "request";
+import * as slash from "slash";
 import * as YAML from "yamljs";
 
 import { CodeChunkData } from "./code-chunk-data";
@@ -447,7 +448,9 @@ export class MarkdownEngine {
       mathJaxConfig["tex2jax"] = mathJaxConfig["tex2jax"] || {};
       mathJaxConfig["tex2jax"]["inlineMath"] = this.config.mathInlineDelimiters;
       mathJaxConfig["tex2jax"]["displayMath"] = this.config.mathBlockDelimiters;
-
+      mathJaxConfig["HTML-CSS"]["imageFont"] = null; // Disable image font, otherwise the preview will only display black color image.
+      mathJaxConfig["root"] = utility.addFileProtocol(slash(path.resolve(utility.extensionDirectoryPath, "./dependencies/mathjax")), isForVSCode);
+      
       scripts += `<script type="text/javascript" async src="${utility.addFileProtocol(
         path.resolve(
           utility.extensionDirectoryPath,
@@ -1065,7 +1068,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         <script type="text/x-mathjax-config">
           MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)});
         </script>
-        <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js"></script>
+        <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"></script>
         `;
       }
     } else if (this.config.mathRenderingOption === "KaTeX") {
