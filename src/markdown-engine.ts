@@ -2403,7 +2403,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         filesCache: this.filesCache,
         mathInlineDelimiters: this.config.mathInlineDelimiters,
         mathBlockDelimiters: this.config.mathBlockDelimiters,
-        mathRenderingOnLineService: this.config.mathRenderingOnLineService,
+        mathRenderingOnlineService: this.config.mathRenderingOnlineService,
         codeChunksData: this.codeChunksData,
         graphsCache: this.graphsCache,
         usePandocParser: this.config.usePandocParser,
