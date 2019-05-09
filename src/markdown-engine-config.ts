@@ -28,6 +28,12 @@ export interface MarkdownEngineConfig {
   pandocArguments?: string[];
   latexEngine?: string;
   enableScriptExecution?: boolean;
+  enableHTML5Embed?: boolean;
+  HTML5EmbedUseImageSyntax?: boolean;
+  HTML5EmbedUseLinkSyntax?: boolean;
+  HTML5EmbedIsAllowedHttp?: boolean;
+  HTML5EmbedAudioAttributes?: string;
+  HTML5EmbedVideoAttributes?: string;
 }
 
 export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
@@ -58,4 +64,10 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   pandocArguments: [],
   latexEngine: "pdflatex",
   enableScriptExecution: false,
+  enableHTML5Embed: false,
+  HTML5EmbedUseImageSyntax: true,
+  HTML5EmbedUseLinkSyntax: false,
+  HTML5EmbedIsAllowedHttp: false,
+  HTML5EmbedAudioAttributes: 'controls preload="metadata"',
+  HTML5EmbedVideoAttributes: 'controls preload="metadata"',
 };

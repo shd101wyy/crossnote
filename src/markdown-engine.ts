@@ -24,6 +24,7 @@ import * as utility from "./utility";
 import useMarkdownItCodeFences from "./custom-markdown-it-features/code-fences";
 import useMarkdownItCriticMarkup from "./custom-markdown-it-features/critic-markup";
 import useMarkdownItEmoji from "./custom-markdown-it-features/emoji";
+import useMarkdownItHTML5Embed from "./custom-markdown-it-features/html5-embed";
 import useMarkdownItMath from "./custom-markdown-it-features/math";
 import useMarkdownItWikilink from "./custom-markdown-it-features/wikilink";
 
@@ -245,46 +246,25 @@ export class MarkdownEngine {
     });
 
     // markdown-it extensions
-    this.md.use(
-      require(path.resolve(
-        extensionDirectoryPath,
-        "./dependencies/markdown-it/extensions/markdown-it-footnote.min.js",
-      )),
-    );
-    this.md.use(
-      require(path.resolve(
-        extensionDirectoryPath,
-        "./dependencies/markdown-it/extensions/markdown-it-sub.min.js",
-      )),
-    );
-    this.md.use(
-      require(path.resolve(
-        extensionDirectoryPath,
-        "./dependencies/markdown-it/extensions/markdown-it-sup.min.js",
-      )),
-    );
-    this.md.use(
-      require(path.resolve(
-        extensionDirectoryPath,
-        "./dependencies/markdown-it/extensions/markdown-it-deflist.min.js",
-      )),
-    );
-    this.md.use(
-      require(path.resolve(
-        extensionDirectoryPath,
-        "./dependencies/markdown-it/extensions/markdown-it-abbr.min.js",
-      )),
-    );
-    this.md.use(
-      require(path.resolve(
-        extensionDirectoryPath,
-        "./dependencies/markdown-it/extensions/markdown-it-mark.min.js",
-      )),
-    );
+    const extensions = [
+      "./dependencies/markdown-it/extensions/markdown-it-footnote.min.js",
+      "./dependencies/markdown-it/extensions/markdown-it-sub.min.js",
+      "./dependencies/markdown-it/extensions/markdown-it-sup.min.js",
+      "./dependencies/markdown-it/extensions/markdown-it-deflist.min.js",
+      "./dependencies/markdown-it/extensions/markdown-it-abbr.min.js",
+      "./dependencies/markdown-it/extensions/markdown-it-mark.min.js",
+    ];
+
+    for (const js of extensions) {
+      const fullPath = path.resolve(extensionDirectoryPath, js);
+      const plugin = require(fullPath);
+      this.md.use(plugin);
+    }
 
     useMarkdownItCodeFences(this.md, this.config);
     useMarkdownItCriticMarkup(this.md, this.config);
     useMarkdownItEmoji(this.md, this.config);
+    useMarkdownItHTML5Embed(this.md, this.config);
     useMarkdownItMath(this.md, this.config);
     useMarkdownItWikilink(this.md, this.config);
   }
