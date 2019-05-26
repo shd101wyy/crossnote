@@ -436,9 +436,9 @@ export function addFileProtocol(
  */
 export function removeFileProtocol(filePath: string): string {
   if (process.platform === "win32") {
-    return filePath.replace(/^file\:\/+/, "");
+    return filePath.replace(/^(file|vscode\-resource)\:\/+/, "");
   } else {
-    return filePath.replace(/^file\:\/+/, "/");
+    return filePath.replace(/^(file|vscode\-resource)\:\/+/, "/");
   }
 }
 

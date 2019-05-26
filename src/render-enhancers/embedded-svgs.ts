@@ -17,7 +17,7 @@ export default async function enhance(
     const $img = $(img);
     let src = resolveFilePath($img.attr("src"), false);
 
-    const fileProtocolMatch = src.match(/^file:\/\/+/);
+    const fileProtocolMatch = src.match(/^(file|vscode\-resource):\/\/+/);
     if (fileProtocolMatch) {
       src = removeFileProtocol(src);
       src = src.replace(/\?(\.|\d)+$/, ""); // remove cache
