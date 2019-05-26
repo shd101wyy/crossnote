@@ -1693,27 +1693,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     });
 
     if (!puppeteer) {
-      // require puppeteer from global node_modules
-      try {
-        const globalNodeModulesPath = (await utility.execFile(
-          process.platform === "win32" ? "npm.cmd" : "npm",
-          ["root", "-g"],
-        ))
-          .trim()
-          .split("\n")[0]
-          .trim();
-        puppeteer = require(path.resolve(globalNodeModulesPath, "./puppeteer")); // trim() function here is very necessary.
-      } catch (error) {
-        throw new Error(
-          "Puppeteer (Headless Chrome) is required to be installed globally. Please run `npm install -g puppeteer` in your terminal.  \n",
-        );
-      }
+      puppeteer = require("puppeteer-core");
     }
 
     const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
     await utility.writeFile(info.fd, html);
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      executablePath: this.config.chromePath || require("chrome-location"),
+      headless: true,
+    });
     const page = await browser.newPage();
     const loadPath =
       "file:///" +
@@ -1736,6 +1725,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       printBackground: this.config.printBackground,
       ...(yamlConfig["chrome"] || yamlConfig["puppeteer"] || {}),
     };
+
+    // wait for timeout
+    let timeout = 0;
+    if (yamlConfig["chrome"] && yamlConfig["chrome"]["timeout"]) {
+      timeout = yamlConfig["chrome"]["timeout"];
+    } else if (yamlConfig["puppeteer"] && yamlConfig["puppeteer"]["timeout"]) {
+      timeout = yamlConfig["puppeteer"]["timeout"];
+    }
+    if (timeout && typeof timeout === "number") {
+      await page.waitFor(timeout);
+    }
 
     if (fileType === "pdf") {
       await page.pdf(puppeteerConfig);
