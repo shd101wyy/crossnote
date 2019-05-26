@@ -1870,7 +1870,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       "." + fileType.toLowerCase(),
     );
 
-    const ebookConfig = yamlConfig["ebook"];
+    const ebookConfig = yamlConfig["ebook"] || {};
     if (!ebookConfig) {
       throw new Error(
         "eBook config not found. Please insert ebook front-matter to your markdown file.",
@@ -2051,7 +2051,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         utility.readFile(
           path.resolve(
             extensionDirectoryPath,
-            `./styles/prism_theme/${this.getPrismTheme(false)}`,
+            `./styles/prism_theme/${
+              /*this.getPrismTheme(false)*/ MarkdownEngine.AutoPrismThemeMap[
+                ebookConfig["theme"] || this.config.previewTheme
+              ]
+            }`,
           ),
           { encoding: "utf-8" },
         ),
@@ -2064,7 +2068,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         utility.readFile(
           path.resolve(
             extensionDirectoryPath,
-            `./styles/preview_theme/${this.config.previewTheme}`,
+            `./styles/preview_theme/${ebookConfig["theme"] ||
+              this.config.previewTheme}`,
           ),
           { encoding: "utf-8" },
         ),
