@@ -43,9 +43,6 @@ async function main() {
   // chrome (puppeteer) export
   await engine.chromeExport({ fileType: "pdf", runAllCodeChunks: true }); // fileType = 'pdf'|'png'|'jpeg'
 
-  // phantomjs export
-  await engine.phantomjsExport({ fileType: "pdf", runAllCodeChunks: true }); // fileType = 'pdf'|'png'|'jpeg'
-
   // prince export
   await engine.princeExport({ runAllCodeChunks: true });
 
@@ -177,8 +174,8 @@ const config = {
   // Whether to print background for file export or not. If set to `false`, then `github-light` preview theme will b  used. You can also set `print_background` in front-matter for individual files.
   printBackground: false,
 
-  // PhantomJS executable path
-  phantomPath: 'phantomjs',
+  // Chrome executable path, which is used for Puppeteer export. Leaving it empty means mume will look for the path automatically.
+  chromePath: '',
 
   // Pandoc executable path
   pandocPath: 'pandoc',
@@ -231,7 +228,8 @@ Global config files are located at `~/.mume` directory
 
 ## Development
 
-[Visual Studio Code](https://code.visualstudio.com/) is recommended.
+[Visual Studio Code](https://code.visualstudio.com/) is recommended.  
+Recommended to use Node.js version `lts/dubnium`.
 
 1.  Clone this project
 2.  Run `npm install` from shell

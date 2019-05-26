@@ -10,6 +10,7 @@ import * as YAML from "yamljs";
 
 import { CodeChunkData } from "./code-chunk-data";
 import { ebookConvert } from "./ebook-convert";
+import HeadingIdGenerator from "./heading-id-generator";
 import { markdownConvert } from "./markdown-convert";
 import {
   defaultMarkdownEngineConfig,
@@ -55,10 +56,6 @@ const CryptoJS = require(path.resolve(
   extensionDirectoryPath,
   "./dependencies/crypto-js/crypto-js.js",
 ));
-const pdf = require(path.resolve(
-  extensionDirectoryPath,
-  "./dependencies/node-html-pdf/index.js",
-));
 
 // Puppeteer
 let puppeteer = null;
@@ -96,11 +93,6 @@ export interface HTMLTemplateOption {
    * whether is for prince export.
    */
   isForPrince: boolean;
-  /**
-   * if it's for phantomjs export, what is the export file type.
-   * `pdf`, `jpeg`, and `png` are available.
-   */
-  phantomjsType?: string;
   /**
    * whether for offline use
    */
@@ -1066,7 +1058,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           "./dependencies/katex/katex.min.css",
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css">`;
       }
     } else {
       mathStyle = "";
@@ -1351,16 +1343,6 @@ for (var i = 0; i < flowcharts.length; i++) {
       princeClass = "prince";
     }
 
-    // phantomjs
-    let phantomjsClass = "";
-    if (options.phantomjsType) {
-      if (options.phantomjsType === "pdf") {
-        phantomjsClass = "phantomjs-pdf";
-      } else {
-        phantomjsClass = "phantomjs-image";
-      }
-    }
-
     let title = path.basename(this.filePath);
     title = title.slice(0, title.length - path.extname(title).length); // remove '.md'
     if (yamlConfig["title"]) {
@@ -1536,7 +1518,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     <body ${options.isForPrint ? "" : 'for="html-export"'} ${
       yamlConfig["isPresentationMode"] ? "data-presentation-mode" : ""
     }>
-      <div class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${
+      <div class="mume markdown-preview ${princeClass} ${elementClass}" ${
       yamlConfig["isPresentationMode"] ? "data-presentation-mode" : ""
     } ${elementId ? `id="${elementId}"` : ""}>
       ${html}
@@ -1712,27 +1694,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     });
 
     if (!puppeteer) {
-      // require puppeteer from global node_modules
-      try {
-        const globalNodeModulesPath = (await utility.execFile(
-          process.platform === "win32" ? "npm.cmd" : "npm",
-          ["root", "-g"],
-        ))
-          .trim()
-          .split("\n")[0]
-          .trim();
-        puppeteer = require(path.resolve(globalNodeModulesPath, "./puppeteer")); // trim() function here is very necessary.
-      } catch (error) {
-        throw new Error(
-          "Puppeteer (Headless Chrome) is required to be installed globally. Please run `npm install -g puppeteer` in your terminal.  \n",
-        );
-      }
+      puppeteer = require("puppeteer-core");
     }
 
     const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
     await utility.writeFile(info.fd, html);
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      executablePath: this.config.chromePath || require("chrome-location"),
+      headless: true,
+    });
     const page = await browser.newPage();
     const loadPath =
       "file:///" +
@@ -1756,6 +1727,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ...(yamlConfig["chrome"] || yamlConfig["puppeteer"] || {}),
     };
 
+    // wait for timeout
+    let timeout = 0;
+    if (yamlConfig["chrome"] && yamlConfig["chrome"]["timeout"]) {
+      timeout = yamlConfig["chrome"]["timeout"];
+    } else if (yamlConfig["puppeteer"] && yamlConfig["puppeteer"]["timeout"]) {
+      timeout = yamlConfig["puppeteer"]["timeout"];
+    }
+    if (timeout && typeof timeout === "number") {
+      await page.waitFor(timeout);
+    }
+
     if (fileType === "pdf") {
       await page.pdf(puppeteerConfig);
     } else {
@@ -1768,86 +1750,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       utility.openFile(dest);
     }
     return dest;
-  }
-
-  /**
-   * Phantomjs file export
-   * The config could be set by front-matter.
-   * Check https://github.com/marcbachmann/node-html-pdf website.
-   * @param fileType the export file type
-   */
-  public async phantomjsExport({
-    fileType = "pdf",
-    runAllCodeChunks = false,
-    openFileAfterGeneration = false,
-  }): Promise<string> {
-    const inputString = await utility.readFile(this.filePath, {
-      encoding: "utf-8",
-    });
-    let html;
-    let yamlConfig;
-    ({ html, yamlConfig } = await this.parseMD(inputString, {
-      useRelativeFilePath: false,
-      hideFrontMatter: true,
-      isForPreview: false,
-      runAllCodeChunks,
-    }));
-    let dest = this.filePath;
-    const extname = path.extname(dest);
-    dest = dest.replace(new RegExp(extname + "$"), "." + fileType);
-
-    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
-      isForPrint: true,
-      isForPrince: false,
-      embedLocalImages: false,
-      offline: true,
-      phantomjsType: fileType,
-    });
-
-    // TODO: phantomjs reveal.js export directly.
-    if (yamlConfig["isPresentationMode"]) {
-      // reveal.js presentation
-      const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
-      await utility.writeFile(info.fd, html);
-      const url = "file:///" + info.path + "?print-pdf";
-      return url;
-    }
-
-    const phantomjsConfig = {
-      type: fileType,
-      border: "1cm",
-      quality: "75",
-      script: path.join(
-        extensionDirectoryPath,
-        "./dependencies/phantomjs/pdf_a4_portrait.js",
-      ),
-      ...(await utility.getPhantomjsConfig()),
-      ...(yamlConfig["phantomjs"] || yamlConfig["phantom"] || {}),
-    };
-    if (!phantomjsConfig["phantomPath"]) {
-      phantomjsConfig["phantomPath"] = this.config.phantomPath;
-    }
-
-    return await new Promise<string>((resolve, reject) => {
-      try {
-        pdf.create(html, phantomjsConfig).toFile(dest, (error, res) => {
-          if (error) {
-            return reject(error);
-          } else {
-            if (openFileAfterGeneration) {
-              utility.openFile(dest);
-            }
-            return resolve(dest);
-          }
-        });
-      } catch (error) {
-        let errorMessage = error.toString();
-        if (errorMessage.indexOf("Error: write EPIPE") >= 0) {
-          errorMessage = `"phantomjs" is required to be installed.`;
-        }
-        return reject(errorMessage);
-      }
-    });
   }
 
   /**
@@ -1968,7 +1870,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       "." + fileType.toLowerCase(),
     );
 
-    const ebookConfig = yamlConfig["ebook"];
+    const ebookConfig = yamlConfig["ebook"] || {};
     if (!ebookConfig) {
       throw new Error(
         "eBook config not found. Please insert ebook front-matter to your markdown file.",
@@ -1984,16 +1886,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     let $ = cheerio.load(`<div>${html}</div>`);
-
     const tocStructure: Array<{
       level: number;
       filePath: string;
       heading: string;
       id: string;
     }> = [];
-    let headingOffset = 0;
-
-    const $toc = $(":root > ul").last();
+    const headingIdGenerator = new HeadingIdGenerator();
+    const $toc = $("div > ul").last();
     if ($toc.length) {
       if (ebookConfig["include_toc"] === false) {
         // remove itself and the heading ahead
@@ -2031,10 +1931,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
         const filePath = decodeURIComponent($a.attr("href")); // markdown file path
         const heading = $a.html();
-        const id = "ebook-heading-id-" + headingOffset;
+        const id = headingIdGenerator.generateId(heading); // "ebook-heading-id-" + headingOffset;
 
         tocStructure.push({ level, filePath, heading, id });
-        headingOffset += 1;
 
         $a.attr("href", "#" + id); // change id
         if ($li.children().length > 1) {
@@ -2088,17 +1987,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     /* tslint:disable-next-line:no-shadowed-variable */
     results.forEach(({ heading, id, level, filePath, html }) => {
       /* tslint:disable-next-line:no-shadowed-variable */
-      const $ = cheerio.load(`<div>${html}</div>`);
-      const $firstChild = $(":root")
-        .children()
-        .first();
-      if ($firstChild.length) {
-        $firstChild.attr("id", id);
-        $firstChild.attr("ebook-toc-level-" + (level + 1), "");
-        $firstChild.attr("heading", heading);
-      }
-
-      outputHTML += $.html().replace(/^<div>(.+)<\/div>$/, "$1"); // append new content
+      outputHTML += `<div id="${id}" ebook-toc-level-${level +
+        1} heading="${heading}">${html}</div>`; // append new content
     });
 
     $ = cheerio.load(outputHTML);
@@ -2139,7 +2029,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig["html"] &&
         ebookConfig["html"].cdn
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           extensionDirectoryPath,
@@ -2161,7 +2051,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         utility.readFile(
           path.resolve(
             extensionDirectoryPath,
-            `./styles/prism_theme/${this.getPrismTheme(false)}`,
+            `./styles/prism_theme/${
+              /*this.getPrismTheme(false)*/ MarkdownEngine.AutoPrismThemeMap[
+                ebookConfig["theme"] || this.config.previewTheme
+              ]
+            }`,
           ),
           { encoding: "utf-8" },
         ),
@@ -2174,7 +2068,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         utility.readFile(
           path.resolve(
             extensionDirectoryPath,
-            `./styles/preview_theme/${this.config.previewTheme}`,
+            `./styles/preview_theme/${ebookConfig["theme"] ||
+              this.config.previewTheme}`,
           ),
           { encoding: "utf-8" },
         ),
@@ -2408,7 +2303,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * export_on_save:
    *    html: true
    *    prince: true
-   *    phantomjs|chrome: true  // or pdf | jpeg | png
+   *    puppeteer | chrome: true  // or pdf | jpeg | png
    *    pandoc: true
    *    ebook: true      // or epub | pdf | html | mobi
    *    markdown: true
@@ -2423,10 +2318,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         this.htmlExport({});
       } else if (exporter === "prince") {
         this.princeExport({ openFileAfterGeneration: false });
-      } else if (exporter === "phantomjs" || exporter === "chrome") {
+      } else if (exporter === "puppeteer" || exporter === "chrome") {
         const fileTypes = data[exporter];
-        let func =
-          exporter === "phantomjs" ? this.phantomjsExport : this.chromeExport;
+        let func = this.chromeExport;
         func = func.bind(this);
 
         if (fileTypes === true) {
@@ -2922,7 +2816,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       enhanceWithEmojiToSvg($);
     }
 
-    html = frontMatterTable + $.html();
+    html = frontMatterTable + $("body").html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
 
     /**
      * check slides

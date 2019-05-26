@@ -5,7 +5,7 @@ import * as less from "less";
 import * as path from "path";
 import * as request from "request";
 import * as temp from "temp";
-import * as uslug from "uslug";
+import HeadingIdGenerator from "./heading-id-generator";
 import { parseAttributes, stringifyAttributes } from "./lib/attributes";
 import computeChecksum from "./lib/compute-checksum";
 import * as utility from "./utility";
@@ -61,7 +61,7 @@ export interface TransformMarkdownOptions {
   notSourceFile?: boolean;
   imageDirectoryPath?: string;
   usePandocParser: boolean;
-  tocTable?: { [key: string]: number };
+  headingIdGenerator?: HeadingIdGenerator;
 }
 
 const fileExtensionToLanguageMap = {
@@ -252,7 +252,7 @@ export async function transformMarkdown(
     notSourceFile = false,
     imageDirectoryPath = "",
     usePandocParser = false,
-    tocTable = {},
+    headingIdGenerator = new HeadingIdGenerator(),
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
   let lastOpeningCodeBlockFence: string = null;
@@ -407,20 +407,13 @@ export async function transformMarkdown(
         }
 
         if (!id) {
-          id = uslug(heading);
+          id = headingIdGenerator.generateId(heading);
           if (usePandocParser) {
             id = id.replace(/^[\d\-]+/, "");
             if (!id) {
               id = "section";
             }
           }
-        }
-
-        if (tocTable[id] >= 0) {
-          tocTable[id] += 1;
-          id = id + "-" + tocTable[id];
-        } else {
-          tocTable[id] = 0;
         }
 
         if (!ignore) {
@@ -790,7 +783,7 @@ export async function transformMarkdown(
                 notSourceFile: true, // <= this is not the sourcefile
                 imageDirectoryPath,
                 usePandocParser,
-                tocTable,
+                headingIdGenerator,
               }));
               output2 = "\n" + output2 + "  ";
               headings = headings.concat(headings2);

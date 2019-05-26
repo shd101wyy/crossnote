@@ -1,4 +1,4 @@
-import * as uslug from "uslug";
+import HeadingIdGenerator from "./heading-id-generator";
 
 function nPrefix(str, n) {
   let output = "";
@@ -72,6 +72,7 @@ export function toc(
   tokens: Array<{ content: string; level: number; id?: string }>,
   opt: TocOption,
 ) {
+  const headingIdGenerator = new HeadingIdGenerator();
   if (!tokens) {
     return { content: "", array: [] };
   }
@@ -95,7 +96,6 @@ export function toc(
   }
 
   const outputArr = [];
-  const tocTable = {};
   let smallestLevel = tokens[0].level;
 
   // get smallestLevel
@@ -109,15 +109,7 @@ export function toc(
   for (const token of tokens) {
     const content = token.content;
     const level = token.level;
-    let slug = token.id || uslug(content);
-
-    if (tocTable[slug] >= 0) {
-      tocTable[slug] += 1;
-      slug += "-" + tocTable[slug];
-    } else {
-      tocTable[slug] = 0;
-    }
-
+    const slug = token.id || headingIdGenerator.generateId(content);
     const n = level - smallestLevel;
     let numStr = "1";
     if (ordered) {

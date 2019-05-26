@@ -33,7 +33,6 @@ export async function init(): Promise<void> {
   configs.globalStyle = await utility.getGlobalStyles();
   configs.mermaidConfig = await utility.getMermaidConfig();
   configs.mathjaxConfig = await utility.getMathJaxConfig();
-  configs.phantomjsConfig = await utility.getPhantomjsConfig();
   configs.parserConfig = await utility.getParserConfig();
   configs.config = await utility.getExtensionConfig();
 
