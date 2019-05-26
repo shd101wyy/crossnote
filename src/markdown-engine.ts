@@ -10,6 +10,7 @@ import * as YAML from "yamljs";
 
 import { CodeChunkData } from "./code-chunk-data";
 import { ebookConvert } from "./ebook-convert";
+import HeadingIdGenerator from "./heading-id-generator";
 import { markdownConvert } from "./markdown-convert";
 import {
   defaultMarkdownEngineConfig,
@@ -1885,16 +1886,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     let $ = cheerio.load(`<div>${html}</div>`);
-
     const tocStructure: Array<{
       level: number;
       filePath: string;
       heading: string;
       id: string;
     }> = [];
-    let headingOffset = 0;
-
-    const $toc = $(":root > ul").last();
+    const headingIdGenerator = new HeadingIdGenerator();
+    const $toc = $("div > ul").last();
     if ($toc.length) {
       if (ebookConfig["include_toc"] === false) {
         // remove itself and the heading ahead
@@ -1932,10 +1931,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
         const filePath = decodeURIComponent($a.attr("href")); // markdown file path
         const heading = $a.html();
-        const id = "ebook-heading-id-" + headingOffset;
+        const id = headingIdGenerator.generateId(heading); // "ebook-heading-id-" + headingOffset;
 
         tocStructure.push({ level, filePath, heading, id });
-        headingOffset += 1;
 
         $a.attr("href", "#" + id); // change id
         if ($li.children().length > 1) {
@@ -1989,17 +1987,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     /* tslint:disable-next-line:no-shadowed-variable */
     results.forEach(({ heading, id, level, filePath, html }) => {
       /* tslint:disable-next-line:no-shadowed-variable */
-      const $ = cheerio.load(`<div>${html}</div>`);
-      const $firstChild = $(":root")
-        .children()
-        .first();
-      if ($firstChild.length) {
-        $firstChild.attr("id", id);
-        $firstChild.attr("ebook-toc-level-" + (level + 1), "");
-        $firstChild.attr("heading", heading);
-      }
-
-      outputHTML += $.html().replace(/^<div>(.+)<\/div>$/, "$1"); // append new content
+      outputHTML += `<div id="${id}" ebook-toc-level-${level +
+        1} heading="${heading}">${html}</div>`; // append new content
     });
 
     $ = cheerio.load(outputHTML);
@@ -2822,7 +2811,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       enhanceWithEmojiToSvg($);
     }
 
-    html = frontMatterTable + $.html();
+    html = frontMatterTable + $("body").html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
 
     /**
      * check slides
