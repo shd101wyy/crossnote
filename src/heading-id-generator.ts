@@ -6,10 +6,11 @@ export default class HeadingIdGenerator {
     this.table = {};
   }
   public generateId(heading: string): string {
+    heading = heading.replace(/。/g, ""); // sanitize
     let slug = uslug(heading);
     if (this.table[slug] >= 0) {
-      slug += "-" + (this.table[slug] + 1);
       this.table[slug] = this.table[slug] + 1;
+      slug += "-" + this.table[slug];
     } else {
       this.table[slug] = 0;
     }
