@@ -12,6 +12,7 @@ export type ParseMathArgs = {
 };
 
 let katex;
+const macros = {};
 
 /**
  *
@@ -39,7 +40,7 @@ export default ({
           "./dependencies/katex/katex.min.js",
         ));
       }
-      return katex.renderToString(content, { displayMode });
+      return katex.renderToString(content, { displayMode, macros });
     } catch (error) {
       return `<span style=\"color: #ee7f49; font-weight: 500;\">${error.toString()}</span>`;
     }
