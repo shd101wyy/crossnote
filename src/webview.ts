@@ -391,26 +391,6 @@
               },
             },
           },
-          phantomjs_export: {
-            name: "PhantomJS",
-            items: {
-              phantomjs_pdf: {
-                name: "PDF",
-                callback: () =>
-                  this.postMessage("phantomjsExport", [this.sourceUri, "pdf"]),
-              },
-              phantomjs_png: {
-                name: "PNG",
-                callback: () =>
-                  this.postMessage("phantomjsExport", [this.sourceUri, "png"]),
-              },
-              phantomjs_jpeg: {
-                name: "JPEG",
-                callback: () =>
-                  this.postMessage("phantomjsExport", [this.sourceUri, "jpeg"]),
-              },
-            },
-          },
           prince_export: {
             name: "PDF (prince)",
             callback: () => this.postMessage("princeExport", [this.sourceUri]),

@@ -22,7 +22,6 @@ export interface MarkdownEngineConfig {
   frontMatterRenderingOption?: string;
   imageFolderPath?: string;
   printBackground?: boolean;
-  phantomPath?: string;
   pandocPath?: string;
   pandocMarkdownFlavor?: string;
   pandocArguments?: string[];
@@ -58,7 +57,6 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   frontMatterRenderingOption: "none",
   imageFolderPath: "/assets",
   printBackground: false,
-  phantomPath: "phantomjs",
   pandocPath: "pandoc",
   pandocMarkdownFlavor: "markdown-raw_tex+tex_math_single_backslash",
   pandocArguments: [],

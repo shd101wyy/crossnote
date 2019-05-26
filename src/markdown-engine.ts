@@ -55,10 +55,6 @@ const CryptoJS = require(path.resolve(
   extensionDirectoryPath,
   "./dependencies/crypto-js/crypto-js.js",
 ));
-const pdf = require(path.resolve(
-  extensionDirectoryPath,
-  "./dependencies/node-html-pdf/index.js",
-));
 
 // Puppeteer
 let puppeteer = null;
@@ -96,11 +92,6 @@ export interface HTMLTemplateOption {
    * whether is for prince export.
    */
   isForPrince: boolean;
-  /**
-   * if it's for phantomjs export, what is the export file type.
-   * `pdf`, `jpeg`, and `png` are available.
-   */
-  phantomjsType?: string;
   /**
    * whether for offline use
    */
@@ -1351,16 +1342,6 @@ for (var i = 0; i < flowcharts.length; i++) {
       princeClass = "prince";
     }
 
-    // phantomjs
-    let phantomjsClass = "";
-    if (options.phantomjsType) {
-      if (options.phantomjsType === "pdf") {
-        phantomjsClass = "phantomjs-pdf";
-      } else {
-        phantomjsClass = "phantomjs-image";
-      }
-    }
-
     let title = path.basename(this.filePath);
     title = title.slice(0, title.length - path.extname(title).length); // remove '.md'
     if (yamlConfig["title"]) {
@@ -1536,7 +1517,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     <body ${options.isForPrint ? "" : 'for="html-export"'} ${
       yamlConfig["isPresentationMode"] ? "data-presentation-mode" : ""
     }>
-      <div class="mume markdown-preview ${princeClass} ${phantomjsClass} ${elementClass}" ${
+      <div class="mume markdown-preview ${princeClass} ${elementClass}" ${
       yamlConfig["isPresentationMode"] ? "data-presentation-mode" : ""
     } ${elementId ? `id="${elementId}"` : ""}>
       ${html}
@@ -1768,86 +1749,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       utility.openFile(dest);
     }
     return dest;
-  }
-
-  /**
-   * Phantomjs file export
-   * The config could be set by front-matter.
-   * Check https://github.com/marcbachmann/node-html-pdf website.
-   * @param fileType the export file type
-   */
-  public async phantomjsExport({
-    fileType = "pdf",
-    runAllCodeChunks = false,
-    openFileAfterGeneration = false,
-  }): Promise<string> {
-    const inputString = await utility.readFile(this.filePath, {
-      encoding: "utf-8",
-    });
-    let html;
-    let yamlConfig;
-    ({ html, yamlConfig } = await this.parseMD(inputString, {
-      useRelativeFilePath: false,
-      hideFrontMatter: true,
-      isForPreview: false,
-      runAllCodeChunks,
-    }));
-    let dest = this.filePath;
-    const extname = path.extname(dest);
-    dest = dest.replace(new RegExp(extname + "$"), "." + fileType);
-
-    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
-      isForPrint: true,
-      isForPrince: false,
-      embedLocalImages: false,
-      offline: true,
-      phantomjsType: fileType,
-    });
-
-    // TODO: phantomjs reveal.js export directly.
-    if (yamlConfig["isPresentationMode"]) {
-      // reveal.js presentation
-      const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
-      await utility.writeFile(info.fd, html);
-      const url = "file:///" + info.path + "?print-pdf";
-      return url;
-    }
-
-    const phantomjsConfig = {
-      type: fileType,
-      border: "1cm",
-      quality: "75",
-      script: path.join(
-        extensionDirectoryPath,
-        "./dependencies/phantomjs/pdf_a4_portrait.js",
-      ),
-      ...(await utility.getPhantomjsConfig()),
-      ...(yamlConfig["phantomjs"] || yamlConfig["phantom"] || {}),
-    };
-    if (!phantomjsConfig["phantomPath"]) {
-      phantomjsConfig["phantomPath"] = this.config.phantomPath;
-    }
-
-    return await new Promise<string>((resolve, reject) => {
-      try {
-        pdf.create(html, phantomjsConfig).toFile(dest, (error, res) => {
-          if (error) {
-            return reject(error);
-          } else {
-            if (openFileAfterGeneration) {
-              utility.openFile(dest);
-            }
-            return resolve(dest);
-          }
-        });
-      } catch (error) {
-        let errorMessage = error.toString();
-        if (errorMessage.indexOf("Error: write EPIPE") >= 0) {
-          errorMessage = `"phantomjs" is required to be installed.`;
-        }
-        return reject(errorMessage);
-      }
-    });
   }
 
   /**
@@ -2408,7 +2309,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * export_on_save:
    *    html: true
    *    prince: true
-   *    phantomjs|chrome: true  // or pdf | jpeg | png
+   *    puppeteer | chrome: true  // or pdf | jpeg | png
    *    pandoc: true
    *    ebook: true      // or epub | pdf | html | mobi
    *    markdown: true
@@ -2423,10 +2324,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         this.htmlExport({});
       } else if (exporter === "prince") {
         this.princeExport({ openFileAfterGeneration: false });
-      } else if (exporter === "phantomjs" || exporter === "chrome") {
+      } else if (exporter === "puppeteer" || exporter === "chrome") {
         const fileTypes = data[exporter];
-        let func =
-          exporter === "phantomjs" ? this.phantomjsExport : this.chromeExport;
+        let func = this.chromeExport;
         func = func.bind(this);
 
         if (fileTypes === true) {

@@ -16,7 +16,6 @@ I managed many libraries by myself instead of through npm to reduce overall file
     "katex": "v0.10.2",
     "crypto-js": "3.9.1-1",
     "jquery-modal": "0.8.0",
-    "node-html-pdf": "commit 543a918d1c11cefc713b2d38983eb63cc1d347fe",
     "vega": "5.3.0",
     "vega-lite": "3.0.0-rc14",
     "vega-embed": "4.0.0-rc1",
@@ -42,8 +41,4 @@ I managed many libraries by myself instead of through npm to reduce overall file
 
 *Attention*: Need to append `.mermaid ` to all selectors in `mermaid.css`, `mermaid.dark.css`, and `mermaid.forest.css`. Otherwise it will pollute `viz` graph.
 
-*Attention*: Need to modify `pdf_a4_portrait.js` file to make it work with *MathJax*.
-
 *Attention*: **mpld3.v0.3.min.js** min version actually has problem, so use not minified version.  
-
-*Attention*: For **node-html-pdf**, I modified the `pdf.js` file so that `phantomjs-prebuilt` will not be required.  

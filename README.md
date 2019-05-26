@@ -43,9 +43,6 @@ async function main() {
   // chrome (puppeteer) export
   await engine.chromeExport({ fileType: "pdf", runAllCodeChunks: true }); // fileType = 'pdf'|'png'|'jpeg'
 
-  // phantomjs export
-  await engine.phantomjsExport({ fileType: "pdf", runAllCodeChunks: true }); // fileType = 'pdf'|'png'|'jpeg'
-
   // prince export
   await engine.princeExport({ runAllCodeChunks: true });
 
@@ -176,9 +173,6 @@ const config = {
 
   // Whether to print background for file export or not. If set to `false`, then `github-light` preview theme will b  used. You can also set `print_background` in front-matter for individual files.
   printBackground: false,
-
-  // PhantomJS executable path
-  phantomPath: 'phantomjs',
 
   // Pandoc executable path
   pandocPath: 'pandoc',
