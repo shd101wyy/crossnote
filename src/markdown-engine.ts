@@ -2286,6 +2286,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         fileDirectoryPath: this.fileDirectoryPath,
         protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
         filesCache: this.filesCache,
+        mathRenderingOption: this.config.mathRenderingOption,
         mathInlineDelimiters: this.config.mathInlineDelimiters,
         mathBlockDelimiters: this.config.mathBlockDelimiters,
         mathRenderingOnlineService: this.config.mathRenderingOnlineService,

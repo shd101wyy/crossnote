@@ -179,6 +179,7 @@ export async function markdownConvert(
     fileDirectoryPath,
     protocolsWhiteListRegExp,
     filesCache,
+    mathRenderingOption,
     mathInlineDelimiters,
     mathBlockDelimiters,
     mathRenderingOnlineService,
@@ -190,6 +191,7 @@ export async function markdownConvert(
     fileDirectoryPath: string;
     protocolsWhiteListRegExp: RegExp;
     filesCache: { [key: string]: string };
+    mathRenderingOption: string;
     mathInlineDelimiters: string[][];
     mathBlockDelimiters: string[][];
     mathRenderingOnlineService: string;
@@ -271,11 +273,14 @@ export async function markdownConvert(
     protocolsWhiteListRegExp,
   );
 
-  text = processMath(text, {
-    mathInlineDelimiters,
-    mathBlockDelimiters,
-    mathRenderingOnlineService,
-  });
+  text =
+    mathRenderingOption !== "None"
+      ? processMath(text, {
+          mathInlineDelimiters,
+          mathBlockDelimiters,
+          mathRenderingOnlineService,
+        })
+      : text;
 
   return await new Promise<string>((resolve, reject) => {
     mkdirp(imageDirectoryPath, (error, made) => {
