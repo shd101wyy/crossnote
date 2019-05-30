@@ -46,7 +46,7 @@
     "temp": "^0.9.0",
     "twemoji": "^11.0.1",
     "uslug": "^1.0.4",
-    "vega-loader": "^4.0.0",
+    "vega-loader": "^4.1.0",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {

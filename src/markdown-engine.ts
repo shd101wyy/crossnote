@@ -123,6 +123,21 @@ let MODIFY_SOURCE: (
   filePath: string,
 ) => Promise<string> = null;
 
+const dependentLibraryMaterials = [
+  {
+    key: "vega",
+    version: "5.4.0",
+  },
+  {
+    key: "vega-lite",
+    version: "3.3.0",
+  },
+  {
+    key: "vega-embed",
+    version: "4.2.0",
+  },
+];
+
 /**
  * The markdown engine that can be used to parse markdown and export files
  */
@@ -552,29 +567,15 @@ if (typeof(window['Reveal']) !== 'undefined') {
       </script>`;
     }
 
-    // vega and vega-lite with vega-embed
-    // https://vega.github.io/vega/usage/#embed
-    scripts += `<script src="${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        `./dependencies/vega/vega.min.js`,
-      ),
-      isForVSCode,
-    )}" charset="UTF-8"></script>`;
-    scripts += `<script src="${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        `./dependencies/vega-lite/vega-lite.min.js`,
-      ),
-      isForVSCode,
-    )}" charset="UTF-8"></script>`;
-    scripts += `<script src="${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        `./dependencies/vega-embed/vega-embed.min.js`,
-      ),
-      isForVSCode,
-    )}" charset="UTF-8"></script>`;
+    dependentLibraryMaterials.forEach(({ key }) => {
+      scripts += `<script src="${utility.addFileProtocol(
+        path.resolve(
+          utility.extensionDirectoryPath,
+          `./dependencies/${key}/${key}.min.js`,
+        ),
+        isForVSCode,
+      )}" charset="UTF-8"></script>`;
+    });
 
     if (isForPresentation) {
       scripts += `<script>
@@ -1148,24 +1149,15 @@ if (typeof(window['Reveal']) !== 'undefined') {
       html.indexOf(' class="vega') >= 0 ||
       html.indexOf(' class="vega-lite') >= 0
     ) {
-      if (options.offline) {
-        vegaScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          `./dependencies/vega/vega.js`,
-        )}" charset="UTF-8"></script>`;
-        vegaScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          `./dependencies/vega-lite/vega-lite.js`,
-        )}" charset="UTF-8"></script>`;
-        vegaScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          `./dependencies/vega-embed/vega-embed.js`,
-        )}" charset="UTF-8"></script>`;
-      } else {
-        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega/5.0.0/vega.min.js"></script>`;
-        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega-lite/3.0.0-rc14/vega-lite.min.js"></script>`;
-        vegaScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vega-embed/4.0.0-rc1/vega-embed.min.js"></script>`;
-      }
+      dependentLibraryMaterials.forEach(({ key, version }) => {
+        vegaScript += options.offline
+          ? `<script type="text/javascript" src="file:///${path.resolve(
+              utility.extensionDirectoryPath,
+              `./dependencies/${key}/${key}.min.js`,
+            )}" charset="UTF-8"></script>`
+          : `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/${key}@${version}/build/${name}.js"></script>`;
+      });
+
       vegaInitScript += `<script>
       var vegaEls = document.querySelectorAll('.vega, .vega-lite');
       function reportVegaError(el, error) {

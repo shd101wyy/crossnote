@@ -146,7 +146,7 @@ digraph G {
 
 ```vega
 {
-  "$schema": "https://vega.github.io/schema/vega/v3.0.json",
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
   "width": 400,
   "height": 200,
   "padding": 5,
@@ -248,7 +248,7 @@ digraph G {
 
 ```vega-lite
 {
-  "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+  "$schema": "https://vega.github.io/schema/vega-lite/v3.json",
   "description": "A simple bar chart with embedded data.",
   "data": {
     "values": [
@@ -270,7 +270,7 @@ digraph G {
 `vega-lite` + yaml
 
 ```vega-lite
-"$schema": https://vega.github.io/schema/vega-lite/v2.json
+"$schema": https://vega.github.io/schema/vega-lite/v3.json
 description: A simple bar chart with embedded data.
 data:
   values: [
@@ -293,7 +293,7 @@ encoding:
 `vega-lite {hide=false}` + json
 
 ```vega-lite {hide=false}
-"$schema": https://vega.github.io/schema/vega-lite/v2.json
+"$schema": https://vega.github.io/schema/vega-lite/v3.json
 description: A simple bar chart with embedded data.
 data:
   values: [
@@ -316,7 +316,7 @@ encoding:
 `vega-lite {cmd=false}`
 
 ```vega-lite {cmd=false}
-"$schema": https://vega.github.io/schema/vega-lite/v2.json
+"$schema": https://vega.github.io/schema/vega-lite/v3.json
 description: A simple bar chart with embedded data.
 data:
   values: [

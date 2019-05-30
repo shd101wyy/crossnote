@@ -1,7 +1,6 @@
 /**
  * Convert vega-lite to vega first, then render to svg.
  */
-import * as path from "path";
 import * as YAML from "yamljs";
 import * as utility from "./utility";
 import * as vega from "./vega";
@@ -10,14 +9,7 @@ let vl = null;
 
 export async function toSVG(spec: string = "", baseURL: string = "") {
   if (!vl) {
-    vl = utility.allowUnsafeEval(() =>
-      utility.allowUnsafeNewFunction(() =>
-        require(path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/vega-lite/vega-lite.min.js",
-        )),
-      ),
-    );
+    vl = utility.loadDependency("vega-lite/vega-lite.min.js");
   }
 
   spec = spec.trim();
