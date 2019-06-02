@@ -6,7 +6,7 @@
 
 ```vega-lite {interactive}
 {
-  "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+  "$schema": "https://vega.github.io/schema/vega-lite/v3.json",
   "description": "A simple bar chart with embedded data.",
   "data": {
     "values": [
@@ -36,7 +36,7 @@
 `vega-lite {interactive}` yaml
 
 ```vega-lite {interactive}
-$schema: https://vega.github.io/schema/vega-lite/v2.json
+$schema: https://vega.github.io/schema/vega-lite/v3.json
 description: A simple bar chart with embedded data.
 data:
   values: [
@@ -66,7 +66,7 @@ encoding:
 
 ```vega-lite {interactive}
 {
-  "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+  "$schema": "https://vega.github.io/schema/vega-lite/v3.json",
   "data": {"url": "data/sp500.csv"},
   "vconcat": [{
     "width": 480,
@@ -109,7 +109,7 @@ encoding:
 
 ```vega-lite {interactive hide=false}
 {
-  "$schema": "https://vega.github.io/schema/vega-lite/v2.json",
+  "$schema": "https://vega.github.io/schema/vega-lite/v3.json",
   "data": {"url": "https://vega.github.io/vega-lite/data/sp500.csv"},
   "vconcat": [{
     "width": 480,
@@ -152,7 +152,7 @@ encoding:
 
 ```vega {interactive}
 {
-  "$schema": "https://vega.github.io/schema/vega/v3.json",
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
   "width": 720,
   "height": 480,
   "padding": 5,
