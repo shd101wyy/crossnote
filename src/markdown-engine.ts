@@ -2816,7 +2816,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       enhanceWithEmojiToSvg($);
     }
 
-    html = frontMatterTable + $("body").html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
+    html = frontMatterTable + $("head").html() + $("body").html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
 
     /**
      * check slides
