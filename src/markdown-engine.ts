@@ -2650,7 +2650,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             if (error) {
               return reject(error);
             } else if (stderr) {
-              return reject(stderr);
+              return resolve('<pre>'+stderr+"</pre>"+stdout);
             } else {
               return resolve(stdout);
             }
