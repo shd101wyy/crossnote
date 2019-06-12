@@ -2535,9 +2535,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         v += 1;
       }
 
-      output += `<section ${attrString} ${idString}  class=\"slide ${classString}\" data-line="${
-        slideConfig["lineNo"]
-      }" data-h=\"${h}\" data-v="${v}">${slide}</section>`;
+      output += `<section ${attrString} ${idString}  class=\"slide ${classString}\" data-line="${slideConfig["lineNo"]}" data-h=\"${h}\" data-v="${v}">${slide}</section>`;
       i += 1;
     }
     if (i > 0 && slideConfigs[i - 1]["vertical"]) {
@@ -2650,7 +2648,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             if (error) {
               return reject(error);
             } else if (stderr) {
-              return resolve('<pre>'+stderr+"</pre>"+stdout);
+              return resolve("<pre>" + stderr + "</pre>" + stdout);
             } else {
               return resolve(stdout);
             }
