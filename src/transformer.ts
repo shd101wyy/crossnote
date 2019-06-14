@@ -348,9 +348,9 @@ export async function transformMarkdown(
         }
         /* tslint:disable-next-line:no-conditional-assignment */
       } else if ((headingMatch = line.match(/^(\#{1,7})(.+)/))) {
-        /* ((headingMatch = line.match(/^(\#{1,7})(.+)$/)) || 
-                  // the ==== and --- headers don't work well. For example, table and list will affect it, therefore I decide not to support it.  
-                  (inputString[end + 1] === '=' && inputString[end + 2] === '=') || 
+        /* ((headingMatch = line.match(/^(\#{1,7})(.+)$/)) ||
+                  // the ==== and --- headers don't work well. For example, table and list will affect it, therefore I decide not to support it.
+                  (inputString[end + 1] === '=' && inputString[end + 2] === '=') ||
                   (inputString[end + 1] === '-' && inputString[end + 2] === '-')) */ // headings
 
         if (forPreview) {
@@ -371,9 +371,9 @@ export async function transformMarkdown(
             } else {
               heading = line.trim()
               tag = '##'
-              level = 2     
+              level = 2
             }
-            
+
             end = inputString.indexOf('\n', end + 1)
             if (end < 0) end = inputString.length
           }*/
@@ -391,15 +391,19 @@ export async function transformMarkdown(
         let classes = "";
         let id = "";
         let ignore = false;
+        var opt;
         if (optMatch) {
           heading = heading.replace(optMatch[0], "");
 
           try {
-            const opt = parseAttributes(optMatch[0]);
+            opt = parseAttributes(optMatch[0]);
 
             (classes = opt["class"]),
               (id = opt["id"]),
               (ignore = opt["ignore"]);
+            delete opt["class"];
+            delete opt["id"];
+            delete opt["ignore"];
           } catch (e) {
             heading = "OptionsError: " + optMatch[1];
             ignore = true;
@@ -428,6 +432,15 @@ export async function transformMarkdown(
           }
           if (classes) {
             optionsStr += "." + classes.replace(/\s+/g, " .") + " ";
+          }
+          if (opt) {
+            for (var key in opt) {
+              if (typeof opt[key] === "number") {
+                optionsStr += " " + key + "=" + opt[key];
+              } else {
+                optionsStr += " " + key + '="' + opt[key] + '"';
+              }
+            }
           }
           optionsStr += "}";
 
@@ -884,7 +897,7 @@ export async function transformMarkdown(
               else if extname in ['.wavedrom']
                 output = "```wavedrom\n${fileContent}\n```  "
                 # filesCache?[absoluteFilePath] = output
-              
+
               else if extname == '.js'
                 if forPreview
                   output = '' # js code is evaluated and there is no need to display the code.
