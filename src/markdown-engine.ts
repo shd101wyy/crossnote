@@ -2575,7 +2575,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     text: string = "",
     args: string[],
   ): Promise<string> {
-    var mathRenderer;
+    let mathRenderer;
     switch (this.config.mathRenderingOption) {
       case "MathJax":
         mathRenderer = "--mathjax";

@@ -391,7 +391,7 @@ export async function transformMarkdown(
         let classes = "";
         let id = "";
         let ignore = false;
-        var opt;
+        let opt;
         if (optMatch) {
           heading = heading.replace(optMatch[0], "");
 
@@ -434,7 +434,7 @@ export async function transformMarkdown(
             optionsStr += "." + classes.replace(/\s+/g, " .") + " ";
           }
           if (opt) {
-            for (var key in opt) {
+            for (const key in opt) {
               if (typeof opt[key] === "number") {
                 optionsStr += " " + key + "=" + opt[key];
               } else {
