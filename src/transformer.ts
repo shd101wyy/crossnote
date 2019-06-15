@@ -347,7 +347,7 @@ export async function transformMarkdown(
           outputString += createAnchor(lineNo); // insert anchor for scroll sync
         }
         /* tslint:disable-next-line:no-conditional-assignment */
-      } else if ((headingMatch = line.match(/^(\#{1,7})(.+)/))) {
+      } else if ((headingMatch = line.match(/^(\#{1,7}).*/))) {
         /* ((headingMatch = line.match(/^(\#{1,7})(.+)$/)) ||
                   // the ==== and --- headers don't work well. For example, table and list will affect it, therefore I decide not to support it.
                   (inputString[end + 1] === '=' && inputString[end + 2] === '=') ||
@@ -360,7 +360,7 @@ export async function transformMarkdown(
         let level;
         let tag;
         // if (headingMatch) {
-        heading = headingMatch[2].trim();
+        heading = line.replace(headingMatch[1],"")
         tag = headingMatch[1];
         level = tag.length;
         /*} else {
@@ -378,13 +378,13 @@ export async function transformMarkdown(
             if (end < 0) end = inputString.length
           }*/
 
-        if (!heading.length) {
+        /*if (!heading.length) {
           // return helper(end+1, lineNo+1, outputString + '\n')
           i = end + 1;
           lineNo = lineNo + 1;
           outputString = outputString + "\n";
           continue;
-        }
+        }*/
 
         // check {class:string, id:string, ignore:boolean}
         const optMatch = heading.match(/([^\\]\{|^\{)(.+?)\}(\s*)$/);
