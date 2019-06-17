@@ -360,7 +360,7 @@ export async function transformMarkdown(
         let level;
         let tag;
         // if (headingMatch) {
-        heading = line.replace(headingMatch[1],"")
+        heading = line.replace(headingMatch[1], "");
         tag = headingMatch[1];
         level = tag.length;
         /*} else {
