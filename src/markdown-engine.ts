@@ -57,9 +57,6 @@ const CryptoJS = require(path.resolve(
   "./dependencies/crypto-js/crypto-js.js",
 ));
 
-// Puppeteer
-let puppeteer = null;
-
 export interface MarkdownEngineRenderOption {
   useRelativeFilePath: boolean;
   isForPreview: boolean;
@@ -1686,27 +1683,25 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     });
 
     let browser = null;
-    if (!puppeteer) {
-      try {
-        // Try to load global `puppeteer`. If the global one doesn't exist, load the local `puppeteer-core` instead.
-        const globalNodeModulesPath = (await utility.execFile(
-          process.platform === "win32" ? "npm.cmd" : "npm",
-          ["root", "-g"],
-        ))
-          .trim()
-          .split("\n")[0]
-          .trim();
-        puppeteer = require(path.resolve(globalNodeModulesPath, "./puppeteer")); // trim() function here is very necessary.
-        browser = await puppeteer.launch({
-          headless: true,
-        });
-      } catch (error) {
-        puppeteer = require("puppeteer-core");
-        browser = await puppeteer.launch({
-          executablePath: this.config.chromePath || require("chrome-location"),
-          headless: true,
-        });
-      }
+    let puppeteer = null;
+    if (this.config.usePuppeteerCore) {
+      puppeteer = require("puppeteer-core");
+      browser = await puppeteer.launch({
+        executablePath: this.config.chromePath || require("chrome-location"),
+        headless: true,
+      });
+    } else {
+      const globalNodeModulesPath = (await utility.execFile(
+        process.platform === "win32" ? "npm.cmd" : "npm",
+        ["root", "-g"],
+      ))
+        .trim()
+        .split("\n")[0]
+        .trim();
+      puppeteer = require(path.resolve(globalNodeModulesPath, "./puppeteer")); // trim() function here is very necessary.
+      browser = await puppeteer.launch({
+        headless: true,
+      });
     }
 
     const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });

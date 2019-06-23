@@ -36,6 +36,7 @@ export interface MarkdownEngineConfig {
   HTML5EmbedAudioAttributes?: string;
   HTML5EmbedVideoAttributes?: string;
   puppeteerWaitForTimeout?: number;
+  usePuppeteerCore?: boolean;
 }
 
 export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
@@ -74,4 +75,5 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   HTML5EmbedAudioAttributes: 'controls preload="metadata"',
   HTML5EmbedVideoAttributes: 'controls preload="metadata"',
   puppeteerWaitForTimeout: 0,
+  usePuppeteerCore: true,
 };
