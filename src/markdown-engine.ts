@@ -500,7 +500,7 @@ export class MarkdownEngine {
 ${utility.configs.mermaidConfig}
 if (window['MERMAID_CONFIG']) {
   window['MERMAID_CONFIG'].startOnLoad = false
-  window['MERMAID_CONFIG'].cloneCssStyles = false 
+  window['MERMAID_CONFIG'].cloneCssStyles = false
   window['MERMAID_CONFIG'].theme = "${this.config.mermaidTheme}"
 }
 mermaid.initialize(window['MERMAID_CONFIG'] || {})
@@ -982,7 +982,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         )}">
 
         ${this.generateJSAndCssFilesForPreview(JSAndCssFiles, isForVSCode)}
-        ${head}        
+        ${head}
       </head>
       <body class="preview-container">
         <div class="mume markdown-preview" for="preview" ${
@@ -1495,7 +1495,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${mathStyle}
       ${sequenceDiagramStyle}
       ${fontAwesomeStyle}
-      
+
       ${presentationScript}
       ${mermaidScript}
       ${wavedromScript}
@@ -1503,8 +1503,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${flowchartScript}
       ${sequenceDiagramScript}
 
-      <style> 
-      ${styles} 
+      <style>
+      ${styles}
       </style>
     </head>
     <body ${options.isForPrint ? "" : 'for="html-export"'} ${
@@ -2087,9 +2087,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     <title>${title}</title>
     <meta charset=\"utf-8\">
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-    <style> 
-    ${styleCSS} 
-    ${globalStyles} 
+    <style>
+    ${styleCSS}
+    ${globalStyles}
     </style>
     ${mathStyle}
   </head>
@@ -2098,7 +2098,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${outputHTML}
     </div>
   </body>
-</html>            
+</html>
 `;
 
     // save as html
@@ -2575,13 +2575,22 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     text: string = "",
     args: string[],
   ): Promise<string> {
+    let mathRenderer;
+    switch (this.config.mathRenderingOption) {
+      case "MathJax":
+        mathRenderer = "--mathjax";
+        break;
+      case "KaTeX":
+        mathRenderer = "--katex";
+        break;
+      default:
+        mathRenderer = "";
+    }
     args = args || [];
     args = [
-      "-f",
-      this.config.pandocMarkdownFlavor, // -tex_math_dollars doesn't work properly
-      "-t",
-      "html",
-      "--mathjax",
+      "--from=" + this.config.pandocMarkdownFlavor, // -tex_math_dollars doesn't work properly
+      "--to=html",
+      mathRenderer,
     ]
       .concat(args)
       .filter((arg) => arg.length);
