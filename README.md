@@ -218,6 +218,9 @@ const config = {
 
   // Puppeteer waits for a certain timeout in milliseconds before the document export.
   puppeteerWaitForTimeout: 0
+
+  // If set to true, then locally installed puppeteer-core will be required. Otherwise, the puppeteer globally installed by `npm install -g puppeteer` will be required.
+  usePuppeteerCore: true
 }
 
 // Init Engine
