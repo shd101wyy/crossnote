@@ -174,8 +174,11 @@ const config = {
   // Whether to print background for file export or not. If set to `false`, then `github-light` preview theme will b  used. You can also set `print_background` in front-matter for individual files.
   printBackground: false,
 
-  // Chrome executable path, which is used for Puppeteer export. Leaving it empty means mume will look for the path automatically.
+  // Chrome executable path, which is used for Puppeteer export. Leaving it empty means the path will be found automatically.
   chromePath: '',
+
+  // ImageMagick command line path. Should be either `magick` or `convert`. Leaving it empty means the path will be found automatically.
+  imageMagickPath: '',
 
   // Pandoc executable path
   pandocPath: 'pandoc',
@@ -212,6 +215,9 @@ const config = {
 
   // HTML attributes to pass to video tags.
   HTML5EmbedVideoAttributes: 'controls preload="metadata" width="320" height="240"',
+
+  // Puppeteer waits for a certain timeout in milliseconds before the document export.
+  puppeteerWaitForTimeout: 0
 }
 
 // Init Engine

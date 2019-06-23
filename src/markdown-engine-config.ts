@@ -23,6 +23,7 @@ export interface MarkdownEngineConfig {
   imageFolderPath?: string;
   printBackground?: boolean;
   chromePath?: string;
+  imageMagickPath?: string;
   pandocPath?: string;
   pandocMarkdownFlavor?: string;
   pandocArguments?: string[];
@@ -34,6 +35,7 @@ export interface MarkdownEngineConfig {
   HTML5EmbedIsAllowedHttp?: boolean;
   HTML5EmbedAudioAttributes?: string;
   HTML5EmbedVideoAttributes?: string;
+  puppeteerWaitForTimeout?: number;
 }
 
 export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
@@ -59,6 +61,7 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   imageFolderPath: "/assets",
   printBackground: false,
   chromePath: "",
+  imageMagickPath: "",
   pandocPath: "pandoc",
   pandocMarkdownFlavor: "markdown-raw_tex+tex_math_single_backslash",
   pandocArguments: [],
@@ -70,4 +73,5 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   HTML5EmbedIsAllowedHttp: false,
   HTML5EmbedAudioAttributes: 'controls preload="metadata"',
   HTML5EmbedVideoAttributes: 'controls preload="metadata"',
+  puppeteerWaitForTimeout: 0,
 };

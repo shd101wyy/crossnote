@@ -1728,6 +1728,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
     if (timeout && typeof timeout === "number") {
       await page.waitFor(timeout);
+    } else if (
+      this.config.puppeteerWaitForTimeout &&
+      this.config.puppeteerWaitForTimeout > 0
+    ) {
+      await page.waitFor(this.config.puppeteerWaitForTimeout);
     }
 
     if (fileType === "pdf") {
@@ -2184,6 +2189,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         pandocMarkdownFlavor: this.config.pandocMarkdownFlavor,
         pandocPath: this.config.pandocPath,
         latexEngine: this.config.latexEngine,
+        imageMagickPath: this.config.imageMagickPath,
       },
       config,
     );
@@ -2285,6 +2291,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         codeChunksData: this.codeChunksData,
         graphsCache: this.graphsCache,
         usePandocParser: this.config.usePandocParser,
+        imageMagickPath: this.config.imageMagickPath,
       },
       markdownConfig,
     );
@@ -2766,7 +2773,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const depthTo = tocConfig["depth_to"] || 6;
     const ordered = tocConfig["ordered"];
 
-    const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "\t" });
+    const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "  " });
     this.tocHTML = this.md.render(tocObject.content);
     // }
     this.headings = headings; // reset headings information
@@ -2816,7 +2823,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       enhanceWithEmojiToSvg($);
     }
 
-    html = frontMatterTable + $("body").html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
+    html = frontMatterTable + $("head").html() + $("body").html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
 
     /**
      * check slides

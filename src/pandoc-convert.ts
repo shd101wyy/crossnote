@@ -278,6 +278,7 @@ export async function pandocConvert(
     pandocMarkdownFlavor,
     pandocPath,
     latexEngine,
+    imageMagickPath,
   },
   config = {},
 ): Promise<string> {
@@ -387,7 +388,7 @@ export async function pandocConvert(
       ordered: false,
       depthFrom: 1,
       depthTo: 6,
-      tab: "\t",
+      tab: "  ",
     });
     text = text.replace(/^\s*\[MUMETOC\]\s*/gm, "\n\n" + tocMarkdown + "\n\n");
   }
@@ -418,6 +419,7 @@ export async function pandocConvert(
     useRelativeFilePath: true,
     codeChunksData,
     graphsCache,
+    imageMagickPath,
   });
 
   // pandoc will cause error if directory doesn't exist,

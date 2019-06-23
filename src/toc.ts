@@ -52,7 +52,7 @@ function sanitizeContent(content) {
  *  ordered: boolean
  *  depthFrom: number, default 1
  *  depthTo: number, default 6
- *  tab: string, default `\t`
+ *  tab: string, default `  `
  */
 export interface TocOption {
   ordered: boolean;
@@ -80,7 +80,7 @@ export function toc(
   const ordered = opt.ordered;
   const depthFrom = opt.depthFrom || 1;
   const depthTo = opt.depthTo || 6;
-  let tab = opt.tab || "\t";
+  let tab = opt.tab || "  ";
   const ignoreLink = opt.ignoreLink || false;
 
   if (ordered) {
@@ -126,7 +126,7 @@ export function toc(
       }
       numStr = orderedListNums[orderedListNums.length - 1];
     }
-    const listItem = `${nPrefix(tab, n)}${ordered ? `${numStr}.` : "*"} ${
+    const listItem = `${nPrefix(tab, n)}${ordered ? `${numStr}.` : "-"} ${
       ignoreLink
         ? sanitizeContent(content)
         : `[${sanitizeContent(content)}](#${slug})`

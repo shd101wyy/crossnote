@@ -186,6 +186,7 @@ export async function markdownConvert(
     codeChunksData,
     graphsCache,
     usePandocParser,
+    imageMagickPath,
   }: {
     projectDirectoryPath: string;
     fileDirectoryPath: string;
@@ -198,6 +199,7 @@ export async function markdownConvert(
     codeChunksData: { [key: string]: CodeChunkData };
     graphsCache: { [key: string]: string };
     usePandocParser: boolean;
+    imageMagickPath: string;
   },
   config: object,
 ): Promise<string> {
@@ -258,7 +260,7 @@ export async function markdownConvert(
       ordered: false,
       depthFrom: 1,
       depthTo: 6,
-      tab: "\t",
+      tab: "  ",
     });
     text = text.replace(/^\s*\[MUMETOC\]\s*/gm, "\n\n" + tocMarkdown + "\n\n");
   }
@@ -296,6 +298,7 @@ export async function markdownConvert(
         useRelativeFilePath,
         codeChunksData,
         graphsCache,
+        imageMagickPath,
       }).then(({ outputString }) => {
         outputString = data.frontMatterString + outputString; // put the front-matter back.
 

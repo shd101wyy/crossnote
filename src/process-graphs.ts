@@ -22,6 +22,7 @@ export async function processGraphs(
     useRelativeFilePath,
     codeChunksData,
     graphsCache,
+    imageMagickPath,
   }: {
     fileDirectoryPath: string;
     projectDirectoryPath: string;
@@ -30,6 +31,7 @@ export async function processGraphs(
     useRelativeFilePath: boolean;
     codeChunksData: { [key: string]: CodeChunkData };
     graphsCache: { [key: string]: string };
+    imageMagickPath: string;
   },
 ): Promise<{ outputString: string; imagePaths: string[] }> {
   const lines = text.split("\n");
@@ -146,7 +148,7 @@ export async function processGraphs(
     }
 
     const pngFilePath = path.resolve(imageDirectoryPath, outFileName);
-    await svgElementToPNGFile(svg, pngFilePath);
+    await svgElementToPNGFile(svg, pngFilePath, imageMagickPath);
     let displayPNGFilePath;
     if (useRelativeFilePath) {
       displayPNGFilePath =
