@@ -1,6 +1,5 @@
 coverage
 node_modules
 test.js
-package-lock.json
 out
 .DS_Store
