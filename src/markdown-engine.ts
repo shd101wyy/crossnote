@@ -1685,17 +1685,33 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       offline: true,
     });
 
+    let browser = null;
     if (!puppeteer) {
-      puppeteer = require("puppeteer-core");
+      try {
+        // Try to load global `puppeteer`. If the global one doesn't exist, load the local `puppeteer-core` instead.
+        const globalNodeModulesPath = (await utility.execFile(
+          process.platform === "win32" ? "npm.cmd" : "npm",
+          ["root", "-g"],
+        ))
+          .trim()
+          .split("\n")[0]
+          .trim();
+        puppeteer = require(path.resolve(globalNodeModulesPath, "./puppeteer")); // trim() function here is very necessary.
+        browser = await puppeteer.launch({
+          headless: true,
+        });
+      } catch (error) {
+        puppeteer = require("puppeteer-core");
+        browser = await puppeteer.launch({
+          executablePath: this.config.chromePath || require("chrome-location"),
+          headless: true,
+        });
+      }
     }
 
     const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
     await utility.writeFile(info.fd, html);
 
-    const browser = await puppeteer.launch({
-      executablePath: this.config.chromePath || require("chrome-location"),
-      headless: true,
-    });
     const page = await browser.newPage();
     const loadPath =
       "file:///" +
