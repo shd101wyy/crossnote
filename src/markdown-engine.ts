@@ -2184,6 +2184,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         pandocMarkdownFlavor: this.config.pandocMarkdownFlavor,
         pandocPath: this.config.pandocPath,
         latexEngine: this.config.latexEngine,
+        imageMagickPath: this.config.imageMagickPath,
       },
       config,
     );
@@ -2285,6 +2286,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         codeChunksData: this.codeChunksData,
         graphsCache: this.graphsCache,
         usePandocParser: this.config.usePandocParser,
+        imageMagickPath: this.config.imageMagickPath,
       },
       markdownConfig,
     );

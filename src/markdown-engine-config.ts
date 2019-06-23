@@ -23,6 +23,7 @@ export interface MarkdownEngineConfig {
   imageFolderPath?: string;
   printBackground?: boolean;
   chromePath?: string;
+  imageMagickPath?: string;
   pandocPath?: string;
   pandocMarkdownFlavor?: string;
   pandocArguments?: string[];
@@ -59,6 +60,7 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   imageFolderPath: "/assets",
   printBackground: false,
   chromePath: "",
+  imageMagickPath: "",
   pandocPath: "pandoc",
   pandocMarkdownFlavor: "markdown-raw_tex+tex_math_single_backslash",
   pandocArguments: [],

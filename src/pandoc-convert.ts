@@ -278,6 +278,7 @@ export async function pandocConvert(
     pandocMarkdownFlavor,
     pandocPath,
     latexEngine,
+    imageMagickPath,
   },
   config = {},
 ): Promise<string> {
@@ -418,6 +419,7 @@ export async function pandocConvert(
     useRelativeFilePath: true,
     codeChunksData,
     graphsCache,
+    imageMagickPath,
   });
 
   // pandoc will cause error if directory doesn't exist,
