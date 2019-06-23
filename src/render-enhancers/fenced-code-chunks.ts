@@ -195,7 +195,7 @@ export async function runCodeChunk(
         ordered: normalizedAttributes["ordered_list"],
         depthFrom: normalizedAttributes["depth_from"],
         depthTo: normalizedAttributes["depth_to"],
-        tab: normalizedAttributes["tab"] || "\t",
+        tab: normalizedAttributes["tab"] || "  ",
         ignoreLink: normalizedAttributes["ignore_link"],
       });
       result = tocObject.content;

@@ -388,7 +388,7 @@ export async function pandocConvert(
       ordered: false,
       depthFrom: 1,
       depthTo: 6,
-      tab: "\t",
+      tab: "  ",
     });
     text = text.replace(/^\s*\[MUMETOC\]\s*/gm, "\n\n" + tocMarkdown + "\n\n");
   }

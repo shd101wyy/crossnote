@@ -2768,7 +2768,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const depthTo = tocConfig["depth_to"] || 6;
     const ordered = tocConfig["ordered"];
 
-    const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "\t" });
+    const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "  " });
     this.tocHTML = this.md.render(tocObject.content);
     // }
     this.headings = headings; // reset headings information
