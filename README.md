@@ -215,6 +215,9 @@ const config = {
 
   // HTML attributes to pass to video tags.
   HTML5EmbedVideoAttributes: 'controls preload="metadata" width="320" height="240"',
+
+  // Puppeteer waits for a certain timeout in milliseconds before the document export.
+  puppeteerWaitForTimeout: 0
 }
 
 // Init Engine

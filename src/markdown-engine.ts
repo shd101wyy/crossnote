@@ -1728,6 +1728,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
     if (timeout && typeof timeout === "number") {
       await page.waitFor(timeout);
+    } else if (
+      this.config.puppeteerWaitForTimeout &&
+      this.config.puppeteerWaitForTimeout > 0
+    ) {
+      await page.waitFor(this.config.puppeteerWaitForTimeout);
     }
 
     if (fileType === "pdf") {
