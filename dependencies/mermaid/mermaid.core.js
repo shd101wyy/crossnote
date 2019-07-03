@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variables */\n/* Gantt chart variables */\n.label {\n  font-family: 'trebuchet ms', verdana, arial;\n  color: #333; }\n\n.node rect,\n.node circle,\n.node ellipse,\n.node polygon {\n  fill: #BDD5EA;\n  stroke: purple;\n  stroke-width: 1px; }\n\n.node.clickable {\n  cursor: pointer; }\n\n.arrowheadPath {\n  fill: lightgrey; }\n\n.edgePath .path {\n  stroke: lightgrey;\n  stroke-width: 1.5px; }\n\n.edgeLabel {\n  background-color: #e8e8e8; }\n\n.cluster rect {\n  fill: #6D6D65 !important;\n  stroke: rgba(255, 255, 255, 0.25) !important;\n  stroke-width: 1px !important; }\n\n.cluster text {\n  fill: #F9FFFE; }\n\ndiv.mermaidTooltip {\n  position: absolute;\n  text-align: center;\n  max-width: 200px;\n  padding: 2px;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 12px;\n  background: #6D6D65;\n  border: 1px solid rgba(255, 255, 255, 0.25);\n  border-radius: 2px;\n  pointer-events: none;\n  z-index: 100; }\n\n.actor {\n  stroke: #81B1DB;\n  fill: #BDD5EA; }\n\ntext.actor {\n  fill: black;\n  stroke: none; }\n\n.actor-line {\n  stroke: lightgrey; }\n\n.messageLine0 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: lightgrey; }\n\n.messageLine1 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: lightgrey; }\n\n#arrowhead {\n  fill: lightgrey; }\n\n#crosshead path {\n  fill: lightgrey !important;\n  stroke: lightgrey !important; }\n\n.messageText {\n  fill: lightgrey;\n  stroke: none; }\n\n.labelBox {\n  stroke: #81B1DB;\n  fill: #BDD5EA; }\n\n.labelText {\n  fill: lightgrey;\n  stroke: none; }\n\n.loopText {\n  fill: lightgrey;\n  stroke: none; }\n\n.loopLine {\n  stroke-width: 2;\n  stroke-dasharray: '2 2';\n  stroke: #81B1DB; }\n\n.note {\n  stroke: rgba(255, 255, 255, 0.25);\n  fill: #fff5ad; }\n\n.noteText {\n  fill: black;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 14px; }\n\n.activation0 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation1 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation2 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n/** Section styling */\n.section {\n  stroke: none;\n  opacity: 0.2; }\n\n.section0 {\n  fill: rgba(255, 255, 255, 0.3); }\n\n.section2 {\n  fill: #EAE8B9; }\n\n.section1,\n.section3 {\n  fill: white;\n  opacity: 0.2; }\n\n.sectionTitle0 {\n  fill: #F9FFFE; }\n\n.sectionTitle1 {\n  fill: #F9FFFE; }\n\n.sectionTitle2 {\n  fill: #F9FFFE; }\n\n.sectionTitle3 {\n  fill: #F9FFFE; }\n\n.sectionTitle {\n  text-anchor: start;\n  font-size: 11px;\n  text-height: 14px; }\n\n/* Grid and axis */\n.grid .tick {\n  stroke: lightgrey;\n  opacity: 0.3;\n  shape-rendering: crispEdges; }\n\n.grid path {\n  stroke-width: 0; }\n\n/* Today line */\n.today {\n  fill: none;\n  stroke: #DB5757;\n  stroke-width: 2px; }\n\n/* Task styling */\n/* Default task */\n.task {\n  stroke-width: 2; }\n\n.taskText {\n  text-anchor: middle;\n  font-size: 11px; }\n\n.taskTextOutsideRight {\n  fill: #323D47;\n  text-anchor: start;\n  font-size: 11px; }\n\n.taskTextOutsideLeft {\n  fill: #323D47;\n  text-anchor: end;\n  font-size: 11px; }\n\n/* Specific task settings for the sections*/\n.taskText0,\n.taskText1,\n.taskText2,\n.taskText3 {\n  fill: #323D47; }\n\n.task0,\n.task1,\n.task2,\n.task3 {\n  fill: #BDD5EA;\n  stroke: rgba(255, 255, 255, 0.5); }\n\n.taskTextOutside0,\n.taskTextOutside2 {\n  fill: lightgrey; }\n\n.taskTextOutside1,\n.taskTextOutside3 {\n  fill: lightgrey; }\n\n/* Active task */\n.active0,\n.active1,\n.active2,\n.active3 {\n  fill: #81B1DB;\n  stroke: rgba(255, 255, 255, 0.5); }\n\n.activeText0,\n.activeText1,\n.activeText2,\n.activeText3 {\n  fill: #323D47 !important; }\n\n/* Completed task */\n.done0,\n.done1,\n.done2,\n.done3 {\n  stroke: grey;\n  fill: lightgrey;\n  stroke-width: 2; }\n\n.doneText0,\n.doneText1,\n.doneText2,\n.doneText3 {\n  fill: #323D47 !important; }\n\n/* Tasks on the critical line */\n.crit0,\n.crit1,\n.crit2,\n.crit3 {\n  stroke: #E83737;\n  fill: #E83737;\n  stroke-width: 2; }\n\n.activeCrit0,\n.activeCrit1,\n.activeCrit2,\n.activeCrit3 {\n  stroke: #E83737;\n  fill: #81B1DB;\n  stroke-width: 2; }\n\n.doneCrit0,\n.doneCrit1,\n.doneCrit2,\n.doneCrit3 {\n  stroke: #E83737;\n  fill: lightgrey;\n  stroke-width: 2;\n  cursor: pointer;\n  shape-rendering: crispEdges; }\n\n.doneCritText0,\n.doneCritText1,\n.doneCritText2,\n.doneCritText3 {\n  fill: #323D47 !important; }\n\n.activeCritText0,\n.activeCritText1,\n.activeCritText2,\n.activeCritText3 {\n  fill: #323D47 !important; }\n\n.titleText {\n  text-anchor: middle;\n  font-size: 18px;\n  fill: #323D47; }\n\ng.classGroup text {\n  fill: purple;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 10px; }\n\ng.classGroup rect {\n  fill: #BDD5EA;\n  stroke: purple; }\n\ng.classGroup line {\n  stroke: purple;\n  stroke-width: 1; }\n\n.classLabel .box {\n  stroke: none;\n  stroke-width: 0;\n  fill: #BDD5EA;\n  opacity: 0.5; }\n\n.classLabel .label {\n  fill: purple;\n  font-size: 10px; }\n\n.relation {\n  stroke: purple;\n  stroke-width: 1;\n  fill: none; }\n\n#compositionStart {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n#compositionEnd {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n#aggregationStart {\n  fill: #BDD5EA;\n  stroke: purple;\n  stroke-width: 1; }\n\n#aggregationEnd {\n  fill: #BDD5EA;\n  stroke: purple;\n  stroke-width: 1; }\n\n#dependencyStart {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n#dependencyEnd {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n#extensionStart {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n#extensionEnd {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n.commit-id,\n.commit-msg,\n.branch-label {\n  fill: lightgrey;\n  color: lightgrey; }\n", ""]);
+exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variables */\n/* Gantt chart variables */\n.label {\n  font-family: 'trebuchet ms', verdana, arial;\n  color: #333; }\n\n.node rect,\n.node circle,\n.node ellipse,\n.node polygon {\n  fill: #BDD5EA;\n  stroke: purple;\n  stroke-width: 1px; }\n\n.node.clickable {\n  cursor: pointer; }\n\n.arrowheadPath {\n  fill: lightgrey; }\n\n.edgePath .path {\n  stroke: lightgrey;\n  stroke-width: 1.5px; }\n\n.edgeLabel {\n  background-color: #e8e8e8; }\n\n.cluster rect {\n  fill: #6D6D65;\n  stroke: rgba(255, 255, 255, 0.25);\n  stroke-width: 1px; }\n\n.cluster text {\n  fill: #F9FFFE; }\n\ndiv.mermaidTooltip {\n  position: absolute;\n  text-align: center;\n  max-width: 200px;\n  padding: 2px;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 12px;\n  background: #6D6D65;\n  border: 1px solid rgba(255, 255, 255, 0.25);\n  border-radius: 2px;\n  pointer-events: none;\n  z-index: 100; }\n\n.actor {\n  stroke: #81B1DB;\n  fill: #BDD5EA; }\n\ntext.actor {\n  fill: black;\n  stroke: none; }\n\n.actor-line {\n  stroke: lightgrey; }\n\n.messageLine0 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: lightgrey; }\n\n.messageLine1 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: lightgrey; }\n\n#arrowhead {\n  fill: lightgrey; }\n\n#crosshead path {\n  fill: lightgrey !important;\n  stroke: lightgrey !important; }\n\n.messageText {\n  fill: lightgrey;\n  stroke: none; }\n\n.labelBox {\n  stroke: #81B1DB;\n  fill: #BDD5EA; }\n\n.labelText {\n  fill: #323D47;\n  stroke: none; }\n\n.loopText {\n  fill: lightgrey;\n  stroke: none; }\n\n.loopLine {\n  stroke-width: 2;\n  stroke-dasharray: '2 2';\n  stroke: #81B1DB; }\n\n.note {\n  stroke: rgba(255, 255, 255, 0.25);\n  fill: #fff5ad; }\n\n.noteText {\n  fill: black;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 14px; }\n\n.activation0 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation1 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation2 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n/** Section styling */\n.section {\n  stroke: none;\n  opacity: 0.2; }\n\n.section0 {\n  fill: rgba(255, 255, 255, 0.3); }\n\n.section2 {\n  fill: #EAE8B9; }\n\n.section1,\n.section3 {\n  fill: white;\n  opacity: 0.2; }\n\n.sectionTitle0 {\n  fill: #F9FFFE; }\n\n.sectionTitle1 {\n  fill: #F9FFFE; }\n\n.sectionTitle2 {\n  fill: #F9FFFE; }\n\n.sectionTitle3 {\n  fill: #F9FFFE; }\n\n.sectionTitle {\n  text-anchor: start;\n  font-size: 11px;\n  text-height: 14px; }\n\n/* Grid and axis */\n.grid .tick {\n  stroke: lightgrey;\n  opacity: 0.3;\n  shape-rendering: crispEdges; }\n\n.grid path {\n  stroke-width: 0; }\n\n/* Today line */\n.today {\n  fill: none;\n  stroke: #DB5757;\n  stroke-width: 2px; }\n\n/* Task styling */\n/* Default task */\n.task {\n  stroke-width: 2; }\n\n.taskText {\n  text-anchor: middle;\n  font-size: 11px; }\n\n.taskTextOutsideRight {\n  fill: #323D47;\n  text-anchor: start;\n  font-size: 11px; }\n\n.taskTextOutsideLeft {\n  fill: #323D47;\n  text-anchor: end;\n  font-size: 11px; }\n\n/* Special case clickable */\n.task.clickable {\n  cursor: pointer; }\n\n.taskText.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n.taskTextOutsideLeft.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n.taskTextOutsideRight.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n/* Specific task settings for the sections*/\n.taskText0,\n.taskText1,\n.taskText2,\n.taskText3 {\n  fill: #323D47; }\n\n.task0,\n.task1,\n.task2,\n.task3 {\n  fill: #BDD5EA;\n  stroke: rgba(255, 255, 255, 0.5); }\n\n.taskTextOutside0,\n.taskTextOutside2 {\n  fill: lightgrey; }\n\n.taskTextOutside1,\n.taskTextOutside3 {\n  fill: lightgrey; }\n\n/* Active task */\n.active0,\n.active1,\n.active2,\n.active3 {\n  fill: #81B1DB;\n  stroke: rgba(255, 255, 255, 0.5); }\n\n.activeText0,\n.activeText1,\n.activeText2,\n.activeText3 {\n  fill: #323D47 !important; }\n\n/* Completed task */\n.done0,\n.done1,\n.done2,\n.done3 {\n  stroke: grey;\n  fill: lightgrey;\n  stroke-width: 2; }\n\n.doneText0,\n.doneText1,\n.doneText2,\n.doneText3 {\n  fill: #323D47 !important; }\n\n/* Tasks on the critical line */\n.crit0,\n.crit1,\n.crit2,\n.crit3 {\n  stroke: #E83737;\n  fill: #E83737;\n  stroke-width: 2; }\n\n.activeCrit0,\n.activeCrit1,\n.activeCrit2,\n.activeCrit3 {\n  stroke: #E83737;\n  fill: #81B1DB;\n  stroke-width: 2; }\n\n.doneCrit0,\n.doneCrit1,\n.doneCrit2,\n.doneCrit3 {\n  stroke: #E83737;\n  fill: lightgrey;\n  stroke-width: 2;\n  cursor: pointer;\n  shape-rendering: crispEdges; }\n\n.milestone {\n  transform: rotate(45deg) scale(0.8, 0.8); }\n\n.milestoneText {\n  font-style: italic; }\n\n.doneCritText0,\n.doneCritText1,\n.doneCritText2,\n.doneCritText3 {\n  fill: #323D47 !important; }\n\n.activeCritText0,\n.activeCritText1,\n.activeCritText2,\n.activeCritText3 {\n  fill: #323D47 !important; }\n\n.titleText {\n  text-anchor: middle;\n  font-size: 18px;\n  fill: #323D47; }\n\ng.classGroup text {\n  fill: purple;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 10px; }\n\ng.classGroup rect {\n  fill: #BDD5EA;\n  stroke: purple; }\n\ng.classGroup line {\n  stroke: purple;\n  stroke-width: 1; }\n\n.classLabel .box {\n  stroke: none;\n  stroke-width: 0;\n  fill: #BDD5EA;\n  opacity: 0.5; }\n\n.classLabel .label {\n  fill: purple;\n  font-size: 10px; }\n\n.relation {\n  stroke: purple;\n  stroke-width: 1;\n  fill: none; }\n\n#compositionStart {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n#compositionEnd {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n#aggregationStart {\n  fill: #BDD5EA;\n  stroke: purple;\n  stroke-width: 1; }\n\n#aggregationEnd {\n  fill: #BDD5EA;\n  stroke: purple;\n  stroke-width: 1; }\n\n#dependencyStart {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n#dependencyEnd {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n#extensionStart {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n#extensionEnd {\n  fill: purple;\n  stroke: purple;\n  stroke-width: 1; }\n\n.commit-id,\n.commit-msg,\n.branch-label {\n  fill: lightgrey;\n  color: lightgrey; }\n", ""]);
 
 
 
@@ -120,7 +120,7 @@ exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variable
 
 exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variables */\n/* Gantt chart variables */\n.label {\n  font-family: 'trebuchet ms', verdana, arial;\n  color: #333; }\n\n.node rect,\n.node circle,\n.node ellipse,\n.node polygon {\n  fill: #ECECFF;\n  stroke: #9370DB;\n  stroke-width: 1px; }\n\n.node.clickable {\n  cursor: pointer; }\n\n.arrowheadPath {\n  fill: #333333; }\n\n.edgePath .path {\n  stroke: #333333;\n  stroke-width: 1.5px; }\n\n.edgeLabel {\n  background-color: #e8e8e8; }\n\n.cluster rect {\n  fill: #ffffde !important;\n  stroke: #aaaa33 !important;\n  stroke-width: 1px !important; }\n\n.cluster text {\n  fill: #333; }\n\ndiv.mermaidTooltip {\n  position: absolute;\n  text-align: center;\n  max-width: 200px;\n  padding: 2px;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 12px;\n  background: #ffffde;\n  border: 1px solid #aaaa33;\n  border-radius: 2px;\n  pointer-events: none;\n  z-index: 100; }\n\n.actor {\n  stroke: #CCCCFF;\n  fill: #ECECFF; }\n\ntext.actor {\n  fill: black;\n  stroke: none; }\n\n.actor-line {\n  stroke: grey; }\n\n.messageLine0 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n.messageLine1 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n#arrowhead {\n  fill: #333; }\n\n#crosshead path {\n  fill: #333 !important;\n  stroke: #333 !important; }\n\n.messageText {\n  fill: #333;\n  stroke: none; }\n\n.labelBox {\n  stroke: #CCCCFF;\n  fill: #ECECFF; }\n\n.labelText {\n  fill: black;\n  stroke: none; }\n\n.loopText {\n  fill: black;\n  stroke: none; }\n\n.loopLine {\n  stroke-width: 2;\n  stroke-dasharray: '2 2';\n  stroke: #CCCCFF; }\n\n.note {\n  stroke: #aaaa33;\n  fill: #fff5ad; }\n\n.noteText {\n  fill: black;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 14px; }\n\n.activation0 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation1 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation2 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n/** Section styling */\n.section {\n  stroke: none;\n  opacity: 0.2; }\n\n.section0 {\n  fill: rgba(102, 102, 255, 0.49); }\n\n.section2 {\n  fill: #fff400; }\n\n.section1,\n.section3 {\n  fill: white;\n  opacity: 0.2; }\n\n.sectionTitle0 {\n  fill: #333; }\n\n.sectionTitle1 {\n  fill: #333; }\n\n.sectionTitle2 {\n  fill: #333; }\n\n.sectionTitle3 {\n  fill: #333; }\n\n.sectionTitle {\n  text-anchor: start;\n  font-size: 11px;\n  text-height: 14px; }\n\n/* Grid and axis */\n.grid .tick {\n  stroke: lightgrey;\n  opacity: 0.3;\n  shape-rendering: crispEdges; }\n\n.grid path {\n  stroke-width: 0; }\n\n/* Today line */\n.today {\n  fill: none;\n  stroke: red;\n  stroke-width: 2px; }\n\n/* Task styling */\n/* Default task */\n.task {\n  stroke-width: 2; }\n\n.taskText {\n  text-anchor: middle;\n  font-size: 11px; }\n\n.taskTextOutsideRight {\n  fill: black;\n  text-anchor: start;\n  font-size: 11px; }\n\n.taskTextOutsideLeft {\n  fill: black;\n  text-anchor: end;\n  font-size: 11px; }\n\n/* Specific task settings for the sections*/\n.taskText0,\n.taskText1,\n.taskText2,\n.taskText3 {\n  fill: white; }\n\n.task0,\n.task1,\n.task2,\n.task3 {\n  fill: #8a90dd;\n  stroke: #534fbc; }\n\n.taskTextOutside0,\n.taskTextOutside2 {\n  fill: black; }\n\n.taskTextOutside1,\n.taskTextOutside3 {\n  fill: black; }\n\n/* Active task */\n.active0,\n.active1,\n.active2,\n.active3 {\n  fill: #bfc7ff;\n  stroke: #534fbc; }\n\n.activeText0,\n.activeText1,\n.activeText2,\n.activeText3 {\n  fill: black !important; }\n\n/* Completed task */\n.done0,\n.done1,\n.done2,\n.done3 {\n  stroke: grey;\n  fill: lightgrey;\n  stroke-width: 2; }\n\n.doneText0,\n.doneText1,\n.doneText2,\n.doneText3 {\n  fill: black !important; }\n\n/* Tasks on the critical line */\n.crit0,\n.crit1,\n.crit2,\n.crit3 {\n  stroke: #ff8888;\n  fill: red;\n  stroke-width: 2; }\n\n.activeCrit0,\n.activeCrit1,\n.activeCrit2,\n.activeCrit3 {\n  stroke: #ff8888;\n  fill: #bfc7ff;\n  stroke-width: 2; }\n\n.doneCrit0,\n.doneCrit1,\n.doneCrit2,\n.doneCrit3 {\n  stroke: #ff8888;\n  fill: lightgrey;\n  stroke-width: 2;\n  cursor: pointer;\n  shape-rendering: crispEdges; }\n\n.doneCritText0,\n.doneCritText1,\n.doneCritText2,\n.doneCritText3 {\n  fill: black !important; }\n\n.activeCritText0,\n.activeCritText1,\n.activeCritText2,\n.activeCritText3 {\n  fill: black !important; }\n\n.titleText {\n  text-anchor: middle;\n  font-size: 18px;\n  fill: black; }\n\ng.classGroup text {\n  fill: #9370DB;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 10px; }\n\ng.classGroup rect {\n  fill: #ECECFF;\n  stroke: #9370DB; }\n\ng.classGroup line {\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n.classLabel .box {\n  stroke: none;\n  stroke-width: 0;\n  fill: #ECECFF;\n  opacity: 0.5; }\n\n.classLabel .label {\n  fill: #9370DB;\n  font-size: 10px; }\n\n.relation {\n  stroke: #9370DB;\n  stroke-width: 1;\n  fill: none; }\n\n#compositionStart {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#compositionEnd {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#aggregationStart {\n  fill: #ECECFF;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#aggregationEnd {\n  fill: #ECECFF;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#dependencyStart {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#dependencyEnd {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#extensionStart {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#extensionEnd {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n.commit-id,\n.commit-msg,\n.branch-label {\n  fill: lightgrey;\n  color: lightgrey; }\n", ""]);
+exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variables */\n/* Gantt chart variables */\n.label {\n  font-family: 'trebuchet ms', verdana, arial;\n  color: #333; }\n\n.node rect,\n.node circle,\n.node ellipse,\n.node polygon {\n  fill: #ECECFF;\n  stroke: #9370DB;\n  stroke-width: 1px; }\n\n.node.clickable {\n  cursor: pointer; }\n\n.arrowheadPath {\n  fill: #333333; }\n\n.edgePath .path {\n  stroke: #333333;\n  stroke-width: 1.5px; }\n\n.edgeLabel {\n  background-color: #e8e8e8; }\n\n.cluster rect {\n  fill: #ffffde;\n  stroke: #aaaa33;\n  stroke-width: 1px; }\n\n.cluster text {\n  fill: #333; }\n\ndiv.mermaidTooltip {\n  position: absolute;\n  text-align: center;\n  max-width: 200px;\n  padding: 2px;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 12px;\n  background: #ffffde;\n  border: 1px solid #aaaa33;\n  border-radius: 2px;\n  pointer-events: none;\n  z-index: 100; }\n\n.actor {\n  stroke: #CCCCFF;\n  fill: #ECECFF; }\n\ntext.actor {\n  fill: black;\n  stroke: none; }\n\n.actor-line {\n  stroke: grey; }\n\n.messageLine0 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n.messageLine1 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n#arrowhead {\n  fill: #333; }\n\n#crosshead path {\n  fill: #333 !important;\n  stroke: #333 !important; }\n\n.messageText {\n  fill: #333;\n  stroke: none; }\n\n.labelBox {\n  stroke: #CCCCFF;\n  fill: #ECECFF; }\n\n.labelText {\n  fill: black;\n  stroke: none; }\n\n.loopText {\n  fill: black;\n  stroke: none; }\n\n.loopLine {\n  stroke-width: 2;\n  stroke-dasharray: '2 2';\n  stroke: #CCCCFF; }\n\n.note {\n  stroke: #aaaa33;\n  fill: #fff5ad; }\n\n.noteText {\n  fill: black;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 14px; }\n\n.activation0 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation1 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation2 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n/** Section styling */\n.section {\n  stroke: none;\n  opacity: 0.2; }\n\n.section0 {\n  fill: rgba(102, 102, 255, 0.49); }\n\n.section2 {\n  fill: #fff400; }\n\n.section1,\n.section3 {\n  fill: white;\n  opacity: 0.2; }\n\n.sectionTitle0 {\n  fill: #333; }\n\n.sectionTitle1 {\n  fill: #333; }\n\n.sectionTitle2 {\n  fill: #333; }\n\n.sectionTitle3 {\n  fill: #333; }\n\n.sectionTitle {\n  text-anchor: start;\n  font-size: 11px;\n  text-height: 14px; }\n\n/* Grid and axis */\n.grid .tick {\n  stroke: lightgrey;\n  opacity: 0.3;\n  shape-rendering: crispEdges; }\n\n.grid path {\n  stroke-width: 0; }\n\n/* Today line */\n.today {\n  fill: none;\n  stroke: red;\n  stroke-width: 2px; }\n\n/* Task styling */\n/* Default task */\n.task {\n  stroke-width: 2; }\n\n.taskText {\n  text-anchor: middle;\n  font-size: 11px; }\n\n.taskTextOutsideRight {\n  fill: black;\n  text-anchor: start;\n  font-size: 11px; }\n\n.taskTextOutsideLeft {\n  fill: black;\n  text-anchor: end;\n  font-size: 11px; }\n\n/* Special case clickable */\n.task.clickable {\n  cursor: pointer; }\n\n.taskText.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n.taskTextOutsideLeft.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n.taskTextOutsideRight.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n/* Specific task settings for the sections*/\n.taskText0,\n.taskText1,\n.taskText2,\n.taskText3 {\n  fill: white; }\n\n.task0,\n.task1,\n.task2,\n.task3 {\n  fill: #8a90dd;\n  stroke: #534fbc; }\n\n.taskTextOutside0,\n.taskTextOutside2 {\n  fill: black; }\n\n.taskTextOutside1,\n.taskTextOutside3 {\n  fill: black; }\n\n/* Active task */\n.active0,\n.active1,\n.active2,\n.active3 {\n  fill: #bfc7ff;\n  stroke: #534fbc; }\n\n.activeText0,\n.activeText1,\n.activeText2,\n.activeText3 {\n  fill: black !important; }\n\n/* Completed task */\n.done0,\n.done1,\n.done2,\n.done3 {\n  stroke: grey;\n  fill: lightgrey;\n  stroke-width: 2; }\n\n.doneText0,\n.doneText1,\n.doneText2,\n.doneText3 {\n  fill: black !important; }\n\n/* Tasks on the critical line */\n.crit0,\n.crit1,\n.crit2,\n.crit3 {\n  stroke: #ff8888;\n  fill: red;\n  stroke-width: 2; }\n\n.activeCrit0,\n.activeCrit1,\n.activeCrit2,\n.activeCrit3 {\n  stroke: #ff8888;\n  fill: #bfc7ff;\n  stroke-width: 2; }\n\n.doneCrit0,\n.doneCrit1,\n.doneCrit2,\n.doneCrit3 {\n  stroke: #ff8888;\n  fill: lightgrey;\n  stroke-width: 2;\n  cursor: pointer;\n  shape-rendering: crispEdges; }\n\n.milestone {\n  transform: rotate(45deg) scale(0.8, 0.8); }\n\n.milestoneText {\n  font-style: italic; }\n\n.doneCritText0,\n.doneCritText1,\n.doneCritText2,\n.doneCritText3 {\n  fill: black !important; }\n\n.activeCritText0,\n.activeCritText1,\n.activeCritText2,\n.activeCritText3 {\n  fill: black !important; }\n\n.titleText {\n  text-anchor: middle;\n  font-size: 18px;\n  fill: black; }\n\ng.classGroup text {\n  fill: #9370DB;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 10px; }\n\ng.classGroup rect {\n  fill: #ECECFF;\n  stroke: #9370DB; }\n\ng.classGroup line {\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n.classLabel .box {\n  stroke: none;\n  stroke-width: 0;\n  fill: #ECECFF;\n  opacity: 0.5; }\n\n.classLabel .label {\n  fill: #9370DB;\n  font-size: 10px; }\n\n.relation {\n  stroke: #9370DB;\n  stroke-width: 1;\n  fill: none; }\n\n#compositionStart {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#compositionEnd {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#aggregationStart {\n  fill: #ECECFF;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#aggregationEnd {\n  fill: #ECECFF;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#dependencyStart {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#dependencyEnd {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#extensionStart {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n#extensionEnd {\n  fill: #9370DB;\n  stroke: #9370DB;\n  stroke-width: 1; }\n\n.commit-id,\n.commit-msg,\n.branch-label {\n  fill: lightgrey;\n  color: lightgrey; }\n", ""]);
 
 
 
@@ -135,7 +135,7 @@ exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variable
 
 exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variables */\n/* Gantt chart variables */\n.label {\n  font-family: 'trebuchet ms', verdana, arial;\n  color: #333; }\n\n.node rect,\n.node circle,\n.node ellipse,\n.node polygon {\n  fill: #cde498;\n  stroke: #13540c;\n  stroke-width: 1px; }\n\n.node.clickable {\n  cursor: pointer; }\n\n.arrowheadPath {\n  fill: green; }\n\n.edgePath .path {\n  stroke: green;\n  stroke-width: 1.5px; }\n\n.edgeLabel {\n  background-color: #e8e8e8; }\n\n.cluster rect {\n  fill: #cdffb2 !important;\n  stroke: #6eaa49 !important;\n  stroke-width: 1px !important; }\n\n.cluster text {\n  fill: #333; }\n\ndiv.mermaidTooltip {\n  position: absolute;\n  text-align: center;\n  max-width: 200px;\n  padding: 2px;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 12px;\n  background: #cdffb2;\n  border: 1px solid #6eaa49;\n  border-radius: 2px;\n  pointer-events: none;\n  z-index: 100; }\n\n.actor {\n  stroke: #13540c;\n  fill: #cde498; }\n\ntext.actor {\n  fill: black;\n  stroke: none; }\n\n.actor-line {\n  stroke: grey; }\n\n.messageLine0 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n.messageLine1 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n#arrowhead {\n  fill: #333; }\n\n#crosshead path {\n  fill: #333 !important;\n  stroke: #333 !important; }\n\n.messageText {\n  fill: #333;\n  stroke: none; }\n\n.labelBox {\n  stroke: #326932;\n  fill: #cde498; }\n\n.labelText {\n  fill: black;\n  stroke: none; }\n\n.loopText {\n  fill: black;\n  stroke: none; }\n\n.loopLine {\n  stroke-width: 2;\n  stroke-dasharray: '2 2';\n  stroke: #326932; }\n\n.note {\n  stroke: #6eaa49;\n  fill: #fff5ad; }\n\n.noteText {\n  fill: black;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 14px; }\n\n.activation0 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation1 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation2 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n/** Section styling */\n.section {\n  stroke: none;\n  opacity: 0.2; }\n\n.section0 {\n  fill: #6eaa49; }\n\n.section2 {\n  fill: #6eaa49; }\n\n.section1,\n.section3 {\n  fill: white;\n  opacity: 0.2; }\n\n.sectionTitle0 {\n  fill: #333; }\n\n.sectionTitle1 {\n  fill: #333; }\n\n.sectionTitle2 {\n  fill: #333; }\n\n.sectionTitle3 {\n  fill: #333; }\n\n.sectionTitle {\n  text-anchor: start;\n  font-size: 11px;\n  text-height: 14px; }\n\n/* Grid and axis */\n.grid .tick {\n  stroke: lightgrey;\n  opacity: 0.3;\n  shape-rendering: crispEdges; }\n\n.grid path {\n  stroke-width: 0; }\n\n/* Today line */\n.today {\n  fill: none;\n  stroke: red;\n  stroke-width: 2px; }\n\n/* Task styling */\n/* Default task */\n.task {\n  stroke-width: 2; }\n\n.taskText {\n  text-anchor: middle;\n  font-size: 11px; }\n\n.taskTextOutsideRight {\n  fill: black;\n  text-anchor: start;\n  font-size: 11px; }\n\n.taskTextOutsideLeft {\n  fill: black;\n  text-anchor: end;\n  font-size: 11px; }\n\n/* Specific task settings for the sections*/\n.taskText0,\n.taskText1,\n.taskText2,\n.taskText3 {\n  fill: white; }\n\n.task0,\n.task1,\n.task2,\n.task3 {\n  fill: #487e3a;\n  stroke: #13540c; }\n\n.taskTextOutside0,\n.taskTextOutside2 {\n  fill: black; }\n\n.taskTextOutside1,\n.taskTextOutside3 {\n  fill: black; }\n\n/* Active task */\n.active0,\n.active1,\n.active2,\n.active3 {\n  fill: #cde498;\n  stroke: #13540c; }\n\n.activeText0,\n.activeText1,\n.activeText2,\n.activeText3 {\n  fill: black !important; }\n\n/* Completed task */\n.done0,\n.done1,\n.done2,\n.done3 {\n  stroke: grey;\n  fill: lightgrey;\n  stroke-width: 2; }\n\n.doneText0,\n.doneText1,\n.doneText2,\n.doneText3 {\n  fill: black !important; }\n\n/* Tasks on the critical line */\n.crit0,\n.crit1,\n.crit2,\n.crit3 {\n  stroke: #ff8888;\n  fill: red;\n  stroke-width: 2; }\n\n.activeCrit0,\n.activeCrit1,\n.activeCrit2,\n.activeCrit3 {\n  stroke: #ff8888;\n  fill: #cde498;\n  stroke-width: 2; }\n\n.doneCrit0,\n.doneCrit1,\n.doneCrit2,\n.doneCrit3 {\n  stroke: #ff8888;\n  fill: lightgrey;\n  stroke-width: 2;\n  cursor: pointer;\n  shape-rendering: crispEdges; }\n\n.doneCritText0,\n.doneCritText1,\n.doneCritText2,\n.doneCritText3 {\n  fill: black !important; }\n\n.activeCritText0,\n.activeCritText1,\n.activeCritText2,\n.activeCritText3 {\n  fill: black !important; }\n\n.titleText {\n  text-anchor: middle;\n  font-size: 18px;\n  fill: black; }\n\ng.classGroup text {\n  fill: #13540c;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 10px; }\n\ng.classGroup rect {\n  fill: #cde498;\n  stroke: #13540c; }\n\ng.classGroup line {\n  stroke: #13540c;\n  stroke-width: 1; }\n\n.classLabel .box {\n  stroke: none;\n  stroke-width: 0;\n  fill: #cde498;\n  opacity: 0.5; }\n\n.classLabel .label {\n  fill: #13540c;\n  font-size: 10px; }\n\n.relation {\n  stroke: #13540c;\n  stroke-width: 1;\n  fill: none; }\n\n#compositionStart {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#compositionEnd {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#aggregationStart {\n  fill: #cde498;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#aggregationEnd {\n  fill: #cde498;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#dependencyStart {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#dependencyEnd {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#extensionStart {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#extensionEnd {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n.commit-id,\n.commit-msg,\n.branch-label {\n  fill: lightgrey;\n  color: lightgrey; }\n", ""]);
+exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variables */\n/* Gantt chart variables */\n.label {\n  font-family: 'trebuchet ms', verdana, arial;\n  color: #333; }\n\n.node rect,\n.node circle,\n.node ellipse,\n.node polygon {\n  fill: #cde498;\n  stroke: #13540c;\n  stroke-width: 1px; }\n\n.node.clickable {\n  cursor: pointer; }\n\n.arrowheadPath {\n  fill: green; }\n\n.edgePath .path {\n  stroke: green;\n  stroke-width: 1.5px; }\n\n.edgeLabel {\n  background-color: #e8e8e8; }\n\n.cluster rect {\n  fill: #cdffb2;\n  stroke: #6eaa49;\n  stroke-width: 1px; }\n\n.cluster text {\n  fill: #333; }\n\ndiv.mermaidTooltip {\n  position: absolute;\n  text-align: center;\n  max-width: 200px;\n  padding: 2px;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 12px;\n  background: #cdffb2;\n  border: 1px solid #6eaa49;\n  border-radius: 2px;\n  pointer-events: none;\n  z-index: 100; }\n\n.actor {\n  stroke: #13540c;\n  fill: #cde498; }\n\ntext.actor {\n  fill: black;\n  stroke: none; }\n\n.actor-line {\n  stroke: grey; }\n\n.messageLine0 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n.messageLine1 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n#arrowhead {\n  fill: #333; }\n\n#crosshead path {\n  fill: #333 !important;\n  stroke: #333 !important; }\n\n.messageText {\n  fill: #333;\n  stroke: none; }\n\n.labelBox {\n  stroke: #326932;\n  fill: #cde498; }\n\n.labelText {\n  fill: black;\n  stroke: none; }\n\n.loopText {\n  fill: black;\n  stroke: none; }\n\n.loopLine {\n  stroke-width: 2;\n  stroke-dasharray: '2 2';\n  stroke: #326932; }\n\n.note {\n  stroke: #6eaa49;\n  fill: #fff5ad; }\n\n.noteText {\n  fill: black;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 14px; }\n\n.activation0 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation1 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation2 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n/** Section styling */\n.section {\n  stroke: none;\n  opacity: 0.2; }\n\n.section0 {\n  fill: #6eaa49; }\n\n.section2 {\n  fill: #6eaa49; }\n\n.section1,\n.section3 {\n  fill: white;\n  opacity: 0.2; }\n\n.sectionTitle0 {\n  fill: #333; }\n\n.sectionTitle1 {\n  fill: #333; }\n\n.sectionTitle2 {\n  fill: #333; }\n\n.sectionTitle3 {\n  fill: #333; }\n\n.sectionTitle {\n  text-anchor: start;\n  font-size: 11px;\n  text-height: 14px; }\n\n/* Grid and axis */\n.grid .tick {\n  stroke: lightgrey;\n  opacity: 0.3;\n  shape-rendering: crispEdges; }\n\n.grid path {\n  stroke-width: 0; }\n\n/* Today line */\n.today {\n  fill: none;\n  stroke: red;\n  stroke-width: 2px; }\n\n/* Task styling */\n/* Default task */\n.task {\n  stroke-width: 2; }\n\n.taskText {\n  text-anchor: middle;\n  font-size: 11px; }\n\n.taskTextOutsideRight {\n  fill: black;\n  text-anchor: start;\n  font-size: 11px; }\n\n.taskTextOutsideLeft {\n  fill: black;\n  text-anchor: end;\n  font-size: 11px; }\n\n/* Special case clickable */\n.task.clickable {\n  cursor: pointer; }\n\n.taskText.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n.taskTextOutsideLeft.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n.taskTextOutsideRight.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n/* Specific task settings for the sections*/\n.taskText0,\n.taskText1,\n.taskText2,\n.taskText3 {\n  fill: white; }\n\n.task0,\n.task1,\n.task2,\n.task3 {\n  fill: #487e3a;\n  stroke: #13540c; }\n\n.taskTextOutside0,\n.taskTextOutside2 {\n  fill: black; }\n\n.taskTextOutside1,\n.taskTextOutside3 {\n  fill: black; }\n\n/* Active task */\n.active0,\n.active1,\n.active2,\n.active3 {\n  fill: #cde498;\n  stroke: #13540c; }\n\n.activeText0,\n.activeText1,\n.activeText2,\n.activeText3 {\n  fill: black !important; }\n\n/* Completed task */\n.done0,\n.done1,\n.done2,\n.done3 {\n  stroke: grey;\n  fill: lightgrey;\n  stroke-width: 2; }\n\n.doneText0,\n.doneText1,\n.doneText2,\n.doneText3 {\n  fill: black !important; }\n\n/* Tasks on the critical line */\n.crit0,\n.crit1,\n.crit2,\n.crit3 {\n  stroke: #ff8888;\n  fill: red;\n  stroke-width: 2; }\n\n.activeCrit0,\n.activeCrit1,\n.activeCrit2,\n.activeCrit3 {\n  stroke: #ff8888;\n  fill: #cde498;\n  stroke-width: 2; }\n\n.doneCrit0,\n.doneCrit1,\n.doneCrit2,\n.doneCrit3 {\n  stroke: #ff8888;\n  fill: lightgrey;\n  stroke-width: 2;\n  cursor: pointer;\n  shape-rendering: crispEdges; }\n\n.milestone {\n  transform: rotate(45deg) scale(0.8, 0.8); }\n\n.milestoneText {\n  font-style: italic; }\n\n.doneCritText0,\n.doneCritText1,\n.doneCritText2,\n.doneCritText3 {\n  fill: black !important; }\n\n.activeCritText0,\n.activeCritText1,\n.activeCritText2,\n.activeCritText3 {\n  fill: black !important; }\n\n.titleText {\n  text-anchor: middle;\n  font-size: 18px;\n  fill: black; }\n\ng.classGroup text {\n  fill: #13540c;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 10px; }\n\ng.classGroup rect {\n  fill: #cde498;\n  stroke: #13540c; }\n\ng.classGroup line {\n  stroke: #13540c;\n  stroke-width: 1; }\n\n.classLabel .box {\n  stroke: none;\n  stroke-width: 0;\n  fill: #cde498;\n  opacity: 0.5; }\n\n.classLabel .label {\n  fill: #13540c;\n  font-size: 10px; }\n\n.relation {\n  stroke: #13540c;\n  stroke-width: 1;\n  fill: none; }\n\n#compositionStart {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#compositionEnd {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#aggregationStart {\n  fill: #cde498;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#aggregationEnd {\n  fill: #cde498;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#dependencyStart {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#dependencyEnd {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#extensionStart {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n#extensionEnd {\n  fill: #13540c;\n  stroke: #13540c;\n  stroke-width: 1; }\n\n.commit-id,\n.commit-msg,\n.branch-label {\n  fill: lightgrey;\n  color: lightgrey; }\n", ""]);
 
 
 
@@ -150,7 +150,7 @@ exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variable
 
 exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variables */\n/* Gantt chart variables */\n.label {\n  font-family: 'trebuchet ms', verdana, arial;\n  color: #333; }\n\n.node rect,\n.node circle,\n.node ellipse,\n.node polygon {\n  fill: #eee;\n  stroke: #999;\n  stroke-width: 1px; }\n\n.node.clickable {\n  cursor: pointer; }\n\n.arrowheadPath {\n  fill: #333333; }\n\n.edgePath .path {\n  stroke: #666;\n  stroke-width: 1.5px; }\n\n.edgeLabel {\n  background-color: white; }\n\n.cluster rect {\n  fill: #eaf2fb !important;\n  stroke: #26a !important;\n  stroke-width: 1px !important; }\n\n.cluster text {\n  fill: #333; }\n\ndiv.mermaidTooltip {\n  position: absolute;\n  text-align: center;\n  max-width: 200px;\n  padding: 2px;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 12px;\n  background: #eaf2fb;\n  border: 1px solid #26a;\n  border-radius: 2px;\n  pointer-events: none;\n  z-index: 100; }\n\n.actor {\n  stroke: #999;\n  fill: #eee; }\n\ntext.actor {\n  fill: #333;\n  stroke: none; }\n\n.actor-line {\n  stroke: #666; }\n\n.messageLine0 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n.messageLine1 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n#arrowhead {\n  fill: #333; }\n\n#crosshead path {\n  fill: #333 !important;\n  stroke: #333 !important; }\n\n.messageText {\n  fill: #333;\n  stroke: none; }\n\n.labelBox {\n  stroke: #999;\n  fill: #eee; }\n\n.labelText {\n  fill: white;\n  stroke: none; }\n\n.loopText {\n  fill: white;\n  stroke: none; }\n\n.loopLine {\n  stroke-width: 2;\n  stroke-dasharray: '2 2';\n  stroke: #999; }\n\n.note {\n  stroke: #777700;\n  fill: #ffa; }\n\n.noteText {\n  fill: black;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 14px; }\n\n.activation0 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation1 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation2 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n/** Section styling */\n.section {\n  stroke: none;\n  opacity: 0.2; }\n\n.section0 {\n  fill: #80b3e6; }\n\n.section2 {\n  fill: #80b3e6; }\n\n.section1,\n.section3 {\n  fill: white;\n  opacity: 0.2; }\n\n.sectionTitle0 {\n  fill: #333; }\n\n.sectionTitle1 {\n  fill: #333; }\n\n.sectionTitle2 {\n  fill: #333; }\n\n.sectionTitle3 {\n  fill: #333; }\n\n.sectionTitle {\n  text-anchor: start;\n  font-size: 11px;\n  text-height: 14px; }\n\n/* Grid and axis */\n.grid .tick {\n  stroke: #e6e6e6;\n  opacity: 0.3;\n  shape-rendering: crispEdges; }\n\n.grid path {\n  stroke-width: 0; }\n\n/* Today line */\n.today {\n  fill: none;\n  stroke: #d42;\n  stroke-width: 2px; }\n\n/* Task styling */\n/* Default task */\n.task {\n  stroke-width: 2; }\n\n.taskText {\n  text-anchor: middle;\n  font-size: 11px; }\n\n.taskTextOutsideRight {\n  fill: #333;\n  text-anchor: start;\n  font-size: 11px; }\n\n.taskTextOutsideLeft {\n  fill: #333;\n  text-anchor: end;\n  font-size: 11px; }\n\n/* Specific task settings for the sections*/\n.taskText0,\n.taskText1,\n.taskText2,\n.taskText3 {\n  fill: white; }\n\n.task0,\n.task1,\n.task2,\n.task3 {\n  fill: #26a;\n  stroke: #1a4d80; }\n\n.taskTextOutside0,\n.taskTextOutside2 {\n  fill: #333; }\n\n.taskTextOutside1,\n.taskTextOutside3 {\n  fill: #333; }\n\n/* Active task */\n.active0,\n.active1,\n.active2,\n.active3 {\n  fill: #eee;\n  stroke: #1a4d80; }\n\n.activeText0,\n.activeText1,\n.activeText2,\n.activeText3 {\n  fill: #333 !important; }\n\n/* Completed task */\n.done0,\n.done1,\n.done2,\n.done3 {\n  stroke: #666;\n  fill: #bbb;\n  stroke-width: 2; }\n\n.doneText0,\n.doneText1,\n.doneText2,\n.doneText3 {\n  fill: #333 !important; }\n\n/* Tasks on the critical line */\n.crit0,\n.crit1,\n.crit2,\n.crit3 {\n  stroke: #b1361b;\n  fill: #d42;\n  stroke-width: 2; }\n\n.activeCrit0,\n.activeCrit1,\n.activeCrit2,\n.activeCrit3 {\n  stroke: #b1361b;\n  fill: #eee;\n  stroke-width: 2; }\n\n.doneCrit0,\n.doneCrit1,\n.doneCrit2,\n.doneCrit3 {\n  stroke: #b1361b;\n  fill: #bbb;\n  stroke-width: 2;\n  cursor: pointer;\n  shape-rendering: crispEdges; }\n\n.doneCritText0,\n.doneCritText1,\n.doneCritText2,\n.doneCritText3 {\n  fill: #333 !important; }\n\n.activeCritText0,\n.activeCritText1,\n.activeCritText2,\n.activeCritText3 {\n  fill: #333 !important; }\n\n.titleText {\n  text-anchor: middle;\n  font-size: 18px;\n  fill: #333; }\n\ng.classGroup text {\n  fill: #999;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 10px; }\n\ng.classGroup rect {\n  fill: #eee;\n  stroke: #999; }\n\ng.classGroup line {\n  stroke: #999;\n  stroke-width: 1; }\n\n.classLabel .box {\n  stroke: none;\n  stroke-width: 0;\n  fill: #eee;\n  opacity: 0.5; }\n\n.classLabel .label {\n  fill: #999;\n  font-size: 10px; }\n\n.relation {\n  stroke: #999;\n  stroke-width: 1;\n  fill: none; }\n\n#compositionStart {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n#compositionEnd {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n#aggregationStart {\n  fill: #eee;\n  stroke: #999;\n  stroke-width: 1; }\n\n#aggregationEnd {\n  fill: #eee;\n  stroke: #999;\n  stroke-width: 1; }\n\n#dependencyStart {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n#dependencyEnd {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n#extensionStart {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n#extensionEnd {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n.commit-id,\n.commit-msg,\n.branch-label {\n  fill: lightgrey;\n  color: lightgrey; }\n", ""]);
+exports.push([module.i, "/* Flowchart variables */\n/* Sequence Diagram variables */\n/* Gantt chart variables */\n.label {\n  font-family: 'trebuchet ms', verdana, arial;\n  color: #333; }\n\n.node rect,\n.node circle,\n.node ellipse,\n.node polygon {\n  fill: #eee;\n  stroke: #999;\n  stroke-width: 1px; }\n\n.node.clickable {\n  cursor: pointer; }\n\n.arrowheadPath {\n  fill: #333333; }\n\n.edgePath .path {\n  stroke: #666;\n  stroke-width: 1.5px; }\n\n.edgeLabel {\n  background-color: white; }\n\n.cluster rect {\n  fill: #eaf2fb;\n  stroke: #26a;\n  stroke-width: 1px; }\n\n.cluster text {\n  fill: #333; }\n\ndiv.mermaidTooltip {\n  position: absolute;\n  text-align: center;\n  max-width: 200px;\n  padding: 2px;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 12px;\n  background: #eaf2fb;\n  border: 1px solid #26a;\n  border-radius: 2px;\n  pointer-events: none;\n  z-index: 100; }\n\n.actor {\n  stroke: #999;\n  fill: #eee; }\n\ntext.actor {\n  fill: #333;\n  stroke: none; }\n\n.actor-line {\n  stroke: #666; }\n\n.messageLine0 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n.messageLine1 {\n  stroke-width: 1.5;\n  stroke-dasharray: '2 2';\n  stroke: #333; }\n\n#arrowhead {\n  fill: #333; }\n\n#crosshead path {\n  fill: #333 !important;\n  stroke: #333 !important; }\n\n.messageText {\n  fill: #333;\n  stroke: none; }\n\n.labelBox {\n  stroke: #999;\n  fill: #eee; }\n\n.labelText {\n  fill: #333;\n  stroke: none; }\n\n.loopText {\n  fill: #333;\n  stroke: none; }\n\n.loopLine {\n  stroke-width: 2;\n  stroke-dasharray: '2 2';\n  stroke: #999; }\n\n.note {\n  stroke: #777700;\n  fill: #ffa; }\n\n.noteText {\n  fill: black;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 14px; }\n\n.activation0 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation1 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n.activation2 {\n  fill: #f4f4f4;\n  stroke: #666; }\n\n/** Section styling */\n.section {\n  stroke: none;\n  opacity: 0.2; }\n\n.section0 {\n  fill: #80b3e6; }\n\n.section2 {\n  fill: #80b3e6; }\n\n.section1,\n.section3 {\n  fill: white;\n  opacity: 0.2; }\n\n.sectionTitle0 {\n  fill: #333; }\n\n.sectionTitle1 {\n  fill: #333; }\n\n.sectionTitle2 {\n  fill: #333; }\n\n.sectionTitle3 {\n  fill: #333; }\n\n.sectionTitle {\n  text-anchor: start;\n  font-size: 11px;\n  text-height: 14px; }\n\n/* Grid and axis */\n.grid .tick {\n  stroke: #e6e6e6;\n  opacity: 0.3;\n  shape-rendering: crispEdges; }\n\n.grid path {\n  stroke-width: 0; }\n\n/* Today line */\n.today {\n  fill: none;\n  stroke: #d42;\n  stroke-width: 2px; }\n\n/* Task styling */\n/* Default task */\n.task {\n  stroke-width: 2; }\n\n.taskText {\n  text-anchor: middle;\n  font-size: 11px; }\n\n.taskTextOutsideRight {\n  fill: #333;\n  text-anchor: start;\n  font-size: 11px; }\n\n.taskTextOutsideLeft {\n  fill: #333;\n  text-anchor: end;\n  font-size: 11px; }\n\n/* Special case clickable */\n.task.clickable {\n  cursor: pointer; }\n\n.taskText.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n.taskTextOutsideLeft.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n.taskTextOutsideRight.clickable {\n  cursor: pointer;\n  fill: #003163 !important;\n  font-weight: bold; }\n\n/* Specific task settings for the sections*/\n.taskText0,\n.taskText1,\n.taskText2,\n.taskText3 {\n  fill: white; }\n\n.task0,\n.task1,\n.task2,\n.task3 {\n  fill: #26a;\n  stroke: #1a4d80; }\n\n.taskTextOutside0,\n.taskTextOutside2 {\n  fill: #333; }\n\n.taskTextOutside1,\n.taskTextOutside3 {\n  fill: #333; }\n\n/* Active task */\n.active0,\n.active1,\n.active2,\n.active3 {\n  fill: #eee;\n  stroke: #1a4d80; }\n\n.activeText0,\n.activeText1,\n.activeText2,\n.activeText3 {\n  fill: #333 !important; }\n\n/* Completed task */\n.done0,\n.done1,\n.done2,\n.done3 {\n  stroke: #666;\n  fill: #bbb;\n  stroke-width: 2; }\n\n.doneText0,\n.doneText1,\n.doneText2,\n.doneText3 {\n  fill: #333 !important; }\n\n/* Tasks on the critical line */\n.crit0,\n.crit1,\n.crit2,\n.crit3 {\n  stroke: #b1361b;\n  fill: #d42;\n  stroke-width: 2; }\n\n.activeCrit0,\n.activeCrit1,\n.activeCrit2,\n.activeCrit3 {\n  stroke: #b1361b;\n  fill: #eee;\n  stroke-width: 2; }\n\n.doneCrit0,\n.doneCrit1,\n.doneCrit2,\n.doneCrit3 {\n  stroke: #b1361b;\n  fill: #bbb;\n  stroke-width: 2;\n  cursor: pointer;\n  shape-rendering: crispEdges; }\n\n.milestone {\n  transform: rotate(45deg) scale(0.8, 0.8); }\n\n.milestoneText {\n  font-style: italic; }\n\n.doneCritText0,\n.doneCritText1,\n.doneCritText2,\n.doneCritText3 {\n  fill: #333 !important; }\n\n.activeCritText0,\n.activeCritText1,\n.activeCritText2,\n.activeCritText3 {\n  fill: #333 !important; }\n\n.titleText {\n  text-anchor: middle;\n  font-size: 18px;\n  fill: #333; }\n\ng.classGroup text {\n  fill: #999;\n  stroke: none;\n  font-family: 'trebuchet ms', verdana, arial;\n  font-size: 10px; }\n\ng.classGroup rect {\n  fill: #eee;\n  stroke: #999; }\n\ng.classGroup line {\n  stroke: #999;\n  stroke-width: 1; }\n\n.classLabel .box {\n  stroke: none;\n  stroke-width: 0;\n  fill: #eee;\n  opacity: 0.5; }\n\n.classLabel .label {\n  fill: #999;\n  font-size: 10px; }\n\n.relation {\n  stroke: #999;\n  stroke-width: 1;\n  fill: none; }\n\n#compositionStart {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n#compositionEnd {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n#aggregationStart {\n  fill: #eee;\n  stroke: #999;\n  stroke-width: 1; }\n\n#aggregationEnd {\n  fill: #eee;\n  stroke: #999;\n  stroke-width: 1; }\n\n#dependencyStart {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n#dependencyEnd {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n#extensionStart {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n#extensionEnd {\n  fill: #999;\n  stroke: #999;\n  stroke-width: 1; }\n\n.commit-id,\n.commit-msg,\n.branch-label {\n  fill: lightgrey;\n  color: lightgrey; }\n", ""]);
 
 
 
@@ -727,11 +727,22 @@ module.exports = function(module) {
 
 /***/ }),
 
+/***/ "./package.json":
+/*!**********************!*\
+  !*** ./package.json ***!
+  \**********************/
+/*! exports provided: name, version, description, main, keywords, scripts, repository, author, license, standard, dependencies, devDependencies, files, yarn-upgrade-all, default */
+/***/ (function(module) {
+
+module.exports = {"name":"mermaid","version":"8.1.0","description":"Markdownish syntax for generating flowcharts, sequence diagrams, class diagrams, gantt charts and git graphs.","main":"dist/mermaid.core.js","keywords":["diagram","markdown","flowchart","sequence diagram","gantt","class diagram","git graph"],"scripts":{"build":"webpack --progress --colors","build:watch":"yarn build --watch","minify":"minify ./dist/mermaid.js > ./dist/mermaid.min.js","release":"yarn build -p --config webpack.config.prod.babel.js","lint":"standard","e2e":"yarn lint && jest e2e --config e2e/jest.config.js","dev":"yarn lint && webpack-dev-server --config webpack.config.e2e.js","test":"yarn lint && jest src","test:watch":"jest --watch src","jison":"node -r @babel/register node_modules/.bin/gulp jison","prepublishOnly":"yarn build && yarn release && yarn test","prepush":"yarn test"},"repository":{"type":"git","url":"https://github.com/knsv/mermaid"},"author":"Knut Sveidqvist","license":"MIT","standard":{"ignore":["**/parser/*.js","dist/**/*.js"],"globals":["page"]},"dependencies":{"d3":"^5.7.0","dagre-d3-renderer":"^0.5.8","dagre-layout":"^0.8.8","graphlibrary":"^2.2.0","he":"^1.2.0","moment-mini":"^2.22.1","lodash":"^4.17.11","minify":"^4.1.1","scope-css":"^1.2.1"},"devDependencies":{"@babel/core":"^7.2.2","@babel/preset-env":"^7.2.0","@babel/register":"^7.0.0","babel-core":"7.0.0-bridge.0","babel-jest":"^23.6.0","babel-loader":"^8.0.4","coveralls":"^3.0.2","css-loader":"^2.0.1","css-to-string-loader":"^0.1.3","gulp":"^4.0.0","gulp-filelog":"^0.4.1","gulp-jison":"^1.2.0","husky":"^1.2.1","identity-obj-proxy":"^3.0.0","jest":"^23.6.0","jest-environment-puppeteer":"^4.2.0","jest-image-snapshot":"^2.8.2","jest-puppeteer":"^4.2.0","jison":"^0.4.18","moment":"^2.23.0","node-sass":"^4.11.0","puppeteer":"^1.17.0","sass-loader":"^7.1.0","standard":"^12.0.1","webpack":"^4.27.1","webpack-cli":"^3.1.2","webpack-dev-server":"^3.4.1","webpack-node-externals":"^1.7.2","yarn-upgrade-all":"^0.5.0"},"files":["dist"],"yarn-upgrade-all":{"ignore":["babel-core"]}};
+
+/***/ }),
+
 /***/ "./src/diagrams/class/classDb.js":
 /*!***************************************!*\
   !*** ./src/diagrams/class/classDb.js ***!
   \***************************************/
-/*! exports provided: addClass, clear, getClass, getClasses, getRelations, addRelation, addMembers, cleanupLabel, lineType, relationType, default */
+/*! exports provided: addClass, clear, getClass, getClasses, getRelations, addRelation, addMember, addMembers, cleanupLabel, lineType, relationType, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -742,14 +753,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getClasses", function() { return getClasses; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getRelations", function() { return getRelations; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addRelation", function() { return addRelation; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addMember", function() { return addMember; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addMembers", function() { return addMembers; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cleanupLabel", function() { return cleanupLabel; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "lineType", function() { return lineType; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "relationType", function() { return relationType; });
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 
-var relations = [];
-var classes = {};
+let relations = [];
+let classes = {};
 /**
  * Function called by parser when a node definition has been found.
  * @param id
@@ -758,7 +770,7 @@ var classes = {};
  * @param style
  */
 
-var addClass = function addClass(id) {
+const addClass = function (id) {
   if (typeof classes[id] === 'undefined') {
     classes[id] = {
       id: id,
@@ -767,64 +779,70 @@ var addClass = function addClass(id) {
     };
   }
 };
-var clear = function clear() {
+const clear = function () {
   relations = [];
   classes = {};
 };
-var getClass = function getClass(id) {
+const getClass = function (id) {
   return classes[id];
 };
-var getClasses = function getClasses() {
+const getClasses = function () {
   return classes;
 };
-var getRelations = function getRelations() {
+const getRelations = function () {
   return relations;
 };
-var addRelation = function addRelation(relation) {
+const addRelation = function (relation) {
   _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Adding relation: ' + JSON.stringify(relation));
   addClass(relation.id1);
   addClass(relation.id2);
   relations.push(relation);
 };
-var addMembers = function addMembers(className, MembersArr) {
-  var theClass = classes[className];
+const addMember = function (className, member) {
+  const theClass = classes[className];
 
-  if (typeof MembersArr === 'string') {
-    if (MembersArr.substr(-1) === ')') {
-      theClass.methods.push(MembersArr);
+  if (typeof member === 'string') {
+    if (member.substr(-1) === ')') {
+      theClass.methods.push(member);
     } else {
-      theClass.members.push(MembersArr);
+      theClass.members.push(member);
     }
   }
 };
-var cleanupLabel = function cleanupLabel(label) {
+const addMembers = function (className, MembersArr) {
+  if (Array.isArray(MembersArr)) {
+    MembersArr.forEach(member => addMember(className, member));
+  }
+};
+const cleanupLabel = function (label) {
   if (label.substring(0, 1) === ':') {
     return label.substr(2).trim();
   } else {
     return label.trim();
   }
 };
-var lineType = {
+const lineType = {
   LINE: 0,
   DOTTED_LINE: 1
 };
-var relationType = {
+const relationType = {
   AGGREGATION: 0,
   EXTENSION: 1,
   COMPOSITION: 2,
   DEPENDENCY: 3
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
-  addClass: addClass,
-  clear: clear,
-  getClass: getClass,
-  getClasses: getClasses,
-  getRelations: getRelations,
-  addRelation: addRelation,
-  addMembers: addMembers,
-  cleanupLabel: cleanupLabel,
-  lineType: lineType,
-  relationType: relationType
+  addClass,
+  clear,
+  getClass,
+  getClasses,
+  getRelations,
+  addRelation,
+  addMember,
+  addMembers,
+  cleanupLabel,
+  lineType,
+  relationType
 });
 
 /***/ }),
@@ -840,14 +858,14 @@ var relationType = {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setConf", function() { return setConf; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "draw", function() { return draw; });
-/* harmony import */ var dagre_layout__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! dagre-layout */ "dagre-layout");
-/* harmony import */ var dagre_layout__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(dagre_layout__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var graphlibrary__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! graphlibrary */ "graphlibrary");
-/* harmony import */ var graphlibrary__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(graphlibrary__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! d3 */ "d3");
-/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _classDb__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./classDb */ "./src/diagrams/class/classDb.js");
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var dagre_layout__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! dagre-layout */ "dagre-layout");
+/* harmony import */ var dagre_layout__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(dagre_layout__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var graphlibrary__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! graphlibrary */ "graphlibrary");
+/* harmony import */ var graphlibrary__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(graphlibrary__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _classDb__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./classDb */ "./src/diagrams/class/classDb.js");
 /* harmony import */ var _parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./parser/classDiagram */ "./src/diagrams/class/parser/classDiagram.js");
 /* harmony import */ var _parser_classDiagram__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__);
 
@@ -856,20 +874,20 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-_parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__["parser"].yy = _classDb__WEBPACK_IMPORTED_MODULE_3__["default"];
-var idCache = {};
-var classCnt = 0;
-var conf = {
+_parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__["parser"].yy = _classDb__WEBPACK_IMPORTED_MODULE_4__["default"];
+const idCache = {};
+let classCnt = 0;
+const conf = {
   dividerMargin: 10,
   padding: 5,
   textHeight: 10 // Todo optimize
 
 };
 
-var getGraphId = function getGraphId(label) {
-  var keys = Object.keys(idCache);
+const getGraphId = function (label) {
+  const keys = Object.keys(idCache);
 
-  for (var i = 0; i < keys.length; i++) {
+  for (let i = 0; i < keys.length; i++) {
     if (idCache[keys[i]].label === label) {
       return keys[i];
     }
@@ -882,7 +900,7 @@ var getGraphId = function getGraphId(label) {
  */
 
 
-var insertMarkers = function insertMarkers(elem) {
+const insertMarkers = function (elem) {
   elem.append('defs').append('marker').attr('id', 'extensionStart').attr('class', 'extension').attr('refX', 0).attr('refY', 7).attr('markerWidth', 190).attr('markerHeight', 240).attr('orient', 'auto').append('path').attr('d', 'M 1,7 L18,13 V 1 Z');
   elem.append('defs').append('marker').attr('id', 'extensionEnd').attr('refX', 19).attr('refY', 7).attr('markerWidth', 20).attr('markerHeight', 28).attr('orient', 'auto').append('path').attr('d', 'M 1,1 V 13 L18,7 Z'); // this is actual shape for arrowhead
 
@@ -894,35 +912,37 @@ var insertMarkers = function insertMarkers(elem) {
   elem.append('defs').append('marker').attr('id', 'dependencyEnd').attr('refX', 19).attr('refY', 7).attr('markerWidth', 20).attr('markerHeight', 28).attr('orient', 'auto').append('path').attr('d', 'M 18,7 L9,13 L14,7 L9,1 Z');
 };
 
-var edgeCount = 0;
+let edgeCount = 0;
+let total = 0;
 
-var drawEdge = function drawEdge(elem, path, relation) {
-  var getRelationType = function getRelationType(type) {
+const drawEdge = function (elem, path, relation) {
+  const getRelationType = function (type) {
     switch (type) {
-      case _classDb__WEBPACK_IMPORTED_MODULE_3__["default"].relationType.AGGREGATION:
+      case _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].relationType.AGGREGATION:
         return 'aggregation';
 
-      case _classDb__WEBPACK_IMPORTED_MODULE_3__["default"].relationType.EXTENSION:
+      case _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].relationType.EXTENSION:
         return 'extension';
 
-      case _classDb__WEBPACK_IMPORTED_MODULE_3__["default"].relationType.COMPOSITION:
+      case _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].relationType.COMPOSITION:
         return 'composition';
 
-      case _classDb__WEBPACK_IMPORTED_MODULE_3__["default"].relationType.DEPENDENCY:
+      case _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].relationType.DEPENDENCY:
         return 'dependency';
     }
-  }; // The data for our line
+  };
 
+  path.points = path.points.filter(p => !Number.isNaN(p.y)); // The data for our line
 
-  var lineData = path.points; // This is the accessor function we talked about above
+  const lineData = path.points; // This is the accessor function we talked about above
 
-  var lineFunction = d3__WEBPACK_IMPORTED_MODULE_2__["line"]().x(function (d) {
+  const lineFunction = d3__WEBPACK_IMPORTED_MODULE_0__["line"]().x(function (d) {
     return d.x;
   }).y(function (d) {
     return d.y;
-  }).curve(d3__WEBPACK_IMPORTED_MODULE_2__["curveBasis"]);
-  var svgPath = elem.append('path').attr('d', lineFunction(lineData)).attr('id', 'edge' + edgeCount).attr('class', 'relation');
-  var url = '';
+  }).curve(d3__WEBPACK_IMPORTED_MODULE_0__["curveBasis"]);
+  const svgPath = elem.append('path').attr('d', lineFunction(lineData)).attr('id', 'edge' + edgeCount).attr('class', 'relation');
+  let url = '';
 
   if (conf.arrowMarkerAbsolute) {
     url = window.location.protocol + '//' + window.location.host + window.location.pathname + window.location.search;
@@ -938,72 +958,72 @@ var drawEdge = function drawEdge(elem, path, relation) {
     svgPath.attr('marker-end', 'url(' + url + '#' + getRelationType(relation.relation.type2) + 'End' + ')');
   }
 
-  var x, y;
-  var l = path.points.length;
+  let x, y;
+  const l = path.points.length;
 
-  if (l % 2 !== 0) {
-    var p1 = path.points[Math.floor(l / 2)];
-    var p2 = path.points[Math.ceil(l / 2)];
+  if (l % 2 !== 0 && l > 1) {
+    const p1 = path.points[Math.floor(l / 2)];
+    const p2 = path.points[Math.ceil(l / 2)];
     x = (p1.x + p2.x) / 2;
     y = (p1.y + p2.y) / 2;
   } else {
-    var p = path.points[Math.floor(l / 2)];
+    const p = path.points[Math.floor(l / 2)];
     x = p.x;
     y = p.y;
   }
 
   if (typeof relation.title !== 'undefined') {
-    var g = elem.append('g').attr('class', 'classLabel');
-    var label = g.append('text').attr('class', 'label').attr('x', x).attr('y', y).attr('fill', 'red').attr('text-anchor', 'middle').text(relation.title);
+    const g = elem.append('g').attr('class', 'classLabel');
+    const label = g.append('text').attr('class', 'label').attr('x', x).attr('y', y).attr('fill', 'red').attr('text-anchor', 'middle').text(relation.title);
     window.label = label;
-    var bounds = label.node().getBBox();
+    const bounds = label.node().getBBox();
     g.insert('rect', ':first-child').attr('class', 'box').attr('x', bounds.x - conf.padding / 2).attr('y', bounds.y - conf.padding / 2).attr('width', bounds.width + conf.padding).attr('height', bounds.height + conf.padding);
   }
 
   edgeCount++;
 };
 
-var drawClass = function drawClass(elem, classDef) {
-  _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].info('Rendering class ' + classDef);
+const drawClass = function (elem, classDef) {
+  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('Rendering class ' + classDef);
 
-  var addTspan = function addTspan(textEl, txt, isFirst) {
-    var tSpan = textEl.append('tspan').attr('x', conf.padding).text(txt);
+  const addTspan = function (textEl, txt, isFirst) {
+    const tSpan = textEl.append('tspan').attr('x', conf.padding).text(txt);
 
     if (!isFirst) {
       tSpan.attr('dy', conf.textHeight);
     }
   };
 
-  var id = 'classId' + classCnt;
-  var classInfo = {
+  const id = 'classId' + classCnt % total;
+  const classInfo = {
     id: id,
     label: classDef.id,
     width: 0,
     height: 0
   };
-  var g = elem.append('g').attr('id', id).attr('class', 'classGroup');
-  var title = g.append('text').attr('x', conf.padding).attr('y', conf.textHeight + conf.padding).text(classDef.id);
-  var titleHeight = title.node().getBBox().height;
-  var membersLine = g.append('line') // text label for the x axis
+  const g = elem.append('g').attr('id', id).attr('class', 'classGroup');
+  const title = g.append('text').attr('x', conf.padding).attr('y', conf.textHeight + conf.padding).text(classDef.id);
+  const titleHeight = title.node().getBBox().height;
+  const membersLine = g.append('line') // text label for the x axis
   .attr('x1', 0).attr('y1', conf.padding + titleHeight + conf.dividerMargin / 2).attr('y2', conf.padding + titleHeight + conf.dividerMargin / 2);
-  var members = g.append('text') // text label for the x axis
+  const members = g.append('text') // text label for the x axis
   .attr('x', conf.padding).attr('y', titleHeight + conf.dividerMargin + conf.textHeight).attr('fill', 'white').attr('class', 'classText');
-  var isFirst = true;
+  let isFirst = true;
   classDef.members.forEach(function (member) {
     addTspan(members, member, isFirst);
     isFirst = false;
   });
-  var membersBox = members.node().getBBox();
-  var methodsLine = g.append('line') // text label for the x axis
+  const membersBox = members.node().getBBox();
+  const methodsLine = g.append('line') // text label for the x axis
   .attr('x1', 0).attr('y1', conf.padding + titleHeight + conf.dividerMargin + membersBox.height).attr('y2', conf.padding + titleHeight + conf.dividerMargin + membersBox.height);
-  var methods = g.append('text') // text label for the x axis
+  const methods = g.append('text') // text label for the x axis
   .attr('x', conf.padding).attr('y', titleHeight + 2 * conf.dividerMargin + membersBox.height + conf.textHeight).attr('fill', 'white').attr('class', 'classText');
   isFirst = true;
   classDef.methods.forEach(function (method) {
     addTspan(methods, method, isFirst);
     isFirst = false;
   });
-  var classBox = g.node().getBBox();
+  const classBox = g.node().getBBox();
   g.insert('rect', ':first-child').attr('x', 0).attr('y', 0).attr('width', classBox.width + 2 * conf.padding).attr('height', classBox.height + conf.padding + 0.5 * conf.dividerMargin);
   membersLine.attr('x2', classBox.width + 2 * conf.padding);
   methodsLine.attr('x2', classBox.width + 2 * conf.padding);
@@ -1014,8 +1034,8 @@ var drawClass = function drawClass(elem, classDef) {
   return classInfo;
 };
 
-var setConf = function setConf(cnf) {
-  var keys = Object.keys(cnf);
+const setConf = function (cnf) {
+  const keys = Object.keys(cnf);
   keys.forEach(function (key) {
     conf[key] = cnf[key];
   });
@@ -1026,15 +1046,15 @@ var setConf = function setConf(cnf) {
  * @param id
  */
 
-var draw = function draw(text, id) {
+const draw = function (text, id) {
   _parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__["parser"].yy.clear();
   _parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__["parser"].parse(text);
-  _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].info('Rendering diagram ' + text); /// / Fetch the default direction, use TD if none was found
+  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('Rendering diagram ' + text); /// / Fetch the default direction, use TD if none was found
 
-  var diagram = d3__WEBPACK_IMPORTED_MODULE_2__["select"]("[id=\"".concat(id, "\"]"));
+  const diagram = d3__WEBPACK_IMPORTED_MODULE_0__["select"](`[id='${id}']`);
   insertMarkers(diagram); // Layout graph, Create a new directed graph
 
-  var g = new graphlibrary__WEBPACK_IMPORTED_MODULE_1___default.a.Graph({
+  const g = new graphlibrary__WEBPACK_IMPORTED_MODULE_2___default.a.Graph({
     multigraph: true
   }); // Set an object for the graph label
 
@@ -1045,44 +1065,47 @@ var draw = function draw(text, id) {
   g.setDefaultEdgeLabel(function () {
     return {};
   });
-  var classes = _classDb__WEBPACK_IMPORTED_MODULE_3__["default"].getClasses();
-  var keys = Object.keys(classes);
+  const classes = _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].getClasses();
+  const keys = Object.keys(classes);
+  total = keys.length;
 
-  for (var i = 0; i < keys.length; i++) {
-    var classDef = classes[keys[i]];
-    var node = drawClass(diagram, classDef); // Add nodes to the graph. The first argument is the node id. The second is
+  for (let i = 0; i < keys.length; i++) {
+    const classDef = classes[keys[i]];
+    const node = drawClass(diagram, classDef); // Add nodes to the graph. The first argument is the node id. The second is
     // metadata about the node. In this case we're going to add labels to each of
     // our nodes.
 
     g.setNode(node.id, node);
-    _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].info('Org height: ' + node.height);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('Org height: ' + node.height);
   }
 
-  var relations = _classDb__WEBPACK_IMPORTED_MODULE_3__["default"].getRelations();
+  const relations = _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].getRelations();
   relations.forEach(function (relation) {
-    _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].info('tjoho' + getGraphId(relation.id1) + getGraphId(relation.id2) + JSON.stringify(relation));
+    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('tjoho' + getGraphId(relation.id1) + getGraphId(relation.id2) + JSON.stringify(relation));
     g.setEdge(getGraphId(relation.id1), getGraphId(relation.id2), {
       relation: relation
     });
   });
-  dagre_layout__WEBPACK_IMPORTED_MODULE_0___default.a.layout(g);
+  dagre_layout__WEBPACK_IMPORTED_MODULE_1___default.a.layout(g);
   g.nodes().forEach(function (v) {
-    if (typeof v !== 'undefined') {
-      _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].debug('Node ' + v + ': ' + JSON.stringify(g.node(v)));
-      d3__WEBPACK_IMPORTED_MODULE_2__["select"]('#' + v).attr('transform', 'translate(' + (g.node(v).x - g.node(v).width / 2) + ',' + (g.node(v).y - g.node(v).height / 2) + ' )');
+    if (typeof v !== 'undefined' && typeof g.node(v) !== 'undefined') {
+      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Node ' + v + ': ' + JSON.stringify(g.node(v)));
+      d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#' + v).attr('transform', 'translate(' + (g.node(v).x - g.node(v).width / 2) + ',' + (g.node(v).y - g.node(v).height / 2) + ' )');
     }
   });
   g.edges().forEach(function (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].debug('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(g.edge(e)));
-    drawEdge(diagram, g.edge(e), g.edge(e).relation);
+    if (typeof e !== 'undefined' && typeof g.edge(e) !== 'undefined') {
+      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(g.edge(e)));
+      drawEdge(diagram, g.edge(e), g.edge(e).relation);
+    }
   });
   diagram.attr('height', '100%');
   diagram.attr('width', '100%');
   diagram.attr('viewBox', '0 0 ' + (g.graph().width + 20) + ' ' + (g.graph().height + 20));
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
-  setConf: setConf,
-  draw: draw
+  setConf,
+  draw
 });
 
 /***/ }),
@@ -1169,12 +1192,10 @@ var draw = function draw(text, id) {
   }
 */
 var parser = function () {
-  var o = function o(k, v, _o, l) {
-    for (_o = _o || {}, l = k.length; l--; _o[k[l]] = v) {
-      ;
-    }
+  var o = function (k, v, o, l) {
+    for (o = o || {}, l = k.length; l--; o[k[l]] = v);
 
-    return _o;
+    return o;
   },
       $V0 = [1, 11],
       $V1 = [1, 12],
@@ -1282,7 +1303,7 @@ var parser = function () {
       46: "NUM",
       47: "ALPHA"
     },
-    productions_: [0, [3, 1], [4, 4], [7, 1], [7, 3], [10, 2], [10, 1], [9, 1], [9, 2], [9, 1], [9, 1], [14, 2], [14, 5], [18, 1], [18, 2], [15, 1], [15, 2], [15, 1], [15, 1], [12, 3], [12, 4], [12, 4], [12, 5], [22, 3], [22, 2], [22, 2], [22, 1], [24, 1], [24, 1], [24, 1], [24, 1], [25, 1], [25, 1], [32, 1], [32, 1], [33, 1], [33, 1], [33, 1], [33, 1], [33, 1], [33, 1], [33, 1], [35, 1], [35, 1], [35, 1], [35, 1], [11, 1], [11, 1], [11, 1]],
+    productions_: [0, [3, 1], [4, 4], [7, 1], [7, 2], [7, 3], [10, 2], [10, 1], [9, 1], [9, 2], [9, 1], [9, 1], [14, 2], [14, 5], [18, 1], [18, 2], [15, 1], [15, 2], [15, 1], [15, 1], [12, 3], [12, 4], [12, 4], [12, 5], [22, 3], [22, 2], [22, 2], [22, 1], [24, 1], [24, 1], [24, 1], [24, 1], [25, 1], [25, 1], [32, 1], [32, 1], [33, 1], [33, 1], [33, 1], [33, 1], [33, 1], [33, 1], [33, 1], [35, 1], [35, 1], [35, 1], [35, 1], [11, 1], [11, 1], [11, 1]],
     performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate
     /* action[1] */
     , $$
@@ -1294,54 +1315,59 @@ var parser = function () {
       var $0 = $$.length - 1;
 
       switch (yystate) {
-        case 5:
+        case 6:
           this.$ = $$[$0 - 1] + $$[$0];
           break;
 
-        case 6:
+        case 7:
           this.$ = $$[$0];
           break;
 
-        case 7:
+        case 8:
           yy.addRelation($$[$0]);
           break;
 
-        case 8:
+        case 9:
           $$[$0 - 1].title = yy.cleanupLabel($$[$0]);
           yy.addRelation($$[$0 - 1]);
           break;
 
         case 12:
-          /*console.log($$[$0-3],JSON.stringify($$[$0-1]));*/
-          yy.addMembers($$[$0 - 3], $$[$0 - 1]);
+          yy.addClass($$[$0]);
           break;
 
         case 13:
-          this.$ = [$$[$0]];
+          /*console.log($$[$0-3],JSON.stringify($$[$0-1]));*/
+          yy.addClass($$[$0 - 3]);
+          yy.addMembers($$[$0 - 3], $$[$0 - 1]);
           break;
 
         case 14:
+          this.$ = [$$[$0]];
+          break;
+
+        case 15:
           $$[$0].push($$[$0 - 1]);
           this.$ = $$[$0];
           break;
 
-        case 15:
+        case 16:
           /*console.log('Rel found',$$[$0]);*/
           break;
 
-        case 16:
-          yy.addMembers($$[$0 - 1], yy.cleanupLabel($$[$0]));
-          break;
-
         case 17:
-          console.warn('Member', $$[$0]);
+          yy.addMember($$[$0 - 1], yy.cleanupLabel($$[$0]));
           break;
 
         case 18:
-          /*console.log('sep found',$$[$0]);*/
+          console.warn('Member', $$[$0]);
           break;
 
         case 19:
+          /*console.log('sep found',$$[$0]);*/
+          break;
+
+        case 20:
           this.$ = {
             'id1': $$[$0 - 2],
             'id2': $$[$0],
@@ -1351,7 +1377,7 @@ var parser = function () {
           };
           break;
 
-        case 20:
+        case 21:
           this.$ = {
             id1: $$[$0 - 3],
             id2: $$[$0],
@@ -1361,7 +1387,7 @@ var parser = function () {
           };
           break;
 
-        case 21:
+        case 22:
           this.$ = {
             id1: $$[$0 - 3],
             id2: $$[$0],
@@ -1371,7 +1397,7 @@ var parser = function () {
           };
           break;
 
-        case 22:
+        case 23:
           this.$ = {
             id1: $$[$0 - 4],
             id2: $$[$0],
@@ -1381,7 +1407,7 @@ var parser = function () {
           };
           break;
 
-        case 23:
+        case 24:
           this.$ = {
             type1: $$[$0 - 2],
             type2: $$[$0],
@@ -1389,7 +1415,7 @@ var parser = function () {
           };
           break;
 
-        case 24:
+        case 25:
           this.$ = {
             type1: 'none',
             type2: $$[$0],
@@ -1397,7 +1423,7 @@ var parser = function () {
           };
           break;
 
-        case 25:
+        case 26:
           this.$ = {
             type1: $$[$0 - 1],
             type2: 'none',
@@ -1405,7 +1431,7 @@ var parser = function () {
           };
           break;
 
-        case 26:
+        case 27:
           this.$ = {
             type1: 'none',
             type2: 'none',
@@ -1413,27 +1439,27 @@ var parser = function () {
           };
           break;
 
-        case 27:
+        case 28:
           this.$ = yy.relationType.AGGREGATION;
           break;
 
-        case 28:
+        case 29:
           this.$ = yy.relationType.EXTENSION;
           break;
 
-        case 29:
+        case 30:
           this.$ = yy.relationType.COMPOSITION;
           break;
 
-        case 30:
+        case 31:
           this.$ = yy.relationType.DEPENDENCY;
           break;
 
-        case 31:
+        case 32:
           this.$ = yy.lineType.LINE;
           break;
 
-        case 32:
+        case 33:
           this.$ = yy.lineType.DOTTED_LINE;
           break;
       }
@@ -1467,9 +1493,9 @@ var parser = function () {
     }, {
       6: [1, 19],
       8: [2, 3]
-    }, o($V6, [2, 7], {
+    }, o($V6, [2, 8], {
       13: [1, 20]
-    }), o($V6, [2, 9]), o($V6, [2, 10]), o($V6, [2, 15], {
+    }), o($V6, [2, 10]), o($V6, [2, 11]), o($V6, [2, 16], {
       22: 21,
       24: 24,
       25: 25,
@@ -1487,16 +1513,17 @@ var parser = function () {
       45: $V3,
       46: $V4,
       47: $V5
-    }, o($V6, [2, 17]), o($V6, [2, 18]), o($Vd, [2, 6], {
+    }, o($V6, [2, 18]), o($V6, [2, 19]), o($Vd, [2, 7], {
       11: 14,
       10: 33,
       45: $V3,
       46: $V4,
       47: $V5
-    }), o($Ve, [2, 46]), o($Ve, [2, 47]), o($Ve, [2, 48]), {
+    }), o($Ve, [2, 47]), o($Ve, [2, 48]), o($Ve, [2, 49]), {
       1: [2, 2]
     }, {
       7: 34,
+      8: [2, 4],
       9: 6,
       10: 10,
       11: 14,
@@ -1509,7 +1536,7 @@ var parser = function () {
       45: $V3,
       46: $V4,
       47: $V5
-    }, o($V6, [2, 8]), {
+    }, o($V6, [2, 9]), {
       10: 35,
       11: 14,
       23: [1, 36],
@@ -1526,21 +1553,21 @@ var parser = function () {
       29: $Va,
       30: $Vb,
       31: $Vc
-    }, o($V6, [2, 16]), {
+    }, o($V6, [2, 17]), {
       25: 38,
       30: $Vb,
       31: $Vc
-    }, o($Vf, [2, 26], {
+    }, o($Vf, [2, 27], {
       24: 39,
       26: $V7,
       27: $V8,
       28: $V9,
       29: $Va
-    }), o($Vg, [2, 27]), o($Vg, [2, 28]), o($Vg, [2, 29]), o($Vg, [2, 30]), o($Vh, [2, 31]), o($Vh, [2, 32]), o($V6, [2, 11], {
+    }), o($Vg, [2, 28]), o($Vg, [2, 29]), o($Vg, [2, 30]), o($Vg, [2, 31]), o($Vh, [2, 32]), o($Vh, [2, 33]), o($V6, [2, 12], {
       17: [1, 40]
-    }), o($Vd, [2, 5]), {
-      8: [2, 4]
-    }, o($Vi, [2, 19]), {
+    }), o($Vd, [2, 6]), {
+      8: [2, 5]
+    }, o($Vi, [2, 20]), {
       10: 41,
       11: 14,
       45: $V3,
@@ -1553,35 +1580,35 @@ var parser = function () {
       45: $V3,
       46: $V4,
       47: $V5
-    }, o($Vf, [2, 25], {
+    }, o($Vf, [2, 26], {
       24: 44,
       26: $V7,
       27: $V8,
       28: $V9,
       29: $Va
-    }), o($Vf, [2, 24]), {
+    }), o($Vf, [2, 25]), {
       18: 45,
       20: $Vj
-    }, o($Vi, [2, 21]), o($Vi, [2, 20]), {
+    }, o($Vi, [2, 22]), o($Vi, [2, 21]), {
       10: 47,
       11: 14,
       45: $V3,
       46: $V4,
       47: $V5
-    }, o($Vf, [2, 23]), {
+    }, o($Vf, [2, 24]), {
       19: [1, 48]
     }, {
       18: 49,
-      19: [2, 13],
+      19: [2, 14],
       20: $Vj
-    }, o($Vi, [2, 22]), o($V6, [2, 12]), {
-      19: [2, 14]
+    }, o($Vi, [2, 23]), o($V6, [2, 13]), {
+      19: [2, 15]
     }],
     defaultActions: {
       2: [2, 1],
       18: [2, 2],
-      34: [2, 4],
-      49: [2, 14]
+      34: [2, 5],
+      49: [2, 15]
     },
     parseError: function parseError(str, hash) {
       if (hash.recoverable) {
@@ -1789,7 +1816,7 @@ var parser = function () {
         }
       },
       // resets the lexer, sets new input
-      setInput: function setInput(input, yy) {
+      setInput: function (input, yy) {
         this.yy = yy || this.yy || {};
         this._input = input;
         this._more = this._backtrack = this.done = false;
@@ -1811,7 +1838,7 @@ var parser = function () {
         return this;
       },
       // consumes and returns one char from the input
-      input: function input() {
+      input: function () {
         var ch = this._input[0];
         this.yytext += ch;
         this.yyleng++;
@@ -1835,7 +1862,7 @@ var parser = function () {
         return ch;
       },
       // unshifts one char (or a string) into the input
-      unput: function unput(ch) {
+      unput: function (ch) {
         var len = ch.length;
         var lines = ch.split(/(?:\r\n?|\n)/g);
         this._input = ch + this._input;
@@ -1866,12 +1893,12 @@ var parser = function () {
         return this;
       },
       // When called from action, caches matched text and appends it on next action
-      more: function more() {
+      more: function () {
         this._more = true;
         return this;
       },
       // When called from action, signals the lexer that this rule fails to match the input, so the next matching rule (regex) should be tested instead.
-      reject: function reject() {
+      reject: function () {
         if (this.options.backtrack_lexer) {
           this._backtrack = true;
         } else {
@@ -1885,16 +1912,16 @@ var parser = function () {
         return this;
       },
       // retain first n characters of the match
-      less: function less(n) {
+      less: function (n) {
         this.unput(this.match.slice(n));
       },
       // displays already matched input, i.e. for error messages
-      pastInput: function pastInput() {
+      pastInput: function () {
         var past = this.matched.substr(0, this.matched.length - this.match.length);
         return (past.length > 20 ? '...' : '') + past.substr(-20).replace(/\n/g, "");
       },
       // displays upcoming input, i.e. for error messages
-      upcomingInput: function upcomingInput() {
+      upcomingInput: function () {
         var next = this.match;
 
         if (next.length < 20) {
@@ -1904,13 +1931,13 @@ var parser = function () {
         return (next.substr(0, 20) + (next.length > 20 ? '...' : '')).replace(/\n/g, "");
       },
       // displays the character position where the lexing error occurred, i.e. for error messages
-      showPosition: function showPosition() {
+      showPosition: function () {
         var pre = this.pastInput();
         var c = new Array(pre.length + 1).join("-");
         return pre + this.upcomingInput() + "\n" + c + "^";
       },
       // test the lexed token: return FALSE when not a match, otherwise return token
-      test_match: function test_match(match, indexed_rule) {
+      test_match: function (match, indexed_rule) {
         var token, lines, backup;
 
         if (this.options.backtrack_lexer) {
@@ -1986,7 +2013,7 @@ var parser = function () {
         return false;
       },
       // return next match in input
-      next: function next() {
+      next: function () {
         if (this.done) {
           return this.EOF;
         }
@@ -2335,30 +2362,30 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 
 
+let vertices = {};
+let edges = [];
+let classes = [];
+let subGraphs = [];
+let subGraphLookup = {};
+let tooltips = {};
+let subCount = 0;
+let direction; // Functions to be run after graph rendering
 
-var vertices = {};
-var edges = [];
-var classes = [];
-var subGraphs = [];
-var tooltips = {};
-var subCount = 0;
-var direction; // Functions to be run after graph rendering
-
-var funs = [];
+let funs = [];
 /**
  * Function called by parser when a node definition has been found
  * @param id
  * @param text
  * @param type
  * @param style
+ * @param classes
  */
 
-var addVertex = function addVertex(id, text, type, style) {
-  var txt;
+const addVertex = function (id, text, type, style, classes) {
+  let txt;
 
   if (typeof id === 'undefined') {
     return;
@@ -2397,6 +2424,14 @@ var addVertex = function addVertex(id, text, type, style) {
       });
     }
   }
+
+  if (typeof classes !== 'undefined') {
+    if (classes !== null) {
+      classes.forEach(function (s) {
+        vertices[id].classes.push(s);
+      });
+    }
+  }
 };
 /**
  * Function called by parser when a link/edge definition has been found
@@ -2406,9 +2441,9 @@ var addVertex = function addVertex(id, text, type, style) {
  * @param linktext
  */
 
-var addLink = function addLink(start, end, type, linktext) {
+const addLink = function (start, end, type, linktext) {
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].info('Got edge...', start, end);
-  var edge = {
+  const edge = {
     start: start,
     end: end,
     type: undefined,
@@ -2437,12 +2472,14 @@ var addLink = function addLink(start, end, type, linktext) {
  * @param interpolate
  */
 
-var updateLinkInterpolate = function updateLinkInterpolate(pos, interp) {
-  if (pos === 'default') {
-    edges.defaultInterpolate = interp;
-  } else {
-    edges[pos].interpolate = interp;
-  }
+const updateLinkInterpolate = function (positions, interp) {
+  positions.forEach(function (pos) {
+    if (pos === 'default') {
+      edges.defaultInterpolate = interp;
+    } else {
+      edges[pos].interpolate = interp;
+    }
+  });
 };
 /**
  * Updates a link with a style
@@ -2450,18 +2487,20 @@ var updateLinkInterpolate = function updateLinkInterpolate(pos, interp) {
  * @param style
  */
 
-var updateLink = function updateLink(pos, style) {
-  if (pos === 'default') {
-    edges.defaultStyle = style;
-  } else {
-    if (_utils__WEBPACK_IMPORTED_MODULE_2__["default"].isSubstringInArray('fill', style) === -1) {
-      style.push('fill:none');
-    }
+const updateLink = function (positions, style) {
+  positions.forEach(function (pos) {
+    if (pos === 'default') {
+      edges.defaultStyle = style;
+    } else {
+      if (_utils__WEBPACK_IMPORTED_MODULE_2__["default"].isSubstringInArray('fill', style) === -1) {
+        style.push('fill:none');
+      }
 
-    edges[pos].style = style;
-  }
+      edges[pos].style = style;
+    }
+  });
 };
-var addClass = function addClass(id, style) {
+const addClass = function (id, style) {
   if (typeof classes[id] === 'undefined') {
     classes[id] = {
       id: id,
@@ -2482,7 +2521,7 @@ var addClass = function addClass(id, style) {
  * @param dir
  */
 
-var setDirection = function setDirection(dir) {
+const setDirection = function (dir) {
   direction = dir;
 };
 /**
@@ -2491,15 +2530,19 @@ var setDirection = function setDirection(dir) {
  * @param className Class to add
  */
 
-var setClass = function setClass(ids, className) {
+const setClass = function (ids, className) {
   ids.split(',').forEach(function (id) {
     if (typeof vertices[id] !== 'undefined') {
       vertices[id].classes.push(className);
     }
+
+    if (typeof subGraphLookup[id] !== 'undefined') {
+      subGraphLookup[id].classes.push(className);
+    }
   });
 };
 
-var setTooltip = function setTooltip(ids, tooltip) {
+const setTooltip = function (ids, tooltip) {
   ids.split(',').forEach(function (id) {
     if (typeof tooltip !== 'undefined') {
       tooltips[id] = tooltip;
@@ -2507,14 +2550,14 @@ var setTooltip = function setTooltip(ids, tooltip) {
   });
 };
 
-var setClickFun = function setClickFun(id, functionName) {
+const setClickFun = function (id, functionName) {
   if (typeof functionName === 'undefined') {
     return;
   }
 
   if (typeof vertices[id] !== 'undefined') {
     funs.push(function (element) {
-      var elem = d3__WEBPACK_IMPORTED_MODULE_0__["select"](element).select("[id=\"".concat(id, "\"]"));
+      const elem = d3__WEBPACK_IMPORTED_MODULE_0__["select"](element).select(`[id="${id}"]`);
 
       if (elem !== null) {
         elem.on('click', function () {
@@ -2532,7 +2575,7 @@ var setClickFun = function setClickFun(id, functionName) {
  */
 
 
-var setLink = function setLink(ids, linkStr, tooltip) {
+const setLink = function (ids, linkStr, tooltip) {
   ids.split(',').forEach(function (id) {
     if (typeof vertices[id] !== 'undefined') {
       vertices[id].link = linkStr;
@@ -2541,7 +2584,7 @@ var setLink = function setLink(ids, linkStr, tooltip) {
   setTooltip(ids, tooltip);
   setClass(ids, 'clickable');
 };
-var getTooltip = function getTooltip(id) {
+const getTooltip = function (id) {
   return tooltips[id];
 };
 /**
@@ -2551,19 +2594,19 @@ var getTooltip = function getTooltip(id) {
  * @param tooltip Tooltip for the clickable element
  */
 
-var setClickEvent = function setClickEvent(ids, functionName, tooltip) {
+const setClickEvent = function (ids, functionName, tooltip) {
   ids.split(',').forEach(function (id) {
     setClickFun(id, functionName);
   });
   setTooltip(ids, tooltip);
   setClass(ids, 'clickable');
 };
-var bindFunctions = function bindFunctions(element) {
+const bindFunctions = function (element) {
   funs.forEach(function (fun) {
     fun(element);
   });
 };
-var getDirection = function getDirection() {
+const getDirection = function () {
   return direction;
 };
 /**
@@ -2571,7 +2614,7 @@ var getDirection = function getDirection() {
  * @returns {{}|*|vertices}
  */
 
-var getVertices = function getVertices() {
+const getVertices = function () {
   return vertices;
 };
 /**
@@ -2579,7 +2622,7 @@ var getVertices = function getVertices() {
  * @returns {{}|*|edges}
  */
 
-var getEdges = function getEdges() {
+const getEdges = function () {
   return edges;
 };
 /**
@@ -2587,34 +2630,34 @@ var getEdges = function getEdges() {
  * @returns {{}|*|classes}
  */
 
-var getClasses = function getClasses() {
+const getClasses = function () {
   return classes;
 };
 
-var setupToolTips = function setupToolTips(element) {
-  var tooltipElem = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('.mermaidTooltip');
+const setupToolTips = function (element) {
+  let tooltipElem = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('.mermaidTooltip');
 
   if ((tooltipElem._groups || tooltipElem)[0][0] === null) {
     tooltipElem = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('body').append('div').attr('class', 'mermaidTooltip').style('opacity', 0);
   }
 
-  var svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"](element).select('svg');
-  var nodes = svg.selectAll('g.node');
+  const svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"](element).select('svg');
+  const nodes = svg.selectAll('g.node');
   nodes.on('mouseover', function () {
-    var el = d3__WEBPACK_IMPORTED_MODULE_0__["select"](this);
-    var title = el.attr('title'); // Dont try to draw a tooltip if no data is provided
+    const el = d3__WEBPACK_IMPORTED_MODULE_0__["select"](this);
+    const title = el.attr('title'); // Dont try to draw a tooltip if no data is provided
 
     if (title === null) {
       return;
     }
 
-    var rect = this.getBoundingClientRect();
+    const rect = this.getBoundingClientRect();
     tooltipElem.transition().duration(200).style('opacity', '.9');
     tooltipElem.html(el.attr('title')).style('left', rect.left + (rect.right - rect.left) / 2 + 'px').style('top', rect.top - 14 + document.body.scrollTop + 'px');
     el.classed('hover', true);
   }).on('mouseout', function () {
     tooltipElem.transition().duration(500).style('opacity', 0);
-    var el = d3__WEBPACK_IMPORTED_MODULE_0__["select"](this);
+    const el = d3__WEBPACK_IMPORTED_MODULE_0__["select"](this);
     el.classed('hover', false);
   });
 };
@@ -2624,13 +2667,14 @@ funs.push(setupToolTips);
  * Clears the internal graph db so that a new graph can be parsed.
  */
 
-var clear = function clear() {
+const clear = function () {
   vertices = {};
   classes = {};
   edges = [];
   funs = [];
   funs.push(setupToolTips);
   subGraphs = [];
+  subGraphLookup = {};
   subCount = 0;
   tooltips = [];
 };
@@ -2639,23 +2683,23 @@ var clear = function clear() {
  * @returns {string}
  */
 
-var defaultStyle = function defaultStyle() {
+const defaultStyle = function () {
   return 'fill:#ffa;stroke: #f66; stroke-width: 3px; stroke-dasharray: 5, 5;fill:#ffa;stroke: #666;';
 };
 /**
  * Clears the internal graph db so that a new graph can be parsed.
  */
 
-var addSubGraph = function addSubGraph(list, title) {
+const addSubGraph = function (id, list, title) {
   function uniq(a) {
-    var prims = {
+    const prims = {
       'boolean': {},
       'number': {},
       'string': {}
     };
-    var objs = [];
+    const objs = [];
     return a.filter(function (item) {
-      var type = _typeof(item);
+      const type = typeof item;
 
       if (item.trim() === '') {
         return false;
@@ -2669,20 +2713,24 @@ var addSubGraph = function addSubGraph(list, title) {
     });
   }
 
-  var nodeList = [];
+  let nodeList = [];
   nodeList = uniq(nodeList.concat.apply(nodeList, list));
-  var subGraph = {
-    id: 'subGraph' + subCount,
+  id = id || 'subGraph' + subCount;
+  title = title || '';
+  subCount = subCount + 1;
+  const subGraph = {
+    id: id,
     nodes: nodeList,
-    title: title.trim()
+    title: title.trim(),
+    classes: []
   };
   subGraphs.push(subGraph);
-  subCount = subCount + 1;
-  return subGraph.id;
+  subGraphLookup[id] = subGraph;
+  return id;
 };
 
-var getPosForId = function getPosForId(id) {
-  for (var i = 0; i < subGraphs.length; i++) {
+const getPosForId = function (id) {
+  for (let i = 0; i < subGraphs.length; i++) {
     if (subGraphs[i].id === id) {
       return i;
     }
@@ -2691,11 +2739,11 @@ var getPosForId = function getPosForId(id) {
   return -1;
 };
 
-var secCount = -1;
-var posCrossRef = [];
+let secCount = -1;
+const posCrossRef = [];
 
-var indexNodes2 = function indexNodes2(id, pos) {
-  var nodes = subGraphs[pos].nodes;
+const indexNodes2 = function (id, pos) {
+  const nodes = subGraphs[pos].nodes;
   secCount = secCount + 1;
 
   if (secCount > 2000) {
@@ -2711,14 +2759,14 @@ var indexNodes2 = function indexNodes2(id, pos) {
     };
   }
 
-  var count = 0;
-  var posCount = 1;
+  let count = 0;
+  let posCount = 1;
 
   while (count < nodes.length) {
-    var childPos = getPosForId(nodes[count]); // Ignore regular nodes (pos will be -1)
+    const childPos = getPosForId(nodes[count]); // Ignore regular nodes (pos will be -1)
 
     if (childPos >= 0) {
-      var res = indexNodes2(id, childPos);
+      const res = indexNodes2(id, childPos);
 
       if (res.result) {
         return {
@@ -2739,41 +2787,41 @@ var indexNodes2 = function indexNodes2(id, pos) {
   };
 };
 
-var getDepthFirstPos = function getDepthFirstPos(pos) {
+const getDepthFirstPos = function (pos) {
   return posCrossRef[pos];
 };
-var indexNodes = function indexNodes() {
+const indexNodes = function () {
   secCount = -1;
 
   if (subGraphs.length > 0) {
     indexNodes2('none', subGraphs.length - 1, 0);
   }
 };
-var getSubGraphs = function getSubGraphs() {
+const getSubGraphs = function () {
   return subGraphs;
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
-  addVertex: addVertex,
-  addLink: addLink,
-  updateLinkInterpolate: updateLinkInterpolate,
-  updateLink: updateLink,
-  addClass: addClass,
-  setDirection: setDirection,
-  setClass: setClass,
-  getTooltip: getTooltip,
-  setClickEvent: setClickEvent,
-  setLink: setLink,
-  bindFunctions: bindFunctions,
-  getDirection: getDirection,
-  getVertices: getVertices,
-  getEdges: getEdges,
-  getClasses: getClasses,
-  clear: clear,
-  defaultStyle: defaultStyle,
-  addSubGraph: addSubGraph,
-  getDepthFirstPos: getDepthFirstPos,
-  indexNodes: indexNodes,
-  getSubGraphs: getSubGraphs
+  addVertex,
+  addLink,
+  updateLinkInterpolate,
+  updateLink,
+  addClass,
+  setDirection,
+  setClass,
+  getTooltip,
+  setClickEvent,
+  setLink,
+  bindFunctions,
+  getDirection,
+  getVertices,
+  getEdges,
+  getClasses,
+  clear,
+  defaultStyle,
+  addSubGraph,
+  getDepthFirstPos,
+  indexNodes,
+  getSubGraphs
 });
 
 /***/ }),
@@ -2801,8 +2849,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _parser_flow__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_parser_flow__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var dagre_d3_renderer__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! dagre-d3-renderer */ "dagre-d3-renderer");
 /* harmony import */ var dagre_d3_renderer__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(dagre_d3_renderer__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var dagre_d3_renderer_lib_label_add_html_label_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! dagre-d3-renderer/lib/label/add-html-label.js */ "dagre-d3-renderer/lib/label/add-html-label.js");
+/* harmony import */ var dagre_d3_renderer_lib_label_add_html_label_js__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(dagre_d3_renderer_lib_label_add_html_label_js__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
 
 
 
@@ -2810,11 +2860,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var conf = {};
-var setConf = function setConf(cnf) {
-  var keys = Object.keys(cnf);
 
-  for (var i = 0; i < keys.length; i++) {
+const conf = {};
+const setConf = function (cnf) {
+  const keys = Object.keys(cnf);
+
+  for (let i = 0; i < keys.length; i++) {
     conf[keys[i]] = cnf[keys[i]];
   }
 };
@@ -2824,67 +2875,61 @@ var setConf = function setConf(cnf) {
  * @param g The graph that is to be drawn.
  */
 
-var addVertices = function addVertices(vert, g) {
-  var keys = Object.keys(vert);
+const addVertices = function (vert, g, svgId) {
+  const svg = d3__WEBPACK_IMPORTED_MODULE_1__["select"](`[id="${svgId}"]`);
+  const keys = Object.keys(vert);
 
-  var styleFromStyleArr = function styleFromStyleArr(styleStr, arr) {
+  const styleFromStyleArr = function (styleStr, arr) {
     // Create a compound style definition from the style definitions found for the node in the graph definition
-    for (var i = 0; i < arr.length; i++) {
+    for (let i = 0; i < arr.length; i++) {
       if (typeof arr[i] !== 'undefined') {
         styleStr = styleStr + arr[i] + ';';
       }
     }
 
     return styleStr;
-  }; // Iterate through each item in the vertice object (containing all the vertices found) in the graph definition
+  }; // Iterate through each item in the vertex object (containing all the vertices found) in the graph definition
 
 
   keys.forEach(function (id) {
-    var vertice = vert[id];
-    var verticeText;
+    const vertex = vert[id];
     /**
-     * Variable for storing the classes for the vertice
+     * Variable for storing the classes for the vertex
      * @type {string}
      */
 
-    var classStr = '';
+    let classStr = '';
 
-    if (vertice.classes.length > 0) {
-      classStr = vertice.classes.join(' ');
+    if (vertex.classes.length > 0) {
+      classStr = vertex.classes.join(' ');
     }
     /**
-     * Variable for storing the extracted style for the vertice
+     * Variable for storing the extracted style for the vertex
      * @type {string}
      */
 
 
-    var style = ''; // Create a compound style definition from the style definitions found for the node in the graph definition
+    let style = ''; // Create a compound style definition from the style definitions found for the node in the graph definition
 
-    style = styleFromStyleArr(style, vertice.styles); // Use vertice id as text in the box if no text is provided by the graph definition
+    style = styleFromStyleArr(style, vertex.styles); // Use vertex id as text in the box if no text is provided by the graph definition
 
-    if (typeof vertice.text === 'undefined') {
-      verticeText = vertice.id;
-    } else {
-      verticeText = vertice.text;
-    }
+    let vertexText = vertex.text !== undefined ? vertex.text : vertex.id; // We create a SVG label, either by delegating to addHtmlLabel or manually
 
-    var labelTypeStr = '';
+    let vertexNode;
 
     if (conf.htmlLabels) {
-      labelTypeStr = 'html';
-      verticeText = verticeText.replace(/fa[lrsb]?:fa-[\w-]+/g, function (s) {
-        return "<i class='".concat(s.replace(':', ' '), "'></i>");
-      });
-
-      if (vertice.link) {
-        verticeText = '<a href="' + vertice.link + '" rel="noopener">' + verticeText + '</a>';
-      }
+      // TODO: addHtmlLabel accepts a labelStyle. Do we possibly have that?
+      const node = {
+        label: vertexText.replace(/fa[lrsb]?:fa-[\w-]+/g, s => `<i class='${s.replace(':', ' ')}'></i>`)
+      };
+      vertexNode = dagre_d3_renderer_lib_label_add_html_label_js__WEBPACK_IMPORTED_MODULE_5___default()(svg, node).node();
+      vertexNode.parentNode.removeChild(vertexNode);
     } else {
-      var svgLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      var rows = verticeText.split(/<br>/);
+      const svgLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      const rows = vertexText.split(/<br[/]{0,1}>/);
 
-      for (var j = 0; j < rows.length; j++) {
-        var tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+      for (let j = 0; j < rows.length; j++) {
+        const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
         tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
         tspan.setAttribute('dy', '1em');
         tspan.setAttribute('x', '1');
@@ -2892,22 +2937,22 @@ var addVertices = function addVertices(vert, g) {
         svgLabel.appendChild(tspan);
       }
 
-      labelTypeStr = 'svg';
+      vertexNode = svgLabel;
+    } // If the node has a link, we wrap it in a SVG link
 
-      if (vertice.link) {
-        var link = document.createElementNS('http://www.w3.org/2000/svg', 'a');
-        link.setAttributeNS('http://www.w3.org/2000/svg', 'href', vertice.link);
-        link.setAttributeNS('http://www.w3.org/2000/svg', 'rel', 'noopener');
-        verticeText = link;
-      } else {
-        verticeText = svgLabel;
-      }
+
+    if (vertex.link) {
+      const link = document.createElementNS('http://www.w3.org/2000/svg', 'a');
+      link.setAttributeNS('http://www.w3.org/2000/svg', 'href', vertex.link);
+      link.setAttributeNS('http://www.w3.org/2000/svg', 'rel', 'noopener');
+      link.appendChild(vertexNode);
+      vertexNode = link;
     }
 
-    var radious = 0;
-    var _shape = ''; // Set the shape based parameters
+    let radious = 0;
+    let _shape = ''; // Set the shape based parameters
 
-    switch (vertice.type) {
+    switch (vertex.type) {
       case 'round':
         radious = 5;
         _shape = 'rect';
@@ -2938,9 +2983,7 @@ var addVertices = function addVertices(vert, g) {
         break;
 
       case 'group':
-        _shape = 'rect'; // Need to create a text node if using svg labels, see #367
-
-        verticeText = conf.htmlLabels ? '' : document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        _shape = 'rect';
         break;
 
       default:
@@ -2948,15 +2991,15 @@ var addVertices = function addVertices(vert, g) {
     } // Add the node
 
 
-    g.setNode(vertice.id, {
-      labelType: labelTypeStr,
+    g.setNode(vertex.id, {
+      labelType: 'svg',
       shape: _shape,
-      label: verticeText,
+      label: vertexNode,
       rx: radious,
       ry: radious,
       'class': classStr,
       style: style,
-      id: vertice.id
+      id: vertex.id
     });
   });
 };
@@ -2966,9 +3009,9 @@ var addVertices = function addVertices(vert, g) {
  * @param {Object} g The graph object
  */
 
-var addEdges = function addEdges(edges, g) {
-  var cnt = 0;
-  var defaultStyle;
+const addEdges = function (edges, g) {
+  let cnt = 0;
+  let defaultStyle;
 
   if (typeof edges.defaultStyle !== 'undefined') {
     defaultStyle = edges.defaultStyle.toString().replace(/,/g, ';');
@@ -2976,7 +3019,7 @@ var addEdges = function addEdges(edges, g) {
 
   edges.forEach(function (edge) {
     cnt++;
-    var edgeData = {}; // Set link type for rendering
+    const edgeData = {}; // Set link type for rendering
 
     if (edge.type === 'arrow_open') {
       edgeData.arrowhead = 'none';
@@ -2984,7 +3027,7 @@ var addEdges = function addEdges(edges, g) {
       edgeData.arrowhead = 'normal';
     }
 
-    var style = '';
+    let style = '';
 
     if (typeof edge.style !== 'undefined') {
       edge.style.forEach(function (s) {
@@ -3014,11 +3057,11 @@ var addEdges = function addEdges(edges, g) {
     edgeData.style = style;
 
     if (typeof edge.interpolate !== 'undefined') {
-      edgeData.curve = Object(_utils__WEBPACK_IMPORTED_MODULE_6__["interpolateToCurve"])(edge.interpolate, d3__WEBPACK_IMPORTED_MODULE_1__["curveLinear"]);
+      edgeData.curve = Object(_utils__WEBPACK_IMPORTED_MODULE_7__["interpolateToCurve"])(edge.interpolate, d3__WEBPACK_IMPORTED_MODULE_1__["curveLinear"]);
     } else if (typeof edges.defaultInterpolate !== 'undefined') {
-      edgeData.curve = Object(_utils__WEBPACK_IMPORTED_MODULE_6__["interpolateToCurve"])(edges.defaultInterpolate, d3__WEBPACK_IMPORTED_MODULE_1__["curveLinear"]);
+      edgeData.curve = Object(_utils__WEBPACK_IMPORTED_MODULE_7__["interpolateToCurve"])(edges.defaultInterpolate, d3__WEBPACK_IMPORTED_MODULE_1__["curveLinear"]);
     } else {
-      edgeData.curve = Object(_utils__WEBPACK_IMPORTED_MODULE_6__["interpolateToCurve"])(conf.curve, d3__WEBPACK_IMPORTED_MODULE_1__["curveLinear"]);
+      edgeData.curve = Object(_utils__WEBPACK_IMPORTED_MODULE_7__["interpolateToCurve"])(conf.curve, d3__WEBPACK_IMPORTED_MODULE_1__["curveLinear"]);
     }
 
     if (typeof edge.text === 'undefined') {
@@ -3036,7 +3079,7 @@ var addEdges = function addEdges(edges, g) {
           edgeData.label = '<span class="edgeLabel">' + edge.text + '</span>';
         } else {
           edgeData.labelType = 'text';
-          edgeData.style = 'stroke: #333; stroke-width: 1.5px;fill:none';
+          edgeData.style = edgeData.style || 'stroke: #333; stroke-width: 1.5px;fill:none';
           edgeData.label = edge.text.replace(/<br>/g, '\n');
         }
       } else {
@@ -3053,9 +3096,9 @@ var addEdges = function addEdges(edges, g) {
  * @returns {object} classDef styles
  */
 
-var getClasses = function getClasses(text) {
+const getClasses = function (text) {
   _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].clear();
-  var parser = _parser_flow__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
+  const parser = _parser_flow__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
   parser.yy = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"]; // Parse the graph definition
 
   parser.parse(text);
@@ -3067,27 +3110,27 @@ var getClasses = function getClasses(text) {
  * @param id
  */
 
-var draw = function draw(text, id) {
-  _logger__WEBPACK_IMPORTED_MODULE_5__["logger"].debug('Drawing flowchart');
+const draw = function (text, id) {
+  _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].debug('Drawing flowchart');
   _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].clear();
-  var parser = _parser_flow__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
+  const parser = _parser_flow__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
   parser.yy = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"]; // Parse the graph definition
 
   try {
     parser.parse(text);
   } catch (err) {
-    _logger__WEBPACK_IMPORTED_MODULE_5__["logger"].debug('Parsing failed');
+    _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].debug('Parsing failed');
   } // Fetch the default direction, use TD if none was found
 
 
-  var dir = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getDirection();
+  let dir = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getDirection();
 
   if (typeof dir === 'undefined') {
     dir = 'TD';
   } // Create the input mermaid.graph
 
 
-  var g = new graphlibrary__WEBPACK_IMPORTED_MODULE_0___default.a.Graph({
+  const g = new graphlibrary__WEBPACK_IMPORTED_MODULE_0___default.a.Graph({
     multigraph: true,
     compound: true
   }).setGraph({
@@ -3097,39 +3140,39 @@ var draw = function draw(text, id) {
   }).setDefaultEdgeLabel(function () {
     return {};
   });
-  var subG;
-  var subGraphs = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getSubGraphs();
+  let subG;
+  const subGraphs = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getSubGraphs();
 
-  for (var _i = subGraphs.length - 1; _i >= 0; _i--) {
-    subG = subGraphs[_i];
-    _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].addVertex(subG.id, subG.title, 'group', undefined);
+  for (let i = subGraphs.length - 1; i >= 0; i--) {
+    subG = subGraphs[i];
+    _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].addVertex(subG.id, subG.title, 'group', undefined, subG.classes);
   } // Fetch the verices/nodes and edges/links from the parsed graph definition
 
 
-  var vert = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getVertices();
-  var edges = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getEdges();
-  var i = 0;
+  const vert = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getVertices();
+  const edges = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getEdges();
+  let i = 0;
 
   for (i = subGraphs.length - 1; i >= 0; i--) {
     subG = subGraphs[i];
     d3__WEBPACK_IMPORTED_MODULE_1__["selectAll"]('cluster').append('text');
 
-    for (var j = 0; j < subG.nodes.length; j++) {
+    for (let j = 0; j < subG.nodes.length; j++) {
       g.setParent(subG.nodes[j], subG.id);
     }
   }
 
-  addVertices(vert, g);
+  addVertices(vert, g, id);
   addEdges(edges, g); // Create the renderer
 
-  var Render = dagre_d3_renderer__WEBPACK_IMPORTED_MODULE_4___default.a.render;
-  var render = new Render(); // Add custom shape for rhombus type of boc (decision)
+  const Render = dagre_d3_renderer__WEBPACK_IMPORTED_MODULE_4___default.a.render;
+  const render = new Render(); // Add custom shape for rhombus type of boc (decision)
 
   render.shapes().question = function (parent, bbox, node) {
-    var w = bbox.width;
-    var h = bbox.height;
-    var s = (w + h) * 0.9;
-    var points = [{
+    const w = bbox.width;
+    const h = bbox.height;
+    const s = (w + h) * 0.9;
+    const points = [{
       x: s / 2,
       y: 0
     }, {
@@ -3142,7 +3185,7 @@ var draw = function draw(text, id) {
       x: 0,
       y: -s / 2
     }];
-    var shapeSvg = parent.insert('polygon', ':first-child').attr('points', points.map(function (d) {
+    const shapeSvg = parent.insert('polygon', ':first-child').attr('points', points.map(function (d) {
       return d.x + ',' + d.y;
     }).join(' ')).attr('rx', 5).attr('ry', 5).attr('transform', 'translate(' + -s / 2 + ',' + s * 2 / 4 + ')');
 
@@ -3155,9 +3198,9 @@ var draw = function draw(text, id) {
 
 
   render.shapes().rect_left_inv_arrow = function (parent, bbox, node) {
-    var w = bbox.width;
-    var h = bbox.height;
-    var points = [{
+    const w = bbox.width;
+    const h = bbox.height;
+    const points = [{
       x: -h / 2,
       y: 0
     }, {
@@ -3173,7 +3216,7 @@ var draw = function draw(text, id) {
       x: 0,
       y: -h / 2
     }];
-    var shapeSvg = parent.insert('polygon', ':first-child').attr('points', points.map(function (d) {
+    const shapeSvg = parent.insert('polygon', ':first-child').attr('points', points.map(function (d) {
       return d.x + ',' + d.y;
     }).join(' ')).attr('transform', 'translate(' + -w / 2 + ',' + h * 2 / 4 + ')');
 
@@ -3186,9 +3229,9 @@ var draw = function draw(text, id) {
 
 
   render.shapes().rect_right_inv_arrow = function (parent, bbox, node) {
-    var w = bbox.width;
-    var h = bbox.height;
-    var points = [{
+    const w = bbox.width;
+    const h = bbox.height;
+    const points = [{
       x: 0,
       y: 0
     }, {
@@ -3204,7 +3247,7 @@ var draw = function draw(text, id) {
       x: 0,
       y: -h
     }];
-    var shapeSvg = parent.insert('polygon', ':first-child').attr('points', points.map(function (d) {
+    const shapeSvg = parent.insert('polygon', ':first-child').attr('points', points.map(function (d) {
       return d.x + ',' + d.y;
     }).join(' ')).attr('transform', 'translate(' + -w / 2 + ',' + h * 2 / 4 + ')');
 
@@ -3217,70 +3260,60 @@ var draw = function draw(text, id) {
 
 
   render.arrows().none = function normal(parent, id, edge, type) {
-    var marker = parent.append('marker').attr('id', id).attr('viewBox', '0 0 10 10').attr('refX', 9).attr('refY', 5).attr('markerUnits', 'strokeWidth').attr('markerWidth', 8).attr('markerHeight', 6).attr('orient', 'auto');
-    var path = marker.append('path').attr('d', 'M 0 0 L 0 0 L 0 0 z');
+    const marker = parent.append('marker').attr('id', id).attr('viewBox', '0 0 10 10').attr('refX', 9).attr('refY', 5).attr('markerUnits', 'strokeWidth').attr('markerWidth', 8).attr('markerHeight', 6).attr('orient', 'auto');
+    const path = marker.append('path').attr('d', 'M 0 0 L 0 0 L 0 0 z');
     dagre_d3_renderer__WEBPACK_IMPORTED_MODULE_4___default.a.util.applyStyle(path, edge[type + 'Style']);
   }; // Override normal arrowhead defined in d3. Remove style & add class to allow css styling.
 
 
   render.arrows().normal = function normal(parent, id, edge, type) {
-    var marker = parent.append('marker').attr('id', id).attr('viewBox', '0 0 10 10').attr('refX', 9).attr('refY', 5).attr('markerUnits', 'strokeWidth').attr('markerWidth', 8).attr('markerHeight', 6).attr('orient', 'auto');
+    const marker = parent.append('marker').attr('id', id).attr('viewBox', '0 0 10 10').attr('refX', 9).attr('refY', 5).attr('markerUnits', 'strokeWidth').attr('markerWidth', 8).attr('markerHeight', 6).attr('orient', 'auto');
     marker.append('path').attr('d', 'M 0 0 L 10 5 L 0 10 z').attr('class', 'arrowheadPath').style('stroke-width', 1).style('stroke-dasharray', '1,0');
   }; // Set up an SVG group so that we can translate the final graph.
 
 
-  var svg = d3__WEBPACK_IMPORTED_MODULE_1__["select"]("[id=\"".concat(id, "\"]")); // Run the renderer. This is what draws the final graph.
+  const svg = d3__WEBPACK_IMPORTED_MODULE_1__["select"](`[id="${id}"]`); // Run the renderer. This is what draws the final graph.
 
-  var element = d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#' + id + ' g');
+  const element = d3__WEBPACK_IMPORTED_MODULE_1__["select"]('#' + id + ' g');
   render(element, g);
   element.selectAll('g.node').attr('title', function () {
     return _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getTooltip(this.id);
   });
-  var padding = 8;
-  var width = g.maxX - g.minX + padding * 2;
-  var height = g.maxY - g.minY + padding * 2;
+  const padding = 8;
+  const width = g.maxX - g.minX + padding * 2;
+  const height = g.maxY - g.minY + padding * 2;
   svg.attr('width', '100%');
-  svg.attr('style', "max-width: ".concat(width, "px;"));
-  svg.attr('viewBox', "0 0 ".concat(width, " ").concat(height));
-  svg.select('g').attr('transform', "translate(".concat(padding - g.minX, ", ").concat(padding - g.minY, ")")); // Index nodes
+  svg.attr('style', `max-width: ${width}px;`);
+  svg.attr('viewBox', `0 0 ${width} ${height}`);
+  svg.select('g').attr('transform', `translate(${padding - g.minX}, ${padding - g.minY})`); // Index nodes
 
-  _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].indexNodes('subGraph' + i);
+  _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].indexNodes('subGraph' + i); // reposition labels
 
   for (i = 0; i < subGraphs.length; i++) {
     subG = subGraphs[i];
 
     if (subG.title !== 'undefined') {
-      var clusterRects = document.querySelectorAll('#' + id + ' #' + subG.id + ' rect');
-      var clusterEl = document.querySelectorAll('#' + id + ' #' + subG.id);
-      var xPos = clusterRects[0].x.baseVal.value;
-      var yPos = clusterRects[0].y.baseVal.value;
-      var _width = clusterRects[0].width.baseVal.value;
-      var cluster = d3__WEBPACK_IMPORTED_MODULE_1__["select"](clusterEl[0]);
-      var te = cluster.append('text');
-      te.attr('x', xPos + _width / 2);
-      te.attr('y', yPos + 14);
-      te.attr('fill', 'black');
-      te.attr('stroke', 'none');
+      const clusterRects = document.querySelectorAll('#' + id + ' #' + subG.id + ' rect');
+      const clusterEl = document.querySelectorAll('#' + id + ' #' + subG.id);
+      const xPos = clusterRects[0].x.baseVal.value;
+      const yPos = clusterRects[0].y.baseVal.value;
+      const width = clusterRects[0].width.baseVal.value;
+      const cluster = d3__WEBPACK_IMPORTED_MODULE_1__["select"](clusterEl[0]);
+      const te = cluster.select('.label');
+      te.attr('transform', `translate(${xPos + width / 2}, ${yPos + 14})`);
       te.attr('id', id + 'Text');
-      te.style('text-anchor', 'middle');
-
-      if (typeof subG.title === 'undefined') {
-        te.text('Undef');
-      } else {
-        te.text(subG.title);
-      }
     }
   } // Add label rects for non html labels
 
 
   if (!conf.htmlLabels) {
-    var labels = document.querySelectorAll('#' + id + ' .edgeLabel .label');
+    const labels = document.querySelectorAll('#' + id + ' .edgeLabel .label');
 
-    for (var k = 0; k < labels.length; k++) {
-      var label = labels[k]; // Get dimensions of label
+    for (let k = 0; k < labels.length; k++) {
+      const label = labels[k]; // Get dimensions of label
 
-      var dim = label.getBBox();
-      var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      const dim = label.getBBox();
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       rect.setAttribute('rx', 0);
       rect.setAttribute('ry', 0);
       rect.setAttribute('width', dim.width);
@@ -3291,11 +3324,11 @@ var draw = function draw(text, id) {
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
-  setConf: setConf,
-  addVertices: addVertices,
-  addEdges: addEdges,
-  getClasses: getClasses,
-  draw: draw
+  setConf,
+  addVertices,
+  addEdges,
+  getClasses,
+  draw
 });
 
 /***/ }),
@@ -3382,17 +3415,15 @@ var draw = function draw(text, id) {
   }
 */
 var parser = function () {
-  var o = function o(k, v, _o, l) {
-    for (_o = _o || {}, l = k.length; l--; _o[k[l]] = v) {
-      ;
-    }
+  var o = function (k, v, o, l) {
+    for (o = o || {}, l = k.length; l--; o[k[l]] = v);
 
-    return _o;
+    return o;
   },
       $V0 = [1, 4],
       $V1 = [1, 3],
       $V2 = [1, 5],
-      $V3 = [1, 8, 9, 10, 11, 13, 18, 30, 46, 71, 72, 73, 74, 75, 81, 86, 88, 89, 91, 92, 94, 95, 96, 97, 98],
+      $V3 = [1, 8, 9, 10, 11, 13, 18, 30, 47, 71, 72, 73, 74, 75, 85, 86, 89, 90, 92, 93, 95, 96, 97, 98, 99],
       $V4 = [2, 2],
       $V5 = [1, 12],
       $V6 = [1, 13],
@@ -3418,55 +3449,56 @@ var parser = function () {
       $Vq = [1, 41],
       $Vr = [1, 42],
       $Vs = [1, 43],
-      $Vt = [1, 8, 9, 10, 11, 13, 18, 30, 32, 46, 71, 72, 73, 74, 75, 81, 86, 88, 89, 91, 92, 94, 95, 96, 97, 98],
+      $Vt = [1, 8, 9, 10, 11, 13, 18, 30, 35, 47, 71, 72, 73, 74, 75, 85, 86, 89, 90, 92, 93, 95, 96, 97, 98, 99],
       $Vu = [1, 53],
       $Vv = [1, 52],
       $Vw = [1, 54],
-      $Vx = [1, 72],
-      $Vy = [1, 80],
-      $Vz = [1, 81],
-      $VA = [1, 66],
-      $VB = [1, 65],
-      $VC = [1, 85],
-      $VD = [1, 84],
-      $VE = [1, 82],
-      $VF = [1, 83],
-      $VG = [1, 73],
-      $VH = [1, 68],
-      $VI = [1, 67],
-      $VJ = [1, 63],
-      $VK = [1, 75],
-      $VL = [1, 76],
-      $VM = [1, 77],
-      $VN = [1, 78],
-      $VO = [1, 79],
-      $VP = [1, 70],
-      $VQ = [1, 69],
-      $VR = [8, 9, 11],
-      $VS = [8, 9, 11, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64],
-      $VT = [1, 115],
-      $VU = [8, 9, 10, 11, 13, 15, 18, 36, 38, 40, 42, 46, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 81, 86, 88, 89, 91, 92, 94, 95, 96, 97, 98],
-      $VV = [8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 30, 32, 36, 37, 38, 39, 40, 41, 42, 43, 46, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 71, 72, 73, 74, 75, 78, 81, 84, 86, 88, 89, 91, 92, 94, 95, 96, 97, 98],
-      $VW = [1, 117],
-      $VX = [1, 118],
-      $VY = [8, 9, 10, 11, 13, 18, 30, 32, 46, 71, 72, 73, 74, 75, 81, 86, 88, 89, 91, 92, 94, 95, 96, 97, 98],
-      $VZ = [8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 30, 32, 37, 39, 41, 43, 46, 50, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 71, 72, 73, 74, 75, 78, 81, 84, 86, 88, 89, 91, 92, 94, 95, 96, 97, 98],
-      $V_ = [13, 18, 46, 81, 86, 88, 89, 91, 92, 94, 95, 96, 97, 98],
-      $V$ = [13, 18, 46, 49, 65, 81, 86, 88, 89, 91, 92, 94, 95, 96, 97, 98],
-      $V01 = [1, 191],
-      $V11 = [1, 188],
+      $Vx = [8, 9, 11],
+      $Vy = [8, 9, 11, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65],
+      $Vz = [1, 91],
+      $VA = [8, 9, 10, 11, 13, 15, 18, 32, 39, 41, 43, 47, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 85, 86, 89, 90, 92, 93, 95, 96, 97, 98, 99],
+      $VB = [8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 30, 32, 34, 35, 39, 40, 41, 42, 43, 44, 47, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 71, 72, 73, 74, 75, 78, 84, 85, 86, 89, 90, 92, 93, 95, 96, 97, 98, 99],
+      $VC = [1, 93],
+      $VD = [1, 94],
+      $VE = [8, 9, 10, 11, 13, 18, 30, 35, 47, 71, 72, 73, 74, 75, 85, 86, 89, 90, 92, 93, 95, 96, 97, 98, 99],
+      $VF = [13, 18, 47, 85, 86, 89, 90, 92, 93, 95, 96, 97, 98, 99],
+      $VG = [1, 118],
+      $VH = [1, 126],
+      $VI = [1, 127],
+      $VJ = [1, 112],
+      $VK = [1, 111],
+      $VL = [1, 131],
+      $VM = [1, 130],
+      $VN = [1, 128],
+      $VO = [1, 129],
+      $VP = [1, 109],
+      $VQ = [1, 119],
+      $VR = [1, 114],
+      $VS = [1, 113],
+      $VT = [1, 121],
+      $VU = [1, 122],
+      $VV = [1, 123],
+      $VW = [1, 124],
+      $VX = [1, 125],
+      $VY = [1, 116],
+      $VZ = [1, 115],
+      $V_ = [13, 18, 47, 50, 66, 85, 86, 89, 90, 92, 93, 95, 96, 97, 98, 99],
+      $V$ = [10, 12, 13, 15, 16, 17, 18, 30, 34, 35, 40, 42, 44, 47, 51, 52, 53, 54, 55, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 71, 72, 73, 74, 75, 78, 84, 85, 86, 89, 90, 92, 93, 95, 96, 97, 98, 99],
+      $V01 = [10, 86],
+      $V11 = [1, 198],
       $V21 = [1, 195],
-      $V31 = [1, 192],
-      $V41 = [1, 189],
-      $V51 = [1, 196],
-      $V61 = [1, 186],
-      $V71 = [1, 187],
-      $V81 = [1, 190],
-      $V91 = [1, 193],
-      $Va1 = [1, 194],
-      $Vb1 = [1, 213],
-      $Vc1 = [8, 9, 11, 86],
-      $Vd1 = [8, 9, 10, 11, 46, 71, 80, 81, 84, 86, 88, 89, 90, 91, 92];
+      $V31 = [1, 202],
+      $V41 = [1, 199],
+      $V51 = [1, 203],
+      $V61 = [1, 196],
+      $V71 = [1, 193],
+      $V81 = [1, 194],
+      $V91 = [1, 197],
+      $Va1 = [1, 200],
+      $Vb1 = [1, 201],
+      $Vc1 = [1, 224],
+      $Vd1 = [8, 9, 11, 86],
+      $Ve1 = [8, 9, 10, 11, 47, 71, 80, 84, 85, 86, 89, 90, 91, 92, 93];
 
   var parser = {
     trace: function trace() {},
@@ -3501,43 +3533,43 @@ var parser = function () {
       "classStatement": 28,
       "clickStatement": 29,
       "subgraph": 30,
-      "text": 31,
-      "end": 32,
-      "vertex": 33,
-      "link": 34,
-      "alphaNum": 35,
-      "SQS": 36,
-      "SQE": 37,
-      "PS": 38,
-      "PE": 39,
-      "(-": 40,
-      "-)": 41,
-      "DIAMOND_START": 42,
-      "DIAMOND_STOP": 43,
-      "alphaNumStatement": 44,
-      "alphaNumToken": 45,
-      "MINUS": 46,
-      "linkStatement": 47,
-      "arrowText": 48,
-      "TESTSTR": 49,
-      "--": 50,
-      "ARROW_POINT": 51,
-      "ARROW_CIRCLE": 52,
-      "ARROW_CROSS": 53,
-      "ARROW_OPEN": 54,
-      "-.": 55,
-      "DOTTED_ARROW_POINT": 56,
-      "DOTTED_ARROW_CIRCLE": 57,
-      "DOTTED_ARROW_CROSS": 58,
-      "DOTTED_ARROW_OPEN": 59,
-      "==": 60,
-      "THICK_ARROW_POINT": 61,
-      "THICK_ARROW_CIRCLE": 62,
-      "THICK_ARROW_CROSS": 63,
-      "THICK_ARROW_OPEN": 64,
-      "PIPE": 65,
-      "textToken": 66,
-      "STR": 67,
+      "alphaNum": 31,
+      "SQS": 32,
+      "text": 33,
+      "SQE": 34,
+      "end": 35,
+      "STR": 36,
+      "vertex": 37,
+      "link": 38,
+      "PS": 39,
+      "PE": 40,
+      "(-": 41,
+      "-)": 42,
+      "DIAMOND_START": 43,
+      "DIAMOND_STOP": 44,
+      "alphaNumStatement": 45,
+      "alphaNumToken": 46,
+      "MINUS": 47,
+      "linkStatement": 48,
+      "arrowText": 49,
+      "TESTSTR": 50,
+      "--": 51,
+      "ARROW_POINT": 52,
+      "ARROW_CIRCLE": 53,
+      "ARROW_CROSS": 54,
+      "ARROW_OPEN": 55,
+      "-.": 56,
+      "DOTTED_ARROW_POINT": 57,
+      "DOTTED_ARROW_CIRCLE": 58,
+      "DOTTED_ARROW_CROSS": 59,
+      "DOTTED_ARROW_OPEN": 60,
+      "==": 61,
+      "THICK_ARROW_POINT": 62,
+      "THICK_ARROW_CIRCLE": 63,
+      "THICK_ARROW_CROSS": 64,
+      "THICK_ARROW_OPEN": 65,
+      "PIPE": 66,
+      "textToken": 67,
       "commentText": 68,
       "commentToken": 69,
       "keywords": 70,
@@ -3551,27 +3583,28 @@ var parser = function () {
       "DEFAULT": 78,
       "stylesOpt": 79,
       "HEX": 80,
-      "NUM": 81,
+      "numList": 81,
       "INTERPOLATE": 82,
       "commentStatement": 83,
       "PCT": 84,
-      "style": 85,
+      "NUM": 85,
       "COMMA": 86,
-      "styleComponent": 87,
-      "ALPHA": 88,
-      "COLON": 89,
-      "UNIT": 90,
-      "BRKT": 91,
-      "DOT": 92,
-      "graphCodeTokens": 93,
-      "PUNCTUATION": 94,
-      "UNICODE_TEXT": 95,
-      "PLUS": 96,
-      "EQUALS": 97,
-      "MULT": 98,
-      "TAG_START": 99,
-      "TAG_END": 100,
-      "QUOTE": 101,
+      "style": 87,
+      "styleComponent": 88,
+      "ALPHA": 89,
+      "COLON": 90,
+      "UNIT": 91,
+      "BRKT": 92,
+      "DOT": 93,
+      "graphCodeTokens": 94,
+      "PUNCTUATION": 95,
+      "UNICODE_TEXT": 96,
+      "PLUS": 97,
+      "EQUALS": 98,
+      "MULT": 99,
+      "TAG_START": 100,
+      "TAG_END": 101,
+      "QUOTE": 102,
       "$accept": 0,
       "$end": 1
     },
@@ -3588,34 +3621,34 @@ var parser = function () {
       17: "UP",
       18: "DOWN",
       30: "subgraph",
-      32: "end",
-      36: "SQS",
-      37: "SQE",
-      38: "PS",
-      39: "PE",
-      40: "(-",
-      41: "-)",
-      42: "DIAMOND_START",
-      43: "DIAMOND_STOP",
-      46: "MINUS",
-      49: "TESTSTR",
-      50: "--",
-      51: "ARROW_POINT",
-      52: "ARROW_CIRCLE",
-      53: "ARROW_CROSS",
-      54: "ARROW_OPEN",
-      55: "-.",
-      56: "DOTTED_ARROW_POINT",
-      57: "DOTTED_ARROW_CIRCLE",
-      58: "DOTTED_ARROW_CROSS",
-      59: "DOTTED_ARROW_OPEN",
-      60: "==",
-      61: "THICK_ARROW_POINT",
-      62: "THICK_ARROW_CIRCLE",
-      63: "THICK_ARROW_CROSS",
-      64: "THICK_ARROW_OPEN",
-      65: "PIPE",
-      67: "STR",
+      32: "SQS",
+      34: "SQE",
+      35: "end",
+      36: "STR",
+      39: "PS",
+      40: "PE",
+      41: "(-",
+      42: "-)",
+      43: "DIAMOND_START",
+      44: "DIAMOND_STOP",
+      47: "MINUS",
+      50: "TESTSTR",
+      51: "--",
+      52: "ARROW_POINT",
+      53: "ARROW_CIRCLE",
+      54: "ARROW_CROSS",
+      55: "ARROW_OPEN",
+      56: "-.",
+      57: "DOTTED_ARROW_POINT",
+      58: "DOTTED_ARROW_CIRCLE",
+      59: "DOTTED_ARROW_CROSS",
+      60: "DOTTED_ARROW_OPEN",
+      61: "==",
+      62: "THICK_ARROW_POINT",
+      63: "THICK_ARROW_CIRCLE",
+      64: "THICK_ARROW_CROSS",
+      65: "THICK_ARROW_OPEN",
+      66: "PIPE",
       71: "STYLE",
       72: "LINKSTYLE",
       73: "CLASSDEF",
@@ -3623,25 +3656,25 @@ var parser = function () {
       75: "CLICK",
       78: "DEFAULT",
       80: "HEX",
-      81: "NUM",
       82: "INTERPOLATE",
       84: "PCT",
+      85: "NUM",
       86: "COMMA",
-      88: "ALPHA",
-      89: "COLON",
-      90: "UNIT",
-      91: "BRKT",
-      92: "DOT",
-      94: "PUNCTUATION",
-      95: "UNICODE_TEXT",
-      96: "PLUS",
-      97: "EQUALS",
-      98: "MULT",
-      99: "TAG_START",
-      100: "TAG_END",
-      101: "QUOTE"
+      89: "ALPHA",
+      90: "COLON",
+      91: "UNIT",
+      92: "BRKT",
+      93: "DOT",
+      95: "PUNCTUATION",
+      96: "UNICODE_TEXT",
+      97: "PLUS",
+      98: "EQUALS",
+      99: "MULT",
+      100: "TAG_START",
+      101: "TAG_END",
+      102: "QUOTE"
     },
-    productions_: [0, [3, 2], [5, 0], [5, 2], [6, 1], [6, 1], [6, 1], [6, 1], [6, 1], [4, 2], [4, 2], [4, 4], [4, 4], [4, 4], [4, 4], [4, 4], [19, 2], [19, 1], [20, 1], [20, 1], [20, 1], [14, 1], [14, 1], [14, 2], [22, 2], [22, 2], [22, 1], [22, 1], [21, 2], [21, 1], [7, 2], [7, 2], [7, 2], [7, 2], [7, 2], [7, 2], [7, 5], [7, 4], [24, 1], [24, 1], [24, 1], [23, 3], [23, 1], [33, 4], [33, 5], [33, 6], [33, 7], [33, 4], [33, 5], [33, 4], [33, 5], [33, 4], [33, 5], [33, 4], [33, 5], [33, 1], [33, 2], [35, 1], [35, 2], [44, 1], [44, 1], [44, 1], [44, 1], [34, 2], [34, 3], [34, 3], [34, 1], [34, 3], [34, 3], [34, 3], [34, 3], [34, 3], [34, 3], [34, 3], [34, 3], [34, 3], [34, 3], [34, 3], [34, 3], [47, 1], [47, 1], [47, 1], [47, 1], [47, 1], [47, 1], [47, 1], [47, 1], [47, 1], [47, 1], [47, 1], [47, 1], [48, 3], [31, 1], [31, 2], [31, 1], [68, 1], [68, 2], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [76, 1], [76, 2], [27, 5], [27, 5], [28, 5], [29, 5], [29, 7], [29, 5], [29, 7], [25, 5], [25, 5], [26, 5], [26, 5], [26, 9], [26, 9], [26, 7], [26, 7], [83, 3], [79, 1], [79, 3], [85, 1], [85, 2], [87, 1], [87, 1], [87, 1], [87, 1], [87, 1], [87, 1], [87, 1], [87, 1], [87, 1], [87, 1], [87, 1], [69, 1], [69, 1], [66, 1], [66, 1], [66, 1], [66, 1], [66, 1], [66, 1], [66, 1], [77, 1], [77, 1], [77, 1], [77, 1], [45, 1], [45, 1], [45, 1], [45, 1], [45, 1], [45, 1], [45, 1], [45, 1], [45, 1], [45, 1], [45, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1], [93, 1]],
+    productions_: [0, [3, 2], [5, 0], [5, 2], [6, 1], [6, 1], [6, 1], [6, 1], [6, 1], [4, 2], [4, 2], [4, 4], [4, 4], [4, 4], [4, 4], [4, 4], [19, 2], [19, 1], [20, 1], [20, 1], [20, 1], [14, 1], [14, 1], [14, 2], [22, 2], [22, 2], [22, 1], [22, 1], [21, 2], [21, 1], [7, 2], [7, 2], [7, 2], [7, 2], [7, 2], [7, 2], [7, 9], [7, 6], [7, 6], [7, 4], [24, 1], [24, 1], [24, 1], [23, 3], [23, 1], [37, 4], [37, 5], [37, 6], [37, 7], [37, 4], [37, 5], [37, 4], [37, 5], [37, 4], [37, 5], [37, 4], [37, 5], [37, 1], [37, 2], [31, 1], [31, 2], [45, 1], [45, 1], [45, 1], [45, 1], [38, 2], [38, 3], [38, 3], [38, 1], [38, 3], [38, 3], [38, 3], [38, 3], [38, 3], [38, 3], [38, 3], [38, 3], [38, 3], [38, 3], [38, 3], [38, 3], [48, 1], [48, 1], [48, 1], [48, 1], [48, 1], [48, 1], [48, 1], [48, 1], [48, 1], [48, 1], [48, 1], [48, 1], [49, 3], [33, 1], [33, 2], [33, 1], [68, 1], [68, 2], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [70, 1], [76, 1], [76, 2], [27, 5], [27, 5], [28, 5], [29, 5], [29, 7], [29, 5], [29, 7], [25, 5], [25, 5], [26, 5], [26, 5], [26, 9], [26, 9], [26, 7], [26, 7], [83, 3], [81, 1], [81, 3], [79, 1], [79, 3], [87, 1], [87, 2], [88, 1], [88, 1], [88, 1], [88, 1], [88, 1], [88, 1], [88, 1], [88, 1], [88, 1], [88, 1], [88, 1], [69, 1], [69, 1], [67, 1], [67, 1], [67, 1], [67, 1], [67, 1], [67, 1], [67, 1], [77, 1], [77, 1], [77, 1], [77, 1], [46, 1], [46, 1], [46, 1], [46, 1], [46, 1], [46, 1], [46, 1], [46, 1], [46, 1], [46, 1], [46, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1], [94, 1]],
     performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate
     /* action[1] */
     , $$
@@ -3666,13 +3699,13 @@ var parser = function () {
           break;
 
         case 4:
-        case 57:
         case 59:
-        case 60:
-        case 92:
+        case 61:
+        case 62:
         case 94:
-        case 95:
-        case 108:
+        case 96:
+        case 97:
+        case 110:
           this.$ = $$[$0];
           break;
 
@@ -3714,141 +3747,133 @@ var parser = function () {
           break;
 
         case 36:
-          this.$ = yy.addSubGraph($$[$0 - 1], $$[$0 - 3]);
+          this.$ = yy.addSubGraph($$[$0 - 6], $$[$0 - 1], $$[$0 - 4]);
           break;
 
         case 37:
-          this.$ = yy.addSubGraph($$[$0 - 1], undefined);
+          this.$ = yy.addSubGraph(undefined, $$[$0 - 1], $$[$0 - 3]);
           break;
 
-        case 41:
+        case 38:
+          this.$ = yy.addSubGraph($$[$0 - 3], $$[$0 - 1], $$[$0 - 3]);
+          break;
+
+        case 39:
+          this.$ = yy.addSubGraph(undefined, $$[$0 - 1], undefined);
+          break;
+
+        case 43:
           yy.addLink($$[$0 - 2], $$[$0], $$[$0 - 1]);
           this.$ = [$$[$0 - 2], $$[$0]];
           break;
 
-        case 42:
+        case 44:
           this.$ = [$$[$0]];
           break;
 
-        case 43:
+        case 45:
           this.$ = $$[$0 - 3];
           yy.addVertex($$[$0 - 3], $$[$0 - 1], 'square');
           break;
 
-        case 44:
+        case 46:
           this.$ = $$[$0 - 4];
           yy.addVertex($$[$0 - 4], $$[$0 - 2], 'square');
           break;
 
-        case 45:
+        case 47:
           this.$ = $$[$0 - 5];
           yy.addVertex($$[$0 - 5], $$[$0 - 2], 'circle');
           break;
 
-        case 46:
+        case 48:
           this.$ = $$[$0 - 6];
           yy.addVertex($$[$0 - 6], $$[$0 - 3], 'circle');
           break;
 
-        case 47:
+        case 49:
           this.$ = $$[$0 - 3];
           yy.addVertex($$[$0 - 3], $$[$0 - 1], 'ellipse');
           break;
 
-        case 48:
+        case 50:
           this.$ = $$[$0 - 4];
           yy.addVertex($$[$0 - 4], $$[$0 - 2], 'ellipse');
           break;
 
-        case 49:
+        case 51:
           this.$ = $$[$0 - 3];
           yy.addVertex($$[$0 - 3], $$[$0 - 1], 'round');
           break;
 
-        case 50:
+        case 52:
           this.$ = $$[$0 - 4];
           yy.addVertex($$[$0 - 4], $$[$0 - 2], 'round');
           break;
 
-        case 51:
+        case 53:
           this.$ = $$[$0 - 3];
           yy.addVertex($$[$0 - 3], $$[$0 - 1], 'diamond');
           break;
 
-        case 52:
+        case 54:
           this.$ = $$[$0 - 4];
           yy.addVertex($$[$0 - 4], $$[$0 - 2], 'diamond');
           break;
 
-        case 53:
+        case 55:
           this.$ = $$[$0 - 3];
           yy.addVertex($$[$0 - 3], $$[$0 - 1], 'odd');
           break;
 
-        case 54:
+        case 56:
           this.$ = $$[$0 - 4];
           yy.addVertex($$[$0 - 4], $$[$0 - 2], 'odd');
           break;
 
-        case 55:
+        case 57:
           this.$ = $$[$0];
           yy.addVertex($$[$0]);
           break;
 
-        case 56:
+        case 58:
           this.$ = $$[$0 - 1];
           yy.addVertex($$[$0 - 1]);
           break;
 
-        case 58:
-        case 93:
-        case 96:
-        case 109:
+        case 60:
+        case 95:
+        case 98:
+        case 111:
           this.$ = $$[$0 - 1] + '' + $$[$0];
           break;
 
-        case 61:
+        case 63:
           this.$ = 'v';
           break;
 
-        case 62:
+        case 64:
           this.$ = '-';
           break;
 
-        case 63:
+        case 65:
           $$[$0 - 1].text = $$[$0];
           this.$ = $$[$0 - 1];
           break;
 
-        case 64:
-        case 65:
+        case 66:
+        case 67:
           $$[$0 - 2].text = $$[$0 - 1];
           this.$ = $$[$0 - 2];
           break;
 
-        case 66:
-          this.$ = $$[$0];
-          break;
-
-        case 67:
-          this.$ = {
-            "type": "arrow",
-            "stroke": "normal",
-            "text": $$[$0 - 1]
-          };
-          break;
-
         case 68:
-          this.$ = {
-            "type": "arrow_circle",
-            "stroke": "normal",
-            "text": $$[$0 - 1]
-          };
+          this.$ = $$[$0];
           break;
 
         case 69:
           this.$ = {
-            "type": "arrow_cross",
+            "type": "arrow",
             "stroke": "normal",
             "text": $$[$0 - 1]
           };
@@ -3856,7 +3881,7 @@ var parser = function () {
 
         case 70:
           this.$ = {
-            "type": "arrow_open",
+            "type": "arrow_circle",
             "stroke": "normal",
             "text": $$[$0 - 1]
           };
@@ -3864,23 +3889,23 @@ var parser = function () {
 
         case 71:
           this.$ = {
-            "type": "arrow",
-            "stroke": "dotted",
+            "type": "arrow_cross",
+            "stroke": "normal",
             "text": $$[$0 - 1]
           };
           break;
 
         case 72:
           this.$ = {
-            "type": "arrow_circle",
-            "stroke": "dotted",
+            "type": "arrow_open",
+            "stroke": "normal",
             "text": $$[$0 - 1]
           };
           break;
 
         case 73:
           this.$ = {
-            "type": "arrow_cross",
+            "type": "arrow",
             "stroke": "dotted",
             "text": $$[$0 - 1]
           };
@@ -3888,7 +3913,7 @@ var parser = function () {
 
         case 74:
           this.$ = {
-            "type": "arrow_open",
+            "type": "arrow_circle",
             "stroke": "dotted",
             "text": $$[$0 - 1]
           };
@@ -3896,23 +3921,23 @@ var parser = function () {
 
         case 75:
           this.$ = {
-            "type": "arrow",
-            "stroke": "thick",
+            "type": "arrow_cross",
+            "stroke": "dotted",
             "text": $$[$0 - 1]
           };
           break;
 
         case 76:
           this.$ = {
-            "type": "arrow_circle",
-            "stroke": "thick",
+            "type": "arrow_open",
+            "stroke": "dotted",
             "text": $$[$0 - 1]
           };
           break;
 
         case 77:
           this.$ = {
-            "type": "arrow_cross",
+            "type": "arrow",
             "stroke": "thick",
             "text": $$[$0 - 1]
           };
@@ -3920,7 +3945,7 @@ var parser = function () {
 
         case 78:
           this.$ = {
-            "type": "arrow_open",
+            "type": "arrow_circle",
             "stroke": "thick",
             "text": $$[$0 - 1]
           };
@@ -3928,158 +3953,189 @@ var parser = function () {
 
         case 79:
           this.$ = {
-            "type": "arrow",
-            "stroke": "normal"
+            "type": "arrow_cross",
+            "stroke": "thick",
+            "text": $$[$0 - 1]
           };
           break;
 
         case 80:
           this.$ = {
-            "type": "arrow_circle",
-            "stroke": "normal"
+            "type": "arrow_open",
+            "stroke": "thick",
+            "text": $$[$0 - 1]
           };
           break;
 
         case 81:
           this.$ = {
-            "type": "arrow_cross",
+            "type": "arrow",
             "stroke": "normal"
           };
           break;
 
         case 82:
           this.$ = {
-            "type": "arrow_open",
+            "type": "arrow_circle",
             "stroke": "normal"
           };
           break;
 
         case 83:
           this.$ = {
-            "type": "arrow",
-            "stroke": "dotted"
+            "type": "arrow_cross",
+            "stroke": "normal"
           };
           break;
 
         case 84:
           this.$ = {
-            "type": "arrow_circle",
-            "stroke": "dotted"
+            "type": "arrow_open",
+            "stroke": "normal"
           };
           break;
 
         case 85:
           this.$ = {
-            "type": "arrow_cross",
+            "type": "arrow",
             "stroke": "dotted"
           };
           break;
 
         case 86:
           this.$ = {
-            "type": "arrow_open",
+            "type": "arrow_circle",
             "stroke": "dotted"
           };
           break;
 
         case 87:
           this.$ = {
-            "type": "arrow",
-            "stroke": "thick"
+            "type": "arrow_cross",
+            "stroke": "dotted"
           };
           break;
 
         case 88:
           this.$ = {
-            "type": "arrow_circle",
-            "stroke": "thick"
+            "type": "arrow_open",
+            "stroke": "dotted"
           };
           break;
 
         case 89:
           this.$ = {
-            "type": "arrow_cross",
+            "type": "arrow",
             "stroke": "thick"
           };
           break;
 
         case 90:
           this.$ = {
-            "type": "arrow_open",
+            "type": "arrow_circle",
             "stroke": "thick"
           };
           break;
 
         case 91:
+          this.$ = {
+            "type": "arrow_cross",
+            "stroke": "thick"
+          };
+          break;
+
+        case 92:
+          this.$ = {
+            "type": "arrow_open",
+            "stroke": "thick"
+          };
+          break;
+
+        case 93:
           this.$ = $$[$0 - 1];
           break;
 
-        case 110:
-        case 111:
+        case 112:
+        case 113:
           this.$ = $$[$0 - 4];
           yy.addClass($$[$0 - 2], $$[$0]);
           break;
 
-        case 112:
+        case 114:
           this.$ = $$[$0 - 4];
           yy.setClass($$[$0 - 2], $$[$0]);
           break;
 
-        case 113:
+        case 115:
           this.$ = $$[$0 - 4];
           yy.setClickEvent($$[$0 - 2], $$[$0], undefined);
           break;
 
-        case 114:
+        case 116:
           this.$ = $$[$0 - 6];
           yy.setClickEvent($$[$0 - 4], $$[$0 - 2], $$[$0]);
           break;
 
-        case 115:
+        case 117:
           this.$ = $$[$0 - 4];
           yy.setLink($$[$0 - 2], $$[$0], undefined);
           break;
 
-        case 116:
+        case 118:
           this.$ = $$[$0 - 6];
           yy.setLink($$[$0 - 4], $$[$0 - 2], $$[$0]);
           break;
 
-        case 117:
+        case 119:
           this.$ = $$[$0 - 4];
           yy.addVertex($$[$0 - 2], undefined, undefined, $$[$0]);
           break;
 
-        case 118:
-        case 119:
         case 120:
+        case 122:
           this.$ = $$[$0 - 4];
           yy.updateLink($$[$0 - 2], $$[$0]);
           break;
 
         case 121:
-        case 122:
+          this.$ = $$[$0 - 4];
+          yy.updateLink([$$[$0 - 2]], $$[$0]);
+          break;
+
+        case 123:
+          this.$ = $$[$0 - 8];
+          yy.updateLinkInterpolate([$$[$0 - 6]], $$[$0 - 2]);
+          yy.updateLink([$$[$0 - 6]], $$[$0]);
+          break;
+
+        case 124:
           this.$ = $$[$0 - 8];
           yy.updateLinkInterpolate($$[$0 - 6], $$[$0 - 2]);
           yy.updateLink($$[$0 - 6], $$[$0]);
           break;
 
-        case 123:
-        case 124:
+        case 125:
+          this.$ = $$[$0 - 6];
+          yy.updateLinkInterpolate([$$[$0 - 4]], $$[$0]);
+          break;
+
+        case 126:
           this.$ = $$[$0 - 6];
           yy.updateLinkInterpolate($$[$0 - 4], $$[$0]);
           break;
 
-        case 126:
+        case 128:
+        case 130:
           this.$ = [$$[$0]];
           break;
 
-        case 127:
+        case 129:
+        case 131:
           $$[$0 - 2].push($$[$0]);
           this.$ = $$[$0 - 2];
           break;
 
-        case 129:
+        case 133:
           this.$ = $$[$0 - 1] + $$[$0];
           break;
       }
@@ -4123,27 +4179,27 @@ var parser = function () {
       28: 20,
       29: 21,
       30: $Vb,
-      33: 23,
-      35: 29,
-      44: 30,
-      45: 32,
-      46: $Vc,
+      31: 29,
+      37: 23,
+      45: 30,
+      46: 32,
+      47: $Vc,
       71: $Vd,
       72: $Ve,
       73: $Vf,
       74: $Vg,
       75: $Vh,
-      81: $Vi,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, o($V3, [2, 9]), o($V3, [2, 10]), {
       13: [1, 46],
       15: [1, 47],
@@ -4183,572 +4239,543 @@ var parser = function () {
     }, {
       8: $Vu,
       9: $Vv,
-      10: $Vx,
+      10: [1, 60],
       11: $Vw,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      24: 61,
-      30: $VE,
-      31: 60,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($VR, [2, 42], {
-      34: 86,
-      47: 87,
-      50: [1, 88],
-      51: [1, 91],
-      52: [1, 92],
-      53: [1, 93],
-      54: [1, 94],
-      55: [1, 89],
-      56: [1, 95],
-      57: [1, 96],
-      58: [1, 97],
-      59: [1, 98],
-      60: [1, 90],
-      61: [1, 99],
-      62: [1, 100],
-      63: [1, 101],
-      64: [1, 102]
+      24: 61
+    }, o($Vx, [2, 44], {
+      38: 62,
+      48: 63,
+      51: [1, 64],
+      52: [1, 67],
+      53: [1, 68],
+      54: [1, 69],
+      55: [1, 70],
+      56: [1, 65],
+      57: [1, 71],
+      58: [1, 72],
+      59: [1, 73],
+      60: [1, 74],
+      61: [1, 66],
+      62: [1, 75],
+      63: [1, 76],
+      64: [1, 77],
+      65: [1, 78]
     }), {
-      10: [1, 103]
+      10: [1, 79]
     }, {
-      10: [1, 104]
+      10: [1, 80]
     }, {
-      10: [1, 105]
+      10: [1, 81]
     }, {
-      10: [1, 106]
+      10: [1, 82]
     }, {
-      10: [1, 107]
-    }, o($VS, [2, 55], {
-      45: 32,
-      21: 113,
-      44: 114,
-      10: $VT,
+      10: [1, 83]
+    }, o($Vy, [2, 57], {
+      46: 32,
+      21: 89,
+      45: 90,
+      10: $Vz,
       13: $V9,
-      15: [1, 112],
+      15: [1, 88],
       18: $Va,
-      36: [1, 108],
-      38: [1, 109],
-      40: [1, 110],
-      42: [1, 111],
-      46: $Vc,
-      81: $Vi,
+      32: [1, 84],
+      39: [1, 85],
+      41: [1, 86],
+      43: [1, 87],
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }), o($VU, [2, 57]), o($VU, [2, 59]), o($VU, [2, 60]), o($VU, [2, 61]), o($VU, [2, 62]), o($VV, [2, 154]), o($VV, [2, 155]), o($VV, [2, 156]), o($VV, [2, 157]), o($VV, [2, 158]), o($VV, [2, 159]), o($VV, [2, 160]), o($VV, [2, 161]), o($VV, [2, 162]), o($VV, [2, 163]), o($VV, [2, 164]), {
-      8: $VW,
-      9: $VX,
-      10: $VT,
-      14: 116,
-      21: 119
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }), o($VA, [2, 59]), o($VA, [2, 61]), o($VA, [2, 62]), o($VA, [2, 63]), o($VA, [2, 64]), o($VB, [2, 158]), o($VB, [2, 159]), o($VB, [2, 160]), o($VB, [2, 161]), o($VB, [2, 162]), o($VB, [2, 163]), o($VB, [2, 164]), o($VB, [2, 165]), o($VB, [2, 166]), o($VB, [2, 167]), o($VB, [2, 168]), {
+      8: $VC,
+      9: $VD,
+      10: $Vz,
+      14: 92,
+      21: 95
     }, {
-      8: $VW,
-      9: $VX,
-      10: $VT,
-      14: 120,
-      21: 119
+      8: $VC,
+      9: $VD,
+      10: $Vz,
+      14: 96,
+      21: 95
     }, {
-      8: $VW,
-      9: $VX,
-      10: $VT,
-      14: 121,
-      21: 119
+      8: $VC,
+      9: $VD,
+      10: $Vz,
+      14: 97,
+      21: 95
     }, {
-      8: $VW,
-      9: $VX,
-      10: $VT,
-      14: 122,
-      21: 119
+      8: $VC,
+      9: $VD,
+      10: $Vz,
+      14: 98,
+      21: 95
     }, {
-      8: $VW,
-      9: $VX,
-      10: $VT,
-      14: 123,
-      21: 119
-    }, o($Vt, [2, 30]), o($Vt, [2, 38]), o($Vt, [2, 39]), o($Vt, [2, 40]), o($Vt, [2, 31]), o($Vt, [2, 32]), o($Vt, [2, 33]), o($Vt, [2, 34]), o($Vt, [2, 35]), {
-      8: $Vu,
-      9: $Vv,
-      10: $Vx,
-      11: $Vw,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      24: 124,
-      30: $VE,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($VY, $V4, {
-      5: 126
-    }), o($VZ, [2, 92]), o($VZ, [2, 94]), o($VZ, [2, 143]), o($VZ, [2, 144]), o($VZ, [2, 145]), o($VZ, [2, 146]), o($VZ, [2, 147]), o($VZ, [2, 148]), o($VZ, [2, 149]), o($VZ, [2, 150]), o($VZ, [2, 151]), o($VZ, [2, 152]), o($VZ, [2, 153]), o($VZ, [2, 97]), o($VZ, [2, 98]), o($VZ, [2, 99]), o($VZ, [2, 100]), o($VZ, [2, 101]), o($VZ, [2, 102]), o($VZ, [2, 103]), o($VZ, [2, 104]), o($VZ, [2, 105]), o($VZ, [2, 106]), o($VZ, [2, 107]), {
+      8: $VC,
+      9: $VD,
+      10: $Vz,
+      14: 99,
+      21: 95
+    }, o($Vt, [2, 30]), o($Vt, [2, 40]), o($Vt, [2, 41]), o($Vt, [2, 42]), o($Vt, [2, 31]), o($Vt, [2, 32]), o($Vt, [2, 33]), o($Vt, [2, 34]), o($Vt, [2, 35]), {
       13: $V9,
       18: $Va,
-      33: 127,
-      35: 29,
-      44: 30,
-      45: 32,
-      46: $Vc,
-      81: $Vi,
+      31: 100,
+      36: [1, 101],
+      45: 30,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($V_, [2, 66], {
-      48: 128,
-      49: [1, 129],
-      65: [1, 130]
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($VE, $V4, {
+      5: 102
     }), {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      31: 131,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      31: 132,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      31: 133,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($V$, [2, 79]), o($V$, [2, 80]), o($V$, [2, 81]), o($V$, [2, 82]), o($V$, [2, 83]), o($V$, [2, 84]), o($V$, [2, 85]), o($V$, [2, 86]), o($V$, [2, 87]), o($V$, [2, 88]), o($V$, [2, 89]), o($V$, [2, 90]), {
       13: $V9,
       18: $Va,
-      35: 134,
-      44: 30,
-      45: 32,
-      46: $Vc,
+      31: 29,
+      37: 103,
+      45: 30,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($VF, [2, 68], {
+      49: 104,
+      50: [1, 105],
+      66: [1, 106]
+    }), {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 107,
+      35: $VO,
+      36: $VP,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 132,
+      35: $VO,
+      36: $VP,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 133,
+      35: $VO,
+      36: $VP,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($V_, [2, 81]), o($V_, [2, 82]), o($V_, [2, 83]), o($V_, [2, 84]), o($V_, [2, 85]), o($V_, [2, 86]), o($V_, [2, 87]), o($V_, [2, 88]), o($V_, [2, 89]), o($V_, [2, 90]), o($V_, [2, 91]), o($V_, [2, 92]), {
+      13: $V9,
+      18: $Va,
+      31: 134,
+      45: 30,
+      46: 32,
+      47: $Vc,
       80: [1, 135],
-      81: $Vi,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
       78: [1, 136],
-      81: [1, 137]
+      81: 137,
+      85: [1, 138]
     }, {
       13: $V9,
       18: $Va,
-      35: 139,
-      44: 30,
-      45: 32,
-      46: $Vc,
-      78: [1, 138],
-      81: $Vi,
+      31: 140,
+      45: 30,
+      46: 32,
+      47: $Vc,
+      78: [1, 139],
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
       13: $V9,
       18: $Va,
-      35: 140,
-      44: 30,
-      45: 32,
-      46: $Vc,
-      81: $Vi,
+      31: 141,
+      45: 30,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
       13: $V9,
       18: $Va,
-      35: 141,
-      44: 30,
-      45: 32,
-      46: $Vc,
-      81: $Vi,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
       31: 142,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      45: 30,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      31: 144,
-      32: $VF,
-      38: [1, 143],
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 143,
+      35: $VO,
+      36: $VP,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      31: 145,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 145,
+      35: $VO,
+      36: $VP,
+      39: [1, 144],
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      31: 146,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 146,
+      35: $VO,
+      36: $VP,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      31: 147,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 147,
+      35: $VO,
+      36: $VP,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($VS, [2, 56]), o($VU, [2, 58]), o($VS, [2, 29], {
-      21: 148,
-      10: $VT
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 148,
+      35: $VO,
+      36: $VP,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($Vy, [2, 58]), o($VA, [2, 60]), o($Vy, [2, 29], {
+      21: 149,
+      10: $Vz
     }), o($V3, [2, 11]), o($V3, [2, 21]), o($V3, [2, 22]), {
-      9: [1, 149]
-    }, o($V3, [2, 12]), o($V3, [2, 13]), o($V3, [2, 14]), o($V3, [2, 15]), o($VY, $V4, {
-      5: 150
-    }), o($VZ, [2, 93]), {
+      9: [1, 150]
+    }, o($V3, [2, 12]), o($V3, [2, 13]), o($V3, [2, 14]), o($V3, [2, 15]), {
+      8: $Vu,
+      9: $Vv,
+      11: $Vw,
+      13: $V9,
+      18: $Va,
+      24: 152,
+      32: [1, 151],
+      45: 90,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, {
+      8: $Vu,
+      9: $Vv,
+      11: $Vw,
+      24: 153
+    }, {
       6: 10,
       7: 11,
       8: $V5,
@@ -4764,484 +4791,780 @@ var parser = function () {
       28: 20,
       29: 21,
       30: $Vb,
-      32: [1, 151],
-      33: 23,
-      35: 29,
-      44: 30,
-      45: 32,
-      46: $Vc,
+      31: 29,
+      35: [1, 154],
+      37: 23,
+      45: 30,
+      46: 32,
+      47: $Vc,
       71: $Vd,
       72: $Ve,
       73: $Vf,
       74: $Vg,
       75: $Vh,
-      81: $Vi,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($VR, [2, 41]), o($V_, [2, 63], {
-      10: [1, 152]
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($Vx, [2, 43]), o($VF, [2, 65], {
+      10: [1, 155]
     }), {
-      10: [1, 153]
+      10: [1, 156]
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      31: 154,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 157,
+      35: $VO,
+      36: $VP,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      51: [1, 155],
-      52: [1, 156],
-      53: [1, 157],
-      54: [1, 158],
-      60: $VI,
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      35: $VO,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      52: [1, 158],
+      53: [1, 159],
+      54: [1, 160],
+      55: [1, 161],
+      61: $VS,
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      56: [1, 159],
-      57: [1, 160],
-      58: [1, 161],
-      59: [1, 162],
-      60: $VI,
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($V$, [2, 94]), o($V$, [2, 96]), o($V$, [2, 147]), o($V$, [2, 148]), o($V$, [2, 149]), o($V$, [2, 150]), o($V$, [2, 151]), o($V$, [2, 152]), o($V$, [2, 153]), o($V$, [2, 154]), o($V$, [2, 155]), o($V$, [2, 156]), o($V$, [2, 157]), o($V$, [2, 99]), o($V$, [2, 100]), o($V$, [2, 101]), o($V$, [2, 102]), o($V$, [2, 103]), o($V$, [2, 104]), o($V$, [2, 105]), o($V$, [2, 106]), o($V$, [2, 107]), o($V$, [2, 108]), o($V$, [2, 109]), {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      35: $VO,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      57: [1, 163],
+      58: [1, 164],
+      59: [1, 165],
+      60: [1, 166],
+      61: $VS,
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      61: [1, 163],
-      62: [1, 164],
-      63: [1, 165],
-      64: [1, 166],
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      35: $VO,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      62: [1, 167],
+      63: [1, 168],
+      64: [1, 169],
+      65: [1, 170],
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: [1, 167],
+      10: [1, 171],
       13: $V9,
       18: $Va,
-      44: 114,
-      45: 32,
-      46: $Vc,
-      81: $Vi,
+      45: 90,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: [1, 168]
+      10: [1, 172]
     }, {
-      10: [1, 169]
-    }, {
-      10: [1, 170]
-    }, {
-      10: [1, 171]
-    }, {
-      10: [1, 172],
-      13: $V9,
-      18: $Va,
-      44: 114,
-      45: 32,
-      46: $Vc,
-      81: $Vi,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, {
-      10: [1, 173],
-      13: $V9,
-      18: $Va,
-      44: 114,
-      45: 32,
-      46: $Vc,
-      81: $Vi,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      10: [1, 173]
     }, {
       10: [1, 174],
+      86: [1, 175]
+    }, o($V01, [2, 128]), {
+      10: [1, 176]
+    }, {
+      10: [1, 177],
       13: $V9,
       18: $Va,
-      44: 114,
-      45: 32,
-      46: $Vc,
-      81: $Vi,
+      45: 90,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      32: $VF,
-      37: [1, 175],
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: [1, 178],
+      13: $V9,
+      18: $Va,
+      45: 90,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      31: 176,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 62,
-      67: $VJ,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: [1, 179],
+      13: $V9,
+      18: $Va,
+      45: 90,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      32: $VF,
-      39: [1, 177],
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      34: [1, 180],
+      35: $VO,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      32: $VF,
-      41: [1, 178],
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 181,
+      35: $VO,
+      36: $VP,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      32: $VF,
-      43: [1, 179],
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      35: $VO,
+      40: [1, 182],
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      32: $VF,
-      37: [1, 180],
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      35: $VO,
+      42: [1, 183],
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($VS, [2, 28]), o($V3, [2, 23]), {
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      35: $VO,
+      44: [1, 184],
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      34: [1, 185],
+      35: $VO,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($Vy, [2, 28]), o($V3, [2, 23]), {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      33: 186,
+      35: $VO,
+      36: $VP,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 108,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($VE, $V4, {
+      5: 187
+    }), o($VE, $V4, {
+      5: 188
+    }), o($Vt, [2, 39]), o($VF, [2, 67]), o($VF, [2, 66]), {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      35: $VO,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      66: [1, 189],
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($VF, [2, 69]), o($VF, [2, 70]), o($VF, [2, 71]), o($VF, [2, 72]), o($V$, [2, 95]), o($VF, [2, 73]), o($VF, [2, 74]), o($VF, [2, 75]), o($VF, [2, 76]), o($VF, [2, 77]), o($VF, [2, 78]), o($VF, [2, 79]), o($VF, [2, 80]), {
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      79: 190,
+      80: $V41,
+      84: $V51,
+      85: $V61,
+      87: 191,
+      88: 192,
+      89: $V71,
+      90: $V81,
+      91: $V91,
+      92: $Va1,
+      93: $Vb1
+    }, {
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      79: 204,
+      80: $V41,
+      84: $V51,
+      85: $V61,
+      87: 191,
+      88: 192,
+      89: $V71,
+      90: $V81,
+      91: $V91,
+      92: $Va1,
+      93: $Vb1
+    }, {
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      79: 205,
+      80: $V41,
+      82: [1, 206],
+      84: $V51,
+      85: $V61,
+      87: 191,
+      88: 192,
+      89: $V71,
+      90: $V81,
+      91: $V91,
+      92: $Va1,
+      93: $Vb1
+    }, {
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      79: 207,
+      80: $V41,
+      82: [1, 208],
+      84: $V51,
+      85: $V61,
+      87: 191,
+      88: 192,
+      89: $V71,
+      90: $V81,
+      91: $V91,
+      92: $Va1,
+      93: $Vb1
+    }, {
+      85: [1, 209]
+    }, {
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      79: 210,
+      80: $V41,
+      84: $V51,
+      85: $V61,
+      87: 191,
+      88: 192,
+      89: $V71,
+      90: $V81,
+      91: $V91,
+      92: $Va1,
+      93: $Vb1
+    }, {
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      79: 211,
+      80: $V41,
+      84: $V51,
+      85: $V61,
+      87: 191,
+      88: 192,
+      89: $V71,
+      90: $V81,
+      91: $V91,
+      92: $Va1,
+      93: $Vb1
+    }, {
+      13: $V9,
+      18: $Va,
+      31: 212,
+      45: 30,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, {
+      13: $V9,
+      18: $Va,
+      31: 213,
+      36: [1, 214],
+      45: 30,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($Vy, [2, 45], {
+      21: 215,
+      10: $Vz
+    }), {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      35: $VO,
+      40: [1, 216],
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o($Vy, [2, 51], {
+      21: 217,
+      10: $Vz
+    }), o($Vy, [2, 49], {
+      21: 218,
+      10: $Vz
+    }), o($Vy, [2, 53], {
+      21: 219,
+      10: $Vz
+    }), o($Vy, [2, 55], {
+      21: 220,
+      10: $Vz
+    }), {
+      10: $VG,
+      12: $VH,
+      13: $VI,
+      15: $VJ,
+      16: $VK,
+      17: $VL,
+      18: $VM,
+      30: $VN,
+      34: [1, 221],
+      35: $VO,
+      46: 117,
+      47: $VQ,
+      51: $VR,
+      61: $VS,
+      67: 162,
+      70: 120,
+      71: $VT,
+      72: $VU,
+      73: $VV,
+      74: $VW,
+      75: $VX,
+      77: 110,
+      78: $VY,
+      84: $VZ,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, {
       6: 10,
       7: 11,
       8: $V5,
@@ -5257,452 +5580,319 @@ var parser = function () {
       28: 20,
       29: 21,
       30: $Vb,
-      32: [1, 181],
-      33: 23,
-      35: 29,
-      44: 30,
-      45: 32,
-      46: $Vc,
+      31: 29,
+      35: [1, 222],
+      37: 23,
+      45: 30,
+      46: 32,
+      47: $Vc,
       71: $Vd,
       72: $Ve,
       73: $Vf,
       74: $Vg,
       75: $Vh,
-      81: $Vi,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($Vt, [2, 37]), o($V_, [2, 65]), o($V_, [2, 64]), {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      32: $VF,
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      65: [1, 182],
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($V_, [2, 67]), o($V_, [2, 68]), o($V_, [2, 69]), o($V_, [2, 70]), o($V_, [2, 71]), o($V_, [2, 72]), o($V_, [2, 73]), o($V_, [2, 74]), o($V_, [2, 75]), o($V_, [2, 76]), o($V_, [2, 77]), o($V_, [2, 78]), {
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      79: 183,
-      80: $V31,
-      81: $V41,
-      84: $V51,
-      85: 184,
-      87: 185,
-      88: $V61,
-      89: $V71,
-      90: $V81,
-      91: $V91,
-      92: $Va1
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      79: 197,
-      80: $V31,
-      81: $V41,
-      84: $V51,
-      85: 184,
-      87: 185,
-      88: $V61,
-      89: $V71,
-      90: $V81,
-      91: $V91,
-      92: $Va1
-    }, {
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      79: 198,
-      80: $V31,
-      81: $V41,
-      82: [1, 199],
-      84: $V51,
-      85: 184,
-      87: 185,
-      88: $V61,
-      89: $V71,
-      90: $V81,
-      91: $V91,
-      92: $Va1
-    }, {
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      79: 200,
-      80: $V31,
-      81: $V41,
-      82: [1, 201],
-      84: $V51,
-      85: 184,
-      87: 185,
-      88: $V61,
-      89: $V71,
-      90: $V81,
-      91: $V91,
-      92: $Va1
-    }, {
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      79: 202,
-      80: $V31,
-      81: $V41,
-      84: $V51,
-      85: 184,
-      87: 185,
-      88: $V61,
-      89: $V71,
-      90: $V81,
-      91: $V91,
-      92: $Va1
-    }, {
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      79: 203,
-      80: $V31,
-      81: $V41,
-      84: $V51,
-      85: 184,
-      87: 185,
-      88: $V61,
-      89: $V71,
-      90: $V81,
-      91: $V91,
-      92: $Va1
-    }, {
+      6: 10,
+      7: 11,
+      8: $V5,
+      9: $V6,
+      10: $V7,
+      11: $V8,
       13: $V9,
       18: $Va,
-      35: 204,
-      44: 30,
-      45: 32,
-      46: $Vc,
-      81: $Vi,
+      23: 16,
+      25: 17,
+      26: 18,
+      27: 19,
+      28: 20,
+      29: 21,
+      30: $Vb,
+      31: 29,
+      35: [1, 223],
+      37: 23,
+      45: 30,
+      46: 32,
+      47: $Vc,
+      71: $Vd,
+      72: $Ve,
+      73: $Vf,
+      74: $Vg,
+      75: $Vh,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, {
-      13: $V9,
-      18: $Va,
-      35: 205,
-      44: 30,
-      45: 32,
-      46: $Vc,
-      67: [1, 206],
-      81: $Vi,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($VS, [2, 43], {
-      21: 207,
-      10: $VT
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }, o([10, 13, 18, 47, 85, 86, 89, 90, 92, 93, 95, 96, 97, 98, 99], [2, 93]), o($Vx, [2, 119], {
+      86: $Vc1
+    }), o($Vd1, [2, 130], {
+      88: 225,
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      80: $V41,
+      84: $V51,
+      85: $V61,
+      89: $V71,
+      90: $V81,
+      91: $V91,
+      92: $Va1,
+      93: $Vb1
+    }), o($Ve1, [2, 132]), o($Ve1, [2, 134]), o($Ve1, [2, 135]), o($Ve1, [2, 136]), o($Ve1, [2, 137]), o($Ve1, [2, 138]), o($Ve1, [2, 139]), o($Ve1, [2, 140]), o($Ve1, [2, 141]), o($Ve1, [2, 142]), o($Ve1, [2, 143]), o($Ve1, [2, 144]), o($Vx, [2, 120], {
+      86: $Vc1
+    }), o($Vx, [2, 121], {
+      86: $Vc1
     }), {
-      10: $Vx,
-      12: $Vy,
-      13: $Vz,
-      15: $VA,
-      16: $VB,
-      17: $VC,
-      18: $VD,
-      30: $VE,
-      32: $VF,
-      39: [1, 208],
-      45: 71,
-      46: $VG,
-      50: $VH,
-      60: $VI,
-      66: 125,
-      70: 74,
-      71: $VK,
-      72: $VL,
-      73: $VM,
-      74: $VN,
-      75: $VO,
-      77: 64,
-      78: $VP,
-      81: $Vi,
-      84: $VQ,
-      86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }, o($VS, [2, 49], {
-      21: 209,
-      10: $VT
-    }), o($VS, [2, 47], {
-      21: 210,
-      10: $VT
-    }), o($VS, [2, 51], {
-      21: 211,
-      10: $VT
-    }), o($VS, [2, 53], {
-      21: 212,
-      10: $VT
-    }), o($Vt, [2, 36]), o([10, 13, 18, 46, 81, 86, 88, 89, 91, 92, 94, 95, 96, 97, 98], [2, 91]), o($VR, [2, 117], {
-      86: $Vb1
-    }), o($Vc1, [2, 126], {
-      87: 214,
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      80: $V31,
-      81: $V41,
-      84: $V51,
-      88: $V61,
-      89: $V71,
-      90: $V81,
-      91: $V91,
-      92: $Va1
-    }), o($Vd1, [2, 128]), o($Vd1, [2, 130]), o($Vd1, [2, 131]), o($Vd1, [2, 132]), o($Vd1, [2, 133]), o($Vd1, [2, 134]), o($Vd1, [2, 135]), o($Vd1, [2, 136]), o($Vd1, [2, 137]), o($Vd1, [2, 138]), o($Vd1, [2, 139]), o($Vd1, [2, 140]), o($VR, [2, 118], {
-      86: $Vb1
-    }), o($VR, [2, 119], {
-      86: $Vb1
+      10: [1, 226]
+    }, o($Vx, [2, 122], {
+      86: $Vc1
     }), {
-      10: [1, 215]
-    }, o($VR, [2, 120], {
-      86: $Vb1
-    }), {
-      10: [1, 216]
-    }, o($VR, [2, 110], {
-      86: $Vb1
-    }), o($VR, [2, 111], {
-      86: $Vb1
-    }), o($VR, [2, 112], {
-      45: 32,
-      44: 114,
+      10: [1, 227]
+    }, o($V01, [2, 129]), o($Vx, [2, 112], {
+      86: $Vc1
+    }), o($Vx, [2, 113], {
+      86: $Vc1
+    }), o($Vx, [2, 114], {
+      46: 32,
+      45: 90,
       13: $V9,
       18: $Va,
-      46: $Vc,
-      81: $Vi,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }), o($VR, [2, 113], {
-      45: 32,
-      44: 114,
-      10: [1, 217],
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }), o($Vx, [2, 115], {
+      46: 32,
+      45: 90,
+      10: [1, 228],
       13: $V9,
       18: $Va,
-      46: $Vc,
-      81: $Vi,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }), o($VR, [2, 115], {
-      10: [1, 218]
-    }), o($VS, [2, 44]), {
-      39: [1, 219]
-    }, o($VS, [2, 50]), o($VS, [2, 48]), o($VS, [2, 52]), o($VS, [2, 54]), {
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      80: $V31,
-      81: $V41,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }), o($Vx, [2, 117], {
+      10: [1, 229]
+    }), o($Vy, [2, 46]), {
+      40: [1, 230]
+    }, o($Vy, [2, 52]), o($Vy, [2, 50]), o($Vy, [2, 54]), o($Vy, [2, 56]), {
+      8: $Vu,
+      9: $Vv,
+      11: $Vw,
+      24: 231
+    }, o($Vt, [2, 38]), o($Vt, [2, 37]), {
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      80: $V41,
       84: $V51,
-      85: 220,
-      87: 185,
-      88: $V61,
+      85: $V61,
+      87: 232,
+      88: 192,
       89: $V71,
       90: $V81,
       91: $V91,
-      92: $Va1
-    }, o($Vd1, [2, 129]), {
+      92: $Va1,
+      93: $Vb1
+    }, o($Ve1, [2, 133]), {
       13: $V9,
       18: $Va,
-      35: 221,
-      44: 30,
-      45: 32,
-      46: $Vc,
-      81: $Vi,
+      31: 233,
+      45: 30,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
       13: $V9,
       18: $Va,
-      35: 222,
-      44: 30,
-      45: 32,
-      46: $Vc,
-      81: $Vi,
+      31: 234,
+      45: 30,
+      46: 32,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      67: [1, 223]
+      36: [1, 235]
     }, {
-      67: [1, 224]
-    }, o($VS, [2, 45], {
-      21: 225,
-      10: $VT
-    }), o($Vc1, [2, 127], {
-      87: 214,
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      80: $V31,
-      81: $V41,
+      36: [1, 236]
+    }, o($Vy, [2, 47], {
+      21: 237,
+      10: $Vz
+    }), o($VE, $V4, {
+      5: 238
+    }), o($Vd1, [2, 131], {
+      88: 225,
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      80: $V41,
       84: $V51,
-      88: $V61,
+      85: $V61,
       89: $V71,
       90: $V81,
       91: $V91,
-      92: $Va1
-    }), o($VR, [2, 123], {
-      45: 32,
-      44: 114,
-      10: [1, 226],
+      92: $Va1,
+      93: $Vb1
+    }), o($Vx, [2, 125], {
+      46: 32,
+      45: 90,
+      10: [1, 239],
       13: $V9,
       18: $Va,
-      46: $Vc,
-      81: $Vi,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }), o($VR, [2, 124], {
-      45: 32,
-      44: 114,
-      10: [1, 227],
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }), o($Vx, [2, 126], {
+      46: 32,
+      45: 90,
+      10: [1, 240],
       13: $V9,
       18: $Va,
-      46: $Vc,
-      81: $Vi,
+      47: $Vc,
+      85: $Vi,
       86: $Vj,
-      88: $Vk,
-      89: $Vl,
-      91: $Vm,
-      92: $Vn,
-      94: $Vo,
-      95: $Vp,
-      96: $Vq,
-      97: $Vr,
-      98: $Vs
-    }), o($VR, [2, 114]), o($VR, [2, 116]), o($VS, [2, 46]), {
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      79: 228,
-      80: $V31,
-      81: $V41,
-      84: $V51,
-      85: 184,
-      87: 185,
-      88: $V61,
-      89: $V71,
-      90: $V81,
-      91: $V91,
-      92: $Va1
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
+    }), o($Vx, [2, 116]), o($Vx, [2, 118]), o($Vy, [2, 48]), {
+      6: 10,
+      7: 11,
+      8: $V5,
+      9: $V6,
+      10: $V7,
+      11: $V8,
+      13: $V9,
+      18: $Va,
+      23: 16,
+      25: 17,
+      26: 18,
+      27: 19,
+      28: 20,
+      29: 21,
+      30: $Vb,
+      31: 29,
+      35: [1, 241],
+      37: 23,
+      45: 30,
+      46: 32,
+      47: $Vc,
+      71: $Vd,
+      72: $Ve,
+      73: $Vf,
+      74: $Vg,
+      75: $Vh,
+      85: $Vi,
+      86: $Vj,
+      89: $Vk,
+      90: $Vl,
+      92: $Vm,
+      93: $Vn,
+      95: $Vo,
+      96: $Vp,
+      97: $Vq,
+      98: $Vr,
+      99: $Vs
     }, {
-      10: $V01,
-      46: $V11,
-      71: $V21,
-      79: 229,
-      80: $V31,
-      81: $V41,
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      79: 242,
+      80: $V41,
       84: $V51,
-      85: 184,
-      87: 185,
-      88: $V61,
+      85: $V61,
+      87: 191,
+      88: 192,
       89: $V71,
       90: $V81,
       91: $V91,
-      92: $Va1
-    }, o($VR, [2, 121], {
-      86: $Vb1
-    }), o($VR, [2, 122], {
-      86: $Vb1
+      92: $Va1,
+      93: $Vb1
+    }, {
+      10: $V11,
+      47: $V21,
+      71: $V31,
+      79: 243,
+      80: $V41,
+      84: $V51,
+      85: $V61,
+      87: 191,
+      88: 192,
+      89: $V71,
+      90: $V81,
+      91: $V91,
+      92: $Va1,
+      93: $Vb1
+    }, o($Vt, [2, 36]), o($Vx, [2, 123], {
+      86: $Vc1
+    }), o($Vx, [2, 124], {
+      86: $Vc1
     })],
     defaultActions: {},
     parseError: function parseError(str, hash) {
@@ -5911,7 +6101,7 @@ var parser = function () {
         }
       },
       // resets the lexer, sets new input
-      setInput: function setInput(input, yy) {
+      setInput: function (input, yy) {
         this.yy = yy || this.yy || {};
         this._input = input;
         this._more = this._backtrack = this.done = false;
@@ -5933,7 +6123,7 @@ var parser = function () {
         return this;
       },
       // consumes and returns one char from the input
-      input: function input() {
+      input: function () {
         var ch = this._input[0];
         this.yytext += ch;
         this.yyleng++;
@@ -5957,7 +6147,7 @@ var parser = function () {
         return ch;
       },
       // unshifts one char (or a string) into the input
-      unput: function unput(ch) {
+      unput: function (ch) {
         var len = ch.length;
         var lines = ch.split(/(?:\r\n?|\n)/g);
         this._input = ch + this._input;
@@ -5988,12 +6178,12 @@ var parser = function () {
         return this;
       },
       // When called from action, caches matched text and appends it on next action
-      more: function more() {
+      more: function () {
         this._more = true;
         return this;
       },
       // When called from action, signals the lexer that this rule fails to match the input, so the next matching rule (regex) should be tested instead.
-      reject: function reject() {
+      reject: function () {
         if (this.options.backtrack_lexer) {
           this._backtrack = true;
         } else {
@@ -6007,16 +6197,16 @@ var parser = function () {
         return this;
       },
       // retain first n characters of the match
-      less: function less(n) {
+      less: function (n) {
         this.unput(this.match.slice(n));
       },
       // displays already matched input, i.e. for error messages
-      pastInput: function pastInput() {
+      pastInput: function () {
         var past = this.matched.substr(0, this.matched.length - this.match.length);
         return (past.length > 20 ? '...' : '') + past.substr(-20).replace(/\n/g, "");
       },
       // displays upcoming input, i.e. for error messages
-      upcomingInput: function upcomingInput() {
+      upcomingInput: function () {
         var next = this.match;
 
         if (next.length < 20) {
@@ -6026,13 +6216,13 @@ var parser = function () {
         return (next.substr(0, 20) + (next.length > 20 ? '...' : '')).replace(/\n/g, "");
       },
       // displays the character position where the lexing error occurred, i.e. for error messages
-      showPosition: function showPosition() {
+      showPosition: function () {
         var pre = this.pastInput();
         var c = new Array(pre.length + 1).join("-");
         return pre + this.upcomingInput() + "\n" + c + "^";
       },
       // test the lexed token: return FALSE when not a match, otherwise return token
-      test_match: function test_match(match, indexed_rule) {
+      test_match: function (match, indexed_rule) {
         var token, lines, backup;
 
         if (this.options.backtrack_lexer) {
@@ -6108,7 +6298,7 @@ var parser = function () {
         return false;
       },
       // return next match in input
-      next: function next() {
+      next: function () {
         if (this.done) {
           return this.EOF;
         }
@@ -6280,7 +6470,7 @@ var parser = function () {
             break;
 
           case 13:
-            return 32;
+            return 35;
             break;
 
           case 14:
@@ -6308,15 +6498,15 @@ var parser = function () {
             break;
 
           case 20:
-            return 81;
+            return 85;
             break;
 
           case 21:
-            return 91;
+            return 92;
             break;
 
           case 22:
-            return 89;
+            return 90;
             break;
 
           case 23:
@@ -6328,7 +6518,7 @@ var parser = function () {
             break;
 
           case 25:
-            return 98;
+            return 99;
             break;
 
           case 26:
@@ -6348,99 +6538,99 @@ var parser = function () {
             break;
 
           case 30:
-            return 53;
-            break;
-
-          case 31:
-            return 51;
-            break;
-
-          case 32:
-            return 52;
-            break;
-
-          case 33:
             return 54;
             break;
 
-          case 34:
-            return 58;
+          case 31:
+            return 52;
             break;
 
-          case 35:
-            return 56;
+          case 32:
+            return 53;
             break;
 
-          case 36:
-            return 57;
-            break;
-
-          case 37:
-            return 59;
-            break;
-
-          case 38:
-            return 58;
-            break;
-
-          case 39:
-            return 56;
-            break;
-
-          case 40:
-            return 57;
-            break;
-
-          case 41:
-            return 59;
-            break;
-
-          case 42:
-            return 63;
-            break;
-
-          case 43:
-            return 61;
-            break;
-
-          case 44:
-            return 62;
-            break;
-
-          case 45:
-            return 64;
-            break;
-
-          case 46:
-            return 50;
-            break;
-
-          case 47:
+          case 33:
             return 55;
             break;
 
-          case 48:
+          case 34:
+            return 59;
+            break;
+
+          case 35:
+            return 57;
+            break;
+
+          case 36:
+            return 58;
+            break;
+
+          case 37:
             return 60;
             break;
 
-          case 49:
-            return 40;
+          case 38:
+            return 59;
             break;
 
-          case 50:
+          case 39:
+            return 57;
+            break;
+
+          case 40:
+            return 58;
+            break;
+
+          case 41:
+            return 60;
+            break;
+
+          case 42:
+            return 64;
+            break;
+
+          case 43:
+            return 62;
+            break;
+
+          case 44:
+            return 63;
+            break;
+
+          case 45:
+            return 65;
+            break;
+
+          case 46:
+            return 51;
+            break;
+
+          case 47:
+            return 56;
+            break;
+
+          case 48:
+            return 61;
+            break;
+
+          case 49:
             return 41;
             break;
 
+          case 50:
+            return 42;
+            break;
+
           case 51:
-            return 46;
+            return 47;
             break;
 
           case 52:
-            return 92;
+            return 93;
             break;
 
           case 53:
-            return 96;
+            return 97;
             break;
 
           case 54:
@@ -6448,55 +6638,55 @@ var parser = function () {
             break;
 
           case 55:
-            return 97;
+            return 98;
             break;
 
           case 56:
-            return 97;
+            return 98;
             break;
 
           case 57:
-            return 88;
+            return 89;
             break;
 
           case 58:
-            return 94;
-            break;
-
-          case 59:
             return 95;
             break;
 
+          case 59:
+            return 96;
+            break;
+
           case 60:
-            return 65;
+            return 66;
             break;
 
           case 61:
-            return 38;
-            break;
-
-          case 62:
             return 39;
             break;
 
+          case 62:
+            return 40;
+            break;
+
           case 63:
-            return 36;
+            return 32;
             break;
 
           case 64:
-            return 37;
+            return 34;
             break;
 
           case 65:
-            return 42;
-            break;
-
-          case 66:
             return 43;
             break;
 
+          case 66:
+            return 44;
+            break;
+
           case 67:
-            return 101;
+            return 102;
             break;
 
           case 68:
@@ -6569,7 +6759,7 @@ if (true) {
 /*!***************************************!*\
   !*** ./src/diagrams/gantt/ganttDb.js ***!
   \***************************************/
-/*! exports provided: clear, setAxisFormat, getAxisFormat, setDateFormat, setTitle, getTitle, addSection, getTasks, addTask, findTaskById, addTaskOrg, default */
+/*! exports provided: clear, setAxisFormat, getAxisFormat, setDateFormat, setExcludes, setTitle, getTitle, addSection, getTasks, addTask, findTaskById, addTaskOrg, setLink, setClass, setClickEvent, bindFunctions, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6578,6 +6768,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setAxisFormat", function() { return setAxisFormat; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getAxisFormat", function() { return getAxisFormat; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setDateFormat", function() { return setDateFormat; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setExcludes", function() { return setExcludes; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setTitle", function() { return setTitle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTitle", function() { return getTitle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addSection", function() { return addSection; });
@@ -6585,50 +6776,64 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addTask", function() { return addTask; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findTaskById", function() { return findTaskById; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "addTaskOrg", function() { return addTaskOrg; });
-/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! moment */ "moment");
-/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(moment__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setLink", function() { return setLink; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setClass", function() { return setClass; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setClickEvent", function() { return setClickEvent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "bindFunctions", function() { return bindFunctions; });
+/* harmony import */ var moment_mini__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! moment-mini */ "moment-mini");
+/* harmony import */ var moment_mini__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(moment_mini__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! d3 */ "d3");
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_2__);
 
 
-var dateFormat = '';
-var axisFormat = '';
-var title = '';
-var sections = [];
-var tasks = [];
-var currentSection = '';
-var clear = function clear() {
+
+let dateFormat = '';
+let axisFormat = '';
+let excludes = [];
+let title = '';
+let sections = [];
+let tasks = [];
+let currentSection = '';
+const tags = ['active', 'done', 'crit', 'milestone'];
+let funs = [];
+const clear = function () {
   sections = [];
   tasks = [];
   currentSection = '';
+  funs = [];
   title = '';
   taskCnt = 0;
   lastTask = undefined;
   lastTaskID = undefined;
   rawTasks = [];
 };
-var setAxisFormat = function setAxisFormat(txt) {
+const setAxisFormat = function (txt) {
   axisFormat = txt;
 };
-var getAxisFormat = function getAxisFormat() {
+const getAxisFormat = function () {
   return axisFormat;
 };
-var setDateFormat = function setDateFormat(txt) {
+const setDateFormat = function (txt) {
   dateFormat = txt;
 };
-var setTitle = function setTitle(txt) {
+const setExcludes = function (txt) {
+  excludes = txt.toLowerCase().split(/[\s,]+/);
+};
+const setTitle = function (txt) {
   title = txt;
 };
-var getTitle = function getTitle() {
+const getTitle = function () {
   return title;
 };
-var addSection = function addSection(txt) {
+const addSection = function (txt) {
   currentSection = txt;
   sections.push(txt);
 };
-var getTasks = function getTasks() {
-  var allItemsPricessed = compileTasks();
-  var maxDepth = 10;
-  var iterationCount = 0;
+const getTasks = function () {
+  let allItemsPricessed = compileTasks();
+  const maxDepth = 10;
+  let iterationCount = 0;
 
   while (!allItemsPricessed && iterationCount < maxDepth) {
     allItemsPricessed = compileTasks();
@@ -6639,17 +6844,60 @@ var getTasks = function getTasks() {
   return tasks;
 };
 
-var getStartDate = function getStartDate(prevTime, dateFormat, str) {
+const isInvalidDate = function (date, dateFormat, excludes) {
+  if (date.isoWeekday() >= 6 && excludes.indexOf('weekends') >= 0) {
+    return true;
+  }
+
+  if (excludes.indexOf(date.format('dddd').toLowerCase()) >= 0) {
+    return true;
+  }
+
+  return excludes.indexOf(date.format(dateFormat.trim())) >= 0;
+};
+
+const checkTaskDates = function (task, dateFormat, excludes) {
+  if (!excludes.length || task.manualEndTime) return;
+  let startTime = moment_mini__WEBPACK_IMPORTED_MODULE_0___default()(task.startTime, dateFormat, true);
+  startTime.add(1, 'd');
+  let endTime = moment_mini__WEBPACK_IMPORTED_MODULE_0___default()(task.endTime, dateFormat, true);
+  let renderEndTime = fixTaskDates(startTime, endTime, dateFormat, excludes);
+  task.endTime = endTime.toDate();
+  task.renderEndTime = renderEndTime;
+};
+
+const fixTaskDates = function (startTime, endTime, dateFormat, excludes) {
+  let invalid = false;
+  let renderEndTime = null;
+
+  while (startTime.date() <= endTime.date()) {
+    if (!invalid) {
+      renderEndTime = endTime.toDate();
+    }
+
+    invalid = isInvalidDate(startTime, dateFormat, excludes);
+
+    if (invalid) {
+      endTime.add(1, 'd');
+    }
+
+    startTime.add(1, 'd');
+  }
+
+  return renderEndTime;
+};
+
+const getStartDate = function (prevTime, dateFormat, str) {
   str = str.trim(); // Test for after
 
-  var re = /^after\s+([\d\w-]+)/;
-  var afterStatement = re.exec(str.trim());
+  const re = /^after\s+([\d\w-]+)/;
+  const afterStatement = re.exec(str.trim());
 
   if (afterStatement !== null) {
-    var task = findTaskById(afterStatement[1]);
+    const task = findTaskById(afterStatement[1]);
 
     if (typeof task === 'undefined') {
-      var dt = new Date();
+      const dt = new Date();
       dt.setHours(0, 0, 0, 0);
       return dt;
     }
@@ -6658,8 +6906,10 @@ var getStartDate = function getStartDate(prevTime, dateFormat, str) {
   } // Check for actual date set
 
 
-  if (moment__WEBPACK_IMPORTED_MODULE_0___default()(str, dateFormat.trim(), true).isValid()) {
-    return moment__WEBPACK_IMPORTED_MODULE_0___default()(str, dateFormat.trim(), true).toDate();
+  let mDate = moment_mini__WEBPACK_IMPORTED_MODULE_0___default()(str, dateFormat.trim(), true);
+
+  if (mDate.isValid()) {
+    return mDate.toDate();
   } else {
     _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('Invalid date:' + str);
     _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('With date format:' + dateFormat.trim());
@@ -6669,17 +6919,19 @@ var getStartDate = function getStartDate(prevTime, dateFormat, str) {
   return new Date();
 };
 
-var getEndDate = function getEndDate(prevTime, dateFormat, str) {
+const getEndDate = function (prevTime, dateFormat, str) {
   str = str.trim(); // Check for actual date
 
-  if (moment__WEBPACK_IMPORTED_MODULE_0___default()(str, dateFormat.trim(), true).isValid()) {
-    return moment__WEBPACK_IMPORTED_MODULE_0___default()(str, dateFormat.trim()).toDate();
+  let mDate = moment_mini__WEBPACK_IMPORTED_MODULE_0___default()(str, dateFormat.trim(), true);
+
+  if (mDate.isValid()) {
+    return mDate.toDate();
   }
 
-  var d = moment__WEBPACK_IMPORTED_MODULE_0___default()(prevTime); // Check for length
+  const d = moment_mini__WEBPACK_IMPORTED_MODULE_0___default()(prevTime); // Check for length
 
-  var re = /^([\d]+)([wdhms])/;
-  var durationStatement = re.exec(str.trim());
+  const re = /^([\d]+)([wdhms])/;
+  const durationStatement = re.exec(str.trim());
 
   if (durationStatement !== null) {
     switch (durationStatement[2]) {
@@ -6703,17 +6955,15 @@ var getEndDate = function getEndDate(prevTime, dateFormat, str) {
         d.add(durationStatement[1], 'weeks');
         break;
     }
-
-    return d.toDate();
   } // Default date - now
 
 
   return d.toDate();
 };
 
-var taskCnt = 0;
+let taskCnt = 0;
 
-var parseId = function parseId(idStr) {
+const parseId = function (idStr) {
   if (typeof idStr === 'undefined') {
     taskCnt = taskCnt + 1;
     return 'task' + taskCnt;
@@ -6732,8 +6982,8 @@ var parseId = function parseId(idStr) {
 // length
 
 
-var compileData = function compileData(prevTask, dataStr) {
-  var ds;
+const compileData = function (prevTask, dataStr) {
+  let ds;
 
   if (dataStr.substr(0, 1) === ':') {
     ds = dataStr.substr(1, dataStr.length);
@@ -6741,64 +6991,50 @@ var compileData = function compileData(prevTask, dataStr) {
     ds = dataStr;
   }
 
-  var data = ds.split(',');
-  var task = {}; // Get tags like active, done cand crit
+  const data = ds.split(',');
+  const task = {}; // Get tags like active, done, crit and milestone
 
-  var matchFound = true;
+  getTaskTags(data, task, tags);
 
-  while (matchFound) {
-    matchFound = false;
-
-    if (data[0].match(/^\s*active\s*$/)) {
-      task.active = true;
-      data.shift(1);
-      matchFound = true;
-    }
-
-    if (data[0].match(/^\s*done\s*$/)) {
-      task.done = true;
-      data.shift(1);
-      matchFound = true;
-    }
-
-    if (data[0].match(/^\s*crit\s*$/)) {
-      task.crit = true;
-      data.shift(1);
-      matchFound = true;
-    }
-  }
-
-  for (var i = 0; i < data.length; i++) {
+  for (let i = 0; i < data.length; i++) {
     data[i] = data[i].trim();
   }
+
+  let endTimeData = '';
 
   switch (data.length) {
     case 1:
       task.id = parseId();
       task.startTime = prevTask.endTime;
-      task.endTime = getEndDate(task.startTime, dateFormat, data[0]);
+      endTimeData = data[0];
       break;
 
     case 2:
       task.id = parseId();
       task.startTime = getStartDate(undefined, dateFormat, data[0]);
-      task.endTime = getEndDate(task.startTime, dateFormat, data[1]);
+      endTimeData = data[1];
       break;
 
     case 3:
       task.id = parseId(data[0]);
       task.startTime = getStartDate(undefined, dateFormat, data[1]);
-      task.endTime = getEndDate(task.startTime, dateFormat, data[2]);
+      endTimeData = data[2];
       break;
 
     default:
   }
 
+  if (endTimeData) {
+    task.endTime = getEndDate(task.startTime, dateFormat, endTimeData);
+    task.manualEndTime = endTimeData === moment_mini__WEBPACK_IMPORTED_MODULE_0___default()(task.endTime).format(dateFormat.trim());
+    checkTaskDates(task, dateFormat, excludes);
+  }
+
   return task;
 };
 
-var parseData = function parseData(prevTaskId, dataStr) {
-  var ds;
+const parseData = function (prevTaskId, dataStr) {
+  let ds;
 
   if (dataStr.substr(0, 1) === ':') {
     ds = dataStr.substr(1, dataStr.length);
@@ -6806,34 +7042,12 @@ var parseData = function parseData(prevTaskId, dataStr) {
     ds = dataStr;
   }
 
-  var data = ds.split(',');
-  var task = {}; // Get tags like active, done cand crit
+  const data = ds.split(',');
+  const task = {}; // Get tags like active, done, crit and milestone
 
-  var matchFound = true;
+  getTaskTags(data, task, tags);
 
-  while (matchFound) {
-    matchFound = false;
-
-    if (data[0].match(/^\s*active\s*$/)) {
-      task.active = true;
-      data.shift(1);
-      matchFound = true;
-    }
-
-    if (data[0].match(/^\s*done\s*$/)) {
-      task.done = true;
-      data.shift(1);
-      matchFound = true;
-    }
-
-    if (data[0].match(/^\s*crit\s*$/)) {
-      task.crit = true;
-      data.shift(1);
-      matchFound = true;
-    }
-  }
-
-  for (var i = 0; i < data.length; i++) {
+  for (let i = 0; i < data.length; i++) {
     data[i] = data[i].trim();
   }
 
@@ -6877,21 +7091,24 @@ var parseData = function parseData(prevTaskId, dataStr) {
   return task;
 };
 
-var lastTask;
-var lastTaskID;
-var rawTasks = [];
-var taskDb = {};
-var addTask = function addTask(descr, data) {
-  var rawTask = {
+let lastTask;
+let lastTaskID;
+let rawTasks = [];
+const taskDb = {};
+const addTask = function (descr, data) {
+  const rawTask = {
     section: currentSection,
     type: currentSection,
     processed: false,
+    manualEndTime: false,
+    renderEndTime: null,
     raw: {
       data: data
     },
-    task: descr
+    task: descr,
+    classes: []
   };
-  var taskInfo = parseData(lastTaskID, data);
+  const taskInfo = parseData(lastTaskID, data);
   rawTask.raw.startTime = taskInfo.startTime;
   rawTask.raw.endTime = taskInfo.endTime;
   rawTask.id = taskInfo.id;
@@ -6899,41 +7116,44 @@ var addTask = function addTask(descr, data) {
   rawTask.active = taskInfo.active;
   rawTask.done = taskInfo.done;
   rawTask.crit = taskInfo.crit;
-  var pos = rawTasks.push(rawTask);
+  rawTask.milestone = taskInfo.milestone;
+  const pos = rawTasks.push(rawTask);
   lastTaskID = rawTask.id; // Store cross ref
 
   taskDb[rawTask.id] = pos - 1;
 };
-var findTaskById = function findTaskById(id) {
-  var pos = taskDb[id];
+const findTaskById = function (id) {
+  const pos = taskDb[id];
   return rawTasks[pos];
 };
-var addTaskOrg = function addTaskOrg(descr, data) {
-  var newTask = {
+const addTaskOrg = function (descr, data) {
+  const newTask = {
     section: currentSection,
     type: currentSection,
     description: descr,
-    task: descr
+    task: descr,
+    classes: []
   };
-  var taskInfo = compileData(lastTask, data);
+  const taskInfo = compileData(lastTask, data);
   newTask.startTime = taskInfo.startTime;
   newTask.endTime = taskInfo.endTime;
   newTask.id = taskInfo.id;
   newTask.active = taskInfo.active;
   newTask.done = taskInfo.done;
   newTask.crit = taskInfo.crit;
+  newTask.milestone = taskInfo.milestone;
   lastTask = newTask;
   tasks.push(newTask);
 };
 
-var compileTasks = function compileTasks() {
-  var compileTask = function compileTask(pos) {
-    var task = rawTasks[pos];
-    var startTime = '';
+const compileTasks = function () {
+  const compileTask = function (pos) {
+    const task = rawTasks[pos];
+    let startTime = '';
 
     switch (rawTasks[pos].raw.startTime.type) {
       case 'prevTaskEnd':
-        var prevTask = findTaskById(task.prevTaskId);
+        const prevTask = findTaskById(task.prevTaskId);
         task.startTime = prevTask.endTime;
         break;
 
@@ -6952,35 +7172,177 @@ var compileTasks = function compileTasks() {
 
       if (rawTasks[pos].endTime) {
         rawTasks[pos].processed = true;
+        rawTasks[pos].manualEndTime = rawTasks[pos].raw.endTime.data === moment_mini__WEBPACK_IMPORTED_MODULE_0___default()(rawTasks[pos].endTime).format(dateFormat.trim());
+        checkTaskDates(rawTasks[pos], dateFormat, excludes);
       }
     }
 
     return rawTasks[pos].processed;
   };
 
-  var allProcessed = true;
+  let allProcessed = true;
 
-  for (var i = 0; i < rawTasks.length; i++) {
+  for (let i = 0; i < rawTasks.length; i++) {
     compileTask(i);
     allProcessed = allProcessed && rawTasks[i].processed;
   }
 
   return allProcessed;
 };
+/**
+ * Called by parser when a link is found. Adds the URL to the vertex data.
+ * @param ids Comma separated list of ids
+ * @param linkStr URL to create a link for
+ */
 
+
+const setLink = function (ids, linkStr) {
+  ids.split(',').forEach(function (id) {
+    let rawTask = findTaskById(id);
+
+    if (typeof rawTask !== 'undefined') {
+      pushFun(id, () => {
+        window.open(linkStr, '_self');
+      });
+    }
+  });
+  setClass(ids, 'clickable');
+};
+/**
+ * Called by parser when a special node is found, e.g. a clickable element.
+ * @param ids Comma separated list of ids
+ * @param className Class to add
+ */
+
+const setClass = function (ids, className) {
+  ids.split(',').forEach(function (id) {
+    let rawTask = findTaskById(id);
+
+    if (typeof rawTask !== 'undefined') {
+      rawTask.classes.push(className);
+    }
+  });
+};
+
+const setClickFun = function (id, functionName, functionArgs) {
+  if (typeof functionName === 'undefined') {
+    return;
+  }
+
+  let argList = [];
+
+  if (typeof functionArgs === 'string') {
+    /* Splits functionArgs by ',', ignoring all ',' in double quoted strings */
+    argList = functionArgs.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+    for (let i = 0; i < argList.length; i++) {
+      let item = argList[i].trim();
+      /* Removes all double quotes at the start and end of an argument */
+
+      /* This preserves all starting and ending whitespace inside */
+
+      if (item.charAt(0) === '"' && item.charAt(item.length - 1) === '"') {
+        item = item.substr(1, item.length - 2);
+      }
+
+      argList[i] = item;
+    }
+  }
+
+  let rawTask = findTaskById(id);
+
+  if (typeof rawTask !== 'undefined') {
+    pushFun(id, () => {
+      window[functionName](...argList);
+    });
+  }
+};
+/**
+ * The callbackFunction is executed in a click event bound to the task with the specified id or the task's assigned text
+ * @param id The task's id
+ * @param callbackFunction A function to be executed when clicked on the task or the task's text
+ */
+
+
+const pushFun = function (id, callbackFunction) {
+  funs.push(function (element) {
+    const elem = d3__WEBPACK_IMPORTED_MODULE_2__["select"](element).select(`[id="${id}"]`);
+
+    if (elem !== null) {
+      elem.on('click', function () {
+        callbackFunction();
+      });
+    }
+  });
+  funs.push(function (element) {
+    const elem = d3__WEBPACK_IMPORTED_MODULE_2__["select"](element).select(`[id="${id}-text"]`);
+
+    if (elem !== null) {
+      elem.on('click', function () {
+        callbackFunction();
+      });
+    }
+  });
+};
+/**
+ * Called by parser when a click definition is found. Registers an event handler.
+ * @param ids Comma separated list of ids
+ * @param functionName Function to be called on click
+ * @param functionArgs Function args the function should be called with
+ */
+
+
+const setClickEvent = function (ids, functionName, functionArgs) {
+  ids.split(',').forEach(function (id) {
+    setClickFun(id, functionName, functionArgs);
+  });
+  setClass(ids, 'clickable');
+};
+/**
+ * Binds all functions previously added to fun (specified through click) to the element
+ * @param element
+ */
+
+const bindFunctions = function (element) {
+  funs.forEach(function (fun) {
+    fun(element);
+  });
+};
 /* harmony default export */ __webpack_exports__["default"] = ({
-  clear: clear,
-  setDateFormat: setDateFormat,
-  setAxisFormat: setAxisFormat,
-  getAxisFormat: getAxisFormat,
-  setTitle: setTitle,
-  getTitle: getTitle,
-  addSection: addSection,
-  getTasks: getTasks,
-  addTask: addTask,
-  findTaskById: findTaskById,
-  addTaskOrg: addTaskOrg
+  clear,
+  setDateFormat,
+  setAxisFormat,
+  getAxisFormat,
+  setTitle,
+  getTitle,
+  addSection,
+  getTasks,
+  addTask,
+  findTaskById,
+  addTaskOrg,
+  setExcludes,
+  setClickEvent,
+  setLink,
+  bindFunctions
 });
+
+function getTaskTags(data, task, tags) {
+  let matchFound = true;
+
+  while (matchFound) {
+    matchFound = false;
+    tags.forEach(function (t) {
+      const pattern = '^\\s*' + t + '\\s*$';
+      const regex = new RegExp(pattern);
+
+      if (data[0].match(regex)) {
+        task[t] = true;
+        data.shift(1);
+        matchFound = true;
+      }
+    });
+  }
+}
 
 /***/ }),
 
@@ -7004,7 +7366,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 _parser_gantt__WEBPACK_IMPORTED_MODULE_1__["parser"].yy = _ganttDb__WEBPACK_IMPORTED_MODULE_2__["default"];
-var conf = {
+const conf = {
   titleTopMargin: 25,
   barHeight: 20,
   barGap: 4,
@@ -7015,17 +7377,17 @@ var conf = {
   fontSize: 11,
   fontFamily: '"Open-Sans", "sans-serif"'
 };
-var setConf = function setConf(cnf) {
-  var keys = Object.keys(cnf);
+const setConf = function (cnf) {
+  const keys = Object.keys(cnf);
   keys.forEach(function (key) {
     conf[key] = cnf[key];
   });
 };
-var w;
-var draw = function draw(text, id) {
+let w;
+const draw = function (text, id) {
   _parser_gantt__WEBPACK_IMPORTED_MODULE_1__["parser"].yy.clear();
   _parser_gantt__WEBPACK_IMPORTED_MODULE_1__["parser"].parse(text);
-  var elem = document.getElementById(id);
+  const elem = document.getElementById(id);
   w = elem.parentElement.offsetWidth;
 
   if (typeof w === 'undefined') {
@@ -7036,26 +7398,26 @@ var draw = function draw(text, id) {
     w = conf.useWidth;
   }
 
-  var taskArray = _parser_gantt__WEBPACK_IMPORTED_MODULE_1__["parser"].yy.getTasks(); // Set height based on number of tasks
+  const taskArray = _parser_gantt__WEBPACK_IMPORTED_MODULE_1__["parser"].yy.getTasks(); // Set height based on number of tasks
 
-  var h = taskArray.length * (conf.barHeight + conf.barGap) + 2 * conf.topPadding;
+  const h = taskArray.length * (conf.barHeight + conf.barGap) + 2 * conf.topPadding;
   elem.setAttribute('height', '100%'); // Set viewBox
 
   elem.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
-  var svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("[id=\"".concat(id, "\"]")); // Set timescale
+  const svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"](`[id="${id}"]`); // Set timescale
 
-  var timeScale = d3__WEBPACK_IMPORTED_MODULE_0__["scaleTime"]().domain([d3__WEBPACK_IMPORTED_MODULE_0__["min"](taskArray, function (d) {
+  const timeScale = d3__WEBPACK_IMPORTED_MODULE_0__["scaleTime"]().domain([d3__WEBPACK_IMPORTED_MODULE_0__["min"](taskArray, function (d) {
     return d.startTime;
   }), d3__WEBPACK_IMPORTED_MODULE_0__["max"](taskArray, function (d) {
     return d.endTime;
   })]).rangeRound([0, w - conf.leftPadding - conf.rightPadding]);
-  var categories = [];
+  let categories = [];
 
-  for (var i = 0; i < taskArray.length; i++) {
+  for (let i = 0; i < taskArray.length; i++) {
     categories.push(taskArray[i].type);
   }
 
-  var catsUnfiltered = categories; // for vert labels
+  const catsUnfiltered = categories; // for vert labels
 
   categories = checkUnique(categories);
   makeGant(taskArray, w, h);
@@ -7067,11 +7429,11 @@ var draw = function draw(text, id) {
   svg.append('text').text(_parser_gantt__WEBPACK_IMPORTED_MODULE_1__["parser"].yy.getTitle()).attr('x', w / 2).attr('y', conf.titleTopMargin).attr('class', 'titleText');
 
   function makeGant(tasks, pageWidth, pageHeight) {
-    var barHeight = conf.barHeight;
-    var gap = barHeight + conf.barGap;
-    var topPadding = conf.topPadding;
-    var leftPadding = conf.leftPadding;
-    var colorScale = d3__WEBPACK_IMPORTED_MODULE_0__["scaleLinear"]().domain([0, categories.length]).range(['#00B9FA', '#F95002']).interpolate(d3__WEBPACK_IMPORTED_MODULE_0__["interpolateHcl"]);
+    const barHeight = conf.barHeight;
+    const gap = barHeight + conf.barGap;
+    const topPadding = conf.topPadding;
+    const leftPadding = conf.leftPadding;
+    const colorScale = d3__WEBPACK_IMPORTED_MODULE_0__["scaleLinear"]().domain([0, categories.length]).range(['#00B9FA', '#F95002']).interpolate(d3__WEBPACK_IMPORTED_MODULE_0__["interpolateHcl"]);
     makeGrid(leftPadding, topPadding, pageWidth, pageHeight);
     drawRects(tasks, gap, topPadding, leftPadding, barHeight, colorScale, pageWidth, pageHeight);
     vertLabels(gap, topPadding, leftPadding, barHeight, colorScale);
@@ -7079,64 +7441,104 @@ var draw = function draw(text, id) {
   }
 
   function drawRects(theArray, theGap, theTopPad, theSidePad, theBarHeight, theColorScale, w, h) {
+    // Draw background rects covering the entire width of the graph, these form the section rows.
     svg.append('g').selectAll('rect').data(theArray).enter().append('rect').attr('x', 0).attr('y', function (d, i) {
       return i * theGap + theTopPad - 2;
     }).attr('width', function () {
       return w - conf.rightPadding / 2;
     }).attr('height', theGap).attr('class', function (d) {
-      for (var _i = 0; _i < categories.length; _i++) {
-        if (d.type === categories[_i]) {
-          return 'section section' + _i % conf.numberSectionStyles;
+      for (let i = 0; i < categories.length; i++) {
+        if (d.type === categories[i]) {
+          return 'section section' + i % conf.numberSectionStyles;
         }
       }
 
       return 'section section0';
-    });
-    var rectangles = svg.append('g').selectAll('rect').data(theArray).enter();
-    rectangles.append('rect').attr('rx', 3).attr('ry', 3).attr('x', function (d) {
+    }); // Draw the rects representing the tasks
+
+    const rectangles = svg.append('g').selectAll('rect').data(theArray).enter();
+    rectangles.append('rect').attr('id', function (d) {
+      return d.id;
+    }).attr('rx', 3).attr('ry', 3).attr('x', function (d) {
+      if (d.milestone) {
+        return timeScale(d.startTime) + theSidePad + 0.5 * (timeScale(d.endTime) - timeScale(d.startTime)) - 0.5 * theBarHeight;
+      }
+
       return timeScale(d.startTime) + theSidePad;
     }).attr('y', function (d, i) {
       return i * theGap + theTopPad;
     }).attr('width', function (d) {
-      return timeScale(d.endTime) - timeScale(d.startTime);
-    }).attr('height', theBarHeight).attr('class', function (d) {
-      var res = 'task ';
-      var secNum = 0;
+      if (d.milestone) {
+        return theBarHeight;
+      }
 
-      for (var _i2 = 0; _i2 < categories.length; _i2++) {
-        if (d.type === categories[_i2]) {
-          secNum = _i2 % conf.numberSectionStyles;
+      return timeScale(d.renderEndTime || d.endTime) - timeScale(d.startTime);
+    }).attr('height', theBarHeight).attr('transform-origin', function (d, i) {
+      return (timeScale(d.startTime) + theSidePad + 0.5 * (timeScale(d.endTime) - timeScale(d.startTime))).toString() + 'px ' + (i * theGap + theTopPad + 0.5 * theBarHeight).toString() + 'px';
+    }).attr('class', function (d) {
+      const res = 'task';
+      let classStr = '';
+
+      if (d.classes.length > 0) {
+        classStr = d.classes.join(' ');
+      }
+
+      let secNum = 0;
+
+      for (let i = 0; i < categories.length; i++) {
+        if (d.type === categories[i]) {
+          secNum = i % conf.numberSectionStyles;
         }
       }
+
+      let taskClass = '';
 
       if (d.active) {
         if (d.crit) {
-          return res + ' activeCrit' + secNum;
+          taskClass += ' activeCrit';
         } else {
-          return res + ' active' + secNum;
+          taskClass = ' active';
         }
-      }
-
-      if (d.done) {
+      } else if (d.done) {
         if (d.crit) {
-          return res + ' doneCrit' + secNum;
+          taskClass = ' doneCrit';
         } else {
-          return res + ' done' + secNum;
+          taskClass = ' done';
+        }
+      } else {
+        if (d.crit) {
+          taskClass += ' crit';
         }
       }
 
-      if (d.crit) {
-        return res + ' crit' + secNum;
+      if (taskClass.length === 0) {
+        taskClass = ' task';
       }
 
-      return res + ' task' + secNum;
-    });
+      if (d.milestone) {
+        taskClass = ' milestone ' + taskClass;
+      }
+
+      taskClass += secNum;
+      taskClass += ' ' + classStr;
+      return res + taskClass;
+    }); // Append task labels
+
     rectangles.append('text').text(function (d) {
       return d.task;
     }).attr('font-size', conf.fontSize).attr('x', function (d) {
-      var startX = timeScale(d.startTime);
-      var endX = timeScale(d.endTime);
-      var textWidth = this.getBBox().width; // Check id text width > width of rectangle
+      let startX = timeScale(d.startTime);
+      let endX = timeScale(d.renderEndTime || d.endTime);
+
+      if (d.milestone) {
+        startX += 0.5 * (timeScale(d.endTime) - timeScale(d.startTime)) - 0.5 * theBarHeight;
+      }
+
+      if (d.milestone) {
+        endX = startX + theBarHeight;
+      }
+
+      const textWidth = this.getBBox().width; // Check id text width > width of rectangle
 
       if (textWidth > endX - startX) {
         if (endX + textWidth + 1.5 * conf.leftPadding > w) {
@@ -7150,18 +7552,29 @@ var draw = function draw(text, id) {
     }).attr('y', function (d, i) {
       return i * theGap + conf.barHeight / 2 + (conf.fontSize / 2 - 2) + theTopPad;
     }).attr('text-height', theBarHeight).attr('class', function (d) {
-      var startX = timeScale(d.startTime);
-      var endX = timeScale(d.endTime);
-      var textWidth = this.getBBox().width;
-      var secNum = 0;
+      const startX = timeScale(d.startTime);
+      let endX = timeScale(d.endTime);
 
-      for (var _i3 = 0; _i3 < categories.length; _i3++) {
-        if (d.type === categories[_i3]) {
-          secNum = _i3 % conf.numberSectionStyles;
+      if (d.milestone) {
+        endX = startX + theBarHeight;
+      }
+
+      const textWidth = this.getBBox().width;
+      let classStr = '';
+
+      if (d.classes.length > 0) {
+        classStr = d.classes.join(' ');
+      }
+
+      let secNum = 0;
+
+      for (let i = 0; i < categories.length; i++) {
+        if (d.type === categories[i]) {
+          secNum = i % conf.numberSectionStyles;
         }
       }
 
-      var taskType = '';
+      let taskType = '';
 
       if (d.active) {
         if (d.crit) {
@@ -7181,32 +7594,36 @@ var draw = function draw(text, id) {
         if (d.crit) {
           taskType = taskType + ' critText' + secNum;
         }
+      }
+
+      if (d.milestone) {
+        taskType += ' milestoneText';
       } // Check id text width > width of rectangle
 
 
       if (textWidth > endX - startX) {
         if (endX + textWidth + 1.5 * conf.leftPadding > w) {
-          return 'taskTextOutsideLeft taskTextOutside' + secNum + ' ' + taskType;
+          return classStr + ' taskTextOutsideLeft taskTextOutside' + secNum + ' ' + taskType;
         } else {
-          return 'taskTextOutsideRight taskTextOutside' + secNum + ' ' + taskType;
+          return classStr + ' taskTextOutsideRight taskTextOutside' + secNum + ' ' + taskType;
         }
       } else {
-        return 'taskText taskText' + secNum + ' ' + taskType;
+        return classStr + ' taskText taskText' + secNum + ' ' + taskType;
       }
     });
   }
 
   function makeGrid(theSidePad, theTopPad, w, h) {
-    var xAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisBottom"](timeScale).tickSize(-h + theTopPad + conf.gridLineStartPadding).tickFormat(d3__WEBPACK_IMPORTED_MODULE_0__["timeFormat"](_parser_gantt__WEBPACK_IMPORTED_MODULE_1__["parser"].yy.getAxisFormat() || conf.axisFormat || '%Y-%m-%d'));
+    let xAxis = d3__WEBPACK_IMPORTED_MODULE_0__["axisBottom"](timeScale).tickSize(-h + theTopPad + conf.gridLineStartPadding).tickFormat(d3__WEBPACK_IMPORTED_MODULE_0__["timeFormat"](_parser_gantt__WEBPACK_IMPORTED_MODULE_1__["parser"].yy.getAxisFormat() || conf.axisFormat || '%Y-%m-%d'));
     svg.append('g').attr('class', 'grid').attr('transform', 'translate(' + theSidePad + ', ' + (h - 50) + ')').call(xAxis).selectAll('text').style('text-anchor', 'middle').attr('fill', '#000').attr('stroke', 'none').attr('font-size', 10).attr('dy', '1em');
   }
 
   function vertLabels(theGap, theTopPad) {
-    var numOccurances = [];
-    var prevGap = 0;
+    const numOccurances = [];
+    let prevGap = 0;
 
-    for (var _i4 = 0; _i4 < categories.length; _i4++) {
-      numOccurances[_i4] = [categories[_i4], getCount(categories[_i4], catsUnfiltered)];
+    for (let i = 0; i < categories.length; i++) {
+      numOccurances[i] = [categories[i], getCount(categories[i], catsUnfiltered)];
     }
 
     svg.append('g') // without doing this, impossible to put grid lines behind text
@@ -7214,7 +7631,7 @@ var draw = function draw(text, id) {
       return d[0];
     }).attr('x', 10).attr('y', function (d, i) {
       if (i > 0) {
-        for (var j = 0; j < i; j++) {
+        for (let j = 0; j < i; j++) {
           prevGap += numOccurances[i - 1][1];
           return d[1] * theGap / 2 + prevGap * theGap + theTopPad;
         }
@@ -7222,9 +7639,9 @@ var draw = function draw(text, id) {
         return d[1] * theGap / 2 + theTopPad;
       }
     }).attr('class', function (d) {
-      for (var _i5 = 0; _i5 < categories.length; _i5++) {
-        if (d[0] === categories[_i5]) {
-          return 'sectionTitle sectionTitle' + _i5 % conf.numberSectionStyles;
+      for (let i = 0; i < categories.length; i++) {
+        if (d[0] === categories[i]) {
+          return 'sectionTitle sectionTitle' + i % conf.numberSectionStyles;
         }
       }
 
@@ -7233,21 +7650,21 @@ var draw = function draw(text, id) {
   }
 
   function drawToday(theSidePad, theTopPad, w, h) {
-    var todayG = svg.append('g').attr('class', 'today');
-    var today = new Date();
+    const todayG = svg.append('g').attr('class', 'today');
+    const today = new Date();
     todayG.append('line').attr('x1', timeScale(today) + theSidePad).attr('x2', timeScale(today) + theSidePad).attr('y1', conf.titleTopMargin).attr('y2', h - conf.titleTopMargin).attr('class', 'today');
   } // from this stackexchange question: http://stackoverflow.com/questions/1890203/unique-for-arrays-in-javascript
 
 
   function checkUnique(arr) {
-    var hash = {};
-    var result = [];
+    const hash = {};
+    const result = [];
 
-    for (var _i6 = 0, l = arr.length; _i6 < l; ++_i6) {
-      if (!hash.hasOwnProperty(arr[_i6])) {
+    for (let i = 0, l = arr.length; i < l; ++i) {
+      if (!hash.hasOwnProperty(arr[i])) {
         // it works with objects! in FF, at least
-        hash[arr[_i6]] = true;
-        result.push(arr[_i6]);
+        hash[arr[i]] = true;
+        result.push(arr[i]);
       }
     }
 
@@ -7256,9 +7673,9 @@ var draw = function draw(text, id) {
 
 
   function getCounts(arr) {
-    var i = arr.length; // const to loop over
+    let i = arr.length; // const to loop over
 
-    var obj = {}; // obj to store results
+    const obj = {}; // obj to store results
 
     while (i) {
       obj[arr[--i]] = (obj[arr[i]] || 0) + 1; // count occurrences
@@ -7273,8 +7690,8 @@ var draw = function draw(text, id) {
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
-  setConf: setConf,
-  draw: draw
+  setConf,
+  draw
 });
 
 /***/ }),
@@ -7361,19 +7778,19 @@ var draw = function draw(text, id) {
   }
 */
 var parser = function () {
-  var o = function o(k, v, _o, l) {
-    for (_o = _o || {}, l = k.length; l--; _o[k[l]] = v) {
-      ;
-    }
+  var o = function (k, v, o, l) {
+    for (o = o || {}, l = k.length; l--; o[k[l]] = v);
 
-    return _o;
+    return o;
   },
-      $V0 = [6, 8, 10, 11, 12, 13, 14, 15],
+      $V0 = [6, 8, 10, 11, 12, 13, 14, 15, 17, 19],
       $V1 = [1, 9],
       $V2 = [1, 10],
       $V3 = [1, 11],
       $V4 = [1, 12],
-      $V5 = [1, 13];
+      $V5 = [1, 13],
+      $V6 = [1, 15],
+      $V7 = [1, 16];
 
   var parser = {
     trace: function trace() {},
@@ -7390,10 +7807,17 @@ var parser = function () {
       "NL": 10,
       "dateFormat": 11,
       "axisFormat": 12,
-      "title": 13,
-      "section": 14,
-      "taskTxt": 15,
-      "taskData": 16,
+      "excludes": 13,
+      "title": 14,
+      "section": 15,
+      "clickStatement": 16,
+      "taskTxt": 17,
+      "taskData": 18,
+      "click": 19,
+      "callbackname": 20,
+      "callbackargs": 21,
+      "href": 22,
+      "clickStatementDebug": 23,
       "$accept": 0,
       "$end": 1
     },
@@ -7405,12 +7829,17 @@ var parser = function () {
       10: "NL",
       11: "dateFormat",
       12: "axisFormat",
-      13: "title",
-      14: "section",
-      15: "taskTxt",
-      16: "taskData"
+      13: "excludes",
+      14: "title",
+      15: "section",
+      17: "taskTxt",
+      18: "taskData",
+      19: "click",
+      20: "callbackname",
+      21: "callbackargs",
+      22: "href"
     },
-    productions_: [0, [3, 3], [5, 0], [5, 2], [7, 2], [7, 1], [7, 1], [7, 1], [9, 1], [9, 1], [9, 1], [9, 1], [9, 2]],
+    productions_: [0, [3, 3], [5, 0], [5, 2], [7, 2], [7, 1], [7, 1], [7, 1], [9, 1], [9, 1], [9, 1], [9, 1], [9, 1], [9, 1], [9, 2], [16, 2], [16, 3], [16, 3], [16, 4], [16, 3], [16, 4], [16, 2], [23, 2], [23, 3], [23, 3], [23, 4], [23, 3], [23, 4], [23, 2]],
     performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate
     /* action[1] */
     , $$
@@ -7456,18 +7885,78 @@ var parser = function () {
           break;
 
         case 10:
+          yy.setExcludes($$[$0].substr(9));
+          this.$ = $$[$0].substr(9);
+          break;
+
+        case 11:
           yy.setTitle($$[$0].substr(6));
           this.$ = $$[$0].substr(6);
           break;
 
-        case 11:
+        case 12:
           yy.addSection($$[$0].substr(8));
           this.$ = $$[$0].substr(8);
           break;
 
-        case 12:
+        case 14:
           yy.addTask($$[$0 - 1], $$[$0]);
           this.$ = 'task';
+          break;
+
+        case 15:
+          this.$ = $$[$0 - 1];
+          yy.setClickEvent($$[$0 - 1], $$[$0], null);
+          break;
+
+        case 16:
+          this.$ = $$[$0 - 2];
+          yy.setClickEvent($$[$0 - 2], $$[$0 - 1], $$[$0]);
+          break;
+
+        case 17:
+          this.$ = $$[$0 - 2];
+          yy.setClickEvent($$[$0 - 2], $$[$0 - 1], null);
+          yy.setLink($$[$0 - 2], $$[$0]);
+          break;
+
+        case 18:
+          this.$ = $$[$0 - 3];
+          yy.setClickEvent($$[$0 - 3], $$[$0 - 2], $$[$0 - 1]);
+          yy.setLink($$[$0 - 3], $$[$0]);
+          break;
+
+        case 19:
+          this.$ = $$[$0 - 2];
+          yy.setClickEvent($$[$0 - 2], $$[$0], null);
+          yy.setLink($$[$0 - 2], $$[$0 - 1]);
+          break;
+
+        case 20:
+          this.$ = $$[$0 - 3];
+          yy.setClickEvent($$[$0 - 3], $$[$0 - 1], $$[$0]);
+          yy.setLink($$[$0 - 3], $$[$0 - 2]);
+          break;
+
+        case 21:
+          this.$ = $$[$0 - 1];
+          yy.setLink($$[$0 - 1], $$[$0]);
+          break;
+
+        case 22:
+        case 28:
+          this.$ = $$[$0 - 1] + ' ' + $$[$0];
+          break;
+
+        case 23:
+        case 24:
+        case 26:
+          this.$ = $$[$0 - 2] + ' ' + $$[$0 - 1] + ' ' + $$[$0];
+          break;
+
+        case 25:
+        case 27:
+          this.$ = $$[$0 - 3] + ' ' + $$[$0 - 2] + ' ' + $$[$0 - 1] + ' ' + $$[$0];
           break;
       }
     },
@@ -7488,19 +7977,37 @@ var parser = function () {
       12: $V2,
       13: $V3,
       14: $V4,
-      15: $V5
+      15: $V5,
+      16: 14,
+      17: $V6,
+      19: $V7
     }, o($V0, [2, 7], {
       1: [2, 1]
     }), o($V0, [2, 3]), {
-      9: 14,
+      9: 17,
       11: $V1,
       12: $V2,
       13: $V3,
       14: $V4,
-      15: $V5
-    }, o($V0, [2, 5]), o($V0, [2, 6]), o($V0, [2, 8]), o($V0, [2, 9]), o($V0, [2, 10]), o($V0, [2, 11]), {
-      16: [1, 15]
-    }, o($V0, [2, 4]), o($V0, [2, 12])],
+      15: $V5,
+      16: 14,
+      17: $V6,
+      19: $V7
+    }, o($V0, [2, 5]), o($V0, [2, 6]), o($V0, [2, 8]), o($V0, [2, 9]), o($V0, [2, 10]), o($V0, [2, 11]), o($V0, [2, 12]), o($V0, [2, 13]), {
+      18: [1, 18]
+    }, {
+      20: [1, 19],
+      22: [1, 20]
+    }, o($V0, [2, 4]), o($V0, [2, 14]), o($V0, [2, 15], {
+      21: [1, 21],
+      22: [1, 22]
+    }), o($V0, [2, 21], {
+      20: [1, 23]
+    }), o($V0, [2, 16], {
+      22: [1, 24]
+    }), o($V0, [2, 17]), o($V0, [2, 19], {
+      21: [1, 25]
+    }), o($V0, [2, 18]), o($V0, [2, 20])],
     defaultActions: {},
     parseError: function parseError(str, hash) {
       if (hash.recoverable) {
@@ -7708,7 +8215,7 @@ var parser = function () {
         }
       },
       // resets the lexer, sets new input
-      setInput: function setInput(input, yy) {
+      setInput: function (input, yy) {
         this.yy = yy || this.yy || {};
         this._input = input;
         this._more = this._backtrack = this.done = false;
@@ -7730,7 +8237,7 @@ var parser = function () {
         return this;
       },
       // consumes and returns one char from the input
-      input: function input() {
+      input: function () {
         var ch = this._input[0];
         this.yytext += ch;
         this.yyleng++;
@@ -7754,7 +8261,7 @@ var parser = function () {
         return ch;
       },
       // unshifts one char (or a string) into the input
-      unput: function unput(ch) {
+      unput: function (ch) {
         var len = ch.length;
         var lines = ch.split(/(?:\r\n?|\n)/g);
         this._input = ch + this._input;
@@ -7785,12 +8292,12 @@ var parser = function () {
         return this;
       },
       // When called from action, caches matched text and appends it on next action
-      more: function more() {
+      more: function () {
         this._more = true;
         return this;
       },
       // When called from action, signals the lexer that this rule fails to match the input, so the next matching rule (regex) should be tested instead.
-      reject: function reject() {
+      reject: function () {
         if (this.options.backtrack_lexer) {
           this._backtrack = true;
         } else {
@@ -7804,16 +8311,16 @@ var parser = function () {
         return this;
       },
       // retain first n characters of the match
-      less: function less(n) {
+      less: function (n) {
         this.unput(this.match.slice(n));
       },
       // displays already matched input, i.e. for error messages
-      pastInput: function pastInput() {
+      pastInput: function () {
         var past = this.matched.substr(0, this.matched.length - this.match.length);
         return (past.length > 20 ? '...' : '') + past.substr(-20).replace(/\n/g, "");
       },
       // displays upcoming input, i.e. for error messages
-      upcomingInput: function upcomingInput() {
+      upcomingInput: function () {
         var next = this.match;
 
         if (next.length < 20) {
@@ -7823,13 +8330,13 @@ var parser = function () {
         return (next.substr(0, 20) + (next.length > 20 ? '...' : '')).replace(/\n/g, "");
       },
       // displays the character position where the lexing error occurred, i.e. for error messages
-      showPosition: function showPosition() {
+      showPosition: function () {
         var pre = this.pastInput();
         var c = new Array(pre.length + 1).join("-");
         return pre + this.upcomingInput() + "\n" + c + "^";
       },
       // test the lexed token: return FALSE when not a match, otherwise return token
-      test_match: function test_match(match, indexed_rule) {
+      test_match: function (match, indexed_rule) {
         var token, lines, backup;
 
         if (this.options.backtrack_lexer) {
@@ -7905,7 +8412,7 @@ var parser = function () {
         return false;
       },
       // return next match in input
-      next: function next() {
+      next: function () {
         if (this.done) {
           return this.EOF;
         }
@@ -8023,7 +8530,6 @@ var parser = function () {
         "case-insensitive": true
       },
       performAction: function anonymous(yy, yy_, $avoiding_name_collisions, YY_START) {
-        // Pre-lexer code can go here
         var YYSTATE = YY_START;
 
         switch ($avoiding_name_collisions) {
@@ -8044,54 +8550,123 @@ var parser = function () {
             break;
 
           case 4:
-            return 4;
+            this.begin("href");
             break;
 
           case 5:
-            return 11;
+            this.popState();
             break;
 
           case 6:
-            return 12;
+            return 22;
             break;
 
           case 7:
-            return 'date';
+            this.begin("callbackname");
             break;
 
           case 8:
-            return 13;
+            this.popState();
             break;
 
           case 9:
-            return 14;
+            this.popState();
+            this.begin("callbackargs");
             break;
 
           case 10:
-            return 15;
+            return 20;
             break;
 
           case 11:
-            return 16;
+            this.popState();
             break;
 
           case 12:
-            return ':';
+            return 21;
             break;
 
           case 13:
-            return 6;
+            this.begin("click");
             break;
 
           case 14:
+            this.popState();
+            break;
+
+          case 15:
+            return 19;
+            break;
+
+          case 16:
+            return 4;
+            break;
+
+          case 17:
+            return 11;
+            break;
+
+          case 18:
+            return 12;
+            break;
+
+          case 19:
+            return 13;
+            break;
+
+          case 20:
+            return 'date';
+            break;
+
+          case 21:
+            return 14;
+            break;
+
+          case 22:
+            return 15;
+            break;
+
+          case 23:
+            return 17;
+            break;
+
+          case 24:
+            return 18;
+            break;
+
+          case 25:
+            return ':';
+            break;
+
+          case 26:
+            return 6;
+            break;
+
+          case 27:
             return 'INVALID';
             break;
         }
       },
-      rules: [/^(?:[\n]+)/i, /^(?:\s+)/i, /^(?:#[^\n]*)/i, /^(?:%[^\n]*)/i, /^(?:gantt\b)/i, /^(?:dateFormat\s[^#\n;]+)/i, /^(?:axisFormat\s[^#\n;]+)/i, /^(?:\d\d\d\d-\d\d-\d\d\b)/i, /^(?:title\s[^#\n;]+)/i, /^(?:section\s[^#:\n;]+)/i, /^(?:[^#:\n;]+)/i, /^(?::[^#\n;]+)/i, /^(?::)/i, /^(?:$)/i, /^(?:.)/i],
+      rules: [/^(?:[\n]+)/i, /^(?:\s+)/i, /^(?:#[^\n]*)/i, /^(?:%[^\n]*)/i, /^(?:href[\s]+["])/i, /^(?:["])/i, /^(?:[^"]*)/i, /^(?:call[\s]+)/i, /^(?:\([\s]*\))/i, /^(?:\()/i, /^(?:[^(]*)/i, /^(?:\))/i, /^(?:[^)]*)/i, /^(?:click[\s]+)/i, /^(?:[\s\n])/i, /^(?:[^\s\n]*)/i, /^(?:gantt\b)/i, /^(?:dateFormat\s[^#\n;]+)/i, /^(?:axisFormat\s[^#\n;]+)/i, /^(?:excludes\s[^#\n;]+)/i, /^(?:\d\d\d\d-\d\d-\d\d\b)/i, /^(?:title\s[^#\n;]+)/i, /^(?:section\s[^#:\n;]+)/i, /^(?:[^#:\n;]+)/i, /^(?::[^#\n;]+)/i, /^(?::)/i, /^(?:$)/i, /^(?:.)/i],
       conditions: {
+        "callbackargs": {
+          "rules": [11, 12],
+          "inclusive": false
+        },
+        "callbackname": {
+          "rules": [8, 9, 10],
+          "inclusive": false
+        },
+        "href": {
+          "rules": [5, 6],
+          "inclusive": false
+        },
+        "click": {
+          "rules": [14, 15],
+          "inclusive": false
+        },
         "INITIAL": {
-          "rules": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+          "rules": [0, 1, 2, 3, 4, 7, 13, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27],
           "inclusive": true
         }
       }
@@ -8168,24 +8743,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 
 
-var commits = {};
-var head = null;
-var branches = {
+let commits = {};
+let head = null;
+let branches = {
   'master': head
 };
-var curBranch = 'master';
-var direction = 'LR';
-var seq = 0;
+let curBranch = 'master';
+let direction = 'LR';
+let seq = 0;
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
 function getId() {
-  var pool = '0123456789abcdef';
-  var id = '';
+  const pool = '0123456789abcdef';
+  let id = '';
 
-  for (var i = 0; i < 7; i++) {
+  for (let i = 0; i < 7; i++) {
     id += pool[getRandomInt(0, 16)];
   }
 
@@ -8212,17 +8787,17 @@ function isfastforwardable(currentCommit, otherCommit) {
 }
 
 function isReachableFrom(currentCommit, otherCommit) {
-  var currentSeq = currentCommit.seq;
-  var otherSeq = otherCommit.seq;
+  const currentSeq = currentCommit.seq;
+  const otherSeq = otherCommit.seq;
   if (currentSeq > otherSeq) return isfastforwardable(otherCommit, currentCommit);
   return false;
 }
 
-var setDirection = function setDirection(dir) {
+const setDirection = function (dir) {
   direction = dir;
 };
-var options = {};
-var setOptions = function setOptions(rawOptString) {
+let options = {};
+const setOptions = function (rawOptString) {
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('options str', rawOptString);
   rawOptString = rawOptString && rawOptString.trim();
   rawOptString = rawOptString || '{}';
@@ -8233,11 +8808,11 @@ var setOptions = function setOptions(rawOptString) {
     _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].error('error while parsing gitGraph options', e.message);
   }
 };
-var getOptions = function getOptions() {
+const getOptions = function () {
   return options;
 };
-var commit = function commit(msg) {
-  var commit = {
+const commit = function (msg) {
+  const commit = {
     id: getId(),
     message: msg,
     seq: seq++,
@@ -8248,13 +8823,13 @@ var commit = function commit(msg) {
   branches[curBranch] = commit.id;
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('in pushCommit ' + commit.id);
 };
-var branch = function branch(name) {
+const branch = function (name) {
   branches[name] = head != null ? head.id : null;
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('in createBranch');
 };
-var merge = function merge(otherBranch) {
-  var currentCommit = commits[branches[curBranch]];
-  var otherCommit = commits[branches[otherBranch]];
+const merge = function (otherBranch) {
+  const currentCommit = commits[branches[curBranch]];
+  const otherCommit = commits[branches[otherBranch]];
 
   if (isReachableFrom(currentCommit, otherCommit)) {
     _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('Already merged');
@@ -8266,31 +8841,31 @@ var merge = function merge(otherBranch) {
     head = commits[branches[curBranch]];
   } else {
     // create merge commit
-    var _commit = {
+    const commit = {
       id: getId(),
       message: 'merged branch ' + otherBranch + ' into ' + curBranch,
       seq: seq++,
       parent: [head == null ? null : head.id, branches[otherBranch]]
     };
-    head = _commit;
-    commits[_commit.id] = _commit;
-    branches[curBranch] = _commit.id;
+    head = commit;
+    commits[commit.id] = commit;
+    branches[curBranch] = commit.id;
   }
 
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug(branches);
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('in mergeBranch');
 };
-var checkout = function checkout(branch) {
+const checkout = function (branch) {
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('in checkout');
   curBranch = branch;
-  var id = branches[curBranch];
+  const id = branches[curBranch];
   head = commits[id];
 };
-var reset = function reset(commitRef) {
+const reset = function (commitRef) {
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('in reset', commitRef);
-  var ref = commitRef.split(':')[0];
-  var parentCount = parseInt(commitRef.split(':')[1]);
-  var commit = ref === 'HEAD' ? head : commits[branches[ref]];
+  const ref = commitRef.split(':')[0];
+  let parentCount = parseInt(commitRef.split(':')[1]);
+  let commit = ref === 'HEAD' ? head : commits[branches[ref]];
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug(commit, parentCount);
 
   while (parentCount > 0) {
@@ -8298,7 +8873,7 @@ var reset = function reset(commitRef) {
     parentCount--;
 
     if (!commit) {
-      var err = 'Critical error - unique parent commit not found during reset';
+      const err = 'Critical error - unique parent commit not found during reset';
       _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].error(err);
       throw err;
     }
@@ -8309,7 +8884,7 @@ var reset = function reset(commitRef) {
 };
 
 function upsert(arr, key, newval) {
-  var index = arr.indexOf(key);
+  const index = arr.indexOf(key);
 
   if (index === -1) {
     arr.push(newval);
@@ -8319,9 +8894,9 @@ function upsert(arr, key, newval) {
 }
 
 function prettyPrintCommitHistory(commitArr) {
-  var commit = lodash__WEBPACK_IMPORTED_MODULE_0___default.a.maxBy(commitArr, 'seq');
+  const commit = lodash__WEBPACK_IMPORTED_MODULE_0___default.a.maxBy(commitArr, 'seq');
 
-  var line = '';
+  let line = '';
   commitArr.forEach(function (c) {
     if (c === commit) {
       line += '\t*';
@@ -8329,22 +8904,22 @@ function prettyPrintCommitHistory(commitArr) {
       line += '\t|';
     }
   });
-  var label = [line, commit.id, commit.seq];
+  const label = [line, commit.id, commit.seq];
 
-  lodash__WEBPACK_IMPORTED_MODULE_0___default.a.each(branches, function (value, key) {
-    if (value === commit.id) label.push(key);
-  });
+  for (let branch in branches) {
+    if (branches[branch] === commit.id) label.push(branch);
+  }
 
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug(label.join(' '));
 
   if (Array.isArray(commit.parent)) {
-    var newCommit = commits[commit.parent[0]];
+    const newCommit = commits[commit.parent[0]];
     upsert(commitArr, commit, newCommit);
     commitArr.push(commits[commit.parent[1]]);
   } else if (commit.parent == null) {
     return;
   } else {
-    var nextCommit = commits[commit.parent];
+    const nextCommit = commits[commit.parent];
     upsert(commitArr, commit, nextCommit);
   }
 
@@ -8352,12 +8927,12 @@ function prettyPrintCommitHistory(commitArr) {
   prettyPrintCommitHistory(commitArr);
 }
 
-var prettyPrint = function prettyPrint() {
+const prettyPrint = function () {
   _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug(commits);
-  var node = getCommitsArray()[0];
+  const node = getCommitsArray()[0];
   prettyPrintCommitHistory([node]);
 };
-var clear = function clear() {
+const clear = function () {
   commits = {};
   head = null;
   branches = {
@@ -8366,24 +8941,26 @@ var clear = function clear() {
   curBranch = 'master';
   seq = 0;
 };
-var getBranchesAsObjArray = function getBranchesAsObjArray() {
-  var branchArr = lodash__WEBPACK_IMPORTED_MODULE_0___default.a.map(branches, function (value, key) {
-    return {
-      'name': key,
-      'commit': commits[value]
-    };
-  });
+const getBranchesAsObjArray = function () {
+  const branchArr = [];
+
+  for (let branch in branches) {
+    branchArr.push({
+      name: branch,
+      commit: commits[branches[branch]]
+    });
+  }
 
   return branchArr;
 };
-var getBranches = function getBranches() {
+const getBranches = function () {
   return branches;
 };
-var getCommits = function getCommits() {
+const getCommits = function () {
   return commits;
 };
-var getCommitsArray = function getCommitsArray() {
-  var commitArr = Object.keys(commits).map(function (key) {
+const getCommitsArray = function () {
+  const commitArr = Object.keys(commits).map(function (key) {
     return commits[key];
   });
   commitArr.forEach(function (o) {
@@ -8391,33 +8968,33 @@ var getCommitsArray = function getCommitsArray() {
   });
   return lodash__WEBPACK_IMPORTED_MODULE_0___default.a.orderBy(commitArr, ['seq'], ['desc']);
 };
-var getCurrentBranch = function getCurrentBranch() {
+const getCurrentBranch = function () {
   return curBranch;
 };
-var getDirection = function getDirection() {
+const getDirection = function () {
   return direction;
 };
-var getHead = function getHead() {
+const getHead = function () {
   return head;
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
-  setDirection: setDirection,
-  setOptions: setOptions,
-  getOptions: getOptions,
-  commit: commit,
-  branch: branch,
-  merge: merge,
-  checkout: checkout,
-  reset: reset,
-  prettyPrint: prettyPrint,
-  clear: clear,
-  getBranchesAsObjArray: getBranchesAsObjArray,
-  getBranches: getBranches,
-  getCommits: getCommits,
-  getCommitsArray: getCommitsArray,
-  getCurrentBranch: getCurrentBranch,
-  getDirection: getDirection,
-  getHead: getHead
+  setDirection,
+  setOptions,
+  getOptions,
+  commit,
+  branch,
+  merge,
+  checkout,
+  reset,
+  prettyPrint,
+  clear,
+  getBranchesAsObjArray,
+  getBranches,
+  getCommits,
+  getCommitsArray,
+  getCurrentBranch,
+  getDirection,
+  getHead
 });
 
 /***/ }),
@@ -8433,10 +9010,10 @@ var getHead = function getHead() {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setConf", function() { return setConf; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "draw", function() { return draw; });
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! lodash */ "lodash");
-/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! d3 */ "d3");
-/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "lodash");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _gitGraphAst__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./gitGraphAst */ "./src/diagrams/git/gitGraphAst.js");
 /* harmony import */ var _parser_gitGraph__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./parser/gitGraph */ "./src/diagrams/git/parser/gitGraph.js");
 /* harmony import */ var _parser_gitGraph__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_parser_gitGraph__WEBPACK_IMPORTED_MODULE_3__);
@@ -8448,9 +9025,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var allCommitsDict = {};
-var branchNum;
-var config = {
+let allCommitsDict = {};
+let branchNum;
+let config = {
   nodeSpacing: 150,
   nodeFillColor: 'yellow',
   nodeStrokeWidth: 2,
@@ -8468,8 +9045,8 @@ var config = {
     y: 0
   }
 };
-var apiConfig = {};
-var setConf = function setConf(c) {
+let apiConfig = {};
+const setConf = function (c) {
   apiConfig = c;
 };
 
@@ -8479,9 +9056,9 @@ function svgCreateDefs(svg) {
 }
 
 function svgDrawLine(svg, points, colorIdx, interpolate) {
-  var curve = Object(_utils__WEBPACK_IMPORTED_MODULE_5__["interpolateToCurve"])(interpolate, d3__WEBPACK_IMPORTED_MODULE_1__["curveBasis"]);
-  var color = config.branchColors[colorIdx % config.branchColors.length];
-  var lineGen = d3__WEBPACK_IMPORTED_MODULE_1__["line"]().x(function (d) {
+  const curve = Object(_utils__WEBPACK_IMPORTED_MODULE_5__["interpolateToCurve"])(interpolate, d3__WEBPACK_IMPORTED_MODULE_0__["curveBasis"]);
+  const color = config.branchColors[colorIdx % config.branchColors.length];
+  const lineGen = d3__WEBPACK_IMPORTED_MODULE_0__["line"]().x(function (d) {
     return Math.round(d.x);
   }).y(function (d) {
     return Math.round(d.y);
@@ -8492,9 +9069,9 @@ function svgDrawLine(svg, points, colorIdx, interpolate) {
 
 function getElementCoords(element, coords) {
   coords = coords || element.node().getBBox();
-  var ctm = element.node().getCTM();
-  var xn = ctm.e + coords.x * ctm.a;
-  var yn = ctm.f + coords.y * ctm.d;
+  const ctm = element.node().getCTM();
+  const xn = ctm.e + coords.x * ctm.a;
+  const yn = ctm.f + coords.y * ctm.d;
   return {
     left: xn,
     top: yn,
@@ -8505,8 +9082,8 @@ function getElementCoords(element, coords) {
 
 function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
   _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].debug('svgDrawLineForCommits: ', fromId, toId);
-  var fromBbox = getElementCoords(svg.select('#node-' + fromId + ' circle'));
-  var toBbox = getElementCoords(svg.select('#node-' + toId + ' circle'));
+  const fromBbox = getElementCoords(svg.select('#node-' + fromId + ' circle'));
+  const toBbox = getElementCoords(svg.select('#node-' + toId + ' circle'));
 
   switch (direction) {
     case 'LR':
@@ -8514,11 +9091,11 @@ function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
       //  +--------
       //          + (fromBbox)
       if (fromBbox.left - toBbox.left > config.nodeSpacing) {
-        var lineStart = {
+        const lineStart = {
           x: fromBbox.left - config.nodeSpacing,
           y: toBbox.top + toBbox.height / 2
         };
-        var lineEnd = {
+        const lineEnd = {
           x: toBbox.left + toBbox.width,
           y: toBbox.top + toBbox.height / 2
         };
@@ -8557,15 +9134,15 @@ function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
       //      |
       //              +   (toBbox)
       if (toBbox.top - fromBbox.top > config.nodeSpacing) {
-        var _lineStart = {
+        const lineStart = {
           x: toBbox.left + toBbox.width / 2,
           y: fromBbox.top + fromBbox.height + config.nodeSpacing
         };
-        var _lineEnd = {
+        const lineEnd = {
           x: toBbox.left + toBbox.width / 2,
           y: toBbox.top
         };
-        svgDrawLine(svg, [_lineStart, _lineEnd], color, 'linear');
+        svgDrawLine(svg, [lineStart, lineEnd], color, 'linear');
         svgDrawLine(svg, [{
           x: fromBbox.left + fromBbox.width / 2,
           y: fromBbox.top + fromBbox.height
@@ -8574,8 +9151,8 @@ function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
           y: fromBbox.top + fromBbox.height + config.nodeSpacing / 2
         }, {
           x: toBbox.left + toBbox.width / 2,
-          y: _lineStart.y - config.nodeSpacing / 2
-        }, _lineStart], color);
+          y: lineStart.y - config.nodeSpacing / 2
+        }, lineStart], color);
       } else {
         svgDrawLine(svg, [{
           'x': fromBbox.left + fromBbox.width / 2,
@@ -8601,10 +9178,10 @@ function cloneNode(svg, selector) {
 }
 
 function renderCommitHistory(svg, commitid, branches, direction) {
-  var commit;
-  var numCommits = Object.keys(allCommitsDict).length;
+  let commit;
+  const numCommits = Object.keys(allCommitsDict).length;
 
-  if (lodash__WEBPACK_IMPORTED_MODULE_0___default.a.isString(commitid)) {
+  if (typeof commitid === 'string') {
     do {
       commit = allCommitsDict[commitid];
       _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].debug('in renderCommitHistory', commit.id, commit.seq);
@@ -8626,8 +9203,14 @@ function renderCommitHistory(svg, commitid, branches, direction) {
             return 'translate(' + (branchNum * config.branchOffset + config.leftMargin) + ', ' + (numCommits - commit.seq) * config.nodeSpacing + ')';
         }
       }).attr('fill', config.nodeFillColor).attr('stroke', config.nodeStrokeColor).attr('stroke-width', config.nodeStrokeWidth);
+      let branch;
 
-      var branch = lodash__WEBPACK_IMPORTED_MODULE_0___default.a.find(branches, ['commit', commit]);
+      for (let branchName in branches) {
+        if (branches[branchName].commit === commit) {
+          branch = branches[branchName];
+          break;
+        }
+      }
 
       if (branch) {
         _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].debug('found branch ', branch.name);
@@ -8644,7 +9227,7 @@ function renderCommitHistory(svg, commitid, branches, direction) {
     } while (commitid && allCommitsDict[commitid]);
   }
 
-  if (lodash__WEBPACK_IMPORTED_MODULE_0___default.a.isArray(commitid)) {
+  if (Array.isArray(commitid)) {
     _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].debug('found merge commmit', commitid);
     renderCommitHistory(svg, commitid[0], branches, direction);
     branchNum++;
@@ -8657,11 +9240,11 @@ function renderLines(svg, commit, direction, branchColor) {
   branchColor = branchColor || 0;
 
   while (commit.seq > 0 && !commit.lineDrawn) {
-    if (lodash__WEBPACK_IMPORTED_MODULE_0___default.a.isString(commit.parent)) {
+    if (typeof commit.parent === 'string') {
       svgDrawLineForCommits(svg, commit.id, commit.parent, direction, branchColor);
       commit.lineDrawn = true;
       commit = allCommitsDict[commit.parent];
-    } else if (lodash__WEBPACK_IMPORTED_MODULE_0___default.a.isArray(commit.parent)) {
+    } else if (Array.isArray(commit.parent)) {
       svgDrawLineForCommits(svg, commit.id, commit.parent[0], direction, branchColor);
       svgDrawLineForCommits(svg, commit.id, commit.parent[1], direction, branchColor + 1);
       renderLines(svg, allCommitsDict[commit.parent[1]], direction, branchColor + 1);
@@ -8671,18 +9254,18 @@ function renderLines(svg, commit, direction, branchColor) {
   }
 }
 
-var draw = function draw(txt, id, ver) {
+const draw = function (txt, id, ver) {
   try {
-    var parser = _parser_gitGraph__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
+    const parser = _parser_gitGraph__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
     parser.yy = _gitGraphAst__WEBPACK_IMPORTED_MODULE_2__["default"];
     _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].debug('in gitgraph renderer', txt, id, ver); // Parse the graph definition
 
     parser.parse(txt + '\n');
-    config = lodash__WEBPACK_IMPORTED_MODULE_0___default.a.extend(config, apiConfig, _gitGraphAst__WEBPACK_IMPORTED_MODULE_2__["default"].getOptions());
+    config = lodash__WEBPACK_IMPORTED_MODULE_1___default.a.assign(config, apiConfig, _gitGraphAst__WEBPACK_IMPORTED_MODULE_2__["default"].getOptions());
     _logger__WEBPACK_IMPORTED_MODULE_4__["logger"].debug('effective options', config);
-    var direction = _gitGraphAst__WEBPACK_IMPORTED_MODULE_2__["default"].getDirection();
+    const direction = _gitGraphAst__WEBPACK_IMPORTED_MODULE_2__["default"].getDirection();
     allCommitsDict = _gitGraphAst__WEBPACK_IMPORTED_MODULE_2__["default"].getCommits();
-    var branches = _gitGraphAst__WEBPACK_IMPORTED_MODULE_2__["default"].getBranchesAsObjArray();
+    const branches = _gitGraphAst__WEBPACK_IMPORTED_MODULE_2__["default"].getBranchesAsObjArray();
 
     if (direction === 'BT') {
       config.nodeLabel.x = branches.length * config.branchOffset;
@@ -8690,15 +9273,16 @@ var draw = function draw(txt, id, ver) {
       config.nodeLabel.y = -1 * 2 * config.nodeRadius;
     }
 
-    var svg = d3__WEBPACK_IMPORTED_MODULE_1__["select"]("[id=\"".concat(id, "\"]"));
+    const svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"](`[id="${id}"]`);
     svgCreateDefs(svg);
     branchNum = 1;
 
-    lodash__WEBPACK_IMPORTED_MODULE_0___default.a.each(branches, function (v) {
+    for (let branch in branches) {
+      const v = branches[branch];
       renderCommitHistory(svg, v.commit.id, branches, direction);
       renderLines(svg, v.commit, direction);
       branchNum++;
-    });
+    }
 
     svg.attr('height', function () {
       if (direction === 'BT') return Object.keys(allCommitsDict).length * config.nodeSpacing;
@@ -8710,8 +9294,8 @@ var draw = function draw(txt, id, ver) {
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
-  setConf: setConf,
-  draw: draw
+  setConf,
+  draw
 });
 
 /***/ }),
@@ -8798,12 +9382,10 @@ var draw = function draw(txt, id, ver) {
   }
 */
 var parser = function () {
-  var o = function o(k, v, _o, l) {
-    for (_o = _o || {}, l = k.length; l--; _o[k[l]] = v) {
-      ;
-    }
+  var o = function (k, v, o, l) {
+    for (o = o || {}, l = k.length; l--; o[k[l]] = v);
 
-    return _o;
+    return o;
   },
       $V0 = [2, 3],
       $V1 = [1, 7],
@@ -9259,7 +9841,7 @@ var parser = function () {
         }
       },
       // resets the lexer, sets new input
-      setInput: function setInput(input, yy) {
+      setInput: function (input, yy) {
         this.yy = yy || this.yy || {};
         this._input = input;
         this._more = this._backtrack = this.done = false;
@@ -9281,7 +9863,7 @@ var parser = function () {
         return this;
       },
       // consumes and returns one char from the input
-      input: function input() {
+      input: function () {
         var ch = this._input[0];
         this.yytext += ch;
         this.yyleng++;
@@ -9305,7 +9887,7 @@ var parser = function () {
         return ch;
       },
       // unshifts one char (or a string) into the input
-      unput: function unput(ch) {
+      unput: function (ch) {
         var len = ch.length;
         var lines = ch.split(/(?:\r\n?|\n)/g);
         this._input = ch + this._input;
@@ -9336,12 +9918,12 @@ var parser = function () {
         return this;
       },
       // When called from action, caches matched text and appends it on next action
-      more: function more() {
+      more: function () {
         this._more = true;
         return this;
       },
       // When called from action, signals the lexer that this rule fails to match the input, so the next matching rule (regex) should be tested instead.
-      reject: function reject() {
+      reject: function () {
         if (this.options.backtrack_lexer) {
           this._backtrack = true;
         } else {
@@ -9355,16 +9937,16 @@ var parser = function () {
         return this;
       },
       // retain first n characters of the match
-      less: function less(n) {
+      less: function (n) {
         this.unput(this.match.slice(n));
       },
       // displays already matched input, i.e. for error messages
-      pastInput: function pastInput() {
+      pastInput: function () {
         var past = this.matched.substr(0, this.matched.length - this.match.length);
         return (past.length > 20 ? '...' : '') + past.substr(-20).replace(/\n/g, "");
       },
       // displays upcoming input, i.e. for error messages
-      upcomingInput: function upcomingInput() {
+      upcomingInput: function () {
         var next = this.match;
 
         if (next.length < 20) {
@@ -9374,13 +9956,13 @@ var parser = function () {
         return (next.substr(0, 20) + (next.length > 20 ? '...' : '')).replace(/\n/g, "");
       },
       // displays the character position where the lexing error occurred, i.e. for error messages
-      showPosition: function showPosition() {
+      showPosition: function () {
         var pre = this.pastInput();
         var c = new Array(pre.length + 1).join("-");
         return pre + this.upcomingInput() + "\n" + c + "^";
       },
       // test the lexed token: return FALSE when not a match, otherwise return token
-      test_match: function test_match(match, indexed_rule) {
+      test_match: function (match, indexed_rule) {
         var token, lines, backup;
 
         if (this.options.backtrack_lexer) {
@@ -9456,7 +10038,7 @@ var parser = function () {
         return false;
       },
       // return next match in input
-      next: function next() {
+      next: function () {
         if (this.done) {
           return this.EOF;
         }
@@ -9723,6 +10305,891 @@ if (true) {
 
 /***/ }),
 
+/***/ "./src/diagrams/info/infoDb.js":
+/*!*************************************!*\
+  !*** ./src/diagrams/info/infoDb.js ***!
+  \*************************************/
+/*! exports provided: setMessage, getMessage, setInfo, getInfo, default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setMessage", function() { return setMessage; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getMessage", function() { return getMessage; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setInfo", function() { return setInfo; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getInfo", function() { return getInfo; });
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/**
+ * Created by knut on 15-01-14.
+ */
+
+var message = '';
+var info = false;
+const setMessage = txt => {
+  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Setting message to: ' + txt);
+  message = txt;
+};
+const getMessage = () => {
+  return message;
+};
+const setInfo = inf => {
+  info = inf;
+};
+const getInfo = () => {
+  return info;
+}; // export const parseError = (err, hash) => {
+//   global.mermaidAPI.parseError(err, hash)
+// }
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  setMessage,
+  getMessage,
+  setInfo,
+  getInfo // parseError
+
+});
+
+/***/ }),
+
+/***/ "./src/diagrams/info/infoRenderer.js":
+/*!*******************************************!*\
+  !*** ./src/diagrams/info/infoRenderer.js ***!
+  \*******************************************/
+/*! exports provided: setConf, draw, default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setConf", function() { return setConf; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "draw", function() { return draw; });
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
+/* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _infoDb__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./infoDb */ "./src/diagrams/info/infoDb.js");
+/* harmony import */ var _parser_info_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./parser/info.js */ "./src/diagrams/info/parser/info.js");
+/* harmony import */ var _parser_info_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_parser_info_js__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/**
+ * Created by knut on 14-12-11.
+ */
+
+
+
+
+const conf = {};
+const setConf = function (cnf) {
+  const keys = Object.keys(cnf);
+  keys.forEach(function (key) {
+    conf[key] = cnf[key];
+  });
+};
+/**
+ * Draws a an info picture in the tag with id: id based on the graph definition in text.
+ * @param text
+ * @param id
+ */
+
+const draw = (txt, id, ver) => {
+  try {
+    const parser = _parser_info_js__WEBPACK_IMPORTED_MODULE_2___default.a.parser;
+    parser.yy = _infoDb__WEBPACK_IMPORTED_MODULE_1__["default"];
+    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Renering info diagram\n' + txt); // Parse the graph definition
+
+    parser.parse(txt);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Parsed info diagram'); // Fetch the default direction, use TD if none was found
+
+    const svg = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#' + id);
+    const g = svg.append('g');
+    g.append('text') // text label for the x axis
+    .attr('x', 100).attr('y', 40).attr('class', 'version').attr('font-size', '32px').style('text-anchor', 'middle').text('v ' + ver);
+    svg.attr('height', 100);
+    svg.attr('width', 400); // svg.attr('viewBox', '0 0 300 150');
+  } catch (e) {
+    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error('Error while rendering info diagram');
+    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error(e.message);
+  }
+};
+/* harmony default export */ __webpack_exports__["default"] = ({
+  setConf,
+  draw
+});
+
+/***/ }),
+
+/***/ "./src/diagrams/info/parser/info.js":
+/*!******************************************!*\
+  !*** ./src/diagrams/info/parser/info.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(process, module) {/* parser generated by jison 0.4.18 */
+
+/*
+  Returns a Parser object of the following structure:
+
+  Parser: {
+    yy: {}
+  }
+
+  Parser.prototype: {
+    yy: {},
+    trace: function(),
+    symbols_: {associative list: name ==> number},
+    terminals_: {associative list: number ==> name},
+    productions_: [...],
+    performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate, $$, _$),
+    table: [...],
+    defaultActions: {...},
+    parseError: function(str, hash),
+    parse: function(input),
+
+    lexer: {
+        EOF: 1,
+        parseError: function(str, hash),
+        setInput: function(input),
+        input: function(),
+        unput: function(str),
+        more: function(),
+        less: function(n),
+        pastInput: function(),
+        upcomingInput: function(),
+        showPosition: function(),
+        test_match: function(regex_match_array, rule_index),
+        next: function(),
+        lex: function(),
+        begin: function(condition),
+        popState: function(),
+        _currentRules: function(),
+        topState: function(),
+        pushState: function(condition),
+
+        options: {
+            ranges: boolean           (optional: true ==> token location info will include a .range[] member)
+            flex: boolean             (optional: true ==> flex-like lexing behaviour where the rules are tested exhaustively to find the longest match)
+            backtrack_lexer: boolean  (optional: true ==> lexer regexes are tested in order and for each matching regex the action code is invoked; the lexer terminates the scan when a token is returned by the action code)
+        },
+
+        performAction: function(yy, yy_, $avoiding_name_collisions, YY_START),
+        rules: [...],
+        conditions: {associative list: name ==> set},
+    }
+  }
+
+
+  token location info (@$, _$, etc.): {
+    first_line: n,
+    last_line: n,
+    first_column: n,
+    last_column: n,
+    range: [start_number, end_number]       (where the numbers are indexes into the input string, regular zero-based)
+  }
+
+
+  the parseError function receives a 'hash' object with these members for lexer and parser errors: {
+    text:        (matched text)
+    token:       (the produced terminal token, if any)
+    line:        (yylineno)
+  }
+  while parser (grammar) errors will also provide these members, i.e. parser errors deliver a superset of attributes: {
+    loc:         (yylloc)
+    expected:    (string describing the set of expected tokens)
+    recoverable: (boolean: TRUE when the parser has a error recovery rule available for this particular error)
+  }
+*/
+var parser = function () {
+  var o = function (k, v, o, l) {
+    for (o = o || {}, l = k.length; l--; o[k[l]] = v);
+
+    return o;
+  },
+      $V0 = [6, 9, 10, 12];
+
+  var parser = {
+    trace: function trace() {},
+    yy: {},
+    symbols_: {
+      "error": 2,
+      "start": 3,
+      "info": 4,
+      "document": 5,
+      "EOF": 6,
+      "line": 7,
+      "statement": 8,
+      "NL": 9,
+      "showInfo": 10,
+      "message": 11,
+      "say": 12,
+      "TXT": 13,
+      "$accept": 0,
+      "$end": 1
+    },
+    terminals_: {
+      2: "error",
+      4: "info",
+      6: "EOF",
+      9: "NL",
+      10: "showInfo",
+      12: "say",
+      13: "TXT"
+    },
+    productions_: [0, [3, 3], [5, 0], [5, 2], [7, 1], [7, 1], [8, 1], [8, 1], [11, 2]],
+    performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate
+    /* action[1] */
+    , $$
+    /* vstack */
+    , _$
+    /* lstack */
+    ) {
+      /* this == yyval */
+      var $0 = $$.length - 1;
+
+      switch (yystate) {
+        case 1:
+          return yy;
+          break;
+
+        case 4:
+          break;
+
+        case 6:
+          yy.setInfo(true);
+          break;
+
+        case 7:
+          yy.setMessage($$[$0]);
+          break;
+
+        case 8:
+          this.$ = $$[$0 - 1].substring(1).trim().replace(/\\n/gm, "\n");
+          break;
+      }
+    },
+    table: [{
+      3: 1,
+      4: [1, 2]
+    }, {
+      1: [3]
+    }, o($V0, [2, 2], {
+      5: 3
+    }), {
+      6: [1, 4],
+      7: 5,
+      8: 6,
+      9: [1, 7],
+      10: [1, 8],
+      11: 9,
+      12: [1, 10]
+    }, {
+      1: [2, 1]
+    }, o($V0, [2, 3]), o($V0, [2, 4]), o($V0, [2, 5]), o($V0, [2, 6]), o($V0, [2, 7]), {
+      13: [1, 11]
+    }, o($V0, [2, 8])],
+    defaultActions: {
+      4: [2, 1]
+    },
+    parseError: function parseError(str, hash) {
+      if (hash.recoverable) {
+        this.trace(str);
+      } else {
+        var error = new Error(str);
+        error.hash = hash;
+        throw error;
+      }
+    },
+    parse: function parse(input) {
+      var self = this,
+          stack = [0],
+          tstack = [],
+          vstack = [null],
+          lstack = [],
+          table = this.table,
+          yytext = '',
+          yylineno = 0,
+          yyleng = 0,
+          recovering = 0,
+          TERROR = 2,
+          EOF = 1;
+      var args = lstack.slice.call(arguments, 1);
+      var lexer = Object.create(this.lexer);
+      var sharedState = {
+        yy: {}
+      };
+
+      for (var k in this.yy) {
+        if (Object.prototype.hasOwnProperty.call(this.yy, k)) {
+          sharedState.yy[k] = this.yy[k];
+        }
+      }
+
+      lexer.setInput(input, sharedState.yy);
+      sharedState.yy.lexer = lexer;
+      sharedState.yy.parser = this;
+
+      if (typeof lexer.yylloc == 'undefined') {
+        lexer.yylloc = {};
+      }
+
+      var yyloc = lexer.yylloc;
+      lstack.push(yyloc);
+      var ranges = lexer.options && lexer.options.ranges;
+
+      if (typeof sharedState.yy.parseError === 'function') {
+        this.parseError = sharedState.yy.parseError;
+      } else {
+        this.parseError = Object.getPrototypeOf(this).parseError;
+      }
+
+      function popStack(n) {
+        stack.length = stack.length - 2 * n;
+        vstack.length = vstack.length - n;
+        lstack.length = lstack.length - n;
+      }
+
+      function lex() {
+        var token;
+        token = tstack.pop() || lexer.lex() || EOF;
+
+        if (typeof token !== 'number') {
+          if (token instanceof Array) {
+            tstack = token;
+            token = tstack.pop();
+          }
+
+          token = self.symbols_[token] || token;
+        }
+
+        return token;
+      }
+
+      var symbol,
+          preErrorSymbol,
+          state,
+          action,
+          a,
+          r,
+          yyval = {},
+          p,
+          len,
+          newState,
+          expected;
+
+      while (true) {
+        state = stack[stack.length - 1];
+
+        if (this.defaultActions[state]) {
+          action = this.defaultActions[state];
+        } else {
+          if (symbol === null || typeof symbol == 'undefined') {
+            symbol = lex();
+          }
+
+          action = table[state] && table[state][symbol];
+        }
+
+        if (typeof action === 'undefined' || !action.length || !action[0]) {
+          var errStr = '';
+          expected = [];
+
+          for (p in table[state]) {
+            if (this.terminals_[p] && p > TERROR) {
+              expected.push('\'' + this.terminals_[p] + '\'');
+            }
+          }
+
+          if (lexer.showPosition) {
+            errStr = 'Parse error on line ' + (yylineno + 1) + ':\n' + lexer.showPosition() + '\nExpecting ' + expected.join(', ') + ', got \'' + (this.terminals_[symbol] || symbol) + '\'';
+          } else {
+            errStr = 'Parse error on line ' + (yylineno + 1) + ': Unexpected ' + (symbol == EOF ? 'end of input' : '\'' + (this.terminals_[symbol] || symbol) + '\'');
+          }
+
+          this.parseError(errStr, {
+            text: lexer.match,
+            token: this.terminals_[symbol] || symbol,
+            line: lexer.yylineno,
+            loc: yyloc,
+            expected: expected
+          });
+        }
+
+        if (action[0] instanceof Array && action.length > 1) {
+          throw new Error('Parse Error: multiple actions possible at state: ' + state + ', token: ' + symbol);
+        }
+
+        switch (action[0]) {
+          case 1:
+            stack.push(symbol);
+            vstack.push(lexer.yytext);
+            lstack.push(lexer.yylloc);
+            stack.push(action[1]);
+            symbol = null;
+
+            if (!preErrorSymbol) {
+              yyleng = lexer.yyleng;
+              yytext = lexer.yytext;
+              yylineno = lexer.yylineno;
+              yyloc = lexer.yylloc;
+
+              if (recovering > 0) {
+                recovering--;
+              }
+            } else {
+              symbol = preErrorSymbol;
+              preErrorSymbol = null;
+            }
+
+            break;
+
+          case 2:
+            len = this.productions_[action[1]][1];
+            yyval.$ = vstack[vstack.length - len];
+            yyval._$ = {
+              first_line: lstack[lstack.length - (len || 1)].first_line,
+              last_line: lstack[lstack.length - 1].last_line,
+              first_column: lstack[lstack.length - (len || 1)].first_column,
+              last_column: lstack[lstack.length - 1].last_column
+            };
+
+            if (ranges) {
+              yyval._$.range = [lstack[lstack.length - (len || 1)].range[0], lstack[lstack.length - 1].range[1]];
+            }
+
+            r = this.performAction.apply(yyval, [yytext, yyleng, yylineno, sharedState.yy, action[1], vstack, lstack].concat(args));
+
+            if (typeof r !== 'undefined') {
+              return r;
+            }
+
+            if (len) {
+              stack = stack.slice(0, -1 * len * 2);
+              vstack = vstack.slice(0, -1 * len);
+              lstack = lstack.slice(0, -1 * len);
+            }
+
+            stack.push(this.productions_[action[1]][0]);
+            vstack.push(yyval.$);
+            lstack.push(yyval._$);
+            newState = table[stack[stack.length - 2]][stack[stack.length - 1]];
+            stack.push(newState);
+            break;
+
+          case 3:
+            return true;
+        }
+      }
+
+      return true;
+    }
+  };
+  /* generated by jison-lex 0.3.4 */
+
+  var lexer = function () {
+    var lexer = {
+      EOF: 1,
+      parseError: function parseError(str, hash) {
+        if (this.yy.parser) {
+          this.yy.parser.parseError(str, hash);
+        } else {
+          throw new Error(str);
+        }
+      },
+      // resets the lexer, sets new input
+      setInput: function (input, yy) {
+        this.yy = yy || this.yy || {};
+        this._input = input;
+        this._more = this._backtrack = this.done = false;
+        this.yylineno = this.yyleng = 0;
+        this.yytext = this.matched = this.match = '';
+        this.conditionStack = ['INITIAL'];
+        this.yylloc = {
+          first_line: 1,
+          first_column: 0,
+          last_line: 1,
+          last_column: 0
+        };
+
+        if (this.options.ranges) {
+          this.yylloc.range = [0, 0];
+        }
+
+        this.offset = 0;
+        return this;
+      },
+      // consumes and returns one char from the input
+      input: function () {
+        var ch = this._input[0];
+        this.yytext += ch;
+        this.yyleng++;
+        this.offset++;
+        this.match += ch;
+        this.matched += ch;
+        var lines = ch.match(/(?:\r\n?|\n).*/g);
+
+        if (lines) {
+          this.yylineno++;
+          this.yylloc.last_line++;
+        } else {
+          this.yylloc.last_column++;
+        }
+
+        if (this.options.ranges) {
+          this.yylloc.range[1]++;
+        }
+
+        this._input = this._input.slice(1);
+        return ch;
+      },
+      // unshifts one char (or a string) into the input
+      unput: function (ch) {
+        var len = ch.length;
+        var lines = ch.split(/(?:\r\n?|\n)/g);
+        this._input = ch + this._input;
+        this.yytext = this.yytext.substr(0, this.yytext.length - len); //this.yyleng -= len;
+
+        this.offset -= len;
+        var oldLines = this.match.split(/(?:\r\n?|\n)/g);
+        this.match = this.match.substr(0, this.match.length - 1);
+        this.matched = this.matched.substr(0, this.matched.length - 1);
+
+        if (lines.length - 1) {
+          this.yylineno -= lines.length - 1;
+        }
+
+        var r = this.yylloc.range;
+        this.yylloc = {
+          first_line: this.yylloc.first_line,
+          last_line: this.yylineno + 1,
+          first_column: this.yylloc.first_column,
+          last_column: lines ? (lines.length === oldLines.length ? this.yylloc.first_column : 0) + oldLines[oldLines.length - lines.length].length - lines[0].length : this.yylloc.first_column - len
+        };
+
+        if (this.options.ranges) {
+          this.yylloc.range = [r[0], r[0] + this.yyleng - len];
+        }
+
+        this.yyleng = this.yytext.length;
+        return this;
+      },
+      // When called from action, caches matched text and appends it on next action
+      more: function () {
+        this._more = true;
+        return this;
+      },
+      // When called from action, signals the lexer that this rule fails to match the input, so the next matching rule (regex) should be tested instead.
+      reject: function () {
+        if (this.options.backtrack_lexer) {
+          this._backtrack = true;
+        } else {
+          return this.parseError('Lexical error on line ' + (this.yylineno + 1) + '. You can only invoke reject() in the lexer when the lexer is of the backtracking persuasion (options.backtrack_lexer = true).\n' + this.showPosition(), {
+            text: "",
+            token: null,
+            line: this.yylineno
+          });
+        }
+
+        return this;
+      },
+      // retain first n characters of the match
+      less: function (n) {
+        this.unput(this.match.slice(n));
+      },
+      // displays already matched input, i.e. for error messages
+      pastInput: function () {
+        var past = this.matched.substr(0, this.matched.length - this.match.length);
+        return (past.length > 20 ? '...' : '') + past.substr(-20).replace(/\n/g, "");
+      },
+      // displays upcoming input, i.e. for error messages
+      upcomingInput: function () {
+        var next = this.match;
+
+        if (next.length < 20) {
+          next += this._input.substr(0, 20 - next.length);
+        }
+
+        return (next.substr(0, 20) + (next.length > 20 ? '...' : '')).replace(/\n/g, "");
+      },
+      // displays the character position where the lexing error occurred, i.e. for error messages
+      showPosition: function () {
+        var pre = this.pastInput();
+        var c = new Array(pre.length + 1).join("-");
+        return pre + this.upcomingInput() + "\n" + c + "^";
+      },
+      // test the lexed token: return FALSE when not a match, otherwise return token
+      test_match: function (match, indexed_rule) {
+        var token, lines, backup;
+
+        if (this.options.backtrack_lexer) {
+          // save context
+          backup = {
+            yylineno: this.yylineno,
+            yylloc: {
+              first_line: this.yylloc.first_line,
+              last_line: this.last_line,
+              first_column: this.yylloc.first_column,
+              last_column: this.yylloc.last_column
+            },
+            yytext: this.yytext,
+            match: this.match,
+            matches: this.matches,
+            matched: this.matched,
+            yyleng: this.yyleng,
+            offset: this.offset,
+            _more: this._more,
+            _input: this._input,
+            yy: this.yy,
+            conditionStack: this.conditionStack.slice(0),
+            done: this.done
+          };
+
+          if (this.options.ranges) {
+            backup.yylloc.range = this.yylloc.range.slice(0);
+          }
+        }
+
+        lines = match[0].match(/(?:\r\n?|\n).*/g);
+
+        if (lines) {
+          this.yylineno += lines.length;
+        }
+
+        this.yylloc = {
+          first_line: this.yylloc.last_line,
+          last_line: this.yylineno + 1,
+          first_column: this.yylloc.last_column,
+          last_column: lines ? lines[lines.length - 1].length - lines[lines.length - 1].match(/\r?\n?/)[0].length : this.yylloc.last_column + match[0].length
+        };
+        this.yytext += match[0];
+        this.match += match[0];
+        this.matches = match;
+        this.yyleng = this.yytext.length;
+
+        if (this.options.ranges) {
+          this.yylloc.range = [this.offset, this.offset += this.yyleng];
+        }
+
+        this._more = false;
+        this._backtrack = false;
+        this._input = this._input.slice(match[0].length);
+        this.matched += match[0];
+        token = this.performAction.call(this, this.yy, this, indexed_rule, this.conditionStack[this.conditionStack.length - 1]);
+
+        if (this.done && this._input) {
+          this.done = false;
+        }
+
+        if (token) {
+          return token;
+        } else if (this._backtrack) {
+          // recover context
+          for (var k in backup) {
+            this[k] = backup[k];
+          }
+
+          return false; // rule action called reject() implying the next rule should be tested instead.
+        }
+
+        return false;
+      },
+      // return next match in input
+      next: function () {
+        if (this.done) {
+          return this.EOF;
+        }
+
+        if (!this._input) {
+          this.done = true;
+        }
+
+        var token, match, tempMatch, index;
+
+        if (!this._more) {
+          this.yytext = '';
+          this.match = '';
+        }
+
+        var rules = this._currentRules();
+
+        for (var i = 0; i < rules.length; i++) {
+          tempMatch = this._input.match(this.rules[rules[i]]);
+
+          if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
+            match = tempMatch;
+            index = i;
+
+            if (this.options.backtrack_lexer) {
+              token = this.test_match(tempMatch, rules[i]);
+
+              if (token !== false) {
+                return token;
+              } else if (this._backtrack) {
+                match = false;
+                continue; // rule action called reject() implying a rule MISmatch.
+              } else {
+                // else: this is a lexer rule which consumes input without producing a token (e.g. whitespace)
+                return false;
+              }
+            } else if (!this.options.flex) {
+              break;
+            }
+          }
+        }
+
+        if (match) {
+          token = this.test_match(match, rules[index]);
+
+          if (token !== false) {
+            return token;
+          } // else: this is a lexer rule which consumes input without producing a token (e.g. whitespace)
+
+
+          return false;
+        }
+
+        if (this._input === "") {
+          return this.EOF;
+        } else {
+          return this.parseError('Lexical error on line ' + (this.yylineno + 1) + '. Unrecognized text.\n' + this.showPosition(), {
+            text: "",
+            token: null,
+            line: this.yylineno
+          });
+        }
+      },
+      // return next match that has a token
+      lex: function lex() {
+        var r = this.next();
+
+        if (r) {
+          return r;
+        } else {
+          return this.lex();
+        }
+      },
+      // activates a new lexer condition state (pushes the new lexer condition state onto the condition stack)
+      begin: function begin(condition) {
+        this.conditionStack.push(condition);
+      },
+      // pop the previously active lexer condition state off the condition stack
+      popState: function popState() {
+        var n = this.conditionStack.length - 1;
+
+        if (n > 0) {
+          return this.conditionStack.pop();
+        } else {
+          return this.conditionStack[0];
+        }
+      },
+      // produce the lexer rule set which is active for the currently active lexer condition state
+      _currentRules: function _currentRules() {
+        if (this.conditionStack.length && this.conditionStack[this.conditionStack.length - 1]) {
+          return this.conditions[this.conditionStack[this.conditionStack.length - 1]].rules;
+        } else {
+          return this.conditions["INITIAL"].rules;
+        }
+      },
+      // return the currently active lexer condition state; when an index argument is provided it produces the N-th previous condition state, if available
+      topState: function topState(n) {
+        n = this.conditionStack.length - 1 - Math.abs(n || 0);
+
+        if (n >= 0) {
+          return this.conditionStack[n];
+        } else {
+          return "INITIAL";
+        }
+      },
+      // alias for begin(condition)
+      pushState: function pushState(condition) {
+        this.begin(condition);
+      },
+      // return the number of states currently on the stack
+      stateStackSize: function stateStackSize() {
+        return this.conditionStack.length;
+      },
+      options: {
+        "case-insensitive": true
+      },
+      performAction: function anonymous(yy, yy_, $avoiding_name_collisions, YY_START) {
+        // Pre-lexer code can go here
+        var YYSTATE = YY_START;
+
+        switch ($avoiding_name_collisions) {
+          case 0:
+            return 4;
+            break;
+
+          case 1:
+            return 9;
+            break;
+
+          case 2:
+            return 'space';
+            break;
+
+          case 3:
+            return 10;
+            break;
+
+          case 4:
+            return 12;
+            break;
+
+          case 5:
+            return 6;
+            break;
+
+          case 6:
+            return 13;
+            break;
+        }
+      },
+      rules: [/^(?:info\b)/i, /^(?:[\s\n\r]+)/i, /^(?:[\s]+)/i, /^(?:showInfo\b)/i, /^(?:say\b)/i, /^(?:$)/i, /^(?:.)/i],
+      conditions: {
+        "INITIAL": {
+          "rules": [0, 1, 2, 3, 4, 5, 6],
+          "inclusive": true
+        }
+      }
+    };
+    return lexer;
+  }();
+
+  parser.lexer = lexer;
+
+  function Parser() {
+    this.yy = {};
+  }
+
+  Parser.prototype = parser;
+  parser.Parser = Parser;
+  return new Parser();
+}();
+
+if (true) {
+  exports.parser = parser;
+  exports.Parser = parser.Parser;
+
+  exports.parse = function () {
+    return parser.parse.apply(parser, arguments);
+  };
+
+  exports.main = function commonjsMain(args) {
+    if (!args[1]) {
+      console.log('Usage: ' + args[0] + ' FILE');
+      process.exit(1);
+    }
+
+    var source = __webpack_require__(/*! fs */ "./node_modules/node-libs-browser/mock/empty.js").readFileSync(__webpack_require__(/*! path */ "./node_modules/path-browserify/index.js").normalize(args[1]), "utf8");
+
+    return exports.parser.parse(source);
+  };
+
+  if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
+    exports.main(process.argv.slice(1));
+  }
+}
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../node_modules/process/browser.js */ "./node_modules/process/browser.js"), __webpack_require__(/*! ./../../../../node_modules/webpack/buildin/module.js */ "./node_modules/webpack/buildin/module.js")(module)))
+
+/***/ }),
+
 /***/ "./src/diagrams/sequence/parser/sequenceDiagram.js":
 /*!*********************************************************!*\
   !*** ./src/diagrams/sequence/parser/sequenceDiagram.js ***!
@@ -9805,12 +11272,10 @@ if (true) {
   }
 */
 var parser = function () {
-  var o = function o(k, v, _o, l) {
-    for (_o = _o || {}, l = k.length; l--; _o[k[l]] = v) {
-      ;
-    }
+  var o = function (k, v, o, l) {
+    for (o = o || {}, l = k.length; l--; o[k[l]] = v);
 
-    return _o;
+    return o;
   },
       $V0 = [1, 2],
       $V1 = [1, 3],
@@ -10669,7 +12134,7 @@ var parser = function () {
         }
       },
       // resets the lexer, sets new input
-      setInput: function setInput(input, yy) {
+      setInput: function (input, yy) {
         this.yy = yy || this.yy || {};
         this._input = input;
         this._more = this._backtrack = this.done = false;
@@ -10691,7 +12156,7 @@ var parser = function () {
         return this;
       },
       // consumes and returns one char from the input
-      input: function input() {
+      input: function () {
         var ch = this._input[0];
         this.yytext += ch;
         this.yyleng++;
@@ -10715,7 +12180,7 @@ var parser = function () {
         return ch;
       },
       // unshifts one char (or a string) into the input
-      unput: function unput(ch) {
+      unput: function (ch) {
         var len = ch.length;
         var lines = ch.split(/(?:\r\n?|\n)/g);
         this._input = ch + this._input;
@@ -10746,12 +12211,12 @@ var parser = function () {
         return this;
       },
       // When called from action, caches matched text and appends it on next action
-      more: function more() {
+      more: function () {
         this._more = true;
         return this;
       },
       // When called from action, signals the lexer that this rule fails to match the input, so the next matching rule (regex) should be tested instead.
-      reject: function reject() {
+      reject: function () {
         if (this.options.backtrack_lexer) {
           this._backtrack = true;
         } else {
@@ -10765,16 +12230,16 @@ var parser = function () {
         return this;
       },
       // retain first n characters of the match
-      less: function less(n) {
+      less: function (n) {
         this.unput(this.match.slice(n));
       },
       // displays already matched input, i.e. for error messages
-      pastInput: function pastInput() {
+      pastInput: function () {
         var past = this.matched.substr(0, this.matched.length - this.match.length);
         return (past.length > 20 ? '...' : '') + past.substr(-20).replace(/\n/g, "");
       },
       // displays upcoming input, i.e. for error messages
-      upcomingInput: function upcomingInput() {
+      upcomingInput: function () {
         var next = this.match;
 
         if (next.length < 20) {
@@ -10784,13 +12249,13 @@ var parser = function () {
         return (next.substr(0, 20) + (next.length > 20 ? '...' : '')).replace(/\n/g, "");
       },
       // displays the character position where the lexing error occurred, i.e. for error messages
-      showPosition: function showPosition() {
+      showPosition: function () {
         var pre = this.pastInput();
         var c = new Array(pre.length + 1).join("-");
         return pre + this.upcomingInput() + "\n" + c + "^";
       },
       // test the lexed token: return FALSE when not a match, otherwise return token
-      test_match: function test_match(match, indexed_rule) {
+      test_match: function (match, indexed_rule) {
         var token, lines, backup;
 
         if (this.options.backtrack_lexer) {
@@ -10866,7 +12331,7 @@ var parser = function () {
         return false;
       },
       // return next match in input
-      next: function next() {
+      next: function () {
         if (this.done) {
           return this.EOF;
         }
@@ -11248,13 +12713,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "apply", function() { return apply; });
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 
-var actors = {};
-var messages = [];
-var notes = [];
-var title = '';
-var addActor = function addActor(id, name, description) {
+let actors = {};
+let messages = [];
+const notes = [];
+let title = '';
+const addActor = function (id, name, description) {
   // Don't allow description nulling
-  var old = actors[id];
+  const old = actors[id];
   if (old && name === old.name && description == null) return; // Don't allow null descriptions, either
 
   if (description == null) description = name;
@@ -11263,7 +12728,7 @@ var addActor = function addActor(id, name, description) {
     description: description
   };
 };
-var addMessage = function addMessage(idFrom, idTo, message, answer) {
+const addMessage = function (idFrom, idTo, message, answer) {
   messages.push({
     from: idFrom,
     to: idTo,
@@ -11271,7 +12736,7 @@ var addMessage = function addMessage(idFrom, idTo, message, answer) {
     answer: answer
   });
 };
-var addSignal = function addSignal(idFrom, idTo, message, messageType) {
+const addSignal = function (idFrom, idTo, message, messageType) {
   _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Adding message from=' + idFrom + ' to=' + idTo + ' message=' + message + ' type=' + messageType);
   messages.push({
     from: idFrom,
@@ -11280,26 +12745,26 @@ var addSignal = function addSignal(idFrom, idTo, message, messageType) {
     type: messageType
   });
 };
-var getMessages = function getMessages() {
+const getMessages = function () {
   return messages;
 };
-var getActors = function getActors() {
+const getActors = function () {
   return actors;
 };
-var getActor = function getActor(id) {
+const getActor = function (id) {
   return actors[id];
 };
-var getActorKeys = function getActorKeys() {
+const getActorKeys = function () {
   return Object.keys(actors);
 };
-var getTitle = function getTitle() {
+const getTitle = function () {
   return title;
 };
-var clear = function clear() {
+const clear = function () {
   actors = {};
   messages = [];
 };
-var LINETYPE = {
+const LINETYPE = {
   SOLID: 0,
   DOTTED: 1,
   NOTE: 2,
@@ -11320,23 +12785,23 @@ var LINETYPE = {
   PAR_AND: 20,
   PAR_END: 21
 };
-var ARROWTYPE = {
+const ARROWTYPE = {
   FILLED: 0,
   OPEN: 1
 };
-var PLACEMENT = {
+const PLACEMENT = {
   LEFTOF: 0,
   RIGHTOF: 1,
   OVER: 2
 };
-var addNote = function addNote(actor, placement, message) {
-  var note = {
+const addNote = function (actor, placement, message) {
+  const note = {
     actor: actor,
     placement: placement,
     message: message // Coerce actor into a [to, from, ...] array
 
   };
-  var actors = [].concat(actor, actor);
+  const actors = [].concat(actor, actor);
   notes.push(note);
   messages.push({
     from: actors[0],
@@ -11346,10 +12811,10 @@ var addNote = function addNote(actor, placement, message) {
     placement: placement
   });
 };
-var setTitle = function setTitle(titleText) {
+const setTitle = function (titleText) {
   title = titleText;
 };
-var apply = function apply(param) {
+const apply = function (param) {
   if (param instanceof Array) {
     param.forEach(function (item) {
       apply(item);
@@ -11423,21 +12888,21 @@ var apply = function apply(param) {
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
-  addActor: addActor,
-  addMessage: addMessage,
-  addSignal: addSignal,
-  getMessages: getMessages,
-  getActors: getActors,
-  getActor: getActor,
-  getActorKeys: getActorKeys,
-  getTitle: getTitle,
-  clear: clear,
-  LINETYPE: LINETYPE,
-  ARROWTYPE: ARROWTYPE,
-  PLACEMENT: PLACEMENT,
-  addNote: addNote,
-  setTitle: setTitle,
-  apply: apply
+  addActor,
+  addMessage,
+  addSignal,
+  getMessages,
+  getActors,
+  getActor,
+  getActorKeys,
+  getTitle,
+  clear,
+  LINETYPE,
+  ARROWTYPE,
+  PLACEMENT,
+  addNote,
+  setTitle,
+  apply
 });
 
 /***/ }),
@@ -11468,7 +12933,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy = _sequenceDb__WEBPACK_IMPORTED_MODULE_4__["default"];
-var conf = {
+const conf = {
   diagramMarginX: 50,
   diagramMarginY: 30,
   // Margin between actors
@@ -11495,7 +12960,7 @@ var conf = {
   // text placement as: tspan | fo | old only text as before
   textPlacement: 'tspan'
 };
-var bounds = {
+const bounds = {
   data: {
     startx: undefined,
     stopx: undefined,
@@ -11505,7 +12970,7 @@ var bounds = {
   verticalPos: 0,
   sequenceItems: [],
   activations: [],
-  init: function init() {
+  init: function () {
     this.sequenceItems = [];
     this.activations = [];
     this.data = {
@@ -11516,23 +12981,23 @@ var bounds = {
     };
     this.verticalPos = 0;
   },
-  updateVal: function updateVal(obj, key, val, fun) {
+  updateVal: function (obj, key, val, fun) {
     if (typeof obj[key] === 'undefined') {
       obj[key] = val;
     } else {
       obj[key] = fun(val, obj[key]);
     }
   },
-  updateBounds: function updateBounds(startx, starty, stopx, stopy) {
-    var _self = this;
+  updateBounds: function (startx, starty, stopx, stopy) {
+    const _self = this;
 
-    var cnt = 0;
+    let cnt = 0;
 
     function updateFn(type) {
       return function updateItemBounds(item) {
         cnt++; // The loop sequenceItems is a stack so the biggest margins in the beginning of the sequenceItems
 
-        var n = _self.sequenceItems.length - cnt + 1;
+        const n = _self.sequenceItems.length - cnt + 1;
 
         _self.updateVal(item, 'starty', starty - n * conf.boxMargin, Math.min);
 
@@ -11557,14 +13022,14 @@ var bounds = {
     this.sequenceItems.forEach(updateFn());
     this.activations.forEach(updateFn('activation'));
   },
-  insert: function insert(startx, starty, stopx, stopy) {
-    var _startx = Math.min(startx, stopx);
+  insert: function (startx, starty, stopx, stopy) {
+    const _startx = Math.min(startx, stopx);
 
-    var _stopx = Math.max(startx, stopx);
+    const _stopx = Math.max(startx, stopx);
 
-    var _starty = Math.min(starty, stopy);
+    const _starty = Math.min(starty, stopy);
 
-    var _stopy = Math.max(starty, stopy);
+    const _stopy = Math.max(starty, stopy);
 
     this.updateVal(bounds.data, 'startx', _startx, Math.min);
     this.updateVal(bounds.data, 'starty', _starty, Math.min);
@@ -11572,10 +13037,10 @@ var bounds = {
     this.updateVal(bounds.data, 'stopy', _stopy, Math.max);
     this.updateBounds(_startx, _starty, _stopx, _stopy);
   },
-  newActivation: function newActivation(message, diagram) {
-    var actorRect = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getActors()[message.from.actor];
-    var stackedSize = actorActivations(message.from.actor).length;
-    var x = actorRect.x + conf.width / 2 + (stackedSize - 1) * conf.activationWidth / 2;
+  newActivation: function (message, diagram) {
+    const actorRect = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getActors()[message.from.actor];
+    const stackedSize = actorActivations(message.from.actor).length;
+    const x = actorRect.x + conf.width / 2 + (stackedSize - 1) * conf.activationWidth / 2;
     this.activations.push({
       startx: x,
       starty: this.verticalPos + 2,
@@ -11585,15 +13050,15 @@ var bounds = {
       anchored: _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].anchorElement(diagram)
     });
   },
-  endActivation: function endActivation(message) {
+  endActivation: function (message) {
     // find most recent activation for given actor
-    var lastActorActivationIdx = this.activations.map(function (activation) {
+    const lastActorActivationIdx = this.activations.map(function (activation) {
       return activation.actor;
     }).lastIndexOf(message.from.actor);
-    var activation = this.activations.splice(lastActorActivationIdx, 1)[0];
+    const activation = this.activations.splice(lastActorActivationIdx, 1)[0];
     return activation;
   },
-  newLoop: function newLoop(title) {
+  newLoop: function (title) {
     this.sequenceItems.push({
       startx: undefined,
       starty: this.verticalPos,
@@ -11602,63 +13067,44 @@ var bounds = {
       title: title
     });
   },
-  endLoop: function endLoop() {
-    var loop = this.sequenceItems.pop();
+  endLoop: function () {
+    const loop = this.sequenceItems.pop();
     return loop;
   },
-  addSectionToLoop: function addSectionToLoop(message) {
-    var loop = this.sequenceItems.pop();
+  addSectionToLoop: function (message) {
+    const loop = this.sequenceItems.pop();
     loop.sections = loop.sections || [];
     loop.sectionTitles = loop.sectionTitles || [];
     loop.sections.push(bounds.getVerticalPos());
     loop.sectionTitles.push(message);
     this.sequenceItems.push(loop);
   },
-  bumpVerticalPos: function bumpVerticalPos(bump) {
+  bumpVerticalPos: function (bump) {
     this.verticalPos = this.verticalPos + bump;
     this.data.stopy = this.verticalPos;
   },
-  getVerticalPos: function getVerticalPos() {
+  getVerticalPos: function () {
     return this.verticalPos;
   },
-  getBounds: function getBounds() {
+  getBounds: function () {
     return this.data;
   }
 };
 
-var _drawLongText = function _drawLongText(text, x, y, g, width) {
-  var textHeight = 0;
-  var lines = text.split(/<br\/?>/ig);
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
+const _drawLongText = (text, x, y, g, width) => {
+  let textHeight = 0;
+  const lines = text.split(/<br\/?>/ig);
 
-  try {
-    for (var _iterator = lines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var line = _step.value;
-      var textObj = _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].getTextObj();
-      textObj.x = x;
-      textObj.y = y + textHeight;
-      textObj.textMargin = conf.noteMargin;
-      textObj.dy = '1em';
-      textObj.text = line;
-      textObj.class = 'noteText';
-      var textElem = _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].drawText(g, textObj, width);
-      textHeight += (textElem._groups || textElem)[0][0].getBBox().height;
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return != null) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
+  for (const line of lines) {
+    const textObj = _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].getTextObj();
+    textObj.x = x;
+    textObj.y = y + textHeight;
+    textObj.textMargin = conf.noteMargin;
+    textObj.dy = '1em';
+    textObj.text = line;
+    textObj.class = 'noteText';
+    const textElem = _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].drawText(g, textObj, width);
+    textHeight += (textElem._groups || textElem)[0][0].getBBox().height;
   }
 
   return textHeight;
@@ -11671,16 +13117,16 @@ var _drawLongText = function _drawLongText(text, x, y, g, width) {
  */
 
 
-var drawNote = function drawNote(elem, startx, verticalPos, msg, forceWidth) {
-  var rect = _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].getNoteRect();
+const drawNote = function (elem, startx, verticalPos, msg, forceWidth) {
+  const rect = _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].getNoteRect();
   rect.x = startx;
   rect.y = verticalPos;
   rect.width = forceWidth || conf.width;
   rect.class = 'note';
-  var g = elem.append('g');
-  var rectElem = _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].drawRect(g, rect);
+  let g = elem.append('g');
+  const rectElem = _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].drawRect(g, rect);
 
-  var textHeight = _drawLongText(msg.message, startx - 4, verticalPos + 24, g, rect.width - conf.noteMargin);
+  const textHeight = _drawLongText(msg.message, startx - 4, verticalPos + 24, g, rect.width - conf.noteMargin);
 
   bounds.insert(startx, verticalPos, startx + rect.width, verticalPos + 2 * conf.noteMargin + textHeight);
   rectElem.attr('height', textHeight + 2 * conf.noteMargin);
@@ -11697,23 +13143,23 @@ var drawNote = function drawNote(elem, startx, verticalPos, msg, forceWidth) {
  */
 
 
-var drawMessage = function drawMessage(elem, startx, stopx, verticalPos, msg) {
-  var g = elem.append('g');
-  var txtCenter = startx + (stopx - startx) / 2;
-  var textElem = g.append('text') // text label for the x axis
+const drawMessage = function (elem, startx, stopx, verticalPos, msg) {
+  const g = elem.append('g');
+  const txtCenter = startx + (stopx - startx) / 2;
+  const textElem = g.append('text') // text label for the x axis
   .attr('x', txtCenter).attr('y', verticalPos - 7).style('text-anchor', 'middle').attr('class', 'messageText').text(msg.message);
-  var textWidth = (textElem._groups || textElem)[0][0].getBBox().width;
-  var line;
+  let textWidth = (textElem._groups || textElem)[0][0].getBBox().width;
+  let line;
 
   if (startx === stopx) {
     if (conf.rightAngles) {
-      line = g.append('path').attr('d', "M  ".concat(startx, ",").concat(verticalPos, " H ").concat(startx + conf.width / 2, " V ").concat(verticalPos + 25, " H ").concat(startx));
+      line = g.append('path').attr('d', `M  ${startx},${verticalPos} H ${startx + conf.width / 2} V ${verticalPos + 25} H ${startx}`);
     } else {
       line = g.append('path').attr('d', 'M ' + startx + ',' + verticalPos + ' C ' + (startx + 60) + ',' + (verticalPos - 10) + ' ' + (startx + 60) + ',' + (verticalPos + 30) + ' ' + startx + ',' + (verticalPos + 20));
     }
 
     bounds.bumpVerticalPos(30);
-    var dx = Math.max(textWidth / 2, 100);
+    const dx = Math.max(textWidth / 2, 100);
     bounds.insert(startx - dx, bounds.getVerticalPos() - 10, stopx + dx, bounds.getVerticalPos());
   } else {
     line = g.append('line');
@@ -11733,7 +13179,7 @@ var drawMessage = function drawMessage(elem, startx, stopx, verticalPos, msg) {
     line.attr('class', 'messageLine0');
   }
 
-  var url = '';
+  let url = '';
 
   if (conf.arrowMarkerAbsolute) {
     url = window.location.protocol + '//' + window.location.host + window.location.pathname + window.location.search;
@@ -11754,10 +13200,10 @@ var drawMessage = function drawMessage(elem, startx, stopx, verticalPos, msg) {
   }
 };
 
-var drawActors = function drawActors(diagram, actors, actorKeys, verticalPos) {
+const drawActors = function (diagram, actors, actorKeys, verticalPos) {
   // Draw the actors
-  for (var i = 0; i < actorKeys.length; i++) {
-    var key = actorKeys[i]; // Add some rendering data to the object
+  for (let i = 0; i < actorKeys.length; i++) {
+    const key = actorKeys[i]; // Add some rendering data to the object
 
     actors[key].x = i * conf.actorMargin + i * conf.width;
     actors[key].y = verticalPos;
@@ -11771,27 +13217,27 @@ var drawActors = function drawActors(diagram, actors, actorKeys, verticalPos) {
 
   bounds.bumpVerticalPos(conf.height);
 };
-var setConf = function setConf(cnf) {
-  var keys = Object.keys(cnf);
+const setConf = function (cnf) {
+  const keys = Object.keys(cnf);
   keys.forEach(function (key) {
     conf[key] = cnf[key];
   });
 };
 
-var actorActivations = function actorActivations(actor) {
+const actorActivations = function (actor) {
   return bounds.activations.filter(function (activation) {
     return activation.actor === actor;
   });
 };
 
-var actorFlowVerticaBounds = function actorFlowVerticaBounds(actor) {
+const actorFlowVerticaBounds = function (actor) {
   // handle multiple stacked activations for same actor
-  var actors = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getActors();
-  var activations = actorActivations(actor);
-  var left = activations.reduce(function (acc, activation) {
+  const actors = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getActors();
+  const activations = actorActivations(actor);
+  const left = activations.reduce(function (acc, activation) {
     return Math.min(acc, activation.startx);
   }, actors[actor].x + conf.width / 2);
-  var right = activations.reduce(function (acc, activation) {
+  const right = activations.reduce(function (acc, activation) {
     return Math.max(acc, activation.stopx);
   }, actors[actor].x + conf.width / 2);
   return [left, right];
@@ -11803,26 +13249,26 @@ var actorFlowVerticaBounds = function actorFlowVerticaBounds(actor) {
  */
 
 
-var draw = function draw(text, id) {
+const draw = function (text, id) {
   _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.clear();
   _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].parse(text + '\n');
   bounds.init();
-  var diagram = d3__WEBPACK_IMPORTED_MODULE_0__["select"]("[id=\"".concat(id, "\"]"));
-  var startx;
-  var stopx;
-  var forceWidth; // Fetch data from the parsing
+  const diagram = d3__WEBPACK_IMPORTED_MODULE_0__["select"](`[id="${id}"]`);
+  let startx;
+  let stopx;
+  let forceWidth; // Fetch data from the parsing
 
-  var actors = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getActors();
-  var actorKeys = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getActorKeys();
-  var messages = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getMessages();
-  var title = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getTitle();
+  const actors = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getActors();
+  const actorKeys = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getActorKeys();
+  const messages = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getMessages();
+  const title = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getTitle();
   drawActors(diagram, actors, actorKeys, 0); // The arrow head definition is attached to the svg once
 
   _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].insertArrowHead(diagram);
   _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].insertArrowCrossHead(diagram);
 
   function activeEnd(msg, verticalPos) {
-    var activationData = bounds.endActivation(msg);
+    const activationData = bounds.endActivation(msg);
 
     if (activationData.starty + 18 > verticalPos) {
       activationData.starty = verticalPos - 6;
@@ -11836,7 +13282,7 @@ var draw = function draw(text, id) {
 
 
   messages.forEach(function (msg) {
-    var loopData;
+    let loopData;
 
     switch (msg.type) {
       case _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.NOTE:
@@ -11931,15 +13377,15 @@ var draw = function draw(text, id) {
         try {
           // lastMsg = msg
           bounds.bumpVerticalPos(conf.messageMargin);
-          var fromBounds = actorFlowVerticaBounds(msg.from);
-          var toBounds = actorFlowVerticaBounds(msg.to);
-          var fromIdx = fromBounds[0] <= toBounds[0] ? 1 : 0;
-          var toIdx = fromBounds[0] < toBounds[0] ? 0 : 1;
+          const fromBounds = actorFlowVerticaBounds(msg.from);
+          const toBounds = actorFlowVerticaBounds(msg.to);
+          const fromIdx = fromBounds[0] <= toBounds[0] ? 1 : 0;
+          const toIdx = fromBounds[0] < toBounds[0] ? 0 : 1;
           startx = fromBounds[fromIdx];
           stopx = toBounds[toIdx];
-          var verticalPos = bounds.getVerticalPos();
+          const verticalPos = bounds.getVerticalPos();
           drawMessage(diagram, startx, stopx, verticalPos, msg);
-          var allBounds = fromBounds.concat(toBounds);
+          const allBounds = fromBounds.concat(toBounds);
           bounds.insert(Math.min.apply(null, allBounds), verticalPos, Math.max.apply(null, allBounds), verticalPos);
         } catch (e) {
           _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].error('error while drawing message', e);
@@ -11954,18 +13400,18 @@ var draw = function draw(text, id) {
     drawActors(diagram, actors, actorKeys, bounds.getVerticalPos());
   }
 
-  var box = bounds.getBounds(); // Adjust line height of actor lines now that the height of the diagram is known
+  const box = bounds.getBounds(); // Adjust line height of actor lines now that the height of the diagram is known
 
   _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('For line height fix Querying: #' + id + ' .actor-line');
-  var actorLines = d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"]('#' + id + ' .actor-line');
+  const actorLines = d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"]('#' + id + ' .actor-line');
   actorLines.attr('y2', box.stopy);
-  var height = box.stopy - box.starty + 2 * conf.diagramMarginY;
+  let height = box.stopy - box.starty + 2 * conf.diagramMarginY;
 
   if (conf.mirrorActors) {
     height = height - conf.boxMargin + conf.bottomMarginAdj;
   }
 
-  var width = box.stopx - box.startx + 2 * conf.diagramMarginX;
+  const width = box.stopx - box.startx + 2 * conf.diagramMarginX;
 
   if (title) {
     diagram.append('text').text(title).attr('x', (box.stopx - box.startx) / 2 - 2 * conf.diagramMarginX).attr('y', -25);
@@ -11980,14 +13426,14 @@ var draw = function draw(text, id) {
     diagram.attr('width', width);
   }
 
-  var extraVertForTitle = title ? 40 : 0;
+  const extraVertForTitle = title ? 40 : 0;
   diagram.attr('viewBox', box.startx - conf.diagramMarginX + ' -' + (conf.diagramMarginY + extraVertForTitle) + ' ' + width + ' ' + (height + extraVertForTitle));
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
-  bounds: bounds,
-  drawActors: drawActors,
-  setConf: setConf,
-  draw: draw
+  bounds,
+  drawActors,
+  setConf,
+  draw
 });
 
 /***/ }),
@@ -12012,8 +13458,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "insertArrowCrossHead", function() { return insertArrowCrossHead; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTextObj", function() { return getTextObj; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getNoteRect", function() { return getNoteRect; });
-var drawRect = function drawRect(elem, rectData) {
-  var rectElem = elem.append('rect');
+const drawRect = function (elem, rectData) {
+  const rectElem = elem.append('rect');
   rectElem.attr('x', rectData.x);
   rectElem.attr('y', rectData.y);
   rectElem.attr('fill', rectData.fill);
@@ -12029,10 +13475,10 @@ var drawRect = function drawRect(elem, rectData) {
 
   return rectElem;
 };
-var drawText = function drawText(elem, textData, width) {
+const drawText = function (elem, textData, width) {
   // Remove and ignore br:s
-  var nText = textData.text.replace(/<br\/?>/ig, ' ');
-  var textElem = elem.append('text');
+  const nText = textData.text.replace(/<br\/?>/ig, ' ');
+  const textElem = elem.append('text');
   textElem.attr('x', textData.x);
   textElem.attr('y', textData.y);
   textElem.style('text-anchor', textData.anchor);
@@ -12042,25 +13488,25 @@ var drawText = function drawText(elem, textData, width) {
     textElem.attr('class', textData.class);
   }
 
-  var span = textElem.append('tspan');
+  const span = textElem.append('tspan');
   span.attr('x', textData.x + textData.textMargin * 2);
   span.attr('fill', textData.fill);
   span.text(nText);
   return textElem;
 };
-var drawLabel = function drawLabel(elem, txtObject) {
+const drawLabel = function (elem, txtObject) {
   function genPoints(x, y, width, height, cut) {
     return x + ',' + y + ' ' + (x + width) + ',' + y + ' ' + (x + width) + ',' + (y + height - cut) + ' ' + (x + width - cut * 1.2) + ',' + (y + height) + ' ' + x + ',' + (y + height);
   }
 
-  var polygon = elem.append('polygon');
+  const polygon = elem.append('polygon');
   polygon.attr('points', genPoints(txtObject.x, txtObject.y, 50, 20, 7));
   polygon.attr('class', 'labelBox');
   txtObject.y = txtObject.y + txtObject.labelMargin;
   txtObject.x = txtObject.x + 0.5 * txtObject.labelMargin;
   drawText(elem, txtObject);
 };
-var actorCnt = -1;
+let actorCnt = -1;
 /**
  * Draws an actor in the diagram with the attaced line
  * @param center - The center of the the actor
@@ -12068,16 +13514,16 @@ var actorCnt = -1;
  * @param description The text in the box
  */
 
-var drawActor = function drawActor(elem, left, verticalPos, description, conf) {
-  var center = left + conf.width / 2;
-  var g = elem.append('g');
+const drawActor = function (elem, left, verticalPos, description, conf) {
+  const center = left + conf.width / 2;
+  const g = elem.append('g');
 
   if (verticalPos === 0) {
     actorCnt++;
     g.append('line').attr('id', 'actor' + actorCnt).attr('x1', center).attr('y1', 5).attr('x2', center).attr('y2', 2000).attr('class', 'actor-line').attr('stroke-width', '0.5px').attr('stroke', '#999');
   }
 
-  var rect = getNoteRect();
+  const rect = getNoteRect();
   rect.x = left;
   rect.y = verticalPos;
   rect.fill = '#eaeaea';
@@ -12092,7 +13538,7 @@ var drawActor = function drawActor(elem, left, verticalPos, description, conf) {
     'class': 'actor'
   }, conf);
 };
-var anchorElement = function anchorElement(elem) {
+const anchorElement = function (elem) {
   return elem.append('g');
 };
 /**
@@ -12102,9 +13548,9 @@ var anchorElement = function anchorElement(elem) {
  * @param verticalPos - precise y cooridnate of bottom activation box edge
  */
 
-var drawActivation = function drawActivation(elem, bounds, verticalPos, conf, actorActivations) {
-  var rect = getNoteRect();
-  var g = bounds.anchored;
+const drawActivation = function (elem, bounds, verticalPos, conf, actorActivations) {
+  const rect = getNoteRect();
+  const g = bounds.anchored;
   rect.x = bounds.startx;
   rect.y = bounds.starty;
   rect.class = 'activation' + actorActivations % 3; // Will evaluate to 0, 1 or 2
@@ -12120,10 +13566,10 @@ var drawActivation = function drawActivation(elem, bounds, verticalPos, conf, ac
  * @param description The text in the box
  */
 
-var drawLoop = function drawLoop(elem, bounds, labelText, conf) {
-  var g = elem.append('g');
+const drawLoop = function (elem, bounds, labelText, conf) {
+  const g = elem.append('g');
 
-  var drawLoopLine = function drawLoopLine(startx, starty, stopx, stopy) {
+  const drawLoopLine = function (startx, starty, stopx, stopy) {
     return g.append('line').attr('x1', startx).attr('y1', starty).attr('x2', stopx).attr('y2', stopy).attr('class', 'loopLine');
   };
 
@@ -12138,7 +13584,7 @@ var drawLoop = function drawLoop(elem, bounds, labelText, conf) {
     });
   }
 
-  var txt = getTextObj();
+  let txt = getTextObj();
   txt.text = labelText;
   txt.x = bounds.startx;
   txt.y = bounds.starty;
@@ -12169,26 +13615,26 @@ var drawLoop = function drawLoop(elem, bounds, labelText, conf) {
  * Setup arrow head and define the marker. The result is appended to the svg.
  */
 
-var insertArrowHead = function insertArrowHead(elem) {
+const insertArrowHead = function (elem) {
   elem.append('defs').append('marker').attr('id', 'arrowhead').attr('refX', 5).attr('refY', 2).attr('markerWidth', 6).attr('markerHeight', 4).attr('orient', 'auto').append('path').attr('d', 'M 0,0 V 4 L6,2 Z'); // this is actual shape for arrowhead
 };
 /**
  * Setup arrow head and define the marker. The result is appended to the svg.
  */
 
-var insertArrowCrossHead = function insertArrowCrossHead(elem) {
-  var defs = elem.append('defs');
-  var marker = defs.append('marker').attr('id', 'crosshead').attr('markerWidth', 15).attr('markerHeight', 8).attr('orient', 'auto').attr('refX', 16).attr('refY', 4); // The arrow
+const insertArrowCrossHead = function (elem) {
+  const defs = elem.append('defs');
+  const marker = defs.append('marker').attr('id', 'crosshead').attr('markerWidth', 15).attr('markerHeight', 8).attr('orient', 'auto').attr('refX', 16).attr('refY', 4); // The arrow
 
   marker.append('path').attr('fill', 'black').attr('stroke', '#000000').style('stroke-dasharray', '0, 0').attr('stroke-width', '1px').attr('d', 'M 9,2 V 6 L16,4 Z'); // The cross
 
   marker.append('path').attr('fill', 'none').attr('stroke', '#000000').style('stroke-dasharray', '0, 0').attr('stroke-width', '1px').attr('d', 'M 0,1 L 6,7 M 6,1 L 0,7'); // this is actual shape for arrowhead
 };
-var getTextObj = function getTextObj() {
-  var txt = {
+const getTextObj = function () {
+  const txt = {
     x: 0,
     y: 0,
-    'fill': 'black',
+    'fill': undefined,
     'text-anchor': 'start',
     style: '#666',
     width: 100,
@@ -12199,8 +13645,8 @@ var getTextObj = function getTextObj() {
   };
   return txt;
 };
-var getNoteRect = function getNoteRect() {
-  var rect = {
+const getNoteRect = function () {
+  const rect = {
     x: 0,
     y: 0,
     fill: '#EDF2AE',
@@ -12214,21 +13660,23 @@ var getNoteRect = function getNoteRect() {
   return rect;
 };
 
-var _drawTextCandidateFunc = function () {
+const _drawTextCandidateFunc = function () {
   function byText(content, g, x, y, width, height, textAttrs) {
-    var text = g.append('text').attr('x', x + width / 2).attr('y', y + height / 2 + 5).style('text-anchor', 'middle').text(content);
+    const text = g.append('text').attr('x', x + width / 2).attr('y', y + height / 2 + 5).style('text-anchor', 'middle').text(content);
 
     _setTextAttrs(text, textAttrs);
   }
 
   function byTspan(content, g, x, y, width, height, textAttrs, conf) {
-    var actorFontSize = conf.actorFontSize,
-        actorFontFamily = conf.actorFontFamily;
-    var lines = content.split(/<br\/?>/ig);
+    const {
+      actorFontSize,
+      actorFontFamily
+    } = conf;
+    const lines = content.split(/<br\/?>/ig);
 
-    for (var i = 0; i < lines.length; i++) {
-      var dy = i * actorFontSize - actorFontSize * (lines.length - 1) / 2;
-      var text = g.append('text').attr('x', x + width / 2).attr('y', y).style('text-anchor', 'middle').style('font-size', actorFontSize).style('font-family', actorFontFamily);
+    for (let i = 0; i < lines.length; i++) {
+      const dy = i * actorFontSize - actorFontSize * (lines.length - 1) / 2;
+      const text = g.append('text').attr('x', x + width / 2).attr('y', y).style('text-anchor', 'middle').style('font-size', actorFontSize).style('font-family', actorFontFamily);
       text.append('tspan').attr('x', x + width / 2).attr('dy', dy).text(lines[i]);
       text.attr('y', y + height / 2.0).attr('dominant-baseline', 'central').attr('alignment-baseline', 'central');
 
@@ -12237,9 +13685,9 @@ var _drawTextCandidateFunc = function () {
   }
 
   function byFo(content, g, x, y, width, height, textAttrs, conf) {
-    var s = g.append('switch');
-    var f = s.append('foreignObject').attr('x', x).attr('y', y).attr('width', width).attr('height', height);
-    var text = f.append('div').style('display', 'table').style('height', '100%').style('width', '100%');
+    const s = g.append('switch');
+    const f = s.append('foreignObject').attr('x', x).attr('y', y).attr('width', width).attr('height', height);
+    const text = f.append('div').style('display', 'table').style('height', '100%').style('width', '100%');
     text.append('div').style('display', 'table-cell').style('text-align', 'center').style('vertical-align', 'middle').text(content);
     byTspan(content, s, x, y, width, height, textAttrs, conf);
 
@@ -12247,7 +13695,7 @@ var _drawTextCandidateFunc = function () {
   }
 
   function _setTextAttrs(toText, fromTextAttrsDict) {
-    for (var key in fromTextAttrsDict) {
+    for (const key in fromTextAttrsDict) {
       if (fromTextAttrsDict.hasOwnProperty(key)) {
         toText.attr(key, fromTextAttrsDict[key]);
       }
@@ -12260,17 +13708,17 @@ var _drawTextCandidateFunc = function () {
 }();
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-  drawRect: drawRect,
-  drawText: drawText,
-  drawLabel: drawLabel,
-  drawActor: drawActor,
-  anchorElement: anchorElement,
-  drawActivation: drawActivation,
-  drawLoop: drawLoop,
-  insertArrowHead: insertArrowHead,
-  insertArrowCrossHead: insertArrowCrossHead,
-  getTextObj: getTextObj,
-  getNoteRect: getNoteRect
+  drawRect,
+  drawText,
+  drawLabel,
+  drawActor,
+  anchorElement,
+  drawActivation,
+  drawLoop,
+  insertArrowHead,
+  insertArrowCrossHead,
+  getTextObj,
+  getNoteRect
 });
 
 /***/ }),
@@ -12287,33 +13735,33 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LEVELS", function() { return LEVELS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "logger", function() { return logger; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setLogLevel", function() { return setLogLevel; });
-/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! moment */ "moment");
-/* harmony import */ var moment__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(moment__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var moment_mini__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! moment-mini */ "moment-mini");
+/* harmony import */ var moment_mini__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(moment_mini__WEBPACK_IMPORTED_MODULE_0__);
 
-var LEVELS = {
+const LEVELS = {
   debug: 1,
   info: 2,
   warn: 3,
   error: 4,
   fatal: 5
 };
-var logger = {
-  debug: function debug() {},
-  info: function info() {},
-  warn: function warn() {},
-  error: function error() {},
-  fatal: function fatal() {}
+const logger = {
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+  fatal: () => {}
 };
-var setLogLevel = function setLogLevel(level) {
-  logger.debug = function () {};
+const setLogLevel = function (level) {
+  logger.debug = () => {};
 
-  logger.info = function () {};
+  logger.info = () => {};
 
-  logger.warn = function () {};
+  logger.warn = () => {};
 
-  logger.error = function () {};
+  logger.error = () => {};
 
-  logger.fatal = function () {};
+  logger.fatal = () => {};
 
   if (level <= LEVELS.fatal) {
     logger.fatal = console.log.bind(console, '\x1b[35m', format('FATAL'));
@@ -12324,7 +13772,7 @@ var setLogLevel = function setLogLevel(level) {
   }
 
   if (level <= LEVELS.warn) {
-    logger.warn = console.log.bind(console, "\x1B[33m", format('WARN'));
+    logger.warn = console.log.bind(console, `\x1b[33m`, format('WARN'));
   }
 
   if (level <= LEVELS.info) {
@@ -12336,9 +13784,9 @@ var setLogLevel = function setLogLevel(level) {
   }
 };
 
-var format = function format(level) {
-  var time = moment__WEBPACK_IMPORTED_MODULE_0___default()().format('HH:mm:ss.SSS');
-  return "".concat(time, " : ").concat(level, " : ");
+const format = level => {
+  const time = moment_mini__WEBPACK_IMPORTED_MODULE_0___default()().format('HH:mm:ss.SSS');
+  return `${time} : ${level} : `;
 };
 
 /***/ }),
@@ -12385,10 +13833,10 @@ __webpack_require__.r(__webpack_exports__);
  * @param nodes a css selector or an array of nodes
  */
 
-var init = function init() {
-  var conf = _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].getConfig();
+const init = function () {
+  const conf = _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].getConfig();
   _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('Starting rendering diagrams');
-  var nodes;
+  let nodes;
 
   if (arguments.length >= 2) {
     /*! sequence config was passed as #1 */
@@ -12402,7 +13850,7 @@ var init = function init() {
   } // if last argument is a function this is the callback function
 
 
-  var callback;
+  let callback;
 
   if (typeof arguments[arguments.length - 1] === 'function') {
     callback = arguments[arguments.length - 1];
@@ -12435,24 +13883,24 @@ var init = function init() {
     });
   }
 
-  var txt;
+  let txt;
 
-  var _loop = function _loop(i) {
-    var element = nodes[i];
+  for (let i = 0; i < nodes.length; i++) {
+    const element = nodes[i];
     /*! Check if previously processed */
 
     if (!element.getAttribute('data-processed')) {
       element.setAttribute('data-processed', true);
     } else {
-      return "continue";
+      continue;
     }
 
-    var id = "mermaid-".concat(Date.now()); // Fetch the graph definition including tags
+    const id = `mermaid-${Date.now()}`; // Fetch the graph definition including tags
 
     txt = element.innerHTML; // transforms the html to pure text
 
     txt = he__WEBPACK_IMPORTED_MODULE_0___default.a.decode(txt).trim().replace(/<br>/ig, '<br/>');
-    _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].render(id, txt, function (svgCode, bindFunctions) {
+    _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].render(id, txt, (svgCode, bindFunctions) => {
       element.innerHTML = svgCode;
 
       if (typeof callback !== 'undefined') {
@@ -12461,17 +13909,11 @@ var init = function init() {
 
       bindFunctions(element);
     }, element);
-  };
-
-  for (var i = 0; i < nodes.length; i++) {
-    var _ret = _loop(i);
-
-    if (_ret === "continue") continue;
   }
 };
 
-var initialize = function initialize(config) {
-  _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('Initializing mermaid');
+const initialize = function (config) {
+  _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('Initializing mermaid ');
 
   if (typeof config.mermaid !== 'undefined') {
     if (typeof config.mermaid.startOnLoad !== 'undefined') {
@@ -12492,8 +13934,8 @@ var initialize = function initialize(config) {
  */
 
 
-var contentLoaded = function contentLoaded() {
-  var config;
+const contentLoaded = function () {
+  let config;
 
   if (mermaid.startOnLoad) {
     // No config found, do check API config
@@ -12523,15 +13965,15 @@ if (typeof document !== 'undefined') {
   }, false);
 }
 
-var mermaid = {
+const mermaid = {
   startOnLoad: true,
   htmlLabels: true,
   mermaidAPI: _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"],
   parse: _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].parse,
   render: _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].render,
-  init: init,
-  initialize: initialize,
-  contentLoaded: contentLoaded
+  init,
+  initialize,
+  contentLoaded
 };
 /* harmony default export */ __webpack_exports__["default"] = (mermaid);
 
@@ -12552,30 +13994,34 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var scope_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! scope-css */ "scope-css");
 /* harmony import */ var scope_css__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(scope_css__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./logger */ "./src/logger.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
-/* harmony import */ var _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./diagrams/flowchart/flowRenderer */ "./src/diagrams/flowchart/flowRenderer.js");
-/* harmony import */ var _diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./diagrams/flowchart/parser/flow */ "./src/diagrams/flowchart/parser/flow.js");
-/* harmony import */ var _diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./diagrams/flowchart/flowDb */ "./src/diagrams/flowchart/flowDb.js");
-/* harmony import */ var _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./diagrams/sequence/sequenceRenderer */ "./src/diagrams/sequence/sequenceRenderer.js");
-/* harmony import */ var _diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./diagrams/sequence/parser/sequenceDiagram */ "./src/diagrams/sequence/parser/sequenceDiagram.js");
-/* harmony import */ var _diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _diagrams_sequence_sequenceDb__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./diagrams/sequence/sequenceDb */ "./src/diagrams/sequence/sequenceDb.js");
-/* harmony import */ var _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./diagrams/gantt/ganttRenderer */ "./src/diagrams/gantt/ganttRenderer.js");
-/* harmony import */ var _diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./diagrams/gantt/parser/gantt */ "./src/diagrams/gantt/parser/gantt.js");
-/* harmony import */ var _diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_11__);
-/* harmony import */ var _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./diagrams/gantt/ganttDb */ "./src/diagrams/gantt/ganttDb.js");
-/* harmony import */ var _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./diagrams/class/classRenderer */ "./src/diagrams/class/classRenderer.js");
-/* harmony import */ var _diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagrams/class/parser/classDiagram */ "./src/diagrams/class/parser/classDiagram.js");
-/* harmony import */ var _diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_14__);
-/* harmony import */ var _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./diagrams/class/classDb */ "./src/diagrams/class/classDb.js");
-/* harmony import */ var _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./diagrams/git/gitGraphRenderer */ "./src/diagrams/git/gitGraphRenderer.js");
-/* harmony import */ var _diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./diagrams/git/parser/gitGraph */ "./src/diagrams/git/parser/gitGraph.js");
-/* harmony import */ var _diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(_diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_17__);
-/* harmony import */ var _diagrams_git_gitGraphAst__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./diagrams/git/gitGraphAst */ "./src/diagrams/git/gitGraphAst.js");
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
+/* harmony import */ var _package_json__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../package.json */ "./package.json");
+var _package_json__WEBPACK_IMPORTED_MODULE_2___namespace = /*#__PURE__*/__webpack_require__.t(/*! ../package.json */ "./package.json", 1);
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./logger */ "./src/logger.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
+/* harmony import */ var _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./diagrams/flowchart/flowRenderer */ "./src/diagrams/flowchart/flowRenderer.js");
+/* harmony import */ var _diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./diagrams/flowchart/parser/flow */ "./src/diagrams/flowchart/parser/flow.js");
+/* harmony import */ var _diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./diagrams/flowchart/flowDb */ "./src/diagrams/flowchart/flowDb.js");
+/* harmony import */ var _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./diagrams/sequence/sequenceRenderer */ "./src/diagrams/sequence/sequenceRenderer.js");
+/* harmony import */ var _diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./diagrams/sequence/parser/sequenceDiagram */ "./src/diagrams/sequence/parser/sequenceDiagram.js");
+/* harmony import */ var _diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _diagrams_sequence_sequenceDb__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./diagrams/sequence/sequenceDb */ "./src/diagrams/sequence/sequenceDb.js");
+/* harmony import */ var _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./diagrams/gantt/ganttRenderer */ "./src/diagrams/gantt/ganttRenderer.js");
+/* harmony import */ var _diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./diagrams/gantt/parser/gantt */ "./src/diagrams/gantt/parser/gantt.js");
+/* harmony import */ var _diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(_diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_12__);
+/* harmony import */ var _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./diagrams/gantt/ganttDb */ "./src/diagrams/gantt/ganttDb.js");
+/* harmony import */ var _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagrams/class/classRenderer */ "./src/diagrams/class/classRenderer.js");
+/* harmony import */ var _diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./diagrams/class/parser/classDiagram */ "./src/diagrams/class/parser/classDiagram.js");
+/* harmony import */ var _diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(_diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_15__);
+/* harmony import */ var _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./diagrams/class/classDb */ "./src/diagrams/class/classDb.js");
+/* harmony import */ var _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./diagrams/git/gitGraphRenderer */ "./src/diagrams/git/gitGraphRenderer.js");
+/* harmony import */ var _diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./diagrams/git/parser/gitGraph */ "./src/diagrams/git/parser/gitGraph.js");
+/* harmony import */ var _diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(_diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_18__);
+/* harmony import */ var _diagrams_git_gitGraphAst__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./diagrams/git/gitGraphAst */ "./src/diagrams/git/gitGraphAst.js");
+/* harmony import */ var _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./diagrams/info/infoRenderer */ "./src/diagrams/info/infoRenderer.js");
+/* harmony import */ var _diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./diagrams/info/parser/info */ "./src/diagrams/info/parser/info.js");
+/* harmony import */ var _diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_21___default = /*#__PURE__*/__webpack_require__.n(_diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_21__);
+/* harmony import */ var _diagrams_info_infoDb__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./diagrams/info/infoDb */ "./src/diagrams/info/infoDb.js");
 /**
  * ---
  * title: mermaidAPI
@@ -12608,12 +14054,14 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
 
 
-var themes = {};
-var _arr = ['default', 'forest', 'dark', 'neutral'];
 
-for (var _i = 0; _i < _arr.length; _i++) {
-  var themeName = _arr[_i];
-  themes[themeName] = __webpack_require__("./src/themes sync recursive ^\\.\\/.*\\/index\\.scss$")("./".concat(themeName, "/index.scss"));
+
+
+
+const themes = {};
+
+for (const themeName of ['default', 'forest', 'dark', 'neutral']) {
+  themes[themeName] = __webpack_require__("./src/themes sync recursive ^\\.\\/.*\\/index\\.scss$")(`./${themeName}/index.scss`);
 }
 /**
  * ## Configuration
@@ -12628,7 +14076,7 @@ for (var _i = 0; _i < _arr.length; _i++) {
  */
 
 
-var config = {
+const config = {
   /** theme , the CSS style sheet
   *
   * **theme** - Choose one of the built-in themes: default, forest, dark or neutral. To disable any pre-defined mermaid theme, use "null".
@@ -12805,43 +14253,50 @@ var config = {
   class: {},
   git: {}
 };
-Object(_logger__WEBPACK_IMPORTED_MODULE_2__["setLogLevel"])(config.logLevel);
+Object(_logger__WEBPACK_IMPORTED_MODULE_3__["setLogLevel"])(config.logLevel);
 
 function parse(text) {
-  var graphType = _utils__WEBPACK_IMPORTED_MODULE_3__["default"].detectType(text);
-  var parser;
+  const graphType = _utils__WEBPACK_IMPORTED_MODULE_4__["default"].detectType(text);
+  let parser;
+  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Type ' + graphType);
 
   switch (graphType) {
     case 'git':
-      parser = _diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_17___default.a;
-      parser.parser.yy = _diagrams_git_gitGraphAst__WEBPACK_IMPORTED_MODULE_18__["default"];
+      parser = _diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_18___default.a;
+      parser.parser.yy = _diagrams_git_gitGraphAst__WEBPACK_IMPORTED_MODULE_19__["default"];
       break;
 
     case 'flowchart':
-      parser = _diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_5___default.a;
-      parser.parser.yy = _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_6__["default"];
+      parser = _diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_6___default.a;
+      parser.parser.yy = _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_7__["default"];
       break;
 
     case 'sequence':
-      parser = _diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_8___default.a;
-      parser.parser.yy = _diagrams_sequence_sequenceDb__WEBPACK_IMPORTED_MODULE_9__["default"];
+      parser = _diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_9___default.a;
+      parser.parser.yy = _diagrams_sequence_sequenceDb__WEBPACK_IMPORTED_MODULE_10__["default"];
       break;
 
     case 'gantt':
-      parser = _diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_11___default.a;
-      parser.parser.yy = _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_12__["default"];
+      parser = _diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_12___default.a;
+      parser.parser.yy = _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_13__["default"];
       break;
 
     case 'class':
-      parser = _diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_14___default.a;
-      parser.parser.yy = _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_15__["default"];
+      parser = _diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_15___default.a;
+      parser.parser.yy = _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_16__["default"];
+      break;
+
+    case 'info':
+      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('info info info');
+      parser = _diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_21___default.a;
+      parser.parser.yy = _diagrams_info_infoDb__WEBPACK_IMPORTED_MODULE_22__["default"];
       break;
   }
 
-  parser.parser.yy.parseError = function (str, hash) {
-    var error = {
-      str: str,
-      hash: hash
+  parser.parser.yy.parseError = (str, hash) => {
+    const error = {
+      str,
+      hash
     };
     throw error;
   };
@@ -12849,19 +14304,19 @@ function parse(text) {
   parser.parse(text);
 }
 
-var encodeEntities = function encodeEntities(text) {
-  var txt = text;
+const encodeEntities = function (text) {
+  let txt = text;
   txt = txt.replace(/style.*:\S*#.*;/g, function (s) {
-    var innerTxt = s.substring(0, s.length - 1);
+    const innerTxt = s.substring(0, s.length - 1);
     return innerTxt;
   });
   txt = txt.replace(/classDef.*:\S*#.*;/g, function (s) {
-    var innerTxt = s.substring(0, s.length - 1);
+    const innerTxt = s.substring(0, s.length - 1);
     return innerTxt;
   });
   txt = txt.replace(/#\w+;/g, function (s) {
-    var innerTxt = s.substring(1, s.length - 1);
-    var isInt = /^\+?\d+$/.test(innerTxt);
+    const innerTxt = s.substring(1, s.length - 1);
+    const isInt = /^\+?\d+$/.test(innerTxt);
 
     if (isInt) {
       return 'ﬂ°°' + innerTxt + '¶ß';
@@ -12871,8 +14326,8 @@ var encodeEntities = function encodeEntities(text) {
   });
   return txt;
 };
-var decodeEntities = function decodeEntities(text) {
-  var txt = text;
+const decodeEntities = function (text) {
+  let txt = text;
   txt = txt.replace(/ﬂ°°/g, function () {
     return '&#';
   });
@@ -12908,15 +14363,15 @@ var decodeEntities = function decodeEntities(text) {
  * completed.
  */
 
-var render = function render(id, txt, cb, container) {
+const render = function (id, txt, cb, container) {
   if (typeof container !== 'undefined') {
     container.innerHTML = '';
     d3__WEBPACK_IMPORTED_MODULE_0__["select"](container).append('div').attr('id', 'd' + id).append('svg').attr('id', id).attr('width', '100%').attr('xmlns', 'http://www.w3.org/2000/svg').append('g');
   } else {
-    var _element = document.querySelector('#' + 'd' + id);
+    const element = document.querySelector('#' + 'd' + id);
 
-    if (_element) {
-      _element.innerHTML = '';
+    if (element) {
+      element.innerHTML = '';
     }
 
     d3__WEBPACK_IMPORTED_MODULE_0__["select"]('body').append('div').attr('id', 'd' + id).append('svg').attr('id', id).attr('width', '100%').attr('xmlns', 'http://www.w3.org/2000/svg').append('g');
@@ -12924,13 +14379,13 @@ var render = function render(id, txt, cb, container) {
 
   window.txt = txt;
   txt = encodeEntities(txt);
-  var element = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#d' + id).node();
-  var graphType = _utils__WEBPACK_IMPORTED_MODULE_3__["default"].detectType(txt); // insert inline style into svg
+  const element = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#d' + id).node();
+  const graphType = _utils__WEBPACK_IMPORTED_MODULE_4__["default"].detectType(txt); // insert inline style into svg
 
-  var svg = element.firstChild;
-  var firstChild = svg.firstChild; // pre-defined theme
+  const svg = element.firstChild;
+  const firstChild = svg.firstChild; // pre-defined theme
 
-  var style = themes[config.theme];
+  let style = themes[config.theme];
 
   if (style === undefined) {
     style = '';
@@ -12938,37 +14393,40 @@ var render = function render(id, txt, cb, container) {
 
 
   if (config.themeCSS !== undefined) {
-    style += "\n".concat(config.themeCSS);
+    style += `\n${config.themeCSS}`;
   } // classDef
 
 
   if (graphType === 'flowchart') {
-    var classes = _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_4__["default"].getClasses(txt);
+    const classes = _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_5__["default"].getClasses(txt);
 
-    for (var className in classes) {
-      style += "\n.".concat(className, " > * { ").concat(classes[className].styles.join(' !important; '), " !important; }");
+    for (const className in classes) {
+      style += `\n.${className} > * { ${classes[className].styles.join(' !important; ')} !important; }`;
     }
   }
 
-  var style1 = document.createElement('style');
-  style1.innerHTML = scope_css__WEBPACK_IMPORTED_MODULE_1___default()(style, "#".concat(id));
+  const style1 = document.createElement('style');
+  style1.innerHTML = scope_css__WEBPACK_IMPORTED_MODULE_1___default()(style, `#${id}`);
   svg.insertBefore(style1, firstChild);
-  var style2 = document.createElement('style');
-  var cs = window.getComputedStyle(svg);
-  style2.innerHTML = "#".concat(id, " {\n    color: ").concat(cs.color, ";\n    font: ").concat(cs.font, ";\n  }");
+  const style2 = document.createElement('style');
+  const cs = window.getComputedStyle(svg);
+  style2.innerHTML = `#${id} {
+    color: ${cs.color};
+    font: ${cs.font};
+  }`;
   svg.insertBefore(style2, firstChild);
 
   switch (graphType) {
     case 'git':
       config.flowchart.arrowMarkerAbsolute = config.arrowMarkerAbsolute;
-      _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_16__["default"].setConf(config.git);
-      _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_16__["default"].draw(txt, id, false);
+      _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_17__["default"].setConf(config.git);
+      _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_17__["default"].draw(txt, id, false);
       break;
 
     case 'flowchart':
       config.flowchart.arrowMarkerAbsolute = config.arrowMarkerAbsolute;
-      _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_4__["default"].setConf(config.flowchart);
-      _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_4__["default"].draw(txt, id, false);
+      _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_5__["default"].setConf(config.flowchart);
+      _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_5__["default"].draw(txt, id, false);
       break;
 
     case 'sequence':
@@ -12976,30 +14434,36 @@ var render = function render(id, txt, cb, container) {
 
       if (config.sequenceDiagram) {
         // backwards compatibility
-        _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_7__["default"].setConf(Object.assign(config.sequence, config.sequenceDiagram));
+        _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_8__["default"].setConf(Object.assign(config.sequence, config.sequenceDiagram));
         console.error('`mermaid config.sequenceDiagram` has been renamed to `config.sequence`. Please update your mermaid config.');
       } else {
-        _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_7__["default"].setConf(config.sequence);
+        _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_8__["default"].setConf(config.sequence);
       }
 
-      _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_7__["default"].draw(txt, id);
+      _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_8__["default"].draw(txt, id);
       break;
 
     case 'gantt':
       config.gantt.arrowMarkerAbsolute = config.arrowMarkerAbsolute;
-      _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_10__["default"].setConf(config.gantt);
-      _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_10__["default"].draw(txt, id);
+      _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_11__["default"].setConf(config.gantt);
+      _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_11__["default"].draw(txt, id);
       break;
 
     case 'class':
       config.class.arrowMarkerAbsolute = config.arrowMarkerAbsolute;
-      _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_13__["default"].setConf(config.class);
-      _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_13__["default"].draw(txt, id);
+      _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_14__["default"].setConf(config.class);
+      _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_14__["default"].draw(txt, id);
+      break;
+
+    case 'info':
+      config.class.arrowMarkerAbsolute = config.arrowMarkerAbsolute;
+      _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_20__["default"].setConf(config.class);
+      _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_20__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_2__.version);
       break;
   }
 
-  d3__WEBPACK_IMPORTED_MODULE_0__["select"]("[id=\"".concat(id, "\"]")).selectAll('foreignobject > *').attr('xmlns', 'http://www.w3.org/1999/xhtml');
-  var url = '';
+  d3__WEBPACK_IMPORTED_MODULE_0__["select"](`[id="${id}"]`).selectAll('foreignobject > *').attr('xmlns', 'http://www.w3.org/1999/xhtml');
+  let url = '';
 
   if (config.arrowMarkerAbsolute) {
     url = window.location.protocol + '//' + window.location.host + window.location.pathname + window.location.search;
@@ -13008,16 +14472,17 @@ var render = function render(id, txt, cb, container) {
   } // Fix for when the base tag is used
 
 
-  var svgCode = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#d' + id).node().innerHTML.replace(/url\(#arrowhead/g, 'url(' + url + '#arrowhead', 'g');
+  let svgCode = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#d' + id).node().innerHTML.replace(/url\(#arrowhead/g, 'url(' + url + '#arrowhead', 'g');
   svgCode = decodeEntities(svgCode);
 
   if (typeof cb !== 'undefined') {
-    cb(svgCode, _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_6__["default"].bindFunctions);
+    cb(svgCode, _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_7__["default"].bindFunctions);
+    cb(svgCode, _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_13__["default"].bindFunctions);
   } else {
-    _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].warn('CB = undefined!');
+    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].warn('CB = undefined!');
   }
 
-  var node = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#d' + id).node();
+  const node = d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#d' + id).node();
 
   if (node !== null && typeof node.remove === 'function') {
     d3__WEBPACK_IMPORTED_MODULE_0__["select"]('#d' + id).node().remove();
@@ -13026,22 +14491,22 @@ var render = function render(id, txt, cb, container) {
   return svgCode;
 };
 
-var setConf = function setConf(cnf) {
+const setConf = function (cnf) {
   // Top level initially mermaid, gflow, sequenceDiagram and gantt
-  var lvl1Keys = Object.keys(cnf);
+  const lvl1Keys = Object.keys(cnf);
 
-  for (var i = 0; i < lvl1Keys.length; i++) {
-    if (_typeof(cnf[lvl1Keys[i]]) === 'object' && cnf[lvl1Keys[i]] != null) {
-      var lvl2Keys = Object.keys(cnf[lvl1Keys[i]]);
+  for (let i = 0; i < lvl1Keys.length; i++) {
+    if (typeof cnf[lvl1Keys[i]] === 'object' && cnf[lvl1Keys[i]] != null) {
+      const lvl2Keys = Object.keys(cnf[lvl1Keys[i]]);
 
-      for (var j = 0; j < lvl2Keys.length; j++) {
-        _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('Setting conf ', lvl1Keys[i], '-', lvl2Keys[j]);
+      for (let j = 0; j < lvl2Keys.length; j++) {
+        _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Setting conf ', lvl1Keys[i], '-', lvl2Keys[j]);
 
         if (typeof config[lvl1Keys[i]] === 'undefined') {
           config[lvl1Keys[i]] = {};
         }
 
-        _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('Setting config: ' + lvl1Keys[i] + ' ' + lvl2Keys[j] + ' to ' + cnf[lvl1Keys[i]][lvl2Keys[j]]);
+        _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Setting config: ' + lvl1Keys[i] + ' ' + lvl2Keys[j] + ' to ' + cnf[lvl1Keys[i]][lvl2Keys[j]]);
         config[lvl1Keys[i]][lvl2Keys[j]] = cnf[lvl1Keys[i]][lvl2Keys[j]];
       }
     } else {
@@ -13051,24 +14516,24 @@ var setConf = function setConf(cnf) {
 };
 
 function initialize(options) {
-  _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('Initializing mermaidAPI'); // Update default config with options supplied at initialization
+  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Initializing mermaidAPI ', _package_json__WEBPACK_IMPORTED_MODULE_2__.version); // Update default config with options supplied at initialization
 
-  if (_typeof(options) === 'object') {
+  if (typeof options === 'object') {
     setConf(options);
   }
 
-  Object(_logger__WEBPACK_IMPORTED_MODULE_2__["setLogLevel"])(config.logLevel);
+  Object(_logger__WEBPACK_IMPORTED_MODULE_3__["setLogLevel"])(config.logLevel);
 }
 
 function getConfig() {
   return config;
 }
 
-var mermaidAPI = {
-  render: render,
-  parse: parse,
-  initialize: initialize,
-  getConfig: getConfig
+const mermaidAPI = {
+  render,
+  parse,
+  initialize,
+  getConfig
 };
 /* harmony default export */ __webpack_exports__["default"] = (mermaidAPI);
 
@@ -13213,6 +14678,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "interpolateToCurve", function() { return interpolateToCurve; });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./logger */ "./src/logger.js");
+
 
 /**
  * @function detectType
@@ -13232,8 +14699,9 @@ __webpack_require__.r(__webpack_exports__);
  * @returns {string} A graph definition key
  */
 
-var detectType = function detectType(text) {
+const detectType = function (text) {
   text = text.replace(/^\s*%%.*\n/g, '\n');
+  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('Detecting diagram type based on the text ' + text);
 
   if (text.match(/^\s*sequenceDiagram/)) {
     return 'sequence';
@@ -13251,6 +14719,10 @@ var detectType = function detectType(text) {
     return 'git';
   }
 
+  if (text.match(/^\s*info/)) {
+    return 'info';
+  }
+
   return 'flowchart';
 };
 /**
@@ -13261,25 +14733,25 @@ var detectType = function detectType(text) {
  * @returns {number} the array index containing the substring or -1 if not present
  **/
 
-var isSubstringInArray = function isSubstringInArray(str, arr) {
-  for (var i = 0; i < arr.length; i++) {
+const isSubstringInArray = function (str, arr) {
+  for (let i = 0; i < arr.length; i++) {
     if (arr[i].match(str)) return i;
   }
 
   return -1;
 };
-var interpolateToCurve = function interpolateToCurve(interpolate, defaultCurve) {
+const interpolateToCurve = (interpolate, defaultCurve) => {
   if (!interpolate) {
     return defaultCurve;
   }
 
-  var curveName = "curve".concat(interpolate.charAt(0).toUpperCase() + interpolate.slice(1));
+  const curveName = `curve${interpolate.charAt(0).toUpperCase() + interpolate.slice(1)}`;
   return d3__WEBPACK_IMPORTED_MODULE_0__[curveName] || defaultCurve;
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
-  detectType: detectType,
-  isSubstringInArray: isSubstringInArray,
-  interpolateToCurve: interpolateToCurve
+  detectType,
+  isSubstringInArray,
+  interpolateToCurve
 });
 
 /***/ }),
@@ -13303,6 +14775,17 @@ module.exports = require("d3");
 /***/ (function(module, exports) {
 
 module.exports = require("dagre-d3-renderer");
+
+/***/ }),
+
+/***/ "dagre-d3-renderer/lib/label/add-html-label.js":
+/*!****************************************************************!*\
+  !*** external "dagre-d3-renderer/lib/label/add-html-label.js" ***!
+  \****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("dagre-d3-renderer/lib/label/add-html-label.js");
 
 /***/ }),
 
@@ -13350,14 +14833,14 @@ module.exports = require("lodash");
 
 /***/ }),
 
-/***/ "moment":
-/*!*************************!*\
-  !*** external "moment" ***!
-  \*************************/
+/***/ "moment-mini":
+/*!******************************!*\
+  !*** external "moment-mini" ***!
+  \******************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = require("moment");
+module.exports = require("moment-mini");
 
 /***/ }),
 
