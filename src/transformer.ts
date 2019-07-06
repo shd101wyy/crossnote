@@ -747,12 +747,22 @@ export async function transformMarkdown(
           continue;
         } else {
           try {
-            const fileContent = await loadFile(
+            let fileContent = await loadFile(
               absoluteFilePath,
               { fileDirectoryPath, forPreview, imageDirectoryPath },
               filesCache,
             );
             filesCache[absoluteFilePath] = fileContent;
+
+            if (config && (config["start"] || config["end"])) {
+              const lines = fileContent.split(/\n/);
+              fileContent = lines
+                .slice(
+                  parseInt(config["start"], 10) || 0,
+                  parseInt(config["end"], 10) || lines.length,
+                )
+                .join("\n");
+            }
 
             if (config && config["code_block"]) {
               const fileExtension = extname.slice(1, extname.length);
