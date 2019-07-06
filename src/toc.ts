@@ -107,7 +107,7 @@ export function toc(
 
   let orderedListNums = [];
   for (const token of tokens) {
-    const content = token.content;
+    const content = token.content.trim();
     const level = token.level;
     const slug = token.id || headingIdGenerator.generateId(content);
     const n = level - smallestLevel;
