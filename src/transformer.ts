@@ -387,7 +387,7 @@ export async function transformMarkdown(
         }*/
 
         // check {class:string, id:string, ignore:boolean}
-        const optMatch = heading.match(/([^\\]\{|^\{)(.+?)\}(\s*)$/);
+        const optMatch = heading.match(/(\s+\{|^\{)(.+?)\}(\s*)$/);
         let classes = "";
         let id = "";
         let ignore = false;
