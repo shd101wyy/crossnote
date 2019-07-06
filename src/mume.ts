@@ -33,6 +33,7 @@ export async function init(): Promise<void> {
   configs.globalStyle = await utility.getGlobalStyles();
   configs.mermaidConfig = await utility.getMermaidConfig();
   configs.mathjaxConfig = await utility.getMathJaxConfig();
+  configs.katexConfig = await utility.getKaTeXConfig();
   configs.parserConfig = await utility.getParserConfig();
   configs.config = await utility.getExtensionConfig();
 
@@ -56,6 +57,13 @@ export async function init(): Promise<void> {
       } else if (fileName === "mathjax_config.js") {
         utility.getMathJaxConfig().then((mathjaxConfig) => {
           configs.mathjaxConfig = mathjaxConfig;
+          if (CONFIG_CHANGE_CALLBACK) {
+            CONFIG_CHANGE_CALLBACK();
+          }
+        });
+      } else if (fileName === "katex_config.js") {
+        utility.getKaTeXConfig().then((katexConfig) => {
+          configs.katexConfig = katexConfig;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }

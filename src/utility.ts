@@ -278,8 +278,12 @@ export const defaultMathjaxConfig = {
   "HTML-CSS": { availableFonts: ["TeX"] },
 };
 
+export const defaultKaTeXConfig = {
+  macros: {},
+};
+
 /**
- * load ~/.mume/mermaid_config.js file.
+ * load ~/.mume/mathjax_config.js file.
  */
 export async function getMathJaxConfig(): Promise<object> {
   const homeDir = os.homedir();
@@ -314,6 +318,32 @@ module.exports = {
   }
 
   return mathjaxConfig;
+}
+
+/**
+ * load ~/.mume/katex_config.js file
+ */
+export async function getKaTeXConfig(): Promise<object> {
+  const homeDir = os.homedir();
+  const katexConfigPath = path.resolve(homeDir, "./.mume/katex_config.js");
+
+  let katexConfig: object;
+  if (fs.existsSync(katexConfigPath)) {
+    try {
+      delete require.cache[katexConfigPath]; // return uncached
+      katexConfig = require(katexConfigPath);
+    } catch (e) {
+      katexConfig = defaultKaTeXConfig;
+    }
+  } else {
+    const fileContent = `
+module.exports = {
+  macros: {}
+}`;
+    await writeFile(katexConfigPath, fileContent, { encoding: "utf-8" });
+    katexConfig = defaultKaTeXConfig;
+  }
+  return katexConfig;
 }
 
 export async function getExtensionConfig(): Promise<object> {
@@ -454,6 +484,7 @@ export function removeFileProtocol(filePath: string): string {
 export const configs: {
   globalStyle: string;
   mathjaxConfig: object;
+  katexConfig: object;
   mermaidConfig: string;
   parserConfig: object;
   /**
@@ -463,6 +494,7 @@ export const configs: {
 } = {
   globalStyle: "",
   mathjaxConfig: defaultMathjaxConfig,
+  katexConfig: defaultKaTeXConfig,
   mermaidConfig: "MERMAID_CONFIG = {startOnLoad: false}",
   parserConfig: {},
   config: {},

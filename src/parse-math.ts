@@ -1,6 +1,6 @@
 import * as path from "path";
 import { MathRenderingOption } from "./markdown-engine-config";
-import { escapeString, extensionDirectoryPath } from "./utility";
+import { configs, escapeString, extensionDirectoryPath } from "./utility";
 
 // tslint:disable-next-line interface-over-type-literal
 export type ParseMathArgs = {
@@ -12,7 +12,6 @@ export type ParseMathArgs = {
 };
 
 let katex;
-const macros = {};
 
 /**
  *
@@ -40,7 +39,10 @@ export default ({
           "./dependencies/katex/katex.min.js",
         ));
       }
-      return katex.renderToString(content, { displayMode, macros });
+      return katex.renderToString(
+        content,
+        Object.assign({}, configs.katexConfig || {}, { displayMode }),
+      );
     } catch (error) {
       return `<span style=\"color: #ee7f49; font-weight: 500;\">${error.toString()}</span>`;
     }
