@@ -1,6 +1,6 @@
 import * as child_process from "child_process";
 import * as fs from "fs";
-import * as jsYAML from "js-yaml"
+import * as jsYAML from "js-yaml";
 import * as less from "less";
 import * as mkdirp_ from "mkdirp";
 import * as os from "os";
@@ -64,7 +64,10 @@ export function parseYAML(yaml: string = "") {
   }
   */
   if (yaml.startsWith("---")) {
-    yaml = yaml.trim().replace(/^---\r?\n/, "").replace(/\r?\n---$/, "")
+    yaml = yaml
+      .trim()
+      .replace(/^---\r?\n/, "")
+      .replace(/\r?\n---$/, "");
   }
   try {
     return jsYAML.safeLoad(yaml);

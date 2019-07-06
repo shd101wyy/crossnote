@@ -754,12 +754,12 @@ export async function transformMarkdown(
             );
             filesCache[absoluteFilePath] = fileContent;
 
-            if (config && (config["start"] || config["end"])) {
+            if (config && (config["line_begin"] || config["line_end"])) {
               const lines = fileContent.split(/\n/);
               fileContent = lines
                 .slice(
-                  parseInt(config["start"], 10) || 0,
-                  parseInt(config["end"], 10) || lines.length,
+                  parseInt(config["line_begin"], 10) || 0,
+                  parseInt(config["line_end"], 10) || lines.length,
                 )
                 .join("\n");
             }
