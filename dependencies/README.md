@@ -3,8 +3,8 @@ I managed many libraries by myself instead of through npm to reduce overall file
 **Versions**
 ```json
 {
-    "mermaid": "8.0.0",
-    "plantuml": "mit-1.2019.6",
+    "mermaid": "8.1.0",
+    "plantuml": "mit-1.2019.7",
     "wavedrom": "1.4.1",
     "reveal": "3.7.0",
     "viz": "v2.0.0",

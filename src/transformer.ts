@@ -387,7 +387,7 @@ export async function transformMarkdown(
         }*/
 
         // check {class:string, id:string, ignore:boolean}
-        const optMatch = heading.match(/([^\\]\{|^\{)(.+?)\}(\s*)$/);
+        const optMatch = heading.match(/(\s+\{|^\{)(.+?)\}(\s*)$/);
         let classes = "";
         let id = "";
         let ignore = false;
@@ -747,12 +747,22 @@ export async function transformMarkdown(
           continue;
         } else {
           try {
-            const fileContent = await loadFile(
+            let fileContent = await loadFile(
               absoluteFilePath,
               { fileDirectoryPath, forPreview, imageDirectoryPath },
               filesCache,
             );
             filesCache[absoluteFilePath] = fileContent;
+
+            if (config && (config["line_begin"] || config["line_end"])) {
+              const lines = fileContent.split(/\n/);
+              fileContent = lines
+                .slice(
+                  parseInt(config["line_begin"], 10) || 0,
+                  parseInt(config["line_end"], 10) || lines.length,
+                )
+                .join("\n");
+            }
 
             if (config && config["code_block"]) {
               const fileExtension = extname.slice(1, extname.length);
