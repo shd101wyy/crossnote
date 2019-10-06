@@ -36,7 +36,7 @@
     "imagemagick-cli": "^0.5.0",
     "js-yaml": "^3.13.1",
     "less": "^3.9.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "mkdirp": "^0.5.1",
     "node-fetch": "^2.6.0",
     "puppeteer-core": "1.15.0",
