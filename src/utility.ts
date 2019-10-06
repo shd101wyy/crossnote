@@ -263,14 +263,14 @@ MERMAID_CONFIG = {
 }
 
 export const defaultMathjaxConfig = {
-  extensions: ["tex2jax.js"],
-  jax: ["input/TeX", "output/HTML-CSS"],
-  messageStyle: "none",
-  tex2jax: {
+  "extensions": ["tex2jax.js"],
+  "jax": ["input/TeX", "output/HTML-CSS"],
+  "messageStyle": "none",
+  "tex2jax": {
     processEnvironments: false,
     processEscapes: true,
   },
-  TeX: {
+  "TeX": {
     extensions: [
       "AMSmath.js",
       "AMSsymbols.js",
