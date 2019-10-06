@@ -2,11 +2,24 @@
   "name": "@shd101wyy/mume",
   "version": "0.4.6",
   "description": "A powerful markdown tool",
+  "keywords": [
+    "markdown"
+  ],
+  "repository": "https://github.com/shd101wyy/mume",
+  "license": "NCSA",
+  "contributors": [
+    "shd101wyy",
+    "kachkaev"
+  ],
+  "files": [
+    "dependencies",
+    "docs",
+    "out",
+    "styles"
+  ],
   "main": "out/src/mume.js",
   "typings": "out/src/mume.d.ts",
   "scripts": {
-    "test": "jest --no-coverage",
-    "test:coverage": "jest",
     "build": "tsc --project .",
     "build:watch": "tsc --project . --watch",
     "check": "npm run check:prettier && npm run check:tsc && npm run check:tslint",
@@ -16,23 +29,10 @@
     "fix": "npm run fix:tslint && npm run fix:prettier",
     "fix:prettier": "prettier --write \"**/*.*\"",
     "fix:tslint": "tslint --project .",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "jest --no-coverage",
+    "test:coverage": "jest"
   },
-  "files": [
-    "dependencies",
-    "docs",
-    "out",
-    "styles"
-  ],
-  "keywords": [
-    "markdown"
-  ],
-  "contributors": [
-    "shd101wyy",
-    "kachkaev"
-  ],
-  "license": "NCSA",
-  "repository": "https://github.com/shd101wyy/mume",
   "dependencies": {
     "babyparse": "^0.4.6",
     "cheerio": "^1.0.0-rc.3",
