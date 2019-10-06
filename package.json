@@ -33,6 +33,17 @@
     "test": "jest --no-coverage",
     "test:coverage": "jest"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.*": [
+      "prettier --write",
+      "git add"
+    ]
+  },
   "dependencies": {
     "babyparse": "^0.4.6",
     "cheerio": "^1.0.0-rc.3",
@@ -61,7 +72,9 @@
     "@types/markdown-it": "0.0.4",
     "@types/node": "^12.0.10",
     "@types/vfile": "^3.0.2",
+    "husky": "^3.0.8",
     "jest": "^24.8.0",
+    "lint-staged": "^9.4.1",
     "prettier": "^1.18.2",
     "prettier-plugin-packagejson": "^2.0.1",
     "ts-jest": "^24.0.2",
