@@ -1,5 +1,5 @@
+.DS_Store
 coverage
 node_modules
-test.js
 out
-.DS_Store
+test.js
