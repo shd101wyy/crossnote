@@ -95,7 +95,7 @@ function imgurUploadImage(filePath: string): Promise<string> {
 function smmsUploadImage(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const headers = {
-      authority: "sm.ms",
+      "authority": "sm.ms",
       "user-agent": "mume",
     };
     request.post(

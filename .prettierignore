@@ -1,0 +1,24 @@
+## extensions
+*.*
+!*.css
+!*.js
+!*.json
+!*.less
+!*.md
+!*.ts
+!*.yaml
+!*.yml
+
+
+## same as in .gitignore
+.DS_Store
+coverage
+node_modules
+out
+test.js
+
+
+## special cases
+dependencies/**
+!dependencies/README.md
+styles

@@ -2,32 +2,48 @@
   "name": "@shd101wyy/mume",
   "version": "0.4.6",
   "description": "A powerful markdown tool",
-  "main": "out/src/mume.js",
-  "typings": "out/src/mume.d.ts",
-  "scripts": {
-    "test": "jest --no-coverage",
-    "test:coverage": "jest",
-    "build": "tsc --project .",
-    "build:watch": "tsc --project . --watch",
-    "lint": "tsc --project . --noEmit && tslint --project . && prettier-check --ignore-path .gitignore \"{.,src/**,test/**}/{*.{j,t}s,*.md,ts*.json}\"",
-    "format": "prettier --write --ignore-path .gitignore \"{.,src/**,test/**}/{*.{j,t}s,*.md,ts*.json}\"",
-    "prepare": "npm run build"
-  },
+  "keywords": [
+    "markdown"
+  ],
+  "repository": "https://github.com/shd101wyy/mume",
+  "license": "NCSA",
+  "contributors": [
+    "shd101wyy",
+    "kachkaev"
+  ],
   "files": [
     "dependencies",
     "docs",
     "out",
     "styles"
   ],
-  "keywords": [
-    "markdown"
-  ],
-  "contributors": [
-    "shd101wyy",
-    "kachkaev"
-  ],
-  "license": "NCSA",
-  "repository": "https://github.com/shd101wyy/mume",
+  "main": "out/src/mume.js",
+  "typings": "out/src/mume.d.ts",
+  "scripts": {
+    "build": "tsc --project .",
+    "build:watch": "tsc --project . --watch",
+    "check": "npm run check:prettier && npm run check:tsc && npm run check:tslint",
+    "check:prettier": "prettier --check \"**/*.*\"",
+    "check:tsc": "tsc --project . --noEmit",
+    "check:tslint": "tslint --project .",
+    "fix": "npm run fix:tslint && npm run fix:prettier",
+    "fix:prettier": "prettier --write \"**/*.*\"",
+    "fix:tslint": "tslint --project .",
+    "prepare": "npm run build",
+    "test": "jest --no-coverage",
+    "test:coverage": "jest"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.*": [
+      "prettier --write",
+      "git add"
+    ]
+  },
   "dependencies": {
     "babyparse": "^0.4.6",
     "cheerio": "^1.0.0-rc.3",
@@ -36,7 +52,7 @@
     "imagemagick-cli": "^0.5.0",
     "js-yaml": "^3.13.1",
     "less": "^3.9.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "mkdirp": "^0.5.1",
     "node-fetch": "^2.6.0",
     "puppeteer-core": "1.15.0",
@@ -56,9 +72,11 @@
     "@types/markdown-it": "0.0.4",
     "@types/node": "^12.0.10",
     "@types/vfile": "^3.0.2",
+    "husky": "^3.0.8",
     "jest": "^24.8.0",
+    "lint-staged": "^9.4.1",
     "prettier": "^1.18.2",
-    "prettier-check": "^2.0.0",
+    "prettier-plugin-packagejson": "^2.0.1",
     "ts-jest": "^24.0.2",
     "tslint": "^5.18.0",
     "tslint-config-prettier": "^1.18.0",
