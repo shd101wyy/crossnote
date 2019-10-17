@@ -1022,7 +1022,11 @@
      * init several preview events
      */
     private async initEvents() {
-      await Promise.all([this.renderMathJax(), this.renderZenUML(), this.renderWavedrom()]);
+      await Promise.all([
+        this.renderMathJax(),
+        this.renderZenUML(),
+        this.renderWavedrom(),
+      ]);
       this.previewElement.innerHTML = this.hiddenPreviewElement.innerHTML;
       this.hiddenPreviewElement.innerHTML = "";
 

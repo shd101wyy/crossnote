@@ -423,7 +423,6 @@ export class MarkdownEngine {
       isForVSCode,
     )}" charset="UTF-8"></script>`;
 
-
     // wavedrome
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
