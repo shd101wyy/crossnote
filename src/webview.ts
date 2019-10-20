@@ -143,6 +143,7 @@
     /**
      * Caches
      */
+    private zenumlCache = {};
     private wavedromCache = {};
     private flowchartCache = {};
     private sequenceDiagramCache = {};
@@ -809,6 +810,43 @@
       }
     }
 
+    /**UML
+     * render zenuml
+     */
+    private async renderZenUML() {
+      const els = this.hiddenPreviewElement.getElementsByClassName("zenuml");
+      if (els.length) {
+        const zenumlCache = {};
+        for (let i = 0; i < els.length; i++) {
+          const el = els[i] as HTMLElement;
+          el.id = "zenuml" + i;
+          const text = el.textContent.trim();
+          if (!text.length) {
+            continue;
+          }
+
+          if (text in this.zenumlCache) {
+            // load cache
+            const svg = this.zenumlCache[text];
+            el.innerHTML = svg;
+            zenumlCache[text] = svg;
+            continue;
+          }
+
+          try {
+            const content = `<sequence-diagram>${text}</sequence-diagram>`;
+            // window["WaveDrom"].RenderWaveForm(i, content, "wavedrom");
+            el.innerHTML = content;
+            zenumlCache[text] = el.innerHTML;
+          } catch (error) {
+            el.innerText = "Failed to eval ZenUML code. " + error;
+          }
+        }
+
+        this.zenumlCache = zenumlCache;
+      }
+    }
+
     /**
      * render MathJax expressions
      */
@@ -984,7 +1022,11 @@
      * init several preview events
      */
     private async initEvents() {
-      await Promise.all([this.renderMathJax(), this.renderWavedrom()]);
+      await Promise.all([
+        this.renderMathJax(),
+        this.renderZenUML(),
+        this.renderWavedrom(),
+      ]);
       this.previewElement.innerHTML = this.hiddenPreviewElement.innerHTML;
       this.hiddenPreviewElement.innerHTML = "";
 
