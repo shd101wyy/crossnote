@@ -62,6 +62,7 @@ export interface TransformMarkdownOptions {
   imageDirectoryPath?: string;
   usePandocParser: boolean;
   headingIdGenerator?: HeadingIdGenerator;
+  headingsLevel?: number;
 }
 
 const fileExtensionToLanguageMap = {
@@ -253,6 +254,7 @@ export async function transformMarkdown(
     imageDirectoryPath = "",
     usePandocParser = false,
     headingIdGenerator = new HeadingIdGenerator(),
+    headingsLevel = 0,
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
   let lastOpeningCodeBlockFence: string = null;
@@ -362,7 +364,7 @@ export async function transformMarkdown(
         // if (headingMatch) {
         heading = line.replace(headingMatch[1], "");
         tag = headingMatch[1];
-        level = tag.length;
+        level = tag.length + headingsLevel;
         /*} else {
             if (inputString[end + 1] === '=') {
               heading = line.trim()
@@ -454,9 +456,11 @@ export async function transformMarkdown(
           // markdown-it
           if (!forMarkdownExport) {
             // convert to <h? ... ></h?>
-            line = `${tag} ${heading}\n<p class="mume-header ${classes}" id="${id}"></p>`;
+            line = `${tag}${"#".repeat(
+              headingsLevel,
+            )} ${heading}\n<p class="mume-header ${classes}" id="${id}"></p>`;
           } else {
-            line = `${tag} ${heading}`;
+            line = `${tag}${"#".repeat(headingsLevel)} ${heading}`;
           }
 
           // return helper(end+1, lineNo+1, outputString + line + '\n\n')
@@ -807,6 +811,7 @@ export async function transformMarkdown(
                 imageDirectoryPath,
                 usePandocParser,
                 headingIdGenerator,
+                headingsLevel: headingsLevel + 1,
               }));
               output2 = "\n" + output2 + "  ";
               headings = headings.concat(headings2);
