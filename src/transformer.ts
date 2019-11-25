@@ -365,6 +365,8 @@ export async function transformMarkdown(
         heading = line.replace(headingMatch[1], "");
         tag = headingMatch[1];
         level = tag.length + headingsLevel;
+        level = level < 6 ? level : 6;
+        tag = "#".repeat(level);
         /*} else {
             if (inputString[end + 1] === '=') {
               heading = line.trim()
@@ -456,11 +458,9 @@ export async function transformMarkdown(
           // markdown-it
           if (!forMarkdownExport) {
             // convert to <h? ... ></h?>
-            line = `${tag}${"#".repeat(
-              headingsLevel,
-            )} ${heading}\n<p class="mume-header ${classes}" id="${id}"></p>`;
+            line = `${tag} ${heading}\n<p class="mume-header ${classes}" id="${id}"></p>`;
           } else {
-            line = `${tag}${"#".repeat(headingsLevel)} ${heading}`;
+            line = `${tag} ${heading}`;
           }
 
           // return helper(end+1, lineNo+1, outputString + line + '\n\n')
