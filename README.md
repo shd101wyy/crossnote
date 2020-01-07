@@ -217,10 +217,13 @@ const config = {
   HTML5EmbedVideoAttributes: 'controls preload="metadata" width="320" height="240"',
 
   // Puppeteer waits for a certain timeout in milliseconds before the document export.
-  puppeteerWaitForTimeout: 0
+  puppeteerWaitForTimeout: 0,
 
   // If set to true, then locally installed puppeteer-core will be required. Otherwise, the puppeteer globally installed by `npm install -g puppeteer` will be required.
-  usePuppeteerCore: true
+  usePuppeteerCore: true,
+
+  // Args passed to puppeteer.launch({args: $puppeteerArgs})
+  puppeteerArgs: [],
 }
 
 // Init Engine

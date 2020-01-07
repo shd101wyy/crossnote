@@ -48,7 +48,6 @@
     "babyparse": "^0.4.6",
     "cheerio": "^1.0.0-rc.3",
     "chrome-location": "^1.2.1",
-    "echarts": "^4.6.0",
     "fs-extra": "^8.0.1",
     "imagemagick-cli": "^0.5.0",
     "js-yaml": "^3.13.1",

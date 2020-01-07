@@ -1722,19 +1722,23 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (this.config.usePuppeteerCore) {
       puppeteer = require("puppeteer-core");
       browser = await puppeteer.launch({
+        args: this.config.puppeteerArgs,
         executablePath: this.config.chromePath || require("chrome-location"),
         headless: true,
       });
     } else {
-      const globalNodeModulesPath = (await utility.execFile(
-        process.platform === "win32" ? "npm.cmd" : "npm",
-        ["root", "-g"],
-      ))
+      const globalNodeModulesPath = (
+        await utility.execFile(
+          process.platform === "win32" ? "npm.cmd" : "npm",
+          ["root", "-g"],
+        )
+      )
         .trim()
         .split("\n")[0]
         .trim();
       puppeteer = require(path.resolve(globalNodeModulesPath, "./puppeteer")); // trim() function here is very necessary.
       browser = await puppeteer.launch({
+        args: this.config.puppeteerArgs,
         headless: true,
       });
     }

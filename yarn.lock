@@ -1420,13 +1420,6 @@ ecc-jsbn@~0.1.1:
     jsbn "~0.1.0"
     safer-buffer "^2.1.0"
 
-echarts@^4.6.0:
-  version "4.6.0"
-  resolved "https://registry.npm.taobao.org/echarts/download/echarts-4.6.0.tgz?cache=0&sync_timestamp=1577438297540&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fecharts%2Fdownload%2Fecharts-4.6.0.tgz#b5a47a1046cec93ceeef954f9ee54751340558ec"
-  integrity sha1-taR6EEbOyTzu75VPnuVHUTQFWOw=
-  dependencies:
-    zrender "4.2.0"
-
 ee-first@~1.1.1:
   version "1.1.1"
   resolved "https://registry.npm.taobao.org/ee-first/download/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
@@ -5250,8 +5243,3 @@ yauzl@2.4.1:
   integrity sha1-lSj0QtqxsihOWLQ3m7GU4i4MQAU=
   dependencies:
     fd-slicer "~1.0.1"
-
-zrender@4.2.0:
-  version "4.2.0"
-  resolved "https://registry.npm.taobao.org/zrender/download/zrender-4.2.0.tgz?cache=0&sync_timestamp=1576159866096&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fzrender%2Fdownload%2Fzrender-4.2.0.tgz#d001302e155f28de1f9fc7fcd5c254bad28471cf"
-  integrity sha1-0AEwLhVfKN4fn8f81cJUutKEcc8=

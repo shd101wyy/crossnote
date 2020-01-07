@@ -37,6 +37,7 @@ export interface MarkdownEngineConfig {
   HTML5EmbedVideoAttributes?: string;
   puppeteerWaitForTimeout?: number;
   usePuppeteerCore?: boolean;
+  puppeteerArgs?: string[];
 }
 
 export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
@@ -51,8 +52,14 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   wikiLinkFileExtension: ".md",
   protocolsWhiteList: "http://, https://, atom://, file://, mailto:, tel:",
   mathRenderingOption: "KaTeX",
-  mathInlineDelimiters: [["$", "$"], ["\\(", "\\)"]],
-  mathBlockDelimiters: [["$$", "$$"], ["\\[", "\\]"]],
+  mathInlineDelimiters: [
+    ["$", "$"],
+    ["\\(", "\\)"],
+  ],
+  mathBlockDelimiters: [
+    ["$$", "$$"],
+    ["\\[", "\\]"],
+  ],
   mathRenderingOnlineService: "https://latex.codecogs.com/gif.latex",
   codeBlockTheme: "auto.css",
   previewTheme: "github-light.css",
@@ -76,4 +83,5 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   HTML5EmbedVideoAttributes: 'controls preload="metadata"',
   puppeteerWaitForTimeout: 0,
   usePuppeteerCore: true,
+  puppeteerArgs: [],
 };
