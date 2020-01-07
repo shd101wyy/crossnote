@@ -244,6 +244,6 @@ Global config files are located at `~/.mume` directory
 Recommended to use Node.js version `lts/dubnium`.
 
 1.  Clone this project
-2.  Run `npm install` from shell
+2.  Run `yarn` from shell
 3.  Open in vscode, then `cmd+shift+b` to build
-4.  Run the tests with `npm run test`
+4.  Run the tests with `yarn test`
