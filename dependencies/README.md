@@ -6,7 +6,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
 {
   "mermaid": "8.4.4",
   "plantuml": "mit-1.2019.11",
-  "wavedrom": "1.4.1",
+  "wavedrom": "2.3.0",
   "reveal": "3.7.0",
   "viz": "v2.0.0",
   "MathJax": "v2.7.5",
