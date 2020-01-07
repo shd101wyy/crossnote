@@ -1722,7 +1722,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (this.config.usePuppeteerCore) {
       puppeteer = require("puppeteer-core");
       browser = await puppeteer.launch({
-        args: this.config.puppeteerArgs,
+        args: this.config.puppeteerArgs || [],
         executablePath: this.config.chromePath || require("chrome-location"),
         headless: true,
       });
@@ -1738,7 +1738,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         .trim();
       puppeteer = require(path.resolve(globalNodeModulesPath, "./puppeteer")); // trim() function here is very necessary.
       browser = await puppeteer.launch({
-        args: this.config.puppeteerArgs,
+        args: this.config.puppeteerArgs || [],
         headless: true,
       });
     }
