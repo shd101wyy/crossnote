@@ -34,10 +34,12 @@ export async function render(
     await utility.writeFile(info.fd, code);
 
     if (!dest) {
-      dest = (await utility.tempOpen({
-        prefix: "mume_ditaa",
-        suffix: ".png",
-      })).path;
+      dest = (
+        await utility.tempOpen({
+          prefix: "mume_ditaa",
+          suffix: ".png",
+        })
+      ).path;
     }
 
     if (

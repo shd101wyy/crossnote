@@ -1,11 +1,12 @@
+dist: bionic
 language: node_js
 node_js:
   - "lts/dubnium"
 install:
-  - npm install
+  - yarn
 script:
-  - npm run check
-  - npm run test
+  - yarn check:all
+  - yarn test
 notifications:
   email:
     on_success: never

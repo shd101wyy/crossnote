@@ -1,6 +1,6 @@
 {
   "name": "@shd101wyy/mume",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "A powerful markdown tool",
   "keywords": [
     "markdown"
@@ -22,7 +22,7 @@
   "scripts": {
     "build": "tsc --project .",
     "build:watch": "tsc --project . --watch",
-    "check": "npm run check:prettier && npm run check:tsc && npm run check:tslint",
+    "check:all": "npm run check:prettier && npm run check:tsc && npm run check:tslint",
     "check:prettier": "prettier --check \"**/*.*\"",
     "check:tsc": "tsc --project . --noEmit",
     "check:tslint": "tslint --project .",

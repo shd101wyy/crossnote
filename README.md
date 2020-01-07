@@ -217,10 +217,13 @@ const config = {
   HTML5EmbedVideoAttributes: 'controls preload="metadata" width="320" height="240"',
 
   // Puppeteer waits for a certain timeout in milliseconds before the document export.
-  puppeteerWaitForTimeout: 0
+  puppeteerWaitForTimeout: 0,
 
   // If set to true, then locally installed puppeteer-core will be required. Otherwise, the puppeteer globally installed by `npm install -g puppeteer` will be required.
-  usePuppeteerCore: true
+  usePuppeteerCore: true,
+
+  // Args passed to puppeteer.launch({args: $puppeteerArgs})
+  puppeteerArgs: [],
 }
 
 // Init Engine
@@ -241,6 +244,6 @@ Global config files are located at `~/.mume` directory
 Recommended to use Node.js version `lts/dubnium`.
 
 1.  Clone this project
-2.  Run `npm install` from shell
+2.  Run `yarn` from shell
 3.  Open in vscode, then `cmd+shift+b` to build
-4.  Run the tests with `npm run test`
+4.  Run the tests with `yarn test`

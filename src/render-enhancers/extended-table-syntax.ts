@@ -55,7 +55,7 @@ export default async function enhance($): Promise<void> {
     const rowspan =
       (parseInt($prev.attr("rowspan"), 10) || 1) +
       (parseInt($col.attr("rowspan"), 10) || 1);
-    $prev.attr("rowspan", rowspan);
+    $prev.attr("rowspan", rowspan.toString());
     $col.remove();
   }
   // tslint:disable-next-line prefer-for-of
@@ -64,7 +64,7 @@ export default async function enhance($): Promise<void> {
     const colspan =
       (parseInt($prev.attr("colspan"), 10) || 1) +
       (parseInt($col.attr("colspan"), 10) || 1);
-    $col.attr("colspan", colspan);
+    $col.attr("colspan", colspan.toString());
     $prev.remove();
   }
   for (let i = colspans2.length - 1; i >= 0; i--) {
@@ -72,7 +72,7 @@ export default async function enhance($): Promise<void> {
     const colspan =
       (parseInt($prev.attr("colspan"), 10) || 1) +
       (parseInt($col.attr("colspan"), 10) || 1);
-    $prev.attr("colspan", colspan);
+    $prev.attr("colspan", colspan.toString());
     $col.remove();
   }
 }
