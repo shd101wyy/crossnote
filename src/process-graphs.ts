@@ -307,14 +307,16 @@ export async function processGraphs(
           const $ = cheerio.load(currentCodeChunk.result); // xmlMode here is necessary...
           const svg = $("svg");
           if (svg.length === 1) {
-            const pngFilePath = (await convertSVGToPNGFile(
-              attributes["filename"],
-              $.html("svg"),
-              lines,
-              start,
-              end,
-              false,
-            )).replace(/\\/g, "/");
+            const pngFilePath = (
+              await convertSVGToPNGFile(
+                attributes["filename"],
+                $.html("svg"),
+                lines,
+                start,
+                end,
+                false,
+              )
+            ).replace(/\\/g, "/");
             result = `![](${pngFilePath})  \n`;
           }
         } else if (
