@@ -97,10 +97,11 @@ function smmsUploadImage(filePath: string): Promise<string> {
     const headers = {
       "authority": "sm.ms",
       "user-agent": "mume",
+      "referer": "",
     };
     request.post(
       {
-        url: "https://sm.ms/api/upload",
+        url: "https://sm.ms/api/v2/upload",
         formData: { smfile: fs.createReadStream(filePath) },
         headers,
       },
