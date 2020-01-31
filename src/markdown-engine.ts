@@ -1072,7 +1072,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           "./dependencies/katex/katex.min.css",
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css">`;
       }
     } else {
       mathStyle = "";
@@ -2076,7 +2076,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig["html"] &&
         ebookConfig["html"].cdn
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           extensionDirectoryPath,
@@ -2872,9 +2872,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       await enhanceWithExtendedTableSyntax($);
     }
 
-    if (options.emojiToSvg) {
-      enhanceWithEmojiToSvg($);
-    }
+    // Disable this function because of issue:
+    // https://github.com/shd101wyy/markdown-preview-enhanced/issues/1287
+    // if (options.emojiToSvg) {
+    //   enhanceWithEmojiToSvg($);
+    // }
 
     html = frontMatterTable + $("head").html() + $("body").html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
 
