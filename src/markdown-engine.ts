@@ -32,7 +32,7 @@ import useMarkdownItWikilink from "./custom-markdown-it-features/wikilink";
 import enhanceWithCodeBlockStyling from "./render-enhancers/code-block-styling";
 import enhanceWithEmbeddedLocalImages from "./render-enhancers/embedded-local-images";
 import enhanceWithEmbeddedSvgs from "./render-enhancers/embedded-svgs";
-import enhanceWithEmojiToSvg from "./render-enhancers/emoji-to-svg";
+// import enhanceWithEmojiToSvg from "./render-enhancers/emoji-to-svg";
 import enhanceWithExtendedTableSyntax from "./render-enhancers/extended-table-syntax";
 import enhanceWithFencedCodeChunks, {
   runCodeChunk,
@@ -1072,7 +1072,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           "./dependencies/katex/katex.min.css",
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css">`;
       }
     } else {
       mathStyle = "";
@@ -2076,7 +2076,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig["html"] &&
         ebookConfig["html"].cdn
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           extensionDirectoryPath,
@@ -2605,7 +2605,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const $ = cheerio.load(output);
     $("li").each((j, elem) => {
       const $elem = $(elem);
-      const html2 = $elem.html().trim();
+      const html2 = $elem
+        .html()
+        .trim()
+        .split("\n")[0];
       const attributeMatch = html2.match(/<!--(.+?)-->/);
       if (attributeMatch) {
         const attributes = attributeMatch[1].replace(/\.element\:/, "").trim();
@@ -2869,9 +2872,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       await enhanceWithExtendedTableSyntax($);
     }
 
-    if (options.emojiToSvg) {
-      enhanceWithEmojiToSvg($);
-    }
+    // Disable this function because of issue:
+    // https://github.com/shd101wyy/markdown-preview-enhanced/issues/1287
+    // if (options.emojiToSvg) {
+    //   enhanceWithEmojiToSvg($);
+    // }
 
     html = frontMatterTable + $("head").html() + $("body").html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
 
