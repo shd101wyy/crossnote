@@ -2605,7 +2605,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const $ = cheerio.load(output);
     $("li").each((j, elem) => {
       const $elem = $(elem);
-      const html2 = $elem.html().trim();
+      const html2 = $elem
+        .html()
+        .trim()
+        .split("\n")[0];
       const attributeMatch = html2.match(/<!--(.+?)-->/);
       if (attributeMatch) {
         const attributes = attributeMatch[1].replace(/\.element\:/, "").trim();
