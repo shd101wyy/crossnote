@@ -4,12 +4,12 @@ import {
   stringifyAttributes,
 } from "../../src/lib/attributes";
 
-const testCases: Array<{
+const testCases: {
   attributes?: any;
   normalizedAttributes?: any;
   raw?: string | string[];
   stringified?: string;
-}> = [
+}[] = [
   {
     // classic behavior
     attributes: { cmd: true },

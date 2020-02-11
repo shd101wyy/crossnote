@@ -4,10 +4,10 @@ import {
   parseBlockInfo,
 } from "../../src/lib/block-info";
 
-const testCasesForParseBlockInfo: Array<{
+const testCasesForParseBlockInfo: {
   info: object;
   raw: string | string[];
-}> = [
+}[] = [
   {
     info: { language: "js", attributes: { cmd: true } },
     raw: [
@@ -27,10 +27,10 @@ const testCasesForParseBlockInfo: Array<{
   },
 ];
 
-const testCasesForNormalizeCodeBlockInfo: Array<{
+const testCasesForNormalizeCodeBlockInfo: {
   infos: object[];
   normalizedInfo: object;
-}> = [
+}[] = [
   {
     infos: [{}],
     normalizedInfo: { language: "", attributes: {} },

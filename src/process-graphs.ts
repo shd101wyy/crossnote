@@ -35,13 +35,13 @@ export async function processGraphs(
   },
 ): Promise<{ outputString: string; imagePaths: string[] }> {
   const lines = text.split("\n");
-  const codes: Array<{
+  const codes: {
     start: number;
     end: number;
     content: string;
     options: object;
     optionsStr: string;
-  }> = [];
+  }[] = [];
 
   let i = 0;
   while (i < lines.length) {

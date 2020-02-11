@@ -1933,12 +1933,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     let $ = cheerio.load(`<div>${html}</div>`);
-    const tocStructure: Array<{
+    const tocStructure: {
       level: number;
       filePath: string;
       heading: string;
       id: string;
-    }> = [];
+    }[] = [];
     const headingIdGenerator = new HeadingIdGenerator();
     const $toc = $("div > ul").last();
     if ($toc.length) {

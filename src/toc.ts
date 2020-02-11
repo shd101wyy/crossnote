@@ -69,7 +69,7 @@ export interface TocOption {
  * @return {content, array}
  */
 export function toc(
-  tokens: Array<{ content: string; level: number; id?: string }>,
+  tokens: { content: string; level: number; id?: string }[],
   opt: TocOption,
 ) {
   const headingIdGenerator = new HeadingIdGenerator();

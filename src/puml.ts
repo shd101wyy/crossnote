@@ -23,12 +23,12 @@ const CHUNKS: { [key: string]: string } = {};
 /**
  * key is fileDirectoryPath, value is Array
  */
-const CALLBACKS: { [key: string]: Array<(result: string) => void> } = {};
+const CALLBACKS: { [key: string]: ((result: string) => void)[] } = {};
 
 class PlantUMLTask {
   private fileDirectoryPath: string;
   private chunks: string;
-  private callbacks: Array<(result: string) => void>;
+  private callbacks: ((result: string) => void)[];
   private task;
 
   constructor(fileDirectoryPath: string) {
