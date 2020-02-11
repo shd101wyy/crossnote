@@ -3,9 +3,9 @@
  * @param $
  */
 export default async function enhance($): Promise<void> {
-  const rowspans: Array<[Cheerio, Cheerio]> = []; // ^
-  const colspans: Array<[Cheerio, Cheerio]> = []; // >
-  const colspans2: Array<[Cheerio, Cheerio]> = []; // empty
+  const rowspans: [Cheerio, Cheerio][] = []; // ^
+  const colspans: [Cheerio, Cheerio][] = []; // >
+  const colspans2: [Cheerio, Cheerio][] = []; // empty
   $("table").each((i, table) => {
     const $table = $(table);
     let $prevRow = null;

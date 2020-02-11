@@ -113,12 +113,12 @@
     /**
      * Track the slide line number, and (h, v) indices
      */
-    private slidesData: Array<{
+    private slidesData: {
       line: number;
       h: number;
       v: number;
       offset: number;
-    }> = [];
+    }[] = [];
 
     /**
      * Current slide offset
