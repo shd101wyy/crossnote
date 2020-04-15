@@ -5,7 +5,7 @@ import * as YAML from "yamljs";
 import { render as renderDitaa } from "../ditaa";
 import computeChecksum from "../lib/compute-checksum";
 import { render as renderPlantuml } from "../puml";
-import { mkdirp, readFile } from "../utility";
+import { mkdirp, readFile, escapeString } from "../utility";
 import { toSVG as vegaToSvg } from "../vega";
 import { toSVG as vegaLiteToSvg } from "../vega-lite";
 import { Viz } from "../viz";
@@ -112,7 +112,7 @@ async function renderDiagram(
             normalizedInfo.attributes,
             normalizedInfo.language,
           ),
-        )}>${code}</div>`;
+        )}>${escapeString(code)}</div>`;
         break;
       }
       case "zenuml":
