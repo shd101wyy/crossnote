@@ -205,20 +205,19 @@ async function renderDiagram(
         const args = normalizedInfo.attributes["args"] || [];
         const filename =
           normalizedInfo.attributes["filename"] ||
-          `${computeChecksum(`${JSON.stringify(args)} ${code}`)}.png`;
+          `${computeChecksum(`${JSON.stringify(args)} ${code}`)}.svg`;
         await mkdirp(imageDirectoryPath);
 
-        const pathToPng = await renderDitaa(
+        const pathToSvg = await renderDitaa(
           code,
           args,
           resolve(imageDirectoryPath, filename),
         );
-        const pathToPngWithoutVersion = pathToPng.replace(/\?[\d\.]+$/, "");
-        const pngAsBase64 = await readFile(pathToPngWithoutVersion, "base64");
-        $output = $("<img />").attr(
-          "src",
-          `data:image/png;charset=utf-8;base64,${pngAsBase64}`,
-        );
+        const pathToSvgWithoutVersion = pathToSvg.replace(/\?[\d\.]+$/, "");
+        const svg = await readFile(pathToSvgWithoutVersion);
+        $output = `<p ${stringifyAttributes(
+          normalizedInfo.attributes,
+        )}>${svg}</p>`;
         break;
       }
     }
