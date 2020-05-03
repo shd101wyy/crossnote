@@ -142,6 +142,8 @@ export async function processGraphs(
     start: number,
     end: number,
     modifyCodeBlock: boolean,
+    altName: string,
+    optionsStr: string,
   ) {
     if (!outFileName) {
       outFileName = imageFilePrefix + imgCount + ".png";
@@ -166,7 +168,12 @@ export async function processGraphs(
 
     if (modifyCodeBlock) {
       clearCodeBlock(lines, start, end);
-      lines[end] += "\n" + `![](${displayPNGFilePath})  `;
+      let altCaption = altName;
+      if (altCaption == null) {
+        altCaption = "";
+      }
+      lines[end] +=
+        "\n" + `![${altCaption}](${displayPNGFilePath}){${optionsStr}}  `;
     }
 
     imagePaths.push(pngFilePath);
@@ -197,6 +204,8 @@ export async function processGraphs(
           start,
           end,
           true,
+          options["alt"],
+          optionsStr,
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
@@ -217,6 +226,8 @@ export async function processGraphs(
           start,
           end,
           true,
+          options["alt"],
+          optionsStr,
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
@@ -237,6 +248,8 @@ export async function processGraphs(
           start,
           end,
           true,
+          options["alt"],
+          optionsStr,
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
@@ -257,6 +270,8 @@ export async function processGraphs(
           start,
           end,
           true,
+          options["alt"],
+          optionsStr,
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
@@ -315,6 +330,8 @@ export async function processGraphs(
                 start,
                 end,
                 false,
+                options["alt"],
+                optionsStr,
               )
             ).replace(/\\/g, "/");
             result = `![](${pngFilePath})  \n`;
