@@ -12,6 +12,7 @@ import * as vegaAPI from "./vega";
 import * as vegaLiteAPI from "./vega-lite";
 import { Viz } from "./viz";
 import * as mermaidAPI from "./mermaid";
+import * as wavedromAPI from "./wavedrom";
 
 export async function processGraphs(
   text: string,
@@ -54,7 +55,7 @@ export async function processGraphs(
     if (
       trimmedLine.match(/^```(.+)\"?cmd\"?[:=]/) || // code chunk
       trimmedLine.match(
-        /^```(puml|plantuml|dot|viz|mermaid|vega|vega\-lite|ditaa)/,
+        /^```(puml|plantuml|dot|viz|mermaid|vega|vega\-lite|ditaa|wavedrom)/,
       )
     ) {
       // graphs
@@ -316,6 +317,28 @@ export async function processGraphs(
           "\n" + `![${altCaption}](${displayPNGFilePath}){${optionsStr}}  `;
 
         imagePaths.push(pngFilePath);
+      } catch (error) {
+        clearCodeBlock(lines, start, end);
+        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
+      }
+    } else if (def.match(/^wavedrom/)) {
+      try {
+        const checksum = computeChecksum(optionsStr + content);
+        let svg = graphsCache[checksum];
+        if (!svg) {
+          // check whether in cache
+          svg = await wavedromAPI.render(content, projectDirectoryPath);
+        }
+        await convertSVGToPNGFile(
+          options["filename"],
+          svg,
+          lines,
+          start,
+          end,
+          true,
+          options["alt"],
+          optionsStr,
+        );
       } catch (error) {
         clearCodeBlock(lines, start, end);
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
