@@ -13,6 +13,7 @@ import * as vegaLiteAPI from "./vega-lite";
 import { Viz } from "./viz";
 import * as mermaidAPI from "./mermaid";
 import * as wavedromAPI from "./wavedrom";
+import * as ditaaAPI from "./ditaa";
 
 export async function processGraphs(
   text: string,
@@ -339,6 +340,40 @@ export async function processGraphs(
           options["alt"],
           optionsStr,
         );
+      } catch (error) {
+        clearCodeBlock(lines, start, end);
+        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
+      }
+    } else if (def.match(/^ditaa/)) {
+      try {
+        const pngFilePath = path.resolve(
+          imageDirectoryPath,
+          imageFilePrefix + imgCount + ".png",
+        );
+        imgCount++;
+        await ditaaAPI.render(content, options["args"], pngFilePath);
+
+        let displayPNGFilePath;
+        if (useRelativeFilePath) {
+          displayPNGFilePath =
+            path.relative(fileDirectoryPath, pngFilePath) + "?" + Math.random();
+        } else {
+          displayPNGFilePath =
+            "/" +
+            path.relative(projectDirectoryPath, pngFilePath) +
+            "?" +
+            Math.random();
+        }
+        clearCodeBlock(lines, start, end);
+
+        let altCaption = options["alt"];
+        if (altCaption == null) {
+          altCaption = "";
+        }
+        lines[end] +=
+          "\n" + `![${altCaption}](${displayPNGFilePath}){${optionsStr}}  `;
+
+        imagePaths.push(pngFilePath);
       } catch (error) {
         clearCodeBlock(lines, start, end);
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
