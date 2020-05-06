@@ -187,6 +187,7 @@ export async function markdownConvert(
     graphsCache,
     usePandocParser,
     imageMagickPath,
+    mermaidTheme,
   }: {
     projectDirectoryPath: string;
     fileDirectoryPath: string;
@@ -200,6 +201,7 @@ export async function markdownConvert(
     graphsCache: { [key: string]: string };
     usePandocParser: boolean;
     imageMagickPath: string;
+    mermaidTheme: string;
   },
   config: object,
 ): Promise<string> {
@@ -299,6 +301,7 @@ export async function markdownConvert(
         codeChunksData,
         graphsCache,
         imageMagickPath,
+        mermaidTheme,
       }).then(({ outputString }) => {
         outputString = data.frontMatterString + outputString; // put the front-matter back.
 

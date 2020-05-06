@@ -11,6 +11,7 @@ import * as plantumlAPI from "./puml";
 import * as vegaAPI from "./vega";
 import * as vegaLiteAPI from "./vega-lite";
 import { Viz } from "./viz";
+import * as mermaidAPI from "./mermaid";
 
 export async function processGraphs(
   text: string,
@@ -23,6 +24,7 @@ export async function processGraphs(
     codeChunksData,
     graphsCache,
     imageMagickPath,
+    mermaidTheme,
   }: {
     fileDirectoryPath: string;
     projectDirectoryPath: string;
@@ -32,6 +34,7 @@ export async function processGraphs(
     codeChunksData: { [key: string]: CodeChunkData };
     graphsCache: { [key: string]: string };
     imageMagickPath: string;
+    mermaidTheme: string;
   },
 ): Promise<{ outputString: string; imagePaths: string[] }> {
   const lines = text.split("\n");
@@ -278,29 +281,45 @@ export async function processGraphs(
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
       }
     } else if (def.match(/^mermaid/)) {
-      // do nothing as it doesn't work well...
-      /*
+      // mermaid-cli Ver.8.4.8 has a bug, render in png https://github.com/mermaid-js/mermaid/issues/664
       try {
-        const pngFilePath = path.resolve(imageDirectoryPath, imageFilePrefix+imgCount+'.png')
-        imgCount++
-        await mermaidToPNG(content, pngFilePath)
+        const pngFilePath = path.resolve(
+          imageDirectoryPath,
+          imageFilePrefix + imgCount + ".png",
+        );
+        imgCount++;
+        await mermaidAPI.mermaidToPNG(
+          content,
+          pngFilePath,
+          projectDirectoryPath,
+          mermaidTheme,
+        );
 
-        let displayPNGFilePath
+        let displayPNGFilePath;
         if (useRelativeFilePath) {
-          displayPNGFilePath = path.relative(fileDirectoryPath, pngFilePath) + '?' + Math.random()
+          displayPNGFilePath =
+            path.relative(fileDirectoryPath, pngFilePath) + "?" + Math.random();
         } else {
-          displayPNGFilePath = '/' + path.relative(projectDirectoryPath, pngFilePath) + '?' + Math.random()
+          displayPNGFilePath =
+            "/" +
+            path.relative(projectDirectoryPath, pngFilePath) +
+            "?" +
+            Math.random();
         }
-        clearCodeBlock(lines, start, end)
-        
-        lines[end] += '\n' + `![](${displayPNGFilePath})  `
+        clearCodeBlock(lines, start, end);
 
-        imagePaths.push(pngFilePath)
-      } catch(error) {
-        clearCodeBlock(lines, start, end)
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`
+        let altCaption = options["alt"];
+        if (altCaption == null) {
+          altCaption = "";
+        }
+        lines[end] +=
+          "\n" + `![${altCaption}](${displayPNGFilePath}){${optionsStr}}  `;
+
+        imagePaths.push(pngFilePath);
+      } catch (error) {
+        clearCodeBlock(lines, start, end);
+        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
       }
-      */
     } else if (currentCodeChunk) {
       // code chunk
       if (currentCodeChunk.normalizedInfo.attributes["hide"]) {
