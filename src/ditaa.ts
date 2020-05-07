@@ -37,7 +37,7 @@ export async function render(
       dest = (
         await utility.tempOpen({
           prefix: "mume_ditaa",
-          suffix: ".png",
+          suffix: ".svg",
         })
       ).path;
     }
@@ -62,6 +62,7 @@ export async function render(
         ),
         info.path,
         dest,
+        "--svg",
       ].concat(args),
     );
     const outputDest = dest + "?" + Math.random();

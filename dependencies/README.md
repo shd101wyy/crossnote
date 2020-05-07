@@ -20,7 +20,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
   "vega": "5.9.0",
   "vega-lite": "4.0.2",
   "vega-embed": "6.2.1",
-  "ditaa": "0.10",
+  "ditaa": "0.11",
   "font-awesome": "4.7",
   "flowchart": "1.11.3",
   "raphael.js": "2.2.7",
