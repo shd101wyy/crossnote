@@ -1,11 +1,10 @@
 // tslint:disable:ban-types no-var-requires
-import { resolve } from "path";
 import * as YAML from "yamljs";
 
 import { render as renderDitaa } from "../ditaa";
 import computeChecksum from "../lib/compute-checksum";
 import { render as renderPlantuml } from "../puml";
-import { mkdirp, readFile, escapeString } from "../utility";
+import { escapeString } from "../utility";
 import { toSVG as vegaToSvg } from "../vega";
 import { toSVG as vegaLiteToSvg } from "../vega-lite";
 import { Viz } from "../viz";
@@ -203,18 +202,8 @@ async function renderDiagram(
 
         // ditaa diagram
         const args = normalizedInfo.attributes["args"] || [];
-        const filename =
-          normalizedInfo.attributes["filename"] ||
-          `${computeChecksum(`${JSON.stringify(args)} ${code}`)}.svg`;
-        await mkdirp(imageDirectoryPath);
 
-        const pathToSvg = await renderDitaa(
-          code,
-          args,
-          resolve(imageDirectoryPath, filename),
-        );
-        const pathToSvgWithoutVersion = pathToSvg.replace(/\?[\d\.]+$/, "");
-        const svg = await readFile(pathToSvgWithoutVersion);
+        const svg = await renderDitaa(code, args);
         $output = `<p ${stringifyAttributes(
           normalizedInfo.attributes,
         )}>${svg}</p>`;

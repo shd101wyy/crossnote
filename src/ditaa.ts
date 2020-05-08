@@ -5,27 +5,23 @@
 import * as path from "path";
 
 import * as utility from "./utility";
+import computeChecksum from "./lib/compute-checksum";
 
 const CACHE: {
   [key: string]: {
     code: string;
     args: any[];
-    outputDest: string;
+    svg: string;
   };
 } = {};
 
 /**
- * Render ditaa diagrams with `code` to `dest`.
+ * Render ditaa diagrams with `code` to svg.
  * @param code the ditaa code
  * @param args args passed to ditaa.jar
- * @param dest where to output the png file. Should be an absolute path.
- * @return the `dest`
+ * @return rendered svg
  */
-export async function render(
-  code: string = "",
-  args = [],
-  dest: string = "",
-): Promise<string> {
+export async function render(code: string = "", args = []): Promise<string> {
   try {
     const info = await utility.tempOpen({
       prefix: "mume_ditaa",
@@ -33,22 +29,26 @@ export async function render(
     });
     await utility.writeFile(info.fd, code);
 
-    if (!dest) {
-      dest = (
-        await utility.tempOpen({
-          prefix: "mume_ditaa",
-          suffix: ".svg",
-        })
-      ).path;
+    const dest = (
+      await utility.tempOpen({
+        prefix: "mume_ditaa",
+        suffix: ".svg",
+      })
+    ).path;
+
+    let codes = code;
+    if (args.length > 0) {
+      codes = args.join() + code;
     }
+    const checksum = computeChecksum(codes);
 
     if (
       dest in CACHE &&
-      CACHE[dest].code === code &&
-      utility.isArrayEqual(args, CACHE[dest].args)
+      CACHE[checksum].code === code &&
+      utility.isArrayEqual(args, CACHE[checksum].args)
     ) {
       // already rendered
-      return CACHE[dest].outputDest;
+      return CACHE[checksum].svg;
     }
 
     await utility.execFile(
@@ -65,12 +65,13 @@ export async function render(
         "--svg",
       ].concat(args),
     );
-    const outputDest = dest + "?" + Math.random();
+    const pathToSvgWithoutVersion = dest.replace(/\?[\d\.]+$/, "");
+    const svg = await utility.readFile(pathToSvgWithoutVersion);
 
     // save to cache
-    CACHE[dest] = { code, args, outputDest };
+    CACHE[checksum] = { code, args, svg };
 
-    return outputDest;
+    return svg;
   } catch (error) {
     throw new Error(`Java is required to be installed.\n${error.toString()}`);
   }

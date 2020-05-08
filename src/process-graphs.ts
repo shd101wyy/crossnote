@@ -346,34 +346,22 @@ export async function processGraphs(
       }
     } else if (def.match(/^ditaa/)) {
       try {
-        const pngFilePath = path.resolve(
-          imageDirectoryPath,
-          imageFilePrefix + imgCount + ".png",
+        const checksum = computeChecksum(optionsStr + content);
+        let svg = graphsCache[checksum];
+        if (!svg) {
+          // check whether in cache
+          svg = await ditaaAPI.render(content, options["args"]);
+        }
+        await convertSVGToPNGFile(
+          options["filename"],
+          svg,
+          lines,
+          start,
+          end,
+          true,
+          options["alt"],
+          optionsStr,
         );
-        imgCount++;
-        await ditaaAPI.render(content, options["args"], pngFilePath);
-
-        let displayPNGFilePath;
-        if (useRelativeFilePath) {
-          displayPNGFilePath =
-            path.relative(fileDirectoryPath, pngFilePath) + "?" + Math.random();
-        } else {
-          displayPNGFilePath =
-            "/" +
-            path.relative(projectDirectoryPath, pngFilePath) +
-            "?" +
-            Math.random();
-        }
-        clearCodeBlock(lines, start, end);
-
-        let altCaption = options["alt"];
-        if (altCaption == null) {
-          altCaption = "";
-        }
-        lines[end] +=
-          "\n" + `![${altCaption}](${displayPNGFilePath}){${optionsStr}}  `;
-
-        imagePaths.push(pngFilePath);
       } catch (error) {
         clearCodeBlock(lines, start, end);
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
