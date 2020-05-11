@@ -43,7 +43,7 @@ export async function render(code: string = "", args = []): Promise<string> {
     const checksum = computeChecksum(codes);
 
     if (
-      dest in CACHE &&
+      checksum in CACHE &&
       CACHE[checksum].code === code &&
       utility.isArrayEqual(args, CACHE[checksum].args)
     ) {
