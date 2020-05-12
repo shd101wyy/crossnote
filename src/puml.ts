@@ -50,6 +50,7 @@ class PlantUMLTask {
   private startTask() {
     this.task = spawn("java", [
       "-Djava.awt.headless=true",
+      "-Dfile.encoding=UTF-8",
       "-Dplantuml.include.path=" +
         [this.fileDirectoryPath, extensionConfigDirectoryPath].join(
           path.delimiter,
