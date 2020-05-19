@@ -2240,6 +2240,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         pandocPath: this.config.pandocPath,
         latexEngine: this.config.latexEngine,
         imageMagickPath: this.config.imageMagickPath,
+        mermaidTheme: this.config.mermaidTheme,
       },
       config,
     );
@@ -2342,6 +2343,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         graphsCache: this.graphsCache,
         usePandocParser: this.config.usePandocParser,
         imageMagickPath: this.config.imageMagickPath,
+        mermaidTheme: this.config.mermaidTheme,
       },
       markdownConfig,
     );
