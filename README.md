@@ -7,6 +7,12 @@ This library powers:
 - [markdown preview enhanced for atom](https://github.com/shd101wyy/markdown-preview-enhanced)
 - [markdown preview enhanced for vscode](https://github.com/shd101wyy/vscode-markdown-preview-enhanced)
 
+and other external projects such as:
+
+- [TechnicalMarkdown](https://github.com/gabyx/TechnicalMarkdown)
+
+## Installation
+
 ```sh
 npm install --save @shd101wyy/mume
 ```
@@ -193,6 +199,7 @@ const config = {
   latexEngine: 'pdflatex',
 
   // Enables executing code chunks and importing javascript files.
+  // This enables also the sidebar table of content.
   // ⚠ ️ Please use this feature with caution because it may put your security at risk!
   //    Your machine can get hacked if someone makes you open a markdown with malicious code while script execution is enabled.
   enableScriptExecution: false,
