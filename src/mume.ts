@@ -19,64 +19,64 @@ export { CodeChunkData } from "./code-chunk-data";
 /**
  * init mume config folder at ~/.mume
  */
-export async function init(): Promise<void> {
+export async function init(configPath: string | null): Promise<void> {
   if (INITIALIZED) {
     return;
   }
 
-  const homeDir = os.homedir();
-  const extensionConfigDirectoryPath = path.resolve(homeDir, "./.mume");
-  if (!fs.existsSync(extensionConfigDirectoryPath)) {
-    fs.mkdirSync(extensionConfigDirectoryPath);
+  configPath = configPath ? configPath : path.resolve(os.homedir(), "./.mume");
+
+  if (!fs.existsSync(configPath)) {
+    fs.mkdirSync(configPath);
   }
 
-  configs.globalStyle = await utility.getGlobalStyles();
-  configs.mermaidConfig = await utility.getMermaidConfig();
-  configs.mathjaxConfig = await utility.getMathJaxConfig();
-  configs.katexConfig = await utility.getKaTeXConfig();
-  configs.parserConfig = await utility.getParserConfig();
-  configs.config = await utility.getExtensionConfig();
+  configs.globalStyle = await utility.getGlobalStyles(configPath);
+  configs.mermaidConfig = await utility.getMermaidConfig(configPath);
+  configs.mathjaxConfig = await utility.getMathJaxConfig(configPath);
+  configs.katexConfig = await utility.getKaTeXConfig(configPath);
+  configs.parserConfig = await utility.getParserConfig(configPath);
+  configs.config = await utility.getExtensionConfig(configPath);
 
-  fs.watch(extensionConfigDirectoryPath, (eventType, fileName) => {
+  fs.watch(configPath, (eventType, fileName) => {
     if (eventType === "change") {
       if (fileName === "style.less") {
         // || fileName==='mermaid_config.js' || fileName==='mathjax_config')
-        utility.getGlobalStyles().then((css) => {
+        utility.getGlobalStyles(configPath).then((css) => {
           configs.globalStyle = css;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }
         });
       } else if (fileName === "mermaid_config.js") {
-        utility.getMermaidConfig().then((mermaidConfig) => {
+        utility.getMermaidConfig(configPath).then((mermaidConfig) => {
           configs.mermaidConfig = mermaidConfig;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }
         });
       } else if (fileName === "mathjax_config.js") {
-        utility.getMathJaxConfig().then((mathjaxConfig) => {
+        utility.getMathJaxConfig(configPath).then((mathjaxConfig) => {
           configs.mathjaxConfig = mathjaxConfig;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }
         });
       } else if (fileName === "katex_config.js") {
-        utility.getKaTeXConfig().then((katexConfig) => {
+        utility.getKaTeXConfig(configPath).then((katexConfig) => {
           configs.katexConfig = katexConfig;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }
         });
       } else if (fileName === "parser.js") {
-        utility.getParserConfig().then((parserConfig) => {
+        utility.getParserConfig(configPath).then((parserConfig) => {
           configs.parserConfig = parserConfig;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }
         });
       } else if (fileName === "config.json") {
-        utility.getExtensionConfig().then((config) => {
+        utility.getExtensionConfig(configPath).then((config) => {
           configs.config = config;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();

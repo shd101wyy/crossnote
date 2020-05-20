@@ -192,9 +192,10 @@ export const extensionDirectoryPath = path.resolve(__dirname, "../../");
 /**
  * compile ~/.mumi/style.less and return 'css' content.
  */
-export async function getGlobalStyles(): Promise<string> {
-  const homeDir = os.homedir();
-  const globalLessFilePath = path.resolve(homeDir, "./.mume/style.less");
+export async function getGlobalStyles(configPath): Promise<string> {
+  const globalLessFilePath = configPath
+    ? path.resolve(configPath, "./styles.less")
+    : path.resolve(os.homedir(), "./.mume/styles.less");
 
   let fileContent: string;
   try {
@@ -235,9 +236,10 @@ export async function getGlobalStyles(): Promise<string> {
 /**
  * load ~/.mume/mermaid_config.js file.
  */
-export async function getMermaidConfig(): Promise<string> {
-  const homeDir = os.homedir();
-  const mermaidConfigPath = path.resolve(homeDir, "./.mume/mermaid_config.js");
+export async function getMermaidConfig(configPath): Promise<string> {
+  const mermaidConfigPath = configPath
+    ? path.resolve(configPath, "./mermaid_config.js")
+    : path.resolve(os.homedir(), "./.mume/mermaid_config.js");
 
   let mermaidConfig: string;
   if (fs.existsSync(mermaidConfigPath)) {
@@ -288,9 +290,10 @@ export const defaultKaTeXConfig = {
 /**
  * load ~/.mume/mathjax_config.js file.
  */
-export async function getMathJaxConfig(): Promise<object> {
-  const homeDir = os.homedir();
-  const mathjaxConfigPath = path.resolve(homeDir, "./.mume/mathjax_config.js");
+export async function getMathJaxConfig(configPath): Promise<object> {
+  const mathjaxConfigPath = configPath
+    ? path.resolve(configPath, "./mathjax_config.js")
+    : path.resolve(os.homedir(), "./.mume/mathjax_config.js");
 
   let mathjaxConfig: object;
   if (fs.existsSync(mathjaxConfigPath)) {
@@ -326,9 +329,10 @@ module.exports = {
 /**
  * load ~/.mume/katex_config.js file
  */
-export async function getKaTeXConfig(): Promise<object> {
-  const homeDir = os.homedir();
-  const katexConfigPath = path.resolve(homeDir, "./.mume/katex_config.js");
+export async function getKaTeXConfig(configPath): Promise<object> {
+  const katexConfigPath = configPath
+    ? path.resolve(configPath, "./katex_config.js")
+    : path.resolve(os.homedir(), "./.mume/katex_config.js");
 
   let katexConfig: object;
   if (fs.existsSync(katexConfigPath)) {
@@ -349,9 +353,10 @@ module.exports = {
   return katexConfig;
 }
 
-export async function getExtensionConfig(): Promise<object> {
-  const homeDir = os.homedir();
-  const extensionConfigFilePath = path.resolve(homeDir, "./.mume/config.json");
+export async function getExtensionConfig(configPath): Promise<object> {
+  const extensionConfigFilePath = configPath
+    ? path.resolve(configPath, "./config.json")
+    : path.resolve(os.homedir(), "./.mume/config.json");
 
   let config: object;
   if (fs.existsSync(extensionConfigFilePath)) {
@@ -368,28 +373,10 @@ export async function getExtensionConfig(): Promise<object> {
   return config;
 }
 
-/**
- * Update ~/.mume/config.json
- * @param newConfig The new config.
- */
-export async function updateExtensionConfig(newConfig = {}): Promise<void> {
-  let config = await getExtensionConfig();
-  config = Object.assign(config, newConfig);
-
-  const homeDir = os.homedir();
-  fs.writeFile(
-    path.resolve(homeDir, "./.mume/config.json"),
-    JSON.stringify(config, null, 2),
-    { encoding: "utf-8" },
-    () => {
-      return;
-    },
-  );
-}
-
-export async function getParserConfig(): Promise<object> {
-  const homeDir = os.homedir();
-  const parserConfigPath = path.resolve(homeDir, "./.mume/parser.js");
+export async function getParserConfig(configPath): Promise<object> {
+  const parserConfigPath = configPath
+    ? path.resolve(configPath, "./parser.js")
+    : path.resolve(os.homedir(), "./.mume/parser.js");
 
   let parserConfig: object;
   if (fs.existsSync(parserConfigPath)) {

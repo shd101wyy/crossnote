@@ -1043,7 +1043,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       this.config.usePandocParser
     ) {
       // TODO
-      const mathJaxConfig = await utility.getMathJaxConfig();
+      const mathJaxConfig = await utility.getMathJaxConfig(this.config.configPath);
       mathJaxConfig["tex2jax"]["inlineMath"] = this.config.mathInlineDelimiters;
       mathJaxConfig["tex2jax"]["displayMath"] = this.config.mathBlockDelimiters;
 
@@ -1103,7 +1103,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       } else {
         mermaidScript = `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@8.5.0/dist/mermaid.min.js"></script>`;
       }
-      const mermaidConfig: string = await utility.getMermaidConfig();
+      const mermaidConfig: string = await utility.getMermaidConfig(this.config.configPath);
       mermaidInitScript += `<script>
 ${mermaidConfig}
 if (window['MERMAID_CONFIG']) {
@@ -1446,7 +1446,7 @@ for (var i = 0; i < flowcharts.length; i++) {
     // global styles
     let globalStyles = "";
     try {
-      globalStyles = await utility.getGlobalStyles();
+      globalStyles = await utility.getGlobalStyles(this.config.configPath);
     } catch (error) {
       // ignore it
     }
@@ -2129,7 +2129,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // global styles
     let globalStyles = "";
     try {
-      globalStyles = await utility.getGlobalStyles();
+      globalStyles = await utility.getGlobalStyles(this.config.configPath);
     } catch (error) {
       // ignore it
     }
