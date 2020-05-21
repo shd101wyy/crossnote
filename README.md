@@ -27,11 +27,13 @@ const mume = require("@shd101wyy/mume");
 // import * as mume from "@shd101wyy/mume"
 
 async function main() {
-  await mume.init();
+  const configPath = path.resolve(os.homedir(), ".mume"); // use here your own config folder, default is "~/.mume"
+  await mume.init(configPath); // default uses "~/.mume"
 
   const engine = new mume.MarkdownEngine({
     filePath: "/Users/wangyiyi/Desktop/markdown-example/test3.md",
     config: {
+      configPath: configPath,
       previewTheme: "github-light.css",
       // revealjsTheme: "white.css"
       codeBlockTheme: "default.css",
@@ -71,6 +73,9 @@ main();
 
 ```js
 const config = {
+  // Default config directory, `null`  means "~./.mume"
+  configPath : null,
+  
   // Enable this option will render markdown by pandoc instead of markdown-it.
   usePandocParser: false,
 
