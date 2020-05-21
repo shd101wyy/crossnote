@@ -1,7 +1,7 @@
 export type MathRenderingOption = "None" | "KaTeX" | "MathJax";
 
 export interface MarkdownEngineConfig {
-  configPath?: string,
+  configPath?: string;
   usePandocParser?: boolean;
   breakOnSingleNewLine?: boolean;
   enableTypographer?: boolean;

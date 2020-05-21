@@ -459,6 +459,11 @@
     "@types/unist" "*"
     "@types/vfile-message" "*"
 
+"@types/vscode@^1.43.0":
+  version "1.45.1"
+  resolved "https://registry.npm.taobao.org/@types/vscode/download/@types/vscode-1.45.1.tgz#672fb8c2cc33cf14cd4d3bdaa19bb294fe2b2706"
+  integrity sha1-Zy+4wswzzxTNTTvaoZuylP4rJwY=
+
 "@types/yargs-parser@*":
   version "15.0.0"
   resolved "https://registry.npm.taobao.org/@types/yargs-parser/download/@types/yargs-parser-15.0.0.tgz#cb3f9f741869e20cce330ffbeb9271590483882d"
