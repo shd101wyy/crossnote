@@ -287,36 +287,38 @@ export async function markdownConvert(
       : text;
 
   return await new Promise<string>((resolve, reject) => {
-    mkdirp(imageDirectoryPath, (error, made) => {
-      if (error) {
-        return reject(error.toString());
-      }
+    mkdirp(imageDirectoryPath)
+      .then(() => {
+        processGraphs(text, {
+          fileDirectoryPath,
+          projectDirectoryPath,
+          imageDirectoryPath,
+          imageFilePrefix: computeChecksum(outputFilePath),
+          useRelativeFilePath,
+          codeChunksData,
+          graphsCache,
+          imageMagickPath,
+          mermaidTheme,
+        }).then(({ outputString }) => {
+          outputString = data.frontMatterString + outputString; // put the front-matter back.
 
-      processGraphs(text, {
-        fileDirectoryPath,
-        projectDirectoryPath,
-        imageDirectoryPath,
-        imageFilePrefix: computeChecksum(outputFilePath),
-        useRelativeFilePath,
-        codeChunksData,
-        graphsCache,
-        imageMagickPath,
-        mermaidTheme,
-      }).then(({ outputString }) => {
-        outputString = data.frontMatterString + outputString; // put the front-matter back.
-
-        fs.writeFile(
-          outputFilePath,
-          outputString,
-          { encoding: "utf-8" },
-          (error2) => {
-            if (error2) {
-              return reject(error2.toString());
-            }
-            return resolve(outputFilePath);
-          },
-        );
+          fs.writeFile(
+            outputFilePath,
+            outputString,
+            { encoding: "utf-8" },
+            (error2) => {
+              if (error2) {
+                return reject(error2.toString());
+              }
+              return resolve(outputFilePath);
+            },
+          );
+        });
+      })
+      .catch((error) => {
+        if (error) {
+          return reject(error.toString());
+        }
       });
-    });
   });
 }

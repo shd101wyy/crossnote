@@ -2,7 +2,6 @@ import * as child_process from "child_process";
 import * as fs from "fs";
 import * as jsYAML from "js-yaml";
 import * as less from "less";
-import * as mkdirp_ from "mkdirp";
 import * as os from "os";
 import * as path from "path";
 import * as vm from "vm";
@@ -143,18 +142,6 @@ export function execFile(
   });
 }
 
-export function mkdirp(dir: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    mkdirp_(dir, (error, made) => {
-      if (error) {
-        return reject(error);
-      } else {
-        return resolve(made);
-      }
-    });
-  });
-}
-
 /**
  * open html file in browser or open pdf file in reader ... etc
  * @param filePath
@@ -176,14 +163,6 @@ export function openFile(filePath: string) {
     child_process.execFile("xdg-open", [filePath]);
   }
 }
-
-/**
- * get "~/.mume" path
- */
-export const extensionConfigDirectoryPath = path.resolve(
-  os.homedir(),
-  "./.mume",
-);
 
 /**
  * get the directory path of this extension.
@@ -437,7 +416,7 @@ export function addFileProtocol(
   if (vscodePreviewPanel) {
     filePath = vscodePreviewPanel.webview
       .asWebviewUri(vscode.Uri.file(filePath))
-      .toString();
+      .toString(true);
   } else {
     if (!filePath.startsWith("file://")) {
       filePath = "file:///" + filePath;

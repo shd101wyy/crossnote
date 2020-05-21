@@ -1,9 +1,7 @@
 import { spawn } from "child_process";
 import * as path from "path";
-import {
-  extensionConfigDirectoryPath,
-  extensionDirectoryPath,
-} from "./utility";
+import { extensionDirectoryPath } from "./utility";
+import { getExtensionConfigPath } from "./mume";
 
 const PlantUMLJarPath = path.resolve(
   extensionDirectoryPath,
@@ -52,9 +50,7 @@ class PlantUMLTask {
       "-Djava.awt.headless=true",
       "-Dfile.encoding=UTF-8",
       "-Dplantuml.include.path=" +
-        [this.fileDirectoryPath, extensionConfigDirectoryPath].join(
-          path.delimiter,
-        ),
+        [this.fileDirectoryPath, getExtensionConfigPath()].join(path.delimiter),
       "-jar",
       PlantUMLJarPath,
       // '-graphvizdot', 'exe'

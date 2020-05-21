@@ -1,6 +1,6 @@
-import { execFile } from "child_process";
 import * as mkdirp from "mkdirp";
 import * as path from "path";
+import { execFile } from "child_process";
 // ebook-convert is requied (calibre), which can be got from https://calibre-ebook.com/download
 // xpath http://www.w3schools.com/xsl/xpath_syntax.asp
 
@@ -196,15 +196,21 @@ export function ebookConvert(src, dest, config = {}) {
 
     // ebook-convert will cause error if directory doesn't exist,
     // therefore I will create directory first.
-    mkdirp(path.dirname(dest), (error, made) => {
-      execFile("ebook-convert", args, (error2) => {
-        if (error2) {
-          return reject(error2.toString());
-        } else {
-          return resolve();
+    mkdirp(path.dirname(dest))
+      .then(() => {
+        execFile("ebook-convert", args, (error2) => {
+          if (error2) {
+            return reject(error2.toString());
+          } else {
+            return resolve();
+          }
+        });
+      })
+      .catch((error) => {
+        if (error) {
+          return reject(error);
         }
       });
-    });
   });
 }
 

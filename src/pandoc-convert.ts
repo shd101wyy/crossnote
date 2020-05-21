@@ -7,6 +7,7 @@ import { processGraphs } from "./process-graphs";
 import { toc } from "./toc";
 import { transformMarkdown } from "./transformer";
 import * as utility from "./utility";
+import mkdirp = require("mkdirp");
 
 function getFileExtension(documentType: string) {
   if (
@@ -410,7 +411,7 @@ export async function pandocConvert(
   } else {
     imageDirectoryPath = path.resolve(fileDirectoryPath, imageDirectoryPath);
   }
-  await utility.mkdirp(imageDirectoryPath); // create imageDirectoryPath
+  await mkdirp(imageDirectoryPath); // create imageDirectoryPath
 
   const { outputString } = await processGraphs(text, {
     fileDirectoryPath,
@@ -426,7 +427,7 @@ export async function pandocConvert(
 
   // pandoc will cause error if directory doesn't exist,
   // therefore I will create directory first.
-  await utility.mkdirp(path.dirname(outputFilePath));
+  await mkdirp(path.dirname(outputFilePath));
 
   return await new Promise<string>((resolve, reject) => {
     const program = execFile(
