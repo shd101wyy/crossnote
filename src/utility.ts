@@ -5,8 +5,6 @@ import * as less from "less";
 import * as os from "os";
 import * as path from "path";
 import * as vm from "vm";
-import * as vscode from "vscode";
-
 import * as temp from "temp";
 temp.track();
 
@@ -404,19 +402,22 @@ export function isArrayEqual(x, y) {
   return true;
 }
 
+let _externalAddFileProtocolFunction: (filePath: string) => string = null;
+
+export function useExternalAddFileProtocolFunction(
+  func: (filePath: string) => string,
+) {
+  _externalAddFileProtocolFunction = func;
+}
+
 /**
  * Add file:/// to file path
  * If it's for VSCode preview, add vscode-resource:/// to file path
  * @param filePath
  */
-export function addFileProtocol(
-  filePath: string,
-  vscodePreviewPanel?: vscode.WebviewPanel,
-): string {
-  if (vscodePreviewPanel) {
-    filePath = vscodePreviewPanel.webview
-      .asWebviewUri(vscode.Uri.file(filePath))
-      .toString(true);
+export function addFileProtocol(filePath: string): string {
+  if (_externalAddFileProtocolFunction) {
+    return _externalAddFileProtocolFunction(filePath);
   } else {
     if (!filePath.startsWith("file://")) {
       filePath = "file:///" + filePath;
@@ -432,9 +433,15 @@ export function addFileProtocol(
  */
 export function removeFileProtocol(filePath: string): string {
   if (process.platform === "win32") {
-    return filePath.replace(/^(file|vscode\-resource)\:\/+/, "");
+    return filePath
+      .replace(/^(file|vscode\-resource)\:\/+/, "")
+      .replace(/^file\/+/, "");
   } else {
-    return filePath.replace(/^(file|vscode\-resource)\:\/+/, "/");
+    return (
+      filePath
+        .replace(/^(file|vscode\-resource)\:\/+/, "")
+        .replace(/^file\/+/, "") + "/"
+    );
   }
 }
 
