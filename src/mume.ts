@@ -22,7 +22,7 @@ let extensionConfigPath = path.resolve(os.homedir(), "./.mume");
 /**
  * init mume config folder at ~/.mume
  */
-export async function init(configPath: string | null): Promise<void> {
+export async function init(configPath: string | null = null): Promise<void> {
   if (INITIALIZED) {
     return;
   }
