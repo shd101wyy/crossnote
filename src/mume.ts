@@ -4,6 +4,7 @@
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
+import * as mkdirp from "mkdirp";
 
 import * as utility_ from "./utility";
 
@@ -16,6 +17,8 @@ export { MarkdownEngineConfig } from "./markdown-engine-config";
 export { MarkdownEngine } from "./markdown-engine";
 export { CodeChunkData } from "./code-chunk-data";
 
+let extensionConfigPath = path.resolve(os.homedir(), "./.mume");
+
 /**
  * init mume config folder at ~/.mume
  */
@@ -25,9 +28,10 @@ export async function init(configPath: string | null): Promise<void> {
   }
 
   configPath = configPath ? configPath : path.resolve(os.homedir(), "./.mume");
+  extensionConfigPath = configPath;
 
   if (!fs.existsSync(configPath)) {
-    fs.mkdirSync(configPath);
+    mkdirp.sync(configPath);
   }
 
   configs.globalStyle = await utility.getGlobalStyles(configPath);
@@ -97,4 +101,8 @@ export async function init(configPath: string | null): Promise<void> {
 
 export function onDidChangeConfigFile(cb: () => void) {
   CONFIG_CHANGE_CALLBACK = cb;
+}
+
+export function getExtensionConfigPath() {
+  return extensionConfigPath;
 }

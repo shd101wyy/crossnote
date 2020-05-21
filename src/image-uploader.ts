@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as request from "request";
 import * as utility from "./utility";
+import { getExtensionConfigPath } from "./mume";
 
 // imgur api
 // referred from node-imgur:
@@ -31,7 +32,7 @@ async function addImageURLToHistory(imageFilePath, imageUrl) {
 
   // TODO: save to history
   const imageHistoryPath = path.resolve(
-    utility.extensionConfigDirectoryPath,
+    getExtensionConfigPath(),
     "./image_history.md",
   );
   let data: string;
