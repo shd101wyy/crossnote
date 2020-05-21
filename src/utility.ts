@@ -6,6 +6,7 @@ import * as os from "os";
 import * as path from "path";
 import * as vm from "vm";
 import * as temp from "temp";
+import * as vscode from "vscode";
 temp.track();
 
 const TAGS_TO_REPLACE = {
@@ -402,10 +403,13 @@ export function isArrayEqual(x, y) {
   return true;
 }
 
-let _externalAddFileProtocolFunction: (filePath: string) => string = null;
+let _externalAddFileProtocolFunction: (
+  filePath: string,
+  vscodePreviewPanel: vscode.WebviewPanel,
+) => string = null;
 
 export function useExternalAddFileProtocolFunction(
-  func: (filePath: string) => string,
+  func: (filePath: string, vscodePreviewPanel: vscode.WebviewPanel) => string,
 ) {
   _externalAddFileProtocolFunction = func;
 }
@@ -415,9 +419,12 @@ export function useExternalAddFileProtocolFunction(
  * If it's for VSCode preview, add vscode-resource:/// to file path
  * @param filePath
  */
-export function addFileProtocol(filePath: string): string {
+export function addFileProtocol(
+  filePath: string,
+  vscodePreviewPanel?: vscode.WebviewPanel,
+): string {
   if (_externalAddFileProtocolFunction) {
-    return _externalAddFileProtocolFunction(filePath);
+    return _externalAddFileProtocolFunction(filePath, vscodePreviewPanel);
   } else {
     if (!filePath.startsWith("file://")) {
       filePath = "file:///" + filePath;
