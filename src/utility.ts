@@ -6,6 +6,7 @@ import * as mkdirp_ from "mkdirp";
 import * as os from "os";
 import * as path from "path";
 import * as vm from "vm";
+import * as vscode from "vscode";
 
 import * as temp from "temp";
 temp.track();
@@ -431,16 +432,12 @@ export function isArrayEqual(x, y) {
  */
 export function addFileProtocol(
   filePath: string,
-  isForVSCodePreview?: boolean,
+  vscodePreviewPanel?: vscode.WebviewPanel,
 ): string {
-  if (isForVSCodePreview) {
-    if (!filePath.startsWith("vscode-resource://")) {
-      filePath = "vscode-resource:///" + filePath;
-    }
-    filePath = filePath.replace(
-      /^vscode\-resource\:\/+/,
-      "vscode-resource:///",
-    );
+  if (vscodePreviewPanel) {
+    filePath = vscodePreviewPanel.webview
+      .asWebviewUri(vscode.Uri.file(filePath))
+      .toString();
   } else {
     if (!filePath.startsWith("file://")) {
       filePath = "file:///" + filePath;
