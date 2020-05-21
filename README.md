@@ -69,7 +69,7 @@ main();
 const config = {
   // Default config directory, `null`  means "~./.mume"
   configPath : null,
-  
+
   // Enable this option will render markdown by pandoc instead of markdown-it.
   usePandocParser: false,
 
