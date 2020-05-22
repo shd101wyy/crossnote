@@ -291,6 +291,8 @@ export class MarkdownEngine {
    * Set default values
    */
   private initConfig() {
+    this.interpolateConfig(this.config, this.projectDirectoryPath);
+
     // break on single newline
     this.breakOnSingleNewLine = this.config.breakOnSingleNewLine;
 
@@ -310,6 +312,22 @@ export class MarkdownEngine {
     this.protocolsWhiteListRegExp = new RegExp(
       "^(" + protocolsWhiteList.join("|") + ")",
     ); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
+  }
+
+  public interpolateConfig(
+    config: MarkdownEngineConfig,
+    projectDirectoryPath: string,
+  ) {
+    const pattern = /\${\s*(\w+?)\s*}/g; // Replace ${property}
+    const replacements = {
+      projectDir: projectDirectoryPath,
+    };
+
+    // Replace configPath
+    config.configPath.replace(
+      pattern,
+      (match, token) => replacements[token] || match,
+    );
   }
 
   public updateConfiguration(config) {
