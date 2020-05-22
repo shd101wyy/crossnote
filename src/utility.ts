@@ -173,8 +173,8 @@ export const extensionDirectoryPath = path.resolve(__dirname, "../../");
  */
 export async function getGlobalStyles(configPath): Promise<string> {
   const globalLessFilePath = configPath
-    ? path.resolve(configPath, "./styles.less")
-    : path.resolve(os.homedir(), "./.mume/styles.less");
+    ? path.resolve(configPath, "./style.less")
+    : path.resolve(os.homedir(), "./.mume/style.less");
 
   let fileContent: string;
   try {
