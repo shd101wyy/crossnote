@@ -281,6 +281,8 @@ export async function pandocConvert(
     latexEngine,
     imageMagickPath,
     mermaidTheme,
+    onWillTransformMarkdown = null,
+    onDidTransformMarkdown = null,
   },
   config = {},
 ): Promise<string> {
@@ -366,6 +368,10 @@ export async function pandocConvert(
   // process output config
   processOutputConfig(outputConfig || {}, args, latexEngine);
 
+  if (onWillTransformMarkdown) {
+    text = await onWillTransformMarkdown(text);
+  }
+
   // import external files
   const data = await transformMarkdown(text, {
     fileDirectoryPath,
@@ -375,8 +381,14 @@ export async function pandocConvert(
     protocolsWhiteListRegExp,
     forPreview: false,
     usePandocParser: true,
+    onWillTransformMarkdown,
+    onDidTransformMarkdown,
   });
   text = data.outputString;
+
+  if (onDidTransformMarkdown) {
+    text = await onDidTransformMarkdown(text);
+  }
 
   // add front-matter(yaml) back to text
   text = "---\n" + YAML.stringify(config) + "---\n" + text;

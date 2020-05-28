@@ -2258,6 +2258,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         latexEngine: this.config.latexEngine,
         imageMagickPath: this.config.imageMagickPath,
         mermaidTheme: this.config.mermaidTheme,
+        onWillTransformMarkdown:
+          utility.configs.parserConfig["onWillTransformMarkdown"],
+        onDidTransformMarkdown:
+          utility.configs.parserConfig["onDidTransformMarkdown"],
       },
       config,
     );
@@ -2361,6 +2365,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         usePandocParser: this.config.usePandocParser,
         imageMagickPath: this.config.imageMagickPath,
         mermaidTheme: this.config.mermaidTheme,
+        onWillTransformMarkdown:
+          utility.configs.parserConfig["onWillTransformMarkdown"],
+        onDidTransformMarkdown:
+          utility.configs.parserConfig["onDidTransformMarkdown"],
       },
       markdownConfig,
     );
@@ -2771,6 +2779,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       );
     }
 
+    if (utility.configs.parserConfig["onWillTransformMarkdown"]) {
+      inputString = await utility.configs.parserConfig[
+        "onWillTransformMarkdown"
+      ](inputString);
+    }
+
     // import external files and insert anchors if necessary
     let outputString;
     let slideConfigs;
@@ -2793,7 +2807,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
       usePandocParser: this.config.usePandocParser,
+      onWillTransformMarkdown:
+        utility.configs.parserConfig["onWillTransformMarkdown"],
+      onDidTransformMarkdown:
+        utility.configs.parserConfig["onDidTransformMarkdown"],
     }));
+
+    if (utility.configs.parserConfig["onDidTransformMarkdown"]) {
+      outputString = await utility.configs.parserConfig[
+        "onDidTransformMarkdown"
+      ](outputString);
+    }
 
     // process front-matter
     const fm = this.processFrontMatter(
