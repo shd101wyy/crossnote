@@ -41,6 +41,16 @@ export function unescapeString(str: string = ""): string {
   );
 }
 
+export interface ParserConfig {
+  onWillParseMarkdown?: (markdown: string) => Promise<string>;
+  onDidParseMarkdown?: (
+    html: string,
+    opts: { cheerio: CheerioAPI },
+  ) => Promise<string>;
+  onWillTransformMarkdown?: (markdown: string) => Promise<string>;
+  onDidTransformMarkdown?: (markdown: string) => Promise<string>;
+}
+
 /**
  * Do nothing and sleep for `ms` milliseconds
  * @param ms
@@ -352,12 +362,12 @@ export async function getExtensionConfig(configPath): Promise<object> {
   return config;
 }
 
-export async function getParserConfig(configPath): Promise<object> {
+export async function getParserConfig(configPath): Promise<ParserConfig> {
   const parserConfigPath = configPath
     ? path.resolve(configPath, "./parser.js")
     : path.resolve(os.homedir(), "./.mume/parser.js");
 
-  let parserConfig: object;
+  let parserConfig: ParserConfig;
   if (fs.existsSync(parserConfigPath)) {
     try {
       delete require.cache[parserConfigPath]; // return uncached
@@ -372,7 +382,7 @@ export async function getParserConfig(configPath): Promise<object> {
       return resolve(markdown)
     })
   },
-  onDidParseMarkdown: function(html) {
+  onDidParseMarkdown: function(html, {cheerio}) {
     return new Promise((resolve, reject)=> {
       return resolve(html)
     })
@@ -476,7 +486,7 @@ export const configs: {
   mathjaxConfig: object;
   katexConfig: object;
   mermaidConfig: string;
-  parserConfig: object;
+  parserConfig: ParserConfig;
   /**
    * Please note that this is not necessarily MarkdownEngineConfig
    */
