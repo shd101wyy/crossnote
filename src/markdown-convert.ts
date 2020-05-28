@@ -188,6 +188,8 @@ export async function markdownConvert(
     usePandocParser,
     imageMagickPath,
     mermaidTheme,
+    onWillTransformMarkdown = null,
+    onDidTransformMarkdown = null,
   }: {
     projectDirectoryPath: string;
     fileDirectoryPath: string;
@@ -202,6 +204,8 @@ export async function markdownConvert(
     usePandocParser: boolean;
     imageMagickPath: string;
     mermaidTheme: string;
+    onWillTransformMarkdown?: any;
+    onDidTransformMarkdown?: any;
   },
   config: object,
 ): Promise<string> {
@@ -239,6 +243,10 @@ export async function markdownConvert(
 
   const useRelativeFilePath = !config["absolute_image_path"];
 
+  if (onWillTransformMarkdown) {
+    text = await onWillTransformMarkdown(text);
+  }
+
   // import external files
   const data = await transformMarkdown(text, {
     fileDirectoryPath,
@@ -250,8 +258,15 @@ export async function markdownConvert(
     protocolsWhiteListRegExp,
     imageDirectoryPath,
     usePandocParser,
+    onWillTransformMarkdown,
+    onDidTransformMarkdown,
   });
+
   text = data.outputString;
+
+  if (onDidTransformMarkdown) {
+    text = await onDidTransformMarkdown(text);
+  }
 
   // replace [MUMETOC]
   const tocBracketEnabled = data.tocBracketEnabled;

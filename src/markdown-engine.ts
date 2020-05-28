@@ -292,6 +292,8 @@ export class MarkdownEngine {
    * Set default values
    */
   private initConfig() {
+    this.interpolateConfig(this.config, this.projectDirectoryPath);
+
     // break on single newline
     this.breakOnSingleNewLine = this.config.breakOnSingleNewLine;
 
@@ -311,6 +313,28 @@ export class MarkdownEngine {
     this.protocolsWhiteListRegExp = new RegExp(
       "^(" + protocolsWhiteList.join("|") + ")",
     ); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
+  }
+
+  public interpolateConfig(
+    config: MarkdownEngineConfig,
+    projectDirectoryPath: string,
+  ) {
+    const pattern = /\${\s*(\w+?)\s*}/g; // Replace ${property}
+
+    const replacements = {
+      projectDir: projectDirectoryPath,
+      workspaceFolder: projectDirectoryPath, // vscode abreviation
+    };
+
+    // Replace certains pathss
+    [
+      config.configPath,
+      config.imageFolderPath,
+      config.imageMagickPath,
+      config.chromePath,
+    ].forEach((x) => {
+      x.replace(pattern, (match, token) => replacements[token] || match);
+    });
   }
 
   public updateConfiguration(config) {
@@ -2234,6 +2258,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         latexEngine: this.config.latexEngine,
         imageMagickPath: this.config.imageMagickPath,
         mermaidTheme: this.config.mermaidTheme,
+        onWillTransformMarkdown:
+          utility.configs.parserConfig["onWillTransformMarkdown"],
+        onDidTransformMarkdown:
+          utility.configs.parserConfig["onDidTransformMarkdown"],
       },
       config,
     );
@@ -2337,6 +2365,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         usePandocParser: this.config.usePandocParser,
         imageMagickPath: this.config.imageMagickPath,
         mermaidTheme: this.config.mermaidTheme,
+        onWillTransformMarkdown:
+          utility.configs.parserConfig["onWillTransformMarkdown"],
+        onDidTransformMarkdown:
+          utility.configs.parserConfig["onDidTransformMarkdown"],
       },
       markdownConfig,
     );
@@ -2747,6 +2779,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       );
     }
 
+    if (utility.configs.parserConfig["onWillTransformMarkdown"]) {
+      inputString = await utility.configs.parserConfig[
+        "onWillTransformMarkdown"
+      ](inputString);
+    }
+
     // import external files and insert anchors if necessary
     let outputString;
     let slideConfigs;
@@ -2769,7 +2807,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
       usePandocParser: this.config.usePandocParser,
+      onWillTransformMarkdown:
+        utility.configs.parserConfig["onWillTransformMarkdown"],
+      onDidTransformMarkdown:
+        utility.configs.parserConfig["onDidTransformMarkdown"],
     }));
+
+    if (utility.configs.parserConfig["onDidTransformMarkdown"]) {
+      outputString = await utility.configs.parserConfig[
+        "onDidTransformMarkdown"
+      ](outputString);
+    }
 
     // process front-matter
     const fm = this.processFrontMatter(

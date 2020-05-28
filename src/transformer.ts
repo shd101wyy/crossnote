@@ -62,6 +62,8 @@ export interface TransformMarkdownOptions {
   imageDirectoryPath?: string;
   usePandocParser: boolean;
   headingIdGenerator?: HeadingIdGenerator;
+  onWillTransformMarkdown?: (markdown: string) => string;
+  onDidTransformMarkdown?: (markdown: string) => string;
 }
 
 const fileExtensionToLanguageMap = {
@@ -253,6 +255,8 @@ export async function transformMarkdown(
     imageDirectoryPath = "",
     usePandocParser = false,
     headingIdGenerator = new HeadingIdGenerator(),
+    onWillTransformMarkdown = null,
+    onDidTransformMarkdown = null,
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
   let lastOpeningCodeBlockFence: string = null;
@@ -788,6 +792,9 @@ export async function transformMarkdown(
                 config,
               )}  \n${fileContent}\n\`\`\`  `;
             } else if ([".md", ".markdown", ".mmark"].indexOf(extname) >= 0) {
+              if (onWillTransformMarkdown) {
+                fileContent = await onWillTransformMarkdown(fileContent);
+              }
               // markdown files
               // this return here is necessary
               let output2;
@@ -808,6 +815,11 @@ export async function transformMarkdown(
                 usePandocParser,
                 headingIdGenerator,
               }));
+
+              if (onDidTransformMarkdown) {
+                output2 = await onDidTransformMarkdown(output2);
+              }
+
               output2 = "\n" + output2 + "  ";
               headings = headings.concat(headings2);
 

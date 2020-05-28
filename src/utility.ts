@@ -376,6 +376,16 @@ export async function getParserConfig(configPath): Promise<object> {
     return new Promise((resolve, reject)=> {
       return resolve(html)
     })
+  },
+  onWillTransformMarkdown: function (markdown) {
+        return new Promise((resolve, reject) => {
+            return resolve(markdown);
+        });
+    },
+  onDidTransformMarkdown: function (markdown) {
+      return new Promise((resolve, reject) => {
+          return resolve(markdown);
+      });
   }
 }`;
     await writeFile(parserConfigPath, template, { encoding: "utf-8" });
