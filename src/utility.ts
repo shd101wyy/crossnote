@@ -441,12 +441,12 @@ export function addFileProtocol(
 export function removeFileProtocol(filePath: string): string {
   if (process.platform === "win32") {
     return filePath
-      .replace(/^(file|vscode\-resource)\:\/+/, "")
+      .replace(/^(file|vscode-resource|vscode-webview-resource)\:\/+/, "")
       .replace(/^file\/+/, "");
   } else {
     return (
       filePath
-        .replace(/^(file|vscode\-resource)\:\/+/, "")
+        .replace(/^(file|vscode-resource|vscode-webview-resource)\:\/+/, "")
         .replace(/^file\/+/, "") + "/"
     );
   }
