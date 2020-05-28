@@ -62,8 +62,8 @@ export interface TransformMarkdownOptions {
   imageDirectoryPath?: string;
   usePandocParser: boolean;
   headingIdGenerator?: HeadingIdGenerator;
-  onWillTransformMarkdown?: (markdown: string) => string;
-  onDidTransformMarkdown?: (markdown: string) => string;
+  onWillTransformMarkdown?: (markdown: string) => Promise<string>;
+  onDidTransformMarkdown?: (markdown: string) => Promise<string>;
 }
 
 const fileExtensionToLanguageMap = {

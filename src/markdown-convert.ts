@@ -204,8 +204,8 @@ export async function markdownConvert(
     usePandocParser: boolean;
     imageMagickPath: string;
     mermaidTheme: string;
-    onWillTransformMarkdown?: any;
-    onDidTransformMarkdown?: any;
+    onWillTransformMarkdown?: (markdown: string) => Promise<string>;
+    onDidTransformMarkdown?: (markdown: string) => Promise<string>;
   },
   config: object,
 ): Promise<string> {
