@@ -314,6 +314,7 @@ export async function markdownConvert(
           graphsCache,
           imageMagickPath,
           mermaidTheme,
+          addOptionsStr: false,
         }).then(({ outputString }) => {
           outputString = data.frontMatterString + outputString; // put the front-matter back.
 
