@@ -27,6 +27,7 @@ export async function processGraphs(
     graphsCache,
     imageMagickPath,
     mermaidTheme,
+    addOptionsStr,
   }: {
     fileDirectoryPath: string;
     projectDirectoryPath: string;
@@ -37,6 +38,7 @@ export async function processGraphs(
     graphsCache: { [key: string]: string };
     imageMagickPath: string;
     mermaidTheme: string;
+    addOptionsStr: boolean;
   },
 ): Promise<{ outputString: string; imagePaths: string[] }> {
   const lines = text.split("\n");
@@ -177,8 +179,12 @@ export async function processGraphs(
       if (altCaption == null) {
         altCaption = "";
       }
+      let imageOptions = "";
+      if (addOptionsStr) {
+        imageOptions = `{${optionsStr}}`;
+      }
       lines[end] +=
-        "\n" + `![${altCaption}](${displayPNGFilePath}){${optionsStr}}  `;
+        "\n" + `![${altCaption}](${displayPNGFilePath})${imageOptions}  `;
     }
 
     imagePaths.push(pngFilePath);
@@ -314,8 +320,12 @@ export async function processGraphs(
         if (altCaption == null) {
           altCaption = "";
         }
+        let imageOptions = "";
+        if (addOptionsStr) {
+          imageOptions = `{${optionsStr}}`;
+        }
         lines[end] +=
-          "\n" + `![${altCaption}](${displayPNGFilePath}){${optionsStr}}  `;
+          "\n" + `![${altCaption}](${displayPNGFilePath})${imageOptions}  `;
 
         imagePaths.push(pngFilePath);
       } catch (error) {

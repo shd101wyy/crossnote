@@ -435,6 +435,7 @@ export async function pandocConvert(
     graphsCache,
     imageMagickPath,
     mermaidTheme,
+    addOptionsStr: true,
   });
 
   // pandoc will cause error if directory doesn't exist,
