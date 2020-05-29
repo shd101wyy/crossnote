@@ -62,10 +62,6 @@ function processOutputConfig(
     args.push("--no-highlight");
   }
 
-  if (config["pandoc_args"]) {
-    config["pandoc_args"].forEach((arg) => args.push(arg));
-  }
-
   if (config["citation_package"]) {
     if (config["citation_package"] === "natbib") {
       args.push("--natbib");
@@ -132,6 +128,12 @@ function processOutputConfig(
 
   if (config["template"]) {
     args.push("--template=" + config["template"]);
+  }
+  
+  // All other arguments give here can override the 
+  // defaults from above
+  if (config["pandoc_args"]) {
+    config["pandoc_args"].forEach((arg) => args.push(arg));
   }
 }
 
