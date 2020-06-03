@@ -193,11 +193,11 @@ export async function getGlobalStyles(configPath): Promise<string> {
     // create style.less file
     fileContent = `
 /* Please visit the URL below for more information: */
-/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */ 
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
 
 .markdown-preview.markdown-preview {
   // modify your style here
-  // eg: background-color: blue;  
+  // eg: background-color: blue;
 }
 `;
     await writeFile(globalLessFilePath, fileContent, { encoding: "utf-8" });
@@ -459,17 +459,24 @@ export function addFileProtocol(
  * @param filePath
  */
 export function removeFileProtocol(filePath: string): string {
-  if (process.platform === "win32") {
-    return filePath
-      .replace(/^(file|vscode-resource|vscode-webview-resource)\:\/+/, "")
-      .replace(/^file\/+/, "");
-  } else {
-    return (
-      filePath
-        .replace(/^(file|vscode-resource|vscode-webview-resource)\:\/+/, "")
-        .replace(/^file\/+/, "") + "/"
-    );
-  }
+  // See https://regex101.com/r/YlpEur/8/
+  // - "file://///a///b//c/d"                   ---> "a///b//c/d"
+  // - "vscode-resource://///file///a///b//c/d" ---> "file///a///b//c/d"
+  const regex = /^(?:(?:file|(vscode)-(?:webview-)?resource|vscode--resource):\/+)(.*)/m;
+
+  return filePath.replace(regex, (m, isVSCode, rest) => {
+    if (isVSCode) {
+      // For vscode urls -> Remove host: `file///C:/a/b/c` -> `C:/a/b/c`
+      rest = rest.replace(/^file\/+/, "");
+    }
+
+    if (process.platform !== "win32" && ! rest.startsWith("/")) {
+      // On Linux platform, add a slash at the front
+      return "/" + rest;
+    } else {
+      return rest;
+    }
+  });
 }
 
 /**
