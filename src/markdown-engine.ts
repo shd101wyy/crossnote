@@ -2845,7 +2845,15 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         }
 
         // check bibliography
-        if (yamlConfig["bibliography"] || yamlConfig["references"]) {
+        const noDefaultsOrCiteProc =
+          args.find((el) => {
+            return el.includes("pandoc-citeproc") || el.includes("--defaults");
+          }) === undefined;
+
+        if (
+          noDefaultsOrCiteProc &&
+          (yamlConfig["bibliography"] || yamlConfig["references"])
+        ) {
           args.push("--filter", "pandoc-citeproc");
         }
 

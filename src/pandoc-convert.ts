@@ -129,8 +129,8 @@ function processOutputConfig(
   if (config["template"]) {
     args.push("--template=" + config["template"]);
   }
-  
-  // All other arguments give here can override the 
+
+  // All other arguments give here can override the
   // defaults from above
   if (config["pandoc_args"]) {
     config["pandoc_args"].forEach((arg) => args.push(arg));
@@ -413,7 +413,15 @@ export async function pandocConvert(
   text = processPaths(text, fileDirectoryPath, projectDirectoryPath);
 
   // citation
-  if (config["bibliography"] || config["references"]) {
+  const noDefaultsOrCiteProc =
+    args.find((el) => {
+      return el.includes("pandoc-citeproc") || el.includes("--defaults");
+    }) === undefined;
+
+  if (
+    noDefaultsOrCiteProc &&
+    (config["bibliography"] || config["references"])
+  ) {
     args.push("--filter", "pandoc-citeproc");
   }
 
