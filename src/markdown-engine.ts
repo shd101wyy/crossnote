@@ -326,15 +326,23 @@ export class MarkdownEngine {
       workspaceFolder: projectDirectoryPath, // vscode abreviation
     };
 
-    // Replace certains pathss
-    [
-      config.configPath,
-      config.imageFolderPath,
-      config.imageMagickPath,
-      config.chromePath,
-    ].forEach((x) => {
-      x.replace(pattern, (match, token) => replacements[token] || match);
-    });
+    // Replace certains paths
+    config.configPath = config.configPath?.replace(
+      pattern,
+      (match, token) => replacements[token] || match,
+    );
+    config.imageFolderPath = config.imageFolderPath?.replace(
+      pattern,
+      (match, token) => replacements[token] || match,
+    );
+    config.imageMagickPath = config.imageMagickPath?.replace(
+      pattern,
+      (match, token) => replacements[token] || match,
+    );
+    config.chromePath = config.chromePath?.replace(
+      pattern,
+      (match, token) => replacements[token] || match,
+    );
   }
 
   public updateConfiguration(config) {

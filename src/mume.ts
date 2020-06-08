@@ -27,7 +27,9 @@ export async function init(configPath: string | null = null): Promise<void> {
     return;
   }
 
-  configPath = configPath ? configPath : path.resolve(os.homedir(), "./.mume");
+  configPath = configPath
+    ? path.resolve(configPath)
+    : path.resolve(os.homedir(), "./.mume");
   extensionConfigPath = configPath;
 
   if (!fs.existsSync(configPath)) {
