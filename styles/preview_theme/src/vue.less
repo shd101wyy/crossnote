@@ -2,6 +2,10 @@
 
 // out: ../vue.css, compress: true, sourceMap: false
 @import url("https://fonts.googleapis.com/css?family=Roboto+Mono|Source+Sans+Pro:300,400,600");
+
+@bg: #fff;
+@fg: #34495e;
+
 * {
   -webkit-font-smoothing: antialiased;
   -webkit-overflow-scrolling: touch;
@@ -70,7 +74,7 @@ html {
 body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
-  color: #34495e;
+  color: @fg;
   font-family: Source Sans Pro, Helvetica Neue, Arial, sans-serif;
   font-size: 15px;
   letter-spacing: 0;
@@ -88,10 +92,11 @@ a[disabled] {
 }
 
 kbd {
+  color: @fg;
   border: 1px solid #ccc;
   border-radius: 3px;
   display: inline-block;
-  font-size: 12px!important;
+  font-size: 12px !important;
   line-height: 12px;
   margin-bottom: 3px;
   padding: 3px 5px;
@@ -379,7 +384,7 @@ body.sticky .sidebar-toggle {
 }
 
 .markdown-preview>:first-child {
-  margin-top: 0!important
+  margin-top: 0 !important
 }
 
 .markdown-preview hr {
@@ -472,6 +477,7 @@ body.close .content {
 }
 
 @media print {
+
   .app-nav,
   .github-corner,
   .sidebar,
@@ -481,27 +487,33 @@ body.close .content {
 }
 
 @media screen and (max-width:768px) {
+
   .github-corner,
   .sidebar,
   .sidebar-toggle {
     position: fixed
   }
+
   .app-nav {
     margin-top: 16px
   }
+
   .app-nav li ul {
     top: 30px
   }
+
   main {
     height: auto;
     overflow-x: hidden
   }
+
   .sidebar {
     left: -300px;
     transition: -webkit-transform .25s ease-out;
     transition: transform .25s ease-out;
     transition: transform .25s ease-out, -webkit-transform .25s ease-out
   }
+
   .content {
     left: 0;
     max-width: 100vw;
@@ -511,39 +523,47 @@ body.close .content {
     transition: transform .25s ease;
     transition: transform .25s ease, -webkit-transform .25s ease
   }
+
   .app-nav,
   .github-corner {
     transition: -webkit-transform .25s ease-out;
     transition: transform .25s ease-out;
     transition: transform .25s ease-out, -webkit-transform .25s ease-out
   }
+
   .sidebar-toggle {
     background-color: transparent;
     width: auto;
     padding: 30px 30px 10px 10px
   }
+
   body.close .sidebar {
     -webkit-transform: translateX(300px);
     transform: translateX(300px)
   }
+
   body.close .sidebar-toggle {
     background-color: hsla(0, 0%, 100%, .8);
     transition: background-color 1s;
     width: 284px;
     padding: 10px
   }
+
   body.close .content {
     -webkit-transform: translateX(300px);
     transform: translateX(300px)
   }
+
   body.close .app-nav,
   body.close .github-corner {
     display: none
   }
+
   .github-corner .octo-arm {
     -webkit-animation: a .56s ease-in-out;
     animation: a .56s ease-in-out
   }
+
   .github-corner:hover .octo-arm {
     -webkit-animation: none;
     animation: none
@@ -551,16 +571,19 @@ body.close .content {
 }
 
 @-webkit-keyframes a {
+
   0%,
   to {
     -webkit-transform: rotate(0);
     transform: rotate(0)
   }
+
   20%,
   60% {
     -webkit-transform: rotate(-25deg);
     transform: rotate(-25deg)
   }
+
   40%,
   80% {
     -webkit-transform: rotate(10deg);
@@ -569,16 +592,19 @@ body.close .content {
 }
 
 @keyframes a {
+
   0%,
   to {
     -webkit-transform: rotate(0);
     transform: rotate(0)
   }
+
   20%,
   60% {
     -webkit-transform: rotate(-25deg);
     transform: rotate(-25deg)
   }
+
   40%,
   80% {
     -webkit-transform: rotate(10deg);
@@ -843,6 +869,7 @@ body {
   border-left: 4px solid #42b983;
   border-left: 4px solid var(--theme-color, #42b983);
   color: #858585;
+  background-color: contrast(@bg, lighten(@bg, 8%), darken(@bg, 6%));
   margin: 2em 0;
   padding-left: 20px
 }

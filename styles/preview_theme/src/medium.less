@@ -1,7 +1,10 @@
 // out: ../medium.css, compress:true
 
 body {
-  background: #fff;
+  @bg: #fff;
+  @fg: rgba(0, 0, 0, .8);
+
+  background: @bg;
   line-height: 1.555;
   text-align: justify;
   padding: 2em;
@@ -9,30 +12,32 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -moz-font-feature-settings: "liga" on;
+  -moz-font-feature-settings: "liga"on;
   font-family: "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
   line-height: 1.58;
   letter-spacing: -0.003em;
-  color: rgba(0, 0, 0, .8);
+  color: @fg;
 
   p {
     font-family: "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
     line-height: 1.58;
     letter-spacing: -0.003em;
-    color: rgba(0, 0, 0, .8);
+    color: @fg;
   }
 
   h1,
-	h2,
-	h3,
-	h4,
-	h5,
-	h6,
-	table, li, 
-	.mathjax-exps, .math, {
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  table,
+  li,
+  .mathjax-exps,
+  .math {
     font-family: "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
-    color: rgba(0, 0, 0, .8);
-	}
+    color: @fg;
+  }
 
   a,
   a:link,
@@ -140,7 +145,7 @@ body {
     font-style: normal;
   }
 
-  ul > li:before {
+  ul>li:before {
     padding-top: 4px;
     padding-right: 15px;
     // content: "•";
@@ -152,10 +157,10 @@ body {
     text-align: right;
   }
 
-  li > p {
-		margin-top: 0;
-		margin-bottom: 0;
-	}
+  li>p {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
 
   ol {
     padding-left: 1.2em;
@@ -171,6 +176,7 @@ body {
     font-weight: 400;
     font-style: normal;
     font-size: 21px;
+    background-color: contrast(@bg, lighten(@bg, 8%), darken(@bg, 6%));
   }
 
   blockquote p {
@@ -239,16 +245,16 @@ body {
     vertical-align: bottom;
   }
 
-  table caption + thead tr:first-child th,
-  table caption + thead tr:first-child td,
-  table colgroup + thead tr:first-child th,
-  table colgroup + thead tr:first-child td,
+  table caption+thead tr:first-child th,
+  table caption+thead tr:first-child td,
+  table colgroup+thead tr:first-child th,
+  table colgroup+thead tr:first-child td,
   table thead:first-child tr:first-child th,
   table thead:first-child tr:first-child td {
     border-top: 0;
   }
 
-  table tbody + tbody {
+  table tbody+tbody {
     border-top: 2px solid #ddd;
   }
 
@@ -283,5 +289,9 @@ body {
   .task-list-item input:checked:before,
   .task-list-item input[checked]:before {
     color: inherit;
+  }
+
+  kbd {
+    color: @fg;
   }
 }
