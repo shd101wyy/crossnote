@@ -4,7 +4,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
 
 ```json
 {
-  "mermaid": "8.5.1",
+  "mermaid": "8.5.2",
   "plantuml": "mit-1.2020.10",
   "wavedrom": "2.3.0",
   "reveal": "3.7.0",
