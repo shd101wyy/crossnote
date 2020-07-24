@@ -60,13 +60,17 @@ class PlantUMLTask {
       "UTF-8",
     ]);
 
+    var svgData = '';
+
     this.task.stdout.on("data", (chunk) => {
       let data = chunk.toString();
+      svgData += data;
+
       this.chunks += data;
       if (
         this.chunks.trimRight().endsWith("</svg>") &&
-        this.chunks.match(/<svg/g).length ===
-          this.chunks.match(/<\/svg>/g).length
+        svgData.match(/<svg/g).length ===
+          svgData.match(/<\/svg/g).length
       ) {
         data = this.chunks;
         this.chunks = ""; // clear CHUNKS
