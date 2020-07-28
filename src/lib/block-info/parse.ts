@@ -5,6 +5,7 @@ export default function(raw: string): BlockInfo {
   let language;
   let attributesAsString: string;
   let attributes: object;
+  const supportedLanguages = ["plantuml", "puml"]
   const trimmedParams = raw.trim();
   const match =
     trimmedParams.indexOf("{") !== -1
@@ -29,6 +30,11 @@ export default function(raw: string): BlockInfo {
     }
   } else {
     attributes = {};
+  }
+  if(!language && attributes && attributes.hasOwnProperty("class")){
+      if(supportedLanguages.indexOf(attributes["class"]) !== -1){
+          language = attributes["class"];
+      }
   }
 
   return { language, attributes };
