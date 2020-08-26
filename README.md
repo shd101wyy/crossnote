@@ -9,7 +9,7 @@ This library powers:
 
 and other external projects such as:
 
-- [TechnicalMarkdown](https://github.com/gabyx/TechnicalMarkdown)
+- [TechnicalMarkdown](https://github.com/gabyx/TechnicalMarkdown) up to commit 13856d37030483679
 
 ## Installation
 
