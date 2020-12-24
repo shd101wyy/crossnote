@@ -1099,7 +1099,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           "./dependencies/katex/katex.min.css",
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">`;
       }
     } else {
       mathStyle = "";
@@ -1128,7 +1128,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           "./dependencies/mermaid/mermaid.min.js",
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@8.5.2/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@8.8.4/dist/mermaid.min.js"></script>`;
       }
       const mermaidConfig: string = await utility.getMermaidConfig(
         this.config.configPath,
@@ -2101,7 +2101,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig["html"] &&
         ebookConfig["html"].cdn
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           extensionDirectoryPath,
