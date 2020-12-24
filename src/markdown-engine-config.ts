@@ -7,6 +7,7 @@ export interface MarkdownEngineConfig {
   enableTypographer?: boolean;
   enableWikiLinkSyntax?: boolean;
   enableLinkify?: boolean;
+  useGitHubStylePipedLink?: boolean;
   wikiLinkFileExtension?: string;
   enableEmojiSyntax?: boolean;
   enableExtendedTableSyntax?: boolean;
@@ -51,6 +52,7 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   enableEmojiSyntax: true,
   enableExtendedTableSyntax: false,
   enableCriticMarkupSyntax: false,
+  useGitHubStylePipedLink: true,
   wikiLinkFileExtension: ".md",
   protocolsWhiteList: "http://, https://, atom://, file://, mailto:, tel:",
   mathRenderingOption: "KaTeX",

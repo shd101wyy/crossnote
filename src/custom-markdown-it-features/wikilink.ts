@@ -57,11 +57,21 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
     }
 
     const splits = content.split("|");
-    const linkText = splits[0].trim();
-    const wikiLink =
-      splits.length === 2
-        ? `${splits[1].trim()}${config.wikiLinkFileExtension}`
-        : `${linkText.replace(/\s/g, "_")}${config.wikiLinkFileExtension}`;
+    let wikiLink: string;
+    let linkText: string;
+    if (splits.length === 1) {
+      linkText = splits[0].trim();
+      const filename = linkText.replace(/\s/g, "_");
+      wikiLink = `${filename}${config.wikiLinkFileExtension}`;
+    } else {
+      if (config.useGitHubStylePipedLink) {
+        linkText = splits[0].trim();
+        wikiLink = `${splits[1].trim()}${config.wikiLinkFileExtension}`;
+      } else {
+        wikiLink = splits[0].trim();
+        linkText = `${splits[1].trim()}${config.wikiLinkFileExtension}`;
+      }
+    }
 
     return `<a href="${wikiLink}">${linkText}</a>`;
   };

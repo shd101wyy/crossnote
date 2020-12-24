@@ -470,7 +470,7 @@ export function removeFileProtocol(filePath: string): string {
       rest = rest.replace(/^file\/+/, "");
     }
 
-    if (process.platform !== "win32" && ! rest.startsWith("/")) {
+    if (process.platform !== "win32" && !rest.startsWith("/")) {
       // On Linux platform, add a slash at the front
       return "/" + rest;
     } else {

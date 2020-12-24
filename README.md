@@ -96,6 +96,9 @@ const config = {
 
   // Enable Wiki Link syntax support. More information can be found a  https://help.github.com/articles/adding-links-to-wikis/
   enableWikiLinkSyntax: true,
+  // If checked, we use GitHub style piped wiki links, i.e. [[linkText|wikiLink]]. Otherwise, we use
+  // [[wikiLink|linkText]] as the original Wikipedia style.
+  useGitHubStylePipedLink: true
   // By default, the extension for wikilink is `.md`. For example: [[test]] will direct to file path `test.md`.
   wikiLinkFileExtension: '.md'
 
@@ -252,7 +255,7 @@ Global config files are located at `~/.mume` directory
 
 ## Development
 
-[Visual Studio Code](https://code.visualstudio.com/) is recommended.  
+[Visual Studio Code](https://code.visualstudio.com/) is recommended.
 Recommended to use Node.js version `lts/dubnium`.
 
 1.  Clone this project
