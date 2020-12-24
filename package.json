@@ -1,6 +1,6 @@
 {
   "name": "@shd101wyy/mume",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A powerful markdown tool",
   "keywords": [
     "markdown"
@@ -55,7 +55,7 @@
     "less": "^3.9.0",
     "lodash": "^4.17.15",
     "mkdirp": "^1.0.4",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "puppeteer-core": "1.15.0",
     "qiniu": "^7.2.2",
     "request": "^2.88.0",
