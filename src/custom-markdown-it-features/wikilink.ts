@@ -68,8 +68,8 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
         linkText = splits[0].trim();
         wikiLink = `${splits[1].trim()}${config.wikiLinkFileExtension}`;
       } else {
-        wikiLink = splits[0].trim();
-        linkText = `${splits[1].trim()}${config.wikiLinkFileExtension}`;
+        linkText = splits[1].trim();
+        wikiLink = `${splits[0].trim()}${config.wikiLinkFileExtension}`;
       }
     }
 
