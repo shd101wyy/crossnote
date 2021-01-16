@@ -2862,7 +2862,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           noDefaultsOrCiteProc &&
           (yamlConfig["bibliography"] || yamlConfig["references"])
         ) {
-          args.push("--filter", "pandoc-citeproc");
+          args.push("--citeproc");
         }
 
         args = this.config.pandocArguments.concat(args);
