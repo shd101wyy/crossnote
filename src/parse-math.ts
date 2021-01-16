@@ -38,6 +38,11 @@ export default ({
           extensionDirectoryPath,
           "./dependencies/katex/katex.min.js",
         ));
+        // Add mhchem support
+        require(path.resolve(
+          extensionDirectoryPath,
+          "./dependencies/katex/contrib/mhchem.min.js",
+        ));
       }
       return katex.renderToString(
         content,

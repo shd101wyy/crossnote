@@ -43,3 +43,5 @@ _Attention_: Need to remove `font: inherit;` from `reveal.css`. Otherwise `KaTeX
 _Attention_: Need to append `.mermaid` to all selectors in `mermaid.css`, `mermaid.dark.css`, and `mermaid.forest.css`. Otherwise it will pollute `viz` graph.
 
 _Attention_: **mpld3.v0.3.min.js** min version actually has problem, so use not minified version.
+
+_Attention_: To add mhchem support to katex, we have to modify `contrib/mhchem.min.js` and replace `require("katex")` to `require("../katex.min.js")`

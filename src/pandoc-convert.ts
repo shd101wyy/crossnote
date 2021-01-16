@@ -422,7 +422,7 @@ export async function pandocConvert(
     noDefaultsOrCiteProc &&
     (config["bibliography"] || config["references"])
   ) {
-    args.push("--filter", "pandoc-citeproc");
+    args.push("--citeproc");
   }
 
   if (imageDirectoryPath[0] === "/") {
