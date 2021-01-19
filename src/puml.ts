@@ -61,26 +61,29 @@ class PlantUMLTask {
     ]);
 
     this.task.stdout.on("data", (chunk) => {
-      let data = chunk.toString();
-      this.chunks += data;
-      if (
-        this.chunks.trimRight().endsWith("</svg>") &&
-        this.chunks.match(/<svg/g).length ===
-          this.chunks.match(/<\/svg>/g).length
-      ) {
-        data = this.chunks;
-        this.chunks = ""; // clear CHUNKS
-        const diagrams = data.split("<?xml ");
-        diagrams.forEach((diagram, i) => {
-          if (diagram.length) {
-            const callback = this.callbacks.shift();
-            if (callback) {
-              callback("<?xml " + diagram);
+        let data = chunk.toString();
+        data = data.replace(/<svg[\n\r\s]+>$/, "</svg>");
+        this.chunks += data;
+        if (data.trimRight().endsWith("</svg>") &&
+            this.chunks.match(/<svg/g).length ===
+                this.chunks.match(/<\/svg/g).length) {
+            data = this.chunks.trim();
+            if (!data.startsWith("<?xml")) {
+                data = "<?xml encoding=\"utf-8\" version=\"1.0\"?>" + data;
             }
-          }
-        });
-      }
+            this.chunks = ""; // clear CHUNKS
+            const diagrams = data.split("<?xml ");
+            diagrams.forEach((diagram, i) => {
+                if (diagram.length) {
+                    const callback = this.callbacks.shift();
+                    if (callback) {
+                        callback("<?xml " + diagram);
+                    }
+                }
+            });
+        }
     });
+    this.task.stderr.on("data", (chunk)=>console.log(chunk.toString().trim()));
 
     this.task.on("error", () => this.closeSelf());
     this.task.on("exit", () => this.closeSelf());
