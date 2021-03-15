@@ -656,7 +656,7 @@ module.exports = function(module) {
 /*! exports provided: name, version, description, main, keywords, scripts, repository, author, license, standard, dependencies, devDependencies, files, yarn-upgrade-all, sideEffects, husky, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"mermaid\",\"version\":\"8.8.4\",\"description\":\"Markdownish syntax for generating flowcharts, sequence diagrams, class diagrams, gantt charts and git graphs.\",\"main\":\"dist/mermaid.core.js\",\"keywords\":[\"diagram\",\"markdown\",\"flowchart\",\"sequence diagram\",\"gantt\",\"class diagram\",\"git graph\"],\"scripts\":{\"build:development\":\"webpack --progress --colors\",\"build:production\":\"yarn build:development -p --config webpack.config.prod.babel.js\",\"build\":\"yarn build:development && yarn build:production\",\"postbuild\":\"documentation build src/mermaidAPI.js src/config.js --shallow -f md --markdown-toc false > docs/Setup.md\",\"build:watch\":\"yarn build --watch\",\"minify\":\"minify ./dist/mermaid.js > ./dist/mermaid.min.js\",\"release\":\"yarn build\",\"lint\":\"eslint src\",\"e2e:depr\":\"yarn lint && jest e2e --config e2e/jest.config.js\",\"cypress\":\"percy exec -- cypress run\",\"e2e\":\"start-server-and-test dev http://localhost:9000/ cypress\",\"e2e-upd\":\"yarn lint && jest e2e -u --config e2e/jest.config.js\",\"dev\":\"webpack-dev-server --config webpack.config.e2e.js\",\"test\":\"yarn lint && jest src/.*\",\"test:watch\":\"jest --watch src\",\"prepublishOnly\":\"yarn build && yarn test\",\"prepare\":\"yarn build\"},\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/knsv/mermaid\"},\"author\":\"Knut Sveidqvist\",\"license\":\"MIT\",\"standard\":{\"ignore\":[\"**/parser/*.js\",\"dist/**/*.js\",\"cypress/**/*.js\"],\"globals\":[\"page\"]},\"dependencies\":{\"@braintree/sanitize-url\":\"^3.1.0\",\"d3\":\"^5.7.0\",\"dagre\":\"^0.8.4\",\"dagre-d3\":\"^0.6.4\",\"entity-decode\":\"^2.0.2\",\"graphlib\":\"^2.1.7\",\"he\":\"^1.2.0\",\"khroma\":\"^1.1.0\",\"minify\":\"^4.1.1\",\"moment-mini\":\"^2.22.1\",\"stylis\":\"^3.5.2\"},\"devDependencies\":{\"@babel/core\":\"^7.2.2\",\"@babel/preset-env\":\"^7.8.4\",\"@babel/register\":\"^7.0.0\",\"@percy/cypress\":\"*\",\"babel-core\":\"7.0.0-bridge.0\",\"babel-eslint\":\"^10.1.0\",\"babel-jest\":\"^24.9.0\",\"babel-loader\":\"^8.0.4\",\"coveralls\":\"^3.0.2\",\"css-loader\":\"^2.0.1\",\"css-to-string-loader\":\"^0.1.3\",\"cypress\":\"4.0.1\",\"documentation\":\"^12.0.1\",\"eslint\":\"^6.3.0\",\"eslint-config-prettier\":\"^6.3.0\",\"eslint-plugin-prettier\":\"^3.1.0\",\"husky\":\"^1.2.1\",\"identity-obj-proxy\":\"^3.0.0\",\"jest\":\"^24.9.0\",\"jison\":\"^0.4.18\",\"moment\":\"^2.23.0\",\"node-sass\":\"^4.12.0\",\"prettier\":\"^1.18.2\",\"puppeteer\":\"^1.17.0\",\"sass-loader\":\"^7.1.0\",\"start-server-and-test\":\"^1.10.6\",\"terser-webpack-plugin\":\"^2.2.2\",\"webpack\":\"^4.41.2\",\"webpack-bundle-analyzer\":\"^3.7.0\",\"webpack-cli\":\"^3.1.2\",\"webpack-dev-server\":\"^3.4.1\",\"webpack-node-externals\":\"^1.7.2\",\"yarn-upgrade-all\":\"^0.5.0\"},\"files\":[\"dist\"],\"yarn-upgrade-all\":{\"ignore\":[\"babel-core\"]},\"sideEffects\":[\"**/*.css\",\"**/*.scss\"],\"husky\":{\"hooks\":{\"pre-push\":\"yarn test\"}}}");
+module.exports = JSON.parse("{\"name\":\"mermaid\",\"version\":\"8.9.2\",\"description\":\"Markdownish syntax for generating flowcharts, sequence diagrams, class diagrams, gantt charts and git graphs.\",\"main\":\"dist/mermaid.core.js\",\"keywords\":[\"diagram\",\"markdown\",\"flowchart\",\"sequence diagram\",\"gantt\",\"class diagram\",\"git graph\"],\"scripts\":{\"build:development\":\"webpack --progress --colors\",\"build:production\":\"yarn build:development -p --config webpack.config.prod.babel.js\",\"build\":\"yarn build:development && yarn build:production\",\"postbuild\":\"documentation build src/mermaidAPI.js src/config.js src/defaultConfig.js --shallow -f md --markdown-toc false > docs/Setup.md\",\"build:watch\":\"yarn build --watch\",\"minify\":\"minify ./dist/mermaid.js > ./dist/mermaid.min.js\",\"release\":\"yarn build\",\"lint\":\"eslint src\",\"e2e:depr\":\"yarn lint && jest e2e --config e2e/jest.config.js\",\"cypress\":\"percy exec -- cypress run\",\"e2e\":\"start-server-and-test dev http://localhost:9000/ cypress\",\"e2e-upd\":\"yarn lint && jest e2e -u --config e2e/jest.config.js\",\"dev\":\"webpack-dev-server --config webpack.config.e2e.js\",\"test\":\"yarn lint && jest src/.*\",\"test:watch\":\"jest --watch src\",\"prepublishOnly\":\"yarn build && yarn test\",\"prepare\":\"yarn build\"},\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/knsv/mermaid\"},\"author\":\"Knut Sveidqvist\",\"license\":\"MIT\",\"standard\":{\"ignore\":[\"**/parser/*.js\",\"dist/**/*.js\",\"cypress/**/*.js\"],\"globals\":[\"page\"]},\"dependencies\":{\"@braintree/sanitize-url\":\"^3.1.0\",\"d3\":\"^5.7.0\",\"dagre\":\"^0.8.4\",\"dagre-d3\":\"^0.6.4\",\"entity-decode\":\"^2.0.2\",\"graphlib\":\"^2.1.7\",\"he\":\"^1.2.0\",\"khroma\":\"^1.1.0\",\"minify\":\"^4.1.1\",\"moment-mini\":\"^2.22.1\",\"stylis\":\"^3.5.2\"},\"devDependencies\":{\"@babel/core\":\"^7.2.2\",\"@babel/preset-env\":\"^7.8.4\",\"@babel/register\":\"^7.0.0\",\"@percy/cypress\":\"*\",\"babel-core\":\"7.0.0-bridge.0\",\"babel-eslint\":\"^10.1.0\",\"babel-jest\":\"^24.9.0\",\"babel-loader\":\"^8.0.4\",\"coveralls\":\"^3.0.2\",\"css-loader\":\"^2.0.1\",\"css-to-string-loader\":\"^0.1.3\",\"cypress\":\"4.0.1\",\"documentation\":\"^12.0.1\",\"eslint\":\"^6.3.0\",\"eslint-config-prettier\":\"^6.3.0\",\"eslint-plugin-prettier\":\"^3.1.0\",\"husky\":\"^1.2.1\",\"identity-obj-proxy\":\"^3.0.0\",\"jest\":\"^24.9.0\",\"jison\":\"^0.4.18\",\"moment\":\"^2.23.0\",\"node-sass\":\"^5.0.0\",\"prettier\":\"^1.18.2\",\"puppeteer\":\"^1.17.0\",\"sass-loader\":\"^7.1.0\",\"start-server-and-test\":\"^1.10.6\",\"terser-webpack-plugin\":\"^2.2.2\",\"webpack\":\"^4.41.2\",\"webpack-bundle-analyzer\":\"^3.7.0\",\"webpack-cli\":\"^3.1.2\",\"webpack-dev-server\":\"^3.4.1\",\"webpack-node-externals\":\"^1.7.2\",\"yarn-upgrade-all\":\"^0.5.0\"},\"files\":[\"dist\"],\"yarn-upgrade-all\":{\"ignore\":[\"babel-core\"]},\"sideEffects\":[\"**/*.css\",\"**/*.scss\"],\"husky\":{\"hooks\":{\"pre-push\":\"yarn test\"}}}");
 
 /***/ }),
 
@@ -664,7 +664,7 @@ module.exports = JSON.parse("{\"name\":\"mermaid\",\"version\":\"8.8.4\",\"descr
 /*!***********************!*\
   !*** ./src/config.js ***!
   \***********************/
-/*! exports provided: defaultConfig, updateCurrentConfig, setSiteConfig, setSiteConfigDelta, updateSiteConfig, getSiteConfig, setConfig, getConfig, sanitize, addDirective, reset */
+/*! exports provided: defaultConfig, updateCurrentConfig, setSiteConfig, saveConfigFromInitilize, updateSiteConfig, getSiteConfig, setConfig, getConfig, sanitize, addDirective, reset */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -672,7 +672,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "defaultConfig", function() { return defaultConfig; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updateCurrentConfig", function() { return updateCurrentConfig; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setSiteConfig", function() { return setSiteConfig; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setSiteConfigDelta", function() { return setSiteConfigDelta; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "saveConfigFromInitilize", function() { return saveConfigFromInitilize; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updateSiteConfig", function() { return updateSiteConfig; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getSiteConfig", function() { return getSiteConfig; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setConfig", function() { return setConfig; });
@@ -684,6 +684,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./logger */ "./src/logger.js");
 /* harmony import */ var _themes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./themes */ "./src/themes/index.js");
 /* harmony import */ var _defaultConfig__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./defaultConfig */ "./src/defaultConfig.js");
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 
 
 
@@ -691,7 +693,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var defaultConfig = Object.freeze(_defaultConfig__WEBPACK_IMPORTED_MODULE_3__["default"]);
 var siteConfig = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["assignWithDepth"])({}, defaultConfig);
-var siteConfigDelta;
+var configFromInitialize;
 var directives = [];
 var currentConfig = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["assignWithDepth"])({}, defaultConfig);
 var updateCurrentConfig = function updateCurrentConfig(siteCfg, _directives) {
@@ -711,15 +713,10 @@ var updateCurrentConfig = function updateCurrentConfig(siteCfg, _directives) {
   cfg = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["assignWithDepth"])(cfg, sumOfDirectives);
 
   if (sumOfDirectives.theme) {
-    var themeVariables = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["assignWithDepth"])(siteConfigDelta.themeVariables || {}, sumOfDirectives.themeVariables);
+    var tmpConfigFromInitialize = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["assignWithDepth"])({}, configFromInitialize);
+    var themeVariables = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["assignWithDepth"])(tmpConfigFromInitialize.themeVariables || {}, sumOfDirectives.themeVariables);
     cfg.themeVariables = _themes__WEBPACK_IMPORTED_MODULE_2__["default"][cfg.theme].getThemeVariables(themeVariables);
-  } // if (cfg.theme && theme[cfg.theme]) {
-  //   let tVars = assignWithDepth({}, cfg.themeVariables);
-  //   tVars = assignWithDepth(tVars, themeVariables);
-  //   const variables = theme[cfg.theme].getThemeVariables(tVars);
-  //   cfg.themeVariables = variables;
-  // }
-
+  }
 
   currentConfig = cfg;
   return cfg;
@@ -750,8 +747,8 @@ var setSiteConfig = function setSiteConfig(conf) {
   currentConfig = updateCurrentConfig(siteConfig, directives);
   return siteConfig;
 };
-var setSiteConfigDelta = function setSiteConfigDelta(conf) {
-  siteConfigDelta = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["assignWithDepth"])({}, conf);
+var saveConfigFromInitilize = function saveConfigFromInitilize(conf) {
+  configFromInitialize = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["assignWithDepth"])({}, conf);
 };
 var updateSiteConfig = function updateSiteConfig(conf) {
   siteConfig = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["assignWithDepth"])(siteConfig, conf);
@@ -817,12 +814,32 @@ var getConfig = function getConfig() {
  */
 
 var sanitize = function sanitize(options) {
+  // Checking that options are not in the list of excluded options
   Object.keys(siteConfig.secure).forEach(function (key) {
     if (typeof options[siteConfig.secure[key]] !== 'undefined') {
       // DO NOT attempt to print options[siteConfig.secure[key]] within `${}` as a malicious script
       // can exploit the logger's attempt to stringify the value and execute arbitrary code
-      _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug("Denied attempt to modify a secure key ".concat(siteConfig.secure[key]), options[siteConfig.secure[key]]);
+      _logger__WEBPACK_IMPORTED_MODULE_1__["log"].debug("Denied attempt to modify a secure key ".concat(siteConfig.secure[key]), options[siteConfig.secure[key]]);
       delete options[siteConfig.secure[key]];
+    }
+  }); // Check that there no attempts of prototype pollution
+
+  Object.keys(options).forEach(function (key) {
+    if (key.indexOf('__') === 0) {
+      delete options[key];
+    }
+  }); // Check that there no attempts of xss, there should be no tags at all in the directive
+  // blocking data urls as base64 urls can contain svgs with inline script tags
+
+  Object.keys(options).forEach(function (key) {
+    if (typeof options[key] === 'string') {
+      if (options[key].indexOf('<') > -1 || options[key].indexOf('>') > -1 || options[key].indexOf('url(data:') > -1) {
+        delete options[key];
+      }
+    }
+
+    if (_typeof(options[key]) === 'object') {
+      sanitize(options[key]);
     }
   });
 };
@@ -887,14 +904,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../config */ "./src/config.js");
 
- // eslint-disable-line
 
 
 
 
 
 var rect = function rect(parent, node) {
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].trace('Creating subgraph rect for ', node.id, node); // Add outer g element
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].trace('Creating subgraph rect for ', node.id, node); // Add outer g element
 
   var shapeSvg = parent.insert('g').attr('class', 'cluster' + (node.class ? ' ' + node.class : '')).attr('id', node.id); // add the rect
 
@@ -915,7 +931,7 @@ var rect = function rect(parent, node) {
 
   var padding = 0 * node.padding;
   var halfPadding = padding / 2;
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].trace('Data ', node, JSON.stringify(node)); // center the rect around its coordinate
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].trace('Data ', node, JSON.stringify(node)); // center the rect around its coordinate
 
   rect.attr('style', node.style).attr('rx', node.rx).attr('ry', node.ry).attr('x', node.x - node.width / 2 - halfPadding).attr('y', node.y - node.height / 2 - halfPadding).attr('width', node.width + padding).attr('height', node.height + padding); // Center the label
 
@@ -1022,7 +1038,7 @@ var shapes = {
 };
 var clusterElems = {};
 var insertCluster = function insertCluster(elem, node) {
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].trace('Inserting cluster');
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].trace('Inserting cluster');
   var shape = node.shape || 'rect';
   clusterElems[node.id] = shapes[shape](elem, node);
 };
@@ -1037,7 +1053,7 @@ var clear = function clear() {
   clusterElems = {};
 };
 var positionCluster = function positionCluster(node) {
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].info('Position cluster');
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].info('Position cluster');
   var el = clusterElems[node.id];
   el.attr('transform', 'translate(' + node.x + ', ' + node.y + ')');
 };
@@ -1118,7 +1134,7 @@ function addHtmlLabel(node) {
   var div = fo.append('xhtml:div');
   var label = node.label;
   var labelClass = node.isNode ? 'nodeLabel' : 'edgeLabel';
-  div.html('<span class="' + labelClass + '">' + label + '</span>');
+  div.html('<span class="' + labelClass + '" ' + (node.labelStyle ? 'style="' + node.labelStyle + '"' : '') + '>' + label + '</span>');
   applyStyle(div, node.labelStyle);
   div.style('display', 'inline-block'); // Fix for firefox
 
@@ -1133,7 +1149,7 @@ var createLabel = function createLabel(_vertexText, style, isTitle, isNode) {
   if (Object(_config__WEBPACK_IMPORTED_MODULE_2__["getConfig"])().flowchart.htmlLabels) {
     // TODO: addHtmlLabel accepts a labelStyle. Do we possibly have that?
     vertexText = vertexText.replace(/\\n|\n/g, '<br />');
-    _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].info('vertexText' + vertexText);
+    _logger__WEBPACK_IMPORTED_MODULE_1__["log"].info('vertexText' + vertexText);
     var node = {
       isNode: isNode,
       label: vertexText.replace(/fa[lrsb]?:fa-[\w-]+/g, function (s) {
@@ -1325,7 +1341,7 @@ var insertEdgeLabel = function insertEdgeLabel(elem, edge) {
   }
 };
 var positionEdgeLabel = function positionEdgeLabel(edge, paths) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Moving label', edge.id, edge.label, edgeLabels[edge.id]);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Moving label', edge.id, edge.label, edgeLabels[edge.id]);
   var path = paths.updatedPath ? paths.updatedPath : paths.originalPath;
 
   if (edge.label) {
@@ -1336,7 +1352,7 @@ var positionEdgeLabel = function positionEdgeLabel(edge, paths) {
     if (path) {
       //   // debugger;
       var pos = _utils__WEBPACK_IMPORTED_MODULE_4__["default"].calcLabelPosition(path);
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Moving label from (', x, ',', y, ') to (', pos.x, ',', pos.y, ')'); // x = pos.x;
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Moving label from (', x, ',', y, ') to (', pos.x, ',', pos.y, ')'); // x = pos.x;
       // y = pos.y;
     }
 
@@ -1421,7 +1437,7 @@ var positionEdgeLabel = function positionEdgeLabel(edge, paths) {
 // };
 
 var outsideNode = function outsideNode(node, point) {
-  // logger.warn('Checking bounds ', node, point);
+  // log.warn('Checking bounds ', node, point);
   var x = node.x;
   var y = node.y;
   var dx = Math.abs(point.x - x);
@@ -1437,7 +1453,7 @@ var outsideNode = function outsideNode(node, point) {
 };
 
 var intersection = function intersection(node, outsidePoint, insidePoint) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('intersection calc o:', outsidePoint, ' i:', insidePoint, node);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('intersection calc o:', outsidePoint, ' i:', insidePoint, node);
   var x = node.x;
   var y = node.y;
   var dx = Math.abs(x - insidePoint.x);
@@ -1452,7 +1468,7 @@ var intersection = function intersection(node, outsidePoint, insidePoint) {
   };
 
   if (outsidePoint.x === edges.x1 || outsidePoint.x === edges.x2 || outsidePoint.y === edges.y1 || outsidePoint.y === edges.y2) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('calc equals on edge');
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('calc equals on edge');
     return outsidePoint;
   }
 
@@ -1469,7 +1485,7 @@ var intersection = function intersection(node, outsidePoint, insidePoint) {
       x: insidePoint.x < outsidePoint.x ? insidePoint.x + R - r : insidePoint.x - r,
       y: insidePoint.y < outsidePoint.y ? insidePoint.y + Q - q : insidePoint.y - q
     };
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn("topp/bott calc, Q ".concat(Q, ", q ").concat(q, ", R ").concat(R, ", r ").concat(r), res);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn("topp/bott calc, Q ".concat(Q, ", q ").concat(q, ", R ").concat(R, ", r ").concat(r), res);
     return res;
   } else {
     // Intersection onn sides of rect
@@ -1485,7 +1501,7 @@ var intersection = function intersection(node, outsidePoint, insidePoint) {
 
     var _q = _q = Q * r / R;
 
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn("sides calc, Q ".concat(Q, ", q ").concat(_q, ", R ").concat(R, ", r ").concat(r), {
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn("sides calc, Q ".concat(Q, ", q ").concat(_q, ", R ").concat(R, ", r ").concat(r), {
       x: insidePoint.x < outsidePoint.x ? insidePoint.x + R - r : insidePoint.x + dx - w,
       y: insidePoint.y < outsidePoint.y ? insidePoint.y + _q : insidePoint.y - _q
     });
@@ -1505,13 +1521,13 @@ var insertEdge = function insertEdge(elem, e, edge, clusterDb, diagramType, grap
   if (head.intersect && tail.intersect) {
     points = points.slice(1, edge.points.length - 1);
     points.unshift(tail.intersect(points[0]));
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Last point', points[points.length - 1], head, head.intersect(points[points.length - 1]));
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Last point', points[points.length - 1], head, head.intersect(points[points.length - 1]));
     points.push(head.intersect(points[points.length - 1]));
   }
 
   if (edge.toCluster) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('edge', edge);
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('to cluster', clusterDb[edge.toCluster]);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('edge', edge);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('to cluster', clusterDb[edge.toCluster]);
     points = [];
     var lastPointOutside;
     var isInside = false;
@@ -1519,7 +1535,7 @@ var insertEdge = function insertEdge(elem, e, edge, clusterDb, diagramType, grap
       var node = clusterDb[edge.toCluster].node;
 
       if (!outsideNode(node, point) && !isInside) {
-        _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('inside', edge.toCluster, point, lastPointOutside); // First point inside the rect
+        _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('inside', edge.toCluster, point, lastPointOutside); // First point inside the rect
 
         var inter = intersection(node, lastPointOutside, point);
         var pointPresent = false;
@@ -1532,7 +1548,7 @@ var insertEdge = function insertEdge(elem, e, edge, clusterDb, diagramType, grap
         })) {
           points.push(inter);
         } else {
-          _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('no intersect', inter, points);
+          _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('no intersect', inter, points);
         }
 
         isInside = true;
@@ -1546,8 +1562,8 @@ var insertEdge = function insertEdge(elem, e, edge, clusterDb, diagramType, grap
   }
 
   if (edge.fromCluster) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('edge', edge);
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('from cluster', clusterDb[edge.fromCluster]);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('edge', edge);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('from cluster', clusterDb[edge.fromCluster]);
     var updatedPoints = [];
 
     var _lastPointOutside;
@@ -1559,16 +1575,16 @@ var insertEdge = function insertEdge(elem, e, edge, clusterDb, diagramType, grap
       var node = clusterDb[edge.fromCluster].node;
 
       if (!outsideNode(node, point) && !_isInside) {
-        _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('inside', edge.fromCluster, point, node); // First point inside the rect
+        _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('inside', edge.fromCluster, point, node); // First point inside the rect
 
-        var insterection = intersection(node, _lastPointOutside, point); // logger.trace('intersect', intersection(node, lastPointOutside, point));
+        var insterection = intersection(node, _lastPointOutside, point); // log.trace('intersect', intersection(node, lastPointOutside, point));
 
         updatedPoints.unshift(insterection); // points.push(insterection);
 
         _isInside = true;
       } else {
         // at the outside
-        _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('Outside point', point);
+        _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('Outside point', point);
         if (!_isInside) updatedPoints.unshift(point);
       }
 
@@ -1638,8 +1654,8 @@ var insertEdge = function insertEdge(elem, e, edge, clusterDb, diagramType, grap
     url = url.replace(/\)/g, '\\)');
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('arrowTypeStart', edge.arrowTypeStart);
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('arrowTypeEnd', edge.arrowTypeEnd);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('arrowTypeStart', edge.arrowTypeStart);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('arrowTypeEnd', edge.arrowTypeEnd);
 
   switch (edge.arrowTypeStart) {
     case 'arrow_cross':
@@ -1757,21 +1773,21 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var recursiveRender = function recursiveRender(_elem, graph, diagramtype, parentCluster) {
-  _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Graph in recursive render: XXX', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph), parentCluster);
+  _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Graph in recursive render: XXX', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph), parentCluster);
   var dir = graph.graph().rankdir;
-  _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].warn('Dir in recursive render - dir:', dir);
+  _logger__WEBPACK_IMPORTED_MODULE_8__["log"].warn('Dir in recursive render - dir:', dir);
 
   var elem = _elem.insert('g').attr('class', 'root'); // eslint-disable-line
 
 
   if (!graph.nodes()) {
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('No nodes found for', graph);
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('No nodes found for', graph);
   } else {
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Recursive render XXX', graph.nodes());
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Recursive render XXX', graph.nodes());
   }
 
   if (graph.edges().length > 0) {
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Recursive edges', graph.edge(graph.edges()[0]));
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Recursive edges', graph.edge(graph.edges()[0]));
   }
 
   var clusters = elem.insert('g').attr('class', 'clusters'); // eslint-disable-line
@@ -1787,36 +1803,36 @@ var recursiveRender = function recursiveRender(_elem, graph, diagramtype, parent
     if (typeof parentCluster !== 'undefined') {
       var data = JSON.parse(JSON.stringify(parentCluster.clusterData)); // data.clusterPositioning = true;
 
-      _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Setting data for cluster XXX (', v, ') ', data, parentCluster);
+      _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Setting data for cluster XXX (', v, ') ', data, parentCluster);
       graph.setNode(parentCluster.id, data);
 
       if (!graph.parent(v)) {
-        _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].warn('Setting parent', v, parentCluster.id);
+        _logger__WEBPACK_IMPORTED_MODULE_8__["log"].warn('Setting parent', v, parentCluster.id);
         graph.setParent(v, parentCluster.id, data);
       }
     }
 
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('(Insert) Node XXX' + v + ': ' + JSON.stringify(graph.node(v)));
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('(Insert) Node XXX' + v + ': ' + JSON.stringify(graph.node(v)));
 
     if (node && node.clusterNode) {
       // const children = graph.children(v);
-      _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Cluster identified', v, node, graph.node(v));
+      _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Cluster identified', v, node, graph.node(v));
       var newEl = recursiveRender(nodes, node.graph, diagramtype, graph.node(v));
       Object(_shapes_util__WEBPACK_IMPORTED_MODULE_3__["updateNodeBounds"])(node, newEl);
       Object(_nodes__WEBPACK_IMPORTED_MODULE_5__["setNodeElem"])(newEl, node);
-      _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].warn('Recursive render complete', newEl, node);
+      _logger__WEBPACK_IMPORTED_MODULE_8__["log"].warn('Recursive render complete', newEl, node);
     } else {
       if (graph.children(v).length > 0) {
         // This is a cluster but not to be rendered recusively
         // Render as before
-        _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Cluster - the non recursive path XXX', v, node.id, node, graph);
-        _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info(Object(_mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["findNonClusterChild"])(node.id, graph));
+        _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Cluster - the non recursive path XXX', v, node.id, node, graph);
+        _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info(Object(_mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["findNonClusterChild"])(node.id, graph));
         _mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["clusterDb"][node.id] = {
           id: Object(_mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["findNonClusterChild"])(node.id, graph),
           node: node
         }; // insertCluster(clusters, graph.node(v));
       } else {
-        _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Node - the non recursive path', v, node.id, node);
+        _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Node - the non recursive path', v, node.id, node);
         Object(_nodes__WEBPACK_IMPORTED_MODULE_5__["insertNode"])(nodes, graph.node(v), dir);
       }
     }
@@ -1827,26 +1843,26 @@ var recursiveRender = function recursiveRender(_elem, graph, diagramtype, parent
 
   graph.edges().forEach(function (e) {
     var edge = graph.edge(e.v, e.w, e.name);
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(e));
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Edge ' + e.v + ' -> ' + e.w + ': ', e, ' ', JSON.stringify(graph.edge(e))); // Check if link is either from or to a cluster
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(e));
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Edge ' + e.v + ' -> ' + e.w + ': ', e, ' ', JSON.stringify(graph.edge(e))); // Check if link is either from or to a cluster
 
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Fix', _mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["clusterDb"], 'ids:', e.v, e.w, 'Translateing: ', _mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["clusterDb"][e.v], _mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["clusterDb"][e.w]);
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Fix', _mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["clusterDb"], 'ids:', e.v, e.w, 'Translateing: ', _mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["clusterDb"][e.v], _mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["clusterDb"][e.w]);
     Object(_edges__WEBPACK_IMPORTED_MODULE_7__["insertEdgeLabel"])(edgeLabels, edge);
   });
   graph.edges().forEach(function (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(e));
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(e));
   });
-  _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('#############################################');
-  _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('###                Layout                 ###');
-  _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('#############################################');
-  _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info(graph);
+  _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('#############################################');
+  _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('###                Layout                 ###');
+  _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('#############################################');
+  _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info(graph);
   dagre__WEBPACK_IMPORTED_MODULE_0___default.a.layout(graph);
-  _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Graph after layout:', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph)); // Move the nodes to the correct place
+  _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Graph after layout:', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph)); // Move the nodes to the correct place
 
   Object(_mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["sortNodesByHierarchy"])(graph).forEach(function (v) {
     var node = graph.node(v);
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Position ' + v + ': ' + JSON.stringify(graph.node(v)));
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Position ' + v + ': (' + node.x, ',' + node.y, ') width: ', node.width, ' height: ', node.height);
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Position ' + v + ': ' + JSON.stringify(graph.node(v)));
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Position ' + v + ': (' + node.x, ',' + node.y, ') width: ', node.width, ' height: ', node.height);
 
     if (node && node.clusterNode) {
       // clusterDb[node.id].node = node;
@@ -1866,7 +1882,7 @@ var recursiveRender = function recursiveRender(_elem, graph, diagramtype, parent
 
   graph.edges().forEach(function (e) {
     var edge = graph.edge(e);
-    _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].info('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(edge), edge);
+    _logger__WEBPACK_IMPORTED_MODULE_8__["log"].info('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(edge), edge);
     var paths = Object(_edges__WEBPACK_IMPORTED_MODULE_7__["insertEdge"])(edgePaths, e, edge, _mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["clusterDb"], diagramtype, graph);
     Object(_edges__WEBPACK_IMPORTED_MODULE_7__["positionEdgeLabel"])(edge, paths);
   });
@@ -1879,9 +1895,9 @@ var render = function render(elem, graph, markers, diagramtype, id) {
   Object(_edges__WEBPACK_IMPORTED_MODULE_7__["clear"])();
   Object(_clusters__WEBPACK_IMPORTED_MODULE_6__["clear"])();
   Object(_mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["clear"])();
-  _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].warn('Graph at first:', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph));
+  _logger__WEBPACK_IMPORTED_MODULE_8__["log"].warn('Graph at first:', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph));
   Object(_mermaid_graphlib__WEBPACK_IMPORTED_MODULE_4__["adjustClustersAndEdges"])(graph);
-  _logger__WEBPACK_IMPORTED_MODULE_8__["logger"].warn('Graph after:', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph)); // log.warn('Graph ever  after:', graphlib.json.write(graph.node('A').graph));
+  _logger__WEBPACK_IMPORTED_MODULE_8__["log"].warn('Graph after:', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph)); // log.warn('Graph ever  after:', graphlib.json.write(graph.node('A').graph));
 
   recursiveRender(elem, graph, diagramtype);
 }; // const shapeDefinitions = {};
@@ -2226,7 +2242,7 @@ var insertMarkers = function insertMarkers(elem, markerArray, type, id) {
 };
 
 var extension = function extension(elem, type, id) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('Making markers for ', id);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('Making markers for ', id);
   elem.append('defs').append('marker').attr('id', type + '-extensionStart').attr('class', 'marker extension ' + type).attr('refX', 0).attr('refY', 7).attr('markerWidth', 190).attr('markerHeight', 240).attr('orient', 'auto').append('path').attr('d', 'M 1,7 L18,13 V 1 Z');
   elem.append('defs').append('marker').attr('id', type + '-extensionEnd').attr('class', 'marker extension ' + type).attr('refX', 19).attr('refY', 7).attr('markerWidth', 20).attr('markerHeight', 28).attr('orient', 'auto').append('path').attr('d', 'M 1,1 V 13 L18,7 Z'); // this is actual shape for arrowhead
 };
@@ -2318,24 +2334,24 @@ var clear = function clear() {
 
 var isDecendant = function isDecendant(id, ancenstorId) {
   // if (id === ancenstorId) return true;
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('In isDecendant', ancenstorId, ' ', id, ' = ', decendants[ancenstorId].indexOf(id) >= 0);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('In isDecendant', ancenstorId, ' ', id, ' = ', decendants[ancenstorId].indexOf(id) >= 0);
   if (decendants[ancenstorId].indexOf(id) >= 0) return true;
   return false;
 };
 
 var edgeInCluster = function edgeInCluster(edge, clusterId) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Decendants of ', clusterId, ' is ', decendants[clusterId]);
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Edge is ', edge); // Edges to/from the cluster is not in the cluster, they are in the parent
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Decendants of ', clusterId, ' is ', decendants[clusterId]);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Edge is ', edge); // Edges to/from the cluster is not in the cluster, they are in the parent
 
   if (edge.v === clusterId) return false;
   if (edge.w === clusterId) return false;
 
   if (!decendants[clusterId]) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Tilt, ', clusterId, ',not in decendants');
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Tilt, ', clusterId, ',not in decendants');
     return false;
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Here ');
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Here ');
   if (decendants[clusterId].indexOf(edge.v) >= 0) return true;
   if (isDecendant(edge.v, clusterId)) return true;
   if (isDecendant(edge.w, clusterId)) return true;
@@ -2344,59 +2360,59 @@ var edgeInCluster = function edgeInCluster(edge, clusterId) {
 };
 
 var copy = function copy(clusterId, graph, newGraph, rootId) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Copying children of ', clusterId, 'root', rootId, 'data', graph.node(clusterId), rootId);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Copying children of ', clusterId, 'root', rootId, 'data', graph.node(clusterId), rootId);
   var nodes = graph.children(clusterId) || []; // Include cluster node if it is not the root
 
   if (clusterId !== rootId) {
     nodes.push(clusterId);
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Copying (nodes) clusterId', clusterId, 'nodes', nodes);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Copying (nodes) clusterId', clusterId, 'nodes', nodes);
   nodes.forEach(function (node) {
     if (graph.children(node).length > 0) {
       copy(node, graph, newGraph, rootId);
     } else {
       var data = graph.node(node);
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('cp ', node, ' to ', rootId, ' with parent ', clusterId); //,node, data, ' parent is ', clusterId);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('cp ', node, ' to ', rootId, ' with parent ', clusterId); //,node, data, ' parent is ', clusterId);
 
       newGraph.setNode(node, data);
 
       if (rootId !== graph.parent(node)) {
-        _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Setting parent', node, graph.parent(node));
+        _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Setting parent', node, graph.parent(node));
         newGraph.setParent(node, graph.parent(node));
       }
 
       if (clusterId !== rootId && node !== clusterId) {
-        _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Setting parent', node, clusterId);
+        _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Setting parent', node, clusterId);
         newGraph.setParent(node, clusterId);
       } else {
-        _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('In copy ', clusterId, 'root', rootId, 'data', graph.node(clusterId), rootId);
-        _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Not Setting parent for node=', node, 'cluster!==rootId', clusterId !== rootId, 'node!==clusterId', node !== clusterId);
+        _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('In copy ', clusterId, 'root', rootId, 'data', graph.node(clusterId), rootId);
+        _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Not Setting parent for node=', node, 'cluster!==rootId', clusterId !== rootId, 'node!==clusterId', node !== clusterId);
       }
 
       var edges = graph.edges(node);
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Copying Edges', edges);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Copying Edges', edges);
       edges.forEach(function (edge) {
-        _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Edge', edge);
+        _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Edge', edge);
         var data = graph.edge(edge.v, edge.w, edge.name);
-        _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Edge data', data, rootId);
+        _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Edge data', data, rootId);
 
         try {
           // Do not copy edges in and out of the root cluster, they belong to the parent graph
           if (edgeInCluster(edge, rootId)) {
-            _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Copying as ', edge.v, edge.w, data, edge.name);
+            _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Copying as ', edge.v, edge.w, data, edge.name);
             newGraph.setEdge(edge.v, edge.w, data, edge.name);
-            _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('newGraph edges ', newGraph.edges(), newGraph.edge(newGraph.edges()[0]));
+            _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('newGraph edges ', newGraph.edges(), newGraph.edge(newGraph.edges()[0]));
           } else {
-            _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Skipping copy of edge ', edge.v, '-->', edge.w, ' rootId: ', rootId, ' clusterId:', clusterId);
+            _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Skipping copy of edge ', edge.v, '-->', edge.w, ' rootId: ', rootId, ' clusterId:', clusterId);
           }
         } catch (e) {
-          _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].error(e);
+          _logger__WEBPACK_IMPORTED_MODULE_0__["log"].error(e);
         }
       });
     }
 
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Removing node', node);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Removing node', node);
     graph.removeNode(node);
   });
 };
@@ -2421,16 +2437,16 @@ var extractDecendants = function extractDecendants(id, graph) {
 
 var validate = function validate(graph) {
   var edges = graph.edges();
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('Edges: ', edges);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('Edges: ', edges);
 
   for (var i = 0; i < edges.length; i++) {
     if (graph.children(edges[i].v).length > 0) {
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('The node ', edges[i].v, ' is part of and edge even though it has children');
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('The node ', edges[i].v, ' is part of and edge even though it has children');
       return false;
     }
 
     if (graph.children(edges[i].w).length > 0) {
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('The node ', edges[i].w, ' is part of and edge even though it has children');
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('The node ', edges[i].w, ' is part of and edge even though it has children');
       return false;
     }
   }
@@ -2445,14 +2461,14 @@ var validate = function validate(graph) {
 
 var findNonClusterChild = function findNonClusterChild(id, graph) {
   // const node = graph.node(id);
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('Searching', id); // const children = graph.children(id).reverse();
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('Searching', id); // const children = graph.children(id).reverse();
 
   var children = graph.children(id); //.reverse();
 
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('Searching children of id ', id, children);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('Searching children of id ', id, children);
 
   if (children.length < 1) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('This is a valid node', id);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('This is a valid node', id);
     return id;
   }
 
@@ -2460,7 +2476,7 @@ var findNonClusterChild = function findNonClusterChild(id, graph) {
     var _id = findNonClusterChild(children[i], graph);
 
     if (_id) {
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace('Found replacement for', id, ' => ', _id);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace('Found replacement for', id, ' => ', _id);
       return _id;
     }
   }
@@ -2486,10 +2502,10 @@ var getAnchorId = function getAnchorId(id) {
 
 var adjustClustersAndEdges = function adjustClustersAndEdges(graph, depth) {
   if (!graph || depth > 10) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Opting out, no graph ');
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Opting out, no graph ');
     return;
   } else {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Opting in, graph ');
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Opting in, graph ');
   } // Go through the nodes and for each cluster found, save a replacment node, this can be used when
   // faking a link to a cluster
 
@@ -2498,7 +2514,7 @@ var adjustClustersAndEdges = function adjustClustersAndEdges(graph, depth) {
     var children = graph.children(id);
 
     if (children.length > 0) {
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Cluster identified', id, ' Replacement id in edges: ', findNonClusterChild(id, graph));
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Cluster identified', id, ' Replacement id in edges: ', findNonClusterChild(id, graph));
       decendants[id] = extractDecendants(id, graph);
       clusterDb[id] = {
         id: findNonClusterChild(id, graph),
@@ -2512,7 +2528,7 @@ var adjustClustersAndEdges = function adjustClustersAndEdges(graph, depth) {
     var edges = graph.edges();
 
     if (children.length > 0) {
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Cluster identified', id, decendants);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Cluster identified', id, decendants);
       edges.forEach(function (edge) {
         // log.debug('Edge, decendants: ', edge, decendants[id]);
         // Check if any edge leaves the cluster (not the actual cluster, thats a link from the box)
@@ -2523,41 +2539,41 @@ var adjustClustersAndEdges = function adjustClustersAndEdges(graph, depth) {
           var d2 = isDecendant(edge.w, id); // d1 xor d2 - if either d1 is true and d2 is false or the other way around
 
           if (d1 ^ d2) {
-            _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Edge: ', edge, ' leaves cluster ', id);
-            _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Decendants of XXX ', id, ': ', decendants[id]);
+            _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Edge: ', edge, ' leaves cluster ', id);
+            _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Decendants of XXX ', id, ': ', decendants[id]);
             clusterDb[id].externalConnections = true;
           }
         }
       });
     } else {
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Not a cluster ', id, decendants);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Not a cluster ', id, decendants);
     }
   }); // For clusters with incoming and/or outgoing edges translate those edges to a real node
   // in the cluster inorder to fake the edge
 
   graph.edges().forEach(function (e) {
     var edge = graph.edge(e);
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(e));
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(graph.edge(e)));
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(e));
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(graph.edge(e)));
     var v = e.v;
     var w = e.w; // Check if link is either from or to a cluster
 
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Fix XXX', clusterDb, 'ids:', e.v, e.w, 'Translateing: ', clusterDb[e.v], ' --- ', clusterDb[e.w]);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Fix XXX', clusterDb, 'ids:', e.v, e.w, 'Translateing: ', clusterDb[e.v], ' --- ', clusterDb[e.w]);
 
     if (clusterDb[e.v] || clusterDb[e.w]) {
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Fixing and trixing - removing XXX', e.v, e.w, e.name);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Fixing and trixing - removing XXX', e.v, e.w, e.name);
       v = getAnchorId(e.v);
       w = getAnchorId(e.w);
       graph.removeEdge(e.v, e.w, e.name);
       if (v !== e.v) edge.fromCluster = e.v;
       if (w !== e.w) edge.toCluster = e.w;
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Fix Replacing with XXX', v, w, e.name);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Fix Replacing with XXX', v, w, e.name);
       graph.setEdge(v, w, edge, e.name);
     }
   });
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Adjusted Graph', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph));
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Adjusted Graph', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph));
   extractor(graph, 0);
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].trace(clusterDb); // Remove references to extracted cluster
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].trace(clusterDb); // Remove references to extracted cluster
   // graph.edges().forEach(edge => {
   //   if (isDecendant(edge.v, clusterId) || isDecendant(edge.w, clusterId)) {
   //     graph.removeEdge(edge);
@@ -2565,10 +2581,10 @@ var adjustClustersAndEdges = function adjustClustersAndEdges(graph, depth) {
   // });
 };
 var extractor = function extractor(graph, depth) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('extractor - ', depth, graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph), graph.children('D'));
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('extractor - ', depth, graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph), graph.children('D'));
 
   if (depth > 10) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].error('Bailing out');
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].error('Bailing out');
     return;
   } // For clusters without incoming and/or outgoing edges, create a new cluster-node
   // containing the nodes and edges in the custer in a new graph
@@ -2585,25 +2601,25 @@ var extractor = function extractor(graph, depth) {
   }
 
   if (!hasChildren) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Done, no node has children', graph.nodes());
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Done, no node has children', graph.nodes());
     return;
   } // const clusters = Object.keys(clusterDb);
   // clusters.forEach(clusterId => {
 
 
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Nodes = ', nodes, depth);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Nodes = ', nodes, depth);
 
   for (var _i = 0; _i < nodes.length; _i++) {
     var _node = nodes[_i];
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Extracting node', _node, clusterDb, clusterDb[_node] && !clusterDb[_node].externalConnections, !graph.parent(_node), graph.node(_node), graph.children('D'), ' Depth ', depth); // Note that the node might have been removed after the Object.keys call so better check
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Extracting node', _node, clusterDb, clusterDb[_node] && !clusterDb[_node].externalConnections, !graph.parent(_node), graph.node(_node), graph.children('D'), ' Depth ', depth); // Note that the node might have been removed after the Object.keys call so better check
     // that it still is in the game
 
     if (!clusterDb[_node]) {
       // Skip if the node is not a cluster
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Not a cluster', _node, depth); // break;
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Not a cluster', _node, depth); // break;
     } else if (!clusterDb[_node].externalConnections && // !graph.parent(node) &&
     graph.children(_node) && graph.children(_node).length > 0) {
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Cluster without external connections, without a parent and with children', _node, depth);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Cluster without external connections, without a parent and with children', _node, depth);
       var graphSettings = graph.graph();
       var clusterGraph = new graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.Graph({
         multigraph: true,
@@ -2618,7 +2634,7 @@ var extractor = function extractor(graph, depth) {
       }).setDefaultEdgeLabel(function () {
         return {};
       });
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Old graph before copy', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph));
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Old graph before copy', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph));
       copy(_node, graph, clusterGraph, _node);
       graph.setNode(_node, {
         clusterNode: true,
@@ -2627,21 +2643,21 @@ var extractor = function extractor(graph, depth) {
         labelText: clusterDb[_node].labelText,
         graph: clusterGraph
       });
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('New graph after copy node: (', _node, ')', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(clusterGraph));
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Old graph after copy', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph));
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('New graph after copy node: (', _node, ')', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(clusterGraph));
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Old graph after copy', graphlib__WEBPACK_IMPORTED_MODULE_1___default.a.json.write(graph));
     } else {
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('Cluster ** ', _node, ' **not meeting the criteria !externalConnections:', !clusterDb[_node].externalConnections, ' no parent: ', !graph.parent(_node), ' children ', graph.children(_node) && graph.children(_node).length > 0, graph.children('D'), depth);
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug(clusterDb);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('Cluster ** ', _node, ' **not meeting the criteria !externalConnections:', !clusterDb[_node].externalConnections, ' no parent: ', !graph.parent(_node), ' children ', graph.children(_node) && graph.children(_node).length > 0, graph.children('D'), depth);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug(clusterDb);
     }
   }
 
   nodes = graph.nodes();
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn('New list of nodes', nodes);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn('New list of nodes', nodes);
 
   for (var _i2 = 0; _i2 < nodes.length; _i2++) {
     var _node2 = nodes[_i2];
     var data = graph.node(_node2);
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].warn(' Now next level', _node2, data);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].warn(' Now next level', _node2, data);
 
     if (data.clusterNode) {
       extractor(data.graph, depth + 1);
@@ -2719,12 +2735,13 @@ var question = function question(parent, node) {
     x: 0,
     y: -s / 2
   }];
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].info('Question main (Circle)');
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].info('Question main (Circle)');
   var questionElem = Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["insertPolygonShape"])(shapeSvg, s, s, points);
+  questionElem.attr('style', node.style);
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, questionElem);
 
   node.intersect = function (point) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].warn('Intersect called');
+    _logger__WEBPACK_IMPORTED_MODULE_1__["log"].warn('Intersect called');
     return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, points, point);
   };
 
@@ -2760,10 +2777,11 @@ var hexagon = function hexagon(parent, node) {
     y: -h / 2
   }];
   var hex = Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["insertPolygonShape"])(shapeSvg, w, h, points);
+  hex.attr('style', node.style);
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, hex);
 
   node.intersect = function (point) {
-    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, point);
+    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, points, point);
   };
 
   return shapeSvg;
@@ -2793,10 +2811,12 @@ var rect_left_inv_arrow = function rect_left_inv_arrow(parent, node) {
     y: -h / 2
   }];
   var el = Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["insertPolygonShape"])(shapeSvg, w, h, points);
-  Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, el);
+  el.attr('style', node.style);
+  node.width = w + h;
+  node.height = h;
 
   node.intersect = function (point) {
-    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, point);
+    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, points, point);
   };
 
   return shapeSvg;
@@ -2823,10 +2843,11 @@ var lean_right = function lean_right(parent, node) {
     y: -h
   }];
   var el = Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["insertPolygonShape"])(shapeSvg, w, h, points);
+  el.attr('style', node.style);
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, el);
 
   node.intersect = function (point) {
-    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, point);
+    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, points, point);
   };
 
   return shapeSvg;
@@ -2853,10 +2874,11 @@ var lean_left = function lean_left(parent, node) {
     y: -h
   }];
   var el = Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["insertPolygonShape"])(shapeSvg, w, h, points);
+  el.attr('style', node.style);
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, el);
 
   node.intersect = function (point) {
-    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, point);
+    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, points, point);
   };
 
   return shapeSvg;
@@ -2883,10 +2905,11 @@ var trapezoid = function trapezoid(parent, node) {
     y: -h
   }];
   var el = Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["insertPolygonShape"])(shapeSvg, w, h, points);
+  el.attr('style', node.style);
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, el);
 
   node.intersect = function (point) {
-    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, point);
+    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, points, point);
   };
 
   return shapeSvg;
@@ -2913,10 +2936,11 @@ var inv_trapezoid = function inv_trapezoid(parent, node) {
     y: -h
   }];
   var el = Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["insertPolygonShape"])(shapeSvg, w, h, points);
+  el.attr('style', node.style);
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, el);
 
   node.intersect = function (point) {
-    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, point);
+    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, points, point);
   };
 
   return shapeSvg;
@@ -2946,10 +2970,11 @@ var rect_right_inv_arrow = function rect_right_inv_arrow(parent, node) {
     y: -h
   }];
   var el = Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["insertPolygonShape"])(shapeSvg, w, h, points);
+  el.attr('style', node.style);
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, el);
 
   node.intersect = function (point) {
-    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, point);
+    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, points, point);
   };
 
   return shapeSvg;
@@ -2965,7 +2990,7 @@ var cylinder = function cylinder(parent, node) {
   var ry = rx / (2.5 + w / 50);
   var h = bbox.height + ry + node.padding;
   var shape = 'M 0,' + ry + ' a ' + rx + ',' + ry + ' 0,0,0 ' + w + ' 0 a ' + rx + ',' + ry + ' 0,0,0 ' + -w + ' 0 l 0,' + h + ' a ' + rx + ',' + ry + ' 0,0,0 ' + w + ' 0 l 0,' + -h;
-  var el = shapeSvg.attr('label-offset-y', ry).insert('path', ':first-child').attr('d', shape).attr('transform', 'translate(' + -w / 2 + ',' + -(h / 2 + ry) + ')');
+  var el = shapeSvg.attr('label-offset-y', ry).insert('path', ':first-child').attr('style', node.style).attr('d', shape).attr('transform', 'translate(' + -w / 2 + ',' + -(h / 2 + ry) + ')');
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, el);
 
   node.intersect = function (point) {
@@ -2994,7 +3019,7 @@ var rect = function rect(parent, node) {
       bbox = _labelHelper10.bbox,
       halfPadding = _labelHelper10.halfPadding;
 
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].trace('Classes = ', node.classes); // add the rect
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].trace('Classes = ', node.classes); // add the rect
 
   var rect = shapeSvg.insert('rect', ':first-child');
   rect.attr('class', 'basic label-container').attr('style', node.style).attr('rx', node.rx).attr('ry', node.ry).attr('x', -bbox.width / 2 - halfPadding).attr('y', -bbox.height / 2 - halfPadding).attr('width', bbox.width + node.padding).attr('height', bbox.height + node.padding);
@@ -3025,7 +3050,7 @@ var rectWithTitle = function rectWithTitle(parent, node) {
   var innerLine = shapeSvg.insert('line');
   var label = shapeSvg.insert('g').attr('class', 'label');
   var text2 = node.labelText.flat();
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].info('Label text', text2[0]);
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].info('Label text', text2[0]);
   var text = label.node().appendChild(Object(_createLabel__WEBPACK_IMPORTED_MODULE_5__["default"])(text2[0], node.labelStyle, true, true));
   var bbox;
 
@@ -3037,7 +3062,7 @@ var rectWithTitle = function rectWithTitle(parent, node) {
     dv.attr('height', bbox.height);
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].info('Text 2', text2);
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].info('Text 2', text2);
   var textRows = text2.slice(1, text2.length);
   var titleBox = text.getBBox();
   var descr = label.node().appendChild(Object(_createLabel__WEBPACK_IMPORTED_MODULE_5__["default"])(textRows.join('<br/>'), node.labelStyle, true, true));
@@ -3053,7 +3078,7 @@ var rectWithTitle = function rectWithTitle(parent, node) {
 
     _dv.attr('height', bbox.height);
   } // bbox = label.getBBox();
-  // logger.info(descr);
+  // log.info(descr);
 
 
   var halfPadding = node.padding / 2;
@@ -3085,7 +3110,7 @@ var stadium = function stadium(parent, node) {
   var h = bbox.height + node.padding;
   var w = bbox.width + h / 4 + node.padding; // add the rect
 
-  var rect = shapeSvg.insert('rect', ':first-child').attr('rx', h / 2).attr('ry', h / 2).attr('x', -w / 2).attr('y', -h / 2).attr('width', w).attr('height', h);
+  var rect = shapeSvg.insert('rect', ':first-child').attr('style', node.style).attr('rx', h / 2).attr('ry', h / 2).attr('x', -w / 2).attr('y', -h / 2).attr('width', w).attr('height', h);
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, rect);
 
   node.intersect = function (point) {
@@ -3103,12 +3128,12 @@ var circle = function circle(parent, node) {
 
   var circle = shapeSvg.insert('circle', ':first-child'); // center the circle around its coordinate
 
-  circle.attr('rx', node.rx).attr('ry', node.ry).attr('r', bbox.width / 2 + halfPadding).attr('width', bbox.width + node.padding).attr('height', bbox.height + node.padding);
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].info('Circle main');
+  circle.attr('style', node.style).attr('rx', node.rx).attr('ry', node.ry).attr('r', bbox.width / 2 + halfPadding).attr('width', bbox.width + node.padding).attr('height', bbox.height + node.padding);
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].info('Circle main');
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, circle);
 
   node.intersect = function (point) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].info('Circle intersect', node, bbox.width / 2 + halfPadding, point);
+    _logger__WEBPACK_IMPORTED_MODULE_1__["log"].info('Circle intersect', node, bbox.width / 2 + halfPadding, point);
     return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].circle(node, bbox.width / 2 + halfPadding, point);
   };
 
@@ -3154,10 +3179,11 @@ var subroutine = function subroutine(parent, node) {
     y: 0
   }];
   var el = Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["insertPolygonShape"])(shapeSvg, w, h, points);
+  el.attr('style', node.style);
   Object(_shapes_util__WEBPACK_IMPORTED_MODULE_2__["updateNodeBounds"])(node, el);
 
   node.intersect = function (point) {
-    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, point);
+    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_4__["default"].polygon(node, points, point);
   };
 
   return shapeSvg;
@@ -3370,7 +3396,7 @@ var class_box = function class_box(parent, node) {
   //   dv.attr('height', bbox.height);
   // }
   // bbox = labelContainer.getBBox();
-  // logger.info('Text 2', text2);
+  // log.info('Text 2', text2);
   // const textRows = text2.slice(1, text2.length);
   // let titleBox = text.getBBox();
   // const descr = label
@@ -3384,7 +3410,7 @@ var class_box = function class_box(parent, node) {
   //   dv.attr('height', bbox.height);
   // }
   // // bbox = label.getBBox();
-  // // logger.info(descr);
+  // // log.info(descr);
   // select(descr).attr(
   //   'transform',
   //   'translate( ' +
@@ -3485,7 +3511,7 @@ var clear = function clear() {
 };
 var positionNode = function positionNode(node) {
   var el = nodeElems[node.id];
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].trace('Transforming node', node, 'translate(' + (node.x - node.width / 2 - 5) + ', ' + (node.y - node.height / 2 - 5) + ')');
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].trace('Transforming node', node, 'translate(' + (node.x - node.width / 2 - 5) + ', ' + (node.y - node.height / 2 - 5) + ')');
   var padding = 8;
 
   if (node.clusterNode) {
@@ -3520,7 +3546,7 @@ var note = function note(parent, node) {
       bbox = _labelHelper.bbox,
       halfPadding = _labelHelper.halfPadding;
 
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].info('Classes = ', node.classes); // add the rect
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].info('Classes = ', node.classes); // add the rect
 
   var rect = shapeSvg.insert('rect', ':first-child');
   rect.attr('rx', node.rx).attr('ry', node.ry).attr('x', -bbox.width / 2 - halfPadding).attr('y', -bbox.height / 2 - halfPadding).attr('width', bbox.width + node.padding).attr('height', bbox.height + node.padding);
@@ -4606,6 +4632,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
 /* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 
 
 
@@ -4689,7 +4723,7 @@ var getRelations = function getRelations() {
   return relations;
 };
 var addRelation = function addRelation(relation) {
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('Adding relation: ' + JSON.stringify(relation));
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].debug('Adding relation: ' + JSON.stringify(relation));
   addClass(relation.id1);
   addClass(relation.id2);
   relation.id1 = splitClassNameAndType(relation.id1).className;
@@ -4768,13 +4802,28 @@ var setCssClass = function setCssClass(ids, className) {
   });
 };
 /**
+ * Called by parser when a tooltip is found, e.g. a clickable element.
+ * @param ids Comma separated list of ids
+ * @param tooltip Tooltip to add
+ */
+
+var setTooltip = function setTooltip(ids, tooltip) {
+  var config = _config__WEBPACK_IMPORTED_MODULE_2__["getConfig"]();
+  ids.split(',').forEach(function (id) {
+    if (typeof tooltip !== 'undefined') {
+      classes[id].tooltip = _common_common__WEBPACK_IMPORTED_MODULE_3__["default"].sanitizeText(tooltip, config);
+    }
+  });
+};
+/**
  * Called by parser when a link is found. Adds the URL to the vertex data.
  * @param ids Comma separated list of ids
  * @param linkStr URL to create a link for
- * @param tooltip Tooltip for the clickable element
+ * @param target Target of the link, _blank by default as originally defined in the svgDraw.js file
  */
 
-var setLink = function setLink(ids, linkStr, tooltip) {
+
+var setLink = function setLink(ids, linkStr, target) {
   var config = _config__WEBPACK_IMPORTED_MODULE_2__["getConfig"]();
   ids.split(',').forEach(function (_id) {
     var id = _id;
@@ -4783,8 +4832,10 @@ var setLink = function setLink(ids, linkStr, tooltip) {
     if (typeof classes[id] !== 'undefined') {
       classes[id].link = _utils__WEBPACK_IMPORTED_MODULE_4__["default"].formatUrl(linkStr, config);
 
-      if (tooltip) {
-        classes[id].tooltip = _common_common__WEBPACK_IMPORTED_MODULE_3__["default"].sanitizeText(tooltip, config);
+      if (typeof target === 'string') {
+        classes[id].linkTarget = target;
+      } else {
+        classes[id].linkTarget = '_blank';
       }
     }
   });
@@ -4794,18 +4845,18 @@ var setLink = function setLink(ids, linkStr, tooltip) {
  * Called by parser when a click definition is found. Registers an event handler.
  * @param ids Comma separated list of ids
  * @param functionName Function to be called on click
- * @param tooltip Tooltip for the clickable element
+ * @param functionArgs Function args the function should be called with
  */
 
-var setClickEvent = function setClickEvent(ids, functionName, tooltip) {
+var setClickEvent = function setClickEvent(ids, functionName, functionArgs) {
   ids.split(',').forEach(function (id) {
-    setClickFunc(id, functionName, tooltip);
+    setClickFunc(id, functionName, functionArgs);
     classes[id].haveCallback = true;
   });
   setCssClass(ids, 'clickable');
 };
 
-var setClickFunc = function setClickFunc(domId, functionName, tooltip) {
+var setClickFunc = function setClickFunc(domId, functionName, functionArgs) {
   var config = _config__WEBPACK_IMPORTED_MODULE_2__["getConfig"]();
   var id = domId;
   var elemId = lookUpDomId(id);
@@ -4819,8 +4870,30 @@ var setClickFunc = function setClickFunc(domId, functionName, tooltip) {
   }
 
   if (typeof classes[id] !== 'undefined') {
-    if (tooltip) {
-      classes[id].tooltip = _common_common__WEBPACK_IMPORTED_MODULE_3__["default"].sanitizeText(tooltip, config);
+    var argList = [];
+
+    if (typeof functionArgs === 'string') {
+      /* Splits functionArgs by ',', ignoring all ',' in double quoted strings */
+      argList = functionArgs.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+      for (var i = 0; i < argList.length; i++) {
+        var item = argList[i].trim();
+        /* Removes all double quotes at the start and end of an argument */
+
+        /* This preserves all starting and ending whitespace inside */
+
+        if (item.charAt(0) === '"' && item.charAt(item.length - 1) === '"') {
+          item = item.substr(1, item.length - 2);
+        }
+
+        argList[i] = item;
+      }
+    }
+    /* if no arguments passed into callback, default to passing in id */
+
+
+    if (argList.length === 0) {
+      argList.push(elemId);
     }
 
     funs.push(function () {
@@ -4828,7 +4901,7 @@ var setClickFunc = function setClickFunc(domId, functionName, tooltip) {
 
       if (elem !== null) {
         elem.addEventListener('click', function () {
-          _utils__WEBPACK_IMPORTED_MODULE_4__["default"].runFunc(functionName, elemId);
+          _utils__WEBPACK_IMPORTED_MODULE_4__["default"].runFunc.apply(_utils__WEBPACK_IMPORTED_MODULE_4__["default"], [functionName].concat(_toConsumableArray(argList)));
         }, false);
       }
     });
@@ -4901,6 +4974,7 @@ funs.push(setupToolTips);
   setClickEvent: setClickEvent,
   setCssClass: setCssClass,
   setLink: setLink,
+  setTooltip: setTooltip,
   lookUpDomId: lookUpDomId
 });
 
@@ -4965,8 +5039,8 @@ var conf = {
 var addClasses = function addClasses(classes, g) {
   // const svg = select(`[id="${svgId}"]`);
   var keys = Object.keys(classes);
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('keys:', keys);
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info(classes); // Iterate through each item in the vertex object (containing all the vertices found) in the graph definition
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('keys:', keys);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info(classes); // Iterate through each item in the vertex object (containing all the vertices found) in the graph definition
 
   keys.forEach(function (id) {
     var vertex = classes[id];
@@ -5045,7 +5119,7 @@ var addClasses = function addClasses(classes, g) {
       type: vertex.type,
       padding: Object(_config__WEBPACK_IMPORTED_MODULE_7__["getConfig"])().flowchart.padding
     });
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('setNode', {
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('setNode', {
       labelStyle: styles.labelStyle,
       shape: _shape,
       labelText: vertexText,
@@ -5089,7 +5163,7 @@ var addRelations = function addRelations(relations, g) {
       edgeData.arrowhead = 'normal';
     }
 
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info(edgeData, edge); //Set edge extra labels
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info(edgeData, edge); //Set edge extra labels
     //edgeData.startLabelLeft = edge.relationTitle1;
 
     edgeData.startLabelRight = edge.relationTitle1 === 'none' ? '' : edge.relationTitle1;
@@ -5187,7 +5261,7 @@ var drawOld = function drawOld(text, id) {
   idCache = {};
   _parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__["parser"].yy.clear();
   _parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__["parser"].parse(text);
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('Rendering diagram ' + text); // Fetch the default direction, use TD if none was found
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('Rendering diagram ' + text); // Fetch the default direction, use TD if none was found
 
   var diagram = Object(d3__WEBPACK_IMPORTED_MODULE_0__["select"])("[id='".concat(id, "']")); // insertMarkers(diagram);
   // Layout graph, Create a new directed graph
@@ -5204,8 +5278,8 @@ var drawOld = function drawOld(text, id) {
     return {};
   });
   var classes = _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].getClasses();
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('classes:');
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info(classes);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('classes:');
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info(classes);
   var keys = Object.keys(classes);
 
   for (var i = 0; i < keys.length; i++) {
@@ -5216,13 +5290,13 @@ var drawOld = function drawOld(text, id) {
     // our nodes.
 
     g.setNode(node.id, node);
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('Org height: ' + node.height);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('Org height: ' + node.height);
   }
 
   var relations = _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].getRelations();
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('relations:', relations);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('relations:', relations);
   relations.forEach(function (relation) {
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('tjoho' + getGraphId(relation.id1) + getGraphId(relation.id2) + JSON.stringify(relation));
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('tjoho' + getGraphId(relation.id1) + getGraphId(relation.id2) + JSON.stringify(relation));
     g.setEdge(getGraphId(relation.id1), getGraphId(relation.id2), {
       relation: relation
     }, relation.title || 'DEFAULT');
@@ -5230,13 +5304,13 @@ var drawOld = function drawOld(text, id) {
   dagre__WEBPACK_IMPORTED_MODULE_1___default.a.layout(g);
   g.nodes().forEach(function (v) {
     if (typeof v !== 'undefined' && typeof g.node(v) !== 'undefined') {
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Node ' + v + ': ' + JSON.stringify(g.node(v)));
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Node ' + v + ': ' + JSON.stringify(g.node(v)));
       Object(d3__WEBPACK_IMPORTED_MODULE_0__["select"])('#' + Object(_classDb__WEBPACK_IMPORTED_MODULE_4__["lookUpDomId"])(v)).attr('transform', 'translate(' + (g.node(v).x - g.node(v).width / 2) + ',' + (g.node(v).y - g.node(v).height / 2) + ' )');
     }
   });
   g.edges().forEach(function (e) {
     if (typeof e !== 'undefined' && typeof g.edge(e) !== 'undefined') {
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(g.edge(e)));
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(g.edge(e)));
       _svgDraw__WEBPACK_IMPORTED_MODULE_6__["default"].drawEdge(diagram, g.edge(e), g.edge(e).relation, conf);
     }
   });
@@ -5246,24 +5320,24 @@ var drawOld = function drawOld(text, id) {
   Object(_utils__WEBPACK_IMPORTED_MODULE_9__["configureSvgSize"])(diagram, height, width, conf.useMaxWidth); // Ensure the viewBox includes the whole svgBounds area with extra space for padding
 
   var vBox = "".concat(svgBounds.x - padding, " ").concat(svgBounds.y - padding, " ").concat(width, " ").concat(height);
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug("viewBox ".concat(vBox));
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug("viewBox ".concat(vBox));
   diagram.attr('viewBox', vBox);
 };
 var draw = function draw(text, id) {
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('Drawing class');
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('Drawing class');
   _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].clear(); // const parser = classDb.parser;
   // parser.yy = classDb;
   // Parse the graph definition
   // try {
 
   _parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__["parser"].parse(text); // } catch (err) {
-  // logger.debug('Parsing failed');
+  // log.debug('Parsing failed');
   // }
   // Fetch the default direction, use TD if none was found
 
   var dir = 'TD';
   var conf = Object(_config__WEBPACK_IMPORTED_MODULE_7__["getConfig"])().flowchart;
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('config:', conf);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('config:', conf);
   var nodeSpacing = conf.nodeSpacing || 50;
   var rankSpacing = conf.rankSpacing || 50; // Create the input mermaid.graph
 
@@ -5280,17 +5354,17 @@ var draw = function draw(text, id) {
     return {};
   }); // let subG;
   // const subGraphs = flowDb.getSubGraphs();
-  // logger.info('Subgraphs - ', subGraphs);
+  // log.info('Subgraphs - ', subGraphs);
   // for (let i = subGraphs.length - 1; i >= 0; i--) {
   //   subG = subGraphs[i];
-  //   logger.info('Subgraph - ', subG);
+  //   log.info('Subgraph - ', subG);
   //   flowDb.addVertex(subG.id, subG.title, 'group', undefined, subG.classes);
   // }
   // Fetch the verices/nodes and edges/links from the parsed graph definition
 
   var classes = _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].getClasses();
   var relations = _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].getRelations();
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info(relations); // let i = 0;
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info(relations); // let i = 0;
   // for (i = subGraphs.length - 1; i >= 0; i--) {
   //   subG = subGraphs[i];
   //   selectAll('cluster').append('text');
@@ -5316,7 +5390,7 @@ var draw = function draw(text, id) {
   var svgBounds = svg.node().getBBox();
   var width = svgBounds.width + padding * 2;
   var height = svgBounds.height + padding * 2;
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug("new ViewBox 0 0 ".concat(width, " ").concat(height), "translate(".concat(padding - g._label.marginx, ", ").concat(padding - g._label.marginy, ")"));
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug("new ViewBox 0 0 ".concat(width, " ").concat(height), "translate(".concat(padding - g._label.marginx, ", ").concat(padding - g._label.marginy, ")"));
   Object(_utils__WEBPACK_IMPORTED_MODULE_9__["configureSvgSize"])(svg, height, width, conf.useMaxWidth);
   svg.attr('viewBox', "0 0 ".concat(width, " ").concat(height));
   svg.select('g').attr('transform', "translate(".concat(padding - g._label.marginx, ", ").concat(padding - svgBounds.y, ")")); // Index nodes
@@ -5487,7 +5561,7 @@ var draw = function draw(text, id) {
   idCache = {};
   _parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__["parser"].yy.clear();
   _parser_classDiagram__WEBPACK_IMPORTED_MODULE_5__["parser"].parse(text);
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('Rendering diagram ' + text); // Fetch the default direction, use TD if none was found
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('Rendering diagram ' + text); // Fetch the default direction, use TD if none was found
 
   var diagram = Object(d3__WEBPACK_IMPORTED_MODULE_0__["select"])("[id='".concat(id, "']"));
   diagram.attr('xmlns:xlink', 'http://www.w3.org/1999/xlink');
@@ -5515,12 +5589,12 @@ var draw = function draw(text, id) {
     // our nodes.
 
     g.setNode(node.id, node);
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('Org height: ' + node.height);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('Org height: ' + node.height);
   }
 
   var relations = _classDb__WEBPACK_IMPORTED_MODULE_4__["default"].getRelations();
   relations.forEach(function (relation) {
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('tjoho' + getGraphId(relation.id1) + getGraphId(relation.id2) + JSON.stringify(relation));
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('tjoho' + getGraphId(relation.id1) + getGraphId(relation.id2) + JSON.stringify(relation));
     g.setEdge(getGraphId(relation.id1), getGraphId(relation.id2), {
       relation: relation
     }, relation.title || 'DEFAULT');
@@ -5528,13 +5602,13 @@ var draw = function draw(text, id) {
   dagre__WEBPACK_IMPORTED_MODULE_1___default.a.layout(g);
   g.nodes().forEach(function (v) {
     if (typeof v !== 'undefined' && typeof g.node(v) !== 'undefined') {
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Node ' + v + ': ' + JSON.stringify(g.node(v)));
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Node ' + v + ': ' + JSON.stringify(g.node(v)));
       Object(d3__WEBPACK_IMPORTED_MODULE_0__["select"])('#' + Object(_classDb__WEBPACK_IMPORTED_MODULE_4__["lookUpDomId"])(v)).attr('transform', 'translate(' + (g.node(v).x - g.node(v).width / 2) + ',' + (g.node(v).y - g.node(v).height / 2) + ' )');
     }
   });
   g.edges().forEach(function (e) {
     if (typeof e !== 'undefined' && typeof g.edge(e) !== 'undefined') {
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(g.edge(e)));
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(g.edge(e)));
       _svgDraw__WEBPACK_IMPORTED_MODULE_6__["default"].drawEdge(diagram, g.edge(e), g.edge(e).relation, conf);
     }
   });
@@ -5544,7 +5618,7 @@ var draw = function draw(text, id) {
   Object(_utils__WEBPACK_IMPORTED_MODULE_7__["configureSvgSize"])(diagram, height, width, conf.useMaxWidth); // Ensure the viewBox includes the whole svgBounds area with extra space for padding
 
   var vBox = "".concat(svgBounds.x - padding, " ").concat(svgBounds.y - padding, " ").concat(width, " ").concat(height);
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug("viewBox ".concat(vBox));
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug("viewBox ".concat(vBox));
   diagram.attr('viewBox', vBox);
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -5635,12 +5709,12 @@ var draw = function draw(text, id) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,7],$V1=[1,6],$V2=[1,14],$V3=[1,25],$V4=[1,28],$V5=[1,26],$V6=[1,27],$V7=[1,29],$V8=[1,30],$V9=[1,31],$Va=[1,33],$Vb=[1,34],$Vc=[1,35],$Vd=[10,19],$Ve=[1,47],$Vf=[1,48],$Vg=[1,49],$Vh=[1,50],$Vi=[1,51],$Vj=[1,52],$Vk=[10,19,25,32,33,41,44,45,46,47,48,49],$Vl=[10,19,23,25,32,33,37,41,44,45,46,47,48,49,66,67,68],$Vm=[10,13,17,19],$Vn=[41,66,67,68],$Vo=[41,48,49,66,67,68],$Vp=[41,44,45,46,47,66,67,68],$Vq=[10,19,25],$Vr=[1,81];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,7],$V1=[1,6],$V2=[1,14],$V3=[1,25],$V4=[1,28],$V5=[1,26],$V6=[1,27],$V7=[1,29],$V8=[1,30],$V9=[1,31],$Va=[1,32],$Vb=[1,34],$Vc=[1,35],$Vd=[1,36],$Ve=[10,19],$Vf=[1,48],$Vg=[1,49],$Vh=[1,50],$Vi=[1,51],$Vj=[1,52],$Vk=[1,53],$Vl=[10,19,25,32,33,41,44,45,46,47,48,49,54,56],$Vm=[10,19,23,25,32,33,37,41,44,45,46,47,48,49,54,56,71,72,73],$Vn=[10,13,17,19],$Vo=[41,71,72,73],$Vp=[41,48,49,71,72,73],$Vq=[41,44,45,46,47,71,72,73],$Vr=[10,19,25],$Vs=[1,85];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"mermaidDoc":4,"directive":5,"graphConfig":6,"openDirective":7,"typeDirective":8,"closeDirective":9,"NEWLINE":10,":":11,"argDirective":12,"open_directive":13,"type_directive":14,"arg_directive":15,"close_directive":16,"CLASS_DIAGRAM":17,"statements":18,"EOF":19,"statement":20,"className":21,"alphaNumToken":22,"GENERICTYPE":23,"relationStatement":24,"LABEL":25,"classStatement":26,"methodStatement":27,"annotationStatement":28,"clickStatement":29,"cssClassStatement":30,"CLASS":31,"STYLE_SEPARATOR":32,"STRUCT_START":33,"members":34,"STRUCT_STOP":35,"ANNOTATION_START":36,"ANNOTATION_END":37,"MEMBER":38,"SEPARATOR":39,"relation":40,"STR":41,"relationType":42,"lineType":43,"AGGREGATION":44,"EXTENSION":45,"COMPOSITION":46,"DEPENDENCY":47,"LINE":48,"DOTTED_LINE":49,"CALLBACK":50,"LINK":51,"CSSCLASS":52,"commentToken":53,"textToken":54,"graphCodeTokens":55,"textNoTagsToken":56,"TAGSTART":57,"TAGEND":58,"==":59,"--":60,"PCT":61,"DEFAULT":62,"SPACE":63,"MINUS":64,"keywords":65,"UNICODE_TEXT":66,"NUM":67,"ALPHA":68,"$accept":0,"$end":1},
-terminals_: {2:"error",10:"NEWLINE",11:":",13:"open_directive",14:"type_directive",15:"arg_directive",16:"close_directive",17:"CLASS_DIAGRAM",19:"EOF",23:"GENERICTYPE",25:"LABEL",31:"CLASS",32:"STYLE_SEPARATOR",33:"STRUCT_START",35:"STRUCT_STOP",36:"ANNOTATION_START",37:"ANNOTATION_END",38:"MEMBER",39:"SEPARATOR",41:"STR",44:"AGGREGATION",45:"EXTENSION",46:"COMPOSITION",47:"DEPENDENCY",48:"LINE",49:"DOTTED_LINE",50:"CALLBACK",51:"LINK",52:"CSSCLASS",55:"graphCodeTokens",57:"TAGSTART",58:"TAGEND",59:"==",60:"--",61:"PCT",62:"DEFAULT",63:"SPACE",64:"MINUS",65:"keywords",66:"UNICODE_TEXT",67:"NUM",68:"ALPHA"},
-productions_: [0,[3,1],[3,2],[4,1],[5,4],[5,6],[7,1],[8,1],[12,1],[9,1],[6,4],[18,1],[18,2],[18,3],[21,1],[21,2],[21,3],[21,2],[20,1],[20,2],[20,1],[20,1],[20,1],[20,1],[20,1],[20,1],[26,2],[26,4],[26,5],[26,7],[28,4],[34,1],[34,2],[27,1],[27,2],[27,1],[27,1],[24,3],[24,4],[24,4],[24,5],[40,3],[40,2],[40,2],[40,1],[42,1],[42,1],[42,1],[42,1],[43,1],[43,1],[29,3],[29,4],[29,3],[29,4],[30,3],[53,1],[53,1],[54,1],[54,1],[54,1],[54,1],[54,1],[54,1],[54,1],[56,1],[56,1],[56,1],[56,1],[22,1],[22,1],[22,1]],
+symbols_: {"error":2,"start":3,"mermaidDoc":4,"directive":5,"graphConfig":6,"openDirective":7,"typeDirective":8,"closeDirective":9,"NEWLINE":10,":":11,"argDirective":12,"open_directive":13,"type_directive":14,"arg_directive":15,"close_directive":16,"CLASS_DIAGRAM":17,"statements":18,"EOF":19,"statement":20,"className":21,"alphaNumToken":22,"GENERICTYPE":23,"relationStatement":24,"LABEL":25,"classStatement":26,"methodStatement":27,"annotationStatement":28,"clickStatement":29,"cssClassStatement":30,"CLASS":31,"STYLE_SEPARATOR":32,"STRUCT_START":33,"members":34,"STRUCT_STOP":35,"ANNOTATION_START":36,"ANNOTATION_END":37,"MEMBER":38,"SEPARATOR":39,"relation":40,"STR":41,"relationType":42,"lineType":43,"AGGREGATION":44,"EXTENSION":45,"COMPOSITION":46,"DEPENDENCY":47,"LINE":48,"DOTTED_LINE":49,"CALLBACK":50,"LINK":51,"LINK_TARGET":52,"CLICK":53,"CALLBACK_NAME":54,"CALLBACK_ARGS":55,"HREF":56,"CSSCLASS":57,"commentToken":58,"textToken":59,"graphCodeTokens":60,"textNoTagsToken":61,"TAGSTART":62,"TAGEND":63,"==":64,"--":65,"PCT":66,"DEFAULT":67,"SPACE":68,"MINUS":69,"keywords":70,"UNICODE_TEXT":71,"NUM":72,"ALPHA":73,"$accept":0,"$end":1},
+terminals_: {2:"error",10:"NEWLINE",11:":",13:"open_directive",14:"type_directive",15:"arg_directive",16:"close_directive",17:"CLASS_DIAGRAM",19:"EOF",23:"GENERICTYPE",25:"LABEL",31:"CLASS",32:"STYLE_SEPARATOR",33:"STRUCT_START",35:"STRUCT_STOP",36:"ANNOTATION_START",37:"ANNOTATION_END",38:"MEMBER",39:"SEPARATOR",41:"STR",44:"AGGREGATION",45:"EXTENSION",46:"COMPOSITION",47:"DEPENDENCY",48:"LINE",49:"DOTTED_LINE",50:"CALLBACK",51:"LINK",52:"LINK_TARGET",53:"CLICK",54:"CALLBACK_NAME",55:"CALLBACK_ARGS",56:"HREF",57:"CSSCLASS",60:"graphCodeTokens",62:"TAGSTART",63:"TAGEND",64:"==",65:"--",66:"PCT",67:"DEFAULT",68:"SPACE",69:"MINUS",70:"keywords",71:"UNICODE_TEXT",72:"NUM",73:"ALPHA"},
+productions_: [0,[3,1],[3,2],[4,1],[5,4],[5,6],[7,1],[8,1],[12,1],[9,1],[6,4],[18,1],[18,2],[18,3],[21,1],[21,2],[21,3],[21,2],[20,1],[20,2],[20,1],[20,1],[20,1],[20,1],[20,1],[20,1],[26,2],[26,4],[26,5],[26,7],[28,4],[34,1],[34,2],[27,1],[27,2],[27,1],[27,1],[24,3],[24,4],[24,4],[24,5],[40,3],[40,2],[40,2],[40,1],[42,1],[42,1],[42,1],[42,1],[43,1],[43,1],[29,3],[29,4],[29,3],[29,4],[29,4],[29,5],[29,3],[29,4],[29,4],[29,5],[29,3],[29,4],[29,4],[29,5],[30,3],[58,1],[58,1],[59,1],[59,1],[59,1],[59,1],[59,1],[59,1],[59,1],[61,1],[61,1],[61,1],[61,1],[22,1],[22,1],[22,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -5751,25 +5825,40 @@ break;
 case 50:
 this.$=yy.lineType.DOTTED_LINE;
 break;
-case 51:
-this.$ = $$[$0-2];yy.setClickEvent($$[$0-1], $$[$0], undefined);
+case 51: case 57:
+this.$ = $$[$0-2];yy.setClickEvent($$[$0-1], $$[$0]);
 break;
-case 52:
-this.$ = $$[$0-3];yy.setClickEvent($$[$0-2], $$[$0-1], $$[$0]);
+case 52: case 58:
+this.$ = $$[$0-3];yy.setClickEvent($$[$0-2], $$[$0-1]);yy.setTooltip($$[$0-2], $$[$0]);
 break;
-case 53:
-this.$ = $$[$0-2];yy.setLink($$[$0-1], $$[$0], undefined);
+case 53: case 61:
+this.$ = $$[$0-2];yy.setLink($$[$0-1], $$[$0]);
 break;
 case 54:
+this.$ = $$[$0-3];yy.setLink($$[$0-2], $$[$0-1],$$[$0]);
+break;
+case 55: case 63:
+this.$ = $$[$0-3];yy.setLink($$[$0-2], $$[$0-1]);yy.setTooltip($$[$0-2], $$[$0]);
+break;
+case 56: case 64:
+this.$ = $$[$0-4];yy.setLink($$[$0-3], $$[$0-2], $$[$0]);yy.setTooltip($$[$0-3], $$[$0-1]);
+break;
+case 59:
+this.$ = $$[$0-3];yy.setClickEvent($$[$0-2], $$[$0-1], $$[$0]);
+break;
+case 60:
+this.$ = $$[$0-4];yy.setClickEvent($$[$0-3], $$[$0-2], $$[$0-1]);yy.setTooltip($$[$0-3], $$[$0]);
+break;
+case 62:
 this.$ = $$[$0-3];yy.setLink($$[$0-2], $$[$0-1], $$[$0]);
 break;
-case 55:
+case 65:
 yy.setCssClass($$[$0-1], $$[$0]);
 break;
 }
 },
-table: [{3:1,4:2,5:3,6:4,7:5,13:$V0,17:$V1},{1:[3]},{1:[2,1]},{3:8,4:2,5:3,6:4,7:5,13:$V0,17:$V1},{1:[2,3]},{8:9,14:[1,10]},{10:[1,11]},{14:[2,6]},{1:[2,2]},{9:12,11:[1,13],16:$V2},o([11,16],[2,7]),{5:23,7:5,13:$V0,18:15,20:16,21:24,22:32,24:17,26:18,27:19,28:20,29:21,30:22,31:$V3,36:$V4,38:$V5,39:$V6,50:$V7,51:$V8,52:$V9,66:$Va,67:$Vb,68:$Vc},{10:[1,36]},{12:37,15:[1,38]},{10:[2,9]},{19:[1,39]},{10:[1,40],19:[2,11]},o($Vd,[2,18],{25:[1,41]}),o($Vd,[2,20]),o($Vd,[2,21]),o($Vd,[2,22]),o($Vd,[2,23]),o($Vd,[2,24]),o($Vd,[2,25]),o($Vd,[2,33],{40:42,42:45,43:46,25:[1,44],41:[1,43],44:$Ve,45:$Vf,46:$Vg,47:$Vh,48:$Vi,49:$Vj}),{21:53,22:32,66:$Va,67:$Vb,68:$Vc},o($Vd,[2,35]),o($Vd,[2,36]),{22:54,66:$Va,67:$Vb,68:$Vc},{21:55,22:32,66:$Va,67:$Vb,68:$Vc},{21:56,22:32,66:$Va,67:$Vb,68:$Vc},{41:[1,57]},o($Vk,[2,14],{22:32,21:58,23:[1,59],66:$Va,67:$Vb,68:$Vc}),o($Vl,[2,69]),o($Vl,[2,70]),o($Vl,[2,71]),o($Vm,[2,4]),{9:60,16:$V2},{16:[2,8]},{1:[2,10]},{5:23,7:5,13:$V0,18:61,19:[2,12],20:16,21:24,22:32,24:17,26:18,27:19,28:20,29:21,30:22,31:$V3,36:$V4,38:$V5,39:$V6,50:$V7,51:$V8,52:$V9,66:$Va,67:$Vb,68:$Vc},o($Vd,[2,19]),{21:62,22:32,41:[1,63],66:$Va,67:$Vb,68:$Vc},{40:64,42:45,43:46,44:$Ve,45:$Vf,46:$Vg,47:$Vh,48:$Vi,49:$Vj},o($Vd,[2,34]),{43:65,48:$Vi,49:$Vj},o($Vn,[2,44],{42:66,44:$Ve,45:$Vf,46:$Vg,47:$Vh}),o($Vo,[2,45]),o($Vo,[2,46]),o($Vo,[2,47]),o($Vo,[2,48]),o($Vp,[2,49]),o($Vp,[2,50]),o($Vd,[2,26],{32:[1,67],33:[1,68]}),{37:[1,69]},{41:[1,70]},{41:[1,71]},{22:72,66:$Va,67:$Vb,68:$Vc},o($Vk,[2,15]),o($Vk,[2,17],{22:32,21:73,66:$Va,67:$Vb,68:$Vc}),{10:[1,74]},{19:[2,13]},o($Vq,[2,37]),{21:75,22:32,66:$Va,67:$Vb,68:$Vc},{21:76,22:32,41:[1,77],66:$Va,67:$Vb,68:$Vc},o($Vn,[2,43],{42:78,44:$Ve,45:$Vf,46:$Vg,47:$Vh}),o($Vn,[2,42]),{22:79,66:$Va,67:$Vb,68:$Vc},{34:80,38:$Vr},{21:82,22:32,66:$Va,67:$Vb,68:$Vc},o($Vd,[2,51],{41:[1,83]}),o($Vd,[2,53],{41:[1,84]}),o($Vd,[2,55]),o($Vk,[2,16]),o($Vm,[2,5]),o($Vq,[2,39]),o($Vq,[2,38]),{21:85,22:32,66:$Va,67:$Vb,68:$Vc},o($Vn,[2,41]),o($Vd,[2,27],{33:[1,86]}),{35:[1,87]},{34:88,35:[2,31],38:$Vr},o($Vd,[2,30]),o($Vd,[2,52]),o($Vd,[2,54]),o($Vq,[2,40]),{34:89,38:$Vr},o($Vd,[2,28]),{35:[2,32]},{35:[1,90]},o($Vd,[2,29])],
-defaultActions: {2:[2,1],4:[2,3],7:[2,6],8:[2,2],14:[2,9],38:[2,8],39:[2,10],61:[2,13],88:[2,32]},
+table: [{3:1,4:2,5:3,6:4,7:5,13:$V0,17:$V1},{1:[3]},{1:[2,1]},{3:8,4:2,5:3,6:4,7:5,13:$V0,17:$V1},{1:[2,3]},{8:9,14:[1,10]},{10:[1,11]},{14:[2,6]},{1:[2,2]},{9:12,11:[1,13],16:$V2},o([11,16],[2,7]),{5:23,7:5,13:$V0,18:15,20:16,21:24,22:33,24:17,26:18,27:19,28:20,29:21,30:22,31:$V3,36:$V4,38:$V5,39:$V6,50:$V7,51:$V8,53:$V9,57:$Va,71:$Vb,72:$Vc,73:$Vd},{10:[1,37]},{12:38,15:[1,39]},{10:[2,9]},{19:[1,40]},{10:[1,41],19:[2,11]},o($Ve,[2,18],{25:[1,42]}),o($Ve,[2,20]),o($Ve,[2,21]),o($Ve,[2,22]),o($Ve,[2,23]),o($Ve,[2,24]),o($Ve,[2,25]),o($Ve,[2,33],{40:43,42:46,43:47,25:[1,45],41:[1,44],44:$Vf,45:$Vg,46:$Vh,47:$Vi,48:$Vj,49:$Vk}),{21:54,22:33,71:$Vb,72:$Vc,73:$Vd},o($Ve,[2,35]),o($Ve,[2,36]),{22:55,71:$Vb,72:$Vc,73:$Vd},{21:56,22:33,71:$Vb,72:$Vc,73:$Vd},{21:57,22:33,71:$Vb,72:$Vc,73:$Vd},{21:58,22:33,71:$Vb,72:$Vc,73:$Vd},{41:[1,59]},o($Vl,[2,14],{22:33,21:60,23:[1,61],71:$Vb,72:$Vc,73:$Vd}),o($Vm,[2,79]),o($Vm,[2,80]),o($Vm,[2,81]),o($Vn,[2,4]),{9:62,16:$V2},{16:[2,8]},{1:[2,10]},{5:23,7:5,13:$V0,18:63,19:[2,12],20:16,21:24,22:33,24:17,26:18,27:19,28:20,29:21,30:22,31:$V3,36:$V4,38:$V5,39:$V6,50:$V7,51:$V8,53:$V9,57:$Va,71:$Vb,72:$Vc,73:$Vd},o($Ve,[2,19]),{21:64,22:33,41:[1,65],71:$Vb,72:$Vc,73:$Vd},{40:66,42:46,43:47,44:$Vf,45:$Vg,46:$Vh,47:$Vi,48:$Vj,49:$Vk},o($Ve,[2,34]),{43:67,48:$Vj,49:$Vk},o($Vo,[2,44],{42:68,44:$Vf,45:$Vg,46:$Vh,47:$Vi}),o($Vp,[2,45]),o($Vp,[2,46]),o($Vp,[2,47]),o($Vp,[2,48]),o($Vq,[2,49]),o($Vq,[2,50]),o($Ve,[2,26],{32:[1,69],33:[1,70]}),{37:[1,71]},{41:[1,72]},{41:[1,73]},{54:[1,74],56:[1,75]},{22:76,71:$Vb,72:$Vc,73:$Vd},o($Vl,[2,15]),o($Vl,[2,17],{22:33,21:77,71:$Vb,72:$Vc,73:$Vd}),{10:[1,78]},{19:[2,13]},o($Vr,[2,37]),{21:79,22:33,71:$Vb,72:$Vc,73:$Vd},{21:80,22:33,41:[1,81],71:$Vb,72:$Vc,73:$Vd},o($Vo,[2,43],{42:82,44:$Vf,45:$Vg,46:$Vh,47:$Vi}),o($Vo,[2,42]),{22:83,71:$Vb,72:$Vc,73:$Vd},{34:84,38:$Vs},{21:86,22:33,71:$Vb,72:$Vc,73:$Vd},o($Ve,[2,51],{41:[1,87]}),o($Ve,[2,53],{41:[1,89],52:[1,88]}),o($Ve,[2,57],{41:[1,90],55:[1,91]}),o($Ve,[2,61],{41:[1,93],52:[1,92]}),o($Ve,[2,65]),o($Vl,[2,16]),o($Vn,[2,5]),o($Vr,[2,39]),o($Vr,[2,38]),{21:94,22:33,71:$Vb,72:$Vc,73:$Vd},o($Vo,[2,41]),o($Ve,[2,27],{33:[1,95]}),{35:[1,96]},{34:97,35:[2,31],38:$Vs},o($Ve,[2,30]),o($Ve,[2,52]),o($Ve,[2,54]),o($Ve,[2,55],{52:[1,98]}),o($Ve,[2,58]),o($Ve,[2,59],{41:[1,99]}),o($Ve,[2,62]),o($Ve,[2,63],{52:[1,100]}),o($Vr,[2,40]),{34:101,38:$Vs},o($Ve,[2,28]),{35:[2,32]},o($Ve,[2,56]),o($Ve,[2,60]),o($Ve,[2,64]),{35:[1,102]},o($Ve,[2,29])],
+defaultActions: {2:[2,1],4:[2,3],7:[2,6],8:[2,2],14:[2,9],39:[2,8],40:[2,10],63:[2,13],97:[2,32]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -6284,76 +6373,104 @@ case 16: /*console.log('lex-member: ' + yy_.yytext);*/  return "MEMBER";
 break;
 case 17:return 31;
 break;
-case 18:return 52;
+case 18:return 57;
 break;
 case 19:return 50;
 break;
 case 20:return 51;
 break;
-case 21:return 36;
+case 21:return 53;
 break;
-case 22:return 37;
+case 22:return 36;
 break;
-case 23:this.begin("generic");
+case 23:return 37;
 break;
-case 24:this.popState();
+case 24:this.begin("generic");
 break;
-case 25:return "GENERICTYPE";
+case 25:this.popState();
 break;
-case 26:this.begin("string");
+case 26:return "GENERICTYPE";
 break;
-case 27:this.popState();
+case 27:this.begin("string");
 break;
-case 28:return "STR";
+case 28:this.popState();
 break;
-case 29:return 45;
+case 29:return "STR";
 break;
-case 30:return 45;
+case 30:this.begin("href");
 break;
-case 31:return 47;
+case 31:this.popState();
 break;
-case 32:return 47;
+case 32:return 56;
 break;
-case 33:return 46;
+case 33:this.begin("callback_name");
 break;
-case 34:return 44;
+case 34:this.popState();
 break;
-case 35:return 48;
+case 35:this.popState(); this.begin("callback_args");
 break;
-case 36:return 49;
+case 36:return 54;
 break;
-case 37:return 25;
+case 37:this.popState();
 break;
-case 38:return 32;
+case 38:return 55;
 break;
-case 39:return 64;
+case 39:return 52;
 break;
-case 40:return 'DOT';
+case 40:return 52;
 break;
-case 41:return 'PLUS';
+case 41:return 52;
 break;
-case 42:return 61;
+case 42:return 52;
 break;
-case 43:return 'EQUALS';
+case 43:return 45;
 break;
-case 44:return 'EQUALS';
+case 44:return 45;
 break;
-case 45:return 68;
+case 45:return 47;
 break;
-case 46:return 'PUNCTUATION';
+case 46:return 47;
 break;
-case 47:return 67;
+case 47:return 46;
 break;
-case 48:return 66;
+case 48:return 44;
 break;
-case 49:return 63;
+case 49:return 48;
 break;
-case 50:return 19;
+case 50:return 49;
+break;
+case 51:return 25;
+break;
+case 52:return 32;
+break;
+case 53:return 69;
+break;
+case 54:return 'DOT';
+break;
+case 55:return 'PLUS';
+break;
+case 56:return 66;
+break;
+case 57:return 'EQUALS';
+break;
+case 58:return 'EQUALS';
+break;
+case 59:return 73;
+break;
+case 60:return 'PUNCTUATION';
+break;
+case 61:return 72;
+break;
+case 62:return 71;
+break;
+case 63:return 68;
+break;
+case 64:return 19;
 break;
 }
 },
-rules: [/^(?:%%\{)/,/^(?:((?:(?!\}%%)[^:.])*))/,/^(?::)/,/^(?:\}%%)/,/^(?:((?:(?!\}%%).|\n)*))/,/^(?:%%(?!\{)*[^\n]*(\r?\n?)+)/,/^(?:%%[^\n]*(\r?\n)*)/,/^(?:(\r?\n)+)/,/^(?:\s+)/,/^(?:classDiagram-v2\b)/,/^(?:classDiagram\b)/,/^(?:[{])/,/^(?:$)/,/^(?:[{])/,/^(?:[}])/,/^(?:[\n])/,/^(?:[^{}\n]*)/,/^(?:class\b)/,/^(?:cssClass\b)/,/^(?:callback\b)/,/^(?:link\b)/,/^(?:<<)/,/^(?:>>)/,/^(?:[~])/,/^(?:[~])/,/^(?:[^~]*)/,/^(?:["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:\s*<\|)/,/^(?:\s*\|>)/,/^(?:\s*>)/,/^(?:\s*<)/,/^(?:\s*\*)/,/^(?:\s*o\b)/,/^(?:--)/,/^(?:\.\.)/,/^(?::{1}[^:\n;]+)/,/^(?::{3})/,/^(?:-)/,/^(?:\.)/,/^(?:\+)/,/^(?:%)/,/^(?:=)/,/^(?:=)/,/^(?:\w+)/,/^(?:[!"#$%&'*+,-.`?\\/])/,/^(?:[0-9]+)/,/^(?:[\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6]|[\u00F8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377]|[\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5]|[\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA]|[\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE]|[\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA]|[\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0]|[\u08A2-\u08AC\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0977]|[\u0979-\u097F\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2]|[\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A]|[\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39]|[\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8]|[\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0B05-\u0B0C]|[\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C]|[\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99]|[\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0]|[\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D]|[\u0C58\u0C59\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3]|[\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10]|[\u0D12-\u0D3A\u0D3D\u0D4E\u0D60\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1]|[\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81]|[\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3]|[\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6]|[\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A]|[\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081]|[\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D]|[\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0]|[\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310]|[\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F4\u1401-\u166C]|[\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u1700-\u170C\u170E-\u1711]|[\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7]|[\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191C]|[\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19C1-\u19C7\u1A00-\u1A16]|[\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF]|[\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC]|[\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D]|[\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D]|[\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3]|[\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F]|[\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128]|[\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184]|[\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3]|[\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6]|[\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE]|[\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C]|[\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D]|[\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC]|[\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B]|[\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788]|[\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805]|[\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB]|[\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uAA00-\uAA28]|[\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5]|[\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4]|[\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E]|[\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D]|[\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36]|[\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D]|[\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC]|[\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF]|[\uFFD2-\uFFD7\uFFDA-\uFFDC])/,/^(?:\s)/,/^(?:$)/],
-conditions: {"string":{"rules":[27,28],"inclusive":false},"generic":{"rules":[24,25],"inclusive":false},"struct":{"rules":[12,13,14,15,16],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,8,9,10,11,17,18,19,20,21,22,23,26,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50],"inclusive":true}}
+rules: [/^(?:%%\{)/,/^(?:((?:(?!\}%%)[^:.])*))/,/^(?::)/,/^(?:\}%%)/,/^(?:((?:(?!\}%%).|\n)*))/,/^(?:%%(?!\{)*[^\n]*(\r?\n?)+)/,/^(?:%%[^\n]*(\r?\n)*)/,/^(?:(\r?\n)+)/,/^(?:\s+)/,/^(?:classDiagram-v2\b)/,/^(?:classDiagram\b)/,/^(?:[{])/,/^(?:$)/,/^(?:[{])/,/^(?:[}])/,/^(?:[\n])/,/^(?:[^{}\n]*)/,/^(?:class\b)/,/^(?:cssClass\b)/,/^(?:callback\b)/,/^(?:link\b)/,/^(?:click\b)/,/^(?:<<)/,/^(?:>>)/,/^(?:[~])/,/^(?:[~])/,/^(?:[^~]*)/,/^(?:["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:href[\s]+["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:call[\s]+)/,/^(?:\([\s]*\))/,/^(?:\()/,/^(?:[^(]*)/,/^(?:\))/,/^(?:[^)]*)/,/^(?:_self\b)/,/^(?:_blank\b)/,/^(?:_parent\b)/,/^(?:_top\b)/,/^(?:\s*<\|)/,/^(?:\s*\|>)/,/^(?:\s*>)/,/^(?:\s*<)/,/^(?:\s*\*)/,/^(?:\s*o\b)/,/^(?:--)/,/^(?:\.\.)/,/^(?::{1}[^:\n;]+)/,/^(?::{3})/,/^(?:-)/,/^(?:\.)/,/^(?:\+)/,/^(?:%)/,/^(?:=)/,/^(?:=)/,/^(?:\w+)/,/^(?:[!"#$%&'*+,-.`?\\/])/,/^(?:[0-9]+)/,/^(?:[\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6]|[\u00F8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377]|[\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5]|[\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA]|[\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE]|[\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA]|[\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0]|[\u08A2-\u08AC\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0977]|[\u0979-\u097F\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2]|[\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A]|[\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39]|[\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8]|[\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0B05-\u0B0C]|[\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C]|[\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99]|[\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0]|[\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D]|[\u0C58\u0C59\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3]|[\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10]|[\u0D12-\u0D3A\u0D3D\u0D4E\u0D60\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1]|[\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81]|[\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3]|[\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6]|[\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A]|[\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081]|[\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D]|[\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0]|[\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310]|[\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F4\u1401-\u166C]|[\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u1700-\u170C\u170E-\u1711]|[\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7]|[\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191C]|[\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19C1-\u19C7\u1A00-\u1A16]|[\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF]|[\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC]|[\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D]|[\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D]|[\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3]|[\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F]|[\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128]|[\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184]|[\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3]|[\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6]|[\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE]|[\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C]|[\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D]|[\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC]|[\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B]|[\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788]|[\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805]|[\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB]|[\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uAA00-\uAA28]|[\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5]|[\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4]|[\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E]|[\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D]|[\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36]|[\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D]|[\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC]|[\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF]|[\uFFD2-\uFFD7\uFFDA-\uFFDC])/,/^(?:\s)/,/^(?:$)/],
+conditions: {"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"callback_args":{"rules":[37,38],"inclusive":false},"callback_name":{"rules":[34,35,36],"inclusive":false},"href":{"rules":[31,32],"inclusive":false},"struct":{"rules":[12,13,14,15,16],"inclusive":false},"generic":{"rules":[25,26],"inclusive":false},"string":{"rules":[28,29],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,8,9,10,11,17,18,19,20,21,22,23,24,27,30,33,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64],"inclusive":true}}
 });
 return lexer;
 })();
@@ -6486,8 +6603,8 @@ var drawEdge = function drawEdge(elem, path, relation, conf) {
   if (l % 2 !== 0 && l > 1) {
     var cardinality_1_point = _utils__WEBPACK_IMPORTED_MODULE_2__["default"].calcCardinalityPosition(relation.relation.type1 !== 'none', path.points, path.points[0]);
     var cardinality_2_point = _utils__WEBPACK_IMPORTED_MODULE_2__["default"].calcCardinalityPosition(relation.relation.type2 !== 'none', path.points, path.points[l - 1]);
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('cardinality_1_point ' + JSON.stringify(cardinality_1_point));
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('cardinality_2_point ' + JSON.stringify(cardinality_2_point));
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('cardinality_1_point ' + JSON.stringify(cardinality_1_point));
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('cardinality_2_point ' + JSON.stringify(cardinality_2_point));
     p1_card_x = cardinality_1_point.x;
     p1_card_y = cardinality_1_point.y;
     p2_card_x = cardinality_2_point.x;
@@ -6502,7 +6619,7 @@ var drawEdge = function drawEdge(elem, path, relation, conf) {
     g.insert('rect', ':first-child').attr('class', 'box').attr('x', bounds.x - conf.padding / 2).attr('y', bounds.y - conf.padding / 2).attr('width', bounds.width + conf.padding).attr('height', bounds.height + conf.padding);
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('Rendering relation ' + JSON.stringify(relation));
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('Rendering relation ' + JSON.stringify(relation));
 
   if (typeof relation.relationTitle1 !== 'undefined' && relation.relationTitle1 !== 'none') {
     var _g = elem.append('g').attr('class', 'cardinality');
@@ -6519,7 +6636,7 @@ var drawEdge = function drawEdge(elem, path, relation, conf) {
   edgeCount++;
 };
 var drawClass = function drawClass(elem, classDef, conf) {
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('Rendering class ' + classDef);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('Rendering class ' + classDef);
   var id = classDef.id;
   var classInfo = {
     id: id,
@@ -6533,7 +6650,7 @@ var drawClass = function drawClass(elem, classDef, conf) {
   var title;
 
   if (classDef.link) {
-    title = g.append('svg:a').attr('xlink:href', classDef.link).attr('target', '_blank').append('text').attr('y', conf.textHeight + conf.padding).attr('x', 0);
+    title = g.append('svg:a').attr('xlink:href', classDef.link).attr('target', classDef.linkTarget).append('text').attr('y', conf.textHeight + conf.padding).attr('x', 0);
   } else {
     title = g.append('text').attr('y', conf.textHeight + conf.padding).attr('x', 0);
   } // add annotations
@@ -6886,7 +7003,7 @@ var addEntity = function addEntity(name) {
     entities[name] = {
       attributes: []
     };
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Added new entity :', name);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Added new entity :', name);
   }
 
   return entities[name];
@@ -6904,7 +7021,7 @@ var addAttributes = function addAttributes(entityName, attribs) {
 
   for (i = attribs.length - 1; i >= 0; i--) {
     entity.attributes.push(attribs[i]);
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Added attribute ', attribs[i].attributeName);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Added attribute ', attribs[i].attributeName);
   }
 };
 /**
@@ -6924,7 +7041,7 @@ var addRelationship = function addRelationship(entA, rolA, entB, rSpec) {
     relSpec: rSpec
   };
   relationships.push(rel);
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Added new relationship :', rel);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Added new relationship :', rel);
 };
 
 var getRelationships = function getRelationships() {
@@ -7309,7 +7426,7 @@ var drawRelationshipFromLayout = function drawRelationshipFromLayout(svg, rel, g
 
 
 var draw = function draw(text, id) {
-  _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].info('Drawing ER diagram');
+  _logger__WEBPACK_IMPORTED_MODULE_6__["log"].info('Drawing ER diagram');
   _erDb__WEBPACK_IMPORTED_MODULE_2__["default"].clear();
   var parser = _parser_erDiagram__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
   parser.yy = _erDb__WEBPACK_IMPORTED_MODULE_2__["default"]; // Parse the text to populate erDb
@@ -7317,7 +7434,7 @@ var draw = function draw(text, id) {
   try {
     parser.parse(text);
   } catch (err) {
-    _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].debug('Parsing failed');
+    _logger__WEBPACK_IMPORTED_MODULE_6__["log"].debug('Parsing failed');
   } // Get a reference to the svg node that contains the text
 
 
@@ -8603,6 +8720,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 
 
 
@@ -8725,7 +8850,7 @@ var addSingleLink = function addSingleLink(_start, _end, type, linktext) {
   var start = _start;
   var end = _end; // if (start[0].match(/\d/)) start = MERMAID_DOM_ID_PREFIX + start;
   // if (end[0].match(/\d/)) end = MERMAID_DOM_ID_PREFIX + end;
-  // logger.info('Got edge...', start, end);
+  // log.info('Got edge...', start, end);
 
   var edge = {
     start: start,
@@ -8870,7 +8995,7 @@ var setTooltip = function setTooltip(ids, tooltip) {
   });
 };
 
-var setClickFun = function setClickFun(id, functionName) {
+var setClickFun = function setClickFun(id, functionName, functionArgs) {
   var domId = lookUpDomId(id); // if (_id[0].match(/\d/)) id = MERMAID_DOM_ID_PREFIX + id;
 
   if (_config__WEBPACK_IMPORTED_MODULE_2__["getConfig"]().securityLevel !== 'loose') {
@@ -8881,6 +9006,32 @@ var setClickFun = function setClickFun(id, functionName) {
     return;
   }
 
+  var argList = [];
+
+  if (typeof functionArgs === 'string') {
+    /* Splits functionArgs by ',', ignoring all ',' in double quoted strings */
+    argList = functionArgs.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+    for (var i = 0; i < argList.length; i++) {
+      var item = argList[i].trim();
+      /* Removes all double quotes at the start and end of an argument */
+
+      /* This preserves all starting and ending whitespace inside */
+
+      if (item.charAt(0) === '"' && item.charAt(item.length - 1) === '"') {
+        item = item.substr(1, item.length - 2);
+      }
+
+      argList[i] = item;
+    }
+  }
+  /* if no arguments passed into callback, default to passing in id */
+
+
+  if (argList.length === 0) {
+    argList.push(id);
+  }
+
   if (typeof vertices[id] !== 'undefined') {
     vertices[id].haveCallback = true;
     funs.push(function () {
@@ -8888,7 +9039,7 @@ var setClickFun = function setClickFun(id, functionName) {
 
       if (elem !== null) {
         elem.addEventListener('click', function () {
-          _utils__WEBPACK_IMPORTED_MODULE_1__["default"].runFunc(functionName, id);
+          _utils__WEBPACK_IMPORTED_MODULE_1__["default"].runFunc.apply(_utils__WEBPACK_IMPORTED_MODULE_1__["default"], [functionName].concat(_toConsumableArray(argList)));
         }, false);
       }
     });
@@ -8898,18 +9049,16 @@ var setClickFun = function setClickFun(id, functionName) {
  * Called by parser when a link is found. Adds the URL to the vertex data.
  * @param ids Comma separated list of ids
  * @param linkStr URL to create a link for
- * @param tooltip Tooltip for the clickable element
  */
 
 
-var setLink = function setLink(ids, linkStr, tooltip, target) {
+var setLink = function setLink(ids, linkStr, target) {
   ids.split(',').forEach(function (id) {
     if (typeof vertices[id] !== 'undefined') {
       vertices[id].link = _utils__WEBPACK_IMPORTED_MODULE_1__["default"].formatUrl(linkStr, config);
       vertices[id].linkTarget = target;
     }
   });
-  setTooltip(ids, tooltip);
   setClass(ids, 'clickable');
 };
 var getTooltip = function getTooltip(id) {
@@ -8922,11 +9071,10 @@ var getTooltip = function getTooltip(id) {
  * @param tooltip Tooltip for the clickable element
  */
 
-var setClickEvent = function setClickEvent(ids, functionName, tooltip) {
+var setClickEvent = function setClickEvent(ids, functionName, functionArgs) {
   ids.split(',').forEach(function (id) {
-    setClickFun(id, functionName);
+    setClickFun(id, functionName, functionArgs);
   });
-  setTooltip(ids, tooltip);
   setClass(ids, 'clickable');
 };
 var bindFunctions = function bindFunctions(element) {
@@ -9058,7 +9206,7 @@ var addSubGraph = function addSubGraph(_id, list, _title) {
   nodeList = uniq(nodeList.concat.apply(nodeList, list));
 
   if (version === 'gen-1') {
-    _logger__WEBPACK_IMPORTED_MODULE_5__["logger"].warn('LOOKING UP');
+    _logger__WEBPACK_IMPORTED_MODULE_5__["log"].warn('LOOKING UP');
 
     for (var i = 0; i < nodeList.length; i++) {
       nodeList[i] = lookUpDomId(nodeList[i]);
@@ -9076,7 +9224,7 @@ var addSubGraph = function addSubGraph(_id, list, _title) {
     title: title.trim(),
     classes: []
   };
-  _logger__WEBPACK_IMPORTED_MODULE_5__["logger"].info('Adding', subGraph.id, subGraph.nodes);
+  _logger__WEBPACK_IMPORTED_MODULE_5__["log"].info('Adding', subGraph.id, subGraph.nodes);
   /**
    * Deletes an id from all subgraphs
    */
@@ -9367,6 +9515,7 @@ var makeUniq = function makeUniq(sg, allSubgraphs) {
   addClass: addClass,
   setDirection: setDirection,
   setClass: setClass,
+  setTooltip: setTooltip,
   getTooltip: getTooltip,
   setClickEvent: setClickEvent,
   setLink: setLink,
@@ -9585,7 +9734,7 @@ var addVertices = function addVertices(vert, g, svgId) {
       type: vertex.type,
       padding: Object(_config__WEBPACK_IMPORTED_MODULE_4__["getConfig"])().flowchart.padding
     });
-    _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].info('setNode', {
+    _logger__WEBPACK_IMPORTED_MODULE_7__["log"].info('setNode', {
       labelStyle: styles.labelStyle,
       shape: _shape,
       labelText: vertexText,
@@ -9749,7 +9898,7 @@ var addEdges = function addEdges(edges, g) {
  */
 
 var getClasses = function getClasses(text) {
-  _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].info('Extracting classes');
+  _logger__WEBPACK_IMPORTED_MODULE_7__["log"].info('Extracting classes');
   _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].clear();
   var parser = _parser_flow__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
   parser.yy = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"];
@@ -9770,7 +9919,7 @@ var getClasses = function getClasses(text) {
  */
 
 var draw = function draw(text, id) {
-  _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].info('Drawing flowchart');
+  _logger__WEBPACK_IMPORTED_MODULE_7__["log"].info('Drawing flowchart');
   _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].clear();
   _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].setGen('gen-2');
   var parser = _parser_flow__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
@@ -9778,7 +9927,7 @@ var draw = function draw(text, id) {
   // try {
 
   parser.parse(text); // } catch (err) {
-  // logger.debug('Parsing failed');
+  // log.debug('Parsing failed');
   // }
   // Fetch the default direction, use TD if none was found
 
@@ -9806,18 +9955,18 @@ var draw = function draw(text, id) {
   });
   var subG;
   var subGraphs = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getSubGraphs();
-  _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].info('Subgraphs - ', subGraphs);
+  _logger__WEBPACK_IMPORTED_MODULE_7__["log"].info('Subgraphs - ', subGraphs);
 
   for (var _i = subGraphs.length - 1; _i >= 0; _i--) {
     subG = subGraphs[_i];
-    _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].info('Subgraph - ', subG);
+    _logger__WEBPACK_IMPORTED_MODULE_7__["log"].info('Subgraph - ', subG);
     _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].addVertex(subG.id, subG.title, 'group', undefined, subG.classes);
   } // Fetch the verices/nodes and edges/links from the parsed graph definition
 
 
   var vert = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getVertices();
   var edges = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getEdges();
-  _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].info(edges);
+  _logger__WEBPACK_IMPORTED_MODULE_7__["log"].info(edges);
   var i = 0;
 
   for (i = subGraphs.length - 1; i >= 0; i--) {
@@ -9826,7 +9975,7 @@ var draw = function draw(text, id) {
     Object(d3__WEBPACK_IMPORTED_MODULE_1__["selectAll"])('cluster').append('text');
 
     for (var j = 0; j < subG.nodes.length; j++) {
-      _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].info('Setting up subgraphs', subG.nodes[j], subG.id);
+      _logger__WEBPACK_IMPORTED_MODULE_7__["log"].info('Setting up subgraphs', subG.nodes[j], subG.id);
       g.setParent(subG.nodes[j], subG.id);
     }
   }
@@ -9845,7 +9994,7 @@ var draw = function draw(text, id) {
   var svgBounds = svg.node().getBBox();
   var width = svgBounds.width + padding * 2;
   var height = svgBounds.height + padding * 2;
-  _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].debug("new ViewBox 0 0 ".concat(width, " ").concat(height), "translate(".concat(padding - g._label.marginx, ", ").concat(padding - g._label.marginy, ")"));
+  _logger__WEBPACK_IMPORTED_MODULE_7__["log"].debug("new ViewBox 0 0 ".concat(width, " ").concat(height), "translate(".concat(padding - g._label.marginx, ", ").concat(padding - g._label.marginy, ")"));
   Object(_utils__WEBPACK_IMPORTED_MODULE_9__["configureSvgSize"])(svg, height, width, conf.useMaxWidth);
   svg.attr('viewBox', "0 0 ".concat(width, " ").concat(height));
   svg.select('g').attr('transform', "translate(".concat(padding - g._label.marginx, ", ").concat(padding - svgBounds.y, ")")); // Index nodes
@@ -10097,7 +10246,7 @@ var addVertices = function addVertices(vert, g, svgId) {
     } // Add the node
 
 
-    _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].warn('Adding node', vertex.id, vertex.domId);
+    _logger__WEBPACK_IMPORTED_MODULE_7__["log"].warn('Adding node', vertex.id, vertex.domId);
     g.setNode(_flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].lookUpDomId(vertex.id), {
       labelType: 'svg',
       labelStyle: styles.labelStyle,
@@ -10223,7 +10372,7 @@ var addEdges = function addEdges(edges, g) {
  */
 
 var getClasses = function getClasses(text) {
-  _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].info('Extracting classes');
+  _logger__WEBPACK_IMPORTED_MODULE_7__["log"].info('Extracting classes');
   _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].clear();
 
   try {
@@ -10243,7 +10392,7 @@ var getClasses = function getClasses(text) {
  */
 
 var draw = function draw(text, id) {
-  _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].info('Drawing flowchart');
+  _logger__WEBPACK_IMPORTED_MODULE_7__["log"].info('Drawing flowchart');
   _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].clear();
   _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].setGen('gen-1');
   var parser = _parser_flow__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
@@ -10251,7 +10400,7 @@ var draw = function draw(text, id) {
   // try {
 
   parser.parse(text); // } catch (err) {
-  // logger.debug('Parsing failed');
+  // log.debug('Parsing failed');
   // }
   // Fetch the default direction, use TD if none was found
 
@@ -10287,7 +10436,7 @@ var draw = function draw(text, id) {
 
 
   var vert = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getVertices();
-  _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].warn('Get vertices', vert);
+  _logger__WEBPACK_IMPORTED_MODULE_7__["log"].warn('Get vertices', vert);
   var edges = _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].getEdges();
   var i = 0;
 
@@ -10296,7 +10445,7 @@ var draw = function draw(text, id) {
     Object(d3__WEBPACK_IMPORTED_MODULE_1__["selectAll"])('cluster').append('text');
 
     for (var j = 0; j < subG.nodes.length; j++) {
-      _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].warn('Setting subgraph', subG.nodes[j], _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].lookUpDomId(subG.nodes[j]), _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].lookUpDomId(subG.id));
+      _logger__WEBPACK_IMPORTED_MODULE_7__["log"].warn('Setting subgraph', subG.nodes[j], _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].lookUpDomId(subG.nodes[j]), _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].lookUpDomId(subG.id));
       g.setParent(_flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].lookUpDomId(subG.nodes[j]), _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].lookUpDomId(subG.id));
     }
   }
@@ -10324,7 +10473,7 @@ var draw = function draw(text, id) {
 
   var svg = Object(d3__WEBPACK_IMPORTED_MODULE_1__["select"])("[id=\"".concat(id, "\"]"));
   svg.attr('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-  _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].warn(g); // Run the renderer. This is what draws the final graph.
+  _logger__WEBPACK_IMPORTED_MODULE_7__["log"].warn(g); // Run the renderer. This is what draws the final graph.
 
   var element = Object(d3__WEBPACK_IMPORTED_MODULE_1__["select"])('#' + id + ' g');
   render(element, g);
@@ -10338,7 +10487,7 @@ var draw = function draw(text, id) {
   Object(_utils__WEBPACK_IMPORTED_MODULE_9__["configureSvgSize"])(svg, height, width, conf.useMaxWidth); // Ensure the viewBox includes the whole svgBounds area with extra space for padding
 
   var vBox = "".concat(svgBounds.x - padding, " ").concat(svgBounds.y - padding, " ").concat(width, " ").concat(height);
-  _logger__WEBPACK_IMPORTED_MODULE_7__["logger"].debug("viewBox ".concat(vBox));
+  _logger__WEBPACK_IMPORTED_MODULE_7__["log"].debug("viewBox ".concat(vBox));
   svg.attr('viewBox', vBox); // Index nodes
 
   _flowDb__WEBPACK_IMPORTED_MODULE_2__["default"].indexNodes('subGraph' + i); // reposition labels
@@ -10513,12 +10662,12 @@ var draw = function draw(text, id) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,9],$V1=[1,7],$V2=[1,6],$V3=[1,8],$V4=[1,20,21,22,23,38,46,75,76,77,78,79,80,91,92,95,96,97,99,100,106,107,108,109,110,111],$V5=[2,10],$V6=[1,20],$V7=[1,21],$V8=[1,22],$V9=[1,23],$Va=[1,30],$Vb=[1,54],$Vc=[1,32],$Vd=[1,33],$Ve=[1,34],$Vf=[1,35],$Vg=[1,36],$Vh=[1,48],$Vi=[1,43],$Vj=[1,45],$Vk=[1,40],$Vl=[1,44],$Vm=[1,47],$Vn=[1,51],$Vo=[1,52],$Vp=[1,53],$Vq=[1,42],$Vr=[1,46],$Vs=[1,49],$Vt=[1,50],$Vu=[1,41],$Vv=[1,57],$Vw=[1,62],$Vx=[1,20,21,22,23,38,42,46,75,76,77,78,79,80,91,92,95,96,97,99,100,106,107,108,109,110,111],$Vy=[1,66],$Vz=[1,65],$VA=[1,67],$VB=[20,21,23,69,70],$VC=[20,21,22,23,69,70],$VD=[20,21,22,23,47,69,70],$VE=[20,21,22,23,40,46,47,49,51,53,55,57,59,61,62,64,69,70,80,91,92,95,96,97,99,100,106,107,108,109,110,111],$VF=[20,21,23],$VG=[20,21,23,46,69,70,80,91,92,95,96,97,99,100,106,107,108,109,110,111],$VH=[1,12,20,21,22,23,24,38,42,46,75,76,77,78,79,80,91,92,95,96,97,99,100,106,107,108,109,110,111],$VI=[46,80,91,92,95,96,97,99,100,106,107,108,109,110,111],$VJ=[1,115],$VK=[1,136],$VL=[1,137],$VM=[1,138],$VN=[1,139],$VO=[1,119],$VP=[1,110],$VQ=[1,111],$VR=[1,107],$VS=[1,131],$VT=[1,132],$VU=[1,133],$VV=[1,134],$VW=[1,135],$VX=[1,140],$VY=[1,141],$VZ=[1,113],$V_=[1,121],$V$=[1,124],$V01=[1,122],$V11=[1,123],$V21=[1,116],$V31=[1,129],$V41=[1,128],$V51=[1,112],$V61=[1,109],$V71=[1,118],$V81=[1,120],$V91=[1,125],$Va1=[1,126],$Vb1=[1,127],$Vc1=[1,130],$Vd1=[20,21,22,23,38,42,46,75,76,77,78,79,80,91,92,95,96,97,99,100,106,107,108,109,110,111],$Ve1=[1,144],$Vf1=[1,148],$Vg1=[1,150],$Vh1=[1,151],$Vi1=[12,21,22,24],$Vj1=[20,21,22,23,24,26,38,40,41,42,46,50,52,54,56,58,60,61,63,65,69,70,71,75,76,77,78,79,80,81,84,91,92,95,96,97,99,100,101,102,106,107,108,109,110,111],$Vk1=[20,21,22,23,26,46,80,91,92,95,96,97,99,100,106,107,108,109,110,111],$Vl1=[22,92],$Vm1=[1,220],$Vn1=[1,224],$Vo1=[1,221],$Vp1=[1,218],$Vq1=[1,215],$Vr1=[1,216],$Vs1=[1,217],$Vt1=[1,219],$Vu1=[1,222],$Vv1=[1,223],$Vw1=[1,225],$Vx1=[1,241],$Vy1=[20,21,23,92],$Vz1=[20,21,22,23,75,88,91,92,95,96,97,98,99,100,101];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,9],$V1=[1,7],$V2=[1,6],$V3=[1,8],$V4=[1,20,21,22,23,38,46,75,76,77,78,79,80,94,95,98,99,100,102,103,109,110,111,112,113,114],$V5=[2,10],$V6=[1,20],$V7=[1,21],$V8=[1,22],$V9=[1,23],$Va=[1,30],$Vb=[1,54],$Vc=[1,32],$Vd=[1,33],$Ve=[1,34],$Vf=[1,35],$Vg=[1,36],$Vh=[1,48],$Vi=[1,43],$Vj=[1,45],$Vk=[1,40],$Vl=[1,44],$Vm=[1,47],$Vn=[1,51],$Vo=[1,52],$Vp=[1,53],$Vq=[1,42],$Vr=[1,46],$Vs=[1,49],$Vt=[1,50],$Vu=[1,41],$Vv=[1,57],$Vw=[1,62],$Vx=[1,20,21,22,23,38,42,46,75,76,77,78,79,80,94,95,98,99,100,102,103,109,110,111,112,113,114],$Vy=[1,66],$Vz=[1,65],$VA=[1,67],$VB=[20,21,23,69,70],$VC=[1,88],$VD=[1,93],$VE=[1,90],$VF=[1,95],$VG=[1,98],$VH=[1,96],$VI=[1,97],$VJ=[1,91],$VK=[1,103],$VL=[1,102],$VM=[1,92],$VN=[1,94],$VO=[1,99],$VP=[1,100],$VQ=[1,101],$VR=[1,104],$VS=[20,21,22,23,69,70],$VT=[20,21,22,23,47,69,70],$VU=[20,21,22,23,40,46,47,49,51,53,55,57,59,61,62,64,69,70,80,94,95,98,99,100,102,103,109,110,111,112,113,114],$VV=[20,21,23],$VW=[20,21,23,46,69,70,80,94,95,98,99,100,102,103,109,110,111,112,113,114],$VX=[1,12,20,21,22,23,24,38,42,46,75,76,77,78,79,80,94,95,98,99,100,102,103,109,110,111,112,113,114],$VY=[46,80,94,95,98,99,100,102,103,109,110,111,112,113,114],$VZ=[1,136],$V_=[1,144],$V$=[1,145],$V01=[1,146],$V11=[1,147],$V21=[1,131],$V31=[1,132],$V41=[1,128],$V51=[1,139],$V61=[1,140],$V71=[1,141],$V81=[1,142],$V91=[1,143],$Va1=[1,148],$Vb1=[1,149],$Vc1=[1,134],$Vd1=[1,137],$Ve1=[1,133],$Vf1=[1,130],$Vg1=[20,21,22,23,38,42,46,75,76,77,78,79,80,94,95,98,99,100,102,103,109,110,111,112,113,114],$Vh1=[1,152],$Vi1=[20,21,22,23,26,46,80,94,95,98,99,100,102,103,109,110,111,112,113,114],$Vj1=[20,21,22,23,24,26,38,40,41,42,46,50,52,54,56,58,60,61,63,65,69,70,71,75,76,77,78,79,80,81,84,94,95,98,99,100,102,103,104,105,109,110,111,112,113,114],$Vk1=[12,21,22,24],$Vl1=[22,95],$Vm1=[1,233],$Vn1=[1,237],$Vo1=[1,234],$Vp1=[1,231],$Vq1=[1,228],$Vr1=[1,229],$Vs1=[1,230],$Vt1=[1,232],$Vu1=[1,235],$Vv1=[1,236],$Vw1=[1,238],$Vx1=[1,255],$Vy1=[20,21,23,95],$Vz1=[20,21,22,23,75,91,94,95,98,99,100,101,102,103,104];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"mermaidDoc":4,"directive":5,"openDirective":6,"typeDirective":7,"closeDirective":8,"separator":9,":":10,"argDirective":11,"open_directive":12,"type_directive":13,"arg_directive":14,"close_directive":15,"graphConfig":16,"document":17,"line":18,"statement":19,"SEMI":20,"NEWLINE":21,"SPACE":22,"EOF":23,"GRAPH":24,"NODIR":25,"DIR":26,"FirstStmtSeperator":27,"ending":28,"endToken":29,"spaceList":30,"spaceListNewline":31,"verticeStatement":32,"styleStatement":33,"linkStyleStatement":34,"classDefStatement":35,"classStatement":36,"clickStatement":37,"subgraph":38,"text":39,"SQS":40,"SQE":41,"end":42,"link":43,"node":44,"vertex":45,"AMP":46,"STYLE_SEPARATOR":47,"idString":48,"PS":49,"PE":50,"(-":51,"-)":52,"STADIUMSTART":53,"STADIUMEND":54,"SUBROUTINESTART":55,"SUBROUTINEEND":56,"CYLINDERSTART":57,"CYLINDEREND":58,"DIAMOND_START":59,"DIAMOND_STOP":60,"TAGEND":61,"TRAPSTART":62,"TRAPEND":63,"INVTRAPSTART":64,"INVTRAPEND":65,"linkStatement":66,"arrowText":67,"TESTSTR":68,"START_LINK":69,"LINK":70,"PIPE":71,"textToken":72,"STR":73,"keywords":74,"STYLE":75,"LINKSTYLE":76,"CLASSDEF":77,"CLASS":78,"CLICK":79,"DOWN":80,"UP":81,"textNoTags":82,"textNoTagsToken":83,"DEFAULT":84,"stylesOpt":85,"alphaNum":86,"LINK_TARGET":87,"HEX":88,"numList":89,"INTERPOLATE":90,"NUM":91,"COMMA":92,"style":93,"styleComponent":94,"ALPHA":95,"COLON":96,"MINUS":97,"UNIT":98,"BRKT":99,"DOT":100,"PCT":101,"TAGSTART":102,"alphaNumToken":103,"idStringToken":104,"alphaNumStatement":105,"PUNCTUATION":106,"UNICODE_TEXT":107,"PLUS":108,"EQUALS":109,"MULT":110,"UNDERSCORE":111,"graphCodeTokens":112,"ARROW_CROSS":113,"ARROW_POINT":114,"ARROW_CIRCLE":115,"ARROW_OPEN":116,"QUOTE":117,"$accept":0,"$end":1},
-terminals_: {2:"error",10:":",12:"open_directive",13:"type_directive",14:"arg_directive",15:"close_directive",20:"SEMI",21:"NEWLINE",22:"SPACE",23:"EOF",24:"GRAPH",25:"NODIR",26:"DIR",38:"subgraph",40:"SQS",41:"SQE",42:"end",46:"AMP",47:"STYLE_SEPARATOR",49:"PS",50:"PE",51:"(-",52:"-)",53:"STADIUMSTART",54:"STADIUMEND",55:"SUBROUTINESTART",56:"SUBROUTINEEND",57:"CYLINDERSTART",58:"CYLINDEREND",59:"DIAMOND_START",60:"DIAMOND_STOP",61:"TAGEND",62:"TRAPSTART",63:"TRAPEND",64:"INVTRAPSTART",65:"INVTRAPEND",68:"TESTSTR",69:"START_LINK",70:"LINK",71:"PIPE",73:"STR",75:"STYLE",76:"LINKSTYLE",77:"CLASSDEF",78:"CLASS",79:"CLICK",80:"DOWN",81:"UP",84:"DEFAULT",87:"LINK_TARGET",88:"HEX",90:"INTERPOLATE",91:"NUM",92:"COMMA",95:"ALPHA",96:"COLON",97:"MINUS",98:"UNIT",99:"BRKT",100:"DOT",101:"PCT",102:"TAGSTART",106:"PUNCTUATION",107:"UNICODE_TEXT",108:"PLUS",109:"EQUALS",110:"MULT",111:"UNDERSCORE",113:"ARROW_CROSS",114:"ARROW_POINT",115:"ARROW_CIRCLE",116:"ARROW_OPEN",117:"QUOTE"},
-productions_: [0,[3,1],[3,2],[5,4],[5,6],[6,1],[7,1],[11,1],[8,1],[4,2],[17,0],[17,2],[18,1],[18,1],[18,1],[18,1],[18,1],[16,2],[16,2],[16,2],[16,3],[28,2],[28,1],[29,1],[29,1],[29,1],[27,1],[27,1],[27,2],[31,2],[31,2],[31,1],[31,1],[30,2],[30,1],[19,2],[19,2],[19,2],[19,2],[19,2],[19,2],[19,9],[19,6],[19,4],[9,1],[9,1],[9,1],[32,3],[32,4],[32,2],[32,1],[44,1],[44,5],[44,3],[45,4],[45,6],[45,4],[45,4],[45,4],[45,4],[45,4],[45,4],[45,6],[45,4],[45,4],[45,4],[45,4],[45,4],[45,1],[43,2],[43,3],[43,3],[43,1],[43,3],[66,1],[67,3],[39,1],[39,2],[39,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[82,1],[82,2],[35,5],[35,5],[36,5],[37,5],[37,7],[37,5],[37,7],[37,7],[37,9],[33,5],[33,5],[34,5],[34,5],[34,9],[34,9],[34,7],[34,7],[89,1],[89,3],[85,1],[85,3],[93,1],[93,2],[94,1],[94,1],[94,1],[94,1],[94,1],[94,1],[94,1],[94,1],[94,1],[94,1],[94,1],[72,1],[72,1],[72,1],[72,1],[72,1],[72,1],[83,1],[83,1],[83,1],[83,1],[48,1],[48,2],[86,1],[86,2],[105,1],[105,1],[105,1],[105,1],[103,1],[103,1],[103,1],[103,1],[103,1],[103,1],[103,1],[103,1],[103,1],[103,1],[103,1],[103,1],[103,1],[104,1],[104,1],[104,1],[104,1],[104,1],[104,1],[104,1],[104,1],[104,1],[104,1],[104,1],[104,1],[104,1],[104,1],[104,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1],[112,1]],
+symbols_: {"error":2,"start":3,"mermaidDoc":4,"directive":5,"openDirective":6,"typeDirective":7,"closeDirective":8,"separator":9,":":10,"argDirective":11,"open_directive":12,"type_directive":13,"arg_directive":14,"close_directive":15,"graphConfig":16,"document":17,"line":18,"statement":19,"SEMI":20,"NEWLINE":21,"SPACE":22,"EOF":23,"GRAPH":24,"NODIR":25,"DIR":26,"FirstStmtSeperator":27,"ending":28,"endToken":29,"spaceList":30,"spaceListNewline":31,"verticeStatement":32,"styleStatement":33,"linkStyleStatement":34,"classDefStatement":35,"classStatement":36,"clickStatement":37,"subgraph":38,"text":39,"SQS":40,"SQE":41,"end":42,"link":43,"node":44,"vertex":45,"AMP":46,"STYLE_SEPARATOR":47,"idString":48,"PS":49,"PE":50,"(-":51,"-)":52,"STADIUMSTART":53,"STADIUMEND":54,"SUBROUTINESTART":55,"SUBROUTINEEND":56,"CYLINDERSTART":57,"CYLINDEREND":58,"DIAMOND_START":59,"DIAMOND_STOP":60,"TAGEND":61,"TRAPSTART":62,"TRAPEND":63,"INVTRAPSTART":64,"INVTRAPEND":65,"linkStatement":66,"arrowText":67,"TESTSTR":68,"START_LINK":69,"LINK":70,"PIPE":71,"textToken":72,"STR":73,"keywords":74,"STYLE":75,"LINKSTYLE":76,"CLASSDEF":77,"CLASS":78,"CLICK":79,"DOWN":80,"UP":81,"textNoTags":82,"textNoTagsToken":83,"DEFAULT":84,"stylesOpt":85,"alphaNum":86,"CALLBACKNAME":87,"CALLBACKARGS":88,"HREF":89,"LINK_TARGET":90,"HEX":91,"numList":92,"INTERPOLATE":93,"NUM":94,"COMMA":95,"style":96,"styleComponent":97,"ALPHA":98,"COLON":99,"MINUS":100,"UNIT":101,"BRKT":102,"DOT":103,"PCT":104,"TAGSTART":105,"alphaNumToken":106,"idStringToken":107,"alphaNumStatement":108,"PUNCTUATION":109,"UNICODE_TEXT":110,"PLUS":111,"EQUALS":112,"MULT":113,"UNDERSCORE":114,"graphCodeTokens":115,"ARROW_CROSS":116,"ARROW_POINT":117,"ARROW_CIRCLE":118,"ARROW_OPEN":119,"QUOTE":120,"$accept":0,"$end":1},
+terminals_: {2:"error",10:":",12:"open_directive",13:"type_directive",14:"arg_directive",15:"close_directive",20:"SEMI",21:"NEWLINE",22:"SPACE",23:"EOF",24:"GRAPH",25:"NODIR",26:"DIR",38:"subgraph",40:"SQS",41:"SQE",42:"end",46:"AMP",47:"STYLE_SEPARATOR",49:"PS",50:"PE",51:"(-",52:"-)",53:"STADIUMSTART",54:"STADIUMEND",55:"SUBROUTINESTART",56:"SUBROUTINEEND",57:"CYLINDERSTART",58:"CYLINDEREND",59:"DIAMOND_START",60:"DIAMOND_STOP",61:"TAGEND",62:"TRAPSTART",63:"TRAPEND",64:"INVTRAPSTART",65:"INVTRAPEND",68:"TESTSTR",69:"START_LINK",70:"LINK",71:"PIPE",73:"STR",75:"STYLE",76:"LINKSTYLE",77:"CLASSDEF",78:"CLASS",79:"CLICK",80:"DOWN",81:"UP",84:"DEFAULT",87:"CALLBACKNAME",88:"CALLBACKARGS",89:"HREF",90:"LINK_TARGET",91:"HEX",93:"INTERPOLATE",94:"NUM",95:"COMMA",98:"ALPHA",99:"COLON",100:"MINUS",101:"UNIT",102:"BRKT",103:"DOT",104:"PCT",105:"TAGSTART",109:"PUNCTUATION",110:"UNICODE_TEXT",111:"PLUS",112:"EQUALS",113:"MULT",114:"UNDERSCORE",116:"ARROW_CROSS",117:"ARROW_POINT",118:"ARROW_CIRCLE",119:"ARROW_OPEN",120:"QUOTE"},
+productions_: [0,[3,1],[3,2],[5,4],[5,6],[6,1],[7,1],[11,1],[8,1],[4,2],[17,0],[17,2],[18,1],[18,1],[18,1],[18,1],[18,1],[16,2],[16,2],[16,2],[16,3],[28,2],[28,1],[29,1],[29,1],[29,1],[27,1],[27,1],[27,2],[31,2],[31,2],[31,1],[31,1],[30,2],[30,1],[19,2],[19,2],[19,2],[19,2],[19,2],[19,2],[19,9],[19,6],[19,4],[9,1],[9,1],[9,1],[32,3],[32,4],[32,2],[32,1],[44,1],[44,5],[44,3],[45,4],[45,6],[45,4],[45,4],[45,4],[45,4],[45,4],[45,4],[45,6],[45,4],[45,4],[45,4],[45,4],[45,4],[45,1],[43,2],[43,3],[43,3],[43,1],[43,3],[66,1],[67,3],[39,1],[39,2],[39,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[74,1],[82,1],[82,2],[35,5],[35,5],[36,5],[37,2],[37,4],[37,3],[37,5],[37,2],[37,4],[37,4],[37,6],[37,2],[37,4],[37,2],[37,4],[37,4],[37,6],[33,5],[33,5],[34,5],[34,5],[34,9],[34,9],[34,7],[34,7],[92,1],[92,3],[85,1],[85,3],[96,1],[96,2],[97,1],[97,1],[97,1],[97,1],[97,1],[97,1],[97,1],[97,1],[97,1],[97,1],[97,1],[72,1],[72,1],[72,1],[72,1],[72,1],[72,1],[83,1],[83,1],[83,1],[83,1],[48,1],[48,2],[86,1],[86,2],[108,1],[108,1],[108,1],[108,1],[106,1],[106,1],[106,1],[106,1],[106,1],[106,1],[106,1],[106,1],[106,1],[106,1],[106,1],[106,1],[106,1],[107,1],[107,1],[107,1],[107,1],[107,1],[107,1],[107,1],[107,1],[107,1],[107,1],[107,1],[107,1],[107,1],[107,1],[107,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -10546,7 +10695,7 @@ case 11:
 	    }
 	    this.$=$$[$0-1];
 break;
-case 12: case 76: case 78: case 90: case 138: case 140: case 141:
+case 12: case 76: case 78: case 90: case 146: case 148: case 149:
 this.$=$$[$0];
 break;
 case 19:
@@ -10654,7 +10803,7 @@ break;
 case 75:
 this.$ = $$[$0-1];
 break;
-case 77: case 91: case 139:
+case 77: case 91: case 147:
 this.$=$$[$0-1]+''+$$[$0];
 break;
 case 92: case 93:
@@ -10663,70 +10812,76 @@ break;
 case 94:
 this.$ = $$[$0-4];yy.setClass($$[$0-2], $$[$0]);
 break;
-case 95:
-this.$ = $$[$0-4];yy.setClickEvent($$[$0-2], $$[$0], undefined);
+case 95: case 103:
+this.$ = $$[$0-1];yy.setClickEvent($$[$0-1], $$[$0]);
 break;
-case 96:
-this.$ = $$[$0-6];yy.setClickEvent($$[$0-4], $$[$0-2], $$[$0])       ;
+case 96: case 104:
+this.$ = $$[$0-3];yy.setClickEvent($$[$0-3], $$[$0-2]);yy.setTooltip($$[$0-3], $$[$0]);
 break;
 case 97:
-this.$ = $$[$0-4];yy.setLink($$[$0-2], $$[$0], undefined, undefined);
+this.$ = $$[$0-2];yy.setClickEvent($$[$0-2], $$[$0-1], $$[$0]);
 break;
 case 98:
-this.$ = $$[$0-6];yy.setLink($$[$0-4], $$[$0-2], $$[$0], undefined       );
+this.$ = $$[$0-4];yy.setClickEvent($$[$0-4], $$[$0-3], $$[$0-2]);yy.setTooltip($$[$0-4], $$[$0]);
 break;
-case 99:
-this.$ = $$[$0-6];yy.setLink($$[$0-4], $$[$0-2], undefined, $$[$0]       );
+case 99: case 105:
+this.$ = $$[$0-1];yy.setLink($$[$0-1], $$[$0]);
 break;
-case 100:
-this.$ = $$[$0-8];yy.setLink($$[$0-6], $$[$0-4], $$[$0-2], $$[$0]              );
+case 100: case 106:
+this.$ = $$[$0-3];yy.setLink($$[$0-3], $$[$0-2]);yy.setTooltip($$[$0-3], $$[$0]);
 break;
-case 101:
+case 101: case 107:
+this.$ = $$[$0-3];yy.setLink($$[$0-3], $$[$0-2], $$[$0]);
+break;
+case 102: case 108:
+this.$ = $$[$0-5];yy.setLink($$[$0-5], $$[$0-4], $$[$0]);yy.setTooltip($$[$0-5], $$[$0-2]);
+break;
+case 109:
 this.$ = $$[$0-4];yy.addVertex($$[$0-2],undefined,undefined,$$[$0]);
 break;
-case 102: case 104:
+case 110: case 112:
 this.$ = $$[$0-4];yy.updateLink($$[$0-2],$$[$0]);
 break;
-case 103:
+case 111:
 this.$ = $$[$0-4];yy.updateLink([$$[$0-2]],$$[$0]);
 break;
-case 105:
+case 113:
 this.$ = $$[$0-8];yy.updateLinkInterpolate([$$[$0-6]],$$[$0-2]);yy.updateLink([$$[$0-6]],$$[$0]);
 break;
-case 106:
+case 114:
 this.$ = $$[$0-8];yy.updateLinkInterpolate($$[$0-6],$$[$0-2]);yy.updateLink($$[$0-6],$$[$0]);
 break;
-case 107:
+case 115:
 this.$ = $$[$0-6];yy.updateLinkInterpolate([$$[$0-4]],$$[$0]);
 break;
-case 108:
+case 116:
 this.$ = $$[$0-6];yy.updateLinkInterpolate($$[$0-4],$$[$0]);
 break;
-case 109: case 111:
+case 117: case 119:
 this.$ = [$$[$0]]
 break;
-case 110: case 112:
+case 118: case 120:
 $$[$0-2].push($$[$0]);this.$ = $$[$0-2];
 break;
-case 114:
+case 122:
 this.$ = $$[$0-1] + $$[$0];
 break;
-case 136:
+case 144:
 this.$=$$[$0]
 break;
-case 137:
+case 145:
 this.$=$$[$0-1]+''+$$[$0]
 break;
-case 142:
+case 150:
 this.$='v';
 break;
-case 143:
+case 151:
 this.$='-';
 break;
 }
 },
-table: [{3:1,4:2,5:3,6:5,12:$V0,16:4,21:$V1,22:$V2,24:$V3},{1:[3]},{1:[2,1]},{3:10,4:2,5:3,6:5,12:$V0,16:4,21:$V1,22:$V2,24:$V3},o($V4,$V5,{17:11}),{7:12,13:[1,13]},{16:14,21:$V1,22:$V2,24:$V3},{16:15,21:$V1,22:$V2,24:$V3},{25:[1,16],26:[1,17]},{13:[2,5]},{1:[2,2]},{1:[2,9],18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,44:31,45:37,46:$Vb,48:38,75:$Vc,76:$Vd,77:$Ve,78:$Vf,79:$Vg,80:$Vh,91:$Vi,92:$Vj,95:$Vk,96:$Vl,97:$Vm,99:$Vn,100:$Vo,104:39,106:$Vp,107:$Vq,108:$Vr,109:$Vs,110:$Vt,111:$Vu},{8:55,10:[1,56],15:$Vv},o([10,15],[2,6]),o($V4,[2,17]),o($V4,[2,18]),o($V4,[2,19]),{20:[1,59],21:[1,60],22:$Vw,27:58,30:61},o($Vx,[2,11]),o($Vx,[2,12]),o($Vx,[2,13]),o($Vx,[2,14]),o($Vx,[2,15]),o($Vx,[2,16]),{9:63,20:$Vy,21:$Vz,23:$VA,43:64,66:68,69:[1,69],70:[1,70]},{9:71,20:$Vy,21:$Vz,23:$VA},{9:72,20:$Vy,21:$Vz,23:$VA},{9:73,20:$Vy,21:$Vz,23:$VA},{9:74,20:$Vy,21:$Vz,23:$VA},{9:75,20:$Vy,21:$Vz,23:$VA},{9:77,20:$Vy,21:$Vz,22:[1,76],23:$VA},o($VB,[2,50],{30:78,22:$Vw}),{22:[1,79]},{22:[1,80]},{22:[1,81]},{22:[1,82]},{22:[1,83]},o($VC,[2,51],{47:[1,84]}),o($VD,[2,68],{104:95,40:[1,85],46:$Vb,49:[1,86],51:[1,87],53:[1,88],55:[1,89],57:[1,90],59:[1,91],61:[1,92],62:[1,93],64:[1,94],80:$Vh,91:$Vi,92:$Vj,95:$Vk,96:$Vl,97:$Vm,99:$Vn,100:$Vo,106:$Vp,107:$Vq,108:$Vr,109:$Vs,110:$Vt,111:$Vu}),o($VE,[2,136]),o($VE,[2,157]),o($VE,[2,158]),o($VE,[2,159]),o($VE,[2,160]),o($VE,[2,161]),o($VE,[2,162]),o($VE,[2,163]),o($VE,[2,164]),o($VE,[2,165]),o($VE,[2,166]),o($VE,[2,167]),o($VE,[2,168]),o($VE,[2,169]),o($VE,[2,170]),o($VE,[2,171]),{9:96,20:$Vy,21:$Vz,23:$VA},{11:97,14:[1,98]},o($VF,[2,8]),o($V4,[2,20]),o($V4,[2,26]),o($V4,[2,27]),{21:[1,99]},o($VG,[2,34],{30:100,22:$Vw}),o($Vx,[2,35]),{44:101,45:37,46:$Vb,48:38,80:$Vh,91:$Vi,92:$Vj,95:$Vk,96:$Vl,97:$Vm,99:$Vn,100:$Vo,104:39,106:$Vp,107:$Vq,108:$Vr,109:$Vs,110:$Vt,111:$Vu},o($VH,[2,44]),o($VH,[2,45]),o($VH,[2,46]),o($VI,[2,72],{67:102,68:[1,103],71:[1,104]}),{22:$VJ,24:$VK,26:$VL,38:$VM,39:105,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},o([46,68,71,80,91,92,95,96,97,99,100,106,107,108,109,110,111],[2,74]),o($Vx,[2,36]),o($Vx,[2,37]),o($Vx,[2,38]),o($Vx,[2,39]),o($Vx,[2,40]),{22:$VJ,24:$VK,26:$VL,38:$VM,39:142,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},o($Vd1,$V5,{17:143}),o($VB,[2,49],{46:$Ve1}),{26:$Vf1,46:$VO,80:$Vg1,86:145,88:[1,146],91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:147,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{84:[1,152],89:153,91:[1,154]},{26:$Vf1,46:$VO,80:$Vg1,84:[1,155],86:156,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:147,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{26:$Vf1,46:$VO,80:$Vg1,86:157,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:147,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{26:$Vf1,46:$VO,80:$Vg1,86:158,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:147,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{46:$Vb,48:159,80:$Vh,91:$Vi,92:$Vj,95:$Vk,96:$Vl,97:$Vm,99:$Vn,100:$Vo,104:39,106:$Vp,107:$Vq,108:$Vr,109:$Vs,110:$Vt,111:$Vu},{22:$VJ,24:$VK,26:$VL,38:$VM,39:160,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:162,42:$VN,46:$VO,49:[1,161],61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:163,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:164,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:165,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:166,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:167,42:$VN,46:$VO,59:[1,168],61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:169,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:170,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:171,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},o($VE,[2,137]),o($Vi1,[2,3]),{8:172,15:$Vv},{15:[2,7]},o($V4,[2,28]),o($VG,[2,33]),o($VB,[2,47],{30:173,22:$Vw}),o($VI,[2,69],{22:[1,174]}),{22:[1,175]},{22:$VJ,24:$VK,26:$VL,38:$VM,39:176,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,61:$VP,69:$VQ,70:[1,177],72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},o($Vj1,[2,76]),o($Vj1,[2,78]),o($Vj1,[2,126]),o($Vj1,[2,127]),o($Vj1,[2,128]),o($Vj1,[2,129]),o($Vj1,[2,130]),o($Vj1,[2,131]),o($Vj1,[2,132]),o($Vj1,[2,133]),o($Vj1,[2,134]),o($Vj1,[2,135]),o($Vj1,[2,144]),o($Vj1,[2,145]),o($Vj1,[2,146]),o($Vj1,[2,147]),o($Vj1,[2,148]),o($Vj1,[2,149]),o($Vj1,[2,150]),o($Vj1,[2,151]),o($Vj1,[2,152]),o($Vj1,[2,153]),o($Vj1,[2,154]),o($Vj1,[2,155]),o($Vj1,[2,156]),o($Vj1,[2,79]),o($Vj1,[2,80]),o($Vj1,[2,81]),o($Vj1,[2,82]),o($Vj1,[2,83]),o($Vj1,[2,84]),o($Vj1,[2,85]),o($Vj1,[2,86]),o($Vj1,[2,87]),o($Vj1,[2,88]),o($Vj1,[2,89]),{9:180,20:$Vy,21:$Vz,22:$VJ,23:$VA,24:$VK,26:$VL,38:$VM,40:[1,179],42:$VN,46:$VO,61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,181],44:31,45:37,46:$Vb,48:38,75:$Vc,76:$Vd,77:$Ve,78:$Vf,79:$Vg,80:$Vh,91:$Vi,92:$Vj,95:$Vk,96:$Vl,97:$Vm,99:$Vn,100:$Vo,104:39,106:$Vp,107:$Vq,108:$Vr,109:$Vs,110:$Vt,111:$Vu},{22:$Vw,30:182},{22:[1,183],26:$Vf1,46:$VO,80:$Vg1,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:184,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:[1,185]},o($Vk1,[2,138]),o($Vk1,[2,140]),o($Vk1,[2,141]),o($Vk1,[2,142]),o($Vk1,[2,143]),{22:[1,186]},{22:[1,187],92:[1,188]},o($Vl1,[2,109]),{22:[1,189]},{22:[1,190],26:$Vf1,46:$VO,80:$Vg1,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:184,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:[1,191],26:$Vf1,46:$VO,80:$Vg1,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:184,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:[1,192],26:$Vf1,46:$VO,80:$Vg1,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:184,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},o($VC,[2,53],{104:95,46:$Vb,80:$Vh,91:$Vi,92:$Vj,95:$Vk,96:$Vl,97:$Vm,99:$Vn,100:$Vo,106:$Vp,107:$Vq,108:$Vr,109:$Vs,110:$Vt,111:$Vu}),{22:$VJ,24:$VK,26:$VL,38:$VM,41:[1,193],42:$VN,46:$VO,61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:194,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,50:[1,195],61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,52:[1,196],61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,54:[1,197],61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,56:[1,198],61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,58:[1,199],61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,60:[1,200],61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,39:201,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,41:[1,202],42:$VN,46:$VO,61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,61:$VP,63:[1,203],65:[1,204],69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,61:$VP,63:[1,206],65:[1,205],69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{9:207,20:$Vy,21:$Vz,23:$VA},o($VB,[2,48],{46:$Ve1}),o($VI,[2,71]),o($VI,[2,70]),{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,61:$VP,69:$VQ,71:[1,208],72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},o($VI,[2,73]),o($Vj1,[2,77]),{22:$VJ,24:$VK,26:$VL,38:$VM,39:209,42:$VN,46:$VO,61:$VP,69:$VQ,72:106,73:$VR,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},o($Vd1,$V5,{17:210}),o($Vx,[2,43]),{45:211,46:$Vb,48:38,80:$Vh,91:$Vi,92:$Vj,95:$Vk,96:$Vl,97:$Vm,99:$Vn,100:$Vo,104:39,106:$Vp,107:$Vq,108:$Vr,109:$Vs,110:$Vt,111:$Vu},{22:$Vm1,75:$Vn1,85:212,88:$Vo1,91:$Vp1,93:213,94:214,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1},o($Vk1,[2,139]),{22:$Vm1,75:$Vn1,85:226,88:$Vo1,91:$Vp1,93:213,94:214,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1},{22:$Vm1,75:$Vn1,85:227,88:$Vo1,90:[1,228],91:$Vp1,93:213,94:214,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1},{22:$Vm1,75:$Vn1,85:229,88:$Vo1,90:[1,230],91:$Vp1,93:213,94:214,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1},{91:[1,231]},{22:$Vm1,75:$Vn1,85:232,88:$Vo1,91:$Vp1,93:213,94:214,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1},{22:$Vm1,75:$Vn1,85:233,88:$Vo1,91:$Vp1,93:213,94:214,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1},{26:$Vf1,46:$VO,80:$Vg1,86:234,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:147,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{26:$Vf1,46:$VO,73:[1,236],80:$Vg1,86:235,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:147,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},o($VD,[2,54]),{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,50:[1,237],61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},o($VD,[2,60]),o($VD,[2,56]),o($VD,[2,57]),o($VD,[2,58]),o($VD,[2,59]),o($VD,[2,61]),{22:$VJ,24:$VK,26:$VL,38:$VM,42:$VN,46:$VO,60:[1,238],61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},o($VD,[2,63]),o($VD,[2,64]),o($VD,[2,66]),o($VD,[2,65]),o($VD,[2,67]),o($Vi1,[2,4]),o([22,46,80,91,92,95,96,97,99,100,106,107,108,109,110,111],[2,75]),{22:$VJ,24:$VK,26:$VL,38:$VM,41:[1,239],42:$VN,46:$VO,61:$VP,69:$VQ,72:178,74:117,75:$VS,76:$VT,77:$VU,78:$VV,79:$VW,80:$VX,81:$VY,83:108,84:$VZ,91:$V_,92:$V$,95:$V01,96:$V11,97:$V21,99:$V31,100:$V41,101:$V51,102:$V61,103:114,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,240],44:31,45:37,46:$Vb,48:38,75:$Vc,76:$Vd,77:$Ve,78:$Vf,79:$Vg,80:$Vh,91:$Vi,92:$Vj,95:$Vk,96:$Vl,97:$Vm,99:$Vn,100:$Vo,104:39,106:$Vp,107:$Vq,108:$Vr,109:$Vs,110:$Vt,111:$Vu},o($VC,[2,52]),o($VF,[2,101],{92:$Vx1}),o($Vy1,[2,111],{94:242,22:$Vm1,75:$Vn1,88:$Vo1,91:$Vp1,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1}),o($Vz1,[2,113]),o($Vz1,[2,115]),o($Vz1,[2,116]),o($Vz1,[2,117]),o($Vz1,[2,118]),o($Vz1,[2,119]),o($Vz1,[2,120]),o($Vz1,[2,121]),o($Vz1,[2,122]),o($Vz1,[2,123]),o($Vz1,[2,124]),o($Vz1,[2,125]),o($VF,[2,102],{92:$Vx1}),o($VF,[2,103],{92:$Vx1}),{22:[1,243]},o($VF,[2,104],{92:$Vx1}),{22:[1,244]},o($Vl1,[2,110]),o($VF,[2,92],{92:$Vx1}),o($VF,[2,93],{92:$Vx1}),o($VF,[2,94],{103:149,105:184,26:$Vf1,46:$VO,80:$Vg1,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1}),o($VF,[2,95],{103:149,105:184,22:[1,245],26:$Vf1,46:$VO,80:$Vg1,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1}),o($VF,[2,97],{22:[1,246]}),{50:[1,247]},{60:[1,248]},{9:249,20:$Vy,21:$Vz,23:$VA},o($Vx,[2,42]),{22:$Vm1,75:$Vn1,88:$Vo1,91:$Vp1,93:250,94:214,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1},o($Vz1,[2,114]),{26:$Vf1,46:$VO,80:$Vg1,86:251,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:147,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{26:$Vf1,46:$VO,80:$Vg1,86:252,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,103:149,105:147,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1},{73:[1,253]},{73:[1,254],87:[1,255]},o($VD,[2,55]),o($VD,[2,62]),o($Vd1,$V5,{17:256}),o($Vy1,[2,112],{94:242,22:$Vm1,75:$Vn1,88:$Vo1,91:$Vp1,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1}),o($VF,[2,107],{103:149,105:184,22:[1,257],26:$Vf1,46:$VO,80:$Vg1,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1}),o($VF,[2,108],{103:149,105:184,22:[1,258],26:$Vf1,46:$VO,80:$Vg1,91:$V_,92:$V$,95:$V01,96:$V11,97:$Vh1,99:$V31,100:$V41,106:$V71,107:$V81,108:$V91,109:$Va1,110:$Vb1,111:$Vc1}),o($VF,[2,96]),o($VF,[2,98],{22:[1,259]}),o($VF,[2,99]),{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,260],44:31,45:37,46:$Vb,48:38,75:$Vc,76:$Vd,77:$Ve,78:$Vf,79:$Vg,80:$Vh,91:$Vi,92:$Vj,95:$Vk,96:$Vl,97:$Vm,99:$Vn,100:$Vo,104:39,106:$Vp,107:$Vq,108:$Vr,109:$Vs,110:$Vt,111:$Vu},{22:$Vm1,75:$Vn1,85:261,88:$Vo1,91:$Vp1,93:213,94:214,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1},{22:$Vm1,75:$Vn1,85:262,88:$Vo1,91:$Vp1,93:213,94:214,95:$Vq1,96:$Vr1,97:$Vs1,98:$Vt1,99:$Vu1,100:$Vv1,101:$Vw1},{87:[1,263]},o($Vx,[2,41]),o($VF,[2,105],{92:$Vx1}),o($VF,[2,106],{92:$Vx1}),o($VF,[2,100])],
-defaultActions: {2:[2,1],9:[2,5],10:[2,2],98:[2,7]},
+table: [{3:1,4:2,5:3,6:5,12:$V0,16:4,21:$V1,22:$V2,24:$V3},{1:[3]},{1:[2,1]},{3:10,4:2,5:3,6:5,12:$V0,16:4,21:$V1,22:$V2,24:$V3},o($V4,$V5,{17:11}),{7:12,13:[1,13]},{16:14,21:$V1,22:$V2,24:$V3},{16:15,21:$V1,22:$V2,24:$V3},{25:[1,16],26:[1,17]},{13:[2,5]},{1:[2,2]},{1:[2,9],18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,44:31,45:37,46:$Vb,48:38,75:$Vc,76:$Vd,77:$Ve,78:$Vf,79:$Vg,80:$Vh,94:$Vi,95:$Vj,98:$Vk,99:$Vl,100:$Vm,102:$Vn,103:$Vo,107:39,109:$Vp,110:$Vq,111:$Vr,112:$Vs,113:$Vt,114:$Vu},{8:55,10:[1,56],15:$Vv},o([10,15],[2,6]),o($V4,[2,17]),o($V4,[2,18]),o($V4,[2,19]),{20:[1,59],21:[1,60],22:$Vw,27:58,30:61},o($Vx,[2,11]),o($Vx,[2,12]),o($Vx,[2,13]),o($Vx,[2,14]),o($Vx,[2,15]),o($Vx,[2,16]),{9:63,20:$Vy,21:$Vz,23:$VA,43:64,66:68,69:[1,69],70:[1,70]},{9:71,20:$Vy,21:$Vz,23:$VA},{9:72,20:$Vy,21:$Vz,23:$VA},{9:73,20:$Vy,21:$Vz,23:$VA},{9:74,20:$Vy,21:$Vz,23:$VA},{9:75,20:$Vy,21:$Vz,23:$VA},{9:77,20:$Vy,21:$Vz,22:[1,76],23:$VA},o($VB,[2,50],{30:78,22:$Vw}),{22:[1,79]},{22:[1,80]},{22:[1,81]},{22:[1,82]},{26:$VC,46:$VD,73:[1,86],80:$VE,86:85,87:[1,83],89:[1,84],94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,106:89,108:87,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($VS,[2,51],{47:[1,105]}),o($VT,[2,68],{107:116,40:[1,106],46:$Vb,49:[1,107],51:[1,108],53:[1,109],55:[1,110],57:[1,111],59:[1,112],61:[1,113],62:[1,114],64:[1,115],80:$Vh,94:$Vi,95:$Vj,98:$Vk,99:$Vl,100:$Vm,102:$Vn,103:$Vo,109:$Vp,110:$Vq,111:$Vr,112:$Vs,113:$Vt,114:$Vu}),o($VU,[2,144]),o($VU,[2,165]),o($VU,[2,166]),o($VU,[2,167]),o($VU,[2,168]),o($VU,[2,169]),o($VU,[2,170]),o($VU,[2,171]),o($VU,[2,172]),o($VU,[2,173]),o($VU,[2,174]),o($VU,[2,175]),o($VU,[2,176]),o($VU,[2,177]),o($VU,[2,178]),o($VU,[2,179]),{9:117,20:$Vy,21:$Vz,23:$VA},{11:118,14:[1,119]},o($VV,[2,8]),o($V4,[2,20]),o($V4,[2,26]),o($V4,[2,27]),{21:[1,120]},o($VW,[2,34],{30:121,22:$Vw}),o($Vx,[2,35]),{44:122,45:37,46:$Vb,48:38,80:$Vh,94:$Vi,95:$Vj,98:$Vk,99:$Vl,100:$Vm,102:$Vn,103:$Vo,107:39,109:$Vp,110:$Vq,111:$Vr,112:$Vs,113:$Vt,114:$Vu},o($VX,[2,44]),o($VX,[2,45]),o($VX,[2,46]),o($VY,[2,72],{67:123,68:[1,124],71:[1,125]}),{22:$VZ,24:$V_,26:$V$,38:$V01,39:126,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o([46,68,71,80,94,95,98,99,100,102,103,109,110,111,112,113,114],[2,74]),o($Vx,[2,36]),o($Vx,[2,37]),o($Vx,[2,38]),o($Vx,[2,39]),o($Vx,[2,40]),{22:$VZ,24:$V_,26:$V$,38:$V01,39:150,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($Vg1,$V5,{17:151}),o($VB,[2,49],{46:$Vh1}),{26:$VC,46:$VD,80:$VE,86:153,91:[1,154],94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,106:89,108:87,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{84:[1,155],92:156,94:[1,157]},{26:$VC,46:$VD,80:$VE,84:[1,158],86:159,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,106:89,108:87,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{26:$VC,46:$VD,80:$VE,86:160,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,106:89,108:87,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($VV,[2,95],{22:[1,161],88:[1,162]}),o($VV,[2,99],{22:[1,163]}),o($VV,[2,103],{106:89,108:165,22:[1,164],26:$VC,46:$VD,80:$VE,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR}),o($VV,[2,105],{22:[1,166]}),o($Vi1,[2,146]),o($Vi1,[2,148]),o($Vi1,[2,149]),o($Vi1,[2,150]),o($Vi1,[2,151]),o($Vj1,[2,152]),o($Vj1,[2,153]),o($Vj1,[2,154]),o($Vj1,[2,155]),o($Vj1,[2,156]),o($Vj1,[2,157]),o($Vj1,[2,158]),o($Vj1,[2,159]),o($Vj1,[2,160]),o($Vj1,[2,161]),o($Vj1,[2,162]),o($Vj1,[2,163]),o($Vj1,[2,164]),{46:$Vb,48:167,80:$Vh,94:$Vi,95:$Vj,98:$Vk,99:$Vl,100:$Vm,102:$Vn,103:$Vo,107:39,109:$Vp,110:$Vq,111:$Vr,112:$Vs,113:$Vt,114:$Vu},{22:$VZ,24:$V_,26:$V$,38:$V01,39:168,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:170,42:$V11,46:$VD,49:[1,169],61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:171,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:172,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:173,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:174,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:175,42:$V11,46:$VD,59:[1,176],61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:177,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:178,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:179,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($VU,[2,145]),o($Vk1,[2,3]),{8:180,15:$Vv},{15:[2,7]},o($V4,[2,28]),o($VW,[2,33]),o($VB,[2,47],{30:181,22:$Vw}),o($VY,[2,69],{22:[1,182]}),{22:[1,183]},{22:$VZ,24:$V_,26:$V$,38:$V01,39:184,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,61:$V21,69:$V31,70:[1,185],72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($Vj1,[2,76]),o($Vj1,[2,78]),o($Vj1,[2,134]),o($Vj1,[2,135]),o($Vj1,[2,136]),o($Vj1,[2,137]),o($Vj1,[2,138]),o($Vj1,[2,139]),o($Vj1,[2,140]),o($Vj1,[2,141]),o($Vj1,[2,142]),o($Vj1,[2,143]),o($Vj1,[2,79]),o($Vj1,[2,80]),o($Vj1,[2,81]),o($Vj1,[2,82]),o($Vj1,[2,83]),o($Vj1,[2,84]),o($Vj1,[2,85]),o($Vj1,[2,86]),o($Vj1,[2,87]),o($Vj1,[2,88]),o($Vj1,[2,89]),{9:188,20:$Vy,21:$Vz,22:$VZ,23:$VA,24:$V_,26:$V$,38:$V01,40:[1,187],42:$V11,46:$VD,61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,189],44:31,45:37,46:$Vb,48:38,75:$Vc,76:$Vd,77:$Ve,78:$Vf,79:$Vg,80:$Vh,94:$Vi,95:$Vj,98:$Vk,99:$Vl,100:$Vm,102:$Vn,103:$Vo,107:39,109:$Vp,110:$Vq,111:$Vr,112:$Vs,113:$Vt,114:$Vu},{22:$Vw,30:190},{22:[1,191],26:$VC,46:$VD,80:$VE,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,106:89,108:165,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:[1,192]},{22:[1,193]},{22:[1,194],95:[1,195]},o($Vl1,[2,117]),{22:[1,196]},{22:[1,197],26:$VC,46:$VD,80:$VE,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,106:89,108:165,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:[1,198],26:$VC,46:$VD,80:$VE,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,106:89,108:165,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{73:[1,199]},o($VV,[2,97],{22:[1,200]}),{73:[1,201],90:[1,202]},{73:[1,203]},o($Vi1,[2,147]),{73:[1,204],90:[1,205]},o($VS,[2,53],{107:116,46:$Vb,80:$Vh,94:$Vi,95:$Vj,98:$Vk,99:$Vl,100:$Vm,102:$Vn,103:$Vo,109:$Vp,110:$Vq,111:$Vr,112:$Vs,113:$Vt,114:$Vu}),{22:$VZ,24:$V_,26:$V$,38:$V01,41:[1,206],42:$V11,46:$VD,61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:207,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,50:[1,208],61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,52:[1,209],61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,54:[1,210],61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,56:[1,211],61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,58:[1,212],61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,60:[1,213],61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,39:214,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,41:[1,215],42:$V11,46:$VD,61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,61:$V21,63:[1,216],65:[1,217],69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,61:$V21,63:[1,219],65:[1,218],69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{9:220,20:$Vy,21:$Vz,23:$VA},o($VB,[2,48],{46:$Vh1}),o($VY,[2,71]),o($VY,[2,70]),{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,61:$V21,69:$V31,71:[1,221],72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($VY,[2,73]),o($Vj1,[2,77]),{22:$VZ,24:$V_,26:$V$,38:$V01,39:222,42:$V11,46:$VD,61:$V21,69:$V31,72:127,73:$V41,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($Vg1,$V5,{17:223}),o($Vx,[2,43]),{45:224,46:$Vb,48:38,80:$Vh,94:$Vi,95:$Vj,98:$Vk,99:$Vl,100:$Vm,102:$Vn,103:$Vo,107:39,109:$Vp,110:$Vq,111:$Vr,112:$Vs,113:$Vt,114:$Vu},{22:$Vm1,75:$Vn1,85:225,91:$Vo1,94:$Vp1,96:226,97:227,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1},{22:$Vm1,75:$Vn1,85:239,91:$Vo1,94:$Vp1,96:226,97:227,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1},{22:$Vm1,75:$Vn1,85:240,91:$Vo1,93:[1,241],94:$Vp1,96:226,97:227,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1},{22:$Vm1,75:$Vn1,85:242,91:$Vo1,93:[1,243],94:$Vp1,96:226,97:227,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1},{94:[1,244]},{22:$Vm1,75:$Vn1,85:245,91:$Vo1,94:$Vp1,96:226,97:227,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1},{22:$Vm1,75:$Vn1,85:246,91:$Vo1,94:$Vp1,96:226,97:227,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1},{26:$VC,46:$VD,80:$VE,86:247,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,106:89,108:87,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($VV,[2,96]),{73:[1,248]},o($VV,[2,100],{22:[1,249]}),o($VV,[2,101]),o($VV,[2,104]),o($VV,[2,106],{22:[1,250]}),o($VV,[2,107]),o($VT,[2,54]),{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,50:[1,251],61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($VT,[2,60]),o($VT,[2,56]),o($VT,[2,57]),o($VT,[2,58]),o($VT,[2,59]),o($VT,[2,61]),{22:$VZ,24:$V_,26:$V$,38:$V01,42:$V11,46:$VD,60:[1,252],61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($VT,[2,63]),o($VT,[2,64]),o($VT,[2,66]),o($VT,[2,65]),o($VT,[2,67]),o($Vk1,[2,4]),o([22,46,80,94,95,98,99,100,102,103,109,110,111,112,113,114],[2,75]),{22:$VZ,24:$V_,26:$V$,38:$V01,41:[1,253],42:$V11,46:$VD,61:$V21,69:$V31,72:186,74:138,75:$V51,76:$V61,77:$V71,78:$V81,79:$V91,80:$Va1,81:$Vb1,83:129,84:$Vc1,94:$VF,95:$VG,98:$VH,99:$VI,100:$Vd1,102:$VK,103:$VL,104:$Ve1,105:$Vf1,106:135,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,254],44:31,45:37,46:$Vb,48:38,75:$Vc,76:$Vd,77:$Ve,78:$Vf,79:$Vg,80:$Vh,94:$Vi,95:$Vj,98:$Vk,99:$Vl,100:$Vm,102:$Vn,103:$Vo,107:39,109:$Vp,110:$Vq,111:$Vr,112:$Vs,113:$Vt,114:$Vu},o($VS,[2,52]),o($VV,[2,109],{95:$Vx1}),o($Vy1,[2,119],{97:256,22:$Vm1,75:$Vn1,91:$Vo1,94:$Vp1,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1}),o($Vz1,[2,121]),o($Vz1,[2,123]),o($Vz1,[2,124]),o($Vz1,[2,125]),o($Vz1,[2,126]),o($Vz1,[2,127]),o($Vz1,[2,128]),o($Vz1,[2,129]),o($Vz1,[2,130]),o($Vz1,[2,131]),o($Vz1,[2,132]),o($Vz1,[2,133]),o($VV,[2,110],{95:$Vx1}),o($VV,[2,111],{95:$Vx1}),{22:[1,257]},o($VV,[2,112],{95:$Vx1}),{22:[1,258]},o($Vl1,[2,118]),o($VV,[2,92],{95:$Vx1}),o($VV,[2,93],{95:$Vx1}),o($VV,[2,94],{106:89,108:165,26:$VC,46:$VD,80:$VE,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR}),o($VV,[2,98]),{90:[1,259]},{90:[1,260]},{50:[1,261]},{60:[1,262]},{9:263,20:$Vy,21:$Vz,23:$VA},o($Vx,[2,42]),{22:$Vm1,75:$Vn1,91:$Vo1,94:$Vp1,96:264,97:227,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1},o($Vz1,[2,122]),{26:$VC,46:$VD,80:$VE,86:265,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,106:89,108:87,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},{26:$VC,46:$VD,80:$VE,86:266,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,106:89,108:87,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR},o($VV,[2,102]),o($VV,[2,108]),o($VT,[2,55]),o($VT,[2,62]),o($Vg1,$V5,{17:267}),o($Vy1,[2,120],{97:256,22:$Vm1,75:$Vn1,91:$Vo1,94:$Vp1,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1}),o($VV,[2,115],{106:89,108:165,22:[1,268],26:$VC,46:$VD,80:$VE,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR}),o($VV,[2,116],{106:89,108:165,22:[1,269],26:$VC,46:$VD,80:$VE,94:$VF,95:$VG,98:$VH,99:$VI,100:$VJ,102:$VK,103:$VL,109:$VM,110:$VN,111:$VO,112:$VP,113:$VQ,114:$VR}),{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,270],44:31,45:37,46:$Vb,48:38,75:$Vc,76:$Vd,77:$Ve,78:$Vf,79:$Vg,80:$Vh,94:$Vi,95:$Vj,98:$Vk,99:$Vl,100:$Vm,102:$Vn,103:$Vo,107:39,109:$Vp,110:$Vq,111:$Vr,112:$Vs,113:$Vt,114:$Vu},{22:$Vm1,75:$Vn1,85:271,91:$Vo1,94:$Vp1,96:226,97:227,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1},{22:$Vm1,75:$Vn1,85:272,91:$Vo1,94:$Vp1,96:226,97:227,98:$Vq1,99:$Vr1,100:$Vs1,101:$Vt1,102:$Vu1,103:$Vv1,104:$Vw1},o($Vx,[2,41]),o($VV,[2,113],{95:$Vx1}),o($VV,[2,114],{95:$Vx1})],
+defaultActions: {2:[2,1],9:[2,5],10:[2,2],119:[2,7]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -11231,160 +11386,182 @@ case 11:return 84;
 break;
 case 12:return 76;
 break;
-case 13:return 90;
+case 13:return 93;
 break;
 case 14:return 77;
 break;
 case 15:return 78;
 break;
-case 16:return 79;
+case 16:this.begin("href");
 break;
-case 17:if(yy.lex.firstGraph()){this.begin("dir");}  return 24;
+case 17:this.popState();
 break;
-case 18:if(yy.lex.firstGraph()){this.begin("dir");}  return 24;
+case 18:return 89;
 break;
-case 19:return 38;
+case 19:this.begin("callbackname");
 break;
-case 20:return 42;
+case 20:this.popState();
 break;
-case 21:return 87;
+case 21:this.popState(); this.begin("callbackargs");
 break;
 case 22:return 87;
 break;
-case 23:return 87;
+case 23:this.popState();
 break;
-case 24:return 87;
+case 24:return 88;
 break;
-case 25:   this.popState();  return 25; 
+case 25:this.begin("click");
 break;
-case 26:   this.popState();  return 26; 
+case 26:this.popState();
 break;
-case 27:   this.popState();  return 26; 
+case 27:return 79;
 break;
-case 28:   this.popState();  return 26; 
+case 28:if(yy.lex.firstGraph()){this.begin("dir");}  return 24;
 break;
-case 29:   this.popState();  return 26; 
+case 29:if(yy.lex.firstGraph()){this.begin("dir");}  return 24;
 break;
-case 30:   this.popState();  return 26; 
+case 30:return 38;
 break;
-case 31:   this.popState();  return 26; 
+case 31:return 42;
 break;
-case 32:   this.popState();  return 26; 
+case 32:return 90;
 break;
-case 33:   this.popState();  return 26; 
+case 33:return 90;
 break;
-case 34:   this.popState();  return 26; 
+case 34:return 90;
 break;
-case 35:   this.popState();  return 26; 
+case 35:return 90;
 break;
-case 36: return 91;
+case 36:   this.popState();  return 25; 
 break;
-case 37:return 99;
+case 37:   this.popState();  return 26; 
 break;
-case 38:return 47;
+case 38:   this.popState();  return 26; 
 break;
-case 39:return 96;
+case 39:   this.popState();  return 26; 
 break;
-case 40:return 46;
+case 40:   this.popState();  return 26; 
 break;
-case 41:return 20;
+case 41:   this.popState();  return 26; 
 break;
-case 42:return 92;
+case 42:   this.popState();  return 26; 
 break;
-case 43:return 110;
+case 43:   this.popState();  return 26; 
 break;
-case 44:return 70;
+case 44:   this.popState();  return 26; 
 break;
-case 45:return 70;
+case 45:   this.popState();  return 26; 
 break;
-case 46:return 70;
+case 46:   this.popState();  return 26; 
 break;
-case 47:return 69;
+case 47: return 94;
 break;
-case 48:return 69;
+case 48:return 102;
 break;
-case 49:return 69;
+case 49:return 47;
 break;
-case 50:return 51;
+case 50:return 99;
 break;
-case 51:return 52;
+case 51:return 46;
 break;
-case 52:return 53;
+case 52:return 20;
 break;
-case 53:return 54;
+case 53:return 95;
 break;
-case 54:return 55;
+case 54:return 113;
 break;
-case 55:return 56;
+case 55:return 70;
 break;
-case 56:return 57;
+case 56:return 70;
 break;
-case 57:return 58;
+case 57:return 70;
 break;
-case 58:return 97;
+case 58:return 69;
 break;
-case 59:return 100;
+case 59:return 69;
 break;
-case 60:return 111;
+case 60:return 69;
 break;
-case 61:return 108;
+case 61:return 51;
 break;
-case 62:return 101;
+case 62:return 52;
 break;
-case 63:return 109;
+case 63:return 53;
 break;
-case 64:return 109;
+case 64:return 54;
 break;
-case 65:return 102;
+case 65:return 55;
 break;
-case 66:return 61;
+case 66:return 56;
 break;
-case 67:return 81;
+case 67:return 57;
 break;
-case 68:return 'SEP';
+case 68:return 58;
 break;
-case 69:return 80;
+case 69:return 100;
 break;
-case 70:return 95;
+case 70:return 103;
 break;
-case 71:return 63;
+case 71:return 114;
 break;
-case 72:return 62;
+case 72:return 111;
 break;
-case 73:return 65;
+case 73:return 104;
 break;
-case 74:return 64;
+case 74:return 112;
 break;
-case 75:return 106;
+case 75:return 112;
 break;
-case 76:return 107;
+case 76:return 105;
 break;
-case 77:return 71;
+case 77:return 61;
 break;
-case 78:return 49;
+case 78:return 81;
 break;
-case 79:return 50;
+case 79:return 'SEP';
 break;
-case 80:return 40;
+case 80:return 80;
 break;
-case 81:return 41;
+case 81:return 98;
 break;
-case 82:return 59
+case 82:return 63;
 break;
-case 83:return 60
+case 83:return 62;
 break;
-case 84:return 117;
+case 84:return 65;
 break;
-case 85:return 21;
+case 85:return 64;
 break;
-case 86:return 22;
+case 86:return 109;
 break;
-case 87:return 23;
+case 87:return 110;
+break;
+case 88:return 71;
+break;
+case 89:return 49;
+break;
+case 90:return 50;
+break;
+case 91:return 40;
+break;
+case 92:return 41;
+break;
+case 93:return 59
+break;
+case 94:return 60
+break;
+case 95:return 120;
+break;
+case 96:return 21;
+break;
+case 97:return 22;
+break;
+case 98:return 23;
 break;
 }
 },
-rules: [/^(?:%%\{)/,/^(?:((?:(?!\}%%)[^:.])*))/,/^(?::)/,/^(?:\}%%)/,/^(?:((?:(?!\}%%).|\n)*))/,/^(?:%%(?!\{)[^\n]*)/,/^(?:[^\}]%%[^\n]*)/,/^(?:["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:style\b)/,/^(?:default\b)/,/^(?:linkStyle\b)/,/^(?:interpolate\b)/,/^(?:classDef\b)/,/^(?:class\b)/,/^(?:click\b)/,/^(?:graph\b)/,/^(?:flowchart\b)/,/^(?:subgraph\b)/,/^(?:end\b\s*)/,/^(?:_self\b)/,/^(?:_blank\b)/,/^(?:_parent\b)/,/^(?:_top\b)/,/^(?:(\r?\n)*\s*\n)/,/^(?:\s*LR\b)/,/^(?:\s*RL\b)/,/^(?:\s*TB\b)/,/^(?:\s*BT\b)/,/^(?:\s*TD\b)/,/^(?:\s*BR\b)/,/^(?:\s*<)/,/^(?:\s*>)/,/^(?:\s*\^)/,/^(?:\s*v\b)/,/^(?:[0-9]+)/,/^(?:#)/,/^(?::::)/,/^(?::)/,/^(?:&)/,/^(?:;)/,/^(?:,)/,/^(?:\*)/,/^(?:\s*[xo<]?--+[-xo>]\s*)/,/^(?:\s*[xo<]?==+[=xo>]\s*)/,/^(?:\s*[xo<]?-?\.+-[xo>]?\s*)/,/^(?:\s*[xo<]?--\s*)/,/^(?:\s*[xo<]?==\s*)/,/^(?:\s*[xo<]?-\.\s*)/,/^(?:\(-)/,/^(?:-\))/,/^(?:\(\[)/,/^(?:\]\))/,/^(?:\[\[)/,/^(?:\]\])/,/^(?:\[\()/,/^(?:\)\])/,/^(?:-)/,/^(?:\.)/,/^(?:[\_])/,/^(?:\+)/,/^(?:%)/,/^(?:=)/,/^(?:=)/,/^(?:<)/,/^(?:>)/,/^(?:\^)/,/^(?:\\\|)/,/^(?:v\b)/,/^(?:[A-Za-z]+)/,/^(?:\\\])/,/^(?:\[\/)/,/^(?:\/\])/,/^(?:\[\\)/,/^(?:[!"#$%&'*+,-.`?\\_/])/,/^(?:[\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6]|[\u00F8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377]|[\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5]|[\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA]|[\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE]|[\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA]|[\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0]|[\u08A2-\u08AC\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0977]|[\u0979-\u097F\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2]|[\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A]|[\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39]|[\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8]|[\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0B05-\u0B0C]|[\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C]|[\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99]|[\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0]|[\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D]|[\u0C58\u0C59\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3]|[\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10]|[\u0D12-\u0D3A\u0D3D\u0D4E\u0D60\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1]|[\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81]|[\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3]|[\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6]|[\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A]|[\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081]|[\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D]|[\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0]|[\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310]|[\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F4\u1401-\u166C]|[\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u1700-\u170C\u170E-\u1711]|[\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7]|[\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191C]|[\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19C1-\u19C7\u1A00-\u1A16]|[\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF]|[\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC]|[\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D]|[\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D]|[\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3]|[\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F]|[\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128]|[\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184]|[\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3]|[\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6]|[\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE]|[\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C]|[\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D]|[\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC]|[\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B]|[\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788]|[\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805]|[\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB]|[\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uAA00-\uAA28]|[\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5]|[\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4]|[\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E]|[\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D]|[\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36]|[\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D]|[\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC]|[\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF]|[\uFFD2-\uFFD7\uFFDA-\uFFDC])/,/^(?:\|)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\{)/,/^(?:\})/,/^(?:")/,/^(?:(\r?\n)+)/,/^(?:\s)/,/^(?:$)/],
-conditions: {"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"vertex":{"rules":[],"inclusive":false},"dir":{"rules":[25,26,27,28,29,30,31,32,33,34,35],"inclusive":false},"string":{"rules":[8,9],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87],"inclusive":true}}
+rules: [/^(?:%%\{)/,/^(?:((?:(?!\}%%)[^:.])*))/,/^(?::)/,/^(?:\}%%)/,/^(?:((?:(?!\}%%).|\n)*))/,/^(?:%%(?!\{)[^\n]*)/,/^(?:[^\}]%%[^\n]*)/,/^(?:["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:style\b)/,/^(?:default\b)/,/^(?:linkStyle\b)/,/^(?:interpolate\b)/,/^(?:classDef\b)/,/^(?:class\b)/,/^(?:href[\s]+["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:call[\s]+)/,/^(?:\([\s]*\))/,/^(?:\()/,/^(?:[^(]*)/,/^(?:\))/,/^(?:[^)]*)/,/^(?:click[\s]+)/,/^(?:[\s\n])/,/^(?:[^\s\n]*)/,/^(?:graph\b)/,/^(?:flowchart\b)/,/^(?:subgraph\b)/,/^(?:end\b\s*)/,/^(?:_self\b)/,/^(?:_blank\b)/,/^(?:_parent\b)/,/^(?:_top\b)/,/^(?:(\r?\n)*\s*\n)/,/^(?:\s*LR\b)/,/^(?:\s*RL\b)/,/^(?:\s*TB\b)/,/^(?:\s*BT\b)/,/^(?:\s*TD\b)/,/^(?:\s*BR\b)/,/^(?:\s*<)/,/^(?:\s*>)/,/^(?:\s*\^)/,/^(?:\s*v\b)/,/^(?:[0-9]+)/,/^(?:#)/,/^(?::::)/,/^(?::)/,/^(?:&)/,/^(?:;)/,/^(?:,)/,/^(?:\*)/,/^(?:\s*[xo<]?--+[-xo>]\s*)/,/^(?:\s*[xo<]?==+[=xo>]\s*)/,/^(?:\s*[xo<]?-?\.+-[xo>]?\s*)/,/^(?:\s*[xo<]?--\s*)/,/^(?:\s*[xo<]?==\s*)/,/^(?:\s*[xo<]?-\.\s*)/,/^(?:\(-)/,/^(?:-\))/,/^(?:\(\[)/,/^(?:\]\))/,/^(?:\[\[)/,/^(?:\]\])/,/^(?:\[\()/,/^(?:\)\])/,/^(?:-)/,/^(?:\.)/,/^(?:[\_])/,/^(?:\+)/,/^(?:%)/,/^(?:=)/,/^(?:=)/,/^(?:<)/,/^(?:>)/,/^(?:\^)/,/^(?:\\\|)/,/^(?:v\b)/,/^(?:[A-Za-z]+)/,/^(?:\\\])/,/^(?:\[\/)/,/^(?:\/\])/,/^(?:\[\\)/,/^(?:[!"#$%&'*+,-.`?\\_/])/,/^(?:[\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6]|[\u00F8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377]|[\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5]|[\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA]|[\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE]|[\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA]|[\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0]|[\u08A2-\u08AC\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0977]|[\u0979-\u097F\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2]|[\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A]|[\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39]|[\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8]|[\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0B05-\u0B0C]|[\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C]|[\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99]|[\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0]|[\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D]|[\u0C58\u0C59\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3]|[\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10]|[\u0D12-\u0D3A\u0D3D\u0D4E\u0D60\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1]|[\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81]|[\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3]|[\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6]|[\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A]|[\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081]|[\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D]|[\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0]|[\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310]|[\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F4\u1401-\u166C]|[\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u1700-\u170C\u170E-\u1711]|[\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7]|[\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191C]|[\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19C1-\u19C7\u1A00-\u1A16]|[\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF]|[\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC]|[\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D]|[\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D]|[\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3]|[\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F]|[\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128]|[\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184]|[\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3]|[\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6]|[\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE]|[\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C]|[\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D]|[\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC]|[\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B]|[\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788]|[\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805]|[\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB]|[\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uAA00-\uAA28]|[\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5]|[\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4]|[\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E]|[\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D]|[\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36]|[\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D]|[\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC]|[\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF]|[\uFFD2-\uFFD7\uFFDA-\uFFDC])/,/^(?:\|)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\{)/,/^(?:\})/,/^(?:")/,/^(?:(\r?\n)+)/,/^(?:\s)/,/^(?:$)/],
+conditions: {"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"callbackargs":{"rules":[23,24],"inclusive":false},"callbackname":{"rules":[20,21,22],"inclusive":false},"href":{"rules":[17,18],"inclusive":false},"click":{"rules":[26,27],"inclusive":false},"vertex":{"rules":[],"inclusive":false},"dir":{"rules":[36,37,38,39,40,41,42,43,44,45,46],"inclusive":false},"string":{"rules":[8,9],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,10,11,12,13,14,15,16,19,25,28,29,30,31,32,33,34,35,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98],"inclusive":true}}
 });
 return lexer;
 })();
@@ -11427,7 +11604,7 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 var getStyles = function getStyles(options) {
-  return ".label {\n    font-family: ".concat(options.fontFamily, ";\n    color: ").concat(options.nodeTextColor || options.textColor, ";\n  }\n\n  .label text {\n    fill: ").concat(options.nodeTextColor || options.textColor, ";\n  }\n\n  .node rect,\n  .node circle,\n  .node ellipse,\n  .node polygon,\n  .node path {\n    fill: ").concat(options.mainBkg, ";\n    stroke: ").concat(options.nodeBorder, ";\n    stroke-width: 1px;\n  }\n\n  .node .label {\n    text-align: center;\n  }\n  .node.clickable {\n    cursor: pointer;\n  }\n\n  .arrowheadPath {\n    fill: ").concat(options.arrowheadColor, ";\n  }\n\n  .edgePath .path {\n    stroke: ").concat(options.lineColor, ";\n    stroke-width: 1.5px;\n  }\n\n  .flowchart-link {\n    stroke: ").concat(options.lineColor, ";\n    fill: none;\n  }\n\n  .edgeLabel {\n    background-color: ").concat(options.edgeLabelBackground, ";\n    rect {\n      opacity: 0.5;\n      background-color: ").concat(options.edgeLabelBackground, ";\n      fill: ").concat(options.edgeLabelBackground, ";\n    }\n    text-align: center;\n  }\n\n  .cluster rect {\n    fill: ").concat(options.clusterBkg, ";\n    stroke: ").concat(options.clusterBorder, ";\n    stroke-width: 1px;\n  }\n\n  .cluster text {\n    fill: ").concat(options.titleColor, ";\n  }\n\n  div.mermaidTooltip {\n    position: absolute;\n    text-align: center;\n    max-width: 200px;\n    padding: 2px;\n    font-family: ").concat(options.fontFamily, ";\n    font-size: 12px;\n    background: ").concat(options.tertiaryColor, ";\n    border: 1px solid ").concat(options.border2, ";\n    border-radius: 2px;\n    pointer-events: none;\n    z-index: 100;\n  }\n");
+  return ".label {\n    font-family: ".concat(options.fontFamily, ";\n    color: ").concat(options.nodeTextColor || options.textColor, ";\n  }\n  .cluster-label text {\n    fill: ").concat(options.titleColor, ";\n  }\n  .cluster-label span {\n    color: ").concat(options.titleColor, ";\n  }\n\n  .label text,span {\n    fill: ").concat(options.nodeTextColor || options.textColor, ";\n    color: ").concat(options.nodeTextColor || options.textColor, ";\n  }\n\n  .node rect,\n  .node circle,\n  .node ellipse,\n  .node polygon,\n  .node path {\n    fill: ").concat(options.mainBkg, ";\n    stroke: ").concat(options.nodeBorder, ";\n    stroke-width: 1px;\n  }\n\n  .node .label {\n    text-align: center;\n  }\n  .node.clickable {\n    cursor: pointer;\n  }\n\n  .arrowheadPath {\n    fill: ").concat(options.arrowheadColor, ";\n  }\n\n  .edgePath .path {\n    stroke: ").concat(options.lineColor, ";\n    stroke-width: 1.5px;\n  }\n\n  .flowchart-link {\n    stroke: ").concat(options.lineColor, ";\n    fill: none;\n  }\n\n  .edgeLabel {\n    background-color: ").concat(options.edgeLabelBackground, ";\n    rect {\n      opacity: 0.5;\n      background-color: ").concat(options.edgeLabelBackground, ";\n      fill: ").concat(options.edgeLabelBackground, ";\n    }\n    text-align: center;\n  }\n\n  .cluster rect {\n    fill: ").concat(options.clusterBkg, ";\n    stroke: ").concat(options.clusterBorder, ";\n    stroke-width: 1px;\n  }\n\n  .cluster text {\n    fill: ").concat(options.titleColor, ";\n  }\n\n  .cluster span {\n    color: ").concat(options.titleColor, ";\n  }\n  // .cluster div {\n  //   color: ").concat(options.titleColor, ";\n  // }\n\n  div.mermaidTooltip {\n    position: absolute;\n    text-align: center;\n    max-width: 200px;\n    padding: 2px;\n    font-family: ").concat(options.fontFamily, ";\n    font-size: 12px;\n    background: ").concat(options.tertiaryColor, ";\n    border: 1px solid ").concat(options.border2, ";\n    border-radius: 2px;\n    pointer-events: none;\n    z-index: 100;\n  }\n");
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (getStyles);
@@ -11660,8 +11837,8 @@ var getStartDate = function getStartDate(prevTime, dateFormat, str) {
   if (mDate.isValid()) {
     return mDate.toDate();
   } else {
-    _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('Invalid date:' + str);
-    _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('With date format:' + dateFormat.trim());
+    _logger__WEBPACK_IMPORTED_MODULE_2__["log"].debug('Invalid date:' + str);
+    _logger__WEBPACK_IMPORTED_MODULE_2__["log"].debug('With date format:' + dateFormat.trim());
   } // Default date - now
 
 
@@ -13364,21 +13541,21 @@ function getId() {
 }
 
 function isfastforwardable(currentCommit, otherCommit) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Entering isfastforwardable:', currentCommit.id, otherCommit.id);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Entering isfastforwardable:', currentCommit.id, otherCommit.id);
 
   while (currentCommit.seq <= otherCommit.seq && currentCommit !== otherCommit) {
     // only if other branch has more commits
     if (otherCommit.parent == null) break;
 
     if (Array.isArray(otherCommit.parent)) {
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('In merge commit:', otherCommit.parent);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('In merge commit:', otherCommit.parent);
       return isfastforwardable(currentCommit, commits[otherCommit.parent[0]]) || isfastforwardable(currentCommit, commits[otherCommit.parent[1]]);
     } else {
       otherCommit = commits[otherCommit.parent];
     }
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug(currentCommit.id, otherCommit.id);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug(currentCommit.id, otherCommit.id);
   return currentCommit.id === otherCommit.id;
 }
 
@@ -13408,14 +13585,14 @@ var setDirection = function setDirection(dir) {
 };
 var options = {};
 var setOptions = function setOptions(rawOptString) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('options str', rawOptString);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('options str', rawOptString);
   rawOptString = rawOptString && rawOptString.trim();
   rawOptString = rawOptString || '{}';
 
   try {
     options = JSON.parse(rawOptString);
   } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].error('error while parsing gitGraph options', e.message);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].error('error while parsing gitGraph options', e.message);
   }
 };
 var getOptions = function getOptions() {
@@ -13431,18 +13608,18 @@ var commit = function commit(msg) {
   head = commit;
   commits[commit.id] = commit;
   branches[curBranch] = commit.id;
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('in pushCommit ' + commit.id);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('in pushCommit ' + commit.id);
 };
 var branch = function branch(name) {
   branches[name] = head != null ? head.id : null;
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('in createBranch');
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('in createBranch');
 };
 var merge = function merge(otherBranch) {
   var currentCommit = commits[branches[curBranch]];
   var otherCommit = commits[branches[otherBranch]];
 
   if (isReachableFrom(currentCommit, otherCommit)) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Already merged');
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Already merged');
     return;
   }
 
@@ -13462,21 +13639,21 @@ var merge = function merge(otherBranch) {
     branches[curBranch] = _commit.id;
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug(branches);
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('in mergeBranch');
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug(branches);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('in mergeBranch');
 };
 var checkout = function checkout(branch) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('in checkout');
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('in checkout');
   curBranch = branch;
   var id = branches[curBranch];
   head = commits[id];
 };
 var reset = function reset(commitRef) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('in reset', commitRef);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('in reset', commitRef);
   var ref = commitRef.split(':')[0];
   var parentCount = parseInt(commitRef.split(':')[1]);
   var commit = ref === 'HEAD' ? head : commits[branches[ref]];
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug(commit, parentCount);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug(commit, parentCount);
 
   while (parentCount > 0) {
     commit = commits[commit.parent];
@@ -13484,7 +13661,7 @@ var reset = function reset(commitRef) {
 
     if (!commit) {
       var err = 'Critical error - unique parent commit not found during reset';
-      _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].error(err);
+      _logger__WEBPACK_IMPORTED_MODULE_0__["log"].error(err);
       throw err;
     }
   }
@@ -13522,7 +13699,7 @@ function prettyPrintCommitHistory(commitArr) {
     if (branches[_branch] === commit.id) label.push(_branch);
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug(label.join(' '));
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug(label.join(' '));
 
   if (Array.isArray(commit.parent)) {
     var newCommit = commits[commit.parent[0]];
@@ -13542,7 +13719,7 @@ function prettyPrintCommitHistory(commitArr) {
 }
 
 var prettyPrint = function prettyPrint() {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug(commits);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug(commits);
   var node = getCommitsArray()[0];
   prettyPrintCommitHistory([node]);
 };
@@ -13578,7 +13755,7 @@ var getCommitsArray = function getCommitsArray() {
     return commits[key];
   });
   commitArr.forEach(function (o) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug(o.id);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug(o.id);
   });
   commitArr.sort(function (a, b) {
     return b.seq - a.seq;
@@ -13695,7 +13872,7 @@ function getElementCoords(element, coords) {
 }
 
 function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('svgDrawLineForCommits: ', fromId, toId);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('svgDrawLineForCommits: ', fromId, toId);
   var fromBbox = getElementCoords(svg.select('#node-' + fromId + ' circle'));
   var toBbox = getElementCoords(svg.select('#node-' + toId + ' circle'));
 
@@ -13798,7 +13975,7 @@ function renderCommitHistory(svg, commitid, branches, direction) {
   if (typeof commitid === 'string') {
     do {
       commit = allCommitsDict[commitid];
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('in renderCommitHistory', commit.id, commit.seq);
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('in renderCommitHistory', commit.id, commit.seq);
 
       if (svg.select('#node-' + commitid).size() > 0) {
         return;
@@ -13827,7 +14004,7 @@ function renderCommitHistory(svg, commitid, branches, direction) {
       }
 
       if (branch) {
-        _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('found branch ', branch.name);
+        _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('found branch ', branch.name);
         svg.select('#node-' + commit.id + ' p').append('xhtml:span').attr('class', 'branch-label').text(branch.name + ', ');
       }
 
@@ -13842,7 +14019,7 @@ function renderCommitHistory(svg, commitid, branches, direction) {
   }
 
   if (Array.isArray(commitid)) {
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('found merge commmit', commitid);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('found merge commmit', commitid);
     renderCommitHistory(svg, commitid[0], branches, direction);
     branchNum++;
     renderCommitHistory(svg, commitid[1], branches, direction);
@@ -13873,11 +14050,11 @@ var draw = function draw(txt, id, ver) {
     var parser = _parser_gitGraph__WEBPACK_IMPORTED_MODULE_2___default.a.parser;
     parser.yy = _gitGraphAst__WEBPACK_IMPORTED_MODULE_1__["default"];
     parser.yy.clear();
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('in gitgraph renderer', txt + '\n', 'id:', id, ver); // Parse the graph definition
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('in gitgraph renderer', txt + '\n', 'id:', id, ver); // Parse the graph definition
 
     parser.parse(txt + '\n');
     config = Object.assign(config, apiConfig, _gitGraphAst__WEBPACK_IMPORTED_MODULE_1__["default"].getOptions());
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('effective options', config);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('effective options', config);
     var direction = _gitGraphAst__WEBPACK_IMPORTED_MODULE_1__["default"].getDirection();
     allCommitsDict = _gitGraphAst__WEBPACK_IMPORTED_MODULE_1__["default"].getCommits();
     var branches = _gitGraphAst__WEBPACK_IMPORTED_MODULE_1__["default"].getBranchesAsObjArray();
@@ -13904,8 +14081,8 @@ var draw = function draw(txt, id, ver) {
       return (branches.length + 1) * config.branchOffset;
     });
   } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error('Error while rendering gitgraph');
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error(e.message);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].error('Error while rendering gitgraph');
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].error(e.message);
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -14660,7 +14837,7 @@ __webpack_require__.r(__webpack_exports__);
 var message = '';
 var info = false;
 var setMessage = function setMessage(txt) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Setting message to: ' + txt);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Setting message to: ' + txt);
   message = txt;
 };
 var getMessage = function getMessage() {
@@ -14726,10 +14903,10 @@ var draw = function draw(txt, id, ver) {
   try {
     var parser = _parser_info__WEBPACK_IMPORTED_MODULE_2___default.a.parser;
     parser.yy = _infoDb__WEBPACK_IMPORTED_MODULE_1__["default"];
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Renering info diagram\n' + txt); // Parse the graph definition
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Renering info diagram\n' + txt); // Parse the graph definition
 
     parser.parse(txt);
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Parsed info diagram'); // Fetch the default direction, use TD if none was found
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Parsed info diagram'); // Fetch the default direction, use TD if none was found
 
     var svg = Object(d3__WEBPACK_IMPORTED_MODULE_0__["select"])('#' + id);
     var g = svg.append('g');
@@ -14738,8 +14915,8 @@ var draw = function draw(txt, id, ver) {
     svg.attr('height', 100);
     svg.attr('width', 400); // svg.attr('viewBox', '0 0 300 150');
   } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error('Error while rendering info diagram');
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error(e.message);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].error('Error while rendering info diagram');
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].error(e.message);
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -16094,7 +16271,7 @@ var parseDirective = function parseDirective(statement, context, type) {
 var addSection = function addSection(id, value) {
   if (typeof sections[id] === 'undefined') {
     sections[id] = value;
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].debug('Added new section :', id);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].debug('Added new section :', id);
   }
 };
 
@@ -16188,11 +16365,11 @@ var draw = function draw(txt, id) {
   try {
     var parser = _parser_pie__WEBPACK_IMPORTED_MODULE_2___default.a.parser;
     parser.yy = _pieDb__WEBPACK_IMPORTED_MODULE_1__["default"];
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Rendering info diagram\n' + txt); // Parse the Pie Chart definition
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Rendering info diagram\n' + txt); // Parse the Pie Chart definition
 
     parser.yy.clear();
     parser.parse(txt);
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Parsed info diagram');
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Parsed info diagram');
     var elem = document.getElementById(id);
     width = elem.parentElement.offsetWidth;
 
@@ -16234,7 +16411,9 @@ var draw = function draw(txt, id) {
     }).attr('stroke', 'black').style('stroke-width', '2px').style('opacity', 0.7); // Now add the percentage.
     // Use the centroid method to get the best coordinates.
 
-    svg.selectAll('mySlices').data(dataReady).enter().append('text').text(function (d) {
+    svg.selectAll('mySlices').data(dataReady.filter(function (value) {
+      return value.data.value !== 0;
+    })).enter().append('text').text(function (d) {
       return (d.data.value / sum * 100).toFixed(0) + '%';
     }).attr('transform', function (d) {
       return 'translate(' + arcGenerator.centroid(d) + ')';
@@ -16253,8 +16432,8 @@ var draw = function draw(txt, id) {
       return d;
     });
   } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error('Error while rendering info diagram');
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error(e);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].error('Error while rendering info diagram');
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].error(e);
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -16362,12 +16541,12 @@ var getStyles = function getStyles(options) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,2],$V1=[1,3],$V2=[1,5],$V3=[1,7],$V4=[2,5],$V5=[1,15],$V6=[1,17],$V7=[1,18],$V8=[1,20],$V9=[1,21],$Va=[1,22],$Vb=[1,24],$Vc=[1,25],$Vd=[1,26],$Ve=[1,27],$Vf=[1,28],$Vg=[1,29],$Vh=[1,32],$Vi=[1,33],$Vj=[1,36],$Vk=[1,4,5,16,21,22,23,25,27,28,29,30,31,33,35,36,37,48,56],$Vl=[1,44],$Vm=[4,5,16,21,22,23,25,27,28,29,30,31,33,37,48,56],$Vn=[4,5,16,21,22,23,25,27,28,29,30,31,33,36,37,48,56],$Vo=[4,5,16,21,22,23,25,27,28,29,30,31,33,35,37,48,56],$Vp=[46,47,48],$Vq=[1,4,5,7,16,21,22,23,25,27,28,29,30,31,33,35,36,37,48,56];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,2],$V1=[1,3],$V2=[1,5],$V3=[1,7],$V4=[2,5],$V5=[1,15],$V6=[1,17],$V7=[1,18],$V8=[1,20],$V9=[1,21],$Va=[1,22],$Vb=[1,24],$Vc=[1,25],$Vd=[1,26],$Ve=[1,27],$Vf=[1,28],$Vg=[1,29],$Vh=[1,32],$Vi=[1,33],$Vj=[1,36],$Vk=[1,4,5,16,21,22,23,25,27,28,29,30,31,33,35,36,37,48,58],$Vl=[1,44],$Vm=[4,5,16,21,22,23,25,27,28,29,30,31,33,37,48,58],$Vn=[4,5,16,21,22,23,25,27,28,29,30,31,33,36,37,48,58],$Vo=[4,5,16,21,22,23,25,27,28,29,30,31,33,35,37,48,58],$Vp=[46,47,48],$Vq=[1,4,5,7,16,21,22,23,25,27,28,29,30,31,33,35,36,37,48,58];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"SPACE":4,"NEWLINE":5,"directive":6,"SD":7,"document":8,"line":9,"statement":10,"openDirective":11,"typeDirective":12,"closeDirective":13,":":14,"argDirective":15,"participant":16,"actor":17,"AS":18,"restOfLine":19,"signal":20,"autonumber":21,"activate":22,"deactivate":23,"note_statement":24,"title":25,"text2":26,"loop":27,"end":28,"rect":29,"opt":30,"alt":31,"else_sections":32,"par":33,"par_sections":34,"and":35,"else":36,"note":37,"placement":38,"over":39,"actor_pair":40,"spaceList":41,",":42,"left_of":43,"right_of":44,"signaltype":45,"+":46,"-":47,"ACTOR":48,"SOLID_OPEN_ARROW":49,"DOTTED_OPEN_ARROW":50,"SOLID_ARROW":51,"DOTTED_ARROW":52,"SOLID_CROSS":53,"DOTTED_CROSS":54,"TXT":55,"open_directive":56,"type_directive":57,"arg_directive":58,"close_directive":59,"$accept":0,"$end":1},
-terminals_: {2:"error",4:"SPACE",5:"NEWLINE",7:"SD",14:":",16:"participant",18:"AS",19:"restOfLine",21:"autonumber",22:"activate",23:"deactivate",25:"title",27:"loop",28:"end",29:"rect",30:"opt",31:"alt",33:"par",35:"and",36:"else",37:"note",39:"over",42:",",43:"left_of",44:"right_of",46:"+",47:"-",48:"ACTOR",49:"SOLID_OPEN_ARROW",50:"DOTTED_OPEN_ARROW",51:"SOLID_ARROW",52:"DOTTED_ARROW",53:"SOLID_CROSS",54:"DOTTED_CROSS",55:"TXT",56:"open_directive",57:"type_directive",58:"arg_directive",59:"close_directive"},
-productions_: [0,[3,2],[3,2],[3,2],[3,2],[8,0],[8,2],[9,2],[9,1],[9,1],[6,4],[6,6],[10,5],[10,3],[10,2],[10,1],[10,3],[10,3],[10,2],[10,3],[10,4],[10,4],[10,4],[10,4],[10,4],[10,1],[34,1],[34,4],[32,1],[32,4],[24,4],[24,4],[41,2],[41,1],[40,3],[40,1],[38,1],[38,1],[20,5],[20,5],[20,4],[17,1],[45,1],[45,1],[45,1],[45,1],[45,1],[45,1],[26,1],[11,1],[12,1],[15,1],[13,1]],
+symbols_: {"error":2,"start":3,"SPACE":4,"NEWLINE":5,"directive":6,"SD":7,"document":8,"line":9,"statement":10,"openDirective":11,"typeDirective":12,"closeDirective":13,":":14,"argDirective":15,"participant":16,"actor":17,"AS":18,"restOfLine":19,"signal":20,"autonumber":21,"activate":22,"deactivate":23,"note_statement":24,"title":25,"text2":26,"loop":27,"end":28,"rect":29,"opt":30,"alt":31,"else_sections":32,"par":33,"par_sections":34,"and":35,"else":36,"note":37,"placement":38,"over":39,"actor_pair":40,"spaceList":41,",":42,"left_of":43,"right_of":44,"signaltype":45,"+":46,"-":47,"ACTOR":48,"SOLID_OPEN_ARROW":49,"DOTTED_OPEN_ARROW":50,"SOLID_ARROW":51,"DOTTED_ARROW":52,"SOLID_CROSS":53,"DOTTED_CROSS":54,"SOLID_POINT":55,"DOTTED_POINT":56,"TXT":57,"open_directive":58,"type_directive":59,"arg_directive":60,"close_directive":61,"$accept":0,"$end":1},
+terminals_: {2:"error",4:"SPACE",5:"NEWLINE",7:"SD",14:":",16:"participant",18:"AS",19:"restOfLine",21:"autonumber",22:"activate",23:"deactivate",25:"title",27:"loop",28:"end",29:"rect",30:"opt",31:"alt",33:"par",35:"and",36:"else",37:"note",39:"over",42:",",43:"left_of",44:"right_of",46:"+",47:"-",48:"ACTOR",49:"SOLID_OPEN_ARROW",50:"DOTTED_OPEN_ARROW",51:"SOLID_ARROW",52:"DOTTED_ARROW",53:"SOLID_CROSS",54:"DOTTED_CROSS",55:"SOLID_POINT",56:"DOTTED_POINT",57:"TXT",58:"open_directive",59:"type_directive",60:"arg_directive",61:"close_directive"},
+productions_: [0,[3,2],[3,2],[3,2],[3,2],[8,0],[8,2],[9,2],[9,1],[9,1],[6,4],[6,6],[10,5],[10,3],[10,2],[10,1],[10,3],[10,3],[10,2],[10,3],[10,4],[10,4],[10,4],[10,4],[10,4],[10,1],[34,1],[34,4],[32,1],[32,4],[24,4],[24,4],[41,2],[41,1],[40,3],[40,1],[38,1],[38,1],[20,5],[20,5],[20,4],[17,1],[45,1],[45,1],[45,1],[45,1],[45,1],[45,1],[45,1],[45,1],[26,1],[11,1],[12,1],[15,1],[13,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -16507,24 +16686,30 @@ case 47:
  this.$ = yy.LINETYPE.DOTTED_CROSS; 
 break;
 case 48:
-this.$ = yy.parseMessage($$[$0].trim().substring(1)) 
+ this.$ = yy.LINETYPE.SOLID_POINT; 
 break;
 case 49:
- yy.parseDirective('%%{', 'open_directive'); 
+ this.$ = yy.LINETYPE.DOTTED_POINT; 
 break;
 case 50:
- yy.parseDirective($$[$0], 'type_directive'); 
+this.$ = yy.parseMessage($$[$0].trim().substring(1)) 
 break;
 case 51:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+ yy.parseDirective('%%{', 'open_directive'); 
 break;
 case 52:
+ yy.parseDirective($$[$0], 'type_directive'); 
+break;
+case 53:
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+break;
+case 54:
  yy.parseDirective('}%%', 'close_directive', 'sequence'); 
 break;
 }
 },
-table: [{3:1,4:$V0,5:$V1,6:4,7:$V2,11:6,56:$V3},{1:[3]},{3:8,4:$V0,5:$V1,6:4,7:$V2,11:6,56:$V3},{3:9,4:$V0,5:$V1,6:4,7:$V2,11:6,56:$V3},{3:10,4:$V0,5:$V1,6:4,7:$V2,11:6,56:$V3},o([1,4,5,16,21,22,23,25,27,29,30,31,33,37,48,56],$V4,{8:11}),{12:12,57:[1,13]},{57:[2,49]},{1:[2,1]},{1:[2,2]},{1:[2,3]},{1:[2,4],4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,29:$Vd,30:$Ve,31:$Vf,33:$Vg,37:$Vh,48:$Vi,56:$V3},{13:34,14:[1,35],59:$Vj},o([14,59],[2,50]),o($Vk,[2,6]),{6:30,10:37,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,29:$Vd,30:$Ve,31:$Vf,33:$Vg,37:$Vh,48:$Vi,56:$V3},o($Vk,[2,8]),o($Vk,[2,9]),{17:38,48:$Vi},{5:[1,39]},o($Vk,[2,15]),{17:40,48:$Vi},{17:41,48:$Vi},{5:[1,42]},{26:43,55:$Vl},{19:[1,45]},{19:[1,46]},{19:[1,47]},{19:[1,48]},{19:[1,49]},o($Vk,[2,25]),{45:50,49:[1,51],50:[1,52],51:[1,53],52:[1,54],53:[1,55],54:[1,56]},{38:57,39:[1,58],43:[1,59],44:[1,60]},o([5,18,42,49,50,51,52,53,54,55],[2,41]),{5:[1,61]},{15:62,58:[1,63]},{5:[2,52]},o($Vk,[2,7]),{5:[1,65],18:[1,64]},o($Vk,[2,14]),{5:[1,66]},{5:[1,67]},o($Vk,[2,18]),{5:[1,68]},{5:[2,48]},o($Vm,$V4,{8:69}),o($Vm,$V4,{8:70}),o($Vm,$V4,{8:71}),o($Vn,$V4,{32:72,8:73}),o($Vo,$V4,{34:74,8:75}),{17:78,46:[1,76],47:[1,77],48:$Vi},o($Vp,[2,42]),o($Vp,[2,43]),o($Vp,[2,44]),o($Vp,[2,45]),o($Vp,[2,46]),o($Vp,[2,47]),{17:79,48:$Vi},{17:81,40:80,48:$Vi},{48:[2,36]},{48:[2,37]},o($Vq,[2,10]),{13:82,59:$Vj},{59:[2,51]},{19:[1,83]},o($Vk,[2,13]),o($Vk,[2,16]),o($Vk,[2,17]),o($Vk,[2,19]),{4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,28:[1,84],29:$Vd,30:$Ve,31:$Vf,33:$Vg,37:$Vh,48:$Vi,56:$V3},{4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,28:[1,85],29:$Vd,30:$Ve,31:$Vf,33:$Vg,37:$Vh,48:$Vi,56:$V3},{4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,28:[1,86],29:$Vd,30:$Ve,31:$Vf,33:$Vg,37:$Vh,48:$Vi,56:$V3},{28:[1,87]},{4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,28:[2,28],29:$Vd,30:$Ve,31:$Vf,33:$Vg,36:[1,88],37:$Vh,48:$Vi,56:$V3},{28:[1,89]},{4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,28:[2,26],29:$Vd,30:$Ve,31:$Vf,33:$Vg,35:[1,90],37:$Vh,48:$Vi,56:$V3},{17:91,48:$Vi},{17:92,48:$Vi},{26:93,55:$Vl},{26:94,55:$Vl},{26:95,55:$Vl},{42:[1,96],55:[2,35]},{5:[1,97]},{5:[1,98]},o($Vk,[2,20]),o($Vk,[2,21]),o($Vk,[2,22]),o($Vk,[2,23]),{19:[1,99]},o($Vk,[2,24]),{19:[1,100]},{26:101,55:$Vl},{26:102,55:$Vl},{5:[2,40]},{5:[2,30]},{5:[2,31]},{17:103,48:$Vi},o($Vq,[2,11]),o($Vk,[2,12]),o($Vn,$V4,{8:73,32:104}),o($Vo,$V4,{8:75,34:105}),{5:[2,38]},{5:[2,39]},{55:[2,34]},{28:[2,29]},{28:[2,27]}],
-defaultActions: {7:[2,49],8:[2,1],9:[2,2],10:[2,3],36:[2,52],44:[2,48],59:[2,36],60:[2,37],63:[2,51],93:[2,40],94:[2,30],95:[2,31],101:[2,38],102:[2,39],103:[2,34],104:[2,29],105:[2,27]},
+table: [{3:1,4:$V0,5:$V1,6:4,7:$V2,11:6,58:$V3},{1:[3]},{3:8,4:$V0,5:$V1,6:4,7:$V2,11:6,58:$V3},{3:9,4:$V0,5:$V1,6:4,7:$V2,11:6,58:$V3},{3:10,4:$V0,5:$V1,6:4,7:$V2,11:6,58:$V3},o([1,4,5,16,21,22,23,25,27,29,30,31,33,37,48,58],$V4,{8:11}),{12:12,59:[1,13]},{59:[2,51]},{1:[2,1]},{1:[2,2]},{1:[2,3]},{1:[2,4],4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,29:$Vd,30:$Ve,31:$Vf,33:$Vg,37:$Vh,48:$Vi,58:$V3},{13:34,14:[1,35],61:$Vj},o([14,61],[2,52]),o($Vk,[2,6]),{6:30,10:37,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,29:$Vd,30:$Ve,31:$Vf,33:$Vg,37:$Vh,48:$Vi,58:$V3},o($Vk,[2,8]),o($Vk,[2,9]),{17:38,48:$Vi},{5:[1,39]},o($Vk,[2,15]),{17:40,48:$Vi},{17:41,48:$Vi},{5:[1,42]},{26:43,57:$Vl},{19:[1,45]},{19:[1,46]},{19:[1,47]},{19:[1,48]},{19:[1,49]},o($Vk,[2,25]),{45:50,49:[1,51],50:[1,52],51:[1,53],52:[1,54],53:[1,55],54:[1,56],55:[1,57],56:[1,58]},{38:59,39:[1,60],43:[1,61],44:[1,62]},o([5,18,42,49,50,51,52,53,54,55,56,57],[2,41]),{5:[1,63]},{15:64,60:[1,65]},{5:[2,54]},o($Vk,[2,7]),{5:[1,67],18:[1,66]},o($Vk,[2,14]),{5:[1,68]},{5:[1,69]},o($Vk,[2,18]),{5:[1,70]},{5:[2,50]},o($Vm,$V4,{8:71}),o($Vm,$V4,{8:72}),o($Vm,$V4,{8:73}),o($Vn,$V4,{32:74,8:75}),o($Vo,$V4,{34:76,8:77}),{17:80,46:[1,78],47:[1,79],48:$Vi},o($Vp,[2,42]),o($Vp,[2,43]),o($Vp,[2,44]),o($Vp,[2,45]),o($Vp,[2,46]),o($Vp,[2,47]),o($Vp,[2,48]),o($Vp,[2,49]),{17:81,48:$Vi},{17:83,40:82,48:$Vi},{48:[2,36]},{48:[2,37]},o($Vq,[2,10]),{13:84,61:$Vj},{61:[2,53]},{19:[1,85]},o($Vk,[2,13]),o($Vk,[2,16]),o($Vk,[2,17]),o($Vk,[2,19]),{4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,28:[1,86],29:$Vd,30:$Ve,31:$Vf,33:$Vg,37:$Vh,48:$Vi,58:$V3},{4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,28:[1,87],29:$Vd,30:$Ve,31:$Vf,33:$Vg,37:$Vh,48:$Vi,58:$V3},{4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,28:[1,88],29:$Vd,30:$Ve,31:$Vf,33:$Vg,37:$Vh,48:$Vi,58:$V3},{28:[1,89]},{4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,28:[2,28],29:$Vd,30:$Ve,31:$Vf,33:$Vg,36:[1,90],37:$Vh,48:$Vi,58:$V3},{28:[1,91]},{4:$V5,5:$V6,6:30,9:14,10:16,11:6,16:$V7,17:31,20:19,21:$V8,22:$V9,23:$Va,24:23,25:$Vb,27:$Vc,28:[2,26],29:$Vd,30:$Ve,31:$Vf,33:$Vg,35:[1,92],37:$Vh,48:$Vi,58:$V3},{17:93,48:$Vi},{17:94,48:$Vi},{26:95,57:$Vl},{26:96,57:$Vl},{26:97,57:$Vl},{42:[1,98],57:[2,35]},{5:[1,99]},{5:[1,100]},o($Vk,[2,20]),o($Vk,[2,21]),o($Vk,[2,22]),o($Vk,[2,23]),{19:[1,101]},o($Vk,[2,24]),{19:[1,102]},{26:103,57:$Vl},{26:104,57:$Vl},{5:[2,40]},{5:[2,30]},{5:[2,31]},{17:105,48:$Vi},o($Vq,[2,11]),o($Vk,[2,12]),o($Vn,$V4,{8:75,32:106}),o($Vo,$V4,{8:77,34:107}),{5:[2,38]},{5:[2,39]},{57:[2,34]},{28:[2,29]},{28:[2,27]}],
+defaultActions: {7:[2,51],8:[2,1],9:[2,2],10:[2,3],36:[2,54],44:[2,50],61:[2,36],62:[2,37],65:[2,53],95:[2,40],96:[2,30],97:[2,31],103:[2,38],104:[2,39],105:[2,34],106:[2,29],107:[2,27]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -17003,15 +17188,15 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 56; 
+case 0: this.begin('open_directive'); return 58; 
 break;
-case 1: this.begin('type_directive'); return 57; 
+case 1: this.begin('type_directive'); return 59; 
 break;
 case 2: this.popState(); this.begin('arg_directive'); return 14; 
 break;
-case 3: this.popState(); this.popState(); return 59; 
+case 3: this.popState(); this.popState(); return 61; 
 break;
-case 4:return 58;
+case 4:return 60;
 break;
 case 5:return 5;
 break;
@@ -17089,18 +17274,22 @@ case 41:return 54;
 break;
 case 42:return 55;
 break;
-case 43:return 46;
+case 43:return 56;
 break;
-case 44:return 47;
+case 44:return 57;
 break;
-case 45:return 5;
+case 45:return 46;
 break;
-case 46:return 'INVALID';
+case 46:return 47;
+break;
+case 47:return 5;
+break;
+case 48:return 'INVALID';
 break;
 }
 },
-rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:[\n]+)/i,/^(?:\s+)/i,/^(?:((?!\n)\s)+)/i,/^(?:#[^\n]*)/i,/^(?:%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:participant\b)/i,/^(?:[^\->:\n,;]+?(?=((?!\n)\s)+as(?!\n)\s|[#\n;]|$))/i,/^(?:as\b)/i,/^(?:(?:))/i,/^(?:loop\b)/i,/^(?:rect\b)/i,/^(?:opt\b)/i,/^(?:alt\b)/i,/^(?:else\b)/i,/^(?:par\b)/i,/^(?:and\b)/i,/^(?:(?:[:]?(?:no)?wrap)?[^#\n;]*)/i,/^(?:end\b)/i,/^(?:left of\b)/i,/^(?:right of\b)/i,/^(?:over\b)/i,/^(?:note\b)/i,/^(?:activate\b)/i,/^(?:deactivate\b)/i,/^(?:title\b)/i,/^(?:sequenceDiagram\b)/i,/^(?:autonumber\b)/i,/^(?:,)/i,/^(?:;)/i,/^(?:[^\+\->:\n,;]+((?!(-x|--x))[\-]*[^\+\->:\n,;]+)*)/i,/^(?:->>)/i,/^(?:-->>)/i,/^(?:->)/i,/^(?:-->)/i,/^(?:-[x])/i,/^(?:--[x])/i,/^(?::(?:(?:no)?wrap)?[^#\n;]+)/i,/^(?:\+)/i,/^(?:-)/i,/^(?:$)/i,/^(?:.)/i],
-conditions: {"open_directive":{"rules":[1,8],"inclusive":false},"type_directive":{"rules":[2,3,8],"inclusive":false},"arg_directive":{"rules":[3,4,8],"inclusive":false},"ID":{"rules":[7,8,12],"inclusive":false},"ALIAS":{"rules":[7,8,13,14],"inclusive":false},"LINE":{"rules":[7,8,22],"inclusive":false},"INITIAL":{"rules":[0,5,6,8,9,10,11,15,16,17,18,19,20,21,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46],"inclusive":true}}
+rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:[\n]+)/i,/^(?:\s+)/i,/^(?:((?!\n)\s)+)/i,/^(?:#[^\n]*)/i,/^(?:%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:participant\b)/i,/^(?:[^\->:\n,;]+?(?=((?!\n)\s)+as(?!\n)\s|[#\n;]|$))/i,/^(?:as\b)/i,/^(?:(?:))/i,/^(?:loop\b)/i,/^(?:rect\b)/i,/^(?:opt\b)/i,/^(?:alt\b)/i,/^(?:else\b)/i,/^(?:par\b)/i,/^(?:and\b)/i,/^(?:(?:[:]?(?:no)?wrap)?[^#\n;]*)/i,/^(?:end\b)/i,/^(?:left of\b)/i,/^(?:right of\b)/i,/^(?:over\b)/i,/^(?:note\b)/i,/^(?:activate\b)/i,/^(?:deactivate\b)/i,/^(?:title\b)/i,/^(?:sequenceDiagram\b)/i,/^(?:autonumber\b)/i,/^(?:,)/i,/^(?:;)/i,/^(?:[^\+\->:\n,;]+((?!(-x|--x|-\)|--\)))[\-]*[^\+\->:\n,;]+)*)/i,/^(?:->>)/i,/^(?:-->>)/i,/^(?:->)/i,/^(?:-->)/i,/^(?:-[x])/i,/^(?:--[x])/i,/^(?:-[\)])/i,/^(?:--[\)])/i,/^(?::(?:(?:no)?wrap)?[^#\n;]+)/i,/^(?:\+)/i,/^(?:-)/i,/^(?:$)/i,/^(?:.)/i],
+conditions: {"open_directive":{"rules":[1,8],"inclusive":false},"type_directive":{"rules":[2,3,8],"inclusive":false},"arg_directive":{"rules":[3,4,8],"inclusive":false},"ID":{"rules":[7,8,12],"inclusive":false},"ALIAS":{"rules":[7,8,13,14],"inclusive":false},"LINE":{"rules":[7,8,22],"inclusive":false},"INITIAL":{"rules":[0,5,6,8,9,10,11,15,16,17,18,19,20,21,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48],"inclusive":true}}
 });
 return lexer;
 })();
@@ -17166,9 +17355,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "apply", function() { return apply; });
 /* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../config */ "./src/config.js");
-/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
-
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 
 
 
@@ -17316,9 +17503,9 @@ var parseMessage = function parseMessage(str) {
 
   var message = {
     text: _str.replace(/^[:]?(?:no)?wrap:/, '').trim(),
-    wrap: _str.match(/^[:]?(?:no)?wrap:/) === null ? _common_common__WEBPACK_IMPORTED_MODULE_2__["default"].hasBreaks(_str) || undefined : _str.match(/^[:]?wrap:/) !== null ? true : _str.match(/^[:]?nowrap:/) !== null ? false : undefined
+    wrap: _str.match(/^[:]?wrap:/) !== null ? true : _str.match(/^[:]?nowrap:/) !== null ? false : undefined
   };
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('parseMessage:', message);
+  _logger__WEBPACK_IMPORTED_MODULE_2__["log"].debug('parseMessage:', message);
   return message;
 };
 var LINETYPE = {
@@ -17342,7 +17529,9 @@ var LINETYPE = {
   PAR_AND: 20,
   PAR_END: 21,
   RECT_START: 22,
-  RECT_END: 23
+  RECT_END: 23,
+  SOLID_POINT: 24,
+  DOTTED_POINT: 25
 };
 var ARROWTYPE = {
   FILLED: 0,
@@ -17758,7 +17947,6 @@ var drawNote = function drawNote(elem, noteModel) {
   textObj.anchor = conf.noteAlign;
   textObj.textMargin = conf.noteMargin;
   textObj.valign = conf.noteAlign;
-  textObj.wrap = true;
   var textElem = Object(_svgDraw__WEBPACK_IMPORTED_MODULE_1__["drawText"])(g, textObj);
   var textHeight = Math.round(textElem.map(function (te) {
     return (te._groups || te)[0][0].getBBox().height;
@@ -17811,8 +17999,7 @@ var drawMessage = function drawMessage(g, msgModel) {
       starty = msgModel.starty,
       message = msgModel.message,
       type = msgModel.type,
-      sequenceIndex = msgModel.sequenceIndex,
-      wrap = msgModel.wrap;
+      sequenceIndex = msgModel.sequenceIndex;
   var lines = _common_common__WEBPACK_IMPORTED_MODULE_4__["default"].splitBreaks(message).length;
   var textDims = _utils__WEBPACK_IMPORTED_MODULE_7__["default"].calculateTextDimensions(message, messageFont(conf));
   var lineHeight = textDims.height / lines;
@@ -17832,7 +18019,6 @@ var drawMessage = function drawMessage(g, msgModel) {
   textObj.valign = conf.messageAlign;
   textObj.textMargin = conf.wrapPadding;
   textObj.tspan = false;
-  textObj.wrap = wrap;
   Object(_svgDraw__WEBPACK_IMPORTED_MODULE_1__["drawText"])(g, textObj);
   var totalOffset = textDims.height - 10;
   var textWidth = textDims.width;
@@ -17865,7 +18051,7 @@ var drawMessage = function drawMessage(g, msgModel) {
   // Draw the line
 
 
-  if (type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED || type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_CROSS || type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_OPEN) {
+  if (type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED || type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_CROSS || type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_POINT || type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_OPEN) {
     line.style('stroke-dasharray', '3, 3');
     line.attr('class', 'messageLine1');
   } else {
@@ -17887,6 +18073,10 @@ var drawMessage = function drawMessage(g, msgModel) {
 
   if (type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID || type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED) {
     line.attr('marker-end', 'url(' + url + '#arrowhead)');
+  }
+
+  if (type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_POINT || type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_POINT) {
+    line.attr('marker-end', 'url(' + url + '#filled-head)');
   }
 
   if (type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_CROSS || type === _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_CROSS) {
@@ -17978,7 +18168,7 @@ function adjustLoopHeightForWrap(loopWidths, msg, preMargin, postMargin, addLoop
     var textDims = _utils__WEBPACK_IMPORTED_MODULE_7__["default"].calculateTextDimensions(msg.message, textConf);
     var totalOffset = Math.max(textDims.height, conf.labelBoxHeight);
     heightAdjust = postMargin + totalOffset;
-    _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug("".concat(totalOffset, " - ").concat(msg.message));
+    _logger__WEBPACK_IMPORTED_MODULE_2__["log"].debug("".concat(totalOffset, " - ").concat(msg.message));
   }
 
   addLoopFn(msg);
@@ -17997,7 +18187,7 @@ var draw = function draw(text, id) {
   _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.setWrap(conf.wrap);
   _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].parse(text + '\n');
   bounds.init();
-  _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug("C:".concat(JSON.stringify(conf, null, 2)));
+  _logger__WEBPACK_IMPORTED_MODULE_2__["log"].debug("C:".concat(JSON.stringify(conf, null, 2)));
   var diagram = Object(d3__WEBPACK_IMPORTED_MODULE_0__["select"])("[id=\"".concat(id, "\"]")); // Fetch data from the parsing
 
   var actors = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.getActors();
@@ -18011,6 +18201,7 @@ var draw = function draw(text, id) {
 
   _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].insertArrowHead(diagram);
   _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].insertArrowCrossHead(diagram);
+  _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].insertArrowFilledHead(diagram);
   _svgDraw__WEBPACK_IMPORTED_MODULE_1__["default"].insertSequenceNumber(diagram);
 
   function activeEnd(msg, verticalPos) {
@@ -18130,13 +18321,13 @@ var draw = function draw(text, id) {
           drawMessage(diagram, msgModel);
           bounds.models.addMessage(msgModel);
         } catch (e) {
-          _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].error('error while drawing message', e);
+          _logger__WEBPACK_IMPORTED_MODULE_2__["log"].error('error while drawing message', e);
         }
 
     } // Increment sequence counter if msg.type is a line (and not another event like activation or note, etc)
 
 
-    if ([_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_OPEN, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_OPEN, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_CROSS, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_CROSS].includes(msg.type)) {
+    if ([_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_OPEN, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_OPEN, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_CROSS, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_CROSS, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_POINT, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_POINT].includes(msg.type)) {
       sequenceIndex++;
     }
   });
@@ -18151,7 +18342,7 @@ var draw = function draw(text, id) {
       box = _bounds$getBounds.bounds; // Adjust line height of actor lines now that the height of the diagram is known
 
 
-  _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('For line height fix Querying: #' + id + ' .actor-line');
+  _logger__WEBPACK_IMPORTED_MODULE_2__["log"].debug('For line height fix Querying: #' + id + ' .actor-line');
   var actorLines = Object(d3__WEBPACK_IMPORTED_MODULE_0__["selectAll"])('#' + id + ' .actor-line');
   actorLines.attr('y2', box.stopy);
   var height = box.stopy - box.starty + 2 * conf.diagramMarginY;
@@ -18169,7 +18360,7 @@ var draw = function draw(text, id) {
   Object(_utils__WEBPACK_IMPORTED_MODULE_7__["configureSvgSize"])(diagram, height, width, conf.useMaxWidth);
   var extraVertForTitle = title ? 40 : 0;
   diagram.attr('viewBox', box.startx - conf.diagramMarginX + ' -' + (conf.diagramMarginY + extraVertForTitle) + ' ' + width + ' ' + (height + extraVertForTitle));
-  _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug("models:", bounds.models);
+  _logger__WEBPACK_IMPORTED_MODULE_2__["log"].debug("models:", bounds.models);
 };
 /**
  * Retrieves the max message width of each actor, supports signals (messages, loops)
@@ -18242,7 +18433,7 @@ var getMaxMessageWidthPerActor = function getMaxMessageWidthPerActor(actors, mes
       }
     }
   });
-  _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('maxMessageWidthPerActor:', maxMessageWidthPerActor);
+  _logger__WEBPACK_IMPORTED_MODULE_2__["log"].debug('maxMessageWidthPerActor:', maxMessageWidthPerActor);
   return maxMessageWidthPerActor;
 };
 /**
@@ -18327,14 +18518,14 @@ var buildNoteModel = function buildNoteModel(msg, actors) {
     noteModel.message = _utils__WEBPACK_IMPORTED_MODULE_7__["default"].wrapLabel(msg.message, noteModel.width - 2 * conf.wrapPadding, noteFont(conf));
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug("NM:[".concat(noteModel.startx, ",").concat(noteModel.stopx, ",").concat(noteModel.starty, ",").concat(noteModel.stopy, ":").concat(noteModel.width, ",").concat(noteModel.height, "=").concat(msg.message, "]"));
+  _logger__WEBPACK_IMPORTED_MODULE_2__["log"].debug("NM:[".concat(noteModel.startx, ",").concat(noteModel.stopx, ",").concat(noteModel.starty, ",").concat(noteModel.stopy, ":").concat(noteModel.width, ",").concat(noteModel.height, "=").concat(msg.message, "]"));
   return noteModel;
 };
 
 var buildMessageModel = function buildMessageModel(msg, actors) {
   var process = false;
 
-  if ([_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_OPEN, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_OPEN, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_CROSS, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_CROSS].includes(msg.type)) {
+  if ([_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_OPEN, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_OPEN, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_CROSS, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_CROSS, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.SOLID_POINT, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_3__["parser"].yy.LINETYPE.DOTTED_POINT].includes(msg.type)) {
     process = true;
   }
 
@@ -18348,12 +18539,12 @@ var buildMessageModel = function buildMessageModel(msg, actors) {
   var toIdx = fromBounds[0] < toBounds[0] ? 0 : 1;
   var allBounds = fromBounds.concat(toBounds);
   var boundedWidth = Math.abs(toBounds[toIdx] - fromBounds[fromIdx]);
-  var msgDims = _utils__WEBPACK_IMPORTED_MODULE_7__["default"].calculateTextDimensions(msg.message, messageFont(conf));
 
   if (msg.wrap && msg.message) {
     msg.message = _utils__WEBPACK_IMPORTED_MODULE_7__["default"].wrapLabel(msg.message, Math.max(boundedWidth + 2 * conf.wrapPadding, conf.width), messageFont(conf));
   }
 
+  var msgDims = _utils__WEBPACK_IMPORTED_MODULE_7__["default"].calculateTextDimensions(msg.message, messageFont(conf));
   return {
     width: Math.max(msg.wrap ? 0 : msgDims.width + 2 * conf.wrapPadding, boundedWidth + 2 * conf.wrapPadding, conf.width),
     height: 0,
@@ -18471,7 +18662,7 @@ var calculateLoopBounds = function calculateLoopBounds(messages, actors) {
     }
   });
   bounds.activations = [];
-  _logger__WEBPACK_IMPORTED_MODULE_2__["logger"].debug('Loop type widths:', loops);
+  _logger__WEBPACK_IMPORTED_MODULE_2__["log"].debug('Loop type widths:', loops);
   return loops;
 };
 
@@ -18505,7 +18696,7 @@ var getStyles = function getStyles(options) {
 /*!******************************************!*\
   !*** ./src/diagrams/sequence/svgDraw.js ***!
   \******************************************/
-/*! exports provided: drawRect, drawText, drawLabel, drawActor, anchorElement, drawActivation, drawLoop, drawBackgroundRect, insertArrowHead, insertSequenceNumber, insertArrowCrossHead, getTextObj, getNoteRect, default */
+/*! exports provided: drawRect, drawText, drawLabel, drawActor, anchorElement, drawActivation, drawLoop, drawBackgroundRect, insertArrowHead, insertArrowFilledHead, insertSequenceNumber, insertArrowCrossHead, getTextObj, getNoteRect, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -18519,6 +18710,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "drawLoop", function() { return drawLoop; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "drawBackgroundRect", function() { return drawBackgroundRect; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "insertArrowHead", function() { return insertArrowHead; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "insertArrowFilledHead", function() { return insertArrowFilledHead; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "insertSequenceNumber", function() { return insertSequenceNumber; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "insertArrowCrossHead", function() { return insertArrowCrossHead; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getTextObj", function() { return getTextObj; });
@@ -18545,7 +18737,7 @@ var drawRect = function drawRect(elem, rectData) {
 var drawText = function drawText(elem, textData) {
   var prevTextHeight = 0,
       textHeight = 0;
-  var lines = textData.wrap ? textData.text.split(_common_common__WEBPACK_IMPORTED_MODULE_0__["default"].lineBreakRegex) : [textData.text.replace(_common_common__WEBPACK_IMPORTED_MODULE_0__["default"].lineBreakRegex, ' ')];
+  var lines = textData.text.split(_common_common__WEBPACK_IMPORTED_MODULE_0__["default"].lineBreakRegex);
   var textElems = [];
   var dy = 0;
 
@@ -18852,7 +19044,14 @@ var drawBackgroundRect = function drawBackgroundRect(elem, bounds) {
  */
 
 var insertArrowHead = function insertArrowHead(elem) {
-  elem.append('defs').append('marker').attr('id', 'arrowhead').attr('refX', 5).attr('refY', 2).attr('markerWidth', 6).attr('markerHeight', 4).attr('orient', 'auto').append('path').attr('d', 'M 0,0 V 4 L6,2 Z'); // this is actual shape for arrowhead
+  elem.append('defs').append('marker').attr('id', 'arrowhead').attr('refX', 9).attr('refY', 5).attr('markerUnits', 'userSpaceOnUse').attr('markerWidth', 12).attr('markerHeight', 12).attr('orient', 'auto').append('path').attr('d', 'M 0 0 L 10 5 L 0 10 z'); // this is actual shape for arrowhead
+};
+/**
+ * Setup arrow head and define the marker. The result is appended to the svg.
+ */
+
+var insertArrowFilledHead = function insertArrowFilledHead(elem) {
+  elem.append('defs').append('marker').attr('id', 'filled-head').attr('refX', 18).attr('refY', 7).attr('markerWidth', 20).attr('markerHeight', 28).attr('orient', 'auto').append('path').attr('d', 'M 18,7 L9,13 L14,7 L9,1 Z');
 };
 /**
  * Setup node number. The result is appended to the svg.
@@ -18960,6 +19159,7 @@ var _drawTextCandidateFunc = function () {
   drawLoop: drawLoop,
   drawBackgroundRect: drawBackgroundRect,
   insertArrowHead: insertArrowHead,
+  insertArrowFilledHead: insertArrowFilledHead,
   insertSequenceNumber: insertSequenceNumber,
   insertArrowCrossHead: insertArrowCrossHead,
   getTextObj: getTextObj,
@@ -20196,12 +20396,12 @@ var drawEdge = function drawEdge(elem, path, relation) {
       var boundstmp = title.node().getBBox();
       maxWidth = Math.max(maxWidth, boundstmp.width);
       minX = Math.min(minX, boundstmp.x);
-      _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].info(boundstmp.x, x, y + titleHeight);
+      _logger__WEBPACK_IMPORTED_MODULE_6__["log"].info(boundstmp.x, x, y + titleHeight);
 
       if (titleHeight === 0) {
         var titleBox = title.node().getBBox();
         titleHeight = titleBox.height;
-        _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].info('Title height', titleHeight, y);
+        _logger__WEBPACK_IMPORTED_MODULE_6__["log"].info('Title height', titleHeight, y);
       }
 
       titleRows.push(title);
@@ -20219,7 +20419,7 @@ var drawEdge = function drawEdge(elem, path, relation) {
 
     var bounds = label.node().getBBox();
     label.insert('rect', ':first-child').attr('class', 'box').attr('x', x - maxWidth / 2 - Object(_config__WEBPACK_IMPORTED_MODULE_5__["getConfig"])().state.padding / 2).attr('y', y - boxHeight / 2 - Object(_config__WEBPACK_IMPORTED_MODULE_5__["getConfig"])().state.padding / 2 - 3.5).attr('width', maxWidth + Object(_config__WEBPACK_IMPORTED_MODULE_5__["getConfig"])().state.padding).attr('height', boxHeight + Object(_config__WEBPACK_IMPORTED_MODULE_5__["getConfig"])().state.padding);
-    _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].info(bounds); //label.attr('transform', '0 -' + (bounds.y / 2));
+    _logger__WEBPACK_IMPORTED_MODULE_6__["log"].info(bounds); //label.attr('transform', '0 -' + (bounds.y / 2));
     // Debug points
     // path.points.forEach(point => {
     //   g.append('circle')
@@ -20283,7 +20483,7 @@ var parseDirective = function parseDirective(statement, context, type) {
 };
 
 var setRootDoc = function setRootDoc(o) {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Setting root doc', o); // rootDoc = { id: 'root', doc: o };
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Setting root doc', o); // rootDoc = { id: 'root', doc: o };
 
   rootDoc = o;
 };
@@ -20368,9 +20568,9 @@ var extract = function extract(_doc) {
   // }
 
 
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info(doc);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info(doc);
   clear();
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Extract', doc);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Extract', doc);
   doc.forEach(function (item) {
     if (item.stmt === 'state') {
       addState(item.id, item.type, item.doc, item.description, item.note);
@@ -20426,7 +20626,7 @@ var addState = function addState(id, type, doc, descr, note) {
   }
 
   if (descr) {
-    _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Adding state ', id, descr);
+    _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Adding state ', id, descr);
     if (typeof descr === 'string') addDescription(id, descr.trim());
 
     if (_typeof(descr) === 'object') {
@@ -20456,7 +20656,7 @@ var getStates = function getStates() {
   return currentDocument.states;
 };
 var logDocuments = function logDocuments() {
-  _logger__WEBPACK_IMPORTED_MODULE_0__["logger"].info('Documents = ', documents);
+  _logger__WEBPACK_IMPORTED_MODULE_0__["log"].info('Documents = ', documents);
 };
 var getRelations = function getRelations() {
   return currentDocument.relations;
@@ -20612,7 +20812,7 @@ var nodeDb = {};
  */
 
 var getClasses = function getClasses(text) {
-  _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].trace('Extracting classes');
+  _logger__WEBPACK_IMPORTED_MODULE_6__["log"].trace('Extracting classes');
   _stateDb__WEBPACK_IMPORTED_MODULE_2__["default"].clear();
   var parser = _parser_stateDiagram__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
   parser.yy = _stateDb__WEBPACK_IMPORTED_MODULE_2__["default"]; // Parse the graph definition
@@ -20675,7 +20875,7 @@ var setupNode = function setupNode(g, parent, node, altFlag) {
 
 
     if (!nodeDb[node.id].type && node.doc) {
-      _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].info('Setting cluser for ', node.id);
+      _logger__WEBPACK_IMPORTED_MODULE_6__["log"].info('Setting cluser for ', node.id);
       nodeDb[node.id].type = 'group';
       nodeDb[node.id].shape = node.type === 'divider' ? 'divider' : 'roundedWithTitle';
       nodeDb[node.id].classes = nodeDb[node.id].classes + ' ' + (altFlag ? 'statediagram-cluster statediagram-cluster-alt' : 'statediagram-cluster');
@@ -20758,13 +20958,13 @@ var setupNode = function setupNode(g, parent, node, altFlag) {
 
   if (parent) {
     if (parent.id !== 'root') {
-      _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].info('Setting node ', node.id, ' to be child of its parent ', parent.id);
+      _logger__WEBPACK_IMPORTED_MODULE_6__["log"].info('Setting node ', node.id, ' to be child of its parent ', parent.id);
       g.setParent(node.id, parent.id);
     }
   }
 
   if (node.doc) {
-    _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].info('Adding nodes children ');
+    _logger__WEBPACK_IMPORTED_MODULE_6__["log"].info('Adding nodes children ');
     setupDoc(g, node, node.doc, !altFlag);
   }
 };
@@ -20773,7 +20973,7 @@ var cnt = 0;
 
 var setupDoc = function setupDoc(g, parent, doc, altFlag) {
   cnt = 0;
-  _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].trace('items', doc);
+  _logger__WEBPACK_IMPORTED_MODULE_6__["log"].trace('items', doc);
   doc.forEach(function (item) {
     if (item.stmt === 'state' || item.stmt === 'default') {
       setupNode(g, parent, item, altFlag);
@@ -20808,7 +21008,7 @@ var setupDoc = function setupDoc(g, parent, doc, altFlag) {
 
 
 var draw = function draw(text, id) {
-  _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].info('Drawing state diagram (v2)', id);
+  _logger__WEBPACK_IMPORTED_MODULE_6__["log"].info('Drawing state diagram (v2)', id);
   _stateDb__WEBPACK_IMPORTED_MODULE_2__["default"].clear();
   nodeDb = {};
   var parser = _parser_stateDiagram__WEBPACK_IMPORTED_MODULE_3___default.a.parser;
@@ -20838,9 +21038,9 @@ var draw = function draw(text, id) {
   }).setDefaultEdgeLabel(function () {
     return {};
   });
-  _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].info(_stateDb__WEBPACK_IMPORTED_MODULE_2__["default"].getRootDocV2());
+  _logger__WEBPACK_IMPORTED_MODULE_6__["log"].info(_stateDb__WEBPACK_IMPORTED_MODULE_2__["default"].getRootDocV2());
   _stateDb__WEBPACK_IMPORTED_MODULE_2__["default"].extract(_stateDb__WEBPACK_IMPORTED_MODULE_2__["default"].getRootDocV2());
-  _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].info(_stateDb__WEBPACK_IMPORTED_MODULE_2__["default"].getRootDocV2());
+  _logger__WEBPACK_IMPORTED_MODULE_6__["log"].info(_stateDb__WEBPACK_IMPORTED_MODULE_2__["default"].getRootDocV2());
   setupNode(g, undefined, _stateDb__WEBPACK_IMPORTED_MODULE_2__["default"].getRootDocV2(), true); // Set up an SVG group so that we can translate the final graph.
 
   var svg = Object(d3__WEBPACK_IMPORTED_MODULE_1__["select"])("[id=\"".concat(id, "\"]")); // Run the renderer. This is what draws the final graph.
@@ -20857,7 +21057,7 @@ var draw = function draw(text, id) {
   Object(_utils__WEBPACK_IMPORTED_MODULE_7__["configureSvgSize"])(svg, height, width * 1.75, conf.useMaxWidth); // Ensure the viewBox includes the whole svgBounds area with extra space for padding
 
   var vBox = "".concat(svgBounds.x - padding, " ").concat(svgBounds.y - padding, " ").concat(width, " ").concat(height);
-  _logger__WEBPACK_IMPORTED_MODULE_6__["logger"].debug("viewBox ".concat(vBox));
+  _logger__WEBPACK_IMPORTED_MODULE_6__["log"].debug("viewBox ".concat(vBox));
   svg.attr('viewBox', vBox); // Add label rects for non html labels
 
   if (!conf.htmlLabels) {
@@ -20944,7 +21144,7 @@ var draw = function draw(text, id) {
   conf = Object(_config__WEBPACK_IMPORTED_MODULE_8__["getConfig"])().state;
   _parser_stateDiagram__WEBPACK_IMPORTED_MODULE_6__["parser"].yy.clear();
   _parser_stateDiagram__WEBPACK_IMPORTED_MODULE_6__["parser"].parse(text);
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Rendering diagram ' + text); // Fetch the default direction, use TD if none was found
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Rendering diagram ' + text); // Fetch the default direction, use TD if none was found
 
   var diagram = Object(d3__WEBPACK_IMPORTED_MODULE_0__["select"])("[id='".concat(id, "']"));
   insertMarkers(diagram); // Layout graph, Create a new directed graph
@@ -21091,11 +21291,11 @@ var renderDoc = function renderDoc(doc, diagram, parentId, altBkg) {
     }
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Count=', graph.nodeCount(), graph);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Count=', graph.nodeCount(), graph);
   var cnt = 0;
   relations.forEach(function (relation) {
     cnt++;
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Setting edge', relation);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Setting edge', relation);
     graph.setEdge(relation.id1, relation.id2, {
       relation: relation,
       width: getLabelWidth(relation.title),
@@ -21104,11 +21304,11 @@ var renderDoc = function renderDoc(doc, diagram, parentId, altBkg) {
     }, 'id' + cnt);
   });
   dagre__WEBPACK_IMPORTED_MODULE_1___default.a.layout(graph);
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Graph after layout', graph.nodes());
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Graph after layout', graph.nodes());
   var svgElem = diagram.node();
   graph.nodes().forEach(function (v) {
     if (typeof v !== 'undefined' && typeof graph.node(v) !== 'undefined') {
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].warn('Node ' + v + ': ' + JSON.stringify(graph.node(v)));
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].warn('Node ' + v + ': ' + JSON.stringify(graph.node(v)));
       Object(d3__WEBPACK_IMPORTED_MODULE_0__["select"])('#' + svgElem.id + ' #' + v).attr('transform', 'translate(' + (graph.node(v).x - graph.node(v).width / 2) + ',' + (graph.node(v).y + (transformationLog[v] ? transformationLog[v].y : 0) - graph.node(v).height / 2) + ' )');
       Object(d3__WEBPACK_IMPORTED_MODULE_0__["select"])('#' + svgElem.id + ' #' + v).attr('data-x-shift', graph.node(v).x - graph.node(v).width / 2);
       var dividers = document.querySelectorAll('#' + svgElem.id + ' #' + v + ' .divider');
@@ -21130,13 +21330,13 @@ var renderDoc = function renderDoc(doc, diagram, parentId, altBkg) {
         divider.setAttribute('x2', pWidth - pShift - 8);
       });
     } else {
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('No Node ' + v + ': ' + JSON.stringify(graph.node(v)));
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('No Node ' + v + ': ' + JSON.stringify(graph.node(v)));
     }
   });
   var stateBox = svgElem.getBBox();
   graph.edges().forEach(function (e) {
     if (typeof e !== 'undefined' && typeof graph.edge(e) !== 'undefined') {
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(graph.edge(e)));
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(graph.edge(e)));
       Object(_shapes__WEBPACK_IMPORTED_MODULE_7__["drawEdge"])(diagram, graph.edge(e), graph.edge(e).relation);
     }
   });
@@ -21149,7 +21349,7 @@ var renderDoc = function renderDoc(doc, diagram, parentId, altBkg) {
   };
   stateInfo.width = stateBox.width + 2 * conf.padding;
   stateInfo.height = stateBox.height + 2 * conf.padding;
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Doc rendered', stateInfo, graph);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Doc rendered', stateInfo, graph);
   return stateInfo;
 };
 
@@ -22638,7 +22838,7 @@ var setConf = function setConf(cnf) {
 
 var draw = function draw(id, ver) {
   try {
-    _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('Renering svg for syntax error\n');
+    _logger__WEBPACK_IMPORTED_MODULE_1__["log"].debug('Renering svg for syntax error\n');
     var svg = Object(d3__WEBPACK_IMPORTED_MODULE_0__["select"])('#' + id);
     var g = svg.append('g');
     g.append('path').attr('class', 'error-icon').attr('d', 'm411.313,123.313c6.25-6.25 6.25-16.375 0-22.625s-16.375-6.25-22.625,0l-32,32-9.375,9.375-20.688-20.688c-12.484-12.5-32.766-12.5-45.25,0l-16,16c-1.261,1.261-2.304,2.648-3.31,4.051-21.739-8.561-45.324-13.426-70.065-13.426-105.867,0-192,86.133-192,192s86.133,192 192,192 192-86.133 192-192c0-24.741-4.864-48.327-13.426-70.065 1.402-1.007 2.79-2.049 4.051-3.31l16-16c12.5-12.492 12.5-32.758 0-45.25l-20.688-20.688 9.375-9.375 32.001-31.999zm-219.313,100.687c-52.938,0-96,43.063-96,96 0,8.836-7.164,16-16,16s-16-7.164-16-16c0-70.578 57.422-128 128-128 8.836,0 16,7.164 16,16s-7.164,16-16,16z');
@@ -22655,8 +22855,8 @@ var draw = function draw(id, ver) {
     svg.attr('width', 400);
     svg.attr('viewBox', '768 0 512 512');
   } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].error('Error while rendering info diagram');
-    _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].error(e.message);
+    _logger__WEBPACK_IMPORTED_MODULE_1__["log"].error('Error while rendering info diagram');
+    _logger__WEBPACK_IMPORTED_MODULE_1__["log"].error(e.message);
   }
 };
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -22670,17 +22870,16 @@ var draw = function draw(id, ver) {
 /*!***********************!*\
   !*** ./src/logger.js ***!
   \***********************/
-/*! exports provided: LEVELS, logger, setLogLevel */
+/*! exports provided: LEVELS, log, setLogLevel */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LEVELS", function() { return LEVELS; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "logger", function() { return logger; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "log", function() { return log; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "setLogLevel", function() { return setLogLevel; });
 /* harmony import */ var moment_mini__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! moment-mini */ "moment-mini");
 /* harmony import */ var moment_mini__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(moment_mini__WEBPACK_IMPORTED_MODULE_0__);
- //
 
 var LEVELS = {
   debug: 1,
@@ -22689,7 +22888,7 @@ var LEVELS = {
   error: 4,
   fatal: 5
 };
-var logger = {
+var log = {
   debug: function debug() {},
   info: function info() {},
   warn: function warn() {},
@@ -22707,37 +22906,37 @@ var setLogLevel = function setLogLevel() {
     }
   }
 
-  logger.trace = function () {};
+  log.trace = function () {};
 
-  logger.debug = function () {};
+  log.debug = function () {};
 
-  logger.info = function () {};
+  log.info = function () {};
 
-  logger.warn = function () {};
+  log.warn = function () {};
 
-  logger.error = function () {};
+  log.error = function () {};
 
-  logger.fatal = function () {};
+  log.fatal = function () {};
 
   if (level <= LEVELS.fatal) {
-    logger.fatal = console.error ? console.error.bind(console, format('FATAL'), 'color: orange') : console.log.bind(console, '\x1b[35m', format('FATAL'));
+    log.fatal = console.error ? console.error.bind(console, format('FATAL'), 'color: orange') : console.log.bind(console, '\x1b[35m', format('FATAL'));
   }
 
   if (level <= LEVELS.error) {
-    logger.error = console.error ? console.error.bind(console, format('ERROR'), 'color: orange') : console.log.bind(console, '\x1b[31m', format('ERROR'));
+    log.error = console.error ? console.error.bind(console, format('ERROR'), 'color: orange') : console.log.bind(console, '\x1b[31m', format('ERROR'));
   }
 
   if (level <= LEVELS.warn) {
-    logger.warn = console.warn ? console.warn.bind(console, format('WARN'), 'color: orange') : console.log.bind(console, "\x1B[33m", format('WARN'));
+    log.warn = console.warn ? console.warn.bind(console, format('WARN'), 'color: orange') : console.log.bind(console, "\x1B[33m", format('WARN'));
   }
 
   if (level <= LEVELS.info) {
-    logger.info = console.info ? // ? console.info.bind(console, '\x1b[34m', format('INFO'), 'color: blue')
-    console.info.bind(console, format('INFO'), 'color: lightblue') : console.log.bind(console, '\x1b[34m', format('INFO'));
+    log.info = console.info // ? console.info.bind(console, '\x1b[34m', format('INFO'), 'color: blue')
+    ? console.info.bind(console, format('INFO'), 'color: lightblue') : console.log.bind(console, '\x1b[34m', format('INFO'));
   }
 
   if (level <= LEVELS.debug) {
-    logger.debug = console.debug ? console.debug.bind(console, format('DEBUG'), 'color: lightgreen') : console.log.bind(console, '\x1b[32m', format('DEBUG'));
+    log.debug = console.debug ? console.debug.bind(console, format('DEBUG'), 'color: lightgreen') : console.log.bind(console, '\x1b[32m', format('DEBUG'));
   }
 };
 
@@ -22816,24 +23015,24 @@ var init = function init() {
 
   if (typeof arguments[arguments.length - 1] === 'function') {
     callback = arguments[arguments.length - 1];
-    _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('Callback function found');
+    _logger__WEBPACK_IMPORTED_MODULE_1__["log"].debug('Callback function found');
   } else {
     if (typeof conf.mermaid !== 'undefined') {
       if (typeof conf.mermaid.callback === 'function') {
         callback = conf.mermaid.callback;
-        _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('Callback function found');
+        _logger__WEBPACK_IMPORTED_MODULE_1__["log"].debug('Callback function found');
       } else {
-        _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('No Callback function found');
+        _logger__WEBPACK_IMPORTED_MODULE_1__["log"].debug('No Callback function found');
       }
     }
   }
 
   nodes = nodes === undefined ? document.querySelectorAll('.mermaid') : typeof nodes === 'string' ? document.querySelectorAll(nodes) : nodes instanceof window.Node ? [nodes] : nodes; // Last case  - sequence config was passed pick next
 
-  _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('Start On Load before: ' + mermaid.startOnLoad);
+  _logger__WEBPACK_IMPORTED_MODULE_1__["log"].debug('Start On Load before: ' + mermaid.startOnLoad);
 
   if (typeof mermaid.startOnLoad !== 'undefined') {
-    _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('Start On Load inner: ' + mermaid.startOnLoad);
+    _logger__WEBPACK_IMPORTED_MODULE_1__["log"].debug('Start On Load inner: ' + mermaid.startOnLoad);
     _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__["default"].updateSiteConfig({
       startOnLoad: mermaid.startOnLoad
     });
@@ -22866,7 +23065,7 @@ var init = function init() {
     var init = _utils__WEBPACK_IMPORTED_MODULE_3__["default"].detectInit(txt);
 
     if (init) {
-      _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('Detected early reinit: ', init);
+      _logger__WEBPACK_IMPORTED_MODULE_1__["log"].debug('Detected early reinit: ', init);
     }
 
     try {
@@ -22880,8 +23079,8 @@ var init = function init() {
         if (bindFunctions) bindFunctions(element);
       }, element);
     } catch (e) {
-      _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].warn('Syntax Error rendering');
-      _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].warn(e);
+      _logger__WEBPACK_IMPORTED_MODULE_1__["log"].warn('Syntax Error rendering');
+      _logger__WEBPACK_IMPORTED_MODULE_1__["log"].warn(e);
 
       if (_this.parseError) {
         _this.parseError(e);
@@ -22929,7 +23128,7 @@ var contentLoaded = function contentLoaded() {
     }
   } else {
     if (typeof mermaid.startOnLoad === 'undefined') {
-      _logger__WEBPACK_IMPORTED_MODULE_1__["logger"].debug('In start, no config');
+      _logger__WEBPACK_IMPORTED_MODULE_1__["log"].debug('In start, no config');
       config = _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__["default"].getConfig();
 
       if (config.startOnLoad) {
@@ -23102,12 +23301,12 @@ function parse(text) {
 
   if (graphInit) {
     reinitialize(graphInit);
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('reinit ', graphInit);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('reinit ', graphInit);
   }
 
   var graphType = _utils__WEBPACK_IMPORTED_MODULE_4__["default"].detectType(text);
   var parser;
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Type ' + graphType);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Type ' + graphType);
 
   switch (graphType) {
     case 'git':
@@ -23158,25 +23357,25 @@ function parse(text) {
       break;
 
     case 'info':
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('info info info');
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('info info info');
       parser = _diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_28___default.a;
       parser.parser.yy = _diagrams_info_infoDb__WEBPACK_IMPORTED_MODULE_29__["default"];
       break;
 
     case 'pie':
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('pie');
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('pie');
       parser = _diagrams_pie_parser_pie__WEBPACK_IMPORTED_MODULE_31___default.a;
       parser.parser.yy = _diagrams_pie_pieDb__WEBPACK_IMPORTED_MODULE_32__["default"];
       break;
 
     case 'er':
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('er');
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('er');
       parser = _diagrams_er_parser_erDiagram__WEBPACK_IMPORTED_MODULE_34___default.a;
       parser.parser.yy = _diagrams_er_erDb__WEBPACK_IMPORTED_MODULE_33__["default"];
       break;
 
     case 'journey':
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Journey');
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Journey');
       parser = _diagrams_user_journey_parser_journey__WEBPACK_IMPORTED_MODULE_36___default.a;
       parser.parser.yy = _diagrams_user_journey_journeyDb__WEBPACK_IMPORTED_MODULE_37__["default"];
       break;
@@ -23269,13 +23468,7 @@ var render = function render(id, _txt, cb, container) {
   // console.warn('Render fetching config');
 
 
-  var cnf = _config__WEBPACK_IMPORTED_MODULE_39__["getConfig"](); // console.warn('Render with config after adding new directives', cnf.sequence);
-  // console.warn(
-  //   'Render with config after adding new directives',
-  //   cnf.fontFamily,
-  //   cnf.themeVariables.fontFamily
-  // );
-  // Check the maximum allowed text size
+  var cnf = _config__WEBPACK_IMPORTED_MODULE_39__["getConfig"](); // Check the maximum allowed text size
 
   if (_txt.length > cnf.maxTextSize) {
     txt = 'graph TB;a[Maximum text size in diagram exceeded];style a fill:#faa';
@@ -23334,7 +23527,7 @@ var render = function render(id, _txt, cb, container) {
         userStyles += "\n.".concat(className, " tspan { ").concat(classes[className].textStyles.join(' !important; '), " !important; }");
       }
     }
-  } // logger.warn(cnf.themeVariables);
+  } // log.warn(cnf.themeVariables);
 
 
   var stylis = new stylis__WEBPACK_IMPORTED_MODULE_0___default.a();
@@ -23457,13 +23650,15 @@ var render = function render(id, _txt, cb, container) {
   // Fix for when the base tag is used
 
   var svgCode = Object(d3__WEBPACK_IMPORTED_MODULE_1__["select"])('#d' + id).node().innerHTML;
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('cnf.arrowMarkerAbsolute', cnf.arrowMarkerAbsolute);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('cnf.arrowMarkerAbsolute', cnf.arrowMarkerAbsolute);
 
   if (!cnf.arrowMarkerAbsolute || cnf.arrowMarkerAbsolute === 'false') {
     svgCode = svgCode.replace(/marker-end="url\(.*?#/g, 'marker-end="url(#', 'g');
   }
 
-  svgCode = decodeEntities(svgCode);
+  svgCode = decodeEntities(svgCode); // Fix for when the br tag is used
+
+  svgCode = svgCode.replace(/<br>/g, '<br/>');
 
   if (typeof cb !== 'undefined') {
     switch (graphType) {
@@ -23485,7 +23680,7 @@ var render = function render(id, _txt, cb, container) {
         cb(svgCode);
     }
   } else {
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('CB = undefined!');
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('CB = undefined!');
   }
 
   var node = Object(d3__WEBPACK_IMPORTED_MODULE_1__["select"])('#d' + id).node();
@@ -23524,13 +23719,13 @@ var parseDirective = function parseDirective(p, statement, context, type) {
       }
     }
   } catch (error) {
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error("Error while rendering sequenceDiagram directive: ".concat(statement, " jison context: ").concat(context));
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error(error.message);
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].error("Error while rendering sequenceDiagram directive: ".concat(statement, " jison context: ").concat(context));
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].error(error.message);
   }
 };
 
 var handleDirective = function handleDirective(p, directive, type) {
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug("Directive type=".concat(directive.type, " with args:"), directive.args);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug("Directive type=".concat(directive.type, " with args:"), directive.args);
 
   switch (directive.type) {
     case 'init':
@@ -23560,7 +23755,7 @@ var handleDirective = function handleDirective(p, directive, type) {
       break;
 
     default:
-      _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].warn("Unhandled directive: source: '%%{".concat(directive.type, ": ").concat(JSON.stringify(directive.args ? directive.args : {}), "}%%"), directive);
+      _logger__WEBPACK_IMPORTED_MODULE_3__["log"].warn("Unhandled directive: source: '%%{".concat(directive.type, ": ").concat(JSON.stringify(directive.args ? directive.args : {}), "}%%"), directive);
       break;
   }
 };
@@ -23597,7 +23792,7 @@ function reinitialize() {// `mermaidAPI.reinitialize: v${pkg.version}`,
   //   typeof options === 'object' ? configApi.setConfig(options) : configApi.getSiteConfig();
   // updateRendererConfigs(config);
   // setLogLevel(config.logLevel);
-  // logger.debug('mermaidAPI.reinitialize: ', config);
+  // log.debug('mermaidAPI.reinitialize: ', config);
 }
 
 function initialize(options) {
@@ -23618,7 +23813,7 @@ function initialize(options) {
   } // Set default options
 
 
-  _config__WEBPACK_IMPORTED_MODULE_39__["setSiteConfigDelta"](options);
+  _config__WEBPACK_IMPORTED_MODULE_39__["saveConfigFromInitilize"](options);
 
   if (options && options.theme && _themes__WEBPACK_IMPORTED_MODULE_41__["default"][options.theme]) {
     // Todo merge with user options
@@ -23629,7 +23824,7 @@ function initialize(options) {
 
   var config = _typeof(options) === 'object' ? _config__WEBPACK_IMPORTED_MODULE_39__["setSiteConfig"](options) : _config__WEBPACK_IMPORTED_MODULE_39__["getSiteConfig"]();
   updateRendererConfigs(config);
-  Object(_logger__WEBPACK_IMPORTED_MODULE_3__["setLogLevel"])(config.logLevel); // logger.debug('mermaidAPI.initialize: ', config);
+  Object(_logger__WEBPACK_IMPORTED_MODULE_3__["setLogLevel"])(config.logLevel); // log.debug('mermaidAPI.initialize: ', config);
 }
 
 var mermaidAPI = Object.freeze({
@@ -23773,7 +23968,7 @@ var calcThemeVariables = function calcThemeVariables(theme, userOverRides) {
 
 var getStyles = function getStyles(type, userStyles, options) {
   //console.warn('options in styles: ', options);
-  return " {\n    font-family: ".concat(options.fontFamily, ";\n    font-size: ").concat(options.fontSize, ";\n    fill: ").concat(options.textColor, "\n  }\n\n  /* Classes common for multiple diagrams */\n\n  .error-icon {\n    fill: ").concat(options.errorBkgColor, ";\n  }\n  .error-text {\n    fill: ").concat(options.errorTextColor, ";\n    stroke: ").concat(options.errorTextColor, ";\n  }\n\n  .edge-thickness-normal {\n    stroke-width: 2px;\n  }\n  .edge-thickness-thick {\n    stroke-width: 3.5px\n  }\n  .edge-pattern-solid {\n    stroke-dasharray: 0;\n  }\n\n  .edge-pattern-dashed{\n    stroke-dasharray: 3;\n  }\n  .edge-pattern-dotted {\n    stroke-dasharray: 2;\n  }\n\n  .marker {\n    fill: ").concat(options.lineColor, ";\n  }\n  .marker.cross {\n    stroke: ").concat(options.lineColor, ";\n  }\n\n  svg {\n    font-family: ").concat(options.fontFamily, ";\n    font-size: ").concat(options.fontSize, ";\n  }\n\n  ").concat(themes[type](options), "\n\n  ").concat(userStyles, "\n\n  ").concat(type, " { fill: apa;}\n");
+  return " {\n    font-family: ".concat(options.fontFamily, ";\n    font-size: ").concat(options.fontSize, ";\n    fill: ").concat(options.textColor, "\n  }\n\n  /* Classes common for multiple diagrams */\n\n  .error-icon {\n    fill: ").concat(options.errorBkgColor, ";\n  }\n  .error-text {\n    fill: ").concat(options.errorTextColor, ";\n    stroke: ").concat(options.errorTextColor, ";\n  }\n\n  .edge-thickness-normal {\n    stroke-width: 2px;\n  }\n  .edge-thickness-thick {\n    stroke-width: 3.5px\n  }\n  .edge-pattern-solid {\n    stroke-dasharray: 0;\n  }\n\n  .edge-pattern-dashed{\n    stroke-dasharray: 3;\n  }\n  .edge-pattern-dotted {\n    stroke-dasharray: 2;\n  }\n\n  .marker {\n    fill: ").concat(options.lineColor, ";\n    stroke: ").concat(options.lineColor, ";\n  }\n  .marker.cross {\n    stroke: ").concat(options.lineColor, ";\n  }\n\n  svg {\n    font-family: ").concat(options.fontFamily, ";\n    font-size: ").concat(options.fontSize, ";\n  }\n\n  ").concat(themes[type](options), "\n\n  ").concat(userStyles, "\n\n  ").concat(type, " { fill: apa;}\n");
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (getStyles);
@@ -25063,7 +25258,7 @@ var detectDirective = function detectDirective(text) {
   try {
     var commentWithoutDirectives = new RegExp("[%]{2}(?![{]".concat(directiveWithoutOpen.source, ")(?=[}][%]{2}).*\n"), 'ig');
     text = text.trim().replace(commentWithoutDirectives, '').replace(/'/gm, '"');
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug("Detecting diagram directive".concat(type !== null ? ' type:' + type : '', " based on the text:").concat(text));
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug("Detecting diagram directive".concat(type !== null ? ' type:' + type : '', " based on the text:").concat(text));
     var match,
         result = [];
 
@@ -25093,7 +25288,7 @@ var detectDirective = function detectDirective(text) {
 
     return result.length === 1 ? result[0] : result;
   } catch (error) {
-    _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].error("ERROR: ".concat(error.message, " - Unable to parse directive").concat(type !== null ? ' type:' + type : '', " based on the text:").concat(text));
+    _logger__WEBPACK_IMPORTED_MODULE_3__["log"].error("ERROR: ".concat(error.message, " - Unable to parse directive").concat(type !== null ? ' type:' + type : '', " based on the text:").concat(text));
     return {
       type: null,
       args: null
@@ -25122,7 +25317,7 @@ var detectDirective = function detectDirective(text) {
 
 var detectType = function detectType(text) {
   text = text.replace(directive, '').replace(anyComment, '\n');
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].debug('Detecting diagram type based on the text ' + text);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].debug('Detecting diagram type based on the text ' + text);
 
   if (text.match(/^\s*sequenceDiagram/)) {
     return 'sequence';
@@ -25301,7 +25496,7 @@ var calcCardinalityPosition = function calcCardinalityPosition(isRelationTypePre
   var prevPoint;
   var totalDistance = 0; // eslint-disable-line
 
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('our points', points);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('our points', points);
 
   if (points[0] !== initialPosition) {
     points = points.reverse();
@@ -25367,7 +25562,7 @@ var calcTerminalLabelPosition = function calcTerminalLabelPosition(terminalMarke
   var prevPoint;
   var totalDistance = 0; // eslint-disable-line
 
-  _logger__WEBPACK_IMPORTED_MODULE_3__["logger"].info('our points', points);
+  _logger__WEBPACK_IMPORTED_MODULE_3__["log"].info('our points', points);
 
   if (position !== 'start_left' && position !== 'start_right') {
     points = points.reverse();

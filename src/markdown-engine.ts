@@ -6,12 +6,19 @@ import * as fs from "fs";
 import * as path from "path";
 import * as request from "request";
 import * as slash from "slash";
-import * as YAML from "yamljs";
 import * as vscode from "vscode";
-
+import * as YAML from "yamljs";
 import { CodeChunkData } from "./code-chunk-data";
+import useMarkdownItCodeFences from "./custom-markdown-it-features/code-fences";
+import useMarkdownItCriticMarkup from "./custom-markdown-it-features/critic-markup";
+import useMarkdownItEmoji from "./custom-markdown-it-features/emoji";
+import useMarkdownItHTML5Embed from "./custom-markdown-it-features/html5-embed";
+import useMarkdownItMath from "./custom-markdown-it-features/math";
+import useMarkdownItWikilink from "./custom-markdown-it-features/wikilink";
 import { ebookConvert } from "./ebook-convert";
 import HeadingIdGenerator from "./heading-id-generator";
+import { parseAttributes, stringifyAttributes } from "./lib/attributes";
+import { normalizeBlockInfo, parseBlockInfo } from "./lib/block-info";
 import { markdownConvert } from "./markdown-convert";
 import {
   defaultMarkdownEngineConfig,
@@ -19,17 +26,6 @@ import {
 } from "./markdown-engine-config";
 import { pandocConvert } from "./pandoc-convert";
 import { princeConvert } from "./prince-convert";
-import { toc } from "./toc";
-import { HeadingData, transformMarkdown } from "./transformer";
-import * as utility from "./utility";
-
-import useMarkdownItCodeFences from "./custom-markdown-it-features/code-fences";
-import useMarkdownItCriticMarkup from "./custom-markdown-it-features/critic-markup";
-import useMarkdownItEmoji from "./custom-markdown-it-features/emoji";
-import useMarkdownItHTML5Embed from "./custom-markdown-it-features/html5-embed";
-import useMarkdownItMath from "./custom-markdown-it-features/math";
-import useMarkdownItWikilink from "./custom-markdown-it-features/wikilink";
-
 import enhanceWithCodeBlockStyling from "./render-enhancers/code-block-styling";
 import enhanceWithEmbeddedLocalImages from "./render-enhancers/embedded-local-images";
 import enhanceWithEmbeddedSvgs from "./render-enhancers/embedded-svgs";
@@ -43,9 +39,9 @@ import enhanceWithFencedCodeChunks, {
 import enhanceWithFencedDiagrams from "./render-enhancers/fenced-diagrams";
 import enhanceWithFencedMath from "./render-enhancers/fenced-math";
 import enhanceWithResolvedImagePaths from "./render-enhancers/resolved-image-paths";
-
-import { parseAttributes, stringifyAttributes } from "./lib/attributes";
-import { normalizeBlockInfo, parseBlockInfo } from "./lib/block-info";
+import { toc } from "./toc";
+import { HeadingData, transformMarkdown } from "./transformer";
+import * as utility from "./utility";
 import { removeFileProtocol } from "./utility";
 
 const extensionDirectoryPath = utility.extensionDirectoryPath;
@@ -1128,7 +1124,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           "./dependencies/mermaid/mermaid.min.js",
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@8.8.4/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@8.9.2/dist/mermaid.min.js"></script>`;
       }
       const mermaidConfig: string = await utility.getMermaidConfig(
         this.config.configPath,
