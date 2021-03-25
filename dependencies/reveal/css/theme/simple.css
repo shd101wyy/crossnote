@@ -13,7 +13,32 @@ section.has-dark-background, section.has-dark-background h1, section.has-dark-ba
 /*********************************************
  * GLOBAL STYLES
  *********************************************/
-body {
+:root {
+  --background-color: #fff;
+  --main-font: Lato, sans-serif;
+  --main-font-size: 40px;
+  --main-color: #000;
+  --block-margin: 20px;
+  --heading-margin: 0 0 20px 0;
+  --heading-font: News Cycle, Impact, sans-serif;
+  --heading-color: #000;
+  --heading-line-height: 1.2;
+  --heading-letter-spacing: normal;
+  --heading-text-transform: none;
+  --heading-text-shadow: none;
+  --heading-font-weight: normal;
+  --heading1-text-shadow: none;
+  --heading1-size: 3.77em;
+  --heading2-size: 2.11em;
+  --heading3-size: 1.55em;
+  --heading4-size: 1em;
+  --code-font: monospace;
+  --link-color: #00008B;
+  --link-color-hover: #0000f1;
+  --selection-background-color: rgba(0, 0, 0, 0.99);
+  --selection-color: #fff; }
+
+.reveal-viewport {
   background: #fff;
   background-color: #fff; }
 
@@ -23,12 +48,12 @@ body {
   font-weight: normal;
   color: #000; }
 
-::selection {
+.reveal ::selection {
   color: #fff;
   background: rgba(0, 0, 0, 0.99);
   text-shadow: none; }
 
-::-moz-selection {
+.reveal ::-moz-selection {
   color: #fff;
   background: rgba(0, 0, 0, 0.99);
   text-shadow: none; }
@@ -78,6 +103,15 @@ body {
 .reveal p {
   margin: 20px 0;
   line-height: 1.3; }
+
+/* Remove trailing margins after titles */
+.reveal h1:last-child,
+.reveal h2:last-child,
+.reveal h3:last-child,
+.reveal h4:last-child,
+.reveal h5:last-child,
+.reveal h6:last-child {
+  margin-bottom: 0; }
 
 /* Ensure certain elements are never larger than the slide itself */
 .reveal img,
@@ -152,7 +186,7 @@ body {
   font-family: monospace;
   line-height: 1.2em;
   word-wrap: break-word;
-  box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.3); }
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15); }
 
 .reveal code {
   font-family: monospace;
@@ -208,14 +242,15 @@ body {
 .reveal small * {
   vertical-align: top; }
 
+.reveal img {
+  margin: 20px 0; }
+
 /*********************************************
  * LINKS
  *********************************************/
 .reveal a {
   color: #00008B;
   text-decoration: none;
-  -webkit-transition: color .15s ease;
-  -moz-transition: color .15s ease;
   transition: color .15s ease; }
 
 .reveal a:hover {
@@ -228,25 +263,16 @@ body {
   background: #00003f; }
 
 /*********************************************
- * IMAGES
+ * Frame helper
  *********************************************/
-.reveal section img {
-  margin: 15px 0px;
-  background: rgba(255, 255, 255, 0.12);
+.reveal .r-frame {
   border: 4px solid #000;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); }
 
-.reveal section img.plain {
-  border: 0;
-  box-shadow: none; }
-
-.reveal a img {
-  -webkit-transition: all .15s linear;
-  -moz-transition: all .15s linear;
+.reveal a .r-frame {
   transition: all .15s linear; }
 
-.reveal a:hover img {
-  background: rgba(255, 255, 255, 0.2);
+.reveal a:hover .r-frame {
   border-color: #00008B;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.55); }
 
@@ -262,11 +288,6 @@ body {
 .reveal .progress {
   background: rgba(0, 0, 0, 0.2);
   color: #00008B; }
-
-.reveal .progress span {
-  -webkit-transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
-  -moz-transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
-  transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985); }
 
 /*********************************************
  * PRINT BACKGROUND

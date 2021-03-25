@@ -566,7 +566,7 @@
      */
     private initPresentationEvent() {
       let initialSlide = null;
-      window["Reveal"].addEventListener("ready", (event) => {
+      const readyEvent = () => {
         if (initialSlide) {
           initialSlide.style.visibility = "visible";
         }
@@ -577,12 +577,12 @@
         this.bindTaskListEvent();
 
         // scroll slides
-        window["Reveal"].addEventListener("slidechanged", (event2) => {
+        window["Reveal"].addEventListener("slidechanged", (event) => {
           if (Date.now() < this.previewScrollDelay) {
             return;
           }
 
-          const { indexh, indexv } = event2;
+          const { indexh, indexv } = event;
           for (const slideData of this.slidesData) {
             const { h, v, line } = slideData;
             if (h === indexh && v === indexv) {
@@ -590,7 +590,7 @@
             }
           }
         });
-      });
+      };
 
       // analyze slides
       this.initSlidesData();
@@ -603,6 +603,12 @@
       initialSlide = window["Reveal"].getCurrentSlide();
       if (initialSlide) {
         initialSlide.style.visibility = "hidden";
+      }
+
+      if (window["Reveal"].isReady()) {
+        readyEvent();
+      } else {
+        window["Reveal"].addEventListener("ready", readyEvent);
       }
     }
 

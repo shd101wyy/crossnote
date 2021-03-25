@@ -7,7 +7,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
   "mermaid": "8.9.2",
   "plantuml": "1.2020.26",
   "wavedrom": "2.3.0",
-  "reveal": "3.7.0",
+  "reveal": "4.10.0",
   "viz": "v2.0.0",
   "MathJax": "v2.7.5",
   "jquery": "v3.2.1",

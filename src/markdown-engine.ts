@@ -1332,8 +1332,7 @@ for (var i = 0; i < flowcharts.length; i++) {
         )}'></script>`;
       } else {
         presentationScript = `
-        <script src='https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/lib/js/head.min.js'></script>
-        <script src='https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/js/reveal.js'></script>`;
+        <script src='https://cdn.jsdelivr.net/npm/reveal.js@4.1.0/dist/reveal.js'></script>`;
       }
 
       const presentationConfig = yamlConfig["presentation"] || {};
@@ -1435,7 +1434,7 @@ for (var i = 0; i < flowcharts.length; i++) {
             `./dependencies/reveal/css/theme/${theme}`,
           )}">`;
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/css/theme/${theme}">`;
+          presentationStyle += `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.1.0/dist/theme/${theme}">`;
         }
       } else {
         // preview theme
