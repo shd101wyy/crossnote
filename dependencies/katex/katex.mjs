@@ -17594,7 +17594,7 @@ var katex = {
   /**
    * Current KaTeX version
    */
-  version: "0.13.0",
+  version: "0.13.2",
 
   /**
    * Renders the given LaTeX into an HTML+MathML combination, and adds
