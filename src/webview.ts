@@ -219,6 +219,9 @@
       /** init image helper */
       this.initImageHelper();
 
+      /** keyboard event */
+      this.initKeyboardEvent();
+
       /** set zoom */
       this.setZoomLevel();
 
@@ -288,6 +291,18 @@
       this.initRefreshButton();
 
       return toolbar;
+    }
+
+    /**
+     * init events for keyboard
+     */
+    private initKeyboardEvent() {
+      window.removeEventListener("keydown", this.keydown);
+      window.addEventListener("keydown", this.keydown);
+    }
+
+    private keydown(event) {
+      this.postMessage("keydown", [this.sourceUri, event]);
     }
 
     /**
@@ -439,6 +454,156 @@
           sync_source: {
             name: "Sync Source",
             callback: () => this.previewSyncSource(),
+          },
+          seq4: "---------",
+          preview_theme: {
+            name: "Preview Theme",
+            items: {
+              atom_dark_css: {
+                name: "atom-dark.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "atom-dark.css",
+                  ]);
+                },
+              },
+              atom_light_css: {
+                name: "atom-light.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "atom-light.css",
+                  ]);
+                },
+              },
+              atom_material_css: {
+                name: "atom-material.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "atom-material.css",
+                  ]);
+                },
+              },
+              github_dark_css: {
+                name: "github-dark.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "github-dark.css",
+                  ]);
+                },
+              },
+              github_light_css: {
+                name: "github-light.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "github-light.css",
+                  ]);
+                },
+              },
+              gothic_css: {
+                name: "gothic.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "gothic.css",
+                  ]);
+                },
+              },
+              medium_css: {
+                name: "medium.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "medium.css",
+                  ]);
+                },
+              },
+              monokai_css: {
+                name: "monokai.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "monokai.css",
+                  ]);
+                },
+              },
+              newsprint_css: {
+                name: "newsprint.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "newsprint.css",
+                  ]);
+                },
+              },
+              night_css: {
+                name: "night.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "night.css",
+                  ]);
+                },
+              },
+              none_css: {
+                name: "none.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "none.css",
+                  ]);
+                },
+              },
+              one_dark_css: {
+                name: "one-dark.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "one-dark.css",
+                  ]);
+                },
+              },
+              one_light_css: {
+                name: "one-light.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "one-light.css",
+                  ]);
+                },
+              },
+              solarized_dark_css: {
+                name: "solarized-dark.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "solarized-dark.css",
+                  ]);
+                },
+              },
+              solarized_light_css: {
+                name: "solarized-light.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "solarized-light.css",
+                  ]);
+                },
+              },
+              vue_css: {
+                name: "vue.css",
+                callback: () => {
+                  this.postMessage("setPreviewTheme", [
+                    this.sourceUri,
+                    "vue.css",
+                  ]);
+                },
+              },
+            },
           },
         },
       });
