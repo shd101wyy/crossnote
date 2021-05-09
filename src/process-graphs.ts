@@ -28,6 +28,7 @@ export async function processGraphs(
     imageMagickPath,
     mermaidTheme,
     addOptionsStr,
+    plantumlServer,
   }: {
     fileDirectoryPath: string;
     projectDirectoryPath: string;
@@ -39,6 +40,7 @@ export async function processGraphs(
     imageMagickPath: string;
     mermaidTheme: string;
     addOptionsStr: boolean;
+    plantumlServer: string;
   },
 ): Promise<{ outputString: string; imagePaths: string[] }> {
   const lines = text.split("\n");
@@ -206,7 +208,11 @@ export async function processGraphs(
         let svg = graphsCache[checksum];
         if (!svg) {
           // check whether in cache
-          svg = await plantumlAPI.render(content, fileDirectoryPath);
+          svg = await plantumlAPI.render(
+            content,
+            fileDirectoryPath,
+            plantumlServer,
+          );
         }
         await convertSVGToPNGFile(
           options["filename"],
