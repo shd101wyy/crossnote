@@ -283,6 +283,7 @@ export async function pandocConvert(
     latexEngine,
     imageMagickPath,
     mermaidTheme,
+    plantumlServer,
     onWillTransformMarkdown = null,
     onDidTransformMarkdown = null,
   },
@@ -446,6 +447,7 @@ export async function pandocConvert(
     imageMagickPath,
     mermaidTheme,
     addOptionsStr: true,
+    plantumlServer,
   });
 
   // pandoc will cause error if directory doesn't exist,

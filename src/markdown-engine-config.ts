@@ -40,6 +40,7 @@ export interface MarkdownEngineConfig {
   puppeteerWaitForTimeout?: number;
   usePuppeteerCore?: boolean;
   puppeteerArgs?: string[];
+  plantumlServer: string;
 }
 
 export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
@@ -88,4 +89,5 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   puppeteerWaitForTimeout: 0,
   usePuppeteerCore: true,
   puppeteerArgs: [],
+  plantumlServer: "",
 };
