@@ -240,7 +240,7 @@ const config = {
   // Args passed to puppeteer.launch({args: $puppeteerArgs})
   puppeteerArgs: [],
 
-  // Render using PlantUML server instead of binary
+  // Render using PlantUML server instead of binary. Leave it empty to use the builtin plantuml.jar binary (`java` is required in system path). Eg: "http://localhost:8080/svg/".
   plantumlServer: "http://localhost:8080/svg/"
 }
 
