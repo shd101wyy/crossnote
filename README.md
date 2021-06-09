@@ -239,6 +239,9 @@ const config = {
 
   // Args passed to puppeteer.launch({args: $puppeteerArgs})
   puppeteerArgs: [],
+
+  // Render using PlantUML server instead of binary
+  plantumlServer: "http://localhost:8080/svg/"
 }
 
 // Init Engine
