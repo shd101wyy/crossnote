@@ -2261,6 +2261,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         latexEngine: this.config.latexEngine,
         imageMagickPath: this.config.imageMagickPath,
         mermaidTheme: this.config.mermaidTheme,
+        plantumlServer: this.config.plantumlServer,
         onWillTransformMarkdown:
           utility.configs.parserConfig["onWillTransformMarkdown"],
         onDidTransformMarkdown:
@@ -2368,6 +2369,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         usePandocParser: this.config.usePandocParser,
         imageMagickPath: this.config.imageMagickPath,
         mermaidTheme: this.config.mermaidTheme,
+        plantumlServer: this.config.plantumlServer,
         onWillTransformMarkdown:
           utility.configs.parserConfig["onWillTransformMarkdown"],
         onDidTransformMarkdown:
@@ -2906,6 +2908,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       removeFileProtocol(
         this.resolveFilePath(this.config.imageFolderPath, false),
       ),
+      this.config.plantumlServer,
     );
     await enhanceWithFencedCodeChunks(
       $,

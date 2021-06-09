@@ -188,6 +188,7 @@ export async function markdownConvert(
     usePandocParser,
     imageMagickPath,
     mermaidTheme,
+    plantumlServer,
     onWillTransformMarkdown = null,
     onDidTransformMarkdown = null,
   }: {
@@ -204,6 +205,7 @@ export async function markdownConvert(
     usePandocParser: boolean;
     imageMagickPath: string;
     mermaidTheme: string;
+    plantumlServer: string;
     onWillTransformMarkdown?: (markdown: string) => Promise<string>;
     onDidTransformMarkdown?: (markdown: string) => Promise<string>;
   },
@@ -315,6 +317,7 @@ export async function markdownConvert(
           imageMagickPath,
           mermaidTheme,
           addOptionsStr: false,
+          plantumlServer,
         }).then(({ outputString }) => {
           outputString = data.frontMatterString + outputString; // put the front-matter back.
 
