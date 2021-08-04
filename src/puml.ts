@@ -72,11 +72,11 @@ class PlantUMLTask {
         data = this.chunks;
         this.chunks = ""; // clear CHUNKS
         const diagrams = data.split("<?xml ");
-        diagrams.forEach((diagram, i) => {
+        diagrams.forEach((diagram) => {
           if (diagram.length) {
             const callback = this.callbacks.shift();
             if (callback) {
-              callback("<?xml " + diagram);
+              callback(diagram);
             }
           }
         });
