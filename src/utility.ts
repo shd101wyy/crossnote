@@ -229,8 +229,9 @@ export async function getGlobalStyles(configPath): Promise<string> {
 export function getConfigPath() {
   const oldDefault = path.resolve(os.homedir(), "./.mume");
 
-  // For compatibility, use the old directory if it exists
-  if (fs.existsSync(oldDefault)) {
+  // For compatibility, use the old directory if either it exists
+  // or the user is on windows
+  if (fs.existsSync(oldDefault) || process.platform === "win32") {
     return oldDefault;
   } else {
     // Calculate new default
