@@ -16,19 +16,17 @@ export { MarkdownEngineConfig } from "./markdown-engine-config";
 export { MarkdownEngine } from "./markdown-engine";
 export { CodeChunkData } from "./code-chunk-data";
 
-let extensionConfigPath = path.resolve(os.homedir(), "./.mume");
+let extensionConfigPath = utility.getConfigPath();
 
 /**
- * init mume config folder at ~/.mume
+ * init mume config folder at ~/.config/mume
  */
 export async function init(configPath: string | null = null): Promise<void> {
   if (INITIALIZED) {
     return;
   }
 
-  configPath = configPath
-    ? path.resolve(configPath)
-    : path.resolve(os.homedir(), "./.mume");
+  configPath = configPath ? path.resolve(configPath) : utility.getConfigPath();
   extensionConfigPath = configPath;
 
   if (!fs.existsSync(configPath)) {

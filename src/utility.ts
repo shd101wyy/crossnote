@@ -184,7 +184,7 @@ export const extensionDirectoryPath = path.resolve(__dirname, "../../");
 export async function getGlobalStyles(configPath): Promise<string> {
   const globalLessFilePath = configPath
     ? path.resolve(configPath, "./style.less")
-    : path.resolve(os.homedir(), "./.mume/style.less");
+    : path.resolve(getConfigPath(), "./style.less");
 
   let fileContent: string;
   try {
@@ -223,12 +223,35 @@ export async function getGlobalStyles(configPath): Promise<string> {
 }
 
 /**
- * load ~/.mume/mermaid_config.js file.
+ * Get default config path
+ * @
+ */
+export function getConfigPath() {
+  const oldDefault = path.resolve(os.homedir(), "./.mume");
+
+  // For compatibility, use the old directory if it exists
+  if (fs.existsSync(oldDefault)) {
+    return oldDefault;
+  } else {
+    // Calculate new default
+    if (
+      typeof process.env.XDG_CONFIG_HOME === "string" &&
+      process.env.XDG_CONFIG_HOME !== ""
+    ) {
+      return path.resolve(process.env.XDG_CONFIG_HOME, "./mume");
+    } else {
+      return path.resolve(os.homedir(), "./.local/state/mume");
+    }
+  }
+}
+
+/**
+ * load ~/.config/mume/mermaid_config.js file.
  */
 export async function getMermaidConfig(configPath): Promise<string> {
   const mermaidConfigPath = configPath
     ? path.resolve(configPath, "./mermaid_config.js")
-    : path.resolve(os.homedir(), "./.mume/mermaid_config.js");
+    : path.resolve(getConfigPath(), "./mermaid_config.js");
 
   let mermaidConfig: string;
   if (fs.existsSync(mermaidConfigPath)) {
@@ -277,12 +300,12 @@ export const defaultKaTeXConfig = {
 };
 
 /**
- * load ~/.mume/mathjax_config.js file.
+ * load ~/.config/mume/mathjax_config.js file.
  */
 export async function getMathJaxConfig(configPath): Promise<object> {
   const mathjaxConfigPath = configPath
     ? path.resolve(configPath, "./mathjax_config.js")
-    : path.resolve(os.homedir(), "./.mume/mathjax_config.js");
+    : path.resolve(getConfigPath(), "./mathjax_config.js");
 
   let mathjaxConfig: object;
   if (fs.existsSync(mathjaxConfigPath)) {
@@ -316,12 +339,12 @@ module.exports = {
 }
 
 /**
- * load ~/.mume/katex_config.js file
+ * load ~/.config/mume/katex_config.js file
  */
 export async function getKaTeXConfig(configPath): Promise<object> {
   const katexConfigPath = configPath
     ? path.resolve(configPath, "./katex_config.js")
-    : path.resolve(os.homedir(), "./.mume/katex_config.js");
+    : path.resolve(getConfigPath(), "./katex_config.js");
 
   let katexConfig: object;
   if (fs.existsSync(katexConfigPath)) {
@@ -345,7 +368,7 @@ module.exports = {
 export async function getExtensionConfig(configPath): Promise<object> {
   const extensionConfigFilePath = configPath
     ? path.resolve(configPath, "./config.json")
-    : path.resolve(os.homedir(), "./.mume/config.json");
+    : path.resolve(getConfigPath(), "./config.json");
 
   let config: object;
   if (fs.existsSync(extensionConfigFilePath)) {
@@ -365,7 +388,7 @@ export async function getExtensionConfig(configPath): Promise<object> {
 export async function getParserConfig(configPath): Promise<ParserConfig> {
   const parserConfigPath = configPath
     ? path.resolve(configPath, "./parser.js")
-    : path.resolve(os.homedir(), "./.mume/parser.js");
+    : path.resolve(getConfigPath(), "./parser.js");
 
   let parserConfig: ParserConfig;
   if (fs.existsSync(parserConfigPath)) {
