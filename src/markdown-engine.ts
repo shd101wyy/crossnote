@@ -9,6 +9,7 @@ import * as slash from "slash";
 import * as vscode from "vscode";
 import * as YAML from "yamljs";
 import { CodeChunkData } from "./code-chunk-data";
+import useMarkdownAdmonition from "./custom-markdown-it-features/admonition";
 import useMarkdownItCodeFences from "./custom-markdown-it-features/code-fences";
 import useMarkdownItCriticMarkup from "./custom-markdown-it-features/critic-markup";
 import useMarkdownItEmoji from "./custom-markdown-it-features/emoji";
@@ -268,6 +269,7 @@ export class MarkdownEngine {
     useMarkdownItHTML5Embed(this.md, this.config);
     useMarkdownItMath(this.md, this.config);
     useMarkdownItWikilink(this.md, this.config);
+    useMarkdownAdmonition(this.md);
   }
 
   /**
@@ -862,6 +864,15 @@ if (typeof(window['Reveal']) !== 'undefined') {
       path.resolve(
         utility.extensionDirectoryPath,
         "./styles/style-template.css",
+      ),
+      vscodePreviewPanel,
+    )}">`;
+
+    // style markdown-it-admonition
+    styles += `<link rel="stylesheet" media="screen" href="${utility.addFileProtocol(
+      path.resolve(
+        utility.extensionDirectoryPath,
+        "./styles/markdown-it-admonition.css",
       ),
       vscodePreviewPanel,
     )}">`;
@@ -1461,6 +1472,17 @@ for (var i = 0; i < flowcharts.length; i++) {
         path.resolve(extensionDirectoryPath, "./styles/style-template.css"),
         { encoding: "utf-8" },
       );
+
+      // markdown-it-admonition
+      if (html.indexOf("admonition") > 0) {
+        styleCSS += await utility.readFile(
+          path.resolve(
+            extensionDirectoryPath,
+            "./styles/markdown-it-admonition.css",
+          ),
+          { encoding: "utf-8" },
+        );
+      }
     } catch (e) {
       styleCSS = "";
     }
@@ -2140,6 +2162,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           ),
           { encoding: "utf-8" },
         ),
+        // markdown-it-admonition
+        outputHTML.indexOf("admonition") > 0
+          ? utility.readFile(
+              path.resolve(
+                extensionDirectoryPath,
+                "./styles/markdown-it-admonition.css",
+              ),
+              { encoding: "utf-8" },
+            )
+          : "",
       ]);
       styleCSS = styles.join("");
     } catch (e) {

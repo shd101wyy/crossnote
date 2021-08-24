@@ -268,3 +268,7 @@ Recommended to use Node.js version `lts/dubnium`.
 2.  Run `yarn` from shell
 3.  Open in vscode, then `cmd+shift+b` to build
 4.  Run the tests with `yarn test`
+
+Or
+
+If you already have [nix](https://nixos.org/download.html) and [direnv](https://direnv.net/) installed, simply cd to the project directory, then run `direnv allow` once.

@@ -5,7 +5,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
 ```json
 {
   "mermaid": "8.10.2",
-  "plantuml": "1.2020.26",
+  "plantuml": "1.2021.9",
   "wavedrom": "2.3.0",
   "reveal": "4.10.0",
   "viz": "v2.0.0",
@@ -28,7 +28,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
   "webfont": "1.6.28",
   // "snap.svg": "0.5.1", // <= Doesn't work well in Preview. Use raphael.js instead
   "underscore": "1.8.3",
-  "prism": "1.23.0"
+  "prism": "1.24.1"
 }
 ```
 
