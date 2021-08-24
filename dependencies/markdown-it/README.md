@@ -8,7 +8,6 @@
     "markdown-it-mark": "2.0.0",
     "markdown-it-emoji": "1.4.0",
     "markdown-it-html5-embed": "1.0.0",
-    "markdown-it-admonition": "1.0.4"
 }
 ```
 
