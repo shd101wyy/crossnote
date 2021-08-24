@@ -76,7 +76,7 @@ class PlantUMLTask {
           if (diagram.length) {
             const callback = this.callbacks.shift();
             if (callback) {
-              callback("<?xml " + diagram);
+              callback(diagram.startsWith("<") ? diagram : "<?xml " + diagram);
             }
           }
         });
