@@ -27,8 +27,11 @@ const mume = require("@shd101wyy/mume");
 // import * as mume from "@shd101wyy/mume"
 
 async function main() {
-  const configPath = path.resolve(os.homedir(), ".mume"); // use here your own config folder, default is "~/.mume"
-  await mume.init(configPath); // default uses "~/.mume"
+  const configPath = path.resolve(os.tmpdir(), ".mume");
+
+  // if no configPath is specified, the default is "~/.config/mume"
+  // but only if the old location (~/.mume) does not exist
+  await mume.init(configPath);
 
   const engine = new mume.MarkdownEngine({
     filePath: "/Users/wangyiyi/Desktop/markdown-example/test3.md",
@@ -73,7 +76,7 @@ main();
 
 ```js
 const config = {
-  // Default config directory, `null`  means "~./.mume"
+  // Default config directory; `null` means "~/.config/mume"
   configPath : null,
 
   // Enable this option will render markdown by pandoc instead of markdown-it.
@@ -254,7 +257,7 @@ const engine = new mume.MarkdownEngine({
 
 ## Global Configuration
 
-Global config files are located at `~/.mume` directory
+Global config files are located in the `$XDG_STATE_HOME/mume` directory, which is `~/.config/mume` by default
 
 ## Development
 

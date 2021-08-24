@@ -274,7 +274,7 @@ export class MarkdownEngine {
    * Reset config
    */
   public resetConfig() {
-    // Please notice that ~/.mume/config.json has the highest priority.
+    // Please notice that ~/.config/mume/config.json has the highest priority.
     this.config = {
       ...defaultMarkdownEngineConfig,
       ...(this.originalConfig || {}),
