@@ -1,8 +1,8 @@
 import { spawn } from "child_process";
 import * as path from "path";
-import { extensionDirectoryPath } from "./utility";
 import { getExtensionConfigPath } from "./mume";
 import PlantUMLServerTask from "./puml-server";
+import { extensionDirectoryPath } from "./utility";
 
 const PlantUMLJarPath = path.resolve(
   extensionDirectoryPath,
@@ -76,7 +76,7 @@ class PlantUMLTask {
           if (diagram.length) {
             const callback = this.callbacks.shift();
             if (callback) {
-              callback(diagram);
+              callback("<?xml " + diagram);
             }
           }
         });
