@@ -16,6 +16,7 @@ export default class PlantUMLServerTask {
     return fetch(this.serverURL, {
       method: "POST",
       body: contentStream,
+      headers: {"Content-Type": 'text/plain; charset=utf-8'}
     }).then((res) => res.text());
   }
 }
