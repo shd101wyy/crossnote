@@ -9,10 +9,16 @@ import { toSVG as vegaToSvg } from "../vega";
 import { toSVG as vegaLiteToSvg } from "../vega-lite";
 import { Viz } from "../viz";
 
-import { Attributes, stringifyAttributes } from "../lib/attributes";
+import {
+  BlockAttributes,
+  stringifyBlockAttributes,
+} from "../lib/block-attributes";
 import { BlockInfo } from "../lib/block-info";
 
-const ensureClassInAttributes = (attributes: Attributes, className: string) => {
+const ensureClassInAttributes = (
+  attributes: BlockAttributes,
+  className: string,
+) => {
   const existingClassNames: string = attributes["class"] || "";
   if (existingClassNames.split(" ").indexOf(className) === -1) {
     return {
@@ -109,7 +115,7 @@ async function renderDiagram(
       case "sequence":
       case "mermaid": {
         // these diagrams are rendered on the client
-        $output = `<div ${stringifyAttributes(
+        $output = `<div ${stringifyBlockAttributes(
           ensureClassInAttributes(
             normalizedInfo.attributes,
             normalizedInfo.language,
@@ -121,7 +127,7 @@ async function renderDiagram(
       case "seq":
       case "sequence-diagram": {
         // sequence-diagram is a web-component, so we just need to add this tag
-        $output = `<div ${stringifyAttributes(
+        $output = `<div ${stringifyBlockAttributes(
           ensureClassInAttributes(
             normalizedInfo.attributes,
             normalizedInfo.language,
@@ -131,7 +137,7 @@ async function renderDiagram(
       }
       case "wavedrom": {
         // wavedrom is also rendered on the client, but using <script>
-        $output = `<div ${stringifyAttributes(
+        $output = `<div ${stringifyBlockAttributes(
           ensureClassInAttributes(
             normalizedInfo.attributes,
             normalizedInfo.language,
@@ -146,7 +152,7 @@ async function renderDiagram(
           svg = await renderPlantuml(code, fileDirectoryPath, plantumlServer);
           graphsCache[checksum] = svg; // store to new cache
         }
-        $output = `<p ${stringifyAttributes(
+        $output = `<p ${stringifyBlockAttributes(
           normalizedInfo.attributes,
         )}>${svg}</p>`;
         break;
@@ -159,7 +165,7 @@ async function renderDiagram(
           svg = await Viz(code, { engine });
           graphsCache[checksum] = svg; // store to new cache
         }
-        $output = `<p ${stringifyAttributes(
+        $output = `<p ${stringifyBlockAttributes(
           normalizedInfo.attributes,
         )}>${svg}</p>`;
         break;
@@ -189,7 +195,7 @@ async function renderDiagram(
             svg = await vegaFunctionToCall(code, fileDirectoryPath);
             graphsCache[checksum] = svg; // store to new cache
           }
-          $output = `<p ${stringifyAttributes(
+          $output = `<p ${stringifyBlockAttributes(
             normalizedInfo.attributes,
           )}>${svg}</p>`;
         }
@@ -207,7 +213,7 @@ async function renderDiagram(
         const args = normalizedInfo.attributes["args"] || [];
 
         const svg = await renderDitaa(code, args);
-        $output = `<p ${stringifyAttributes(
+        $output = `<p ${stringifyBlockAttributes(
           normalizedInfo.attributes,
         )}>${svg}</p>`;
         break;
@@ -230,6 +236,6 @@ async function renderDiagram(
 }
 
 const hiddenCode = (code, attributes, language) =>
-  `<p ${stringifyAttributes(
+  `<p ${stringifyBlockAttributes(
     ensureClassInAttributes(attributes, language),
   )}><span style="display: none">${code}</span></p>`;

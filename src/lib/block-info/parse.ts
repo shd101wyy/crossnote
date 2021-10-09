@@ -1,5 +1,5 @@
 import { BlockInfo } from ".";
-import { parseAttributes } from "../attributes";
+import { parseBlockAttributes } from "../block-attributes";
 
 export default function(raw: string): BlockInfo {
   let language;
@@ -23,7 +23,7 @@ export default function(raw: string): BlockInfo {
 
   if (attributesAsString) {
     try {
-      attributes = parseAttributes(attributesAsString);
+      attributes = parseBlockAttributes(attributesAsString);
     } catch (e) {
       //
     }

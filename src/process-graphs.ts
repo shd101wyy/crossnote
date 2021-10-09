@@ -3,7 +3,7 @@ import * as path from "path";
 
 import { compileLaTeX } from "./code-chunk";
 import { CodeChunkData } from "./code-chunk-data";
-import { parseAttributes } from "./lib/attributes";
+import { parseBlockAttributes } from "./lib/block-attributes";
 import { extractCommandFromBlockInfo } from "./lib/block-info";
 import computeChecksum from "./lib/compute-checksum";
 import { svgElementToPNGFile } from "./magick";
@@ -77,7 +77,7 @@ export async function processGraphs(
           const optionsMatch = trimmedLine.match(/\{(.+)\}$/);
           if (optionsMatch) {
             try {
-              options = parseAttributes(optionsMatch[0]);
+              options = parseBlockAttributes(optionsMatch[0]);
               optionsStr = optionsMatch[1];
             } catch (error) {
               options = {};

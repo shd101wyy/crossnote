@@ -1,11 +1,11 @@
-import { Attributes } from ".";
+import { BlockAttributes } from ".";
 
 /**
  * Convert attributes as JSON object to attributes as string
  * @param attributes
  */
 export default function(
-  attributes: Attributes,
+  attributes: BlockAttributes,
   addCurlyBrackets: boolean = false,
 ): string {
   const parts = [];

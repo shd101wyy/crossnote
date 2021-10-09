@@ -1,8 +1,8 @@
 import {
-  normalizeAttributes,
-  parseAttributes,
-  stringifyAttributes,
-} from "../../src/lib/attributes";
+  normalizeBlockAttributes,
+  parseBlockAttributes,
+  stringifyBlockAttributes,
+} from "../../src/lib/block-attributes";
 
 const testCases: {
   attributes?: any;
@@ -239,7 +239,7 @@ describe("lib/attributes", () => {
     const arrayOfTexts = typeof raw === "string" ? [raw] : raw;
     arrayOfTexts.map((text) => {
       test(`parseAttributes() correctly parses ${text}`, () => {
-        const result = parseAttributes(text);
+        const result = parseBlockAttributes(text);
         expect(result).toEqual(attributes);
       });
     });
@@ -252,7 +252,7 @@ describe("lib/attributes", () => {
     test(`normalizeAttributes() correctly normalizes ${JSON.stringify(
       attributes,
     )}`, () => {
-      const result = normalizeAttributes(attributes);
+      const result = normalizeBlockAttributes(attributes);
       expect(result).toEqual(normalizedAttributes);
     });
   });
@@ -277,11 +277,14 @@ describe("lib/attributes", () => {
           attrs,
         )}`, () => {
           // without curly parentheses
-          const resultWithoutCurlyParentheses = stringifyAttributes(attrs);
+          const resultWithoutCurlyParentheses = stringifyBlockAttributes(attrs);
           expect(resultWithoutCurlyParentheses).toEqual(stringified);
 
           // with curly parentheses (default)
-          const resultWithCurlyParentheses = stringifyAttributes(attrs, true);
+          const resultWithCurlyParentheses = stringifyBlockAttributes(
+            attrs,
+            true,
+          );
           expect(resultWithCurlyParentheses).toEqual(`{${stringified}}`);
         });
       });

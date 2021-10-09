@@ -1,8 +1,8 @@
-import { Attributes } from "../attributes";
+import { BlockAttributes } from "../block-attributes";
 
 export interface BlockInfo {
-  attributes: Attributes;
-  derivedAttributes?: Attributes;
+  attributes: BlockAttributes;
+  derivedAttributes?: BlockAttributes;
   language: string;
 }
 

@@ -1,4 +1,4 @@
-import { Attributes } from ".";
+import { BlockAttributes } from ".";
 
 enum NodeType {
   QUOTED_STRING,
@@ -11,14 +11,14 @@ type Node = [any, number, NodeType];
  * Parses block attributes
  * @param text e.g. {#identifier .class1 .class2 key1=value1 key2=value2}
  */
-export default function(text?: string): Attributes {
+export default function(text?: string): BlockAttributes {
   // remove surrounding { } if exist
   let textToParse = (text || "").trim();
   if (textToParse[0] === "{" && textToParse[textToParse.length - 1] === "}") {
     textToParse = textToParse.slice(1, -1);
   }
 
-  const output: Attributes = {};
+  const output: BlockAttributes = {};
   let pendingKey: string;
   let i = 0;
   while (i < textToParse.length) {

@@ -4,13 +4,13 @@ import * as path from "path";
 import * as vm from "vm";
 
 import * as LaTeX from "./latex";
-import { Attributes } from "./lib/attributes";
+import { BlockAttributes } from "./lib/block-attributes";
 import * as utility from "./utility";
 
 export async function compileLaTeX(
   content: string,
   fileDirectoryPath: string,
-  normalizedAttributes: Attributes,
+  normalizedAttributes: BlockAttributes,
 ): Promise<string> {
   const latexEngine = normalizedAttributes["latex_engine"] || "pdflatex";
   const latexSVGDir = normalizedAttributes["latex_svg_dir"]; // if not provided, the svg files will be stored in temp folder and will be deleted automatically
@@ -51,7 +51,7 @@ export async function compileLaTeX(
  */
 async function runInVm(
   code: string,
-  normalizedAttributes: Attributes,
+  normalizedAttributes: BlockAttributes,
 ): Promise<string> {
   const script = new vm.Script(`((${code})())`);
   const context = vm.createContext(normalizedAttributes["context"] || {});
@@ -62,7 +62,7 @@ export async function run(
   content: string,
   fileDirectoryPath: string,
   cmd: string,
-  normalizedAttributes: Attributes,
+  normalizedAttributes: BlockAttributes,
   latexEngine: string = "pdflatex",
 ): Promise<string> {
   let args = normalizedAttributes["args"] || [];

@@ -1,11 +1,11 @@
 import * as snakeCase from "lodash/snakeCase";
-import { Attributes } from ".";
+import { BlockAttributes } from ".";
 
 /**
  * Walks through attribute keys and makes them snakeCase if needed
  * @param attributes
  */
-export default function(attributes: Attributes): Attributes {
+export default function(attributes: BlockAttributes): BlockAttributes {
   if (typeof attributes !== "object") {
     return {};
   }
