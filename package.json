@@ -30,7 +30,7 @@
     "fix": "npm run fix:tslint && npm run fix:prettier",
     "fix:prettier": "prettier --write \"**/*.*\"",
     "fix:tslint": "tslint --fix --project .",
-    "prepare": "npm run build",
+    "prepare": "husky install && npm run build",
     "test": "jest --no-coverage",
     "test:coverage": "jest"
   },
