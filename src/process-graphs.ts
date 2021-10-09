@@ -4,7 +4,6 @@ import * as path from "path";
 import { compileLaTeX } from "./code-chunk";
 import { CodeChunkData } from "./code-chunk-data";
 import { parseBlockAttributes } from "./lib/block-attributes";
-import { extractCommandFromBlockInfo } from "./lib/block-info";
 import computeChecksum from "./lib/compute-checksum";
 import { svgElementToPNGFile } from "./magick";
 import * as plantumlAPI from "./puml";
@@ -14,6 +13,7 @@ import { Viz } from "./viz";
 import * as mermaidAPI from "./mermaid";
 import * as wavedromAPI from "./wavedrom";
 import * as ditaaAPI from "./ditaa";
+import { extractCommandFromBlockInfo } from "./utility";
 
 export async function processGraphs(
   text: string,

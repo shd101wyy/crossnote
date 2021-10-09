@@ -1,7 +1,16 @@
-import { BlockInfo } from ".";
 import { normalizeBlockAttributes } from "../block-attributes";
 
-export default function(blockInfo: BlockInfo): BlockInfo {
+import { BlockInfo } from "./types";
+
+const normalizeLanguage = (language?: string): string => {
+  if (typeof language === "string") {
+    return language.trim().toLowerCase();
+  }
+
+  return "";
+};
+
+export const normalizeBlockInfo = (blockInfo: BlockInfo): BlockInfo => {
   const normalizedAttributes = normalizeBlockAttributes(blockInfo.attributes);
   const normalizedLanguage = normalizeLanguage(blockInfo.language);
   if (
@@ -13,12 +22,6 @@ export default function(blockInfo: BlockInfo): BlockInfo {
       attributes: normalizedAttributes,
     };
   }
-  return blockInfo;
-}
 
-const normalizeLanguage = (language?: string): string => {
-  if (typeof language === "string") {
-    return language.trim().toLowerCase();
-  }
-  return "";
+  return blockInfo;
 };

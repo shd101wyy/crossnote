@@ -1,9 +1,10 @@
 // tslint:disable:ban-types no-var-requires
 import { run } from "../code-chunk";
 import { CodeChunkData, CodeChunksData } from "../code-chunk-data";
-import { BlockInfo, extractCommandFromBlockInfo } from "../lib/block-info";
+import { BlockInfo } from "../lib/block-info";
 import { MarkdownEngineRenderOption } from "../markdown-engine";
 import { toc } from "../toc";
+import { extractCommandFromBlockInfo } from "../utility";
 
 export default async function enhance(
   $,

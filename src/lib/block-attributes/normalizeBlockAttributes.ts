@@ -1,11 +1,13 @@
 import * as snakeCase from "lodash/snakeCase";
-import { BlockAttributes } from ".";
+import { BlockAttributes } from "./types";
 
 /**
  * Walks through attribute keys and makes them snakeCase if needed
  * @param attributes
  */
-export default function(attributes: BlockAttributes): BlockAttributes {
+export const normalizeBlockAttributes = (
+  attributes: BlockAttributes,
+): BlockAttributes => {
   if (typeof attributes !== "object") {
     return {};
   }
@@ -13,7 +15,7 @@ export default function(attributes: BlockAttributes): BlockAttributes {
   const result = { ...attributes };
 
   for (const key in attributes) {
-    if (attributes.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(attributes, key)) {
       const normalizedKey = snakeCase(key);
       if (normalizedKey !== key) {
         result[normalizedKey] = result[key];
@@ -24,4 +26,4 @@ export default function(attributes: BlockAttributes): BlockAttributes {
   }
 
   return changed ? result : attributes;
-}
+};
