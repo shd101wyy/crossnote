@@ -164,7 +164,7 @@ function processPDF(config = {}, args) {
  */
 
 export function ebookConvert(src, dest, config = {}) {
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     const args = [
       src,
       dest,

@@ -1,6 +1,6 @@
 import { execFile } from "child_process";
 
-export function princeConvert(src, dest): Promise<string> {
+export function princeConvert(src, dest): Promise<void> {
   return new Promise((resolve, reject) => {
     execFile("prince", [src, "--javascript", "-o", dest], (error: Error) => {
       if (error) {
