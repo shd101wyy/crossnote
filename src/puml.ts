@@ -83,7 +83,11 @@ class PlantUMLTask {
       }
     });
 
-    this.task.on("error", () => this.closeSelf());
+    this.task.on("error", (err) => {
+      // Return error object to rendered doc
+      this.callbacks.forEach((cb) => cb(JSON.stringify(err)));
+      this.closeSelf();
+    });
     this.task.on("exit", () => this.closeSelf());
   }
 
