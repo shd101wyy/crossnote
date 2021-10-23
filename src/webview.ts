@@ -797,7 +797,7 @@
 
     private setZoomLevel() {
       const zoomLevel = this.config.zoomLevel || 1;
-      this.previewElement.style.zoom = zoomLevel.toString();
+      this.previewElement.style["zoom"] = zoomLevel.toString();
       if (this.enableSidebarTOC) {
         this.previewElement.style.width = `calc(100% - ${268 / zoomLevel}px)`;
       }
@@ -812,7 +812,7 @@
      * render mermaid graphs
      */
     private renderMermaid() {
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         const mermaid = window["mermaid"]; // window.mermaid doesn't work, has to be written as window['mermaid']
         const mermaidGraphs = this.previewElement.getElementsByClassName(
           "mermaid",
@@ -857,7 +857,7 @@
      * This function is copied from render flowchart
      */
     private renderInteractiveVega() {
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         const vegaElements = this.previewElement.querySelectorAll(
           ".vega, .vega-lite",
         );
@@ -887,7 +887,7 @@
      * This function doesn't work with `hiddenPreviewElement`
      */
     private renderFlowchart() {
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         const flowcharts = this.previewElement.getElementsByClassName("flow");
         const newFlowchartCache = {};
         for (let i = 0; i < flowcharts.length; i++) {
@@ -916,7 +916,7 @@
      * render sequence diagram
      */
     private renderSequenceDiagram() {
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         const sequenceDiagrams = this.previewElement.getElementsByClassName(
           "sequence",
         );
@@ -1022,7 +1022,7 @@
      * render MathJax expressions
      */
     private renderMathJax() {
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         if (
           this.config.mathRenderingOption === "MathJax" ||
           this.config.usePandocParser
