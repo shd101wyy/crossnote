@@ -3,8 +3,7 @@ import * as path from "path";
 
 import { compileLaTeX } from "./code-chunk";
 import { CodeChunkData } from "./code-chunk-data";
-import { parseAttributes } from "./lib/attributes";
-import { extractCommandFromBlockInfo } from "./lib/block-info";
+import { parseBlockAttributes } from "./lib/block-attributes";
 import computeChecksum from "./lib/compute-checksum";
 import { svgElementToPNGFile } from "./magick";
 import * as plantumlAPI from "./puml";
@@ -14,6 +13,7 @@ import { Viz } from "./viz";
 import * as mermaidAPI from "./mermaid";
 import * as wavedromAPI from "./wavedrom";
 import * as ditaaAPI from "./ditaa";
+import { extractCommandFromBlockInfo } from "./utility";
 
 export async function processGraphs(
   text: string,
@@ -77,7 +77,7 @@ export async function processGraphs(
           const optionsMatch = trimmedLine.match(/\{(.+)\}$/);
           if (optionsMatch) {
             try {
-              options = parseAttributes(optionsMatch[0]);
+              options = parseBlockAttributes(optionsMatch[0]);
               optionsStr = optionsMatch[1];
             } catch (error) {
               options = {};

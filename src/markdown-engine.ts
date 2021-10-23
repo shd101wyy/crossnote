@@ -18,7 +18,10 @@ import useMarkdownItMath from "./custom-markdown-it-features/math";
 import useMarkdownItWikilink from "./custom-markdown-it-features/wikilink";
 import { ebookConvert } from "./ebook-convert";
 import HeadingIdGenerator from "./heading-id-generator";
-import { parseAttributes, stringifyAttributes } from "./lib/attributes";
+import {
+  parseBlockAttributes,
+  stringifyBlockAttributes,
+} from "./lib/block-attributes";
 import { normalizeBlockInfo, parseBlockInfo } from "./lib/block-info";
 import { markdownConvert } from "./markdown-convert";
 import {
@@ -2636,7 +2639,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         );
       }
 
-      const attrString = stringifyAttributes(slideConfig, false); // parseAttrString(slideConfig)
+      const attrString = stringifyBlockAttributes(slideConfig, false); // parseAttrString(slideConfig)
       const classString = slideConfig["class"] || "";
       const idString = slideConfig["id"] ? `id="${slideConfig["id"]}"` : "";
 
@@ -2676,7 +2679,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       const attributeMatch = html2.match(/<!--(.+?)-->/);
       if (attributeMatch) {
         const attributes = attributeMatch[1].replace(/\.element\:/, "").trim();
-        const attrObj = parseAttributes(attributes);
+        const attrObj = parseBlockAttributes(attributes);
         for (const key in attrObj) {
           if (attrObj.hasOwnProperty(key)) {
             $elem.attr(key, attrObj[key]);

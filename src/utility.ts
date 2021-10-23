@@ -7,6 +7,8 @@ import * as path from "path";
 import * as vm from "vm";
 import * as temp from "temp";
 import * as vscode from "vscode";
+import { BlockInfo } from "./lib/block-info";
+
 temp.track();
 
 const TAGS_TO_REPLACE = {
@@ -610,6 +612,9 @@ export const loadDependency = (dependencyPath: string) =>
       )),
     ),
   );
+
+export const extractCommandFromBlockInfo = (info: BlockInfo) =>
+  info.attributes["cmd"] === true ? info.language : info.attributes["cmd"];
 
 export function Function(...args: string[]) {
   let body = "";

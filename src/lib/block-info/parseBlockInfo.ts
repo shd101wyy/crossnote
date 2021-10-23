@@ -1,14 +1,15 @@
-import { BlockInfo } from ".";
-import { parseAttributes } from "../attributes";
+import { BlockAttributes, parseBlockAttributes } from "../block-attributes";
 
-export default function(raw: string): BlockInfo {
+import { BlockInfo } from "./types";
+
+export const parseBlockInfo = (raw = ""): BlockInfo => {
   let language;
   let attributesAsString: string;
-  let attributes: object;
+  let attributes: BlockAttributes;
   const trimmedParams = raw.trim();
   const match =
     trimmedParams.indexOf("{") !== -1
-      ? trimmedParams.match(/^([^\s\{]*)\s*\{(.*?)\}/)
+      ? trimmedParams.match(/^([^\s{]*)\s*\{(.*?)\}/)
       : trimmedParams.match(/^([^\s]+)\s+(.+?)$/);
 
   if (match) {
@@ -23,13 +24,13 @@ export default function(raw: string): BlockInfo {
 
   if (attributesAsString) {
     try {
-      attributes = parseAttributes(attributesAsString);
+      attributes = parseBlockAttributes(attributesAsString);
     } catch (e) {
-      //
+      attributes = {};
     }
   } else {
     attributes = {};
   }
 
   return { language, attributes };
-}
+};
