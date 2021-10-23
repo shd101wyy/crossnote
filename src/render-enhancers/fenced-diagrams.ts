@@ -177,7 +177,7 @@ async function renderDiagram(
             spec = JSON.parse(rawSpec);
           }
           $output = hiddenCode(
-            JSON.stringify(spec),
+            JSON.stringify(spec).replace("<", "&lt;"),
             normalizedInfo.attributes,
             normalizedInfo.language,
           );
