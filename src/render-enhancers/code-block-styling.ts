@@ -47,6 +47,12 @@ export default async function enhance($: CheerioStatic): Promise<void> {
           extensionDirectoryPath,
           "./dependencies/prism/prism.js",
         ));
+        Prism.hooks.add('wrap', (env) => {
+          if (env.type !== 'keyword') {
+            return;
+          }
+          env.classes.push(`keyword-${env.content}`);
+        })
       }
       const html = Prism.highlight(code, Prism.languages[language]);
       $container.html(html);
