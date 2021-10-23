@@ -791,4 +791,4 @@ var renderA11yString = function renderA11yString(text, settings) {
   return flatten(a11yStrings).join(", ");
 };
 
-export default renderA11yString;
+export { renderA11yString as default };

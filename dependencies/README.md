@@ -5,7 +5,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
 ```json
 {
   "mermaid": "8.10.2",
-  "plantuml": "1.2021.9",
+  "plantuml": "1.2021.12",
   "wavedrom": "2.3.0",
   "reveal": "4.10.0",
   "viz": "v2.0.0",
@@ -14,7 +14,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
   "jquery-contextmenu": "2.6.3",
   "markdown-it": "8.4.2",
   "JavaScript-MD5": "2.7.0",
-  "katex": "v0.13.11",
+  "katex": "v0.13.18",
   "crypto-js": "3.9.1-1",
   "jquery-modal": "0.8.0",
   "vega": "5.9.0",
