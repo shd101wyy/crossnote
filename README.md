@@ -21,6 +21,7 @@ npm install --save @shd101wyy/mume
 
 ```javascript
 // node.js
+const path = require("path");
 const mume = require("@shd101wyy/mume");
 
 // es6
