@@ -896,7 +896,8 @@ export async function transformMarkdown(
             } else if (
               extname === ".dot" ||
               extname === ".gv" ||
-              extname === ".viz"
+              extname === ".viz" ||
+              extname === ".graphviz"
             ) {
               // graphviz
               output = `\`\`\`dot ${stringifyBlockAttributes(
