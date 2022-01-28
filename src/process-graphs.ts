@@ -331,7 +331,7 @@ export async function processGraphs(
           imageOptions = `{${optionsStr}}`;
         }
         lines[end] +=
-          "\n" + `![${altCaption}](${displayPNGFilePath})${imageOptions}  `;
+          "\n" + `![${altCaption}](${displayPNGFilePath.replace(/\\/g, "/")})${imageOptions}  `;
 
         imagePaths.push(pngFilePath);
       } catch (error) {
