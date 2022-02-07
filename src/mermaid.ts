@@ -24,6 +24,8 @@ export async function mermaidToPNG(
     await utility.execFile(
       "npx",
       [
+        "-p",
+        "@mermaid-js/mermaid-cli",        
         "mmdc",
         "--theme",
         themeName,
