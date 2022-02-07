@@ -56,7 +56,7 @@
     "request": "^2.88.0",
     "slash": "^2.0.0",
     "temp": "^0.9.0",
-    "twemoji": "^12.1.5",
+    "twemoji": "^13.1.0",
     "uslug": "^1.0.4",
     "vega-loader": "^4.1.0",
     "yamljs": "^0.3.0"
