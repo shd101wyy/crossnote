@@ -44,6 +44,7 @@ const scopesForLanguageName = {
   "plantuml": "plantuml",
   "puml": "plantuml",
   "wavedrom": "wavedrom",
+  "graphviz": "dot",
   "viz": "dot",
   "dot": "dot",
   "erd": "erd",
