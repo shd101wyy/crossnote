@@ -297,10 +297,11 @@ export async function processGraphs(
     } else if (def.match(/^mermaid/)) {
       // mermaid-cli Ver.8.4.8 has a bug, render in png https://github.com/mermaid-js/mermaid/issues/664
       try {
-        const pngFilePath = path.resolve(
-          imageDirectoryPath,
-          imageFilePrefix + imgCount + ".png",
-        );
+        let pngFileName = options["filename"];
+        if (!pngFileName) {
+          pngFileName = imageFilePrefix + imgCount + ".png";
+        }
+        const pngFilePath = path.resolve(imageDirectoryPath, pngFileName);
         imgCount++;
         await mermaidAPI.mermaidToPNG(
           content,
@@ -331,7 +332,11 @@ export async function processGraphs(
           imageOptions = `{${optionsStr}}`;
         }
         lines[end] +=
-          "\n" + `![${altCaption}](${displayPNGFilePath.replace(/\\/g, "/")})${imageOptions}  `;
+          "\n" +
+          `![${altCaption}](${displayPNGFilePath.replace(
+            /\\/g,
+            "/",
+          )})${imageOptions}  `;
 
         imagePaths.push(pngFilePath);
       } catch (error) {
