@@ -109,7 +109,7 @@ document.addEventListener('copy', function (event) {
  */
 
 
-__webpack_exports__ = __webpack_exports__.default;
+__webpack_exports__ = __webpack_exports__["default"];
 /******/ 	return __webpack_exports__;
 /******/ })()
 ;
