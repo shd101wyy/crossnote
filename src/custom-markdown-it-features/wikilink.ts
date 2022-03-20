@@ -61,7 +61,7 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
     let linkText: string;
     if (splits.length === 1) {
       linkText = splits[0].trim();
-      const filename = linkText.replace(/\s/g, "_");
+      const filename = linkText;
       wikiLink = `${filename}${config.wikiLinkFileExtension}`;
     } else {
       if (config.useGitHubStylePipedLink) {
