@@ -1203,8 +1203,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
           "./dependencies/wavedrom/wavedrom.min.js",
         )}" charset="UTF-8"></script>`;
       } else {
-        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/skins/default.js"></script>`;
-        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/1.4.1/wavedrom.min.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.9.1/skins/default.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.9.1/wavedrom.min.js"></script>`;
       }
       wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`;
     }
