@@ -7,7 +7,7 @@
 		exports["mermaid"] = factory();
 	else
 		root["mermaid"] = factory();
-})(typeof self !== "undefined" ? self : this, function() {
+})(typeof self !== "undefined" ? self : this, () => {
 return /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
@@ -92,165 +92,171 @@ return /******/ (() => { // webpackBootstrap
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,6],$V1=[1,7],$V2=[1,8],$V3=[1,9],$V4=[1,12],$V5=[1,11],$V6=[1,15,24],$V7=[1,19],$V8=[1,31],$V9=[1,34],$Va=[1,32],$Vb=[1,33],$Vc=[1,35],$Vd=[1,36],$Ve=[1,37],$Vf=[1,38],$Vg=[1,41],$Vh=[1,42],$Vi=[1,43],$Vj=[1,44],$Vk=[15,24],$Vl=[1,56],$Vm=[1,57],$Vn=[1,58],$Vo=[1,59],$Vp=[1,60],$Vq=[1,61],$Vr=[15,24,31,38,39,47,50,51,52,53,54,55,60,62],$Vs=[15,24,29,31,38,39,43,47,50,51,52,53,54,55,60,62,77,78,79,80],$Vt=[7,8,9,10,15,18,22,24],$Vu=[47,77,78,79,80],$Vv=[47,54,55,77,78,79,80],$Vw=[47,50,51,52,53,77,78,79,80],$Vx=[15,24,31],$Vy=[1,93];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,3],$V1=[1,7],$V2=[1,8],$V3=[1,9],$V4=[1,10],$V5=[1,13],$V6=[1,12],$V7=[1,16,25],$V8=[1,20],$V9=[1,31],$Va=[1,32],$Vb=[1,33],$Vc=[1,35],$Vd=[1,38],$Ve=[1,36],$Vf=[1,37],$Vg=[1,39],$Vh=[1,40],$Vi=[1,41],$Vj=[1,42],$Vk=[1,45],$Vl=[1,46],$Vm=[1,47],$Vn=[1,48],$Vo=[16,25],$Vp=[1,62],$Vq=[1,63],$Vr=[1,64],$Vs=[1,65],$Vt=[1,66],$Vu=[1,67],$Vv=[16,25,32,44,45,53,56,57,58,59,60,61,66,68],$Vw=[16,25,30,32,44,45,49,53,56,57,58,59,60,61,66,68,83,84,85,86],$Vx=[5,8,9,10,11,16,19,23,25],$Vy=[53,83,84,85,86],$Vz=[53,60,61,83,84,85,86],$VA=[53,56,57,58,59,83,84,85,86],$VB=[16,25,32],$VC=[1,99];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"mermaidDoc":4,"direction":5,"directive":6,"direction_tb":7,"direction_bt":8,"direction_rl":9,"direction_lr":10,"graphConfig":11,"openDirective":12,"typeDirective":13,"closeDirective":14,"NEWLINE":15,":":16,"argDirective":17,"open_directive":18,"type_directive":19,"arg_directive":20,"close_directive":21,"CLASS_DIAGRAM":22,"statements":23,"EOF":24,"statement":25,"className":26,"alphaNumToken":27,"classLiteralName":28,"GENERICTYPE":29,"relationStatement":30,"LABEL":31,"classStatement":32,"methodStatement":33,"annotationStatement":34,"clickStatement":35,"cssClassStatement":36,"CLASS":37,"STYLE_SEPARATOR":38,"STRUCT_START":39,"members":40,"STRUCT_STOP":41,"ANNOTATION_START":42,"ANNOTATION_END":43,"MEMBER":44,"SEPARATOR":45,"relation":46,"STR":47,"relationType":48,"lineType":49,"AGGREGATION":50,"EXTENSION":51,"COMPOSITION":52,"DEPENDENCY":53,"LINE":54,"DOTTED_LINE":55,"CALLBACK":56,"LINK":57,"LINK_TARGET":58,"CLICK":59,"CALLBACK_NAME":60,"CALLBACK_ARGS":61,"HREF":62,"CSSCLASS":63,"commentToken":64,"textToken":65,"graphCodeTokens":66,"textNoTagsToken":67,"TAGSTART":68,"TAGEND":69,"==":70,"--":71,"PCT":72,"DEFAULT":73,"SPACE":74,"MINUS":75,"keywords":76,"UNICODE_TEXT":77,"NUM":78,"ALPHA":79,"BQUOTE_STR":80,"$accept":0,"$end":1},
-terminals_: {2:"error",7:"direction_tb",8:"direction_bt",9:"direction_rl",10:"direction_lr",15:"NEWLINE",16:":",18:"open_directive",19:"type_directive",20:"arg_directive",21:"close_directive",22:"CLASS_DIAGRAM",24:"EOF",29:"GENERICTYPE",31:"LABEL",37:"CLASS",38:"STYLE_SEPARATOR",39:"STRUCT_START",41:"STRUCT_STOP",42:"ANNOTATION_START",43:"ANNOTATION_END",44:"MEMBER",45:"SEPARATOR",47:"STR",50:"AGGREGATION",51:"EXTENSION",52:"COMPOSITION",53:"DEPENDENCY",54:"LINE",55:"DOTTED_LINE",56:"CALLBACK",57:"LINK",58:"LINK_TARGET",59:"CLICK",60:"CALLBACK_NAME",61:"CALLBACK_ARGS",62:"HREF",63:"CSSCLASS",66:"graphCodeTokens",68:"TAGSTART",69:"TAGEND",70:"==",71:"--",72:"PCT",73:"DEFAULT",74:"SPACE",75:"MINUS",76:"keywords",77:"UNICODE_TEXT",78:"NUM",79:"ALPHA",80:"BQUOTE_STR"},
-productions_: [0,[3,1],[3,1],[3,2],[5,1],[5,1],[5,1],[5,1],[4,1],[6,4],[6,6],[12,1],[13,1],[17,1],[14,1],[11,4],[23,1],[23,2],[23,3],[26,1],[26,1],[26,2],[26,2],[26,2],[25,1],[25,2],[25,1],[25,1],[25,1],[25,1],[25,1],[25,1],[25,1],[32,2],[32,4],[32,5],[32,7],[34,4],[40,1],[40,2],[33,1],[33,2],[33,1],[33,1],[30,3],[30,4],[30,4],[30,5],[46,3],[46,2],[46,2],[46,1],[48,1],[48,1],[48,1],[48,1],[49,1],[49,1],[35,3],[35,4],[35,3],[35,4],[35,4],[35,5],[35,3],[35,4],[35,4],[35,5],[35,3],[35,4],[35,4],[35,5],[36,3],[64,1],[64,1],[65,1],[65,1],[65,1],[65,1],[65,1],[65,1],[65,1],[67,1],[67,1],[67,1],[67,1],[27,1],[27,1],[27,1],[28,1]],
+symbols_: {"error":2,"start":3,"mermaidDoc":4,"statments":5,"direction":6,"directive":7,"direction_tb":8,"direction_bt":9,"direction_rl":10,"direction_lr":11,"graphConfig":12,"openDirective":13,"typeDirective":14,"closeDirective":15,"NEWLINE":16,":":17,"argDirective":18,"open_directive":19,"type_directive":20,"arg_directive":21,"close_directive":22,"CLASS_DIAGRAM":23,"statements":24,"EOF":25,"statement":26,"className":27,"alphaNumToken":28,"classLiteralName":29,"GENERICTYPE":30,"relationStatement":31,"LABEL":32,"classStatement":33,"methodStatement":34,"annotationStatement":35,"clickStatement":36,"cssClassStatement":37,"acc_title":38,"acc_title_value":39,"acc_descr":40,"acc_descr_value":41,"acc_descr_multiline_value":42,"CLASS":43,"STYLE_SEPARATOR":44,"STRUCT_START":45,"members":46,"STRUCT_STOP":47,"ANNOTATION_START":48,"ANNOTATION_END":49,"MEMBER":50,"SEPARATOR":51,"relation":52,"STR":53,"relationType":54,"lineType":55,"AGGREGATION":56,"EXTENSION":57,"COMPOSITION":58,"DEPENDENCY":59,"LINE":60,"DOTTED_LINE":61,"CALLBACK":62,"LINK":63,"LINK_TARGET":64,"CLICK":65,"CALLBACK_NAME":66,"CALLBACK_ARGS":67,"HREF":68,"CSSCLASS":69,"commentToken":70,"textToken":71,"graphCodeTokens":72,"textNoTagsToken":73,"TAGSTART":74,"TAGEND":75,"==":76,"--":77,"PCT":78,"DEFAULT":79,"SPACE":80,"MINUS":81,"keywords":82,"UNICODE_TEXT":83,"NUM":84,"ALPHA":85,"BQUOTE_STR":86,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"statments",8:"direction_tb",9:"direction_bt",10:"direction_rl",11:"direction_lr",16:"NEWLINE",17:":",19:"open_directive",20:"type_directive",21:"arg_directive",22:"close_directive",23:"CLASS_DIAGRAM",25:"EOF",30:"GENERICTYPE",32:"LABEL",38:"acc_title",39:"acc_title_value",40:"acc_descr",41:"acc_descr_value",42:"acc_descr_multiline_value",43:"CLASS",44:"STYLE_SEPARATOR",45:"STRUCT_START",47:"STRUCT_STOP",48:"ANNOTATION_START",49:"ANNOTATION_END",50:"MEMBER",51:"SEPARATOR",53:"STR",56:"AGGREGATION",57:"EXTENSION",58:"COMPOSITION",59:"DEPENDENCY",60:"LINE",61:"DOTTED_LINE",62:"CALLBACK",63:"LINK",64:"LINK_TARGET",65:"CLICK",66:"CALLBACK_NAME",67:"CALLBACK_ARGS",68:"HREF",69:"CSSCLASS",72:"graphCodeTokens",74:"TAGSTART",75:"TAGEND",76:"==",77:"--",78:"PCT",79:"DEFAULT",80:"SPACE",81:"MINUS",82:"keywords",83:"UNICODE_TEXT",84:"NUM",85:"ALPHA",86:"BQUOTE_STR"},
+productions_: [0,[3,1],[3,1],[3,1],[3,2],[6,1],[6,1],[6,1],[6,1],[4,1],[7,4],[7,6],[13,1],[14,1],[18,1],[15,1],[12,4],[24,1],[24,2],[24,3],[27,1],[27,1],[27,2],[27,2],[27,2],[26,1],[26,2],[26,1],[26,1],[26,1],[26,1],[26,1],[26,1],[26,1],[26,2],[26,2],[26,1],[33,2],[33,4],[33,5],[33,7],[35,4],[46,1],[46,2],[34,1],[34,2],[34,1],[34,1],[31,3],[31,4],[31,4],[31,5],[52,3],[52,2],[52,2],[52,1],[54,1],[54,1],[54,1],[54,1],[55,1],[55,1],[36,3],[36,4],[36,3],[36,4],[36,4],[36,5],[36,3],[36,4],[36,4],[36,5],[36,3],[36,4],[36,4],[36,5],[37,3],[70,1],[70,1],[71,1],[71,1],[71,1],[71,1],[71,1],[71,1],[71,1],[73,1],[73,1],[73,1],[73,1],[28,1],[28,1],[28,1],[29,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
 var $0 = $$.length - 1;
 switch (yystate) {
-case 4:
+case 5:
  yy.setDirection('TB');
 break;
-case 5:
+case 6:
  yy.setDirection('BT');
 break;
-case 6:
+case 7:
  yy.setDirection('RL');
 break;
-case 7:
+case 8:
  yy.setDirection('LR');
 break;
-case 11:
+case 12:
  yy.parseDirective('%%{', 'open_directive'); 
 break;
-case 12:
+case 13:
  yy.parseDirective($$[$0], 'type_directive'); 
 break;
-case 13:
+case 14:
  $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
 break;
-case 14:
+case 15:
  yy.parseDirective('}%%', 'close_directive', 'class'); 
 break;
-case 19: case 20:
+case 20: case 21:
  this.$=$$[$0]; 
 break;
-case 21:
+case 22:
  this.$=$$[$0-1]+$$[$0]; 
 break;
-case 22: case 23:
+case 23: case 24:
  this.$=$$[$0-1]+'~'+$$[$0]; 
 break;
-case 24:
+case 25:
  yy.addRelation($$[$0]); 
 break;
-case 25:
+case 26:
  $$[$0-1].title =  yy.cleanupLabel($$[$0]); yy.addRelation($$[$0-1]);        
 break;
-case 33:
-yy.addClass($$[$0]);
-break;
 case 34:
-yy.addClass($$[$0-2]);yy.setCssClass($$[$0-2], $$[$0]);
+ this.$=$$[$0].trim();yy.setTitle(this.$); 
 break;
-case 35:
-/*console.log($$[$0-3],JSON.stringify($$[$0-1]));*/yy.addClass($$[$0-3]);yy.addMembers($$[$0-3],$$[$0-1]);
-break;
-case 36:
-yy.addClass($$[$0-5]);yy.setCssClass($$[$0-5], $$[$0-3]);yy.addMembers($$[$0-5],$$[$0-1]);
+case 35: case 36:
+ this.$=$$[$0].trim();yy.setAccDescription(this.$); 
 break;
 case 37:
- yy.addAnnotation($$[$0],$$[$0-2]); 
+yy.addClass($$[$0]);
 break;
 case 38:
- this.$ = [$$[$0]]; 
+yy.addClass($$[$0-2]);yy.setCssClass($$[$0-2], $$[$0]);
 break;
 case 39:
- $$[$0].push($$[$0-1]);this.$=$$[$0];
+/*console.log($$[$0-3],JSON.stringify($$[$0-1]));*/yy.addClass($$[$0-3]);yy.addMembers($$[$0-3],$$[$0-1]);
 break;
 case 40:
-/*console.log('Rel found',$$[$0]);*/
+yy.addClass($$[$0-5]);yy.setCssClass($$[$0-5], $$[$0-3]);yy.addMembers($$[$0-5],$$[$0-1]);
 break;
 case 41:
-yy.addMember($$[$0-1],yy.cleanupLabel($$[$0]));
+ yy.addAnnotation($$[$0],$$[$0-2]); 
 break;
 case 42:
-/*console.warn('Member',$$[$0]);*/
+ this.$ = [$$[$0]]; 
 break;
 case 43:
-/*console.log('sep found',$$[$0]);*/
+ $$[$0].push($$[$0-1]);this.$=$$[$0];
 break;
 case 44:
- this.$ = {'id1':$$[$0-2],'id2':$$[$0], relation:$$[$0-1], relationTitle1:'none', relationTitle2:'none'}; 
+/*console.log('Rel found',$$[$0]);*/
 break;
 case 45:
- this.$ = {id1:$$[$0-3], id2:$$[$0], relation:$$[$0-1], relationTitle1:$$[$0-2], relationTitle2:'none'}
+yy.addMember($$[$0-1],yy.cleanupLabel($$[$0]));
 break;
 case 46:
- this.$ = {id1:$$[$0-3], id2:$$[$0], relation:$$[$0-2], relationTitle1:'none', relationTitle2:$$[$0-1]}; 
+/*console.warn('Member',$$[$0]);*/
 break;
 case 47:
- this.$ = {id1:$$[$0-4], id2:$$[$0], relation:$$[$0-2], relationTitle1:$$[$0-3], relationTitle2:$$[$0-1]} 
+/*console.log('sep found',$$[$0]);*/
 break;
 case 48:
- this.$={type1:$$[$0-2],type2:$$[$0],lineType:$$[$0-1]}; 
+ this.$ = {'id1':$$[$0-2],'id2':$$[$0], relation:$$[$0-1], relationTitle1:'none', relationTitle2:'none'}; 
 break;
 case 49:
- this.$={type1:'none',type2:$$[$0],lineType:$$[$0-1]}; 
+ this.$ = {id1:$$[$0-3], id2:$$[$0], relation:$$[$0-1], relationTitle1:$$[$0-2], relationTitle2:'none'}
 break;
 case 50:
- this.$={type1:$$[$0-1],type2:'none',lineType:$$[$0]}; 
+ this.$ = {id1:$$[$0-3], id2:$$[$0], relation:$$[$0-2], relationTitle1:'none', relationTitle2:$$[$0-1]}; 
 break;
 case 51:
- this.$={type1:'none',type2:'none',lineType:$$[$0]}; 
+ this.$ = {id1:$$[$0-4], id2:$$[$0], relation:$$[$0-2], relationTitle1:$$[$0-3], relationTitle2:$$[$0-1]} 
 break;
 case 52:
- this.$=yy.relationType.AGGREGATION;
+ this.$={type1:$$[$0-2],type2:$$[$0],lineType:$$[$0-1]}; 
 break;
 case 53:
- this.$=yy.relationType.EXTENSION;
+ this.$={type1:'none',type2:$$[$0],lineType:$$[$0-1]}; 
 break;
 case 54:
- this.$=yy.relationType.COMPOSITION;
+ this.$={type1:$$[$0-1],type2:'none',lineType:$$[$0]}; 
 break;
 case 55:
- this.$=yy.relationType.DEPENDENCY;
+ this.$={type1:'none',type2:'none',lineType:$$[$0]}; 
 break;
 case 56:
-this.$=yy.lineType.LINE;
+ this.$=yy.relationType.AGGREGATION;
 break;
 case 57:
-this.$=yy.lineType.DOTTED_LINE;
+ this.$=yy.relationType.EXTENSION;
 break;
-case 58: case 64:
-this.$ = $$[$0-2];yy.setClickEvent($$[$0-1], $$[$0]);
+case 58:
+ this.$=yy.relationType.COMPOSITION;
 break;
-case 59: case 65:
-this.$ = $$[$0-3];yy.setClickEvent($$[$0-2], $$[$0-1]);yy.setTooltip($$[$0-2], $$[$0]);
+case 59:
+ this.$=yy.relationType.DEPENDENCY;
 break;
-case 60: case 68:
-this.$ = $$[$0-2];yy.setLink($$[$0-1], $$[$0]);
+case 60:
+this.$=yy.lineType.LINE;
 break;
 case 61:
+this.$=yy.lineType.DOTTED_LINE;
+break;
+case 62: case 68:
+this.$ = $$[$0-2];yy.setClickEvent($$[$0-1], $$[$0]);
+break;
+case 63: case 69:
+this.$ = $$[$0-3];yy.setClickEvent($$[$0-2], $$[$0-1]);yy.setTooltip($$[$0-2], $$[$0]);
+break;
+case 64: case 72:
+this.$ = $$[$0-2];yy.setLink($$[$0-1], $$[$0]);
+break;
+case 65:
 this.$ = $$[$0-3];yy.setLink($$[$0-2], $$[$0-1],$$[$0]);
 break;
-case 62: case 70:
+case 66: case 74:
 this.$ = $$[$0-3];yy.setLink($$[$0-2], $$[$0-1]);yy.setTooltip($$[$0-2], $$[$0]);
 break;
-case 63: case 71:
+case 67: case 75:
 this.$ = $$[$0-4];yy.setLink($$[$0-3], $$[$0-2], $$[$0]);yy.setTooltip($$[$0-3], $$[$0-1]);
 break;
-case 66:
+case 70:
 this.$ = $$[$0-3];yy.setClickEvent($$[$0-2], $$[$0-1], $$[$0]);
 break;
-case 67:
+case 71:
 this.$ = $$[$0-4];yy.setClickEvent($$[$0-3], $$[$0-2], $$[$0-1]);yy.setTooltip($$[$0-3], $$[$0]);
 break;
-case 69:
+case 73:
 this.$ = $$[$0-3];yy.setLink($$[$0-2], $$[$0-1], $$[$0]);
 break;
-case 72:
+case 76:
 yy.setCssClass($$[$0-1], $$[$0]);
 break;
 }
 },
-table: [{3:1,4:2,5:3,6:4,7:$V0,8:$V1,9:$V2,10:$V3,11:5,12:10,18:$V4,22:$V5},{1:[3]},{1:[2,1]},{1:[2,2]},{3:13,4:2,5:3,6:4,7:$V0,8:$V1,9:$V2,10:$V3,11:5,12:10,18:$V4,22:$V5},{1:[2,8]},o($V6,[2,4]),o($V6,[2,5]),o($V6,[2,6]),o($V6,[2,7]),{13:14,19:[1,15]},{15:[1,16]},{19:[2,11]},{1:[2,3]},{14:17,16:[1,18],21:$V7},o([16,21],[2,12]),{5:29,6:28,7:$V0,8:$V1,9:$V2,10:$V3,12:10,18:$V4,23:20,25:21,26:30,27:39,28:40,30:22,32:23,33:24,34:25,35:26,36:27,37:$V8,42:$V9,44:$Va,45:$Vb,56:$Vc,57:$Vd,59:$Ve,63:$Vf,77:$Vg,78:$Vh,79:$Vi,80:$Vj},{15:[1,45]},{17:46,20:[1,47]},{15:[2,14]},{24:[1,48]},{15:[1,49],24:[2,16]},o($Vk,[2,24],{31:[1,50]}),o($Vk,[2,26]),o($Vk,[2,27]),o($Vk,[2,28]),o($Vk,[2,29]),o($Vk,[2,30]),o($Vk,[2,31]),o($Vk,[2,32]),o($Vk,[2,40],{46:51,48:54,49:55,31:[1,53],47:[1,52],50:$Vl,51:$Vm,52:$Vn,53:$Vo,54:$Vp,55:$Vq}),{26:62,27:39,28:40,77:$Vg,78:$Vh,79:$Vi,80:$Vj},o($Vk,[2,42]),o($Vk,[2,43]),{27:63,77:$Vg,78:$Vh,79:$Vi},{26:64,27:39,28:40,77:$Vg,78:$Vh,79:$Vi,80:$Vj},{26:65,27:39,28:40,77:$Vg,78:$Vh,79:$Vi,80:$Vj},{26:66,27:39,28:40,77:$Vg,78:$Vh,79:$Vi,80:$Vj},{47:[1,67]},o($Vr,[2,19],{27:39,28:40,26:68,29:[1,69],77:$Vg,78:$Vh,79:$Vi,80:$Vj}),o($Vr,[2,20],{29:[1,70]}),o($Vs,[2,86]),o($Vs,[2,87]),o($Vs,[2,88]),o([15,24,29,31,38,39,47,50,51,52,53,54,55,60,62],[2,89]),o($Vt,[2,9]),{14:71,21:$V7},{21:[2,13]},{1:[2,15]},{5:29,6:28,7:$V0,8:$V1,9:$V2,10:$V3,12:10,18:$V4,23:72,24:[2,17],25:21,26:30,27:39,28:40,30:22,32:23,33:24,34:25,35:26,36:27,37:$V8,42:$V9,44:$Va,45:$Vb,56:$Vc,57:$Vd,59:$Ve,63:$Vf,77:$Vg,78:$Vh,79:$Vi,80:$Vj},o($Vk,[2,25]),{26:73,27:39,28:40,47:[1,74],77:$Vg,78:$Vh,79:$Vi,80:$Vj},{46:75,48:54,49:55,50:$Vl,51:$Vm,52:$Vn,53:$Vo,54:$Vp,55:$Vq},o($Vk,[2,41]),{49:76,54:$Vp,55:$Vq},o($Vu,[2,51],{48:77,50:$Vl,51:$Vm,52:$Vn,53:$Vo}),o($Vv,[2,52]),o($Vv,[2,53]),o($Vv,[2,54]),o($Vv,[2,55]),o($Vw,[2,56]),o($Vw,[2,57]),o($Vk,[2,33],{38:[1,78],39:[1,79]}),{43:[1,80]},{47:[1,81]},{47:[1,82]},{60:[1,83],62:[1,84]},{27:85,77:$Vg,78:$Vh,79:$Vi},o($Vr,[2,21]),o($Vr,[2,22]),o($Vr,[2,23]),{15:[1,86]},{24:[2,18]},o($Vx,[2,44]),{26:87,27:39,28:40,77:$Vg,78:$Vh,79:$Vi,80:$Vj},{26:88,27:39,28:40,47:[1,89],77:$Vg,78:$Vh,79:$Vi,80:$Vj},o($Vu,[2,50],{48:90,50:$Vl,51:$Vm,52:$Vn,53:$Vo}),o($Vu,[2,49]),{27:91,77:$Vg,78:$Vh,79:$Vi},{40:92,44:$Vy},{26:94,27:39,28:40,77:$Vg,78:$Vh,79:$Vi,80:$Vj},o($Vk,[2,58],{47:[1,95]}),o($Vk,[2,60],{47:[1,97],58:[1,96]}),o($Vk,[2,64],{47:[1,98],61:[1,99]}),o($Vk,[2,68],{47:[1,101],58:[1,100]}),o($Vk,[2,72]),o($Vt,[2,10]),o($Vx,[2,46]),o($Vx,[2,45]),{26:102,27:39,28:40,77:$Vg,78:$Vh,79:$Vi,80:$Vj},o($Vu,[2,48]),o($Vk,[2,34],{39:[1,103]}),{41:[1,104]},{40:105,41:[2,38],44:$Vy},o($Vk,[2,37]),o($Vk,[2,59]),o($Vk,[2,61]),o($Vk,[2,62],{58:[1,106]}),o($Vk,[2,65]),o($Vk,[2,66],{47:[1,107]}),o($Vk,[2,69]),o($Vk,[2,70],{58:[1,108]}),o($Vx,[2,47]),{40:109,44:$Vy},o($Vk,[2,35]),{41:[2,39]},o($Vk,[2,63]),o($Vk,[2,67]),o($Vk,[2,71]),{41:[1,110]},o($Vk,[2,36])],
-defaultActions: {2:[2,1],3:[2,2],5:[2,8],12:[2,11],13:[2,3],19:[2,14],47:[2,13],48:[2,15],72:[2,18],105:[2,39]},
+table: [{3:1,4:2,5:$V0,6:4,7:5,8:$V1,9:$V2,10:$V3,11:$V4,12:6,13:11,19:$V5,23:$V6},{1:[3]},{1:[2,1]},{1:[2,2]},{1:[2,3]},{3:14,4:2,5:$V0,6:4,7:5,8:$V1,9:$V2,10:$V3,11:$V4,12:6,13:11,19:$V5,23:$V6},{1:[2,9]},o($V7,[2,5]),o($V7,[2,6]),o($V7,[2,7]),o($V7,[2,8]),{14:15,20:[1,16]},{16:[1,17]},{20:[2,12]},{1:[2,4]},{15:18,17:[1,19],22:$V8},o([17,22],[2,13]),{6:30,7:29,8:$V1,9:$V2,10:$V3,11:$V4,13:11,19:$V5,24:21,26:22,27:34,28:43,29:44,31:23,33:24,34:25,35:26,36:27,37:28,38:$V9,40:$Va,42:$Vb,43:$Vc,48:$Vd,50:$Ve,51:$Vf,62:$Vg,63:$Vh,65:$Vi,69:$Vj,83:$Vk,84:$Vl,85:$Vm,86:$Vn},{16:[1,49]},{18:50,21:[1,51]},{16:[2,15]},{25:[1,52]},{16:[1,53],25:[2,17]},o($Vo,[2,25],{32:[1,54]}),o($Vo,[2,27]),o($Vo,[2,28]),o($Vo,[2,29]),o($Vo,[2,30]),o($Vo,[2,31]),o($Vo,[2,32]),o($Vo,[2,33]),{39:[1,55]},{41:[1,56]},o($Vo,[2,36]),o($Vo,[2,44],{52:57,54:60,55:61,32:[1,59],53:[1,58],56:$Vp,57:$Vq,58:$Vr,59:$Vs,60:$Vt,61:$Vu}),{27:68,28:43,29:44,83:$Vk,84:$Vl,85:$Vm,86:$Vn},o($Vo,[2,46]),o($Vo,[2,47]),{28:69,83:$Vk,84:$Vl,85:$Vm},{27:70,28:43,29:44,83:$Vk,84:$Vl,85:$Vm,86:$Vn},{27:71,28:43,29:44,83:$Vk,84:$Vl,85:$Vm,86:$Vn},{27:72,28:43,29:44,83:$Vk,84:$Vl,85:$Vm,86:$Vn},{53:[1,73]},o($Vv,[2,20],{28:43,29:44,27:74,30:[1,75],83:$Vk,84:$Vl,85:$Vm,86:$Vn}),o($Vv,[2,21],{30:[1,76]}),o($Vw,[2,90]),o($Vw,[2,91]),o($Vw,[2,92]),o([16,25,30,32,44,45,53,56,57,58,59,60,61,66,68],[2,93]),o($Vx,[2,10]),{15:77,22:$V8},{22:[2,14]},{1:[2,16]},{6:30,7:29,8:$V1,9:$V2,10:$V3,11:$V4,13:11,19:$V5,24:78,25:[2,18],26:22,27:34,28:43,29:44,31:23,33:24,34:25,35:26,36:27,37:28,38:$V9,40:$Va,42:$Vb,43:$Vc,48:$Vd,50:$Ve,51:$Vf,62:$Vg,63:$Vh,65:$Vi,69:$Vj,83:$Vk,84:$Vl,85:$Vm,86:$Vn},o($Vo,[2,26]),o($Vo,[2,34]),o($Vo,[2,35]),{27:79,28:43,29:44,53:[1,80],83:$Vk,84:$Vl,85:$Vm,86:$Vn},{52:81,54:60,55:61,56:$Vp,57:$Vq,58:$Vr,59:$Vs,60:$Vt,61:$Vu},o($Vo,[2,45]),{55:82,60:$Vt,61:$Vu},o($Vy,[2,55],{54:83,56:$Vp,57:$Vq,58:$Vr,59:$Vs}),o($Vz,[2,56]),o($Vz,[2,57]),o($Vz,[2,58]),o($Vz,[2,59]),o($VA,[2,60]),o($VA,[2,61]),o($Vo,[2,37],{44:[1,84],45:[1,85]}),{49:[1,86]},{53:[1,87]},{53:[1,88]},{66:[1,89],68:[1,90]},{28:91,83:$Vk,84:$Vl,85:$Vm},o($Vv,[2,22]),o($Vv,[2,23]),o($Vv,[2,24]),{16:[1,92]},{25:[2,19]},o($VB,[2,48]),{27:93,28:43,29:44,83:$Vk,84:$Vl,85:$Vm,86:$Vn},{27:94,28:43,29:44,53:[1,95],83:$Vk,84:$Vl,85:$Vm,86:$Vn},o($Vy,[2,54],{54:96,56:$Vp,57:$Vq,58:$Vr,59:$Vs}),o($Vy,[2,53]),{28:97,83:$Vk,84:$Vl,85:$Vm},{46:98,50:$VC},{27:100,28:43,29:44,83:$Vk,84:$Vl,85:$Vm,86:$Vn},o($Vo,[2,62],{53:[1,101]}),o($Vo,[2,64],{53:[1,103],64:[1,102]}),o($Vo,[2,68],{53:[1,104],67:[1,105]}),o($Vo,[2,72],{53:[1,107],64:[1,106]}),o($Vo,[2,76]),o($Vx,[2,11]),o($VB,[2,50]),o($VB,[2,49]),{27:108,28:43,29:44,83:$Vk,84:$Vl,85:$Vm,86:$Vn},o($Vy,[2,52]),o($Vo,[2,38],{45:[1,109]}),{47:[1,110]},{46:111,47:[2,42],50:$VC},o($Vo,[2,41]),o($Vo,[2,63]),o($Vo,[2,65]),o($Vo,[2,66],{64:[1,112]}),o($Vo,[2,69]),o($Vo,[2,70],{53:[1,113]}),o($Vo,[2,73]),o($Vo,[2,74],{64:[1,114]}),o($VB,[2,51]),{46:115,50:$VC},o($Vo,[2,39]),{47:[2,43]},o($Vo,[2,67]),o($Vo,[2,71]),o($Vo,[2,75]),{47:[1,116]},o($Vo,[2,40])],
+defaultActions: {2:[2,1],3:[2,2],4:[2,3],6:[2,9],13:[2,12],14:[2,4],20:[2,15],51:[2,14],52:[2,16],78:[2,19],111:[2,43]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -729,154 +735,168 @@ options: {},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 18; 
+case 0: this.begin('open_directive'); return 19; 
 break;
-case 1:return 7;
+case 1:return 8;
 break;
-case 2:return 8;
+case 2:return 9;
 break;
-case 3:return 9;
+case 3:return 10;
 break;
-case 4:return 10;
+case 4:return 11;
 break;
-case 5: this.begin('type_directive'); return 19; 
+case 5: this.begin('type_directive'); return 20; 
 break;
-case 6: this.popState(); this.begin('arg_directive'); return 16; 
+case 6: this.popState(); this.begin('arg_directive'); return 17; 
 break;
-case 7: this.popState(); this.popState(); return 21; 
+case 7: this.popState(); this.popState(); return 22; 
 break;
-case 8:return 20;
+case 8:return 21;
 break;
 case 9:/* skip comments */
 break;
 case 10:/* skip comments */
 break;
-case 11:return 15;
+case 11: this.begin("acc_title");return 38; 
 break;
-case 12:/* skip whitespace */
+case 12: this.popState(); return "acc_title_value"; 
 break;
-case 13:return 22;
+case 13: this.begin("acc_descr");return 40; 
 break;
-case 14:return 22;
+case 14: this.popState(); return "acc_descr_value"; 
 break;
-case 15: this.begin("struct"); /*console.log('Starting struct');*/ return 39;
+case 15: this.begin("acc_descr_multiline");
 break;
-case 16:return "EOF_IN_STRUCT";
+case 16: this.popState(); 
 break;
-case 17:return "OPEN_IN_STRUCT";
+case 17:return "acc_descr_multiline_value";
 break;
-case 18: /*console.log('Ending struct');*/this.popState(); return 41;
+case 18:return 16;
 break;
-case 19:/* nothing */
+case 19:/* skip whitespace */
 break;
-case 20: /*console.log('lex-member: ' + yy_.yytext);*/  return "MEMBER";
+case 20:return 23;
 break;
-case 21:return 37;
+case 21:return 23;
 break;
-case 22:return 63;
+case 22: this.begin("struct"); /*console.log('Starting struct');*/ return 45;
 break;
-case 23:return 56;
+case 23:return "EOF_IN_STRUCT";
 break;
-case 24:return 57;
+case 24:return "OPEN_IN_STRUCT";
 break;
-case 25:return 59;
+case 25: /*console.log('Ending struct');*/this.popState(); return 47;
 break;
-case 26:return 42;
+case 26:/* nothing */
 break;
-case 27:return 43;
+case 27: /*console.log('lex-member: ' + yy_.yytext);*/  return "MEMBER";
 break;
-case 28:this.begin("generic");
+case 28:return 43;
 break;
-case 29:this.popState();
+case 29:return 69;
 break;
-case 30:return "GENERICTYPE";
+case 30:return 62;
 break;
-case 31:this.begin("string");
+case 31:return 63;
 break;
-case 32:this.popState();
+case 32:return 65;
 break;
-case 33:return "STR";
+case 33:return 48;
 break;
-case 34:this.begin("bqstring");
+case 34:return 49;
 break;
-case 35:this.popState();
+case 35:this.begin("generic");
 break;
-case 36:return "BQUOTE_STR";
+case 36:this.popState();
 break;
-case 37:this.begin("href");
+case 37:return "GENERICTYPE";
 break;
-case 38:this.popState();
+case 38:this.begin("string");
 break;
-case 39:return 62;
+case 39:this.popState();
 break;
-case 40:this.begin("callback_name");
+case 40:return "STR";
 break;
-case 41:this.popState();
+case 41:this.begin("bqstring");
 break;
-case 42:this.popState(); this.begin("callback_args");
+case 42:this.popState();
 break;
-case 43:return 60;
+case 43:return "BQUOTE_STR";
 break;
-case 44:this.popState();
+case 44:this.begin("href");
 break;
-case 45:return 61;
+case 45:this.popState();
 break;
-case 46:return 58;
+case 46:return 68;
 break;
-case 47:return 58;
+case 47:this.begin("callback_name");
 break;
-case 48:return 58;
+case 48:this.popState();
 break;
-case 49:return 58;
+case 49:this.popState(); this.begin("callback_args");
 break;
-case 50:return 51;
+case 50:return 66;
 break;
-case 51:return 51;
+case 51:this.popState();
 break;
-case 52:return 53;
+case 52:return 67;
 break;
-case 53:return 53;
+case 53:return 64;
 break;
-case 54:return 52;
+case 54:return 64;
 break;
-case 55:return 50;
+case 55:return 64;
 break;
-case 56:return 54;
+case 56:return 64;
 break;
-case 57:return 55;
+case 57:return 57;
 break;
-case 58:return 31;
+case 58:return 57;
 break;
-case 59:return 38;
+case 59:return 59;
 break;
-case 60:return 75;
+case 60:return 59;
 break;
-case 61:return 'DOT';
+case 61:return 58;
 break;
-case 62:return 'PLUS';
+case 62:return 56;
 break;
-case 63:return 72;
+case 63:return 60;
 break;
-case 64:return 'EQUALS';
+case 64:return 61;
 break;
-case 65:return 'EQUALS';
+case 65:return 32;
 break;
-case 66:return 79;
+case 66:return 44;
 break;
-case 67:return 'PUNCTUATION';
+case 67:return 81;
 break;
-case 68:return 78;
+case 68:return 'DOT';
 break;
-case 69:return 77;
+case 69:return 'PLUS';
 break;
-case 70:return 74;
+case 70:return 78;
 break;
-case 71:return 24;
+case 71:return 'EQUALS';
+break;
+case 72:return 'EQUALS';
+break;
+case 73:return 85;
+break;
+case 74:return 'PUNCTUATION';
+break;
+case 75:return 84;
+break;
+case 76:return 83;
+break;
+case 77:return 80;
+break;
+case 78:return 25;
 break;
 }
 },
-rules: [/^(?:%%\{)/,/^(?:.*direction\s+TB[^\n]*)/,/^(?:.*direction\s+BT[^\n]*)/,/^(?:.*direction\s+RL[^\n]*)/,/^(?:.*direction\s+LR[^\n]*)/,/^(?:((?:(?!\}%%)[^:.])*))/,/^(?::)/,/^(?:\}%%)/,/^(?:((?:(?!\}%%).|\n)*))/,/^(?:%%(?!\{)*[^\n]*(\r?\n?)+)/,/^(?:%%[^\n]*(\r?\n)*)/,/^(?:\s*(\r?\n)+)/,/^(?:\s+)/,/^(?:classDiagram-v2\b)/,/^(?:classDiagram\b)/,/^(?:[{])/,/^(?:$)/,/^(?:[{])/,/^(?:[}])/,/^(?:[\n])/,/^(?:[^{}\n]*)/,/^(?:class\b)/,/^(?:cssClass\b)/,/^(?:callback\b)/,/^(?:link\b)/,/^(?:click\b)/,/^(?:<<)/,/^(?:>>)/,/^(?:[~])/,/^(?:[~])/,/^(?:[^~]*)/,/^(?:["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:[`])/,/^(?:[`])/,/^(?:[^`]+)/,/^(?:href[\s]+["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:call[\s]+)/,/^(?:\([\s]*\))/,/^(?:\()/,/^(?:[^(]*)/,/^(?:\))/,/^(?:[^)]*)/,/^(?:_self\b)/,/^(?:_blank\b)/,/^(?:_parent\b)/,/^(?:_top\b)/,/^(?:\s*<\|)/,/^(?:\s*\|>)/,/^(?:\s*>)/,/^(?:\s*<)/,/^(?:\s*\*)/,/^(?:\s*o\b)/,/^(?:--)/,/^(?:\.\.)/,/^(?::{1}[^:\n;]+)/,/^(?::{3})/,/^(?:-)/,/^(?:\.)/,/^(?:\+)/,/^(?:%)/,/^(?:=)/,/^(?:=)/,/^(?:\w+)/,/^(?:[!"#$%&'*+,-.`?\\/])/,/^(?:[0-9]+)/,/^(?:[\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6]|[\u00F8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377]|[\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5]|[\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA]|[\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE]|[\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA]|[\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0]|[\u08A2-\u08AC\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0977]|[\u0979-\u097F\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2]|[\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A]|[\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39]|[\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8]|[\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0B05-\u0B0C]|[\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C]|[\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99]|[\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0]|[\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D]|[\u0C58\u0C59\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3]|[\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10]|[\u0D12-\u0D3A\u0D3D\u0D4E\u0D60\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1]|[\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81]|[\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3]|[\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6]|[\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A]|[\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081]|[\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D]|[\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0]|[\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310]|[\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F4\u1401-\u166C]|[\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u1700-\u170C\u170E-\u1711]|[\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7]|[\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191C]|[\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19C1-\u19C7\u1A00-\u1A16]|[\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF]|[\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC]|[\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D]|[\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D]|[\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3]|[\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F]|[\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128]|[\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184]|[\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3]|[\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6]|[\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE]|[\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C]|[\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D]|[\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC]|[\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B]|[\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788]|[\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805]|[\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB]|[\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uAA00-\uAA28]|[\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5]|[\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4]|[\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E]|[\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D]|[\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36]|[\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D]|[\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC]|[\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF]|[\uFFD2-\uFFD7\uFFDA-\uFFDC])/,/^(?:\s)/,/^(?:$)/],
-conditions: {"arg_directive":{"rules":[7,8],"inclusive":false},"type_directive":{"rules":[6,7],"inclusive":false},"open_directive":{"rules":[5],"inclusive":false},"callback_args":{"rules":[44,45],"inclusive":false},"callback_name":{"rules":[41,42,43],"inclusive":false},"href":{"rules":[38,39],"inclusive":false},"struct":{"rules":[16,17,18,19,20],"inclusive":false},"generic":{"rules":[29,30],"inclusive":false},"bqstring":{"rules":[35,36],"inclusive":false},"string":{"rules":[32,33],"inclusive":false},"INITIAL":{"rules":[0,1,2,3,4,9,10,11,12,13,14,15,21,22,23,24,25,26,27,28,31,34,37,40,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71],"inclusive":true}}
+rules: [/^(?:%%\{)/,/^(?:.*direction\s+TB[^\n]*)/,/^(?:.*direction\s+BT[^\n]*)/,/^(?:.*direction\s+RL[^\n]*)/,/^(?:.*direction\s+LR[^\n]*)/,/^(?:((?:(?!\}%%)[^:.])*))/,/^(?::)/,/^(?:\}%%)/,/^(?:((?:(?!\}%%).|\n)*))/,/^(?:%%(?!\{)*[^\n]*(\r?\n?)+)/,/^(?:%%[^\n]*(\r?\n)*)/,/^(?:accTitle\s*:\s*)/,/^(?:(?!\n||)*[^\n]*)/,/^(?:accDescr\s*:\s*)/,/^(?:(?!\n||)*[^\n]*)/,/^(?:accDescr\s*\{\s*)/,/^(?:[\}])/,/^(?:[^\}]*)/,/^(?:\s*(\r?\n)+)/,/^(?:\s+)/,/^(?:classDiagram-v2\b)/,/^(?:classDiagram\b)/,/^(?:[{])/,/^(?:$)/,/^(?:[{])/,/^(?:[}])/,/^(?:[\n])/,/^(?:[^{}\n]*)/,/^(?:class\b)/,/^(?:cssClass\b)/,/^(?:callback\b)/,/^(?:link\b)/,/^(?:click\b)/,/^(?:<<)/,/^(?:>>)/,/^(?:[~])/,/^(?:[~])/,/^(?:[^~]*)/,/^(?:["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:[`])/,/^(?:[`])/,/^(?:[^`]+)/,/^(?:href[\s]+["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:call[\s]+)/,/^(?:\([\s]*\))/,/^(?:\()/,/^(?:[^(]*)/,/^(?:\))/,/^(?:[^)]*)/,/^(?:_self\b)/,/^(?:_blank\b)/,/^(?:_parent\b)/,/^(?:_top\b)/,/^(?:\s*<\|)/,/^(?:\s*\|>)/,/^(?:\s*>)/,/^(?:\s*<)/,/^(?:\s*\*)/,/^(?:\s*o\b)/,/^(?:--)/,/^(?:\.\.)/,/^(?::{1}[^:\n;]+)/,/^(?::{3})/,/^(?:-)/,/^(?:\.)/,/^(?:\+)/,/^(?:%)/,/^(?:=)/,/^(?:=)/,/^(?:\w+)/,/^(?:[!"#$%&'*+,-.`?\\/])/,/^(?:[0-9]+)/,/^(?:[\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6]|[\u00F8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377]|[\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5]|[\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA]|[\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE]|[\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA]|[\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0]|[\u08A2-\u08AC\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0977]|[\u0979-\u097F\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2]|[\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A]|[\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39]|[\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8]|[\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0B05-\u0B0C]|[\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C]|[\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99]|[\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0]|[\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D]|[\u0C58\u0C59\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3]|[\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10]|[\u0D12-\u0D3A\u0D3D\u0D4E\u0D60\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1]|[\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81]|[\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3]|[\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6]|[\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A]|[\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081]|[\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D]|[\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0]|[\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310]|[\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F4\u1401-\u166C]|[\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u1700-\u170C\u170E-\u1711]|[\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7]|[\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191C]|[\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19C1-\u19C7\u1A00-\u1A16]|[\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF]|[\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC]|[\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D]|[\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D]|[\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3]|[\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F]|[\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128]|[\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184]|[\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3]|[\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6]|[\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE]|[\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C]|[\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D]|[\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC]|[\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B]|[\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788]|[\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805]|[\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB]|[\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uAA00-\uAA28]|[\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5]|[\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4]|[\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E]|[\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D]|[\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36]|[\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D]|[\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC]|[\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF]|[\uFFD2-\uFFD7\uFFDA-\uFFDC])/,/^(?:\s)/,/^(?:$)/],
+conditions: {"acc_descr_multiline":{"rules":[16,17],"inclusive":false},"acc_descr":{"rules":[14],"inclusive":false},"acc_title":{"rules":[12],"inclusive":false},"arg_directive":{"rules":[7,8],"inclusive":false},"type_directive":{"rules":[6,7],"inclusive":false},"open_directive":{"rules":[5],"inclusive":false},"callback_args":{"rules":[51,52],"inclusive":false},"callback_name":{"rules":[48,49,50],"inclusive":false},"href":{"rules":[45,46],"inclusive":false},"struct":{"rules":[23,24,25,26,27],"inclusive":false},"generic":{"rules":[36,37],"inclusive":false},"bqstring":{"rules":[42,43],"inclusive":false},"string":{"rules":[39,40],"inclusive":false},"INITIAL":{"rules":[0,1,2,3,4,9,10,11,13,15,18,19,20,21,22,28,29,30,31,32,33,34,35,38,41,44,47,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78],"inclusive":true}}
 });
 return lexer;
 })();
@@ -989,12 +1009,12 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,2],$V1=[1,5],$V2=[6,9,11,23,41],$V3=[1,17],$V4=[1,20],$V5=[1,25],$V6=[1,26],$V7=[1,27],$V8=[1,28],$V9=[1,37],$Va=[23,38,39],$Vb=[4,6,9,11,23,41],$Vc=[34,35,36,37],$Vd=[22,29],$Ve=[1,55];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,2],$V1=[1,5],$V2=[6,9,11,23,25,27,29,30,48],$V3=[1,17],$V4=[1,18],$V5=[1,19],$V6=[1,20],$V7=[1,21],$V8=[1,24],$V9=[1,29],$Va=[1,30],$Vb=[1,31],$Vc=[1,32],$Vd=[1,44],$Ve=[30,45,46],$Vf=[4,6,9,11,23,25,27,29,30,48],$Vg=[41,42,43,44],$Vh=[22,36],$Vi=[1,62];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"ER_DIAGRAM":4,"document":5,"EOF":6,"directive":7,"line":8,"SPACE":9,"statement":10,"NEWLINE":11,"openDirective":12,"typeDirective":13,"closeDirective":14,":":15,"argDirective":16,"entityName":17,"relSpec":18,"role":19,"BLOCK_START":20,"attributes":21,"BLOCK_STOP":22,"ALPHANUM":23,"attribute":24,"attributeType":25,"attributeName":26,"attributeKeyType":27,"attributeComment":28,"ATTRIBUTE_WORD":29,"ATTRIBUTE_KEY":30,"COMMENT":31,"cardinality":32,"relType":33,"ZERO_OR_ONE":34,"ZERO_OR_MORE":35,"ONE_OR_MORE":36,"ONLY_ONE":37,"NON_IDENTIFYING":38,"IDENTIFYING":39,"WORD":40,"open_directive":41,"type_directive":42,"arg_directive":43,"close_directive":44,"$accept":0,"$end":1},
-terminals_: {2:"error",4:"ER_DIAGRAM",6:"EOF",9:"SPACE",11:"NEWLINE",15:":",20:"BLOCK_START",22:"BLOCK_STOP",23:"ALPHANUM",29:"ATTRIBUTE_WORD",30:"ATTRIBUTE_KEY",31:"COMMENT",34:"ZERO_OR_ONE",35:"ZERO_OR_MORE",36:"ONE_OR_MORE",37:"ONLY_ONE",38:"NON_IDENTIFYING",39:"IDENTIFYING",40:"WORD",41:"open_directive",42:"type_directive",43:"arg_directive",44:"close_directive"},
-productions_: [0,[3,3],[3,2],[5,0],[5,2],[8,2],[8,1],[8,1],[8,1],[7,4],[7,6],[10,1],[10,5],[10,4],[10,3],[10,1],[17,1],[21,1],[21,2],[24,2],[24,3],[24,3],[24,4],[25,1],[26,1],[27,1],[28,1],[18,3],[32,1],[32,1],[32,1],[32,1],[33,1],[33,1],[19,1],[19,1],[12,1],[13,1],[16,1],[14,1]],
+symbols_: {"error":2,"start":3,"ER_DIAGRAM":4,"document":5,"EOF":6,"directive":7,"line":8,"SPACE":9,"statement":10,"NEWLINE":11,"openDirective":12,"typeDirective":13,"closeDirective":14,":":15,"argDirective":16,"entityName":17,"relSpec":18,"role":19,"BLOCK_START":20,"attributes":21,"BLOCK_STOP":22,"title":23,"title_value":24,"acc_title":25,"acc_title_value":26,"acc_descr":27,"acc_descr_value":28,"acc_descr_multiline_value":29,"ALPHANUM":30,"attribute":31,"attributeType":32,"attributeName":33,"attributeKeyType":34,"attributeComment":35,"ATTRIBUTE_WORD":36,"ATTRIBUTE_KEY":37,"COMMENT":38,"cardinality":39,"relType":40,"ZERO_OR_ONE":41,"ZERO_OR_MORE":42,"ONE_OR_MORE":43,"ONLY_ONE":44,"NON_IDENTIFYING":45,"IDENTIFYING":46,"WORD":47,"open_directive":48,"type_directive":49,"arg_directive":50,"close_directive":51,"$accept":0,"$end":1},
+terminals_: {2:"error",4:"ER_DIAGRAM",6:"EOF",9:"SPACE",11:"NEWLINE",15:":",20:"BLOCK_START",22:"BLOCK_STOP",23:"title",24:"title_value",25:"acc_title",26:"acc_title_value",27:"acc_descr",28:"acc_descr_value",29:"acc_descr_multiline_value",30:"ALPHANUM",36:"ATTRIBUTE_WORD",37:"ATTRIBUTE_KEY",38:"COMMENT",41:"ZERO_OR_ONE",42:"ZERO_OR_MORE",43:"ONE_OR_MORE",44:"ONLY_ONE",45:"NON_IDENTIFYING",46:"IDENTIFYING",47:"WORD",48:"open_directive",49:"type_directive",50:"arg_directive",51:"close_directive"},
+productions_: [0,[3,3],[3,2],[5,0],[5,2],[8,2],[8,1],[8,1],[8,1],[7,4],[7,6],[10,1],[10,5],[10,4],[10,3],[10,1],[10,2],[10,2],[10,2],[10,1],[17,1],[21,1],[21,2],[31,2],[31,3],[31,3],[31,4],[32,1],[33,1],[34,1],[35,1],[18,3],[39,1],[39,1],[39,1],[39,1],[40,1],[40,1],[19,1],[19,1],[12,1],[13,1],[16,1],[14,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -1037,79 +1057,85 @@ break;
 case 15:
  yy.addEntity($$[$0]); 
 break;
-case 16:
- this.$ = $$[$0]; /*console.log('Entity: ' + $$[$0]);*/ 
+case 16: case 17:
+ this.$=$$[$0].trim();yy.setTitle(this.$); 
 break;
-case 17:
- this.$ = [$$[$0]]; 
-break;
-case 18:
- $$[$0].push($$[$0-1]); this.$=$$[$0]; 
-break;
-case 19:
- this.$ = { attributeType: $$[$0-1], attributeName: $$[$0] }; 
+case 18: case 19:
+ this.$=$$[$0].trim();yy.setAccDescription(this.$); 
 break;
 case 20:
- this.$ = { attributeType: $$[$0-2], attributeName: $$[$0-1], attributeKeyType: $$[$0] }; 
+ this.$ = $$[$0]; /*console.log('Entity: ' + $$[$0]);*/ 
 break;
 case 21:
- this.$ = { attributeType: $$[$0-2], attributeName: $$[$0-1], attributeComment: $$[$0] }; 
+ this.$ = [$$[$0]]; 
 break;
 case 22:
- this.$ = { attributeType: $$[$0-3], attributeName: $$[$0-2], attributeKeyType: $$[$0-1], attributeComment: $$[$0] }; 
+ $$[$0].push($$[$0-1]); this.$=$$[$0]; 
 break;
-case 23: case 24: case 25:
- this.$=$$[$0]; 
+case 23:
+ this.$ = { attributeType: $$[$0-1], attributeName: $$[$0] }; 
+break;
+case 24:
+ this.$ = { attributeType: $$[$0-2], attributeName: $$[$0-1], attributeKeyType: $$[$0] }; 
+break;
+case 25:
+ this.$ = { attributeType: $$[$0-2], attributeName: $$[$0-1], attributeComment: $$[$0] }; 
 break;
 case 26:
+ this.$ = { attributeType: $$[$0-3], attributeName: $$[$0-2], attributeKeyType: $$[$0-1], attributeComment: $$[$0] }; 
+break;
+case 27: case 28: case 29:
+ this.$=$$[$0]; 
+break;
+case 30:
  this.$=$$[$0].replace(/"/g, ''); 
 break;
-case 27:
+case 31:
 
         this.$ = { cardA: $$[$0], relType: $$[$0-1], cardB: $$[$0-2] };
         /*console.log('relSpec: ' + $$[$0] + $$[$0-1] + $$[$0-2]);*/
       
 break;
-case 28:
+case 32:
  this.$ = yy.Cardinality.ZERO_OR_ONE; 
 break;
-case 29:
+case 33:
  this.$ = yy.Cardinality.ZERO_OR_MORE; 
 break;
-case 30:
+case 34:
  this.$ = yy.Cardinality.ONE_OR_MORE; 
 break;
-case 31:
+case 35:
  this.$ = yy.Cardinality.ONLY_ONE; 
 break;
-case 32:
+case 36:
  this.$ = yy.Identification.NON_IDENTIFYING;  
 break;
-case 33:
+case 37:
  this.$ = yy.Identification.IDENTIFYING; 
 break;
-case 34:
+case 38:
  this.$ = $$[$0].replace(/"/g, ''); 
 break;
-case 35:
+case 39:
  this.$ = $$[$0]; 
 break;
-case 36:
+case 40:
  yy.parseDirective('%%{', 'open_directive'); 
 break;
-case 37:
+case 41:
  yy.parseDirective($$[$0], 'type_directive'); 
 break;
-case 38:
+case 42:
  $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
 break;
-case 39:
+case 43:
  yy.parseDirective('}%%', 'close_directive', 'er'); 
 break;
 }
 },
-table: [{3:1,4:$V0,7:3,12:4,41:$V1},{1:[3]},o($V2,[2,3],{5:6}),{3:7,4:$V0,7:3,12:4,41:$V1},{13:8,42:[1,9]},{42:[2,36]},{6:[1,10],7:15,8:11,9:[1,12],10:13,11:[1,14],12:4,17:16,23:$V3,41:$V1},{1:[2,2]},{14:18,15:[1,19],44:$V4},o([15,44],[2,37]),o($V2,[2,8],{1:[2,1]}),o($V2,[2,4]),{7:15,10:21,12:4,17:16,23:$V3,41:$V1},o($V2,[2,6]),o($V2,[2,7]),o($V2,[2,11]),o($V2,[2,15],{18:22,32:24,20:[1,23],34:$V5,35:$V6,36:$V7,37:$V8}),o([6,9,11,15,20,23,34,35,36,37,41],[2,16]),{11:[1,29]},{16:30,43:[1,31]},{11:[2,39]},o($V2,[2,5]),{17:32,23:$V3},{21:33,22:[1,34],24:35,25:36,29:$V9},{33:38,38:[1,39],39:[1,40]},o($Va,[2,28]),o($Va,[2,29]),o($Va,[2,30]),o($Va,[2,31]),o($Vb,[2,9]),{14:41,44:$V4},{44:[2,38]},{15:[1,42]},{22:[1,43]},o($V2,[2,14]),{21:44,22:[2,17],24:35,25:36,29:$V9},{26:45,29:[1,46]},{29:[2,23]},{32:47,34:$V5,35:$V6,36:$V7,37:$V8},o($Vc,[2,32]),o($Vc,[2,33]),{11:[1,48]},{19:49,23:[1,51],40:[1,50]},o($V2,[2,13]),{22:[2,18]},o($Vd,[2,19],{27:52,28:53,30:[1,54],31:$Ve}),o([22,29,30,31],[2,24]),{23:[2,27]},o($Vb,[2,10]),o($V2,[2,12]),o($V2,[2,34]),o($V2,[2,35]),o($Vd,[2,20],{28:56,31:$Ve}),o($Vd,[2,21]),o([22,29,31],[2,25]),o($Vd,[2,26]),o($Vd,[2,22])],
-defaultActions: {5:[2,36],7:[2,2],20:[2,39],31:[2,38],37:[2,23],44:[2,18],47:[2,27]},
+table: [{3:1,4:$V0,7:3,12:4,48:$V1},{1:[3]},o($V2,[2,3],{5:6}),{3:7,4:$V0,7:3,12:4,48:$V1},{13:8,49:[1,9]},{49:[2,40]},{6:[1,10],7:15,8:11,9:[1,12],10:13,11:[1,14],12:4,17:16,23:$V3,25:$V4,27:$V5,29:$V6,30:$V7,48:$V1},{1:[2,2]},{14:22,15:[1,23],51:$V8},o([15,51],[2,41]),o($V2,[2,8],{1:[2,1]}),o($V2,[2,4]),{7:15,10:25,12:4,17:16,23:$V3,25:$V4,27:$V5,29:$V6,30:$V7,48:$V1},o($V2,[2,6]),o($V2,[2,7]),o($V2,[2,11]),o($V2,[2,15],{18:26,39:28,20:[1,27],41:$V9,42:$Va,43:$Vb,44:$Vc}),{24:[1,33]},{26:[1,34]},{28:[1,35]},o($V2,[2,19]),o([6,9,11,15,20,23,25,27,29,30,41,42,43,44,48],[2,20]),{11:[1,36]},{16:37,50:[1,38]},{11:[2,43]},o($V2,[2,5]),{17:39,30:$V7},{21:40,22:[1,41],31:42,32:43,36:$Vd},{40:45,45:[1,46],46:[1,47]},o($Ve,[2,32]),o($Ve,[2,33]),o($Ve,[2,34]),o($Ve,[2,35]),o($V2,[2,16]),o($V2,[2,17]),o($V2,[2,18]),o($Vf,[2,9]),{14:48,51:$V8},{51:[2,42]},{15:[1,49]},{22:[1,50]},o($V2,[2,14]),{21:51,22:[2,21],31:42,32:43,36:$Vd},{33:52,36:[1,53]},{36:[2,27]},{39:54,41:$V9,42:$Va,43:$Vb,44:$Vc},o($Vg,[2,36]),o($Vg,[2,37]),{11:[1,55]},{19:56,30:[1,58],47:[1,57]},o($V2,[2,13]),{22:[2,22]},o($Vh,[2,23],{34:59,35:60,37:[1,61],38:$Vi}),o([22,36,37,38],[2,28]),{30:[2,31]},o($Vf,[2,10]),o($V2,[2,12]),o($V2,[2,38]),o($V2,[2,39]),o($Vh,[2,24],{35:63,38:$Vi}),o($Vh,[2,25]),o([22,36,38],[2,29]),o($Vh,[2,30]),o($Vh,[2,26])],
+defaultActions: {5:[2,40],7:[2,2],24:[2,43],38:[2,42],44:[2,27],51:[2,22],54:[2,31]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -1588,78 +1614,92 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 41; 
+case 0: this.begin("acc_title");return 25; 
 break;
-case 1: this.begin('type_directive'); return 42; 
+case 1: this.popState(); return "acc_title_value"; 
 break;
-case 2: this.popState(); this.begin('arg_directive'); return 15; 
+case 2: this.begin("acc_descr");return 27; 
 break;
-case 3: this.popState(); this.popState(); return 44; 
+case 3: this.popState(); return "acc_descr_value"; 
 break;
-case 4:return 43;
+case 4: this.begin("acc_descr_multiline");
 break;
-case 5:/* skip comments */
+case 5: this.popState(); 
 break;
-case 6:/* skip comments */
+case 6:return "acc_descr_multiline_value";
 break;
-case 7:return 11;
+case 7: this.begin('open_directive'); return 48; 
 break;
-case 8:/* skip whitespace */
+case 8: this.begin('type_directive'); return 49; 
 break;
-case 9:return 9;
+case 9: this.popState(); this.begin('arg_directive'); return 15; 
 break;
-case 10:return 40;
+case 10: this.popState(); this.popState(); return 51; 
 break;
-case 11:return 4;
+case 11:return 50;
 break;
-case 12: this.begin("block"); return 20; 
+case 12:/* skip comments */
 break;
-case 13:/* skip whitespace in block */
+case 13:/* skip comments */
 break;
-case 14:return 30
+case 14:return 11;
 break;
-case 15:return 29
+case 15:/* skip whitespace */
 break;
-case 16:return 31;
+case 16:return 9;
 break;
-case 17:/* nothing */
+case 17:return 47;
 break;
-case 18: this.popState(); return 22; 
+case 18:return 4;
 break;
-case 19:return yy_.yytext[0];
+case 19: this.begin("block"); return 20; 
 break;
-case 20:return 34;
+case 20:/* skip whitespace in block */
 break;
-case 21:return 35;
+case 21:return 37
 break;
-case 22:return 36;
+case 22:return 36
 break;
-case 23:return 37;
+case 23:return 38;
 break;
-case 24:return 34;
+case 24:/* nothing */
 break;
-case 25:return 35;
+case 25: this.popState(); return 22; 
 break;
-case 26:return 36;
+case 26:return yy_.yytext[0];
 break;
-case 27:return 38;
+case 27:return 41;
 break;
-case 28:return 39;
+case 28:return 42;
 break;
-case 29:return 38;
+case 29:return 43;
 break;
-case 30:return 38;
+case 30:return 44;
 break;
-case 31:return 23;
+case 31:return 41;
 break;
-case 32:return yy_.yytext[0];
+case 32:return 42;
 break;
-case 33:return 6;
+case 33:return 43;
+break;
+case 34:return 45;
+break;
+case 35:return 46;
+break;
+case 36:return 45;
+break;
+case 37:return 45;
+break;
+case 38:return 30;
+break;
+case 39:return yy_.yytext[0];
+break;
+case 40:return 6;
 break;
 }
 },
-rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:[\n]+)/i,/^(?:\s+)/i,/^(?:[\s]+)/i,/^(?:"[^"]*")/i,/^(?:erDiagram\b)/i,/^(?:\{)/i,/^(?:\s+)/i,/^(?:(?:PK)|(?:FK))/i,/^(?:[A-Za-z][A-Za-z0-9\-_]*)/i,/^(?:"[^"]*")/i,/^(?:[\n]+)/i,/^(?:\})/i,/^(?:.)/i,/^(?:\|o\b)/i,/^(?:\}o\b)/i,/^(?:\}\|)/i,/^(?:\|\|)/i,/^(?:o\|)/i,/^(?:o\{)/i,/^(?:\|\{)/i,/^(?:\.\.)/i,/^(?:--)/i,/^(?:\.-)/i,/^(?:-\.)/i,/^(?:[A-Za-z][A-Za-z0-9\-_]*)/i,/^(?:.)/i,/^(?:$)/i],
-conditions: {"open_directive":{"rules":[1],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"block":{"rules":[13,14,15,16,17,18,19],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,8,9,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31,32,33],"inclusive":true}}
+rules: [/^(?:accTitle\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*\{\s*)/i,/^(?:[\}])/i,/^(?:[^\}]*)/i,/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:[\n]+)/i,/^(?:\s+)/i,/^(?:[\s]+)/i,/^(?:"[^"]*")/i,/^(?:erDiagram\b)/i,/^(?:\{)/i,/^(?:\s+)/i,/^(?:(?:PK)|(?:FK))/i,/^(?:[A-Za-z][A-Za-z0-9\-_]*)/i,/^(?:"[^"]*")/i,/^(?:[\n]+)/i,/^(?:\})/i,/^(?:.)/i,/^(?:\|o\b)/i,/^(?:\}o\b)/i,/^(?:\}\|)/i,/^(?:\|\|)/i,/^(?:o\|)/i,/^(?:o\{)/i,/^(?:\|\{)/i,/^(?:\.\.)/i,/^(?:--)/i,/^(?:\.-)/i,/^(?:-\.)/i,/^(?:[A-Za-z][A-Za-z0-9\-_]*)/i,/^(?:.)/i,/^(?:$)/i],
+conditions: {"acc_descr_multiline":{"rules":[5,6],"inclusive":false},"acc_descr":{"rules":[3],"inclusive":false},"acc_title":{"rules":[1],"inclusive":false},"open_directive":{"rules":[8],"inclusive":false},"type_directive":{"rules":[9,10],"inclusive":false},"arg_directive":{"rules":[10,11],"inclusive":false},"block":{"rules":[20,21,22,23,24,25,26],"inclusive":false},"INITIAL":{"rules":[0,2,4,7,12,13,14,15,16,17,18,19,27,28,29,30,31,32,33,34,35,36,37,38,39,40],"inclusive":true}}
 });
 return lexer;
 })();
@@ -1772,12 +1812,12 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,9],$V1=[1,7],$V2=[1,6],$V3=[1,8],$V4=[1,20,21,22,23,38,47,59,60,79,80,81,82,83,84,88,98,99,102,104,105,111,112,113,114,115,116,117,118,119,120],$V5=[2,10],$V6=[1,20],$V7=[1,21],$V8=[1,22],$V9=[1,23],$Va=[1,30],$Vb=[1,59],$Vc=[1,45],$Vd=[1,49],$Ve=[1,33],$Vf=[1,34],$Vg=[1,35],$Vh=[1,36],$Vi=[1,37],$Vj=[1,53],$Vk=[1,60],$Vl=[1,48],$Vm=[1,50],$Vn=[1,52],$Vo=[1,56],$Vp=[1,57],$Vq=[1,38],$Vr=[1,39],$Vs=[1,40],$Vt=[1,41],$Vu=[1,58],$Vv=[1,47],$Vw=[1,51],$Vx=[1,54],$Vy=[1,55],$Vz=[1,46],$VA=[1,63],$VB=[1,68],$VC=[1,20,21,22,23,38,42,47,59,60,79,80,81,82,83,84,88,98,99,102,104,105,111,112,113,114,115,116,117,118,119,120],$VD=[1,72],$VE=[1,71],$VF=[1,73],$VG=[20,21,23,74,75],$VH=[1,94],$VI=[1,99],$VJ=[1,102],$VK=[1,103],$VL=[1,96],$VM=[1,101],$VN=[1,104],$VO=[1,97],$VP=[1,109],$VQ=[1,108],$VR=[1,98],$VS=[1,100],$VT=[1,105],$VU=[1,106],$VV=[1,107],$VW=[1,110],$VX=[20,21,22,23,74,75],$VY=[20,21,22,23,48,74,75],$VZ=[20,21,22,23,40,47,48,50,52,54,56,58,59,60,62,64,66,67,69,74,75,84,88,98,99,102,104,105,115,116,117,118,119,120],$V_=[20,21,23],$V$=[20,21,23,47,59,60,74,75,84,88,98,99,102,104,105,115,116,117,118,119,120],$V01=[1,12,20,21,22,23,24,38,42,47,59,60,79,80,81,82,83,84,88,98,99,102,104,105,111,112,113,114,115,116,117,118,119,120],$V11=[47,59,60,84,88,98,99,102,104,105,115,116,117,118,119,120],$V21=[1,143],$V31=[1,151],$V41=[1,152],$V51=[1,153],$V61=[1,154],$V71=[1,138],$V81=[1,139],$V91=[1,135],$Va1=[1,146],$Vb1=[1,147],$Vc1=[1,148],$Vd1=[1,149],$Ve1=[1,150],$Vf1=[1,155],$Vg1=[1,156],$Vh1=[1,141],$Vi1=[1,144],$Vj1=[1,140],$Vk1=[1,137],$Vl1=[20,21,22,23,38,42,47,59,60,79,80,81,82,83,84,88,98,99,102,104,105,111,112,113,114,115,116,117,118,119,120],$Vm1=[1,159],$Vn1=[20,21,22,23,26,47,59,60,84,98,99,102,104,105,115,116,117,118,119,120],$Vo1=[20,21,22,23,24,26,38,40,41,42,47,51,53,55,57,59,60,61,63,65,66,68,70,74,75,79,80,81,82,83,84,85,88,98,99,102,104,105,106,107,115,116,117,118,119,120],$Vp1=[12,21,22,24],$Vq1=[22,99],$Vr1=[1,242],$Vs1=[1,237],$Vt1=[1,238],$Vu1=[1,246],$Vv1=[1,243],$Vw1=[1,240],$Vx1=[1,239],$Vy1=[1,241],$Vz1=[1,244],$VA1=[1,245],$VB1=[1,247],$VC1=[1,265],$VD1=[20,21,23,99],$VE1=[20,21,22,23,59,60,79,95,98,99,102,103,104,105,106];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,9],$V1=[1,7],$V2=[1,6],$V3=[1,8],$V4=[1,20,21,22,23,38,44,46,48,52,66,67,86,87,88,89,90,91,95,105,106,109,111,112,118,119,120,121,122,123,124,125,126,127],$V5=[2,10],$V6=[1,20],$V7=[1,21],$V8=[1,22],$V9=[1,23],$Va=[1,30],$Vb=[1,32],$Vc=[1,33],$Vd=[1,34],$Ve=[1,62],$Vf=[1,48],$Vg=[1,52],$Vh=[1,36],$Vi=[1,37],$Vj=[1,38],$Vk=[1,39],$Vl=[1,40],$Vm=[1,56],$Vn=[1,63],$Vo=[1,51],$Vp=[1,53],$Vq=[1,55],$Vr=[1,59],$Vs=[1,60],$Vt=[1,41],$Vu=[1,42],$Vv=[1,43],$Vw=[1,44],$Vx=[1,61],$Vy=[1,50],$Vz=[1,54],$VA=[1,57],$VB=[1,58],$VC=[1,49],$VD=[1,66],$VE=[1,71],$VF=[1,20,21,22,23,38,42,44,46,48,52,66,67,86,87,88,89,90,91,95,105,106,109,111,112,118,119,120,121,122,123,124,125,126,127],$VG=[1,75],$VH=[1,74],$VI=[1,76],$VJ=[20,21,23,81,82],$VK=[1,99],$VL=[1,104],$VM=[1,107],$VN=[1,108],$VO=[1,101],$VP=[1,106],$VQ=[1,109],$VR=[1,102],$VS=[1,114],$VT=[1,113],$VU=[1,103],$VV=[1,105],$VW=[1,110],$VX=[1,111],$VY=[1,112],$VZ=[1,115],$V_=[20,21,22,23,81,82],$V$=[20,21,22,23,53,81,82],$V01=[20,21,22,23,40,52,53,55,57,59,61,63,65,66,67,69,71,73,74,76,81,82,91,95,105,106,109,111,112,122,123,124,125,126,127],$V11=[20,21,23],$V21=[20,21,23,52,66,67,81,82,91,95,105,106,109,111,112,122,123,124,125,126,127],$V31=[1,12,20,21,22,23,24,38,42,44,46,48,52,66,67,86,87,88,89,90,91,95,105,106,109,111,112,118,119,120,121,122,123,124,125,126,127],$V41=[52,66,67,91,95,105,106,109,111,112,122,123,124,125,126,127],$V51=[1,149],$V61=[1,157],$V71=[1,158],$V81=[1,159],$V91=[1,160],$Va1=[1,144],$Vb1=[1,145],$Vc1=[1,141],$Vd1=[1,152],$Ve1=[1,153],$Vf1=[1,154],$Vg1=[1,155],$Vh1=[1,156],$Vi1=[1,161],$Vj1=[1,162],$Vk1=[1,147],$Vl1=[1,150],$Vm1=[1,146],$Vn1=[1,143],$Vo1=[20,21,22,23,38,42,44,46,48,52,66,67,86,87,88,89,90,91,95,105,106,109,111,112,118,119,120,121,122,123,124,125,126,127],$Vp1=[1,165],$Vq1=[20,21,22,23,26,52,66,67,91,105,106,109,111,112,122,123,124,125,126,127],$Vr1=[20,21,22,23,24,26,38,40,41,42,52,56,58,60,62,64,66,67,68,70,72,73,75,77,81,82,86,87,88,89,90,91,92,95,105,106,109,111,112,113,114,122,123,124,125,126,127],$Vs1=[12,21,22,24],$Vt1=[22,106],$Vu1=[1,250],$Vv1=[1,245],$Vw1=[1,246],$Vx1=[1,254],$Vy1=[1,251],$Vz1=[1,248],$VA1=[1,247],$VB1=[1,249],$VC1=[1,252],$VD1=[1,253],$VE1=[1,255],$VF1=[1,273],$VG1=[20,21,23,106],$VH1=[20,21,22,23,66,67,86,102,105,106,109,110,111,112,113];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"mermaidDoc":4,"directive":5,"openDirective":6,"typeDirective":7,"closeDirective":8,"separator":9,":":10,"argDirective":11,"open_directive":12,"type_directive":13,"arg_directive":14,"close_directive":15,"graphConfig":16,"document":17,"line":18,"statement":19,"SEMI":20,"NEWLINE":21,"SPACE":22,"EOF":23,"GRAPH":24,"NODIR":25,"DIR":26,"FirstStmtSeperator":27,"ending":28,"endToken":29,"spaceList":30,"spaceListNewline":31,"verticeStatement":32,"styleStatement":33,"linkStyleStatement":34,"classDefStatement":35,"classStatement":36,"clickStatement":37,"subgraph":38,"text":39,"SQS":40,"SQE":41,"end":42,"direction":43,"link":44,"node":45,"vertex":46,"AMP":47,"STYLE_SEPARATOR":48,"idString":49,"PS":50,"PE":51,"(-":52,"-)":53,"STADIUMSTART":54,"STADIUMEND":55,"SUBROUTINESTART":56,"SUBROUTINEEND":57,"VERTEX_WITH_PROPS_START":58,"ALPHA":59,"COLON":60,"PIPE":61,"CYLINDERSTART":62,"CYLINDEREND":63,"DIAMOND_START":64,"DIAMOND_STOP":65,"TAGEND":66,"TRAPSTART":67,"TRAPEND":68,"INVTRAPSTART":69,"INVTRAPEND":70,"linkStatement":71,"arrowText":72,"TESTSTR":73,"START_LINK":74,"LINK":75,"textToken":76,"STR":77,"keywords":78,"STYLE":79,"LINKSTYLE":80,"CLASSDEF":81,"CLASS":82,"CLICK":83,"DOWN":84,"UP":85,"textNoTags":86,"textNoTagsToken":87,"DEFAULT":88,"stylesOpt":89,"alphaNum":90,"CALLBACKNAME":91,"CALLBACKARGS":92,"HREF":93,"LINK_TARGET":94,"HEX":95,"numList":96,"INTERPOLATE":97,"NUM":98,"COMMA":99,"style":100,"styleComponent":101,"MINUS":102,"UNIT":103,"BRKT":104,"DOT":105,"PCT":106,"TAGSTART":107,"alphaNumToken":108,"idStringToken":109,"alphaNumStatement":110,"direction_tb":111,"direction_bt":112,"direction_rl":113,"direction_lr":114,"PUNCTUATION":115,"UNICODE_TEXT":116,"PLUS":117,"EQUALS":118,"MULT":119,"UNDERSCORE":120,"graphCodeTokens":121,"ARROW_CROSS":122,"ARROW_POINT":123,"ARROW_CIRCLE":124,"ARROW_OPEN":125,"QUOTE":126,"$accept":0,"$end":1},
-terminals_: {2:"error",10:":",12:"open_directive",13:"type_directive",14:"arg_directive",15:"close_directive",20:"SEMI",21:"NEWLINE",22:"SPACE",23:"EOF",24:"GRAPH",25:"NODIR",26:"DIR",38:"subgraph",40:"SQS",41:"SQE",42:"end",47:"AMP",48:"STYLE_SEPARATOR",50:"PS",51:"PE",52:"(-",53:"-)",54:"STADIUMSTART",55:"STADIUMEND",56:"SUBROUTINESTART",57:"SUBROUTINEEND",58:"VERTEX_WITH_PROPS_START",59:"ALPHA",60:"COLON",61:"PIPE",62:"CYLINDERSTART",63:"CYLINDEREND",64:"DIAMOND_START",65:"DIAMOND_STOP",66:"TAGEND",67:"TRAPSTART",68:"TRAPEND",69:"INVTRAPSTART",70:"INVTRAPEND",73:"TESTSTR",74:"START_LINK",75:"LINK",77:"STR",79:"STYLE",80:"LINKSTYLE",81:"CLASSDEF",82:"CLASS",83:"CLICK",84:"DOWN",85:"UP",88:"DEFAULT",91:"CALLBACKNAME",92:"CALLBACKARGS",93:"HREF",94:"LINK_TARGET",95:"HEX",97:"INTERPOLATE",98:"NUM",99:"COMMA",102:"MINUS",103:"UNIT",104:"BRKT",105:"DOT",106:"PCT",107:"TAGSTART",111:"direction_tb",112:"direction_bt",113:"direction_rl",114:"direction_lr",115:"PUNCTUATION",116:"UNICODE_TEXT",117:"PLUS",118:"EQUALS",119:"MULT",120:"UNDERSCORE",122:"ARROW_CROSS",123:"ARROW_POINT",124:"ARROW_CIRCLE",125:"ARROW_OPEN",126:"QUOTE"},
-productions_: [0,[3,1],[3,2],[5,4],[5,6],[6,1],[7,1],[11,1],[8,1],[4,2],[17,0],[17,2],[18,1],[18,1],[18,1],[18,1],[18,1],[16,2],[16,2],[16,2],[16,3],[28,2],[28,1],[29,1],[29,1],[29,1],[27,1],[27,1],[27,2],[31,2],[31,2],[31,1],[31,1],[30,2],[30,1],[19,2],[19,2],[19,2],[19,2],[19,2],[19,2],[19,9],[19,6],[19,4],[19,1],[9,1],[9,1],[9,1],[32,3],[32,4],[32,2],[32,1],[45,1],[45,5],[45,3],[46,4],[46,6],[46,4],[46,4],[46,4],[46,8],[46,4],[46,4],[46,4],[46,6],[46,4],[46,4],[46,4],[46,4],[46,4],[46,1],[44,2],[44,3],[44,3],[44,1],[44,3],[71,1],[72,3],[39,1],[39,2],[39,1],[78,1],[78,1],[78,1],[78,1],[78,1],[78,1],[78,1],[78,1],[78,1],[78,1],[78,1],[86,1],[86,2],[35,5],[35,5],[36,5],[37,2],[37,4],[37,3],[37,5],[37,2],[37,4],[37,4],[37,6],[37,2],[37,4],[37,2],[37,4],[37,4],[37,6],[33,5],[33,5],[34,5],[34,5],[34,9],[34,9],[34,7],[34,7],[96,1],[96,3],[89,1],[89,3],[100,1],[100,2],[101,1],[101,1],[101,1],[101,1],[101,1],[101,1],[101,1],[101,1],[101,1],[101,1],[101,1],[76,1],[76,1],[76,1],[76,1],[76,1],[76,1],[87,1],[87,1],[87,1],[87,1],[49,1],[49,2],[90,1],[90,2],[110,1],[110,1],[110,1],[110,1],[43,1],[43,1],[43,1],[43,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[109,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1],[121,1]],
+symbols_: {"error":2,"start":3,"mermaidDoc":4,"directive":5,"openDirective":6,"typeDirective":7,"closeDirective":8,"separator":9,":":10,"argDirective":11,"open_directive":12,"type_directive":13,"arg_directive":14,"close_directive":15,"graphConfig":16,"document":17,"line":18,"statement":19,"SEMI":20,"NEWLINE":21,"SPACE":22,"EOF":23,"GRAPH":24,"NODIR":25,"DIR":26,"FirstStmtSeperator":27,"ending":28,"endToken":29,"spaceList":30,"spaceListNewline":31,"verticeStatement":32,"styleStatement":33,"linkStyleStatement":34,"classDefStatement":35,"classStatement":36,"clickStatement":37,"subgraph":38,"text":39,"SQS":40,"SQE":41,"end":42,"direction":43,"acc_title":44,"acc_title_value":45,"acc_descr":46,"acc_descr_value":47,"acc_descr_multiline_value":48,"link":49,"node":50,"vertex":51,"AMP":52,"STYLE_SEPARATOR":53,"idString":54,"DOUBLECIRCLESTART":55,"DOUBLECIRCLEEND":56,"PS":57,"PE":58,"(-":59,"-)":60,"STADIUMSTART":61,"STADIUMEND":62,"SUBROUTINESTART":63,"SUBROUTINEEND":64,"VERTEX_WITH_PROPS_START":65,"ALPHA":66,"COLON":67,"PIPE":68,"CYLINDERSTART":69,"CYLINDEREND":70,"DIAMOND_START":71,"DIAMOND_STOP":72,"TAGEND":73,"TRAPSTART":74,"TRAPEND":75,"INVTRAPSTART":76,"INVTRAPEND":77,"linkStatement":78,"arrowText":79,"TESTSTR":80,"START_LINK":81,"LINK":82,"textToken":83,"STR":84,"keywords":85,"STYLE":86,"LINKSTYLE":87,"CLASSDEF":88,"CLASS":89,"CLICK":90,"DOWN":91,"UP":92,"textNoTags":93,"textNoTagsToken":94,"DEFAULT":95,"stylesOpt":96,"alphaNum":97,"CALLBACKNAME":98,"CALLBACKARGS":99,"HREF":100,"LINK_TARGET":101,"HEX":102,"numList":103,"INTERPOLATE":104,"NUM":105,"COMMA":106,"style":107,"styleComponent":108,"MINUS":109,"UNIT":110,"BRKT":111,"DOT":112,"PCT":113,"TAGSTART":114,"alphaNumToken":115,"idStringToken":116,"alphaNumStatement":117,"direction_tb":118,"direction_bt":119,"direction_rl":120,"direction_lr":121,"PUNCTUATION":122,"UNICODE_TEXT":123,"PLUS":124,"EQUALS":125,"MULT":126,"UNDERSCORE":127,"graphCodeTokens":128,"ARROW_CROSS":129,"ARROW_POINT":130,"ARROW_CIRCLE":131,"ARROW_OPEN":132,"QUOTE":133,"$accept":0,"$end":1},
+terminals_: {2:"error",10:":",12:"open_directive",13:"type_directive",14:"arg_directive",15:"close_directive",20:"SEMI",21:"NEWLINE",22:"SPACE",23:"EOF",24:"GRAPH",25:"NODIR",26:"DIR",38:"subgraph",40:"SQS",41:"SQE",42:"end",44:"acc_title",45:"acc_title_value",46:"acc_descr",47:"acc_descr_value",48:"acc_descr_multiline_value",52:"AMP",53:"STYLE_SEPARATOR",55:"DOUBLECIRCLESTART",56:"DOUBLECIRCLEEND",57:"PS",58:"PE",59:"(-",60:"-)",61:"STADIUMSTART",62:"STADIUMEND",63:"SUBROUTINESTART",64:"SUBROUTINEEND",65:"VERTEX_WITH_PROPS_START",66:"ALPHA",67:"COLON",68:"PIPE",69:"CYLINDERSTART",70:"CYLINDEREND",71:"DIAMOND_START",72:"DIAMOND_STOP",73:"TAGEND",74:"TRAPSTART",75:"TRAPEND",76:"INVTRAPSTART",77:"INVTRAPEND",80:"TESTSTR",81:"START_LINK",82:"LINK",84:"STR",86:"STYLE",87:"LINKSTYLE",88:"CLASSDEF",89:"CLASS",90:"CLICK",91:"DOWN",92:"UP",95:"DEFAULT",98:"CALLBACKNAME",99:"CALLBACKARGS",100:"HREF",101:"LINK_TARGET",102:"HEX",104:"INTERPOLATE",105:"NUM",106:"COMMA",109:"MINUS",110:"UNIT",111:"BRKT",112:"DOT",113:"PCT",114:"TAGSTART",118:"direction_tb",119:"direction_bt",120:"direction_rl",121:"direction_lr",122:"PUNCTUATION",123:"UNICODE_TEXT",124:"PLUS",125:"EQUALS",126:"MULT",127:"UNDERSCORE",129:"ARROW_CROSS",130:"ARROW_POINT",131:"ARROW_CIRCLE",132:"ARROW_OPEN",133:"QUOTE"},
+productions_: [0,[3,1],[3,2],[5,4],[5,6],[6,1],[7,1],[11,1],[8,1],[4,2],[17,0],[17,2],[18,1],[18,1],[18,1],[18,1],[18,1],[16,2],[16,2],[16,2],[16,3],[28,2],[28,1],[29,1],[29,1],[29,1],[27,1],[27,1],[27,2],[31,2],[31,2],[31,1],[31,1],[30,2],[30,1],[19,2],[19,2],[19,2],[19,2],[19,2],[19,2],[19,9],[19,6],[19,4],[19,1],[19,2],[19,2],[19,1],[9,1],[9,1],[9,1],[32,3],[32,4],[32,2],[32,1],[50,1],[50,5],[50,3],[51,4],[51,4],[51,6],[51,4],[51,4],[51,4],[51,8],[51,4],[51,4],[51,4],[51,6],[51,4],[51,4],[51,4],[51,4],[51,4],[51,1],[49,2],[49,3],[49,3],[49,1],[49,3],[78,1],[79,3],[39,1],[39,2],[39,1],[85,1],[85,1],[85,1],[85,1],[85,1],[85,1],[85,1],[85,1],[85,1],[85,1],[85,1],[93,1],[93,2],[35,5],[35,5],[36,5],[37,2],[37,4],[37,3],[37,5],[37,2],[37,4],[37,4],[37,6],[37,2],[37,4],[37,2],[37,4],[37,4],[37,6],[33,5],[33,5],[34,5],[34,5],[34,9],[34,9],[34,7],[34,7],[103,1],[103,3],[96,1],[96,3],[107,1],[107,2],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[108,1],[83,1],[83,1],[83,1],[83,1],[83,1],[83,1],[94,1],[94,1],[94,1],[94,1],[54,1],[54,2],[97,1],[97,2],[117,1],[117,1],[117,1],[117,1],[43,1],[43,1],[43,1],[43,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[115,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[116,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1],[128,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -1805,7 +1845,7 @@ case 11:
 	    }
 	    this.$=$$[$0-1];
 break;
-case 12: case 78: case 80: case 92: case 148: case 150: case 151:
+case 12: case 82: case 84: case 96: case 152: case 154: case 155:
 this.$=$$[$0];
 break;
 case 19:
@@ -1829,184 +1869,193 @@ break;
 case 43:
 this.$=yy.addSubGraph(undefined,$$[$0-1],undefined);
 break;
-case 48:
- /* console.warn('vs',$$[$0-2].stmt,$$[$0]); */ yy.addLink($$[$0-2].stmt,$$[$0],$$[$0-1]); this.$ = { stmt: $$[$0], nodes: $$[$0].concat($$[$0-2].nodes) } 
+case 45:
+ this.$=$$[$0].trim();yy.setTitle(this.$); 
 break;
-case 49:
- /* console.warn('vs',$$[$0-3].stmt,$$[$0-1]); */ yy.addLink($$[$0-3].stmt,$$[$0-1],$$[$0-2]); this.$ = { stmt: $$[$0-1], nodes: $$[$0-1].concat($$[$0-3].nodes) } 
-break;
-case 50:
-/*console.warn('noda', $$[$0-1]);*/ this.$ = {stmt: $$[$0-1], nodes:$$[$0-1] }
+case 46: case 47:
+ this.$=$$[$0].trim();yy.setAccDescription(this.$); 
 break;
 case 51:
- /*console.warn('noda', $$[$0]);*/ this.$ = {stmt: $$[$0], nodes:$$[$0] }
+ /* console.warn('vs',$$[$0-2].stmt,$$[$0]); */ yy.addLink($$[$0-2].stmt,$$[$0],$$[$0-1]); this.$ = { stmt: $$[$0], nodes: $$[$0].concat($$[$0-2].nodes) } 
 break;
 case 52:
- /* console.warn('nod', $$[$0]); */ this.$ = [$$[$0]];
+ /* console.warn('vs',$$[$0-3].stmt,$$[$0-1]); */ yy.addLink($$[$0-3].stmt,$$[$0-1],$$[$0-2]); this.$ = { stmt: $$[$0-1], nodes: $$[$0-1].concat($$[$0-3].nodes) } 
 break;
 case 53:
- this.$ = $$[$0-4].concat($$[$0]); /* console.warn('pip', $$[$0-4][0], $$[$0], this.$); */ 
+/*console.warn('noda', $$[$0-1]);*/ this.$ = {stmt: $$[$0-1], nodes:$$[$0-1] }
 break;
 case 54:
-this.$ = [$$[$0-2]];yy.setClass($$[$0-2],$$[$0])
+ /*console.warn('noda', $$[$0]);*/ this.$ = {stmt: $$[$0], nodes:$$[$0] }
 break;
 case 55:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'square');
+ /* console.warn('nod', $$[$0]); */ this.$ = [$$[$0]];
 break;
 case 56:
-this.$ = $$[$0-5];yy.addVertex($$[$0-5],$$[$0-2],'circle');
+ this.$ = $$[$0-4].concat($$[$0]); /* console.warn('pip', $$[$0-4][0], $$[$0], this.$); */ 
 break;
 case 57:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'ellipse');
+this.$ = [$$[$0-2]];yy.setClass($$[$0-2],$$[$0])
 break;
 case 58:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'stadium');
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'square');
 break;
 case 59:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'subroutine');
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'doublecircle');
 break;
 case 60:
-this.$ = $$[$0-7];yy.addVertex($$[$0-7],$$[$0-1],'rect',undefined,undefined,undefined, Object.fromEntries([[$$[$0-5], $$[$0-3]]]));
+this.$ = $$[$0-5];yy.addVertex($$[$0-5],$$[$0-2],'circle');
 break;
 case 61:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'cylinder');
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'ellipse');
 break;
 case 62:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'round');
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'stadium');
 break;
 case 63:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'diamond');
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'subroutine');
 break;
 case 64:
-this.$ = $$[$0-5];yy.addVertex($$[$0-5],$$[$0-2],'hexagon');
+this.$ = $$[$0-7];yy.addVertex($$[$0-7],$$[$0-1],'rect',undefined,undefined,undefined, Object.fromEntries([[$$[$0-5], $$[$0-3]]]));
 break;
 case 65:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'odd');
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'cylinder');
 break;
 case 66:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'trapezoid');
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'round');
 break;
 case 67:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'inv_trapezoid');
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'diamond');
 break;
 case 68:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'lean_right');
+this.$ = $$[$0-5];yy.addVertex($$[$0-5],$$[$0-2],'hexagon');
 break;
 case 69:
-this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'lean_left');
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'odd');
 break;
 case 70:
- /*console.warn('h: ', $$[$0]);*/this.$ = $$[$0];yy.addVertex($$[$0]);
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'trapezoid');
 break;
 case 71:
-$$[$0-1].text = $$[$0];this.$ = $$[$0-1];
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'inv_trapezoid');
 break;
-case 72: case 73:
-$$[$0-2].text = $$[$0-1];this.$ = $$[$0-2];
+case 72:
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'lean_right');
+break;
+case 73:
+this.$ = $$[$0-3];yy.addVertex($$[$0-3],$$[$0-1],'lean_left');
 break;
 case 74:
-this.$ = $$[$0];
+ /*console.warn('h: ', $$[$0]);*/this.$ = $$[$0];yy.addVertex($$[$0]);
 break;
 case 75:
+$$[$0-1].text = $$[$0];this.$ = $$[$0-1];
+break;
+case 76: case 77:
+$$[$0-2].text = $$[$0-1];this.$ = $$[$0-2];
+break;
+case 78:
+this.$ = $$[$0];
+break;
+case 79:
 var inf = yy.destructLink($$[$0], $$[$0-2]); this.$ = {"type":inf.type,"stroke":inf.stroke,"length":inf.length,"text":$$[$0-1]};
 break;
-case 76:
+case 80:
 var inf = yy.destructLink($$[$0]);this.$ = {"type":inf.type,"stroke":inf.stroke,"length":inf.length};
 break;
-case 77:
+case 81:
 this.$ = $$[$0-1];
 break;
-case 79: case 93: case 149:
+case 83: case 97: case 153:
 this.$=$$[$0-1]+''+$$[$0];
 break;
-case 94: case 95:
+case 98: case 99:
 this.$ = $$[$0-4];yy.addClass($$[$0-2],$$[$0]);
 break;
-case 96:
+case 100:
 this.$ = $$[$0-4];yy.setClass($$[$0-2], $$[$0]);
 break;
-case 97: case 105:
+case 101: case 109:
 this.$ = $$[$0-1];yy.setClickEvent($$[$0-1], $$[$0]);
 break;
-case 98: case 106:
+case 102: case 110:
 this.$ = $$[$0-3];yy.setClickEvent($$[$0-3], $$[$0-2]);yy.setTooltip($$[$0-3], $$[$0]);
 break;
-case 99:
+case 103:
 this.$ = $$[$0-2];yy.setClickEvent($$[$0-2], $$[$0-1], $$[$0]);
 break;
-case 100:
+case 104:
 this.$ = $$[$0-4];yy.setClickEvent($$[$0-4], $$[$0-3], $$[$0-2]);yy.setTooltip($$[$0-4], $$[$0]);
 break;
-case 101: case 107:
+case 105: case 111:
 this.$ = $$[$0-1];yy.setLink($$[$0-1], $$[$0]);
 break;
-case 102: case 108:
+case 106: case 112:
 this.$ = $$[$0-3];yy.setLink($$[$0-3], $$[$0-2]);yy.setTooltip($$[$0-3], $$[$0]);
 break;
-case 103: case 109:
+case 107: case 113:
 this.$ = $$[$0-3];yy.setLink($$[$0-3], $$[$0-2], $$[$0]);
 break;
-case 104: case 110:
+case 108: case 114:
 this.$ = $$[$0-5];yy.setLink($$[$0-5], $$[$0-4], $$[$0]);yy.setTooltip($$[$0-5], $$[$0-2]);
 break;
-case 111:
+case 115:
 this.$ = $$[$0-4];yy.addVertex($$[$0-2],undefined,undefined,$$[$0]);
 break;
-case 112: case 114:
+case 116: case 118:
 this.$ = $$[$0-4];yy.updateLink($$[$0-2],$$[$0]);
 break;
-case 113:
+case 117:
 this.$ = $$[$0-4];yy.updateLink([$$[$0-2]],$$[$0]);
 break;
-case 115:
+case 119:
 this.$ = $$[$0-8];yy.updateLinkInterpolate([$$[$0-6]],$$[$0-2]);yy.updateLink([$$[$0-6]],$$[$0]);
 break;
-case 116:
+case 120:
 this.$ = $$[$0-8];yy.updateLinkInterpolate($$[$0-6],$$[$0-2]);yy.updateLink($$[$0-6],$$[$0]);
 break;
-case 117:
+case 121:
 this.$ = $$[$0-6];yy.updateLinkInterpolate([$$[$0-4]],$$[$0]);
 break;
-case 118:
+case 122:
 this.$ = $$[$0-6];yy.updateLinkInterpolate($$[$0-4],$$[$0]);
 break;
-case 119: case 121:
+case 123: case 125:
 this.$ = [$$[$0]]
 break;
-case 120: case 122:
+case 124: case 126:
 $$[$0-2].push($$[$0]);this.$ = $$[$0-2];
 break;
-case 124:
+case 128:
 this.$ = $$[$0-1] + $$[$0];
 break;
-case 146:
+case 150:
 this.$=$$[$0]
 break;
-case 147:
+case 151:
 this.$=$$[$0-1]+''+$$[$0]
 break;
-case 152:
+case 156:
 this.$='v';
 break;
-case 153:
+case 157:
 this.$='-';
 break;
-case 154:
+case 158:
  this.$={stmt:'dir', value:'TB'};
 break;
-case 155:
+case 159:
  this.$={stmt:'dir', value:'BT'};
 break;
-case 156:
+case 160:
  this.$={stmt:'dir', value:'RL'};
 break;
-case 157:
+case 161:
  this.$={stmt:'dir', value:'LR'};
 break;
 }
 },
-table: [{3:1,4:2,5:3,6:5,12:$V0,16:4,21:$V1,22:$V2,24:$V3},{1:[3]},{1:[2,1]},{3:10,4:2,5:3,6:5,12:$V0,16:4,21:$V1,22:$V2,24:$V3},o($V4,$V5,{17:11}),{7:12,13:[1,13]},{16:14,21:$V1,22:$V2,24:$V3},{16:15,21:$V1,22:$V2,24:$V3},{25:[1,16],26:[1,17]},{13:[2,5]},{1:[2,2]},{1:[2,9],18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,43:31,45:32,46:42,47:$Vb,49:43,59:$Vc,60:$Vd,79:$Ve,80:$Vf,81:$Vg,82:$Vh,83:$Vi,84:$Vj,88:$Vk,98:$Vl,99:$Vm,102:$Vn,104:$Vo,105:$Vp,109:44,111:$Vq,112:$Vr,113:$Vs,114:$Vt,115:$Vu,116:$Vv,117:$Vw,118:$Vx,119:$Vy,120:$Vz},{8:61,10:[1,62],15:$VA},o([10,15],[2,6]),o($V4,[2,17]),o($V4,[2,18]),o($V4,[2,19]),{20:[1,65],21:[1,66],22:$VB,27:64,30:67},o($VC,[2,11]),o($VC,[2,12]),o($VC,[2,13]),o($VC,[2,14]),o($VC,[2,15]),o($VC,[2,16]),{9:69,20:$VD,21:$VE,23:$VF,44:70,71:74,74:[1,75],75:[1,76]},{9:77,20:$VD,21:$VE,23:$VF},{9:78,20:$VD,21:$VE,23:$VF},{9:79,20:$VD,21:$VE,23:$VF},{9:80,20:$VD,21:$VE,23:$VF},{9:81,20:$VD,21:$VE,23:$VF},{9:83,20:$VD,21:$VE,22:[1,82],23:$VF},o($VC,[2,44]),o($VG,[2,51],{30:84,22:$VB}),{22:[1,85]},{22:[1,86]},{22:[1,87]},{22:[1,88]},{26:$VH,47:$VI,59:$VJ,60:$VK,77:[1,92],84:$VL,90:91,91:[1,89],93:[1,90],98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,108:95,110:93,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($VC,[2,154]),o($VC,[2,155]),o($VC,[2,156]),o($VC,[2,157]),o($VX,[2,52],{48:[1,111]}),o($VY,[2,70],{109:123,40:[1,112],47:$Vb,50:[1,113],52:[1,114],54:[1,115],56:[1,116],58:[1,117],59:$Vc,60:$Vd,62:[1,118],64:[1,119],66:[1,120],67:[1,121],69:[1,122],84:$Vj,88:$Vk,98:$Vl,99:$Vm,102:$Vn,104:$Vo,105:$Vp,115:$Vu,116:$Vv,117:$Vw,118:$Vx,119:$Vy,120:$Vz}),o($VZ,[2,146]),o($VZ,[2,171]),o($VZ,[2,172]),o($VZ,[2,173]),o($VZ,[2,174]),o($VZ,[2,175]),o($VZ,[2,176]),o($VZ,[2,177]),o($VZ,[2,178]),o($VZ,[2,179]),o($VZ,[2,180]),o($VZ,[2,181]),o($VZ,[2,182]),o($VZ,[2,183]),o($VZ,[2,184]),o($VZ,[2,185]),o($VZ,[2,186]),{9:124,20:$VD,21:$VE,23:$VF},{11:125,14:[1,126]},o($V_,[2,8]),o($V4,[2,20]),o($V4,[2,26]),o($V4,[2,27]),{21:[1,127]},o($V$,[2,34],{30:128,22:$VB}),o($VC,[2,35]),{45:129,46:42,47:$Vb,49:43,59:$Vc,60:$Vd,84:$Vj,88:$Vk,98:$Vl,99:$Vm,102:$Vn,104:$Vo,105:$Vp,109:44,115:$Vu,116:$Vv,117:$Vw,118:$Vx,119:$Vy,120:$Vz},o($V01,[2,45]),o($V01,[2,46]),o($V01,[2,47]),o($V11,[2,74],{72:130,61:[1,132],73:[1,131]}),{22:$V21,24:$V31,26:$V41,38:$V51,39:133,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o([47,59,60,61,73,84,88,98,99,102,104,105,115,116,117,118,119,120],[2,76]),o($VC,[2,36]),o($VC,[2,37]),o($VC,[2,38]),o($VC,[2,39]),o($VC,[2,40]),{22:$V21,24:$V31,26:$V41,38:$V51,39:157,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($Vl1,$V5,{17:158}),o($VG,[2,50],{47:$Vm1}),{26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,90:160,95:[1,161],98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,108:95,110:93,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{88:[1,162],96:163,98:[1,164]},{26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,88:[1,165],90:166,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,108:95,110:93,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,90:167,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,108:95,110:93,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($V_,[2,97],{22:[1,168],92:[1,169]}),o($V_,[2,101],{22:[1,170]}),o($V_,[2,105],{108:95,110:172,22:[1,171],26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW}),o($V_,[2,107],{22:[1,173]}),o($Vn1,[2,148]),o($Vn1,[2,150]),o($Vn1,[2,151]),o($Vn1,[2,152]),o($Vn1,[2,153]),o($Vo1,[2,158]),o($Vo1,[2,159]),o($Vo1,[2,160]),o($Vo1,[2,161]),o($Vo1,[2,162]),o($Vo1,[2,163]),o($Vo1,[2,164]),o($Vo1,[2,165]),o($Vo1,[2,166]),o($Vo1,[2,167]),o($Vo1,[2,168]),o($Vo1,[2,169]),o($Vo1,[2,170]),{47:$Vb,49:174,59:$Vc,60:$Vd,84:$Vj,88:$Vk,98:$Vl,99:$Vm,102:$Vn,104:$Vo,105:$Vp,109:44,115:$Vu,116:$Vv,117:$Vw,118:$Vx,119:$Vy,120:$Vz},{22:$V21,24:$V31,26:$V41,38:$V51,39:175,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,39:177,42:$V61,47:$VI,50:[1,176],59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,39:178,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,39:179,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,39:180,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{59:[1,181]},{22:$V21,24:$V31,26:$V41,38:$V51,39:182,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,39:183,42:$V61,47:$VI,59:$VJ,60:$VK,64:[1,184],66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,39:185,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,39:186,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,39:187,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($VZ,[2,147]),o($Vp1,[2,3]),{8:188,15:$VA},{15:[2,7]},o($V4,[2,28]),o($V$,[2,33]),o($VG,[2,48],{30:189,22:$VB}),o($V11,[2,71],{22:[1,190]}),{22:[1,191]},{22:$V21,24:$V31,26:$V41,38:$V51,39:192,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,75:[1,193],76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($Vo1,[2,78]),o($Vo1,[2,80]),o($Vo1,[2,136]),o($Vo1,[2,137]),o($Vo1,[2,138]),o($Vo1,[2,139]),o($Vo1,[2,140]),o($Vo1,[2,141]),o($Vo1,[2,142]),o($Vo1,[2,143]),o($Vo1,[2,144]),o($Vo1,[2,145]),o($Vo1,[2,81]),o($Vo1,[2,82]),o($Vo1,[2,83]),o($Vo1,[2,84]),o($Vo1,[2,85]),o($Vo1,[2,86]),o($Vo1,[2,87]),o($Vo1,[2,88]),o($Vo1,[2,89]),o($Vo1,[2,90]),o($Vo1,[2,91]),{9:196,20:$VD,21:$VE,22:$V21,23:$VF,24:$V31,26:$V41,38:$V51,40:[1,195],42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,197],43:31,45:32,46:42,47:$Vb,49:43,59:$Vc,60:$Vd,79:$Ve,80:$Vf,81:$Vg,82:$Vh,83:$Vi,84:$Vj,88:$Vk,98:$Vl,99:$Vm,102:$Vn,104:$Vo,105:$Vp,109:44,111:$Vq,112:$Vr,113:$Vs,114:$Vt,115:$Vu,116:$Vv,117:$Vw,118:$Vx,119:$Vy,120:$Vz},{22:$VB,30:198},{22:[1,199],26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,108:95,110:172,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:[1,200]},{22:[1,201]},{22:[1,202],99:[1,203]},o($Vq1,[2,119]),{22:[1,204]},{22:[1,205],26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,108:95,110:172,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:[1,206],26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,108:95,110:172,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{77:[1,207]},o($V_,[2,99],{22:[1,208]}),{77:[1,209],94:[1,210]},{77:[1,211]},o($Vn1,[2,149]),{77:[1,212],94:[1,213]},o($VX,[2,54],{109:123,47:$Vb,59:$Vc,60:$Vd,84:$Vj,88:$Vk,98:$Vl,99:$Vm,102:$Vn,104:$Vo,105:$Vp,115:$Vu,116:$Vv,117:$Vw,118:$Vx,119:$Vy,120:$Vz}),{22:$V21,24:$V31,26:$V41,38:$V51,41:[1,214],42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,39:215,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,51:[1,216],59:$VJ,60:$VK,66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,53:[1,217],59:$VJ,60:$VK,66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,55:[1,218],59:$VJ,60:$VK,66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,57:[1,219],59:$VJ,60:$VK,66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{60:[1,220]},{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,59:$VJ,60:$VK,63:[1,221],66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,59:$VJ,60:$VK,65:[1,222],66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,39:223,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,41:[1,224],42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,68:[1,225],70:[1,226],74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,68:[1,228],70:[1,227],74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{9:229,20:$VD,21:$VE,23:$VF},o($VG,[2,49],{47:$Vm1}),o($V11,[2,73]),o($V11,[2,72]),{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,59:$VJ,60:$VK,61:[1,230],66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($V11,[2,75]),o($Vo1,[2,79]),{22:$V21,24:$V31,26:$V41,38:$V51,39:231,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($Vl1,$V5,{17:232}),o($VC,[2,43]),{46:233,47:$Vb,49:43,59:$Vc,60:$Vd,84:$Vj,88:$Vk,98:$Vl,99:$Vm,102:$Vn,104:$Vo,105:$Vp,109:44,115:$Vu,116:$Vv,117:$Vw,118:$Vx,119:$Vy,120:$Vz},{22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,89:234,95:$Vv1,98:$Vw1,100:235,101:236,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1},{22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,89:248,95:$Vv1,98:$Vw1,100:235,101:236,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1},{22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,89:249,95:$Vv1,97:[1,250],98:$Vw1,100:235,101:236,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1},{22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,89:251,95:$Vv1,97:[1,252],98:$Vw1,100:235,101:236,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1},{98:[1,253]},{22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,89:254,95:$Vv1,98:$Vw1,100:235,101:236,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1},{22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,89:255,95:$Vv1,98:$Vw1,100:235,101:236,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1},{26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,90:256,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,108:95,110:93,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($V_,[2,98]),{77:[1,257]},o($V_,[2,102],{22:[1,258]}),o($V_,[2,103]),o($V_,[2,106]),o($V_,[2,108],{22:[1,259]}),o($V_,[2,109]),o($VY,[2,55]),{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,51:[1,260],59:$VJ,60:$VK,66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($VY,[2,62]),o($VY,[2,57]),o($VY,[2,58]),o($VY,[2,59]),{59:[1,261]},o($VY,[2,61]),o($VY,[2,63]),{22:$V21,24:$V31,26:$V41,38:$V51,42:$V61,47:$VI,59:$VJ,60:$VK,65:[1,262],66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($VY,[2,65]),o($VY,[2,66]),o($VY,[2,68]),o($VY,[2,67]),o($VY,[2,69]),o($Vp1,[2,4]),o([22,47,59,60,84,88,98,99,102,104,105,115,116,117,118,119,120],[2,77]),{22:$V21,24:$V31,26:$V41,38:$V51,41:[1,263],42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,264],43:31,45:32,46:42,47:$Vb,49:43,59:$Vc,60:$Vd,79:$Ve,80:$Vf,81:$Vg,82:$Vh,83:$Vi,84:$Vj,88:$Vk,98:$Vl,99:$Vm,102:$Vn,104:$Vo,105:$Vp,109:44,111:$Vq,112:$Vr,113:$Vs,114:$Vt,115:$Vu,116:$Vv,117:$Vw,118:$Vx,119:$Vy,120:$Vz},o($VX,[2,53]),o($V_,[2,111],{99:$VC1}),o($VD1,[2,121],{101:266,22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,95:$Vv1,98:$Vw1,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1}),o($VE1,[2,123]),o($VE1,[2,125]),o($VE1,[2,126]),o($VE1,[2,127]),o($VE1,[2,128]),o($VE1,[2,129]),o($VE1,[2,130]),o($VE1,[2,131]),o($VE1,[2,132]),o($VE1,[2,133]),o($VE1,[2,134]),o($VE1,[2,135]),o($V_,[2,112],{99:$VC1}),o($V_,[2,113],{99:$VC1}),{22:[1,267]},o($V_,[2,114],{99:$VC1}),{22:[1,268]},o($Vq1,[2,120]),o($V_,[2,94],{99:$VC1}),o($V_,[2,95],{99:$VC1}),o($V_,[2,96],{108:95,110:172,26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW}),o($V_,[2,100]),{94:[1,269]},{94:[1,270]},{51:[1,271]},{61:[1,272]},{65:[1,273]},{9:274,20:$VD,21:$VE,23:$VF},o($VC,[2,42]),{22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,95:$Vv1,98:$Vw1,100:275,101:236,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1},o($VE1,[2,124]),{26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,90:276,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,108:95,110:93,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,90:277,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,108:95,110:93,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($V_,[2,104]),o($V_,[2,110]),o($VY,[2,56]),{22:$V21,24:$V31,26:$V41,38:$V51,39:278,42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:134,77:$V91,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},o($VY,[2,64]),o($Vl1,$V5,{17:279}),o($VD1,[2,122],{101:266,22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,95:$Vv1,98:$Vw1,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1}),o($V_,[2,117],{108:95,110:172,22:[1,280],26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW}),o($V_,[2,118],{108:95,110:172,22:[1,281],26:$VH,47:$VI,59:$VJ,60:$VK,84:$VL,98:$VM,99:$VN,102:$VO,104:$VP,105:$VQ,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW}),{22:$V21,24:$V31,26:$V41,38:$V51,41:[1,282],42:$V61,47:$VI,59:$VJ,60:$VK,66:$V71,74:$V81,76:194,78:145,79:$Va1,80:$Vb1,81:$Vc1,82:$Vd1,83:$Ve1,84:$Vf1,85:$Vg1,87:136,88:$Vh1,98:$VM,99:$VN,102:$Vi1,104:$VP,105:$VQ,106:$Vj1,107:$Vk1,108:142,115:$VR,116:$VS,117:$VT,118:$VU,119:$VV,120:$VW},{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,283],43:31,45:32,46:42,47:$Vb,49:43,59:$Vc,60:$Vd,79:$Ve,80:$Vf,81:$Vg,82:$Vh,83:$Vi,84:$Vj,88:$Vk,98:$Vl,99:$Vm,102:$Vn,104:$Vo,105:$Vp,109:44,111:$Vq,112:$Vr,113:$Vs,114:$Vt,115:$Vu,116:$Vv,117:$Vw,118:$Vx,119:$Vy,120:$Vz},{22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,89:284,95:$Vv1,98:$Vw1,100:235,101:236,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1},{22:$Vr1,59:$Vs1,60:$Vt1,79:$Vu1,89:285,95:$Vv1,98:$Vw1,100:235,101:236,102:$Vx1,103:$Vy1,104:$Vz1,105:$VA1,106:$VB1},o($VY,[2,60]),o($VC,[2,41]),o($V_,[2,115],{99:$VC1}),o($V_,[2,116],{99:$VC1})],
-defaultActions: {2:[2,1],9:[2,5],10:[2,2],126:[2,7]},
+table: [{3:1,4:2,5:3,6:5,12:$V0,16:4,21:$V1,22:$V2,24:$V3},{1:[3]},{1:[2,1]},{3:10,4:2,5:3,6:5,12:$V0,16:4,21:$V1,22:$V2,24:$V3},o($V4,$V5,{17:11}),{7:12,13:[1,13]},{16:14,21:$V1,22:$V2,24:$V3},{16:15,21:$V1,22:$V2,24:$V3},{25:[1,16],26:[1,17]},{13:[2,5]},{1:[2,2]},{1:[2,9],18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,43:31,44:$Vb,46:$Vc,48:$Vd,50:35,51:45,52:$Ve,54:46,66:$Vf,67:$Vg,86:$Vh,87:$Vi,88:$Vj,89:$Vk,90:$Vl,91:$Vm,95:$Vn,105:$Vo,106:$Vp,109:$Vq,111:$Vr,112:$Vs,116:47,118:$Vt,119:$Vu,120:$Vv,121:$Vw,122:$Vx,123:$Vy,124:$Vz,125:$VA,126:$VB,127:$VC},{8:64,10:[1,65],15:$VD},o([10,15],[2,6]),o($V4,[2,17]),o($V4,[2,18]),o($V4,[2,19]),{20:[1,68],21:[1,69],22:$VE,27:67,30:70},o($VF,[2,11]),o($VF,[2,12]),o($VF,[2,13]),o($VF,[2,14]),o($VF,[2,15]),o($VF,[2,16]),{9:72,20:$VG,21:$VH,23:$VI,49:73,78:77,81:[1,78],82:[1,79]},{9:80,20:$VG,21:$VH,23:$VI},{9:81,20:$VG,21:$VH,23:$VI},{9:82,20:$VG,21:$VH,23:$VI},{9:83,20:$VG,21:$VH,23:$VI},{9:84,20:$VG,21:$VH,23:$VI},{9:86,20:$VG,21:$VH,22:[1,85],23:$VI},o($VF,[2,44]),{45:[1,87]},{47:[1,88]},o($VF,[2,47]),o($VJ,[2,54],{30:89,22:$VE}),{22:[1,90]},{22:[1,91]},{22:[1,92]},{22:[1,93]},{26:$VK,52:$VL,66:$VM,67:$VN,84:[1,97],91:$VO,97:96,98:[1,94],100:[1,95],105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,115:100,117:98,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($VF,[2,158]),o($VF,[2,159]),o($VF,[2,160]),o($VF,[2,161]),o($V_,[2,55],{53:[1,116]}),o($V$,[2,74],{116:129,40:[1,117],52:$Ve,55:[1,118],57:[1,119],59:[1,120],61:[1,121],63:[1,122],65:[1,123],66:$Vf,67:$Vg,69:[1,124],71:[1,125],73:[1,126],74:[1,127],76:[1,128],91:$Vm,95:$Vn,105:$Vo,106:$Vp,109:$Vq,111:$Vr,112:$Vs,122:$Vx,123:$Vy,124:$Vz,125:$VA,126:$VB,127:$VC}),o($V01,[2,150]),o($V01,[2,175]),o($V01,[2,176]),o($V01,[2,177]),o($V01,[2,178]),o($V01,[2,179]),o($V01,[2,180]),o($V01,[2,181]),o($V01,[2,182]),o($V01,[2,183]),o($V01,[2,184]),o($V01,[2,185]),o($V01,[2,186]),o($V01,[2,187]),o($V01,[2,188]),o($V01,[2,189]),o($V01,[2,190]),{9:130,20:$VG,21:$VH,23:$VI},{11:131,14:[1,132]},o($V11,[2,8]),o($V4,[2,20]),o($V4,[2,26]),o($V4,[2,27]),{21:[1,133]},o($V21,[2,34],{30:134,22:$VE}),o($VF,[2,35]),{50:135,51:45,52:$Ve,54:46,66:$Vf,67:$Vg,91:$Vm,95:$Vn,105:$Vo,106:$Vp,109:$Vq,111:$Vr,112:$Vs,116:47,122:$Vx,123:$Vy,124:$Vz,125:$VA,126:$VB,127:$VC},o($V31,[2,48]),o($V31,[2,49]),o($V31,[2,50]),o($V41,[2,78],{79:136,68:[1,138],80:[1,137]}),{22:$V51,24:$V61,26:$V71,38:$V81,39:139,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o([52,66,67,68,80,91,95,105,106,109,111,112,122,123,124,125,126,127],[2,80]),o($VF,[2,36]),o($VF,[2,37]),o($VF,[2,38]),o($VF,[2,39]),o($VF,[2,40]),{22:$V51,24:$V61,26:$V71,38:$V81,39:163,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($Vo1,$V5,{17:164}),o($VF,[2,45]),o($VF,[2,46]),o($VJ,[2,53],{52:$Vp1}),{26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,97:166,102:[1,167],105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,115:100,117:98,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{95:[1,168],103:169,105:[1,170]},{26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,95:[1,171],97:172,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,115:100,117:98,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,97:173,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,115:100,117:98,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($V11,[2,101],{22:[1,174],99:[1,175]}),o($V11,[2,105],{22:[1,176]}),o($V11,[2,109],{115:100,117:178,22:[1,177],26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ}),o($V11,[2,111],{22:[1,179]}),o($Vq1,[2,152]),o($Vq1,[2,154]),o($Vq1,[2,155]),o($Vq1,[2,156]),o($Vq1,[2,157]),o($Vr1,[2,162]),o($Vr1,[2,163]),o($Vr1,[2,164]),o($Vr1,[2,165]),o($Vr1,[2,166]),o($Vr1,[2,167]),o($Vr1,[2,168]),o($Vr1,[2,169]),o($Vr1,[2,170]),o($Vr1,[2,171]),o($Vr1,[2,172]),o($Vr1,[2,173]),o($Vr1,[2,174]),{52:$Ve,54:180,66:$Vf,67:$Vg,91:$Vm,95:$Vn,105:$Vo,106:$Vp,109:$Vq,111:$Vr,112:$Vs,116:47,122:$Vx,123:$Vy,124:$Vz,125:$VA,126:$VB,127:$VC},{22:$V51,24:$V61,26:$V71,38:$V81,39:181,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:182,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:184,42:$V91,52:$VL,57:[1,183],66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:185,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:186,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:187,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{66:[1,188]},{22:$V51,24:$V61,26:$V71,38:$V81,39:189,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:190,42:$V91,52:$VL,66:$VM,67:$VN,71:[1,191],73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:192,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:193,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:194,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($V01,[2,151]),o($Vs1,[2,3]),{8:195,15:$VD},{15:[2,7]},o($V4,[2,28]),o($V21,[2,33]),o($VJ,[2,51],{30:196,22:$VE}),o($V41,[2,75],{22:[1,197]}),{22:[1,198]},{22:$V51,24:$V61,26:$V71,38:$V81,39:199,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,82:[1,200],83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($Vr1,[2,82]),o($Vr1,[2,84]),o($Vr1,[2,140]),o($Vr1,[2,141]),o($Vr1,[2,142]),o($Vr1,[2,143]),o($Vr1,[2,144]),o($Vr1,[2,145]),o($Vr1,[2,146]),o($Vr1,[2,147]),o($Vr1,[2,148]),o($Vr1,[2,149]),o($Vr1,[2,85]),o($Vr1,[2,86]),o($Vr1,[2,87]),o($Vr1,[2,88]),o($Vr1,[2,89]),o($Vr1,[2,90]),o($Vr1,[2,91]),o($Vr1,[2,92]),o($Vr1,[2,93]),o($Vr1,[2,94]),o($Vr1,[2,95]),{9:203,20:$VG,21:$VH,22:$V51,23:$VI,24:$V61,26:$V71,38:$V81,40:[1,202],42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,204],43:31,44:$Vb,46:$Vc,48:$Vd,50:35,51:45,52:$Ve,54:46,66:$Vf,67:$Vg,86:$Vh,87:$Vi,88:$Vj,89:$Vk,90:$Vl,91:$Vm,95:$Vn,105:$Vo,106:$Vp,109:$Vq,111:$Vr,112:$Vs,116:47,118:$Vt,119:$Vu,120:$Vv,121:$Vw,122:$Vx,123:$Vy,124:$Vz,125:$VA,126:$VB,127:$VC},{22:$VE,30:205},{22:[1,206],26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,115:100,117:178,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:[1,207]},{22:[1,208]},{22:[1,209],106:[1,210]},o($Vt1,[2,123]),{22:[1,211]},{22:[1,212],26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,115:100,117:178,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:[1,213],26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,115:100,117:178,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{84:[1,214]},o($V11,[2,103],{22:[1,215]}),{84:[1,216],101:[1,217]},{84:[1,218]},o($Vq1,[2,153]),{84:[1,219],101:[1,220]},o($V_,[2,57],{116:129,52:$Ve,66:$Vf,67:$Vg,91:$Vm,95:$Vn,105:$Vo,106:$Vp,109:$Vq,111:$Vr,112:$Vs,122:$Vx,123:$Vy,124:$Vz,125:$VA,126:$VB,127:$VC}),{22:$V51,24:$V61,26:$V71,38:$V81,41:[1,221],42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,56:[1,222],66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:223,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,58:[1,224],66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,60:[1,225],66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,62:[1,226],66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,64:[1,227],66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{67:[1,228]},{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,66:$VM,67:$VN,70:[1,229],73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,66:$VM,67:$VN,72:[1,230],73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,39:231,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,41:[1,232],42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,75:[1,233],77:[1,234],81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,75:[1,236],77:[1,235],81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{9:237,20:$VG,21:$VH,23:$VI},o($VJ,[2,52],{52:$Vp1}),o($V41,[2,77]),o($V41,[2,76]),{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,66:$VM,67:$VN,68:[1,238],73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($V41,[2,79]),o($Vr1,[2,83]),{22:$V51,24:$V61,26:$V71,38:$V81,39:239,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($Vo1,$V5,{17:240}),o($VF,[2,43]),{51:241,52:$Ve,54:46,66:$Vf,67:$Vg,91:$Vm,95:$Vn,105:$Vo,106:$Vp,109:$Vq,111:$Vr,112:$Vs,116:47,122:$Vx,123:$Vy,124:$Vz,125:$VA,126:$VB,127:$VC},{22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,96:242,102:$Vy1,105:$Vz1,107:243,108:244,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1},{22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,96:256,102:$Vy1,105:$Vz1,107:243,108:244,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1},{22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,96:257,102:$Vy1,104:[1,258],105:$Vz1,107:243,108:244,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1},{22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,96:259,102:$Vy1,104:[1,260],105:$Vz1,107:243,108:244,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1},{105:[1,261]},{22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,96:262,102:$Vy1,105:$Vz1,107:243,108:244,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1},{22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,96:263,102:$Vy1,105:$Vz1,107:243,108:244,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1},{26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,97:264,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,115:100,117:98,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($V11,[2,102]),{84:[1,265]},o($V11,[2,106],{22:[1,266]}),o($V11,[2,107]),o($V11,[2,110]),o($V11,[2,112],{22:[1,267]}),o($V11,[2,113]),o($V$,[2,58]),o($V$,[2,59]),{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,58:[1,268],66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($V$,[2,66]),o($V$,[2,61]),o($V$,[2,62]),o($V$,[2,63]),{66:[1,269]},o($V$,[2,65]),o($V$,[2,67]),{22:$V51,24:$V61,26:$V71,38:$V81,42:$V91,52:$VL,66:$VM,67:$VN,72:[1,270],73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($V$,[2,69]),o($V$,[2,70]),o($V$,[2,72]),o($V$,[2,71]),o($V$,[2,73]),o($Vs1,[2,4]),o([22,52,66,67,91,95,105,106,109,111,112,122,123,124,125,126,127],[2,81]),{22:$V51,24:$V61,26:$V71,38:$V81,41:[1,271],42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,272],43:31,44:$Vb,46:$Vc,48:$Vd,50:35,51:45,52:$Ve,54:46,66:$Vf,67:$Vg,86:$Vh,87:$Vi,88:$Vj,89:$Vk,90:$Vl,91:$Vm,95:$Vn,105:$Vo,106:$Vp,109:$Vq,111:$Vr,112:$Vs,116:47,118:$Vt,119:$Vu,120:$Vv,121:$Vw,122:$Vx,123:$Vy,124:$Vz,125:$VA,126:$VB,127:$VC},o($V_,[2,56]),o($V11,[2,115],{106:$VF1}),o($VG1,[2,125],{108:274,22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,102:$Vy1,105:$Vz1,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1}),o($VH1,[2,127]),o($VH1,[2,129]),o($VH1,[2,130]),o($VH1,[2,131]),o($VH1,[2,132]),o($VH1,[2,133]),o($VH1,[2,134]),o($VH1,[2,135]),o($VH1,[2,136]),o($VH1,[2,137]),o($VH1,[2,138]),o($VH1,[2,139]),o($V11,[2,116],{106:$VF1}),o($V11,[2,117],{106:$VF1}),{22:[1,275]},o($V11,[2,118],{106:$VF1}),{22:[1,276]},o($Vt1,[2,124]),o($V11,[2,98],{106:$VF1}),o($V11,[2,99],{106:$VF1}),o($V11,[2,100],{115:100,117:178,26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ}),o($V11,[2,104]),{101:[1,277]},{101:[1,278]},{58:[1,279]},{68:[1,280]},{72:[1,281]},{9:282,20:$VG,21:$VH,23:$VI},o($VF,[2,42]),{22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,102:$Vy1,105:$Vz1,107:283,108:244,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1},o($VH1,[2,128]),{26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,97:284,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,115:100,117:98,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,97:285,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,115:100,117:98,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($V11,[2,108]),o($V11,[2,114]),o($V$,[2,60]),{22:$V51,24:$V61,26:$V71,38:$V81,39:286,42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:140,84:$Vc1,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},o($V$,[2,68]),o($Vo1,$V5,{17:287}),o($VG1,[2,126],{108:274,22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,102:$Vy1,105:$Vz1,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1}),o($V11,[2,121],{115:100,117:178,22:[1,288],26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ}),o($V11,[2,122],{115:100,117:178,22:[1,289],26:$VK,52:$VL,66:$VM,67:$VN,91:$VO,105:$VP,106:$VQ,109:$VR,111:$VS,112:$VT,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ}),{22:$V51,24:$V61,26:$V71,38:$V81,41:[1,290],42:$V91,52:$VL,66:$VM,67:$VN,73:$Va1,81:$Vb1,83:201,85:151,86:$Vd1,87:$Ve1,88:$Vf1,89:$Vg1,90:$Vh1,91:$Vi1,92:$Vj1,94:142,95:$Vk1,105:$VP,106:$VQ,109:$Vl1,111:$VS,112:$VT,113:$Vm1,114:$Vn1,115:148,122:$VU,123:$VV,124:$VW,125:$VX,126:$VY,127:$VZ},{18:18,19:19,20:$V6,21:$V7,22:$V8,23:$V9,32:24,33:25,34:26,35:27,36:28,37:29,38:$Va,42:[1,291],43:31,44:$Vb,46:$Vc,48:$Vd,50:35,51:45,52:$Ve,54:46,66:$Vf,67:$Vg,86:$Vh,87:$Vi,88:$Vj,89:$Vk,90:$Vl,91:$Vm,95:$Vn,105:$Vo,106:$Vp,109:$Vq,111:$Vr,112:$Vs,116:47,118:$Vt,119:$Vu,120:$Vv,121:$Vw,122:$Vx,123:$Vy,124:$Vz,125:$VA,126:$VB,127:$VC},{22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,96:292,102:$Vy1,105:$Vz1,107:243,108:244,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1},{22:$Vu1,66:$Vv1,67:$Vw1,86:$Vx1,96:293,102:$Vy1,105:$Vz1,107:243,108:244,109:$VA1,110:$VB1,111:$VC1,112:$VD1,113:$VE1},o($V$,[2,64]),o($VF,[2,41]),o($V11,[2,119],{106:$VF1}),o($V11,[2,120],{106:$VF1})],
+defaultActions: {2:[2,1],9:[2,5],10:[2,2],132:[2,7]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -2499,79 +2548,79 @@ case 5:/* skip comments */
 break;
 case 6:/* skip comments */
 break;
-case 7:this.begin("string");
+case 7: this.begin("acc_title");return 44; 
 break;
-case 8:this.popState();
+case 8: this.popState(); return "acc_title_value"; 
 break;
-case 9:return "STR";
+case 9: this.begin("acc_descr");return 46; 
 break;
-case 10:return 79;
+case 10: this.popState(); return "acc_descr_value"; 
 break;
-case 11:return 88;
+case 11: this.begin("acc_descr_multiline");
 break;
-case 12:return 80;
+case 12: this.popState(); 
 break;
-case 13:return 97;
+case 13:return "acc_descr_multiline_value";
 break;
-case 14:return 81;
+case 14:this.begin("string");
 break;
-case 15:return 82;
+case 15:this.popState();
 break;
-case 16:this.begin("href");
+case 16:return "STR";
 break;
-case 17:this.popState();
+case 17:return 86;
 break;
-case 18:return 93;
+case 18:return 95;
 break;
-case 19:this.begin("callbackname");
+case 19:return 87;
 break;
-case 20:this.popState();
+case 20:return 104;
 break;
-case 21:this.popState(); this.begin("callbackargs");
+case 21:return 88;
 break;
-case 22:return 91;
+case 22:return 89;
 break;
-case 23:this.popState();
+case 23:this.begin("href");
 break;
-case 24:return 92;
+case 24:this.popState();
 break;
-case 25:this.begin("click");
+case 25:return 100;
 break;
-case 26:this.popState();
+case 26:this.begin("callbackname");
 break;
-case 27:return 83;
+case 27:this.popState();
 break;
-case 28:if(yy.lex.firstGraph()){this.begin("dir");}  return 24;
+case 28:this.popState(); this.begin("callbackargs");
 break;
-case 29:if(yy.lex.firstGraph()){this.begin("dir");}  return 24;
+case 29:return 98;
 break;
-case 30:return 38;
+case 30:this.popState();
 break;
-case 31:return 42;
+case 31:return 99;
 break;
-case 32:return 94;
+case 32:this.begin("click");
 break;
-case 33:return 94;
+case 33:this.popState();
 break;
-case 34:return 94;
+case 34:return 90;
 break;
-case 35:return 94;
+case 35:if(yy.lex.firstGraph()){this.begin("dir");}  return 24;
 break;
-case 36:   this.popState();  return 25; 
+case 36:if(yy.lex.firstGraph()){this.begin("dir");}  return 24;
 break;
-case 37:   this.popState();  return 26; 
+case 37:return 38;
 break;
-case 38:   this.popState();  return 26; 
+case 38:return 42;
 break;
-case 39:   this.popState();  return 26; 
+case 39:return 101;
 break;
-case 40:   this.popState();  return 26; 
+case 40:return 101;
 break;
-case 41:   this.popState();  return 26; 
+case 41:return 101;
 break;
-case 42:   this.popState();  return 26; 
+case 42:return 101;
 break;
-case 43:   this.popState();  return 26; 
+case 43:   this.popState();  return 25; 
 break;
 case 44:   this.popState();  return 26; 
 break;
@@ -2579,124 +2628,142 @@ case 45:   this.popState();  return 26;
 break;
 case 46:   this.popState();  return 26; 
 break;
-case 47:return 111;
+case 47:   this.popState();  return 26; 
 break;
-case 48:return 112;
+case 48:   this.popState();  return 26; 
 break;
-case 49:return 113;
+case 49:   this.popState();  return 26; 
 break;
-case 50:return 114;
+case 50:   this.popState();  return 26; 
 break;
-case 51: return 98;
+case 51:   this.popState();  return 26; 
 break;
-case 52:return 104;
+case 52:   this.popState();  return 26; 
 break;
-case 53:return 48;
+case 53:   this.popState();  return 26; 
 break;
-case 54:return 60;
+case 54:return 118;
 break;
-case 55:return 47;
+case 55:return 119;
 break;
-case 56:return 20;
+case 56:return 120;
 break;
-case 57:return 99;
+case 57:return 121;
 break;
-case 58:return 119;
+case 58: return 105;
 break;
-case 59:return 75;
+case 59:return 111;
 break;
-case 60:return 75;
+case 60:return 53;
 break;
-case 61:return 75;
+case 61:return 67;
 break;
-case 62:return 74;
+case 62:return 52;
 break;
-case 63:return 74;
+case 63:return 20;
 break;
-case 64:return 74;
+case 64:return 106;
 break;
-case 65:return 52;
+case 65:return 126;
 break;
-case 66:return 53;
+case 66:return 82;
 break;
-case 67:return 54;
+case 67:return 82;
 break;
-case 68:return 55;
+case 68:return 82;
 break;
-case 69:return 56;
+case 69:return 81;
 break;
-case 70:return 57;
+case 70:return 81;
 break;
-case 71:return 58;
+case 71:return 81;
 break;
-case 72:return 62;
+case 72:return 59;
 break;
-case 73:return 63;
+case 73:return 60;
 break;
-case 74:return 102;
+case 74:return 61;
 break;
-case 75:return 105;
+case 75:return 62;
 break;
-case 76:return 120;
+case 76:return 63;
 break;
-case 77:return 117;
+case 77:return 64;
 break;
-case 78:return 106;
+case 78:return 65;
 break;
-case 79:return 118;
+case 79:return 69;
 break;
-case 80:return 118;
+case 80:return 70;
 break;
-case 81:return 107;
+case 81:return 55;
 break;
-case 82:return 66;
+case 82:return 56;
 break;
-case 83:return 85;
+case 83:return 109;
 break;
-case 84:return 'SEP';
+case 84:return 112;
 break;
-case 85:return 84;
+case 85:return 127;
 break;
-case 86:return 59;
+case 86:return 124;
 break;
-case 87:return 68;
+case 87:return 113;
 break;
-case 88:return 67;
+case 88:return 125;
 break;
-case 89:return 70;
+case 89:return 125;
 break;
-case 90:return 69;
+case 90:return 114;
 break;
-case 91:return 115;
+case 91:return 73;
 break;
-case 92:return 116;
+case 92:return 92;
 break;
-case 93:return 61;
+case 93:return 'SEP';
 break;
-case 94:return 50;
+case 94:return 91;
 break;
-case 95:return 51;
+case 95:return 66;
 break;
-case 96:return 40;
+case 96:return 75;
 break;
-case 97:return 41;
+case 97:return 74;
 break;
-case 98:return 64
+case 98:return 77;
 break;
-case 99:return 65
+case 99:return 76;
 break;
-case 100:return 126;
+case 100:return 122;
 break;
-case 101:return 21;
+case 101:return 123;
 break;
-case 102:return 22;
+case 102:return 68;
 break;
-case 103:return 23;
+case 103:return 57;
+break;
+case 104:return 58;
+break;
+case 105:return 40;
+break;
+case 106:return 41;
+break;
+case 107:return 71
+break;
+case 108:return 72
+break;
+case 109:return 133;
+break;
+case 110:return 21;
+break;
+case 111:return 22;
+break;
+case 112:return 23;
 break;
 }
 },
-rules: [/^(?:%%\{)/,/^(?:((?:(?!\}%%)[^:.])*))/,/^(?::)/,/^(?:\}%%)/,/^(?:((?:(?!\}%%).|\n)*))/,/^(?:%%(?!\{)[^\n]*)/,/^(?:[^\}]%%[^\n]*)/,/^(?:["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:style\b)/,/^(?:default\b)/,/^(?:linkStyle\b)/,/^(?:interpolate\b)/,/^(?:classDef\b)/,/^(?:class\b)/,/^(?:href[\s]+["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:call[\s]+)/,/^(?:\([\s]*\))/,/^(?:\()/,/^(?:[^(]*)/,/^(?:\))/,/^(?:[^)]*)/,/^(?:click[\s]+)/,/^(?:[\s\n])/,/^(?:[^\s\n]*)/,/^(?:graph\b)/,/^(?:flowchart\b)/,/^(?:subgraph\b)/,/^(?:end\b\s*)/,/^(?:_self\b)/,/^(?:_blank\b)/,/^(?:_parent\b)/,/^(?:_top\b)/,/^(?:(\r?\n)*\s*\n)/,/^(?:\s*LR\b)/,/^(?:\s*RL\b)/,/^(?:\s*TB\b)/,/^(?:\s*BT\b)/,/^(?:\s*TD\b)/,/^(?:\s*BR\b)/,/^(?:\s*<)/,/^(?:\s*>)/,/^(?:\s*\^)/,/^(?:\s*v\b)/,/^(?:.*direction\s+TB[^\n]*)/,/^(?:.*direction\s+BT[^\n]*)/,/^(?:.*direction\s+RL[^\n]*)/,/^(?:.*direction\s+LR[^\n]*)/,/^(?:[0-9]+)/,/^(?:#)/,/^(?::::)/,/^(?::)/,/^(?:&)/,/^(?:;)/,/^(?:,)/,/^(?:\*)/,/^(?:\s*[xo<]?--+[-xo>]\s*)/,/^(?:\s*[xo<]?==+[=xo>]\s*)/,/^(?:\s*[xo<]?-?\.+-[xo>]?\s*)/,/^(?:\s*[xo<]?--\s*)/,/^(?:\s*[xo<]?==\s*)/,/^(?:\s*[xo<]?-\.\s*)/,/^(?:\(-)/,/^(?:-\))/,/^(?:\(\[)/,/^(?:\]\))/,/^(?:\[\[)/,/^(?:\]\])/,/^(?:\[\|)/,/^(?:\[\()/,/^(?:\)\])/,/^(?:-)/,/^(?:\.)/,/^(?:[\_])/,/^(?:\+)/,/^(?:%)/,/^(?:=)/,/^(?:=)/,/^(?:<)/,/^(?:>)/,/^(?:\^)/,/^(?:\\\|)/,/^(?:v\b)/,/^(?:[A-Za-z]+)/,/^(?:\\\])/,/^(?:\[\/)/,/^(?:\/\])/,/^(?:\[\\)/,/^(?:[!"#$%&'*+,-.`?\\_/])/,/^(?:[\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6]|[\u00F8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377]|[\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5]|[\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA]|[\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE]|[\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA]|[\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0]|[\u08A2-\u08AC\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0977]|[\u0979-\u097F\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2]|[\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A]|[\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39]|[\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8]|[\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0B05-\u0B0C]|[\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C]|[\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99]|[\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0]|[\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D]|[\u0C58\u0C59\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3]|[\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10]|[\u0D12-\u0D3A\u0D3D\u0D4E\u0D60\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1]|[\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81]|[\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3]|[\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6]|[\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A]|[\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081]|[\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D]|[\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0]|[\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310]|[\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F4\u1401-\u166C]|[\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u1700-\u170C\u170E-\u1711]|[\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7]|[\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191C]|[\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19C1-\u19C7\u1A00-\u1A16]|[\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF]|[\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC]|[\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D]|[\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D]|[\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3]|[\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F]|[\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128]|[\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184]|[\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3]|[\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6]|[\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE]|[\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C]|[\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D]|[\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC]|[\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B]|[\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788]|[\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805]|[\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB]|[\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uAA00-\uAA28]|[\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5]|[\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4]|[\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E]|[\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D]|[\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36]|[\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D]|[\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC]|[\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF]|[\uFFD2-\uFFD7\uFFDA-\uFFDC])/,/^(?:\|)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\{)/,/^(?:\})/,/^(?:")/,/^(?:(\r?\n)+)/,/^(?:\s)/,/^(?:$)/],
-conditions: {"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"callbackargs":{"rules":[23,24],"inclusive":false},"callbackname":{"rules":[20,21,22],"inclusive":false},"href":{"rules":[17,18],"inclusive":false},"click":{"rules":[26,27],"inclusive":false},"vertex":{"rules":[],"inclusive":false},"dir":{"rules":[36,37,38,39,40,41,42,43,44,45,46],"inclusive":false},"string":{"rules":[8,9],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,10,11,12,13,14,15,16,19,25,28,29,30,31,32,33,34,35,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103],"inclusive":true}}
+rules: [/^(?:%%\{)/,/^(?:((?:(?!\}%%)[^:.])*))/,/^(?::)/,/^(?:\}%%)/,/^(?:((?:(?!\}%%).|\n)*))/,/^(?:%%(?!\{)[^\n]*)/,/^(?:[^\}]%%[^\n]*)/,/^(?:accTitle\s*:\s*)/,/^(?:(?!\n||)*[^\n]*)/,/^(?:accDescr\s*:\s*)/,/^(?:(?!\n||)*[^\n]*)/,/^(?:accDescr\s*\{\s*)/,/^(?:[\}])/,/^(?:[^\}]*)/,/^(?:["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:style\b)/,/^(?:default\b)/,/^(?:linkStyle\b)/,/^(?:interpolate\b)/,/^(?:classDef\b)/,/^(?:class\b)/,/^(?:href[\s]+["])/,/^(?:["])/,/^(?:[^"]*)/,/^(?:call[\s]+)/,/^(?:\([\s]*\))/,/^(?:\()/,/^(?:[^(]*)/,/^(?:\))/,/^(?:[^)]*)/,/^(?:click[\s]+)/,/^(?:[\s\n])/,/^(?:[^\s\n]*)/,/^(?:graph\b)/,/^(?:flowchart\b)/,/^(?:subgraph\b)/,/^(?:end\b\s*)/,/^(?:_self\b)/,/^(?:_blank\b)/,/^(?:_parent\b)/,/^(?:_top\b)/,/^(?:(\r?\n)*\s*\n)/,/^(?:\s*LR\b)/,/^(?:\s*RL\b)/,/^(?:\s*TB\b)/,/^(?:\s*BT\b)/,/^(?:\s*TD\b)/,/^(?:\s*BR\b)/,/^(?:\s*<)/,/^(?:\s*>)/,/^(?:\s*\^)/,/^(?:\s*v\b)/,/^(?:.*direction\s+TB[^\n]*)/,/^(?:.*direction\s+BT[^\n]*)/,/^(?:.*direction\s+RL[^\n]*)/,/^(?:.*direction\s+LR[^\n]*)/,/^(?:[0-9]+)/,/^(?:#)/,/^(?::::)/,/^(?::)/,/^(?:&)/,/^(?:;)/,/^(?:,)/,/^(?:\*)/,/^(?:\s*[xo<]?--+[-xo>]\s*)/,/^(?:\s*[xo<]?==+[=xo>]\s*)/,/^(?:\s*[xo<]?-?\.+-[xo>]?\s*)/,/^(?:\s*[xo<]?--\s*)/,/^(?:\s*[xo<]?==\s*)/,/^(?:\s*[xo<]?-\.\s*)/,/^(?:\(-)/,/^(?:-\))/,/^(?:\(\[)/,/^(?:\]\))/,/^(?:\[\[)/,/^(?:\]\])/,/^(?:\[\|)/,/^(?:\[\()/,/^(?:\)\])/,/^(?:\(\(\()/,/^(?:\)\)\))/,/^(?:-)/,/^(?:\.)/,/^(?:[\_])/,/^(?:\+)/,/^(?:%)/,/^(?:=)/,/^(?:=)/,/^(?:<)/,/^(?:>)/,/^(?:\^)/,/^(?:\\\|)/,/^(?:v\b)/,/^(?:[A-Za-z]+)/,/^(?:\\\])/,/^(?:\[\/)/,/^(?:\/\])/,/^(?:\[\\)/,/^(?:[!"#$%&'*+,-.`?\\_/])/,/^(?:[\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6]|[\u00F8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377]|[\u037A-\u037D\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5]|[\u03F7-\u0481\u048A-\u0527\u0531-\u0556\u0559\u0561-\u0587\u05D0-\u05EA]|[\u05F0-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE]|[\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA]|[\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u08A0]|[\u08A2-\u08AC\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0977]|[\u0979-\u097F\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2]|[\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A]|[\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39]|[\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8]|[\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0B05-\u0B0C]|[\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C]|[\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99]|[\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0]|[\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C3D]|[\u0C58\u0C59\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3]|[\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10]|[\u0D12-\u0D3A\u0D3D\u0D4E\u0D60\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1]|[\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81]|[\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3]|[\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6]|[\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A]|[\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081]|[\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D]|[\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0]|[\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310]|[\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F4\u1401-\u166C]|[\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u1700-\u170C\u170E-\u1711]|[\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7]|[\u17DC\u1820-\u1877\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191C]|[\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19C1-\u19C7\u1A00-\u1A16]|[\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE\u1BAF]|[\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1CE9-\u1CEC]|[\u1CEE-\u1CF1\u1CF5\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D]|[\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D]|[\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3]|[\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F]|[\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128]|[\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2183\u2184]|[\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3]|[\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6]|[\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE]|[\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005\u3006\u3031-\u3035\u303B\u303C]|[\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312D]|[\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FCC]|[\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B]|[\uA640-\uA66E\uA67F-\uA697\uA6A0-\uA6E5\uA717-\uA71F\uA722-\uA788]|[\uA78B-\uA78E\uA790-\uA793\uA7A0-\uA7AA\uA7F8-\uA801\uA803-\uA805]|[\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB]|[\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uAA00-\uAA28]|[\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA80-\uAAAF\uAAB1\uAAB5]|[\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4]|[\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E]|[\uABC0-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D]|[\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36]|[\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D]|[\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC]|[\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF]|[\uFFD2-\uFFD7\uFFDA-\uFFDC])/,/^(?:\|)/,/^(?:\()/,/^(?:\))/,/^(?:\[)/,/^(?:\])/,/^(?:\{)/,/^(?:\})/,/^(?:")/,/^(?:(\r?\n)+)/,/^(?:\s)/,/^(?:$)/],
+conditions: {"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"callbackargs":{"rules":[30,31],"inclusive":false},"callbackname":{"rules":[27,28,29],"inclusive":false},"href":{"rules":[24,25],"inclusive":false},"click":{"rules":[33,34],"inclusive":false},"vertex":{"rules":[],"inclusive":false},"dir":{"rules":[43,44,45,46,47,48,49,50,51,52,53],"inclusive":false},"acc_descr_multiline":{"rules":[12,13],"inclusive":false},"acc_descr":{"rules":[10],"inclusive":false},"acc_title":{"rules":[8],"inclusive":false},"string":{"rules":[15,16],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,9,11,14,17,18,19,20,21,22,23,26,32,35,36,37,38,39,40,41,42,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112],"inclusive":true}}
 });
 return lexer;
 })();
@@ -2809,12 +2876,12 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,3],$V1=[1,5],$V2=[7,9,11,12,13,14,15,16,17,18,19,20,22,29,34],$V3=[1,15],$V4=[1,16],$V5=[1,17],$V6=[1,18],$V7=[1,19],$V8=[1,20],$V9=[1,21],$Va=[1,22],$Vb=[1,23],$Vc=[1,25],$Vd=[1,27],$Ve=[1,30],$Vf=[5,7,9,11,12,13,14,15,16,17,18,19,20,22,29,34];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,3],$V1=[1,5],$V2=[7,9,11,12,13,14,15,16,17,18,19,20,22,24,25,27,34,39],$V3=[1,15],$V4=[1,16],$V5=[1,17],$V6=[1,18],$V7=[1,19],$V8=[1,20],$V9=[1,21],$Va=[1,22],$Vb=[1,23],$Vc=[1,24],$Vd=[1,25],$Ve=[1,26],$Vf=[1,28],$Vg=[1,30],$Vh=[1,33],$Vi=[5,7,9,11,12,13,14,15,16,17,18,19,20,22,24,25,27,34,39];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"directive":4,"gantt":5,"document":6,"EOF":7,"line":8,"SPACE":9,"statement":10,"NL":11,"dateFormat":12,"inclusiveEndDates":13,"topAxis":14,"axisFormat":15,"excludes":16,"includes":17,"todayMarker":18,"title":19,"section":20,"clickStatement":21,"taskTxt":22,"taskData":23,"openDirective":24,"typeDirective":25,"closeDirective":26,":":27,"argDirective":28,"click":29,"callbackname":30,"callbackargs":31,"href":32,"clickStatementDebug":33,"open_directive":34,"type_directive":35,"arg_directive":36,"close_directive":37,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"gantt",7:"EOF",9:"SPACE",11:"NL",12:"dateFormat",13:"inclusiveEndDates",14:"topAxis",15:"axisFormat",16:"excludes",17:"includes",18:"todayMarker",19:"title",20:"section",22:"taskTxt",23:"taskData",27:":",29:"click",30:"callbackname",31:"callbackargs",32:"href",34:"open_directive",35:"type_directive",36:"arg_directive",37:"close_directive"},
-productions_: [0,[3,2],[3,3],[6,0],[6,2],[8,2],[8,1],[8,1],[8,1],[10,1],[10,1],[10,1],[10,1],[10,1],[10,1],[10,1],[10,1],[10,1],[10,1],[10,2],[10,1],[4,4],[4,6],[21,2],[21,3],[21,3],[21,4],[21,3],[21,4],[21,2],[33,2],[33,3],[33,3],[33,4],[33,3],[33,4],[33,2],[24,1],[25,1],[28,1],[26,1]],
+symbols_: {"error":2,"start":3,"directive":4,"gantt":5,"document":6,"EOF":7,"line":8,"SPACE":9,"statement":10,"NL":11,"dateFormat":12,"inclusiveEndDates":13,"topAxis":14,"axisFormat":15,"excludes":16,"includes":17,"todayMarker":18,"title":19,"acc_title":20,"acc_title_value":21,"acc_descr":22,"acc_descr_value":23,"acc_descr_multiline_value":24,"section":25,"clickStatement":26,"taskTxt":27,"taskData":28,"openDirective":29,"typeDirective":30,"closeDirective":31,":":32,"argDirective":33,"click":34,"callbackname":35,"callbackargs":36,"href":37,"clickStatementDebug":38,"open_directive":39,"type_directive":40,"arg_directive":41,"close_directive":42,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"gantt",7:"EOF",9:"SPACE",11:"NL",12:"dateFormat",13:"inclusiveEndDates",14:"topAxis",15:"axisFormat",16:"excludes",17:"includes",18:"todayMarker",19:"title",20:"acc_title",21:"acc_title_value",22:"acc_descr",23:"acc_descr_value",24:"acc_descr_multiline_value",25:"section",27:"taskTxt",28:"taskData",32:":",34:"click",35:"callbackname",36:"callbackargs",37:"href",39:"open_directive",40:"type_directive",41:"arg_directive",42:"close_directive"},
+productions_: [0,[3,2],[3,3],[6,0],[6,2],[8,2],[8,1],[8,1],[8,1],[10,1],[10,1],[10,1],[10,1],[10,1],[10,1],[10,1],[10,1],[10,2],[10,2],[10,1],[10,1],[10,1],[10,2],[10,1],[4,4],[4,6],[26,2],[26,3],[26,3],[26,4],[26,3],[26,4],[26,2],[38,2],[38,3],[38,3],[38,4],[38,3],[38,4],[38,2],[29,1],[30,1],[33,1],[31,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -2860,57 +2927,63 @@ case 16:
 yy.setTitle($$[$0].substr(6));this.$=$$[$0].substr(6);
 break;
 case 17:
+ this.$=$$[$0].trim();yy.setTitle(this.$); 
+break;
+case 18: case 19:
+ this.$=$$[$0].trim();yy.setAccDescription(this.$); 
+break;
+case 20:
 yy.addSection($$[$0].substr(8));this.$=$$[$0].substr(8);
 break;
-case 19:
+case 22:
 yy.addTask($$[$0-1],$$[$0]);this.$='task';
 break;
-case 23:
+case 26:
 this.$ = $$[$0-1];yy.setClickEvent($$[$0-1], $$[$0], null);
 break;
-case 24:
+case 27:
 this.$ = $$[$0-2];yy.setClickEvent($$[$0-2], $$[$0-1], $$[$0]);
 break;
-case 25:
+case 28:
 this.$ = $$[$0-2];yy.setClickEvent($$[$0-2], $$[$0-1], null);yy.setLink($$[$0-2],$$[$0]);
 break;
-case 26:
+case 29:
 this.$ = $$[$0-3];yy.setClickEvent($$[$0-3], $$[$0-2], $$[$0-1]);yy.setLink($$[$0-3],$$[$0]);
 break;
-case 27:
+case 30:
 this.$ = $$[$0-2];yy.setClickEvent($$[$0-2], $$[$0], null);yy.setLink($$[$0-2],$$[$0-1]);
 break;
-case 28:
+case 31:
 this.$ = $$[$0-3];yy.setClickEvent($$[$0-3], $$[$0-1], $$[$0]);yy.setLink($$[$0-3],$$[$0-2]);
 break;
-case 29:
+case 32:
 this.$ = $$[$0-1];yy.setLink($$[$0-1], $$[$0]);
 break;
-case 30: case 36:
+case 33: case 39:
 this.$=$$[$0-1] + ' ' + $$[$0];
 break;
-case 31: case 32: case 34:
+case 34: case 35: case 37:
 this.$=$$[$0-2] + ' ' + $$[$0-1] + ' ' + $$[$0];
 break;
-case 33: case 35:
+case 36: case 38:
 this.$=$$[$0-3] + ' ' + $$[$0-2] + ' ' + $$[$0-1] + ' ' + $$[$0];
 break;
-case 37:
+case 40:
  yy.parseDirective('%%{', 'open_directive'); 
 break;
-case 38:
+case 41:
  yy.parseDirective($$[$0], 'type_directive'); 
 break;
-case 39:
+case 42:
  $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
 break;
-case 40:
+case 43:
  yy.parseDirective('}%%', 'close_directive', 'gantt'); 
 break;
 }
 },
-table: [{3:1,4:2,5:$V0,24:4,34:$V1},{1:[3]},{3:6,4:2,5:$V0,24:4,34:$V1},o($V2,[2,3],{6:7}),{25:8,35:[1,9]},{35:[2,37]},{1:[2,1]},{4:26,7:[1,10],8:11,9:[1,12],10:13,11:[1,14],12:$V3,13:$V4,14:$V5,15:$V6,16:$V7,17:$V8,18:$V9,19:$Va,20:$Vb,21:24,22:$Vc,24:4,29:$Vd,34:$V1},{26:28,27:[1,29],37:$Ve},o([27,37],[2,38]),o($V2,[2,8],{1:[2,2]}),o($V2,[2,4]),{4:26,10:31,12:$V3,13:$V4,14:$V5,15:$V6,16:$V7,17:$V8,18:$V9,19:$Va,20:$Vb,21:24,22:$Vc,24:4,29:$Vd,34:$V1},o($V2,[2,6]),o($V2,[2,7]),o($V2,[2,9]),o($V2,[2,10]),o($V2,[2,11]),o($V2,[2,12]),o($V2,[2,13]),o($V2,[2,14]),o($V2,[2,15]),o($V2,[2,16]),o($V2,[2,17]),o($V2,[2,18]),{23:[1,32]},o($V2,[2,20]),{30:[1,33],32:[1,34]},{11:[1,35]},{28:36,36:[1,37]},{11:[2,40]},o($V2,[2,5]),o($V2,[2,19]),o($V2,[2,23],{31:[1,38],32:[1,39]}),o($V2,[2,29],{30:[1,40]}),o($Vf,[2,21]),{26:41,37:$Ve},{37:[2,39]},o($V2,[2,24],{32:[1,42]}),o($V2,[2,25]),o($V2,[2,27],{31:[1,43]}),{11:[1,44]},o($V2,[2,26]),o($V2,[2,28]),o($Vf,[2,22])],
-defaultActions: {5:[2,37],6:[2,1],30:[2,40],37:[2,39]},
+table: [{3:1,4:2,5:$V0,29:4,39:$V1},{1:[3]},{3:6,4:2,5:$V0,29:4,39:$V1},o($V2,[2,3],{6:7}),{30:8,40:[1,9]},{40:[2,40]},{1:[2,1]},{4:29,7:[1,10],8:11,9:[1,12],10:13,11:[1,14],12:$V3,13:$V4,14:$V5,15:$V6,16:$V7,17:$V8,18:$V9,19:$Va,20:$Vb,22:$Vc,24:$Vd,25:$Ve,26:27,27:$Vf,29:4,34:$Vg,39:$V1},{31:31,32:[1,32],42:$Vh},o([32,42],[2,41]),o($V2,[2,8],{1:[2,2]}),o($V2,[2,4]),{4:29,10:34,12:$V3,13:$V4,14:$V5,15:$V6,16:$V7,17:$V8,18:$V9,19:$Va,20:$Vb,22:$Vc,24:$Vd,25:$Ve,26:27,27:$Vf,29:4,34:$Vg,39:$V1},o($V2,[2,6]),o($V2,[2,7]),o($V2,[2,9]),o($V2,[2,10]),o($V2,[2,11]),o($V2,[2,12]),o($V2,[2,13]),o($V2,[2,14]),o($V2,[2,15]),o($V2,[2,16]),{21:[1,35]},{23:[1,36]},o($V2,[2,19]),o($V2,[2,20]),o($V2,[2,21]),{28:[1,37]},o($V2,[2,23]),{35:[1,38],37:[1,39]},{11:[1,40]},{33:41,41:[1,42]},{11:[2,43]},o($V2,[2,5]),o($V2,[2,17]),o($V2,[2,18]),o($V2,[2,22]),o($V2,[2,26],{36:[1,43],37:[1,44]}),o($V2,[2,32],{35:[1,45]}),o($Vi,[2,24]),{31:46,42:$Vh},{42:[2,42]},o($V2,[2,27],{37:[1,47]}),o($V2,[2,28]),o($V2,[2,30],{36:[1,48]}),{11:[1,49]},o($V2,[2,29]),o($V2,[2,31]),o($Vi,[2,25])],
+defaultActions: {5:[2,40],6:[2,1],33:[2,43],42:[2,42]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -3389,90 +3462,106 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 34; 
+case 0: this.begin('open_directive'); return 39; 
 break;
-case 1: this.begin('type_directive'); return 35; 
+case 1: this.begin('type_directive'); return 40; 
 break;
-case 2: this.popState(); this.begin('arg_directive'); return 27; 
+case 2: this.popState(); this.begin('arg_directive'); return 32; 
 break;
-case 3: this.popState(); this.popState(); return 37; 
+case 3: this.popState(); this.popState(); return 42; 
 break;
-case 4:return 36;
+case 4:return 41;
 break;
-case 5:/* skip comments */
+case 5: this.begin("acc_title");return 20; 
 break;
-case 6:/* skip comments */
+case 6: this.popState(); return "acc_title_value"; 
 break;
-case 7:/* do nothing */
+case 7: this.begin("acc_descr");return 22; 
 break;
-case 8:return 11;
+case 8: this.popState(); return "acc_descr_value"; 
 break;
-case 9:/* skip whitespace */
+case 9: this.begin("acc_descr_multiline");
 break;
-case 10:/* skip comments */
+case 10: this.popState(); 
 break;
-case 11:/* skip comments */
+case 11:return "acc_descr_multiline_value";
 break;
-case 12:this.begin("href");
+case 12:/* skip comments */
 break;
-case 13:this.popState();
+case 13:/* skip comments */
 break;
-case 14:return 32;
+case 14:/* do nothing */
 break;
-case 15:this.begin("callbackname");
+case 15:return 11;
 break;
-case 16:this.popState();
+case 16:/* skip whitespace */
 break;
-case 17:this.popState(); this.begin("callbackargs");
+case 17:/* skip comments */
 break;
-case 18:return 30;
+case 18:/* skip comments */
 break;
-case 19:this.popState();
+case 19:this.begin("href");
 break;
-case 20:return 31;
+case 20:this.popState();
 break;
-case 21:this.begin("click");
+case 21:return 37;
 break;
-case 22:this.popState();
+case 22:this.begin("callbackname");
 break;
-case 23:return 29;
+case 23:this.popState();
 break;
-case 24:return 5;
+case 24:this.popState(); this.begin("callbackargs");
 break;
-case 25:return 12;
+case 25:return 35;
 break;
-case 26:return 13;
+case 26:this.popState();
 break;
-case 27:return 14;
+case 27:return 36;
 break;
-case 28:return 15;
+case 28:this.begin("click");
 break;
-case 29:return 17;
+case 29:this.popState();
 break;
-case 30:return 16;
+case 30:return 34;
 break;
-case 31:return 18;
+case 31:return 5;
 break;
-case 32:return 'date';
+case 32:return 12;
 break;
-case 33:return 19;
+case 33:return 13;
 break;
-case 34:return 20;
+case 34:return 14;
 break;
-case 35:return 22;
+case 35:return 15;
 break;
-case 36:return 23;
+case 36:return 17;
 break;
-case 37:return 27;
+case 37:return 16;
 break;
-case 38:return 7;
+case 38:return 18;
 break;
-case 39:return 'INVALID';
+case 39:return 'date';
+break;
+case 40:return 19;
+break;
+case 41:return 'accDescription'
+break;
+case 42:return 25;
+break;
+case 43:return 27;
+break;
+case 44:return 28;
+break;
+case 45:return 32;
+break;
+case 46:return 7;
+break;
+case 47:return 'INVALID';
 break;
 }
 },
-rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:%%(?!\{)*[^\n]*)/i,/^(?:[^\}]%%*[^\n]*)/i,/^(?:%%*[^\n]*[\n]*)/i,/^(?:[\n]+)/i,/^(?:\s+)/i,/^(?:#[^\n]*)/i,/^(?:%[^\n]*)/i,/^(?:href[\s]+["])/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:call[\s]+)/i,/^(?:\([\s]*\))/i,/^(?:\()/i,/^(?:[^(]*)/i,/^(?:\))/i,/^(?:[^)]*)/i,/^(?:click[\s]+)/i,/^(?:[\s\n])/i,/^(?:[^\s\n]*)/i,/^(?:gantt\b)/i,/^(?:dateFormat\s[^#\n;]+)/i,/^(?:inclusiveEndDates\b)/i,/^(?:topAxis\b)/i,/^(?:axisFormat\s[^#\n;]+)/i,/^(?:includes\s[^#\n;]+)/i,/^(?:excludes\s[^#\n;]+)/i,/^(?:todayMarker\s[^\n;]+)/i,/^(?:\d\d\d\d-\d\d-\d\d\b)/i,/^(?:title\s[^#\n;]+)/i,/^(?:section\s[^#:\n;]+)/i,/^(?:[^#:\n;]+)/i,/^(?::[^#\n;]+)/i,/^(?::)/i,/^(?:$)/i,/^(?:.)/i],
-conditions: {"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"callbackargs":{"rules":[19,20],"inclusive":false},"callbackname":{"rules":[16,17,18],"inclusive":false},"href":{"rules":[13,14],"inclusive":false},"click":{"rules":[22,23],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,8,9,10,11,12,15,21,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39],"inclusive":true}}
+rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:accTitle\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*\{\s*)/i,/^(?:[\}])/i,/^(?:[^\}]*)/i,/^(?:%%(?!\{)*[^\n]*)/i,/^(?:[^\}]%%*[^\n]*)/i,/^(?:%%*[^\n]*[\n]*)/i,/^(?:[\n]+)/i,/^(?:\s+)/i,/^(?:#[^\n]*)/i,/^(?:%[^\n]*)/i,/^(?:href[\s]+["])/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:call[\s]+)/i,/^(?:\([\s]*\))/i,/^(?:\()/i,/^(?:[^(]*)/i,/^(?:\))/i,/^(?:[^)]*)/i,/^(?:click[\s]+)/i,/^(?:[\s\n])/i,/^(?:[^\s\n]*)/i,/^(?:gantt\b)/i,/^(?:dateFormat\s[^#\n;]+)/i,/^(?:inclusiveEndDates\b)/i,/^(?:topAxis\b)/i,/^(?:axisFormat\s[^#\n;]+)/i,/^(?:includes\s[^#\n;]+)/i,/^(?:excludes\s[^#\n;]+)/i,/^(?:todayMarker\s[^\n;]+)/i,/^(?:\d\d\d\d-\d\d-\d\d\b)/i,/^(?:title\s[^#\n;]+)/i,/^(?:accDescription\s[^#\n;]+)/i,/^(?:section\s[^#:\n;]+)/i,/^(?:[^#:\n;]+)/i,/^(?::[^#\n;]+)/i,/^(?::)/i,/^(?:$)/i,/^(?:.)/i],
+conditions: {"acc_descr_multiline":{"rules":[10,11],"inclusive":false},"acc_descr":{"rules":[8],"inclusive":false},"acc_title":{"rules":[6],"inclusive":false},"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"callbackargs":{"rules":[26,27],"inclusive":false},"callbackname":{"rules":[23,24,25],"inclusive":false},"href":{"rules":[20,21],"inclusive":false},"click":{"rules":[29,30],"inclusive":false},"INITIAL":{"rules":[0,5,7,9,12,13,14,15,16,17,18,19,22,28,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47],"inclusive":true}}
 });
 return lexer;
 })();
@@ -3585,75 +3674,291 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[2,3],$V1=[1,7],$V2=[7,12,15,17,19,20,21],$V3=[7,11,12,15,17,19,20,21],$V4=[2,20],$V5=[1,32];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,4],$V1=[1,7],$V2=[1,5],$V3=[1,9],$V4=[1,6],$V5=[2,6],$V6=[1,16],$V7=[6,8,14,19,21,23,24,26,28,31,34,47,51],$V8=[8,14,19,21,23,24,26,28,31,34],$V9=[8,13,14,19,21,23,24,26,28,31,34],$Va=[1,26],$Vb=[6,8,14,47,51],$Vc=[8,14,51],$Vd=[1,61],$Ve=[1,62],$Vf=[1,63],$Vg=[8,14,32,38,39,51];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"GG":4,":":5,"document":6,"EOF":7,"DIR":8,"options":9,"body":10,"OPT":11,"NL":12,"line":13,"statement":14,"COMMIT":15,"commit_arg":16,"BRANCH":17,"ID":18,"CHECKOUT":19,"MERGE":20,"RESET":21,"reset_arg":22,"STR":23,"HEAD":24,"reset_parents":25,"CARET":26,"$accept":0,"$end":1},
-terminals_: {2:"error",4:"GG",5:":",7:"EOF",8:"DIR",11:"OPT",12:"NL",15:"COMMIT",17:"BRANCH",18:"ID",19:"CHECKOUT",20:"MERGE",21:"RESET",23:"STR",24:"HEAD",26:"CARET"},
-productions_: [0,[3,4],[3,5],[6,0],[6,2],[9,2],[9,1],[10,0],[10,2],[13,2],[13,1],[14,2],[14,2],[14,2],[14,2],[14,2],[16,0],[16,1],[22,2],[22,2],[25,0],[25,2]],
+symbols_: {"error":2,"start":3,"eol":4,"directive":5,"GG":6,"document":7,"EOF":8,":":9,"DIR":10,"options":11,"body":12,"OPT":13,"NL":14,"line":15,"statement":16,"commitStatement":17,"mergeStatement":18,"acc_title":19,"acc_title_value":20,"acc_descr":21,"acc_descr_value":22,"acc_descr_multiline_value":23,"section":24,"branchStatement":25,"CHECKOUT":26,"ID":27,"BRANCH":28,"ORDER":29,"NUM":30,"MERGE":31,"COMMIT_TAG":32,"STR":33,"COMMIT":34,"commit_arg":35,"COMMIT_TYPE":36,"commitType":37,"COMMIT_ID":38,"COMMIT_MSG":39,"NORMAL":40,"REVERSE":41,"HIGHLIGHT":42,"openDirective":43,"typeDirective":44,"closeDirective":45,"argDirective":46,"open_directive":47,"type_directive":48,"arg_directive":49,"close_directive":50,";":51,"$accept":0,"$end":1},
+terminals_: {2:"error",6:"GG",8:"EOF",9:":",10:"DIR",13:"OPT",14:"NL",19:"acc_title",20:"acc_title_value",21:"acc_descr",22:"acc_descr_value",23:"acc_descr_multiline_value",24:"section",26:"CHECKOUT",27:"ID",28:"BRANCH",29:"ORDER",30:"NUM",31:"MERGE",32:"COMMIT_TAG",33:"STR",34:"COMMIT",36:"COMMIT_TYPE",38:"COMMIT_ID",39:"COMMIT_MSG",40:"NORMAL",41:"REVERSE",42:"HIGHLIGHT",47:"open_directive",48:"type_directive",49:"arg_directive",50:"close_directive",51:";"},
+productions_: [0,[3,2],[3,2],[3,3],[3,4],[3,5],[7,0],[7,2],[11,2],[11,1],[12,0],[12,2],[15,2],[15,1],[16,1],[16,1],[16,2],[16,2],[16,1],[16,1],[16,1],[16,2],[25,2],[25,4],[18,2],[18,4],[17,2],[17,3],[17,3],[17,5],[17,5],[17,3],[17,5],[17,5],[17,5],[17,5],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,3],[17,5],[17,5],[17,5],[17,5],[17,5],[17,5],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,7],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[17,9],[35,0],[35,1],[37,1],[37,1],[37,1],[5,3],[5,5],[43,1],[44,1],[46,1],[45,1],[4,1],[4,1],[4,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
 var $0 = $$.length - 1;
 switch (yystate) {
-case 1:
- return $$[$0-1]; 
-break;
-case 2:
-yy.setDirection($$[$0-3]); return $$[$0-1];
+case 3:
+ return $$[$0]; 
 break;
 case 4:
- yy.setOptions($$[$0-1]); this.$ = $$[$0]
+ return $$[$0-1]; 
 break;
 case 5:
-$$[$0-1] +=$$[$0]; this.$=$$[$0-1]
+yy.setDirection($$[$0-3]); return $$[$0-1];
 break;
 case 7:
-this.$ = []
+ yy.setOptions($$[$0-1]); this.$ = $$[$0]
 break;
 case 8:
-$$[$0-1].push($$[$0]); this.$=$$[$0-1];
+$$[$0-1] +=$$[$0]; this.$=$$[$0-1]
 break;
-case 9:
-this.$ =$$[$0-1]
+case 10:
+this.$ = []
 break;
 case 11:
-yy.commit($$[$0])
+$$[$0-1].push($$[$0]); this.$=$$[$0-1];
 break;
 case 12:
-yy.branch($$[$0])
-break;
-case 13:
-yy.checkout($$[$0])
-break;
-case 14:
-yy.merge($$[$0])
-break;
-case 15:
-yy.reset($$[$0])
+this.$ =$$[$0-1]
 break;
 case 16:
-this.$ = ""
+ this.$=$$[$0].trim();yy.setTitle(this.$); 
 break;
-case 17:
-this.$=$$[$0]
-break;
-case 18:
-this.$ = $$[$0-1]+ ":" + $$[$0] 
+case 17: case 18:
+ this.$=$$[$0].trim();yy.setAccDescription(this.$); 
 break;
 case 19:
-this.$ = $$[$0-1]+ ":"  + yy.count; yy.count = 0
-break;
-case 20:
-yy.count = 0
+yy.addSection($$[$0].substr(8));this.$=$$[$0].substr(8);
 break;
 case 21:
- yy.count += 1 
+yy.checkout($$[$0])
+break;
+case 22:
+yy.branch($$[$0])
+break;
+case 23:
+yy.branch($$[$0-2], $$[$0])
+break;
+case 24:
+yy.merge($$[$0])
+break;
+case 25:
+yy.merge($$[$0-2], $$[$0])
+break;
+case 26:
+yy.commit($$[$0])
+break;
+case 27:
+yy.commit('','',yy.commitType.NORMAL,$$[$0])
+break;
+case 28:
+yy.commit('','',$$[$0],'')
+break;
+case 29:
+yy.commit('','',$$[$0],$$[$0-2])
+break;
+case 30:
+yy.commit('','',$$[$0-2],$$[$0])
+break;
+case 31:
+yy.commit('',$$[$0],yy.commitType.NORMAL,'')
+break;
+case 32:
+yy.commit('',$$[$0-2],yy.commitType.NORMAL,$$[$0])
+break;
+case 33:
+yy.commit('',$$[$0],yy.commitType.NORMAL,$$[$0-2])
+break;
+case 34:
+yy.commit('',$$[$0-2],$$[$0],'')
+break;
+case 35:
+yy.commit('',$$[$0],$$[$0-2],'')
+break;
+case 36:
+yy.commit('',$$[$0-4],$$[$0-2],$$[$0])
+break;
+case 37:
+yy.commit('',$$[$0-4],$$[$0],$$[$0-2])
+break;
+case 38:
+yy.commit('',$$[$0-2],$$[$0-4],$$[$0])
+break;
+case 39:
+yy.commit('',$$[$0],$$[$0-4],$$[$0-2])
+break;
+case 40:
+yy.commit('',$$[$0],$$[$0-2],$$[$0-4])
+break;
+case 41:
+yy.commit('',$$[$0-2],$$[$0],$$[$0-4])
+break;
+case 42:
+yy.commit($$[$0],'',yy.commitType.NORMAL,'')
+break;
+case 43:
+yy.commit($$[$0],'',yy.commitType.NORMAL,$$[$0-2])
+break;
+case 44:
+yy.commit($$[$0-2],'',yy.commitType.NORMAL,$$[$0])
+break;
+case 45:
+yy.commit($$[$0-2],'',$$[$0],'')
+break;
+case 46:
+yy.commit($$[$0],'',$$[$0-2],'')
+break;
+case 47:
+yy.commit($$[$0],$$[$0-2],yy.commitType.NORMAL,'')
+break;
+case 48:
+yy.commit($$[$0-2],$$[$0],yy.commitType.NORMAL,'')
+break;
+case 49:
+yy.commit($$[$0-4],'',$$[$0-2],$$[$0])
+break;
+case 50:
+yy.commit($$[$0-4],'',$$[$0],$$[$0-2])
+break;
+case 51:
+yy.commit($$[$0-2],'',$$[$0-4],$$[$0])
+break;
+case 52:
+yy.commit($$[$0],'',$$[$0-4],$$[$0-2])
+break;
+case 53:
+yy.commit($$[$0],'',$$[$0-2],$$[$0-4])
+break;
+case 54:
+yy.commit($$[$0-2],'',$$[$0],$$[$0-4])
+break;
+case 55:
+yy.commit($$[$0-4],$$[$0],$$[$0-2],'')
+break;
+case 56:
+yy.commit($$[$0-4],$$[$0-2],$$[$0],'')
+break;
+case 57:
+yy.commit($$[$0-2],$$[$0],$$[$0-4],'')
+break;
+case 58:
+yy.commit($$[$0],$$[$0-2],$$[$0-4],'')
+break;
+case 59:
+yy.commit($$[$0],$$[$0-4],$$[$0-2],'')
+break;
+case 60:
+yy.commit($$[$0-2],$$[$0-4],$$[$0],'')
+break;
+case 61:
+yy.commit($$[$0-4],$$[$0],yy.commitType.NORMAL,$$[$0-2])
+break;
+case 62:
+yy.commit($$[$0-4],$$[$0-2],yy.commitType.NORMAL,$$[$0])
+break;
+case 63:
+yy.commit($$[$0-2],$$[$0],yy.commitType.NORMAL,$$[$0-4])
+break;
+case 64:
+yy.commit($$[$0],$$[$0-2],yy.commitType.NORMAL,$$[$0-4])
+break;
+case 65:
+yy.commit($$[$0],$$[$0-4],yy.commitType.NORMAL,$$[$0-2])
+break;
+case 66:
+yy.commit($$[$0-2],$$[$0-4],yy.commitType.NORMAL,$$[$0])
+break;
+case 67:
+yy.commit($$[$0-6],$$[$0-4],$$[$0-2],$$[$0])
+break;
+case 68:
+yy.commit($$[$0-6],$$[$0-4],$$[$0],$$[$0-2])
+break;
+case 69:
+yy.commit($$[$0-6],$$[$0-2],$$[$0-4],$$[$0])
+break;
+case 70:
+yy.commit($$[$0-6],$$[$0],$$[$0-4],$$[$0-2])
+break;
+case 71:
+yy.commit($$[$0-6],$$[$0-2],$$[$0],$$[$0-4])
+break;
+case 72:
+yy.commit($$[$0-6],$$[$0],$$[$0-2],$$[$0-4])
+break;
+case 73:
+yy.commit($$[$0-4],$$[$0-6],$$[$0-2],$$[$0])
+break;
+case 74:
+yy.commit($$[$0-4],$$[$0-6],$$[$0],$$[$0-2])
+break;
+case 75:
+yy.commit($$[$0-2],$$[$0-6],$$[$0-4],$$[$0])
+break;
+case 76:
+yy.commit($$[$0],$$[$0-6],$$[$0-4],$$[$0-2])
+break;
+case 77:
+yy.commit($$[$0-2],$$[$0-6],$$[$0],$$[$0-4])
+break;
+case 78:
+yy.commit($$[$0],$$[$0-6],$$[$0-2],$$[$0-4])
+break;
+case 79:
+yy.commit($$[$0],$$[$0-4],$$[$0-2],$$[$0-6])
+break;
+case 80:
+yy.commit($$[$0-2],$$[$0-4],$$[$0],$$[$0-6])
+break;
+case 81:
+yy.commit($$[$0],$$[$0-2],$$[$0-4],$$[$0-6])
+break;
+case 82:
+yy.commit($$[$0-2],$$[$0],$$[$0-4],$$[$0-6])
+break;
+case 83:
+yy.commit($$[$0-4],$$[$0-2],$$[$0],$$[$0-6])
+break;
+case 84:
+yy.commit($$[$0-4],$$[$0],$$[$0-2],$$[$0-6])
+break;
+case 85:
+yy.commit($$[$0-2],$$[$0-4],$$[$0-6],$$[$0])
+break;
+case 86:
+yy.commit($$[$0],$$[$0-4],$$[$0-6],$$[$0-2])
+break;
+case 87:
+yy.commit($$[$0-2],$$[$0],$$[$0-6],$$[$0-4])
+break;
+case 88:
+yy.commit($$[$0],$$[$0-2],$$[$0-6],$$[$0-4])
+break;
+case 89:
+yy.commit($$[$0-4],$$[$0-2],$$[$0-6],$$[$0])
+break;
+case 90:
+yy.commit($$[$0-4],$$[$0],$$[$0-6],$$[$0-2])
+break;
+case 91:
+this.$ = ""
+break;
+case 92:
+this.$=$$[$0]
+break;
+case 93:
+ this.$=yy.commitType.NORMAL;
+break;
+case 94:
+ this.$=yy.commitType.REVERSE;
+break;
+case 95:
+ this.$=yy.commitType.HIGHLIGHT;
+break;
+case 98:
+ yy.parseDirective('%%{', 'open_directive'); 
+break;
+case 99:
+ yy.parseDirective($$[$0], 'type_directive'); 
+break;
+case 100:
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+break;
+case 101:
+ yy.parseDirective('}%%', 'close_directive', 'gitGraph'); 
 break;
 }
 },
-table: [{3:1,4:[1,2]},{1:[3]},{5:[1,3],8:[1,4]},{6:5,7:$V0,9:6,12:$V1},{5:[1,8]},{7:[1,9]},o($V2,[2,7],{10:10,11:[1,11]}),o($V3,[2,6]),{6:12,7:$V0,9:6,12:$V1},{1:[2,1]},{7:[2,4],12:[1,15],13:13,14:14,15:[1,16],17:[1,17],19:[1,18],20:[1,19],21:[1,20]},o($V3,[2,5]),{7:[1,21]},o($V2,[2,8]),{12:[1,22]},o($V2,[2,10]),{12:[2,16],16:23,23:[1,24]},{18:[1,25]},{18:[1,26]},{18:[1,27]},{18:[1,30],22:28,24:[1,29]},{1:[2,2]},o($V2,[2,9]),{12:[2,11]},{12:[2,17]},{12:[2,12]},{12:[2,13]},{12:[2,14]},{12:[2,15]},{12:$V4,25:31,26:$V5},{12:$V4,25:33,26:$V5},{12:[2,18]},{12:$V4,25:34,26:$V5},{12:[2,19]},{12:[2,21]}],
-defaultActions: {9:[2,1],21:[2,2],23:[2,11],24:[2,17],25:[2,12],26:[2,13],27:[2,14],28:[2,15],31:[2,18],33:[2,19],34:[2,21]},
+table: [{3:1,4:2,5:3,6:$V0,8:$V1,14:$V2,43:8,47:$V3,51:$V4},{1:[3]},{3:10,4:2,5:3,6:$V0,8:$V1,14:$V2,43:8,47:$V3,51:$V4},{3:11,4:2,5:3,6:$V0,8:$V1,14:$V2,43:8,47:$V3,51:$V4},{7:12,8:$V5,9:[1,13],10:[1,14],11:15,14:$V6},o($V7,[2,102]),o($V7,[2,103]),o($V7,[2,104]),{44:17,48:[1,18]},{48:[2,98]},{1:[2,1]},{1:[2,2]},{8:[1,19]},{7:20,8:$V5,11:15,14:$V6},{9:[1,21]},o($V8,[2,10],{12:22,13:[1,23]}),o($V9,[2,9]),{9:[1,25],45:24,50:$Va},o([9,50],[2,99]),{1:[2,3]},{8:[1,27]},{7:28,8:$V5,11:15,14:$V6},{8:[2,7],14:[1,31],15:29,16:30,17:32,18:33,19:[1,34],21:[1,35],23:[1,36],24:[1,37],25:38,26:[1,39],28:[1,42],31:[1,41],34:[1,40]},o($V9,[2,8]),o($Vb,[2,96]),{46:43,49:[1,44]},o($Vb,[2,101]),{1:[2,4]},{8:[1,45]},o($V8,[2,11]),{4:46,8:$V1,14:$V2,51:$V4},o($V8,[2,13]),o($Vc,[2,14]),o($Vc,[2,15]),{20:[1,47]},{22:[1,48]},o($Vc,[2,18]),o($Vc,[2,19]),o($Vc,[2,20]),{27:[1,49]},o($Vc,[2,91],{35:50,32:[1,51],33:[1,55],36:[1,52],38:[1,53],39:[1,54]}),{27:[1,56]},{27:[1,57]},{45:58,50:$Va},{50:[2,100]},{1:[2,5]},o($V8,[2,12]),o($Vc,[2,16]),o($Vc,[2,17]),o($Vc,[2,21]),o($Vc,[2,26]),{33:[1,59]},{37:60,40:$Vd,41:$Ve,42:$Vf},{33:[1,64]},{33:[1,65]},o($Vc,[2,92]),o($Vc,[2,24],{32:[1,66]}),o($Vc,[2,22],{29:[1,67]}),o($Vb,[2,97]),o($Vc,[2,27],{36:[1,68],38:[1,69],39:[1,70]}),o($Vc,[2,28],{32:[1,71],38:[1,72],39:[1,73]}),o($Vg,[2,93]),o($Vg,[2,94]),o($Vg,[2,95]),o($Vc,[2,31],{32:[1,74],36:[1,75],39:[1,76]}),o($Vc,[2,42],{32:[1,77],36:[1,78],38:[1,79]}),{33:[1,80]},{30:[1,81]},{37:82,40:$Vd,41:$Ve,42:$Vf},{33:[1,83]},{33:[1,84]},{33:[1,85]},{33:[1,86]},{33:[1,87]},{33:[1,88]},{37:89,40:$Vd,41:$Ve,42:$Vf},{33:[1,90]},{33:[1,91]},{37:92,40:$Vd,41:$Ve,42:$Vf},{33:[1,93]},o($Vc,[2,25]),o($Vc,[2,23]),o($Vc,[2,29],{38:[1,94],39:[1,95]}),o($Vc,[2,33],{36:[1,96],39:[1,97]}),o($Vc,[2,43],{36:[1,98],38:[1,99]}),o($Vc,[2,30],{38:[1,100],39:[1,101]}),o($Vc,[2,35],{32:[1,102],39:[1,103]}),o($Vc,[2,46],{32:[1,104],38:[1,105]}),o($Vc,[2,32],{36:[1,106],39:[1,107]}),o($Vc,[2,34],{32:[1,108],39:[1,109]}),o($Vc,[2,47],{32:[1,111],36:[1,110]}),o($Vc,[2,44],{36:[1,112],38:[1,113]}),o($Vc,[2,45],{32:[1,114],38:[1,115]}),o($Vc,[2,48],{32:[1,117],36:[1,116]}),{33:[1,118]},{33:[1,119]},{37:120,40:$Vd,41:$Ve,42:$Vf},{33:[1,121]},{37:122,40:$Vd,41:$Ve,42:$Vf},{33:[1,123]},{33:[1,124]},{33:[1,125]},{33:[1,126]},{33:[1,127]},{33:[1,128]},{33:[1,129]},{37:130,40:$Vd,41:$Ve,42:$Vf},{33:[1,131]},{33:[1,132]},{33:[1,133]},{37:134,40:$Vd,41:$Ve,42:$Vf},{33:[1,135]},{37:136,40:$Vd,41:$Ve,42:$Vf},{33:[1,137]},{33:[1,138]},{33:[1,139]},{37:140,40:$Vd,41:$Ve,42:$Vf},{33:[1,141]},o($Vc,[2,40],{39:[1,142]}),o($Vc,[2,53],{38:[1,143]}),o($Vc,[2,41],{39:[1,144]}),o($Vc,[2,64],{36:[1,145]}),o($Vc,[2,54],{38:[1,146]}),o($Vc,[2,63],{36:[1,147]}),o($Vc,[2,39],{39:[1,148]}),o($Vc,[2,52],{38:[1,149]}),o($Vc,[2,38],{39:[1,150]}),o($Vc,[2,58],{32:[1,151]}),o($Vc,[2,51],{38:[1,152]}),o($Vc,[2,57],{32:[1,153]}),o($Vc,[2,37],{39:[1,154]}),o($Vc,[2,65],{36:[1,155]}),o($Vc,[2,36],{39:[1,156]}),o($Vc,[2,59],{32:[1,157]}),o($Vc,[2,60],{32:[1,158]}),o($Vc,[2,66],{36:[1,159]}),o($Vc,[2,50],{38:[1,160]}),o($Vc,[2,61],{36:[1,161]}),o($Vc,[2,49],{38:[1,162]}),o($Vc,[2,55],{32:[1,163]}),o($Vc,[2,56],{32:[1,164]}),o($Vc,[2,62],{36:[1,165]}),{33:[1,166]},{33:[1,167]},{33:[1,168]},{37:169,40:$Vd,41:$Ve,42:$Vf},{33:[1,170]},{37:171,40:$Vd,41:$Ve,42:$Vf},{33:[1,172]},{33:[1,173]},{33:[1,174]},{33:[1,175]},{33:[1,176]},{33:[1,177]},{33:[1,178]},{37:179,40:$Vd,41:$Ve,42:$Vf},{33:[1,180]},{33:[1,181]},{33:[1,182]},{37:183,40:$Vd,41:$Ve,42:$Vf},{33:[1,184]},{37:185,40:$Vd,41:$Ve,42:$Vf},{33:[1,186]},{33:[1,187]},{33:[1,188]},{37:189,40:$Vd,41:$Ve,42:$Vf},o($Vc,[2,81]),o($Vc,[2,82]),o($Vc,[2,79]),o($Vc,[2,80]),o($Vc,[2,84]),o($Vc,[2,83]),o($Vc,[2,88]),o($Vc,[2,87]),o($Vc,[2,86]),o($Vc,[2,85]),o($Vc,[2,90]),o($Vc,[2,89]),o($Vc,[2,78]),o($Vc,[2,77]),o($Vc,[2,76]),o($Vc,[2,75]),o($Vc,[2,73]),o($Vc,[2,74]),o($Vc,[2,72]),o($Vc,[2,71]),o($Vc,[2,70]),o($Vc,[2,69]),o($Vc,[2,67]),o($Vc,[2,68])],
+defaultActions: {9:[2,98],10:[2,1],11:[2,2],19:[2,3],27:[2,4],44:[2,100],45:[2,5]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -4131,54 +4436,94 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0:return 12;
+case 0: this.begin('open_directive'); return 47; 
 break;
-case 1:/* skip all whitespace */
+case 1: this.begin('type_directive'); return 48; 
 break;
-case 2:/* skip comments */
+case 2: this.popState(); this.begin('arg_directive'); return 9; 
 break;
-case 3:/* skip comments */
+case 3: this.popState(); this.popState(); return 50; 
 break;
-case 4:return 4;
+case 4:return 49;
 break;
-case 5:return 15;
+case 5: this.begin("acc_title");return 19; 
 break;
-case 6:return 17;
+case 6: this.popState(); return "acc_title_value"; 
 break;
-case 7:return 20;
+case 7: this.begin("acc_descr");return 21; 
 break;
-case 8:return 21;
+case 8: this.popState(); return "acc_descr_value"; 
 break;
-case 9:return 19;
+case 9: this.begin("acc_descr_multiline");
 break;
-case 10:return 8;
+case 10: this.popState(); 
 break;
-case 11:return 8;
+case 11:return "acc_descr_multiline_value";
 break;
-case 12:return 5;
+case 12:/*{console.log('New line');return 14;}*/ return 14;
 break;
-case 13:return 26
+case 13:/* skip all whitespace */
 break;
-case 14:this.begin("options");
+case 14:/* skip comments */
 break;
-case 15:this.popState();
+case 15:/* skip comments */
 break;
-case 16:return 11;
+case 16:return 6;
 break;
-case 17:this.begin("string");
+case 17:return 34;
 break;
-case 18:this.popState();
+case 18:return 38;
 break;
-case 19:return 23;
+case 19:return 36;
 break;
-case 20:return 18;
+case 20:return 39;
 break;
-case 21:return 7;
+case 21:return 40;
+break;
+case 22:return 41;
+break;
+case 23:return 42;
+break;
+case 24:return 32;
+break;
+case 25:return 28;
+break;
+case 26:return 29;
+break;
+case 27:return 31;
+break;
+case 28:return 26;
+break;
+case 29:return 10;
+break;
+case 30:return 10;
+break;
+case 31:return 9;
+break;
+case 32:return 'CARET'
+break;
+case 33:this.begin("options"); //
+break;
+case 34:this.popState();       // not used anymore in the renderer, fixed for backward compatibility
+break;
+case 35:return 13;          //
+break;
+case 36:this.begin("string");
+break;
+case 37:this.popState();
+break;
+case 38:return 33;
+break;
+case 39:return 30;
+break;
+case 40:return 27;
+break;
+case 41:return 8;
 break;
 }
 },
-rules: [/^(?:(\r?\n)+)/i,/^(?:\s+)/i,/^(?:#[^\n]*)/i,/^(?:%[^\n]*)/i,/^(?:gitGraph\b)/i,/^(?:commit\b)/i,/^(?:branch\b)/i,/^(?:merge\b)/i,/^(?:reset\b)/i,/^(?:checkout\b)/i,/^(?:LR\b)/i,/^(?:BT\b)/i,/^(?::)/i,/^(?:\^)/i,/^(?:options\r?\n)/i,/^(?:end\r?\n)/i,/^(?:[^\n]+\r?\n)/i,/^(?:["])/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:[a-zA-Z][-_\.a-zA-Z0-9]*[-_a-zA-Z0-9])/i,/^(?:$)/i],
-conditions: {"options":{"rules":[15,16],"inclusive":false},"string":{"rules":[18,19],"inclusive":false},"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,17,20,21],"inclusive":true}}
+rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:accTitle\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*\{\s*)/i,/^(?:[\}])/i,/^(?:[^\}]*)/i,/^(?:(\r?\n)+)/i,/^(?:\s+)/i,/^(?:#[^\n]*)/i,/^(?:%[^\n]*)/i,/^(?:gitGraph\b)/i,/^(?:commit\b)/i,/^(?:id:)/i,/^(?:type:)/i,/^(?:msg:)/i,/^(?:NORMAL\b)/i,/^(?:REVERSE\b)/i,/^(?:HIGHLIGHT\b)/i,/^(?:tag:)/i,/^(?:branch\b)/i,/^(?:order:)/i,/^(?:merge\b)/i,/^(?:checkout\b)/i,/^(?:LR\b)/i,/^(?:BT\b)/i,/^(?::)/i,/^(?:\^)/i,/^(?:options\r?\n)/i,/^(?:[ \r\n\t]+end\b)/i,/^(?:[\s\S]+(?=[ \r\n\t]+end))/i,/^(?:["])/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:[0-9]+)/i,/^(?:[a-zA-Z][-_\./a-zA-Z0-9]*[-_a-zA-Z0-9])/i,/^(?:$)/i],
+conditions: {"acc_descr_multiline":{"rules":[10,11],"inclusive":false},"acc_descr":{"rules":[8],"inclusive":false},"acc_title":{"rules":[6],"inclusive":false},"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"options":{"rules":[34,35],"inclusive":false},"string":{"rules":[37,38],"inclusive":false},"INITIAL":{"rules":[0,5,7,9,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,36,39,40,41],"inclusive":true}}
 });
 return lexer;
 })();
@@ -4923,12 +5268,12 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,4],$V1=[1,5],$V2=[1,6],$V3=[1,7],$V4=[1,9],$V5=[1,11,13,20,21,22,23],$V6=[2,5],$V7=[1,6,11,13,20,21,22,23],$V8=[20,21,22],$V9=[2,8],$Va=[1,18],$Vb=[1,19],$Vc=[1,24],$Vd=[6,20,21,22,23];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,4],$V1=[1,5],$V2=[1,6],$V3=[1,7],$V4=[1,9],$V5=[1,11,13,15,17,19,20,26,27,28,29],$V6=[2,5],$V7=[1,6,11,13,15,17,19,20,26,27,28,29],$V8=[26,27,28],$V9=[2,8],$Va=[1,18],$Vb=[1,19],$Vc=[1,20],$Vd=[1,21],$Ve=[1,22],$Vf=[1,23],$Vg=[1,28],$Vh=[6,26,27,28,29];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"eol":4,"directive":5,"PIE":6,"document":7,"showData":8,"line":9,"statement":10,"txt":11,"value":12,"title":13,"title_value":14,"openDirective":15,"typeDirective":16,"closeDirective":17,":":18,"argDirective":19,"NEWLINE":20,";":21,"EOF":22,"open_directive":23,"type_directive":24,"arg_directive":25,"close_directive":26,"$accept":0,"$end":1},
-terminals_: {2:"error",6:"PIE",8:"showData",11:"txt",12:"value",13:"title",14:"title_value",18:":",20:"NEWLINE",21:";",22:"EOF",23:"open_directive",24:"type_directive",25:"arg_directive",26:"close_directive"},
-productions_: [0,[3,2],[3,2],[3,2],[3,3],[7,0],[7,2],[9,2],[10,0],[10,2],[10,2],[10,1],[5,3],[5,5],[4,1],[4,1],[4,1],[15,1],[16,1],[19,1],[17,1]],
+symbols_: {"error":2,"start":3,"eol":4,"directive":5,"PIE":6,"document":7,"showData":8,"line":9,"statement":10,"txt":11,"value":12,"title":13,"title_value":14,"acc_title":15,"acc_title_value":16,"acc_descr":17,"acc_descr_value":18,"acc_descr_multiline_value":19,"section":20,"openDirective":21,"typeDirective":22,"closeDirective":23,":":24,"argDirective":25,"NEWLINE":26,";":27,"EOF":28,"open_directive":29,"type_directive":30,"arg_directive":31,"close_directive":32,"$accept":0,"$end":1},
+terminals_: {2:"error",6:"PIE",8:"showData",11:"txt",12:"value",13:"title",14:"title_value",15:"acc_title",16:"acc_title_value",17:"acc_descr",18:"acc_descr_value",19:"acc_descr_multiline_value",20:"section",24:":",26:"NEWLINE",27:";",28:"EOF",29:"open_directive",30:"type_directive",31:"arg_directive",32:"close_directive"},
+productions_: [0,[3,2],[3,2],[3,2],[3,3],[7,0],[7,2],[9,2],[10,0],[10,2],[10,2],[10,2],[10,2],[10,1],[10,1],[10,1],[5,3],[5,5],[4,1],[4,1],[4,1],[21,1],[22,1],[25,1],[23,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -4944,24 +5289,33 @@ case 9:
  yy.addSection($$[$0-1],yy.cleanupValue($$[$0])); 
 break;
 case 10:
+ this.$=$$[$0].trim();yy.setPieTitle(this.$); 
+break;
+case 11:
  this.$=$$[$0].trim();yy.setTitle(this.$); 
 break;
-case 17:
+case 12: case 13:
+ this.$=$$[$0].trim();yy.setAccDescription(this.$); 
+break;
+case 14:
+yy.addSection($$[$0].substr(8));this.$=$$[$0].substr(8);
+break;
+case 21:
  yy.parseDirective('%%{', 'open_directive'); 
 break;
-case 18:
+case 22:
  yy.parseDirective($$[$0], 'type_directive'); 
 break;
-case 19:
+case 23:
  $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
 break;
-case 20:
+case 24:
  yy.parseDirective('}%%', 'close_directive', 'pie'); 
 break;
 }
 },
-table: [{3:1,4:2,5:3,6:$V0,15:8,20:$V1,21:$V2,22:$V3,23:$V4},{1:[3]},{3:10,4:2,5:3,6:$V0,15:8,20:$V1,21:$V2,22:$V3,23:$V4},{3:11,4:2,5:3,6:$V0,15:8,20:$V1,21:$V2,22:$V3,23:$V4},o($V5,$V6,{7:12,8:[1,13]}),o($V7,[2,14]),o($V7,[2,15]),o($V7,[2,16]),{16:14,24:[1,15]},{24:[2,17]},{1:[2,1]},{1:[2,2]},o($V8,$V9,{15:8,9:16,10:17,5:20,1:[2,3],11:$Va,13:$Vb,23:$V4}),o($V5,$V6,{7:21}),{17:22,18:[1,23],26:$Vc},o([18,26],[2,18]),o($V5,[2,6]),{4:25,20:$V1,21:$V2,22:$V3},{12:[1,26]},{14:[1,27]},o($V8,[2,11]),o($V8,$V9,{15:8,9:16,10:17,5:20,1:[2,4],11:$Va,13:$Vb,23:$V4}),o($Vd,[2,12]),{19:28,25:[1,29]},o($Vd,[2,20]),o($V5,[2,7]),o($V8,[2,9]),o($V8,[2,10]),{17:30,26:$Vc},{26:[2,19]},o($Vd,[2,13])],
-defaultActions: {9:[2,17],10:[2,1],11:[2,2],29:[2,19]},
+table: [{3:1,4:2,5:3,6:$V0,21:8,26:$V1,27:$V2,28:$V3,29:$V4},{1:[3]},{3:10,4:2,5:3,6:$V0,21:8,26:$V1,27:$V2,28:$V3,29:$V4},{3:11,4:2,5:3,6:$V0,21:8,26:$V1,27:$V2,28:$V3,29:$V4},o($V5,$V6,{7:12,8:[1,13]}),o($V7,[2,18]),o($V7,[2,19]),o($V7,[2,20]),{22:14,30:[1,15]},{30:[2,21]},{1:[2,1]},{1:[2,2]},o($V8,$V9,{21:8,9:16,10:17,5:24,1:[2,3],11:$Va,13:$Vb,15:$Vc,17:$Vd,19:$Ve,20:$Vf,29:$V4}),o($V5,$V6,{7:25}),{23:26,24:[1,27],32:$Vg},o([24,32],[2,22]),o($V5,[2,6]),{4:29,26:$V1,27:$V2,28:$V3},{12:[1,30]},{14:[1,31]},{16:[1,32]},{18:[1,33]},o($V8,[2,13]),o($V8,[2,14]),o($V8,[2,15]),o($V8,$V9,{21:8,9:16,10:17,5:24,1:[2,4],11:$Va,13:$Vb,15:$Vc,17:$Vd,19:$Ve,20:$Vf,29:$V4}),o($Vh,[2,16]),{25:34,31:[1,35]},o($Vh,[2,24]),o($V5,[2,7]),o($V8,[2,9]),o($V8,[2,10]),o($V8,[2,11]),o($V8,[2,12]),{23:36,32:$Vg},{32:[2,23]},o($Vh,[2,17])],
+defaultActions: {9:[2,21],10:[2,1],11:[2,2],35:[2,23]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -5440,21 +5794,21 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 23; 
+case 0: this.begin('open_directive'); return 29; 
 break;
-case 1: this.begin('type_directive'); return 24; 
+case 1: this.begin('type_directive'); return 30; 
 break;
-case 2: this.popState(); this.begin('arg_directive'); return 18; 
+case 2: this.popState(); this.begin('arg_directive'); return 24; 
 break;
-case 3: this.popState(); this.popState(); return 26; 
+case 3: this.popState(); this.popState(); return 32; 
 break;
-case 4:return 25;
+case 4:return 31;
 break;
 case 5:/* skip comments */
 break;
 case 6:/* skip comments */{ /*console.log('');*/ }
 break;
-case 7:return 20;
+case 7:return 26;
 break;
 case 8:/* do nothing */
 break;
@@ -5464,24 +5818,38 @@ case 10: this.begin("title");return 13;
 break;
 case 11: this.popState(); return "title_value"; 
 break;
-case 12: this.begin("string"); 
+case 12: this.begin("acc_title");return 15; 
 break;
-case 13: this.popState(); 
+case 13: this.popState(); return "acc_title_value"; 
 break;
-case 14: return "txt"; 
+case 14: this.begin("acc_descr");return 17; 
 break;
-case 15:return 6;
+case 15: this.popState(); return "acc_descr_value"; 
 break;
-case 16:return 8;
+case 16: this.begin("acc_descr_multiline");
 break;
-case 17:return "value";
+case 17: this.popState(); 
 break;
-case 18:return 22;
+case 18:return "acc_descr_multiline_value";
+break;
+case 19: this.begin("string"); 
+break;
+case 20: this.popState(); 
+break;
+case 21: return "txt"; 
+break;
+case 22:return 6;
+break;
+case 23:return 8;
+break;
+case 24:return "value";
+break;
+case 25:return 28;
 break;
 }
 },
-rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:%%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:[\n\r]+)/i,/^(?:%%[^\n]*)/i,/^(?:[\s]+)/i,/^(?:title\b)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:["])/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:pie\b)/i,/^(?:showData\b)/i,/^(?::[\s]*[\d]+(?:\.[\d]+)?)/i,/^(?:$)/i],
-conditions: {"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"title":{"rules":[11],"inclusive":false},"string":{"rules":[13,14],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,8,9,10,12,15,16,17,18],"inclusive":true}}
+rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:%%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:[\n\r]+)/i,/^(?:%%[^\n]*)/i,/^(?:[\s]+)/i,/^(?:title\b)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accTitle\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*\{\s*)/i,/^(?:[\}])/i,/^(?:[^\}]*)/i,/^(?:["])/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:pie\b)/i,/^(?:showData\b)/i,/^(?::[\s]*[\d]+(?:\.[\d]+)?)/i,/^(?:$)/i],
+conditions: {"acc_descr_multiline":{"rules":[17,18],"inclusive":false},"acc_descr":{"rules":[15],"inclusive":false},"acc_title":{"rules":[13],"inclusive":false},"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"title":{"rules":[11],"inclusive":false},"string":{"rules":[20,21],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,8,9,10,12,14,16,19,22,23,24,25],"inclusive":true}}
 });
 return lexer;
 })();
@@ -5594,126 +5962,132 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,3],$V1=[1,5],$V2=[1,17],$V3=[2,10],$V4=[1,21],$V5=[1,22],$V6=[1,23],$V7=[1,24],$V8=[1,25],$V9=[1,26],$Va=[1,19],$Vb=[1,27],$Vc=[1,28],$Vd=[1,31],$Ve=[66,67],$Vf=[5,8,14,35,36,37,38,39,40,48,55,57,66,67],$Vg=[5,6,8,14,35,36,37,38,39,40,48,66,67],$Vh=[1,51],$Vi=[1,52],$Vj=[1,53],$Vk=[1,54],$Vl=[1,55],$Vm=[1,56],$Vn=[1,57],$Vo=[57,58],$Vp=[1,69],$Vq=[1,65],$Vr=[1,66],$Vs=[1,67],$Vt=[1,68],$Vu=[1,70],$Vv=[1,74],$Vw=[1,75],$Vx=[1,72],$Vy=[1,73],$Vz=[5,8,14,35,36,37,38,39,40,48,66,67];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,3],$V1=[1,5],$V2=[1,6],$V3=[1,7],$V4=[1,8],$V5=[5,6,8,14,16,18,19,40,41,42,43,44,45,53,71,72],$V6=[1,22],$V7=[2,13],$V8=[1,26],$V9=[1,27],$Va=[1,28],$Vb=[1,29],$Vc=[1,30],$Vd=[1,31],$Ve=[1,24],$Vf=[1,32],$Vg=[1,33],$Vh=[1,36],$Vi=[71,72],$Vj=[5,8,14,16,18,19,40,41,42,43,44,45,53,60,62,71,72],$Vk=[1,56],$Vl=[1,57],$Vm=[1,58],$Vn=[1,59],$Vo=[1,60],$Vp=[1,61],$Vq=[1,62],$Vr=[62,63],$Vs=[1,74],$Vt=[1,70],$Vu=[1,71],$Vv=[1,72],$Vw=[1,73],$Vx=[1,75],$Vy=[1,79],$Vz=[1,80],$VA=[1,77],$VB=[1,78],$VC=[5,8,14,16,18,19,40,41,42,43,44,45,53,71,72];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"directive":4,"NEWLINE":5,"RD":6,"diagram":7,"EOF":8,"openDirective":9,"typeDirective":10,"closeDirective":11,":":12,"argDirective":13,"open_directive":14,"type_directive":15,"arg_directive":16,"close_directive":17,"requirementDef":18,"elementDef":19,"relationshipDef":20,"requirementType":21,"requirementName":22,"STRUCT_START":23,"requirementBody":24,"ID":25,"COLONSEP":26,"id":27,"TEXT":28,"text":29,"RISK":30,"riskLevel":31,"VERIFYMTHD":32,"verifyType":33,"STRUCT_STOP":34,"REQUIREMENT":35,"FUNCTIONAL_REQUIREMENT":36,"INTERFACE_REQUIREMENT":37,"PERFORMANCE_REQUIREMENT":38,"PHYSICAL_REQUIREMENT":39,"DESIGN_CONSTRAINT":40,"LOW_RISK":41,"MED_RISK":42,"HIGH_RISK":43,"VERIFY_ANALYSIS":44,"VERIFY_DEMONSTRATION":45,"VERIFY_INSPECTION":46,"VERIFY_TEST":47,"ELEMENT":48,"elementName":49,"elementBody":50,"TYPE":51,"type":52,"DOCREF":53,"ref":54,"END_ARROW_L":55,"relationship":56,"LINE":57,"END_ARROW_R":58,"CONTAINS":59,"COPIES":60,"DERIVES":61,"SATISFIES":62,"VERIFIES":63,"REFINES":64,"TRACES":65,"unqString":66,"qString":67,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"NEWLINE",6:"RD",8:"EOF",12:":",14:"open_directive",15:"type_directive",16:"arg_directive",17:"close_directive",23:"STRUCT_START",25:"ID",26:"COLONSEP",28:"TEXT",30:"RISK",32:"VERIFYMTHD",34:"STRUCT_STOP",35:"REQUIREMENT",36:"FUNCTIONAL_REQUIREMENT",37:"INTERFACE_REQUIREMENT",38:"PERFORMANCE_REQUIREMENT",39:"PHYSICAL_REQUIREMENT",40:"DESIGN_CONSTRAINT",41:"LOW_RISK",42:"MED_RISK",43:"HIGH_RISK",44:"VERIFY_ANALYSIS",45:"VERIFY_DEMONSTRATION",46:"VERIFY_INSPECTION",47:"VERIFY_TEST",48:"ELEMENT",51:"TYPE",53:"DOCREF",55:"END_ARROW_L",57:"LINE",58:"END_ARROW_R",59:"CONTAINS",60:"COPIES",61:"DERIVES",62:"SATISFIES",63:"VERIFIES",64:"REFINES",65:"TRACES",66:"unqString",67:"qString"},
-productions_: [0,[3,3],[3,2],[3,4],[4,3],[4,5],[9,1],[10,1],[13,1],[11,1],[7,0],[7,2],[7,2],[7,2],[7,2],[7,2],[18,5],[24,5],[24,5],[24,5],[24,5],[24,2],[24,1],[21,1],[21,1],[21,1],[21,1],[21,1],[21,1],[31,1],[31,1],[31,1],[33,1],[33,1],[33,1],[33,1],[19,5],[50,5],[50,5],[50,2],[50,1],[20,5],[20,5],[56,1],[56,1],[56,1],[56,1],[56,1],[56,1],[56,1],[22,1],[22,1],[27,1],[27,1],[29,1],[29,1],[49,1],[49,1],[52,1],[52,1],[54,1],[54,1]],
+symbols_: {"error":2,"start":3,"directive":4,"NEWLINE":5,"RD":6,"diagram":7,"EOF":8,"openDirective":9,"typeDirective":10,"closeDirective":11,":":12,"argDirective":13,"acc_title":14,"acc_title_value":15,"acc_descr":16,"acc_descr_value":17,"acc_descr_multiline_value":18,"open_directive":19,"type_directive":20,"arg_directive":21,"close_directive":22,"requirementDef":23,"elementDef":24,"relationshipDef":25,"requirementType":26,"requirementName":27,"STRUCT_START":28,"requirementBody":29,"ID":30,"COLONSEP":31,"id":32,"TEXT":33,"text":34,"RISK":35,"riskLevel":36,"VERIFYMTHD":37,"verifyType":38,"STRUCT_STOP":39,"REQUIREMENT":40,"FUNCTIONAL_REQUIREMENT":41,"INTERFACE_REQUIREMENT":42,"PERFORMANCE_REQUIREMENT":43,"PHYSICAL_REQUIREMENT":44,"DESIGN_CONSTRAINT":45,"LOW_RISK":46,"MED_RISK":47,"HIGH_RISK":48,"VERIFY_ANALYSIS":49,"VERIFY_DEMONSTRATION":50,"VERIFY_INSPECTION":51,"VERIFY_TEST":52,"ELEMENT":53,"elementName":54,"elementBody":55,"TYPE":56,"type":57,"DOCREF":58,"ref":59,"END_ARROW_L":60,"relationship":61,"LINE":62,"END_ARROW_R":63,"CONTAINS":64,"COPIES":65,"DERIVES":66,"SATISFIES":67,"VERIFIES":68,"REFINES":69,"TRACES":70,"unqString":71,"qString":72,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"NEWLINE",6:"RD",8:"EOF",12:":",14:"acc_title",15:"acc_title_value",16:"acc_descr",17:"acc_descr_value",18:"acc_descr_multiline_value",19:"open_directive",20:"type_directive",21:"arg_directive",22:"close_directive",28:"STRUCT_START",30:"ID",31:"COLONSEP",33:"TEXT",35:"RISK",37:"VERIFYMTHD",39:"STRUCT_STOP",40:"REQUIREMENT",41:"FUNCTIONAL_REQUIREMENT",42:"INTERFACE_REQUIREMENT",43:"PERFORMANCE_REQUIREMENT",44:"PHYSICAL_REQUIREMENT",45:"DESIGN_CONSTRAINT",46:"LOW_RISK",47:"MED_RISK",48:"HIGH_RISK",49:"VERIFY_ANALYSIS",50:"VERIFY_DEMONSTRATION",51:"VERIFY_INSPECTION",52:"VERIFY_TEST",53:"ELEMENT",56:"TYPE",58:"DOCREF",60:"END_ARROW_L",62:"LINE",63:"END_ARROW_R",64:"CONTAINS",65:"COPIES",66:"DERIVES",67:"SATISFIES",68:"VERIFIES",69:"REFINES",70:"TRACES",71:"unqString",72:"qString"},
+productions_: [0,[3,3],[3,2],[3,4],[4,3],[4,5],[4,2],[4,2],[4,1],[9,1],[10,1],[13,1],[11,1],[7,0],[7,2],[7,2],[7,2],[7,2],[7,2],[23,5],[29,5],[29,5],[29,5],[29,5],[29,2],[29,1],[26,1],[26,1],[26,1],[26,1],[26,1],[26,1],[36,1],[36,1],[36,1],[38,1],[38,1],[38,1],[38,1],[24,5],[55,5],[55,5],[55,2],[55,1],[25,5],[25,5],[61,1],[61,1],[61,1],[61,1],[61,1],[61,1],[61,1],[27,1],[27,1],[32,1],[32,1],[34,1],[34,1],[54,1],[54,1],[57,1],[57,1],[59,1],[59,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
 var $0 = $$.length - 1;
 switch (yystate) {
 case 6:
- yy.parseDirective('%%{', 'open_directive'); 
+ this.$=$$[$0].trim();yy.setTitle(this.$); 
 break;
-case 7:
- yy.parseDirective($$[$0], 'type_directive'); 
-break;
-case 8:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+case 7: case 8:
+ this.$=$$[$0].trim();yy.setAccDescription(this.$); 
 break;
 case 9:
- yy.parseDirective('}%%', 'close_directive', 'pie'); 
+ yy.parseDirective('%%{', 'open_directive'); 
 break;
 case 10:
+ yy.parseDirective($$[$0], 'type_directive'); 
+break;
+case 11:
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+break;
+case 12:
+ yy.parseDirective('}%%', 'close_directive', 'pie'); 
+break;
+case 13:
  this.$ = [] 
 break;
-case 16:
+case 19:
  yy.addRequirement($$[$0-3], $$[$0-4]) 
 break;
-case 17:
+case 20:
  yy.setNewReqId($$[$0-2]); 
 break;
-case 18:
+case 21:
  yy.setNewReqText($$[$0-2]); 
 break;
-case 19:
+case 22:
  yy.setNewReqRisk($$[$0-2]); 
 break;
-case 20:
+case 23:
  yy.setNewReqVerifyMethod($$[$0-2]); 
 break;
-case 23:
+case 26:
  this.$=yy.RequirementType.REQUIREMENT;
 break;
-case 24:
+case 27:
  this.$=yy.RequirementType.FUNCTIONAL_REQUIREMENT;
 break;
-case 25:
+case 28:
  this.$=yy.RequirementType.INTERFACE_REQUIREMENT;
 break;
-case 26:
+case 29:
  this.$=yy.RequirementType.PERFORMANCE_REQUIREMENT;
 break;
-case 27:
+case 30:
  this.$=yy.RequirementType.PHYSICAL_REQUIREMENT;
 break;
-case 28:
+case 31:
  this.$=yy.RequirementType.DESIGN_CONSTRAINT;
 break;
-case 29:
+case 32:
  this.$=yy.RiskLevel.LOW_RISK;
 break;
-case 30:
+case 33:
  this.$=yy.RiskLevel.MED_RISK;
 break;
-case 31:
+case 34:
  this.$=yy.RiskLevel.HIGH_RISK;
 break;
-case 32:
+case 35:
  this.$=yy.VerifyType.VERIFY_ANALYSIS;
 break;
-case 33:
+case 36:
  this.$=yy.VerifyType.VERIFY_DEMONSTRATION;
 break;
-case 34:
+case 37:
  this.$=yy.VerifyType.VERIFY_INSPECTION;
 break;
-case 35:
+case 38:
  this.$=yy.VerifyType.VERIFY_TEST;
 break;
-case 36:
+case 39:
  yy.addElement($$[$0-3]) 
 break;
-case 37:
+case 40:
  yy.setNewElementType($$[$0-2]); 
 break;
-case 38:
+case 41:
  yy.setNewElementDocRef($$[$0-2]); 
 break;
-case 41:
+case 44:
   yy.addRelationship($$[$0-2], $$[$0], $$[$0-4]) 
 break;
-case 42:
+case 45:
  yy.addRelationship($$[$0-2], $$[$0-4], $$[$0]) 
 break;
-case 43:
+case 46:
  this.$=yy.Relationships.CONTAINS;
 break;
-case 44:
+case 47:
  this.$=yy.Relationships.COPIES;
 break;
-case 45:
+case 48:
  this.$=yy.Relationships.DERIVES;
 break;
-case 46:
+case 49:
  this.$=yy.Relationships.SATISFIES;
 break;
-case 47:
+case 50:
  this.$=yy.Relationships.VERIFIES;
 break;
-case 48:
+case 51:
  this.$=yy.Relationships.REFINES;
 break;
-case 49:
+case 52:
  this.$=yy.Relationships.TRACES;
 break;
 }
 },
-table: [{3:1,4:2,6:$V0,9:4,14:$V1},{1:[3]},{3:7,4:2,5:[1,6],6:$V0,9:4,14:$V1},{5:[1,8]},{10:9,15:[1,10]},{15:[2,6]},{3:11,4:2,6:$V0,9:4,14:$V1},{1:[2,2]},{4:16,5:$V2,7:12,8:$V3,9:4,14:$V1,18:13,19:14,20:15,21:18,27:20,35:$V4,36:$V5,37:$V6,38:$V7,39:$V8,40:$V9,48:$Va,66:$Vb,67:$Vc},{11:29,12:[1,30],17:$Vd},o([12,17],[2,7]),{1:[2,1]},{8:[1,32]},{4:16,5:$V2,7:33,8:$V3,9:4,14:$V1,18:13,19:14,20:15,21:18,27:20,35:$V4,36:$V5,37:$V6,38:$V7,39:$V8,40:$V9,48:$Va,66:$Vb,67:$Vc},{4:16,5:$V2,7:34,8:$V3,9:4,14:$V1,18:13,19:14,20:15,21:18,27:20,35:$V4,36:$V5,37:$V6,38:$V7,39:$V8,40:$V9,48:$Va,66:$Vb,67:$Vc},{4:16,5:$V2,7:35,8:$V3,9:4,14:$V1,18:13,19:14,20:15,21:18,27:20,35:$V4,36:$V5,37:$V6,38:$V7,39:$V8,40:$V9,48:$Va,66:$Vb,67:$Vc},{4:16,5:$V2,7:36,8:$V3,9:4,14:$V1,18:13,19:14,20:15,21:18,27:20,35:$V4,36:$V5,37:$V6,38:$V7,39:$V8,40:$V9,48:$Va,66:$Vb,67:$Vc},{4:16,5:$V2,7:37,8:$V3,9:4,14:$V1,18:13,19:14,20:15,21:18,27:20,35:$V4,36:$V5,37:$V6,38:$V7,39:$V8,40:$V9,48:$Va,66:$Vb,67:$Vc},{22:38,66:[1,39],67:[1,40]},{49:41,66:[1,42],67:[1,43]},{55:[1,44],57:[1,45]},o($Ve,[2,23]),o($Ve,[2,24]),o($Ve,[2,25]),o($Ve,[2,26]),o($Ve,[2,27]),o($Ve,[2,28]),o($Vf,[2,52]),o($Vf,[2,53]),o($Vg,[2,4]),{13:46,16:[1,47]},o($Vg,[2,9]),{1:[2,3]},{8:[2,11]},{8:[2,12]},{8:[2,13]},{8:[2,14]},{8:[2,15]},{23:[1,48]},{23:[2,50]},{23:[2,51]},{23:[1,49]},{23:[2,56]},{23:[2,57]},{56:50,59:$Vh,60:$Vi,61:$Vj,62:$Vk,63:$Vl,64:$Vm,65:$Vn},{56:58,59:$Vh,60:$Vi,61:$Vj,62:$Vk,63:$Vl,64:$Vm,65:$Vn},{11:59,17:$Vd},{17:[2,8]},{5:[1,60]},{5:[1,61]},{57:[1,62]},o($Vo,[2,43]),o($Vo,[2,44]),o($Vo,[2,45]),o($Vo,[2,46]),o($Vo,[2,47]),o($Vo,[2,48]),o($Vo,[2,49]),{58:[1,63]},o($Vg,[2,5]),{5:$Vp,24:64,25:$Vq,28:$Vr,30:$Vs,32:$Vt,34:$Vu},{5:$Vv,34:$Vw,50:71,51:$Vx,53:$Vy},{27:76,66:$Vb,67:$Vc},{27:77,66:$Vb,67:$Vc},o($Vz,[2,16]),{26:[1,78]},{26:[1,79]},{26:[1,80]},{26:[1,81]},{5:$Vp,24:82,25:$Vq,28:$Vr,30:$Vs,32:$Vt,34:$Vu},o($Vz,[2,22]),o($Vz,[2,36]),{26:[1,83]},{26:[1,84]},{5:$Vv,34:$Vw,50:85,51:$Vx,53:$Vy},o($Vz,[2,40]),o($Vz,[2,41]),o($Vz,[2,42]),{27:86,66:$Vb,67:$Vc},{29:87,66:[1,88],67:[1,89]},{31:90,41:[1,91],42:[1,92],43:[1,93]},{33:94,44:[1,95],45:[1,96],46:[1,97],47:[1,98]},o($Vz,[2,21]),{52:99,66:[1,100],67:[1,101]},{54:102,66:[1,103],67:[1,104]},o($Vz,[2,39]),{5:[1,105]},{5:[1,106]},{5:[2,54]},{5:[2,55]},{5:[1,107]},{5:[2,29]},{5:[2,30]},{5:[2,31]},{5:[1,108]},{5:[2,32]},{5:[2,33]},{5:[2,34]},{5:[2,35]},{5:[1,109]},{5:[2,58]},{5:[2,59]},{5:[1,110]},{5:[2,60]},{5:[2,61]},{5:$Vp,24:111,25:$Vq,28:$Vr,30:$Vs,32:$Vt,34:$Vu},{5:$Vp,24:112,25:$Vq,28:$Vr,30:$Vs,32:$Vt,34:$Vu},{5:$Vp,24:113,25:$Vq,28:$Vr,30:$Vs,32:$Vt,34:$Vu},{5:$Vp,24:114,25:$Vq,28:$Vr,30:$Vs,32:$Vt,34:$Vu},{5:$Vv,34:$Vw,50:115,51:$Vx,53:$Vy},{5:$Vv,34:$Vw,50:116,51:$Vx,53:$Vy},o($Vz,[2,17]),o($Vz,[2,18]),o($Vz,[2,19]),o($Vz,[2,20]),o($Vz,[2,37]),o($Vz,[2,38])],
-defaultActions: {5:[2,6],7:[2,2],11:[2,1],32:[2,3],33:[2,11],34:[2,12],35:[2,13],36:[2,14],37:[2,15],39:[2,50],40:[2,51],42:[2,56],43:[2,57],47:[2,8],88:[2,54],89:[2,55],91:[2,29],92:[2,30],93:[2,31],95:[2,32],96:[2,33],97:[2,34],98:[2,35],100:[2,58],101:[2,59],103:[2,60],104:[2,61]},
+table: [{3:1,4:2,6:$V0,9:4,14:$V1,16:$V2,18:$V3,19:$V4},{1:[3]},{3:10,4:2,5:[1,9],6:$V0,9:4,14:$V1,16:$V2,18:$V3,19:$V4},{5:[1,11]},{10:12,20:[1,13]},{15:[1,14]},{17:[1,15]},o($V5,[2,8]),{20:[2,9]},{3:16,4:2,6:$V0,9:4,14:$V1,16:$V2,18:$V3,19:$V4},{1:[2,2]},{4:21,5:$V6,7:17,8:$V7,9:4,14:$V1,16:$V2,18:$V3,19:$V4,23:18,24:19,25:20,26:23,32:25,40:$V8,41:$V9,42:$Va,43:$Vb,44:$Vc,45:$Vd,53:$Ve,71:$Vf,72:$Vg},{11:34,12:[1,35],22:$Vh},o([12,22],[2,10]),o($V5,[2,6]),o($V5,[2,7]),{1:[2,1]},{8:[1,37]},{4:21,5:$V6,7:38,8:$V7,9:4,14:$V1,16:$V2,18:$V3,19:$V4,23:18,24:19,25:20,26:23,32:25,40:$V8,41:$V9,42:$Va,43:$Vb,44:$Vc,45:$Vd,53:$Ve,71:$Vf,72:$Vg},{4:21,5:$V6,7:39,8:$V7,9:4,14:$V1,16:$V2,18:$V3,19:$V4,23:18,24:19,25:20,26:23,32:25,40:$V8,41:$V9,42:$Va,43:$Vb,44:$Vc,45:$Vd,53:$Ve,71:$Vf,72:$Vg},{4:21,5:$V6,7:40,8:$V7,9:4,14:$V1,16:$V2,18:$V3,19:$V4,23:18,24:19,25:20,26:23,32:25,40:$V8,41:$V9,42:$Va,43:$Vb,44:$Vc,45:$Vd,53:$Ve,71:$Vf,72:$Vg},{4:21,5:$V6,7:41,8:$V7,9:4,14:$V1,16:$V2,18:$V3,19:$V4,23:18,24:19,25:20,26:23,32:25,40:$V8,41:$V9,42:$Va,43:$Vb,44:$Vc,45:$Vd,53:$Ve,71:$Vf,72:$Vg},{4:21,5:$V6,7:42,8:$V7,9:4,14:$V1,16:$V2,18:$V3,19:$V4,23:18,24:19,25:20,26:23,32:25,40:$V8,41:$V9,42:$Va,43:$Vb,44:$Vc,45:$Vd,53:$Ve,71:$Vf,72:$Vg},{27:43,71:[1,44],72:[1,45]},{54:46,71:[1,47],72:[1,48]},{60:[1,49],62:[1,50]},o($Vi,[2,26]),o($Vi,[2,27]),o($Vi,[2,28]),o($Vi,[2,29]),o($Vi,[2,30]),o($Vi,[2,31]),o($Vj,[2,55]),o($Vj,[2,56]),o($V5,[2,4]),{13:51,21:[1,52]},o($V5,[2,12]),{1:[2,3]},{8:[2,14]},{8:[2,15]},{8:[2,16]},{8:[2,17]},{8:[2,18]},{28:[1,53]},{28:[2,53]},{28:[2,54]},{28:[1,54]},{28:[2,59]},{28:[2,60]},{61:55,64:$Vk,65:$Vl,66:$Vm,67:$Vn,68:$Vo,69:$Vp,70:$Vq},{61:63,64:$Vk,65:$Vl,66:$Vm,67:$Vn,68:$Vo,69:$Vp,70:$Vq},{11:64,22:$Vh},{22:[2,11]},{5:[1,65]},{5:[1,66]},{62:[1,67]},o($Vr,[2,46]),o($Vr,[2,47]),o($Vr,[2,48]),o($Vr,[2,49]),o($Vr,[2,50]),o($Vr,[2,51]),o($Vr,[2,52]),{63:[1,68]},o($V5,[2,5]),{5:$Vs,29:69,30:$Vt,33:$Vu,35:$Vv,37:$Vw,39:$Vx},{5:$Vy,39:$Vz,55:76,56:$VA,58:$VB},{32:81,71:$Vf,72:$Vg},{32:82,71:$Vf,72:$Vg},o($VC,[2,19]),{31:[1,83]},{31:[1,84]},{31:[1,85]},{31:[1,86]},{5:$Vs,29:87,30:$Vt,33:$Vu,35:$Vv,37:$Vw,39:$Vx},o($VC,[2,25]),o($VC,[2,39]),{31:[1,88]},{31:[1,89]},{5:$Vy,39:$Vz,55:90,56:$VA,58:$VB},o($VC,[2,43]),o($VC,[2,44]),o($VC,[2,45]),{32:91,71:$Vf,72:$Vg},{34:92,71:[1,93],72:[1,94]},{36:95,46:[1,96],47:[1,97],48:[1,98]},{38:99,49:[1,100],50:[1,101],51:[1,102],52:[1,103]},o($VC,[2,24]),{57:104,71:[1,105],72:[1,106]},{59:107,71:[1,108],72:[1,109]},o($VC,[2,42]),{5:[1,110]},{5:[1,111]},{5:[2,57]},{5:[2,58]},{5:[1,112]},{5:[2,32]},{5:[2,33]},{5:[2,34]},{5:[1,113]},{5:[2,35]},{5:[2,36]},{5:[2,37]},{5:[2,38]},{5:[1,114]},{5:[2,61]},{5:[2,62]},{5:[1,115]},{5:[2,63]},{5:[2,64]},{5:$Vs,29:116,30:$Vt,33:$Vu,35:$Vv,37:$Vw,39:$Vx},{5:$Vs,29:117,30:$Vt,33:$Vu,35:$Vv,37:$Vw,39:$Vx},{5:$Vs,29:118,30:$Vt,33:$Vu,35:$Vv,37:$Vw,39:$Vx},{5:$Vs,29:119,30:$Vt,33:$Vu,35:$Vv,37:$Vw,39:$Vx},{5:$Vy,39:$Vz,55:120,56:$VA,58:$VB},{5:$Vy,39:$Vz,55:121,56:$VA,58:$VB},o($VC,[2,20]),o($VC,[2,21]),o($VC,[2,22]),o($VC,[2,23]),o($VC,[2,40]),o($VC,[2,41])],
+defaultActions: {8:[2,9],10:[2,2],16:[2,1],37:[2,3],38:[2,14],39:[2,15],40:[2,16],41:[2,17],42:[2,18],44:[2,53],45:[2,54],47:[2,59],48:[2,60],52:[2,11],93:[2,57],94:[2,58],96:[2,32],97:[2,33],98:[2,34],100:[2,35],101:[2,36],102:[2,37],103:[2,38],105:[2,61],106:[2,62],108:[2,63],109:[2,64]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -6192,106 +6566,122 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 14; 
+case 0: this.begin('open_directive'); return 19; 
 break;
-case 1: this.begin('type_directive'); return 15; 
+case 1: this.begin('type_directive'); return 20; 
 break;
 case 2: this.popState(); this.begin('arg_directive'); return 12; 
 break;
-case 3: this.popState(); this.popState(); return 17; 
+case 3: this.popState(); this.popState(); return 22; 
 break;
-case 4:return 16;
+case 4:return 21;
 break;
-case 5:return 5;
+case 5:return 'title';
 break;
-case 6:/* skip all whitespace */
+case 6: this.begin("acc_title");return 14; 
 break;
-case 7:/* skip comments */
+case 7: this.popState(); return "acc_title_value"; 
 break;
-case 8:/* skip comments */
+case 8: this.begin("acc_descr");return 16; 
 break;
-case 9:return 8;
+case 9: this.popState(); return "acc_descr_value"; 
 break;
-case 10:return 6;
+case 10: this.begin("acc_descr_multiline");
 break;
-case 11:return 23;
+case 11: this.popState(); 
 break;
-case 12:return 34;
+case 12:return "acc_descr_multiline_value";
 break;
-case 13:return 26;
+case 13:return 5;
 break;
-case 14:return 25;
+case 14:/* skip all whitespace */
 break;
-case 15:return 28;
+case 15:/* skip comments */
 break;
-case 16:return 30;
+case 16:/* skip comments */
 break;
-case 17:return 32;
+case 17:return 8;
 break;
-case 18:return 35;
+case 18:return 6;
 break;
-case 19:return 36;
+case 19:return 28;
 break;
-case 20:return 37;
+case 20:return 39;
 break;
-case 21:return 38;
+case 21:return 31;
 break;
-case 22:return 39;
+case 22:return 30;
 break;
-case 23:return 40;
+case 23:return 33;
 break;
-case 24:return 41;
+case 24:return 35;
 break;
-case 25:return 42;
+case 25:return 37;
 break;
-case 26:return 43;
+case 26:return 40;
 break;
-case 27:return 44;
+case 27:return 41;
 break;
-case 28:return 45;
+case 28:return 42;
 break;
-case 29:return 46;
+case 29:return 43;
 break;
-case 30:return 47;
+case 30:return 44;
 break;
-case 31:return 48;
+case 31:return 45;
 break;
-case 32:return 59;
+case 32:return 46;
 break;
-case 33:return 60;
+case 33:return 47;
 break;
-case 34:return 61;
+case 34:return 48;
 break;
-case 35:return 62;
+case 35:return 49;
 break;
-case 36:return 63;
+case 36:return 50;
 break;
-case 37:return 64;
+case 37:return 51;
 break;
-case 38:return 65;
+case 38:return 52;
 break;
-case 39:return 51;
+case 39:return 53;
 break;
-case 40:return 53;
+case 40:return 64;
 break;
-case 41:return 55;
+case 41:return 65;
 break;
-case 42:return 58;
+case 42:return 66;
 break;
-case 43:return 57;
+case 43:return 67;
 break;
-case 44: this.begin("string"); 
+case 44:return 68;
 break;
-case 45: this.popState(); 
+case 45:return 69;
 break;
-case 46: return "qString"; 
+case 46:return 70;
 break;
-case 47: yy_.yytext = yy_.yytext.trim(); return 66;
+case 47:return 56;
+break;
+case 48:return 58;
+break;
+case 49:return 60;
+break;
+case 50:return 63;
+break;
+case 51:return 62;
+break;
+case 52: this.begin("string"); 
+break;
+case 53: this.popState(); 
+break;
+case 54: return "qString"; 
+break;
+case 55: yy_.yytext = yy_.yytext.trim(); return 71;
 break;
 }
 },
-rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:(\r?\n)+)/i,/^(?:\s+)/i,/^(?:#[^\n]*)/i,/^(?:%[^\n]*)/i,/^(?:$)/i,/^(?:requirementDiagram\b)/i,/^(?:\{)/i,/^(?:\})/i,/^(?::)/i,/^(?:id\b)/i,/^(?:text\b)/i,/^(?:risk\b)/i,/^(?:verifyMethod\b)/i,/^(?:requirement\b)/i,/^(?:functionalRequirement\b)/i,/^(?:interfaceRequirement\b)/i,/^(?:performanceRequirement\b)/i,/^(?:physicalRequirement\b)/i,/^(?:designConstraint\b)/i,/^(?:low\b)/i,/^(?:medium\b)/i,/^(?:high\b)/i,/^(?:analysis\b)/i,/^(?:demonstration\b)/i,/^(?:inspection\b)/i,/^(?:test\b)/i,/^(?:element\b)/i,/^(?:contains\b)/i,/^(?:copies\b)/i,/^(?:derives\b)/i,/^(?:satisfies\b)/i,/^(?:verifies\b)/i,/^(?:refines\b)/i,/^(?:traces\b)/i,/^(?:type\b)/i,/^(?:docref\b)/i,/^(?:<-)/i,/^(?:->)/i,/^(?:-)/i,/^(?:["])/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:[\w][^\r\n\{\<\>\-\=]*)/i],
-conditions: {"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"unqString":{"rules":[],"inclusive":false},"token":{"rules":[],"inclusive":false},"string":{"rules":[45,46],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,47],"inclusive":true}}
+rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:title\s[^#\n;]+)/i,/^(?:accTitle\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*\{\s*)/i,/^(?:[\}])/i,/^(?:[^\}]*)/i,/^(?:(\r?\n)+)/i,/^(?:\s+)/i,/^(?:#[^\n]*)/i,/^(?:%[^\n]*)/i,/^(?:$)/i,/^(?:requirementDiagram\b)/i,/^(?:\{)/i,/^(?:\})/i,/^(?::)/i,/^(?:id\b)/i,/^(?:text\b)/i,/^(?:risk\b)/i,/^(?:verifyMethod\b)/i,/^(?:requirement\b)/i,/^(?:functionalRequirement\b)/i,/^(?:interfaceRequirement\b)/i,/^(?:performanceRequirement\b)/i,/^(?:physicalRequirement\b)/i,/^(?:designConstraint\b)/i,/^(?:low\b)/i,/^(?:medium\b)/i,/^(?:high\b)/i,/^(?:analysis\b)/i,/^(?:demonstration\b)/i,/^(?:inspection\b)/i,/^(?:test\b)/i,/^(?:element\b)/i,/^(?:contains\b)/i,/^(?:copies\b)/i,/^(?:derives\b)/i,/^(?:satisfies\b)/i,/^(?:verifies\b)/i,/^(?:refines\b)/i,/^(?:traces\b)/i,/^(?:type\b)/i,/^(?:docref\b)/i,/^(?:<-)/i,/^(?:->)/i,/^(?:-)/i,/^(?:["])/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:[\w][^\r\n\{\<\>\-\=]*)/i],
+conditions: {"acc_descr_multiline":{"rules":[11,12],"inclusive":false},"acc_descr":{"rules":[9],"inclusive":false},"acc_title":{"rules":[7],"inclusive":false},"close_directive":{"rules":[],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"open_directive":{"rules":[1],"inclusive":false},"unqString":{"rules":[],"inclusive":false},"token":{"rules":[],"inclusive":false},"string":{"rules":[53,54],"inclusive":false},"INITIAL":{"rules":[0,5,6,8,10,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,55],"inclusive":true}}
 });
 return lexer;
 })();
@@ -6404,12 +6794,12 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,2],$V1=[1,3],$V2=[1,5],$V3=[1,7],$V4=[2,5],$V5=[1,15],$V6=[1,17],$V7=[1,18],$V8=[1,19],$V9=[1,21],$Va=[1,22],$Vb=[1,23],$Vc=[1,29],$Vd=[1,30],$Ve=[1,31],$Vf=[1,32],$Vg=[1,33],$Vh=[1,34],$Vi=[1,37],$Vj=[1,38],$Vk=[1,39],$Vl=[1,40],$Vm=[1,41],$Vn=[1,42],$Vo=[1,45],$Vp=[1,4,5,16,20,22,23,24,30,32,33,34,35,36,38,40,41,42,46,47,48,49,57,67],$Vq=[1,58],$Vr=[4,5,16,20,22,23,24,30,32,33,34,35,36,38,42,46,47,48,49,57,67],$Vs=[4,5,16,20,22,23,24,30,32,33,34,35,36,38,41,42,46,47,48,49,57,67],$Vt=[4,5,16,20,22,23,24,30,32,33,34,35,36,38,40,42,46,47,48,49,57,67],$Vu=[55,56,57],$Vv=[1,4,5,7,16,20,22,23,24,30,32,33,34,35,36,38,40,41,42,46,47,48,49,57,67];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,2],$V1=[1,3],$V2=[1,5],$V3=[1,7],$V4=[2,5],$V5=[1,15],$V6=[1,17],$V7=[1,18],$V8=[1,19],$V9=[1,21],$Va=[1,22],$Vb=[1,23],$Vc=[1,29],$Vd=[1,30],$Ve=[1,31],$Vf=[1,32],$Vg=[1,33],$Vh=[1,34],$Vi=[1,35],$Vj=[1,36],$Vk=[1,37],$Vl=[1,38],$Vm=[1,41],$Vn=[1,42],$Vo=[1,43],$Vp=[1,44],$Vq=[1,45],$Vr=[1,46],$Vs=[1,49],$Vt=[1,4,5,16,20,22,25,26,32,33,34,36,38,39,40,41,42,43,45,47,48,49,54,55,56,57,65,75],$Vu=[4,5,16,20,22,25,26,32,33,34,36,38,39,40,41,42,43,45,49,54,55,56,57,65,75],$Vv=[4,5,16,20,22,25,26,32,33,34,36,38,39,40,41,42,43,45,48,49,54,55,56,57,65,75],$Vw=[4,5,16,20,22,25,26,32,33,34,36,38,39,40,41,42,43,45,47,49,54,55,56,57,65,75],$Vx=[63,64,65],$Vy=[1,114],$Vz=[1,4,5,7,16,20,22,25,26,32,33,34,36,38,39,40,41,42,43,45,47,48,49,54,55,56,57,65,75];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"SPACE":4,"NEWLINE":5,"directive":6,"SD":7,"document":8,"line":9,"statement":10,"openDirective":11,"typeDirective":12,"closeDirective":13,":":14,"argDirective":15,"participant":16,"actor":17,"AS":18,"restOfLine":19,"participant_actor":20,"signal":21,"autonumber":22,"activate":23,"deactivate":24,"note_statement":25,"links_statement":26,"link_statement":27,"properties_statement":28,"details_statement":29,"title":30,"text2":31,"loop":32,"end":33,"rect":34,"opt":35,"alt":36,"else_sections":37,"par":38,"par_sections":39,"and":40,"else":41,"note":42,"placement":43,"over":44,"actor_pair":45,"links":46,"link":47,"properties":48,"details":49,"spaceList":50,",":51,"left_of":52,"right_of":53,"signaltype":54,"+":55,"-":56,"ACTOR":57,"SOLID_OPEN_ARROW":58,"DOTTED_OPEN_ARROW":59,"SOLID_ARROW":60,"DOTTED_ARROW":61,"SOLID_CROSS":62,"DOTTED_CROSS":63,"SOLID_POINT":64,"DOTTED_POINT":65,"TXT":66,"open_directive":67,"type_directive":68,"arg_directive":69,"close_directive":70,"$accept":0,"$end":1},
-terminals_: {2:"error",4:"SPACE",5:"NEWLINE",7:"SD",14:":",16:"participant",18:"AS",19:"restOfLine",20:"participant_actor",22:"autonumber",23:"activate",24:"deactivate",30:"title",32:"loop",33:"end",34:"rect",35:"opt",36:"alt",38:"par",40:"and",41:"else",42:"note",44:"over",46:"links",47:"link",48:"properties",49:"details",51:",",52:"left_of",53:"right_of",55:"+",56:"-",57:"ACTOR",58:"SOLID_OPEN_ARROW",59:"DOTTED_OPEN_ARROW",60:"SOLID_ARROW",61:"DOTTED_ARROW",62:"SOLID_CROSS",63:"DOTTED_CROSS",64:"SOLID_POINT",65:"DOTTED_POINT",66:"TXT",67:"open_directive",68:"type_directive",69:"arg_directive",70:"close_directive"},
-productions_: [0,[3,2],[3,2],[3,2],[3,2],[8,0],[8,2],[9,2],[9,1],[9,1],[6,4],[6,6],[10,5],[10,3],[10,5],[10,3],[10,2],[10,1],[10,3],[10,3],[10,2],[10,2],[10,2],[10,2],[10,2],[10,3],[10,4],[10,4],[10,4],[10,4],[10,4],[10,1],[39,1],[39,4],[37,1],[37,4],[25,4],[25,4],[26,3],[27,3],[28,3],[29,3],[50,2],[50,1],[45,3],[45,1],[43,1],[43,1],[21,5],[21,5],[21,4],[17,1],[54,1],[54,1],[54,1],[54,1],[54,1],[54,1],[54,1],[54,1],[31,1],[11,1],[12,1],[15,1],[13,1]],
+symbols_: {"error":2,"start":3,"SPACE":4,"NEWLINE":5,"directive":6,"SD":7,"document":8,"line":9,"statement":10,"openDirective":11,"typeDirective":12,"closeDirective":13,":":14,"argDirective":15,"participant":16,"actor":17,"AS":18,"restOfLine":19,"participant_actor":20,"signal":21,"autonumber":22,"NUM":23,"off":24,"activate":25,"deactivate":26,"note_statement":27,"links_statement":28,"link_statement":29,"properties_statement":30,"details_statement":31,"title":32,"legacy_title":33,"acc_title":34,"acc_title_value":35,"acc_descr":36,"acc_descr_value":37,"acc_descr_multiline_value":38,"loop":39,"end":40,"rect":41,"opt":42,"alt":43,"else_sections":44,"par":45,"par_sections":46,"and":47,"else":48,"note":49,"placement":50,"text2":51,"over":52,"actor_pair":53,"links":54,"link":55,"properties":56,"details":57,"spaceList":58,",":59,"left_of":60,"right_of":61,"signaltype":62,"+":63,"-":64,"ACTOR":65,"SOLID_OPEN_ARROW":66,"DOTTED_OPEN_ARROW":67,"SOLID_ARROW":68,"DOTTED_ARROW":69,"SOLID_CROSS":70,"DOTTED_CROSS":71,"SOLID_POINT":72,"DOTTED_POINT":73,"TXT":74,"open_directive":75,"type_directive":76,"arg_directive":77,"close_directive":78,"$accept":0,"$end":1},
+terminals_: {2:"error",4:"SPACE",5:"NEWLINE",7:"SD",14:":",16:"participant",18:"AS",19:"restOfLine",20:"participant_actor",22:"autonumber",23:"NUM",24:"off",25:"activate",26:"deactivate",32:"title",33:"legacy_title",34:"acc_title",35:"acc_title_value",36:"acc_descr",37:"acc_descr_value",38:"acc_descr_multiline_value",39:"loop",40:"end",41:"rect",42:"opt",43:"alt",45:"par",47:"and",48:"else",49:"note",52:"over",54:"links",55:"link",56:"properties",57:"details",59:",",60:"left_of",61:"right_of",63:"+",64:"-",65:"ACTOR",66:"SOLID_OPEN_ARROW",67:"DOTTED_OPEN_ARROW",68:"SOLID_ARROW",69:"DOTTED_ARROW",70:"SOLID_CROSS",71:"DOTTED_CROSS",72:"SOLID_POINT",73:"DOTTED_POINT",74:"TXT",75:"open_directive",76:"type_directive",77:"arg_directive",78:"close_directive"},
+productions_: [0,[3,2],[3,2],[3,2],[3,2],[8,0],[8,2],[9,2],[9,1],[9,1],[6,4],[6,6],[10,5],[10,3],[10,5],[10,3],[10,2],[10,4],[10,3],[10,3],[10,2],[10,3],[10,3],[10,2],[10,2],[10,2],[10,2],[10,2],[10,1],[10,1],[10,2],[10,2],[10,1],[10,4],[10,4],[10,4],[10,4],[10,4],[10,1],[46,1],[46,4],[44,1],[44,4],[27,4],[27,4],[28,3],[29,3],[30,3],[31,3],[58,2],[58,1],[53,3],[53,1],[50,1],[50,1],[21,5],[21,5],[21,4],[17,1],[62,1],[62,1],[62,1],[62,1],[62,1],[62,1],[62,1],[62,1],[51,1],[11,1],[12,1],[15,1],[13,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -6443,36 +6833,54 @@ case 15:
 $$[$0-1].type='addActor'; this.$=$$[$0-1];
 break;
 case 17:
-yy.enableSequenceNumbers()
+ this.$= {type:'sequenceIndex',sequenceIndex: Number($$[$0-2]), sequenceIndexStep:Number($$[$0-1]), sequenceVisible:true, signalType:yy.LINETYPE.AUTONUMBER};
 break;
 case 18:
-this.$={type: 'activeStart', signalType: yy.LINETYPE.ACTIVE_START, actor: $$[$0-1]};
+ this.$ = {type:'sequenceIndex',sequenceIndex: Number($$[$0-1]), sequenceIndexStep:1, sequenceVisible:true, signalType:yy.LINETYPE.AUTONUMBER};
 break;
 case 19:
+ this.$ = {type:'sequenceIndex', sequenceVisible:false, signalType:yy.LINETYPE.AUTONUMBER};
+break;
+case 20:
+this.$ = {type:'sequenceIndex', sequenceVisible:true, signalType:yy.LINETYPE.AUTONUMBER}; 
+break;
+case 21:
+this.$={type: 'activeStart', signalType: yy.LINETYPE.ACTIVE_START, actor: $$[$0-1]};
+break;
+case 22:
 this.$={type: 'activeEnd', signalType: yy.LINETYPE.ACTIVE_END, actor: $$[$0-1]};
 break;
-case 25:
-this.$=[{type:'setTitle', text:$$[$0-1]}]
+case 28:
+yy.setDiagramTitle($$[$0].substring(6));this.$=$$[$0].substring(6);
 break;
-case 26:
+case 29:
+yy.setDiagramTitle($$[$0].substring(7));this.$=$$[$0].substring(7);
+break;
+case 30:
+ this.$=$$[$0].trim();yy.setTitle(this.$); 
+break;
+case 31: case 32:
+ this.$=$$[$0].trim();yy.setAccDescription(this.$); 
+break;
+case 33:
 
 		$$[$0-1].unshift({type: 'loopStart', loopText:yy.parseMessage($$[$0-2]), signalType: yy.LINETYPE.LOOP_START});
 		$$[$0-1].push({type: 'loopEnd', loopText:$$[$0-2], signalType: yy.LINETYPE.LOOP_END});
 		this.$=$$[$0-1];
 break;
-case 27:
+case 34:
 
 		$$[$0-1].unshift({type: 'rectStart', color:yy.parseMessage($$[$0-2]), signalType: yy.LINETYPE.RECT_START });
 		$$[$0-1].push({type: 'rectEnd', color:yy.parseMessage($$[$0-2]), signalType: yy.LINETYPE.RECT_END });
 		this.$=$$[$0-1];
 break;
-case 28:
+case 35:
 
 		$$[$0-1].unshift({type: 'optStart', optText:yy.parseMessage($$[$0-2]), signalType: yy.LINETYPE.OPT_START});
 		$$[$0-1].push({type: 'optEnd', optText:yy.parseMessage($$[$0-2]), signalType: yy.LINETYPE.OPT_END});
 		this.$=$$[$0-1];
 break;
-case 29:
+case 36:
 
 		// Alt start
 		$$[$0-1].unshift({type: 'altStart', altText:yy.parseMessage($$[$0-2]), signalType: yy.LINETYPE.ALT_START});
@@ -6481,7 +6889,7 @@ case 29:
 		$$[$0-1].push({type: 'altEnd', signalType: yy.LINETYPE.ALT_END});
 		this.$=$$[$0-1];
 break;
-case 30:
+case 37:
 
 		// Parallel start
 		$$[$0-1].unshift({type: 'parStart', parText:yy.parseMessage($$[$0-2]), signalType: yy.LINETYPE.PAR_START});
@@ -6490,17 +6898,17 @@ case 30:
 		$$[$0-1].push({type: 'parEnd', signalType: yy.LINETYPE.PAR_END});
 		this.$=$$[$0-1];
 break;
-case 33:
+case 40:
  this.$ = $$[$0-3].concat([{type: 'and', parText:yy.parseMessage($$[$0-1]), signalType: yy.LINETYPE.PAR_AND}, $$[$0]]); 
 break;
-case 35:
+case 42:
  this.$ = $$[$0-3].concat([{type: 'else', altText:yy.parseMessage($$[$0-1]), signalType: yy.LINETYPE.ALT_ELSE}, $$[$0]]); 
 break;
-case 36:
+case 43:
 
 		this.$ = [$$[$0-1], {type:'addNote', placement:$$[$0-2], actor:$$[$0-1].actor, text:$$[$0]}];
 break;
-case 37:
+case 44:
 
 		// Coerce actor_pair into a [to, from, ...] array
 		$$[$0-2] = [].concat($$[$0-1], $$[$0-1]).slice(0, 2);
@@ -6508,97 +6916,97 @@ case 37:
 		$$[$0-2][1] = $$[$0-2][1].actor;
 		this.$ = [$$[$0-1], {type:'addNote', placement:yy.PLACEMENT.OVER, actor:$$[$0-2].slice(0, 2), text:$$[$0]}];
 break;
-case 38:
+case 45:
 
 		this.$ = [$$[$0-1], {type:'addLinks', actor:$$[$0-1].actor, text:$$[$0]}];
   
 break;
-case 39:
+case 46:
 
 		this.$ = [$$[$0-1], {type:'addALink', actor:$$[$0-1].actor, text:$$[$0]}];
   
 break;
-case 40:
+case 47:
 
 		this.$ = [$$[$0-1], {type:'addProperties', actor:$$[$0-1].actor, text:$$[$0]}];
   
 break;
-case 41:
+case 48:
 
 		this.$ = [$$[$0-1], {type:'addDetails', actor:$$[$0-1].actor, text:$$[$0]}];
   
 break;
-case 44:
+case 51:
  this.$ = [$$[$0-2], $$[$0]]; 
 break;
-case 45:
+case 52:
  this.$ = $$[$0]; 
 break;
-case 46:
+case 53:
  this.$ = yy.PLACEMENT.LEFTOF; 
 break;
-case 47:
+case 54:
  this.$ = yy.PLACEMENT.RIGHTOF; 
 break;
-case 48:
+case 55:
  this.$ = [$$[$0-4],$$[$0-1],{type: 'addMessage', from:$$[$0-4].actor, to:$$[$0-1].actor, signalType:$$[$0-3], msg:$$[$0]},
 	              {type: 'activeStart', signalType: yy.LINETYPE.ACTIVE_START, actor: $$[$0-1]}
 	             ]
 break;
-case 49:
+case 56:
  this.$ = [$$[$0-4],$$[$0-1],{type: 'addMessage', from:$$[$0-4].actor, to:$$[$0-1].actor, signalType:$$[$0-3], msg:$$[$0]},
 	             {type: 'activeEnd', signalType: yy.LINETYPE.ACTIVE_END, actor: $$[$0-4]}
 	             ]
 break;
-case 50:
+case 57:
  this.$ = [$$[$0-3],$$[$0-1],{type: 'addMessage', from:$$[$0-3].actor, to:$$[$0-1].actor, signalType:$$[$0-2], msg:$$[$0]}]
 break;
-case 51:
+case 58:
 this.$={ type: 'addParticipant', actor:$$[$0]}
 break;
-case 52:
+case 59:
  this.$ = yy.LINETYPE.SOLID_OPEN; 
 break;
-case 53:
+case 60:
  this.$ = yy.LINETYPE.DOTTED_OPEN; 
 break;
-case 54:
+case 61:
  this.$ = yy.LINETYPE.SOLID; 
 break;
-case 55:
+case 62:
  this.$ = yy.LINETYPE.DOTTED; 
 break;
-case 56:
+case 63:
  this.$ = yy.LINETYPE.SOLID_CROSS; 
 break;
-case 57:
+case 64:
  this.$ = yy.LINETYPE.DOTTED_CROSS; 
 break;
-case 58:
+case 65:
  this.$ = yy.LINETYPE.SOLID_POINT; 
 break;
-case 59:
+case 66:
  this.$ = yy.LINETYPE.DOTTED_POINT; 
 break;
-case 60:
+case 67:
 this.$ = yy.parseMessage($$[$0].trim().substring(1)) 
 break;
-case 61:
+case 68:
  yy.parseDirective('%%{', 'open_directive'); 
 break;
-case 62:
+case 69:
  yy.parseDirective($$[$0], 'type_directive'); 
 break;
-case 63:
+case 70:
  $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
 break;
-case 64:
+case 71:
  yy.parseDirective('}%%', 'close_directive', 'sequence'); 
 break;
 }
 },
-table: [{3:1,4:$V0,5:$V1,6:4,7:$V2,11:6,67:$V3},{1:[3]},{3:8,4:$V0,5:$V1,6:4,7:$V2,11:6,67:$V3},{3:9,4:$V0,5:$V1,6:4,7:$V2,11:6,67:$V3},{3:10,4:$V0,5:$V1,6:4,7:$V2,11:6,67:$V3},o([1,4,5,16,20,22,23,24,30,32,34,35,36,38,42,46,47,48,49,57,67],$V4,{8:11}),{12:12,68:[1,13]},{68:[2,61]},{1:[2,1]},{1:[2,2]},{1:[2,3]},{1:[2,4],4:$V5,5:$V6,6:35,9:14,10:16,11:6,16:$V7,17:36,20:$V8,21:20,22:$V9,23:$Va,24:$Vb,25:24,26:25,27:26,28:27,29:28,30:$Vc,32:$Vd,34:$Ve,35:$Vf,36:$Vg,38:$Vh,42:$Vi,46:$Vj,47:$Vk,48:$Vl,49:$Vm,57:$Vn,67:$V3},{13:43,14:[1,44],70:$Vo},o([14,70],[2,62]),o($Vp,[2,6]),{6:35,10:46,11:6,16:$V7,17:36,20:$V8,21:20,22:$V9,23:$Va,24:$Vb,25:24,26:25,27:26,28:27,29:28,30:$Vc,32:$Vd,34:$Ve,35:$Vf,36:$Vg,38:$Vh,42:$Vi,46:$Vj,47:$Vk,48:$Vl,49:$Vm,57:$Vn,67:$V3},o($Vp,[2,8]),o($Vp,[2,9]),{17:47,57:$Vn},{17:48,57:$Vn},{5:[1,49]},o($Vp,[2,17]),{17:50,57:$Vn},{17:51,57:$Vn},{5:[1,52]},{5:[1,53]},{5:[1,54]},{5:[1,55]},{5:[1,56]},{31:57,66:$Vq},{19:[1,59]},{19:[1,60]},{19:[1,61]},{19:[1,62]},{19:[1,63]},o($Vp,[2,31]),{54:64,58:[1,65],59:[1,66],60:[1,67],61:[1,68],62:[1,69],63:[1,70],64:[1,71],65:[1,72]},{43:73,44:[1,74],52:[1,75],53:[1,76]},{17:77,57:$Vn},{17:78,57:$Vn},{17:79,57:$Vn},{17:80,57:$Vn},o([5,18,51,58,59,60,61,62,63,64,65,66],[2,51]),{5:[1,81]},{15:82,69:[1,83]},{5:[2,64]},o($Vp,[2,7]),{5:[1,85],18:[1,84]},{5:[1,87],18:[1,86]},o($Vp,[2,16]),{5:[1,88]},{5:[1,89]},o($Vp,[2,20]),o($Vp,[2,21]),o($Vp,[2,22]),o($Vp,[2,23]),o($Vp,[2,24]),{5:[1,90]},{5:[2,60]},o($Vr,$V4,{8:91}),o($Vr,$V4,{8:92}),o($Vr,$V4,{8:93}),o($Vs,$V4,{37:94,8:95}),o($Vt,$V4,{39:96,8:97}),{17:100,55:[1,98],56:[1,99],57:$Vn},o($Vu,[2,52]),o($Vu,[2,53]),o($Vu,[2,54]),o($Vu,[2,55]),o($Vu,[2,56]),o($Vu,[2,57]),o($Vu,[2,58]),o($Vu,[2,59]),{17:101,57:$Vn},{17:103,45:102,57:$Vn},{57:[2,46]},{57:[2,47]},{31:104,66:$Vq},{31:105,66:$Vq},{31:106,66:$Vq},{31:107,66:$Vq},o($Vv,[2,10]),{13:108,70:$Vo},{70:[2,63]},{19:[1,109]},o($Vp,[2,13]),{19:[1,110]},o($Vp,[2,15]),o($Vp,[2,18]),o($Vp,[2,19]),o($Vp,[2,25]),{4:$V5,5:$V6,6:35,9:14,10:16,11:6,16:$V7,17:36,20:$V8,21:20,22:$V9,23:$Va,24:$Vb,25:24,26:25,27:26,28:27,29:28,30:$Vc,32:$Vd,33:[1,111],34:$Ve,35:$Vf,36:$Vg,38:$Vh,42:$Vi,46:$Vj,47:$Vk,48:$Vl,49:$Vm,57:$Vn,67:$V3},{4:$V5,5:$V6,6:35,9:14,10:16,11:6,16:$V7,17:36,20:$V8,21:20,22:$V9,23:$Va,24:$Vb,25:24,26:25,27:26,28:27,29:28,30:$Vc,32:$Vd,33:[1,112],34:$Ve,35:$Vf,36:$Vg,38:$Vh,42:$Vi,46:$Vj,47:$Vk,48:$Vl,49:$Vm,57:$Vn,67:$V3},{4:$V5,5:$V6,6:35,9:14,10:16,11:6,16:$V7,17:36,20:$V8,21:20,22:$V9,23:$Va,24:$Vb,25:24,26:25,27:26,28:27,29:28,30:$Vc,32:$Vd,33:[1,113],34:$Ve,35:$Vf,36:$Vg,38:$Vh,42:$Vi,46:$Vj,47:$Vk,48:$Vl,49:$Vm,57:$Vn,67:$V3},{33:[1,114]},{4:$V5,5:$V6,6:35,9:14,10:16,11:6,16:$V7,17:36,20:$V8,21:20,22:$V9,23:$Va,24:$Vb,25:24,26:25,27:26,28:27,29:28,30:$Vc,32:$Vd,33:[2,34],34:$Ve,35:$Vf,36:$Vg,38:$Vh,41:[1,115],42:$Vi,46:$Vj,47:$Vk,48:$Vl,49:$Vm,57:$Vn,67:$V3},{33:[1,116]},{4:$V5,5:$V6,6:35,9:14,10:16,11:6,16:$V7,17:36,20:$V8,21:20,22:$V9,23:$Va,24:$Vb,25:24,26:25,27:26,28:27,29:28,30:$Vc,32:$Vd,33:[2,32],34:$Ve,35:$Vf,36:$Vg,38:$Vh,40:[1,117],42:$Vi,46:$Vj,47:$Vk,48:$Vl,49:$Vm,57:$Vn,67:$V3},{17:118,57:$Vn},{17:119,57:$Vn},{31:120,66:$Vq},{31:121,66:$Vq},{31:122,66:$Vq},{51:[1,123],66:[2,45]},{5:[2,38]},{5:[2,39]},{5:[2,40]},{5:[2,41]},{5:[1,124]},{5:[1,125]},{5:[1,126]},o($Vp,[2,26]),o($Vp,[2,27]),o($Vp,[2,28]),o($Vp,[2,29]),{19:[1,127]},o($Vp,[2,30]),{19:[1,128]},{31:129,66:$Vq},{31:130,66:$Vq},{5:[2,50]},{5:[2,36]},{5:[2,37]},{17:131,57:$Vn},o($Vv,[2,11]),o($Vp,[2,12]),o($Vp,[2,14]),o($Vs,$V4,{8:95,37:132}),o($Vt,$V4,{8:97,39:133}),{5:[2,48]},{5:[2,49]},{66:[2,44]},{33:[2,35]},{33:[2,33]}],
-defaultActions: {7:[2,61],8:[2,1],9:[2,2],10:[2,3],45:[2,64],58:[2,60],75:[2,46],76:[2,47],83:[2,63],104:[2,38],105:[2,39],106:[2,40],107:[2,41],120:[2,50],121:[2,36],122:[2,37],129:[2,48],130:[2,49],131:[2,44],132:[2,35],133:[2,33]},
+table: [{3:1,4:$V0,5:$V1,6:4,7:$V2,11:6,75:$V3},{1:[3]},{3:8,4:$V0,5:$V1,6:4,7:$V2,11:6,75:$V3},{3:9,4:$V0,5:$V1,6:4,7:$V2,11:6,75:$V3},{3:10,4:$V0,5:$V1,6:4,7:$V2,11:6,75:$V3},o([1,4,5,16,20,22,25,26,32,33,34,36,38,39,41,42,43,45,49,54,55,56,57,65,75],$V4,{8:11}),{12:12,76:[1,13]},{76:[2,68]},{1:[2,1]},{1:[2,2]},{1:[2,3]},{1:[2,4],4:$V5,5:$V6,6:39,9:14,10:16,11:6,16:$V7,17:40,20:$V8,21:20,22:$V9,25:$Va,26:$Vb,27:24,28:25,29:26,30:27,31:28,32:$Vc,33:$Vd,34:$Ve,36:$Vf,38:$Vg,39:$Vh,41:$Vi,42:$Vj,43:$Vk,45:$Vl,49:$Vm,54:$Vn,55:$Vo,56:$Vp,57:$Vq,65:$Vr,75:$V3},{13:47,14:[1,48],78:$Vs},o([14,78],[2,69]),o($Vt,[2,6]),{6:39,10:50,11:6,16:$V7,17:40,20:$V8,21:20,22:$V9,25:$Va,26:$Vb,27:24,28:25,29:26,30:27,31:28,32:$Vc,33:$Vd,34:$Ve,36:$Vf,38:$Vg,39:$Vh,41:$Vi,42:$Vj,43:$Vk,45:$Vl,49:$Vm,54:$Vn,55:$Vo,56:$Vp,57:$Vq,65:$Vr,75:$V3},o($Vt,[2,8]),o($Vt,[2,9]),{17:51,65:$Vr},{17:52,65:$Vr},{5:[1,53]},{5:[1,56],23:[1,54],24:[1,55]},{17:57,65:$Vr},{17:58,65:$Vr},{5:[1,59]},{5:[1,60]},{5:[1,61]},{5:[1,62]},{5:[1,63]},o($Vt,[2,28]),o($Vt,[2,29]),{35:[1,64]},{37:[1,65]},o($Vt,[2,32]),{19:[1,66]},{19:[1,67]},{19:[1,68]},{19:[1,69]},{19:[1,70]},o($Vt,[2,38]),{62:71,66:[1,72],67:[1,73],68:[1,74],69:[1,75],70:[1,76],71:[1,77],72:[1,78],73:[1,79]},{50:80,52:[1,81],60:[1,82],61:[1,83]},{17:84,65:$Vr},{17:85,65:$Vr},{17:86,65:$Vr},{17:87,65:$Vr},o([5,18,59,66,67,68,69,70,71,72,73,74],[2,58]),{5:[1,88]},{15:89,77:[1,90]},{5:[2,71]},o($Vt,[2,7]),{5:[1,92],18:[1,91]},{5:[1,94],18:[1,93]},o($Vt,[2,16]),{5:[1,96],23:[1,95]},{5:[1,97]},o($Vt,[2,20]),{5:[1,98]},{5:[1,99]},o($Vt,[2,23]),o($Vt,[2,24]),o($Vt,[2,25]),o($Vt,[2,26]),o($Vt,[2,27]),o($Vt,[2,30]),o($Vt,[2,31]),o($Vu,$V4,{8:100}),o($Vu,$V4,{8:101}),o($Vu,$V4,{8:102}),o($Vv,$V4,{44:103,8:104}),o($Vw,$V4,{46:105,8:106}),{17:109,63:[1,107],64:[1,108],65:$Vr},o($Vx,[2,59]),o($Vx,[2,60]),o($Vx,[2,61]),o($Vx,[2,62]),o($Vx,[2,63]),o($Vx,[2,64]),o($Vx,[2,65]),o($Vx,[2,66]),{17:110,65:$Vr},{17:112,53:111,65:$Vr},{65:[2,53]},{65:[2,54]},{51:113,74:$Vy},{51:115,74:$Vy},{51:116,74:$Vy},{51:117,74:$Vy},o($Vz,[2,10]),{13:118,78:$Vs},{78:[2,70]},{19:[1,119]},o($Vt,[2,13]),{19:[1,120]},o($Vt,[2,15]),{5:[1,121]},o($Vt,[2,18]),o($Vt,[2,19]),o($Vt,[2,21]),o($Vt,[2,22]),{4:$V5,5:$V6,6:39,9:14,10:16,11:6,16:$V7,17:40,20:$V8,21:20,22:$V9,25:$Va,26:$Vb,27:24,28:25,29:26,30:27,31:28,32:$Vc,33:$Vd,34:$Ve,36:$Vf,38:$Vg,39:$Vh,40:[1,122],41:$Vi,42:$Vj,43:$Vk,45:$Vl,49:$Vm,54:$Vn,55:$Vo,56:$Vp,57:$Vq,65:$Vr,75:$V3},{4:$V5,5:$V6,6:39,9:14,10:16,11:6,16:$V7,17:40,20:$V8,21:20,22:$V9,25:$Va,26:$Vb,27:24,28:25,29:26,30:27,31:28,32:$Vc,33:$Vd,34:$Ve,36:$Vf,38:$Vg,39:$Vh,40:[1,123],41:$Vi,42:$Vj,43:$Vk,45:$Vl,49:$Vm,54:$Vn,55:$Vo,56:$Vp,57:$Vq,65:$Vr,75:$V3},{4:$V5,5:$V6,6:39,9:14,10:16,11:6,16:$V7,17:40,20:$V8,21:20,22:$V9,25:$Va,26:$Vb,27:24,28:25,29:26,30:27,31:28,32:$Vc,33:$Vd,34:$Ve,36:$Vf,38:$Vg,39:$Vh,40:[1,124],41:$Vi,42:$Vj,43:$Vk,45:$Vl,49:$Vm,54:$Vn,55:$Vo,56:$Vp,57:$Vq,65:$Vr,75:$V3},{40:[1,125]},{4:$V5,5:$V6,6:39,9:14,10:16,11:6,16:$V7,17:40,20:$V8,21:20,22:$V9,25:$Va,26:$Vb,27:24,28:25,29:26,30:27,31:28,32:$Vc,33:$Vd,34:$Ve,36:$Vf,38:$Vg,39:$Vh,40:[2,41],41:$Vi,42:$Vj,43:$Vk,45:$Vl,48:[1,126],49:$Vm,54:$Vn,55:$Vo,56:$Vp,57:$Vq,65:$Vr,75:$V3},{40:[1,127]},{4:$V5,5:$V6,6:39,9:14,10:16,11:6,16:$V7,17:40,20:$V8,21:20,22:$V9,25:$Va,26:$Vb,27:24,28:25,29:26,30:27,31:28,32:$Vc,33:$Vd,34:$Ve,36:$Vf,38:$Vg,39:$Vh,40:[2,39],41:$Vi,42:$Vj,43:$Vk,45:$Vl,47:[1,128],49:$Vm,54:$Vn,55:$Vo,56:$Vp,57:$Vq,65:$Vr,75:$V3},{17:129,65:$Vr},{17:130,65:$Vr},{51:131,74:$Vy},{51:132,74:$Vy},{51:133,74:$Vy},{59:[1,134],74:[2,52]},{5:[2,45]},{5:[2,67]},{5:[2,46]},{5:[2,47]},{5:[2,48]},{5:[1,135]},{5:[1,136]},{5:[1,137]},o($Vt,[2,17]),o($Vt,[2,33]),o($Vt,[2,34]),o($Vt,[2,35]),o($Vt,[2,36]),{19:[1,138]},o($Vt,[2,37]),{19:[1,139]},{51:140,74:$Vy},{51:141,74:$Vy},{5:[2,57]},{5:[2,43]},{5:[2,44]},{17:142,65:$Vr},o($Vz,[2,11]),o($Vt,[2,12]),o($Vt,[2,14]),o($Vv,$V4,{8:104,44:143}),o($Vw,$V4,{8:106,46:144}),{5:[2,55]},{5:[2,56]},{74:[2,51]},{40:[2,42]},{40:[2,40]}],
+defaultActions: {7:[2,68],8:[2,1],9:[2,2],10:[2,3],49:[2,71],82:[2,53],83:[2,54],90:[2,70],113:[2,45],114:[2,67],115:[2,46],116:[2,47],117:[2,48],131:[2,57],132:[2,43],133:[2,44],140:[2,55],141:[2,56],142:[2,51],143:[2,42],144:[2,40]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -7077,15 +7485,15 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 67; 
+case 0: this.begin('open_directive'); return 75; 
 break;
-case 1: this.begin('type_directive'); return 68; 
+case 1: this.begin('type_directive'); return 76; 
 break;
 case 2: this.popState(); this.begin('arg_directive'); return 14; 
 break;
-case 3: this.popState(); this.popState(); return 70; 
+case 3: this.popState(); this.popState(); return 78; 
 break;
-case 4:return 69;
+case 4:return 77;
 break;
 case 5:return 5;
 break;
@@ -7099,96 +7507,116 @@ case 9:/* skip comments */
 break;
 case 10:/* skip comments */
 break;
-case 11: this.begin('ID'); return 16; 
+case 11:return 23;
 break;
-case 12: this.begin('ID'); return 20; 
+case 12: this.begin('ID'); return 16; 
 break;
-case 13: yy_.yytext = yy_.yytext.trim(); this.begin('ALIAS'); return 57; 
+case 13: this.begin('ID'); return 20; 
 break;
-case 14: this.popState(); this.popState(); this.begin('LINE'); return 18; 
+case 14: yy_.yytext = yy_.yytext.trim(); this.begin('ALIAS'); return 65; 
 break;
-case 15: this.popState(); this.popState(); return 5; 
+case 15: this.popState(); this.popState(); this.begin('LINE'); return 18; 
 break;
-case 16: this.begin('LINE'); return 32; 
+case 16: this.popState(); this.popState(); return 5; 
 break;
-case 17: this.begin('LINE'); return 34; 
+case 17: this.begin('LINE'); return 39; 
 break;
-case 18: this.begin('LINE'); return 35; 
+case 18: this.begin('LINE'); return 41; 
 break;
-case 19: this.begin('LINE'); return 36; 
+case 19: this.begin('LINE'); return 42; 
 break;
-case 20: this.begin('LINE'); return 41; 
+case 20: this.begin('LINE'); return 43; 
 break;
-case 21: this.begin('LINE'); return 38; 
+case 21: this.begin('LINE'); return 48; 
 break;
-case 22: this.begin('LINE'); return 40; 
+case 22: this.begin('LINE'); return 45; 
 break;
-case 23: this.popState(); return 19; 
+case 23: this.begin('LINE'); return 47; 
 break;
-case 24:return 33;
+case 24: this.popState(); return 19; 
 break;
-case 25:return 52;
+case 25:return 40;
 break;
-case 26:return 53;
+case 26:return 60;
 break;
-case 27:return 46;
+case 27:return 61;
 break;
-case 28:return 47;
+case 28:return 54;
 break;
-case 29:return 48;
+case 29:return 55;
 break;
-case 30:return 49;
+case 30:return 56;
 break;
-case 31:return 44;
+case 31:return 57;
 break;
-case 32:return 42;
+case 32:return 52;
 break;
-case 33: this.begin('ID'); return 23; 
+case 33:return 49;
 break;
-case 34: this.begin('ID'); return 24; 
+case 34: this.begin('ID'); return 25; 
 break;
-case 35:return 30;
+case 35: this.begin('ID'); return 26; 
 break;
-case 36:return 7;
+case 36:return 32;
 break;
-case 37:return 22;
+case 37:return 33;
 break;
-case 38:return 51;
+case 38: this.begin("acc_title");return 34; 
 break;
-case 39:return 5;
+case 39: this.popState(); return "acc_title_value"; 
 break;
-case 40: yy_.yytext = yy_.yytext.trim(); return 57; 
+case 40: this.begin("acc_descr");return 36; 
 break;
-case 41:return 60;
+case 41: this.popState(); return "acc_descr_value"; 
 break;
-case 42:return 61;
+case 42: this.begin("acc_descr_multiline");
 break;
-case 43:return 58;
+case 43: this.popState(); 
 break;
-case 44:return 59;
+case 44:return "acc_descr_multiline_value";
 break;
-case 45:return 62;
+case 45:return 7;
 break;
-case 46:return 63;
+case 46:return 22;
 break;
-case 47:return 64;
+case 47:return 24;
 break;
-case 48:return 65;
+case 48:return 59;
 break;
-case 49:return 66;
+case 49:return 5;
 break;
-case 50:return 55;
+case 50: yy_.yytext = yy_.yytext.trim(); return 65; 
 break;
-case 51:return 56;
+case 51:return 68;
 break;
-case 52:return 5;
+case 52:return 69;
 break;
-case 53:return 'INVALID';
+case 53:return 66;
+break;
+case 54:return 67;
+break;
+case 55:return 70;
+break;
+case 56:return 71;
+break;
+case 57:return 72;
+break;
+case 58:return 73;
+break;
+case 59:return 74;
+break;
+case 60:return 63;
+break;
+case 61:return 64;
+break;
+case 62:return 5;
+break;
+case 63:return 'INVALID';
 break;
 }
 },
-rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:[\n]+)/i,/^(?:\s+)/i,/^(?:((?!\n)\s)+)/i,/^(?:#[^\n]*)/i,/^(?:%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:participant\b)/i,/^(?:actor\b)/i,/^(?:[^\->:\n,;]+?(?=((?!\n)\s)+as(?!\n)\s|[#\n;]|$))/i,/^(?:as\b)/i,/^(?:(?:))/i,/^(?:loop\b)/i,/^(?:rect\b)/i,/^(?:opt\b)/i,/^(?:alt\b)/i,/^(?:else\b)/i,/^(?:par\b)/i,/^(?:and\b)/i,/^(?:(?:[:]?(?:no)?wrap)?[^#\n;]*)/i,/^(?:end\b)/i,/^(?:left of\b)/i,/^(?:right of\b)/i,/^(?:links\b)/i,/^(?:link\b)/i,/^(?:properties\b)/i,/^(?:details\b)/i,/^(?:over\b)/i,/^(?:note\b)/i,/^(?:activate\b)/i,/^(?:deactivate\b)/i,/^(?:title\b)/i,/^(?:sequenceDiagram\b)/i,/^(?:autonumber\b)/i,/^(?:,)/i,/^(?:;)/i,/^(?:[^\+\->:\n,;]+((?!(-x|--x|-\)|--\)))[\-]*[^\+\->:\n,;]+)*)/i,/^(?:->>)/i,/^(?:-->>)/i,/^(?:->)/i,/^(?:-->)/i,/^(?:-[x])/i,/^(?:--[x])/i,/^(?:-[\)])/i,/^(?:--[\)])/i,/^(?::(?:(?:no)?wrap)?[^#\n;]+)/i,/^(?:\+)/i,/^(?:-)/i,/^(?:$)/i,/^(?:.)/i],
-conditions: {"open_directive":{"rules":[1,8],"inclusive":false},"type_directive":{"rules":[2,3,8],"inclusive":false},"arg_directive":{"rules":[3,4,8],"inclusive":false},"ID":{"rules":[7,8,13],"inclusive":false},"ALIAS":{"rules":[7,8,14,15],"inclusive":false},"LINE":{"rules":[7,8,23],"inclusive":false},"INITIAL":{"rules":[0,5,6,8,9,10,11,12,16,17,18,19,20,21,22,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53],"inclusive":true}}
+rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:[\n]+)/i,/^(?:\s+)/i,/^(?:((?!\n)\s)+)/i,/^(?:#[^\n]*)/i,/^(?:%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:[0-9]+(?=[ \n]+))/i,/^(?:participant\b)/i,/^(?:actor\b)/i,/^(?:[^\->:\n,;]+?(?=((?!\n)\s)+as(?!\n)\s|[#\n;]|$))/i,/^(?:as\b)/i,/^(?:(?:))/i,/^(?:loop\b)/i,/^(?:rect\b)/i,/^(?:opt\b)/i,/^(?:alt\b)/i,/^(?:else\b)/i,/^(?:par\b)/i,/^(?:and\b)/i,/^(?:(?:[:]?(?:no)?wrap)?[^#\n;]*)/i,/^(?:end\b)/i,/^(?:left of\b)/i,/^(?:right of\b)/i,/^(?:links\b)/i,/^(?:link\b)/i,/^(?:properties\b)/i,/^(?:details\b)/i,/^(?:over\b)/i,/^(?:note\b)/i,/^(?:activate\b)/i,/^(?:deactivate\b)/i,/^(?:title\s[^#\n;]+)/i,/^(?:title:\s[^#\n;]+)/i,/^(?:accTitle\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*\{\s*)/i,/^(?:[\}])/i,/^(?:[^\}]*)/i,/^(?:sequenceDiagram\b)/i,/^(?:autonumber\b)/i,/^(?:off\b)/i,/^(?:,)/i,/^(?:;)/i,/^(?:[^\+\->:\n,;]+((?!(-x|--x|-\)|--\)))[\-]*[^\+\->:\n,;]+)*)/i,/^(?:->>)/i,/^(?:-->>)/i,/^(?:->)/i,/^(?:-->)/i,/^(?:-[x])/i,/^(?:--[x])/i,/^(?:-[\)])/i,/^(?:--[\)])/i,/^(?::(?:(?:no)?wrap)?[^#\n;]+)/i,/^(?:\+)/i,/^(?:-)/i,/^(?:$)/i,/^(?:.)/i],
+conditions: {"acc_descr_multiline":{"rules":[43,44],"inclusive":false},"acc_descr":{"rules":[41],"inclusive":false},"acc_title":{"rules":[39],"inclusive":false},"open_directive":{"rules":[1,8],"inclusive":false},"type_directive":{"rules":[2,3,8],"inclusive":false},"arg_directive":{"rules":[3,4,8],"inclusive":false},"ID":{"rules":[7,8,14],"inclusive":false},"ALIAS":{"rules":[7,8,15,16],"inclusive":false},"LINE":{"rules":[7,8,24],"inclusive":false},"INITIAL":{"rules":[0,5,6,8,9,10,11,12,13,17,18,19,20,21,22,23,25,26,27,28,29,30,31,32,33,34,35,36,37,38,40,42,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63],"inclusive":true}}
 });
 return lexer;
 })();
@@ -7301,12 +7729,12 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,2],$V1=[1,3],$V2=[1,5],$V3=[1,7],$V4=[2,5],$V5=[1,15],$V6=[1,17],$V7=[1,19],$V8=[1,20],$V9=[1,21],$Va=[1,22],$Vb=[1,30],$Vc=[1,23],$Vd=[1,24],$Ve=[1,25],$Vf=[1,26],$Vg=[1,27],$Vh=[1,32],$Vi=[1,33],$Vj=[1,34],$Vk=[1,35],$Vl=[1,31],$Vm=[1,38],$Vn=[1,4,5,14,15,17,19,20,22,23,24,25,26,27,36,37,38,39,42,45],$Vo=[1,4,5,12,13,14,15,17,19,20,22,23,24,25,26,27,36,37,38,39,42,45],$Vp=[1,4,5,7,14,15,17,19,20,22,23,24,25,26,27,36,37,38,39,42,45],$Vq=[4,5,14,15,17,19,20,22,23,24,25,26,27,36,37,38,39,42,45];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,2],$V1=[1,3],$V2=[1,5],$V3=[1,7],$V4=[2,5],$V5=[1,15],$V6=[1,17],$V7=[1,19],$V8=[1,20],$V9=[1,21],$Va=[1,22],$Vb=[1,33],$Vc=[1,23],$Vd=[1,24],$Ve=[1,25],$Vf=[1,26],$Vg=[1,27],$Vh=[1,30],$Vi=[1,31],$Vj=[1,32],$Vk=[1,35],$Vl=[1,36],$Vm=[1,37],$Vn=[1,38],$Vo=[1,34],$Vp=[1,41],$Vq=[1,4,5,14,15,17,19,20,22,23,24,25,26,27,31,33,35,41,42,43,44,47,50],$Vr=[1,4,5,12,13,14,15,17,19,20,22,23,24,25,26,27,31,33,35,41,42,43,44,47,50],$Vs=[1,4,5,7,14,15,17,19,20,22,23,24,25,26,27,31,33,35,41,42,43,44,47,50],$Vt=[4,5,14,15,17,19,20,22,23,24,25,26,27,31,33,35,41,42,43,44,47,50];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"SPACE":4,"NL":5,"directive":6,"SD":7,"document":8,"line":9,"statement":10,"idStatement":11,"DESCR":12,"-->":13,"HIDE_EMPTY":14,"scale":15,"WIDTH":16,"COMPOSIT_STATE":17,"STRUCT_START":18,"STRUCT_STOP":19,"STATE_DESCR":20,"AS":21,"ID":22,"FORK":23,"JOIN":24,"CHOICE":25,"CONCURRENT":26,"note":27,"notePosition":28,"NOTE_TEXT":29,"direction":30,"openDirective":31,"typeDirective":32,"closeDirective":33,":":34,"argDirective":35,"direction_tb":36,"direction_bt":37,"direction_rl":38,"direction_lr":39,"eol":40,";":41,"EDGE_STATE":42,"left_of":43,"right_of":44,"open_directive":45,"type_directive":46,"arg_directive":47,"close_directive":48,"$accept":0,"$end":1},
-terminals_: {2:"error",4:"SPACE",5:"NL",7:"SD",12:"DESCR",13:"-->",14:"HIDE_EMPTY",15:"scale",16:"WIDTH",17:"COMPOSIT_STATE",18:"STRUCT_START",19:"STRUCT_STOP",20:"STATE_DESCR",21:"AS",22:"ID",23:"FORK",24:"JOIN",25:"CHOICE",26:"CONCURRENT",27:"note",29:"NOTE_TEXT",34:":",36:"direction_tb",37:"direction_bt",38:"direction_rl",39:"direction_lr",41:";",42:"EDGE_STATE",43:"left_of",44:"right_of",45:"open_directive",46:"type_directive",47:"arg_directive",48:"close_directive"},
-productions_: [0,[3,2],[3,2],[3,2],[3,2],[8,0],[8,2],[9,2],[9,1],[9,1],[10,1],[10,2],[10,3],[10,4],[10,1],[10,2],[10,1],[10,4],[10,3],[10,6],[10,1],[10,1],[10,1],[10,1],[10,4],[10,4],[10,1],[10,1],[6,3],[6,5],[30,1],[30,1],[30,1],[30,1],[40,1],[40,1],[11,1],[11,1],[28,1],[28,1],[31,1],[32,1],[35,1],[33,1]],
+symbols_: {"error":2,"start":3,"SPACE":4,"NL":5,"directive":6,"SD":7,"document":8,"line":9,"statement":10,"idStatement":11,"DESCR":12,"-->":13,"HIDE_EMPTY":14,"scale":15,"WIDTH":16,"COMPOSIT_STATE":17,"STRUCT_START":18,"STRUCT_STOP":19,"STATE_DESCR":20,"AS":21,"ID":22,"FORK":23,"JOIN":24,"CHOICE":25,"CONCURRENT":26,"note":27,"notePosition":28,"NOTE_TEXT":29,"direction":30,"acc_title":31,"acc_title_value":32,"acc_descr":33,"acc_descr_value":34,"acc_descr_multiline_value":35,"openDirective":36,"typeDirective":37,"closeDirective":38,":":39,"argDirective":40,"direction_tb":41,"direction_bt":42,"direction_rl":43,"direction_lr":44,"eol":45,";":46,"EDGE_STATE":47,"left_of":48,"right_of":49,"open_directive":50,"type_directive":51,"arg_directive":52,"close_directive":53,"$accept":0,"$end":1},
+terminals_: {2:"error",4:"SPACE",5:"NL",7:"SD",12:"DESCR",13:"-->",14:"HIDE_EMPTY",15:"scale",16:"WIDTH",17:"COMPOSIT_STATE",18:"STRUCT_START",19:"STRUCT_STOP",20:"STATE_DESCR",21:"AS",22:"ID",23:"FORK",24:"JOIN",25:"CHOICE",26:"CONCURRENT",27:"note",29:"NOTE_TEXT",31:"acc_title",32:"acc_title_value",33:"acc_descr",34:"acc_descr_value",35:"acc_descr_multiline_value",39:":",41:"direction_tb",42:"direction_bt",43:"direction_rl",44:"direction_lr",46:";",47:"EDGE_STATE",48:"left_of",49:"right_of",50:"open_directive",51:"type_directive",52:"arg_directive",53:"close_directive"},
+productions_: [0,[3,2],[3,2],[3,2],[3,2],[8,0],[8,2],[9,2],[9,1],[9,1],[10,1],[10,2],[10,3],[10,4],[10,1],[10,2],[10,1],[10,4],[10,3],[10,6],[10,1],[10,1],[10,1],[10,1],[10,4],[10,4],[10,1],[10,1],[10,2],[10,2],[10,1],[6,3],[6,5],[30,1],[30,1],[30,1],[30,1],[45,1],[45,1],[11,1],[11,1],[28,1],[28,1],[36,1],[37,1],[40,1],[38,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -7401,37 +7829,43 @@ case 24:
         this.$={ stmt: 'state', id: $$[$0-1].trim(), note:{position: $$[$0-2].trim(), text: $$[$0].trim()}};
     
 break;
-case 30:
- yy.setDirection('TB');this.$={stmt:'dir', value:'TB'};
+case 28:
+ this.$=$$[$0].trim();yy.setTitle(this.$); 
 break;
-case 31:
- yy.setDirection('BT');this.$={stmt:'dir', value:'BT'};
-break;
-case 32:
- yy.setDirection('RL'); this.$={stmt:'dir', value:'RL'};
+case 29: case 30:
+ this.$=$$[$0].trim();yy.setAccDescription(this.$); 
 break;
 case 33:
+ yy.setDirection('TB');this.$={stmt:'dir', value:'TB'};
+break;
+case 34:
+ yy.setDirection('BT');this.$={stmt:'dir', value:'BT'};
+break;
+case 35:
+ yy.setDirection('RL'); this.$={stmt:'dir', value:'RL'};
+break;
+case 36:
  yy.setDirection('LR');this.$={stmt:'dir', value:'LR'};
 break;
-case 36: case 37:
+case 39: case 40:
 this.$=$$[$0];
 break;
-case 40:
+case 43:
  yy.parseDirective('%%{', 'open_directive'); 
 break;
-case 41:
+case 44:
  yy.parseDirective($$[$0], 'type_directive'); 
 break;
-case 42:
+case 45:
  $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
 break;
-case 43:
+case 46:
  yy.parseDirective('}%%', 'close_directive', 'state'); 
 break;
 }
 },
-table: [{3:1,4:$V0,5:$V1,6:4,7:$V2,31:6,45:$V3},{1:[3]},{3:8,4:$V0,5:$V1,6:4,7:$V2,31:6,45:$V3},{3:9,4:$V0,5:$V1,6:4,7:$V2,31:6,45:$V3},{3:10,4:$V0,5:$V1,6:4,7:$V2,31:6,45:$V3},o([1,4,5,14,15,17,20,22,23,24,25,26,27,36,37,38,39,42,45],$V4,{8:11}),{32:12,46:[1,13]},{46:[2,40]},{1:[2,1]},{1:[2,2]},{1:[2,3]},{1:[2,4],4:$V5,5:$V6,6:28,9:14,10:16,11:18,14:$V7,15:$V8,17:$V9,20:$Va,22:$Vb,23:$Vc,24:$Vd,25:$Ve,26:$Vf,27:$Vg,30:29,31:6,36:$Vh,37:$Vi,38:$Vj,39:$Vk,42:$Vl,45:$V3},{33:36,34:[1,37],48:$Vm},o([34,48],[2,41]),o($Vn,[2,6]),{6:28,10:39,11:18,14:$V7,15:$V8,17:$V9,20:$Va,22:$Vb,23:$Vc,24:$Vd,25:$Ve,26:$Vf,27:$Vg,30:29,31:6,36:$Vh,37:$Vi,38:$Vj,39:$Vk,42:$Vl,45:$V3},o($Vn,[2,8]),o($Vn,[2,9]),o($Vn,[2,10],{12:[1,40],13:[1,41]}),o($Vn,[2,14]),{16:[1,42]},o($Vn,[2,16],{18:[1,43]}),{21:[1,44]},o($Vn,[2,20]),o($Vn,[2,21]),o($Vn,[2,22]),o($Vn,[2,23]),{28:45,29:[1,46],43:[1,47],44:[1,48]},o($Vn,[2,26]),o($Vn,[2,27]),o($Vo,[2,36]),o($Vo,[2,37]),o($Vn,[2,30]),o($Vn,[2,31]),o($Vn,[2,32]),o($Vn,[2,33]),o($Vp,[2,28]),{35:49,47:[1,50]},o($Vp,[2,43]),o($Vn,[2,7]),o($Vn,[2,11]),{11:51,22:$Vb,42:$Vl},o($Vn,[2,15]),o($Vq,$V4,{8:52}),{22:[1,53]},{22:[1,54]},{21:[1,55]},{22:[2,38]},{22:[2,39]},{33:56,48:$Vm},{48:[2,42]},o($Vn,[2,12],{12:[1,57]}),{4:$V5,5:$V6,6:28,9:14,10:16,11:18,14:$V7,15:$V8,17:$V9,19:[1,58],20:$Va,22:$Vb,23:$Vc,24:$Vd,25:$Ve,26:$Vf,27:$Vg,30:29,31:6,36:$Vh,37:$Vi,38:$Vj,39:$Vk,42:$Vl,45:$V3},o($Vn,[2,18],{18:[1,59]}),{29:[1,60]},{22:[1,61]},o($Vp,[2,29]),o($Vn,[2,13]),o($Vn,[2,17]),o($Vq,$V4,{8:62}),o($Vn,[2,24]),o($Vn,[2,25]),{4:$V5,5:$V6,6:28,9:14,10:16,11:18,14:$V7,15:$V8,17:$V9,19:[1,63],20:$Va,22:$Vb,23:$Vc,24:$Vd,25:$Ve,26:$Vf,27:$Vg,30:29,31:6,36:$Vh,37:$Vi,38:$Vj,39:$Vk,42:$Vl,45:$V3},o($Vn,[2,19])],
-defaultActions: {7:[2,40],8:[2,1],9:[2,2],10:[2,3],47:[2,38],48:[2,39],50:[2,42]},
+table: [{3:1,4:$V0,5:$V1,6:4,7:$V2,36:6,50:$V3},{1:[3]},{3:8,4:$V0,5:$V1,6:4,7:$V2,36:6,50:$V3},{3:9,4:$V0,5:$V1,6:4,7:$V2,36:6,50:$V3},{3:10,4:$V0,5:$V1,6:4,7:$V2,36:6,50:$V3},o([1,4,5,14,15,17,20,22,23,24,25,26,27,31,33,35,41,42,43,44,47,50],$V4,{8:11}),{37:12,51:[1,13]},{51:[2,43]},{1:[2,1]},{1:[2,2]},{1:[2,3]},{1:[2,4],4:$V5,5:$V6,6:28,9:14,10:16,11:18,14:$V7,15:$V8,17:$V9,20:$Va,22:$Vb,23:$Vc,24:$Vd,25:$Ve,26:$Vf,27:$Vg,30:29,31:$Vh,33:$Vi,35:$Vj,36:6,41:$Vk,42:$Vl,43:$Vm,44:$Vn,47:$Vo,50:$V3},{38:39,39:[1,40],53:$Vp},o([39,53],[2,44]),o($Vq,[2,6]),{6:28,10:42,11:18,14:$V7,15:$V8,17:$V9,20:$Va,22:$Vb,23:$Vc,24:$Vd,25:$Ve,26:$Vf,27:$Vg,30:29,31:$Vh,33:$Vi,35:$Vj,36:6,41:$Vk,42:$Vl,43:$Vm,44:$Vn,47:$Vo,50:$V3},o($Vq,[2,8]),o($Vq,[2,9]),o($Vq,[2,10],{12:[1,43],13:[1,44]}),o($Vq,[2,14]),{16:[1,45]},o($Vq,[2,16],{18:[1,46]}),{21:[1,47]},o($Vq,[2,20]),o($Vq,[2,21]),o($Vq,[2,22]),o($Vq,[2,23]),{28:48,29:[1,49],48:[1,50],49:[1,51]},o($Vq,[2,26]),o($Vq,[2,27]),{32:[1,52]},{34:[1,53]},o($Vq,[2,30]),o($Vr,[2,39]),o($Vr,[2,40]),o($Vq,[2,33]),o($Vq,[2,34]),o($Vq,[2,35]),o($Vq,[2,36]),o($Vs,[2,31]),{40:54,52:[1,55]},o($Vs,[2,46]),o($Vq,[2,7]),o($Vq,[2,11]),{11:56,22:$Vb,47:$Vo},o($Vq,[2,15]),o($Vt,$V4,{8:57}),{22:[1,58]},{22:[1,59]},{21:[1,60]},{22:[2,41]},{22:[2,42]},o($Vq,[2,28]),o($Vq,[2,29]),{38:61,53:$Vp},{53:[2,45]},o($Vq,[2,12],{12:[1,62]}),{4:$V5,5:$V6,6:28,9:14,10:16,11:18,14:$V7,15:$V8,17:$V9,19:[1,63],20:$Va,22:$Vb,23:$Vc,24:$Vd,25:$Ve,26:$Vf,27:$Vg,30:29,31:$Vh,33:$Vi,35:$Vj,36:6,41:$Vk,42:$Vl,43:$Vm,44:$Vn,47:$Vo,50:$V3},o($Vq,[2,18],{18:[1,64]}),{29:[1,65]},{22:[1,66]},o($Vs,[2,32]),o($Vq,[2,13]),o($Vq,[2,17]),o($Vt,$V4,{8:67}),o($Vq,[2,24]),o($Vq,[2,25]),{4:$V5,5:$V6,6:28,9:14,10:16,11:18,14:$V7,15:$V8,17:$V9,19:[1,68],20:$Va,22:$Vb,23:$Vc,24:$Vd,25:$Ve,26:$Vf,27:$Vg,30:29,31:$Vh,33:$Vi,35:$Vj,36:6,41:$Vk,42:$Vl,43:$Vm,44:$Vn,47:$Vo,50:$V3},o($Vq,[2,19])],
+defaultActions: {7:[2,43],8:[2,1],9:[2,2],10:[2,3],50:[2,41],51:[2,42],55:[2,45]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -7910,23 +8344,23 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0:return 36;
+case 0:return 41;
 break;
-case 1:return 37;
+case 1:return 42;
 break;
-case 2:return 38;
+case 2:return 43;
 break;
-case 3:return 39;
+case 3:return 44;
 break;
-case 4: this.begin('open_directive'); return 45; 
+case 4: this.begin('open_directive'); return 50; 
 break;
-case 5: this.begin('type_directive'); return 46; 
+case 5: this.begin('type_directive'); return 51; 
 break;
-case 6: this.popState(); this.begin('arg_directive'); return 34; 
+case 6: this.popState(); this.begin('arg_directive'); return 39; 
 break;
-case 7: this.popState(); this.popState(); return 48; 
+case 7: this.popState(); this.popState(); return 53; 
 break;
-case 8:return 47;
+case 8:return 52;
 break;
 case 9:/* skip comments */
 break;
@@ -7948,94 +8382,108 @@ case 17:return 16;
 break;
 case 18:this.popState();
 break;
-case 19: /*console.log('Starting STATE zxzx'+yy.getDirection());*/this.pushState('STATE'); 
+case 19: this.begin("acc_title");return 31; 
 break;
-case 20:this.popState();yy_.yytext=yy_.yytext.slice(0,-8).trim(); /*console.warn('Fork Fork: ',yy_.yytext);*/return 23;
+case 20: this.popState(); return "acc_title_value"; 
 break;
-case 21:this.popState();yy_.yytext=yy_.yytext.slice(0,-8).trim();/*console.warn('Fork Join: ',yy_.yytext);*/return 24;
+case 21: this.begin("acc_descr");return 33; 
 break;
-case 22:this.popState();yy_.yytext=yy_.yytext.slice(0,-10).trim();/*console.warn('Fork Join: ',yy_.yytext);*/return 25;
+case 22: this.popState(); return "acc_descr_value"; 
 break;
-case 23:this.popState();yy_.yytext=yy_.yytext.slice(0,-8).trim();/*console.warn('Fork Fork: ',yy_.yytext);*/return 23;
+case 23: this.begin("acc_descr_multiline");
 break;
-case 24:this.popState();yy_.yytext=yy_.yytext.slice(0,-8).trim();/*console.warn('Fork Join: ',yy_.yytext);*/return 24;
+case 24: this.popState(); 
 break;
-case 25:this.popState();yy_.yytext=yy_.yytext.slice(0,-10).trim();/*console.warn('Fork Join: ',yy_.yytext);*/return 25;
+case 25:return "acc_descr_multiline_value";
 break;
-case 26: return 36;
+case 26: /*console.log('Starting STATE zxzx'+yy.getDirection());*/this.pushState('STATE'); 
 break;
-case 27: return 37;
+case 27:this.popState();yy_.yytext=yy_.yytext.slice(0,-8).trim(); /*console.warn('Fork Fork: ',yy_.yytext);*/return 23;
 break;
-case 28: return 38;
+case 28:this.popState();yy_.yytext=yy_.yytext.slice(0,-8).trim();/*console.warn('Fork Join: ',yy_.yytext);*/return 24;
 break;
-case 29: return 39;
+case 29:this.popState();yy_.yytext=yy_.yytext.slice(0,-10).trim();/*console.warn('Fork Join: ',yy_.yytext);*/return 25;
 break;
-case 30: /*console.log('Starting STATE_STRING zxzx');*/this.begin("STATE_STRING");
+case 30:this.popState();yy_.yytext=yy_.yytext.slice(0,-8).trim();/*console.warn('Fork Fork: ',yy_.yytext);*/return 23;
 break;
-case 31:this.popState();this.pushState('STATE_ID');return "AS";
+case 31:this.popState();yy_.yytext=yy_.yytext.slice(0,-8).trim();/*console.warn('Fork Join: ',yy_.yytext);*/return 24;
 break;
-case 32:this.popState();/* console.log('STATE_ID', yy_.yytext);*/return "ID";
+case 32:this.popState();yy_.yytext=yy_.yytext.slice(0,-10).trim();/*console.warn('Fork Join: ',yy_.yytext);*/return 25;
 break;
-case 33:this.popState();
+case 33: return 41;
 break;
-case 34: /*console.log('Long description:', yy_.yytext);*/return "STATE_DESCR";
+case 34: return 42;
 break;
-case 35:/*console.log('COMPOSIT_STATE', yy_.yytext);*/return 17;
+case 35: return 43;
 break;
-case 36:this.popState();
+case 36: return 44;
 break;
-case 37:this.popState();this.pushState('struct'); /*console.log('begin struct', yy_.yytext);*/return 18;
+case 37: /*console.log('Starting STATE_STRING zxzx');*/this.begin("STATE_STRING");
 break;
-case 38: /*console.log('Ending struct');*/ this.popState(); return 19;
+case 38:this.popState();this.pushState('STATE_ID');return "AS";
 break;
-case 39:/* nothing */
+case 39:this.popState();/* console.log('STATE_ID', yy_.yytext);*/return "ID";
 break;
-case 40: this.begin('NOTE'); return 27; 
+case 40:this.popState();
 break;
-case 41: this.popState();this.pushState('NOTE_ID');return 43;
+case 41: /*console.log('Long description:', yy_.yytext);*/return "STATE_DESCR";
 break;
-case 42: this.popState();this.pushState('NOTE_ID');return 44;
+case 42:/*console.log('COMPOSIT_STATE', yy_.yytext);*/return 17;
 break;
-case 43: this.popState();this.pushState('FLOATING_NOTE');
+case 43:this.popState();
 break;
-case 44:this.popState();this.pushState('FLOATING_NOTE_ID');return "AS";
+case 44:this.popState();this.pushState('struct'); /*console.log('begin struct', yy_.yytext);*/return 18;
 break;
-case 45:/**/
+case 45: /*console.log('Ending struct');*/ this.popState(); return 19;
 break;
-case 46: /*console.log('Floating note text: ', yy_.yytext);*/return "NOTE_TEXT";
+case 46:/* nothing */
 break;
-case 47:this.popState();/*console.log('Floating note ID', yy_.yytext);*/return "ID";
+case 47: this.begin('NOTE'); return 27; 
 break;
-case 48: this.popState();this.pushState('NOTE_TEXT');/*console.log('Got ID for note', yy_.yytext);*/return 22;
+case 48: this.popState();this.pushState('NOTE_ID');return 48;
 break;
-case 49: this.popState();/*console.log('Got NOTE_TEXT for note',yy_.yytext);*/yy_.yytext = yy_.yytext.substr(2).trim();return 29;
+case 49: this.popState();this.pushState('NOTE_ID');return 49;
 break;
-case 50: this.popState();/*console.log('Got NOTE_TEXT for note',yy_.yytext);*/yy_.yytext = yy_.yytext.slice(0,-8).trim();return 29;
+case 50: this.popState();this.pushState('FLOATING_NOTE');
 break;
-case 51: /*console.log('Got state diagram', yy_.yytext,'#');*/return 7; 
+case 51:this.popState();this.pushState('FLOATING_NOTE_ID');return "AS";
 break;
-case 52: /*console.log('Got state diagram', yy_.yytext,'#');*/return 7; 
+case 52:/**/
 break;
-case 53: /*console.log('HIDE_EMPTY', yy_.yytext,'#');*/return 14; 
+case 53: /*console.log('Floating note text: ', yy_.yytext);*/return "NOTE_TEXT";
 break;
-case 54: /*console.log('EDGE_STATE=',yy_.yytext);*/ return 42;
+case 54:this.popState();/*console.log('Floating note ID', yy_.yytext);*/return "ID";
 break;
-case 55: /*console.log('=>ID=',yy_.yytext);*/ return 22;
+case 55: this.popState();this.pushState('NOTE_TEXT');/*console.log('Got ID for note', yy_.yytext);*/return 22;
 break;
-case 56: yy_.yytext = yy_.yytext.trim(); /*console.log('Descr = ', yy_.yytext);*/ return 12; 
+case 56: this.popState();/*console.log('Got NOTE_TEXT for note',yy_.yytext);*/yy_.yytext = yy_.yytext.substr(2).trim();return 29;
 break;
-case 57:return 13;
+case 57: this.popState();/*console.log('Got NOTE_TEXT for note',yy_.yytext);*/yy_.yytext = yy_.yytext.slice(0,-8).trim();return 29;
 break;
-case 58:return 26;
+case 58: /*console.log('Got state diagram', yy_.yytext,'#');*/return 7; 
 break;
-case 59:return 5;
+case 59: /*console.log('Got state diagram', yy_.yytext,'#');*/return 7; 
 break;
-case 60:return 'INVALID';
+case 60: /*console.log('HIDE_EMPTY', yy_.yytext,'#');*/return 14; 
+break;
+case 61: /*console.log('EDGE_STATE=',yy_.yytext);*/ return 47;
+break;
+case 62: /*console.log('=>ID=',yy_.yytext);*/ return 22;
+break;
+case 63: yy_.yytext = yy_.yytext.trim(); /*console.log('Descr = ', yy_.yytext);*/ return 12; 
+break;
+case 64:return 13;
+break;
+case 65:return 26;
+break;
+case 66:return 5;
+break;
+case 67:return 'INVALID';
 break;
 }
 },
-rules: [/^(?:.*direction\s+TB[^\n]*)/i,/^(?:.*direction\s+BT[^\n]*)/i,/^(?:.*direction\s+RL[^\n]*)/i,/^(?:.*direction\s+LR[^\n]*)/i,/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:%%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:[\n]+)/i,/^(?:[\s]+)/i,/^(?:((?!\n)\s)+)/i,/^(?:#[^\n]*)/i,/^(?:%[^\n]*)/i,/^(?:scale\s+)/i,/^(?:\d+)/i,/^(?:\s+width\b)/i,/^(?:state\s+)/i,/^(?:.*<<fork>>)/i,/^(?:.*<<join>>)/i,/^(?:.*<<choice>>)/i,/^(?:.*\[\[fork\]\])/i,/^(?:.*\[\[join\]\])/i,/^(?:.*\[\[choice\]\])/i,/^(?:.*direction\s+TB[^\n]*)/i,/^(?:.*direction\s+BT[^\n]*)/i,/^(?:.*direction\s+RL[^\n]*)/i,/^(?:.*direction\s+LR[^\n]*)/i,/^(?:["])/i,/^(?:\s*as\s+)/i,/^(?:[^\n\{]*)/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:[^\n\s\{]+)/i,/^(?:\n)/i,/^(?:\{)/i,/^(?:\})/i,/^(?:[\n])/i,/^(?:note\s+)/i,/^(?:left of\b)/i,/^(?:right of\b)/i,/^(?:")/i,/^(?:\s*as\s*)/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:[^\n]*)/i,/^(?:\s*[^:\n\s\-]+)/i,/^(?:\s*:[^:\n;]+)/i,/^(?:[\s\S]*?end note\b)/i,/^(?:stateDiagram\s+)/i,/^(?:stateDiagram-v2\s+)/i,/^(?:hide empty description\b)/i,/^(?:\[\*\])/i,/^(?:[^:\n\s\-\{]+)/i,/^(?:\s*:[^:\n;]+)/i,/^(?:-->)/i,/^(?:--)/i,/^(?:$)/i,/^(?:.)/i],
-conditions: {"LINE":{"rules":[13,14],"inclusive":false},"close_directive":{"rules":[13,14],"inclusive":false},"arg_directive":{"rules":[7,8,13,14],"inclusive":false},"type_directive":{"rules":[6,7,13,14],"inclusive":false},"open_directive":{"rules":[5,13,14],"inclusive":false},"struct":{"rules":[13,14,19,26,27,28,29,38,39,40,54,55,56,57,58],"inclusive":false},"FLOATING_NOTE_ID":{"rules":[47],"inclusive":false},"FLOATING_NOTE":{"rules":[44,45,46],"inclusive":false},"NOTE_TEXT":{"rules":[49,50],"inclusive":false},"NOTE_ID":{"rules":[48],"inclusive":false},"NOTE":{"rules":[41,42,43],"inclusive":false},"SCALE":{"rules":[17,18],"inclusive":false},"ALIAS":{"rules":[],"inclusive":false},"STATE_ID":{"rules":[32],"inclusive":false},"STATE_STRING":{"rules":[33,34],"inclusive":false},"FORK_STATE":{"rules":[],"inclusive":false},"STATE":{"rules":[13,14,20,21,22,23,24,25,30,31,35,36,37],"inclusive":false},"ID":{"rules":[13,14],"inclusive":false},"INITIAL":{"rules":[0,1,2,3,4,9,10,11,12,14,15,16,19,37,40,51,52,53,54,55,56,57,59,60],"inclusive":true}}
+rules: [/^(?:.*direction\s+TB[^\n]*)/i,/^(?:.*direction\s+BT[^\n]*)/i,/^(?:.*direction\s+RL[^\n]*)/i,/^(?:.*direction\s+LR[^\n]*)/i,/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:%%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:[\n]+)/i,/^(?:[\s]+)/i,/^(?:((?!\n)\s)+)/i,/^(?:#[^\n]*)/i,/^(?:%[^\n]*)/i,/^(?:scale\s+)/i,/^(?:\d+)/i,/^(?:\s+width\b)/i,/^(?:accTitle\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*\{\s*)/i,/^(?:[\}])/i,/^(?:[^\}]*)/i,/^(?:state\s+)/i,/^(?:.*<<fork>>)/i,/^(?:.*<<join>>)/i,/^(?:.*<<choice>>)/i,/^(?:.*\[\[fork\]\])/i,/^(?:.*\[\[join\]\])/i,/^(?:.*\[\[choice\]\])/i,/^(?:.*direction\s+TB[^\n]*)/i,/^(?:.*direction\s+BT[^\n]*)/i,/^(?:.*direction\s+RL[^\n]*)/i,/^(?:.*direction\s+LR[^\n]*)/i,/^(?:["])/i,/^(?:\s*as\s+)/i,/^(?:[^\n\{]*)/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:[^\n\s\{]+)/i,/^(?:\n)/i,/^(?:\{)/i,/^(?:\})/i,/^(?:[\n])/i,/^(?:note\s+)/i,/^(?:left of\b)/i,/^(?:right of\b)/i,/^(?:")/i,/^(?:\s*as\s*)/i,/^(?:["])/i,/^(?:[^"]*)/i,/^(?:[^\n]*)/i,/^(?:\s*[^:\n\s\-]+)/i,/^(?:\s*:[^:\n;]+)/i,/^(?:[\s\S]*?end note\b)/i,/^(?:stateDiagram\s+)/i,/^(?:stateDiagram-v2\s+)/i,/^(?:hide empty description\b)/i,/^(?:\[\*\])/i,/^(?:[^:\n\s\-\{]+)/i,/^(?:\s*:[^:\n;]+)/i,/^(?:-->)/i,/^(?:--)/i,/^(?:$)/i,/^(?:.)/i],
+conditions: {"LINE":{"rules":[13,14],"inclusive":false},"close_directive":{"rules":[13,14],"inclusive":false},"arg_directive":{"rules":[7,8,13,14],"inclusive":false},"type_directive":{"rules":[6,7,13,14],"inclusive":false},"open_directive":{"rules":[5,13,14],"inclusive":false},"struct":{"rules":[13,14,26,33,34,35,36,45,46,47,61,62,63,64,65],"inclusive":false},"FLOATING_NOTE_ID":{"rules":[54],"inclusive":false},"FLOATING_NOTE":{"rules":[51,52,53],"inclusive":false},"NOTE_TEXT":{"rules":[56,57],"inclusive":false},"NOTE_ID":{"rules":[55],"inclusive":false},"NOTE":{"rules":[48,49,50],"inclusive":false},"acc_descr_multiline":{"rules":[24,25],"inclusive":false},"acc_descr":{"rules":[22],"inclusive":false},"acc_title":{"rules":[20],"inclusive":false},"SCALE":{"rules":[17,18],"inclusive":false},"ALIAS":{"rules":[],"inclusive":false},"STATE_ID":{"rules":[39],"inclusive":false},"STATE_STRING":{"rules":[40,41],"inclusive":false},"FORK_STATE":{"rules":[],"inclusive":false},"STATE":{"rules":[13,14,27,28,29,30,31,32,37,38,42,43,44],"inclusive":false},"ID":{"rules":[13,14],"inclusive":false},"INITIAL":{"rules":[0,1,2,3,4,9,10,11,12,14,15,16,19,21,23,26,44,47,58,59,60,61,62,63,64,66,67],"inclusive":true}}
 });
 return lexer;
 })();
@@ -8148,12 +8596,12 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
   }
 */
 var parser = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,2],$V1=[1,5],$V2=[6,9,11,17,18,19,21],$V3=[1,15],$V4=[1,16],$V5=[1,17],$V6=[1,21],$V7=[4,6,9,11,17,18,19,21];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,2],$V1=[1,5],$V2=[6,9,11,17,18,20,22,23,24,26],$V3=[1,15],$V4=[1,16],$V5=[1,17],$V6=[1,18],$V7=[1,19],$V8=[1,20],$V9=[1,24],$Va=[4,6,9,11,17,18,20,22,23,24,26];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"journey":4,"document":5,"EOF":6,"directive":7,"line":8,"SPACE":9,"statement":10,"NEWLINE":11,"openDirective":12,"typeDirective":13,"closeDirective":14,":":15,"argDirective":16,"title":17,"section":18,"taskName":19,"taskData":20,"open_directive":21,"type_directive":22,"arg_directive":23,"close_directive":24,"$accept":0,"$end":1},
-terminals_: {2:"error",4:"journey",6:"EOF",9:"SPACE",11:"NEWLINE",15:":",17:"title",18:"section",19:"taskName",20:"taskData",21:"open_directive",22:"type_directive",23:"arg_directive",24:"close_directive"},
-productions_: [0,[3,3],[3,2],[5,0],[5,2],[8,2],[8,1],[8,1],[8,1],[7,4],[7,6],[10,1],[10,1],[10,2],[10,1],[12,1],[13,1],[16,1],[14,1]],
+symbols_: {"error":2,"start":3,"journey":4,"document":5,"EOF":6,"directive":7,"line":8,"SPACE":9,"statement":10,"NEWLINE":11,"openDirective":12,"typeDirective":13,"closeDirective":14,":":15,"argDirective":16,"title":17,"acc_title":18,"acc_title_value":19,"acc_descr":20,"acc_descr_value":21,"acc_descr_multiline_value":22,"section":23,"taskName":24,"taskData":25,"open_directive":26,"type_directive":27,"arg_directive":28,"close_directive":29,"$accept":0,"$end":1},
+terminals_: {2:"error",4:"journey",6:"EOF",9:"SPACE",11:"NEWLINE",15:":",17:"title",18:"acc_title",19:"acc_title_value",20:"acc_descr",21:"acc_descr_value",22:"acc_descr_multiline_value",23:"section",24:"taskName",25:"taskData",26:"open_directive",27:"type_directive",28:"arg_directive",29:"close_directive"},
+productions_: [0,[3,3],[3,2],[5,0],[5,2],[8,2],[8,1],[8,1],[8,1],[7,4],[7,6],[10,1],[10,2],[10,2],[10,1],[10,1],[10,2],[10,1],[12,1],[13,1],[16,1],[14,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -8178,27 +8626,33 @@ case 11:
 yy.setTitle($$[$0].substr(6));this.$=$$[$0].substr(6);
 break;
 case 12:
-yy.addSection($$[$0].substr(8));this.$=$$[$0].substr(8);
+ this.$=$$[$0].trim();yy.setTitle(this.$); 
 break;
-case 13:
-yy.addTask($$[$0-1], $$[$0]);this.$='task';
+case 13: case 14:
+ this.$=$$[$0].trim();yy.setAccDescription(this.$); 
 break;
 case 15:
- yy.parseDirective('%%{', 'open_directive'); 
+yy.addSection($$[$0].substr(8));this.$=$$[$0].substr(8);
 break;
 case 16:
- yy.parseDirective($$[$0], 'type_directive'); 
-break;
-case 17:
- $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+yy.addTask($$[$0-1], $$[$0]);this.$='task';
 break;
 case 18:
+ yy.parseDirective('%%{', 'open_directive'); 
+break;
+case 19:
+ yy.parseDirective($$[$0], 'type_directive'); 
+break;
+case 20:
+ $$[$0] = $$[$0].trim().replace(/'/g, '"'); yy.parseDirective($$[$0], 'arg_directive'); 
+break;
+case 21:
  yy.parseDirective('}%%', 'close_directive', 'journey'); 
 break;
 }
 },
-table: [{3:1,4:$V0,7:3,12:4,21:$V1},{1:[3]},o($V2,[2,3],{5:6}),{3:7,4:$V0,7:3,12:4,21:$V1},{13:8,22:[1,9]},{22:[2,15]},{6:[1,10],7:18,8:11,9:[1,12],10:13,11:[1,14],12:4,17:$V3,18:$V4,19:$V5,21:$V1},{1:[2,2]},{14:19,15:[1,20],24:$V6},o([15,24],[2,16]),o($V2,[2,8],{1:[2,1]}),o($V2,[2,4]),{7:18,10:22,12:4,17:$V3,18:$V4,19:$V5,21:$V1},o($V2,[2,6]),o($V2,[2,7]),o($V2,[2,11]),o($V2,[2,12]),{20:[1,23]},o($V2,[2,14]),{11:[1,24]},{16:25,23:[1,26]},{11:[2,18]},o($V2,[2,5]),o($V2,[2,13]),o($V7,[2,9]),{14:27,24:$V6},{24:[2,17]},{11:[1,28]},o($V7,[2,10])],
-defaultActions: {5:[2,15],7:[2,2],21:[2,18],26:[2,17]},
+table: [{3:1,4:$V0,7:3,12:4,26:$V1},{1:[3]},o($V2,[2,3],{5:6}),{3:7,4:$V0,7:3,12:4,26:$V1},{13:8,27:[1,9]},{27:[2,18]},{6:[1,10],7:21,8:11,9:[1,12],10:13,11:[1,14],12:4,17:$V3,18:$V4,20:$V5,22:$V6,23:$V7,24:$V8,26:$V1},{1:[2,2]},{14:22,15:[1,23],29:$V9},o([15,29],[2,19]),o($V2,[2,8],{1:[2,1]}),o($V2,[2,4]),{7:21,10:25,12:4,17:$V3,18:$V4,20:$V5,22:$V6,23:$V7,24:$V8,26:$V1},o($V2,[2,6]),o($V2,[2,7]),o($V2,[2,11]),{19:[1,26]},{21:[1,27]},o($V2,[2,14]),o($V2,[2,15]),{25:[1,28]},o($V2,[2,17]),{11:[1,29]},{16:30,28:[1,31]},{11:[2,21]},o($V2,[2,5]),o($V2,[2,12]),o($V2,[2,13]),o($V2,[2,16]),o($Va,[2,9]),{14:32,29:$V9},{29:[2,20]},{11:[1,33]},o($Va,[2,10])],
+defaultActions: {5:[2,18],7:[2,2],24:[2,21],31:[2,20]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -8677,15 +9131,15 @@ options: {"case-insensitive":true},
 performAction: function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 var YYSTATE=YY_START;
 switch($avoiding_name_collisions) {
-case 0: this.begin('open_directive'); return 21; 
+case 0: this.begin('open_directive'); return 26; 
 break;
-case 1: this.begin('type_directive'); return 22; 
+case 1: this.begin('type_directive'); return 27; 
 break;
 case 2: this.popState(); this.begin('arg_directive'); return 15; 
 break;
-case 3: this.popState(); this.popState(); return 24; 
+case 3: this.popState(); this.popState(); return 29; 
 break;
-case 4:return 23;
+case 4:return 28;
 break;
 case 5:/* skip comments */
 break;
@@ -8701,22 +9155,36 @@ case 10:return 4;
 break;
 case 11:return 17;
 break;
-case 12:return 18;
+case 12: this.begin("acc_title");return 18; 
 break;
-case 13:return 19;
+case 13: this.popState(); return "acc_title_value"; 
 break;
-case 14:return 20;
+case 14: this.begin("acc_descr");return 20; 
 break;
-case 15:return 15;
+case 15: this.popState(); return "acc_descr_value"; 
 break;
-case 16:return 6;
+case 16: this.begin("acc_descr_multiline");
 break;
-case 17:return 'INVALID';
+case 17: this.popState(); 
+break;
+case 18:return "acc_descr_multiline_value";
+break;
+case 19:return 23;
+break;
+case 20:return 24;
+break;
+case 21:return 25;
+break;
+case 22:return 15;
+break;
+case 23:return 6;
+break;
+case 24:return 'INVALID';
 break;
 }
 },
-rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:[\n]+)/i,/^(?:\s+)/i,/^(?:#[^\n]*)/i,/^(?:journey\b)/i,/^(?:title\s[^#\n;]+)/i,/^(?:section\s[^#:\n;]+)/i,/^(?:[^#:\n;]+)/i,/^(?::[^#\n;]+)/i,/^(?::)/i,/^(?:$)/i,/^(?:.)/i],
-conditions: {"open_directive":{"rules":[1],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,8,9,10,11,12,13,14,15,16,17],"inclusive":true}}
+rules: [/^(?:%%\{)/i,/^(?:((?:(?!\}%%)[^:.])*))/i,/^(?::)/i,/^(?:\}%%)/i,/^(?:((?:(?!\}%%).|\n)*))/i,/^(?:%(?!\{)[^\n]*)/i,/^(?:[^\}]%%[^\n]*)/i,/^(?:[\n]+)/i,/^(?:\s+)/i,/^(?:#[^\n]*)/i,/^(?:journey\b)/i,/^(?:title\s[^#\n;]+)/i,/^(?:accTitle\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*:\s*)/i,/^(?:(?!\n||)*[^\n]*)/i,/^(?:accDescr\s*\{\s*)/i,/^(?:[\}])/i,/^(?:[^\}]*)/i,/^(?:section\s[^#:\n;]+)/i,/^(?:[^#:\n;]+)/i,/^(?::[^#\n;]+)/i,/^(?::)/i,/^(?:$)/i,/^(?:.)/i],
+conditions: {"open_directive":{"rules":[1],"inclusive":false},"type_directive":{"rules":[2,3],"inclusive":false},"arg_directive":{"rules":[3,4],"inclusive":false},"acc_descr_multiline":{"rules":[17,18],"inclusive":false},"acc_descr":{"rules":[15],"inclusive":false},"acc_title":{"rules":[13],"inclusive":false},"INITIAL":{"rules":[0,5,6,7,8,9,10,11,12,14,16,19,20,21,22,23,24],"inclusive":true}}
 });
 return lexer;
 })();
@@ -8748,6 +9216,96 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
 
 /***/ }),
 
+/***/ "./src/accessibility.js":
+/*!******************************!*\
+  !*** ./src/accessibility.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ addSVGAccessibilityFields)
+/* harmony export */ });
+/**
+ * This method will add a basic title and description element to a chart. The yy parser will need to
+ * respond to getTitle and getAccDescription, where the title is the title element on the chart,
+ * which is generally not displayed and the accDescription is the description element on the chart,
+ * which is never displayed.
+ *
+ * The following charts display their title as a visual and accessibility element: gantt
+ *
+ * @param yy_parser
+ * @param svg
+ * @param id
+ */
+function addSVGAccessibilityFields(yy_parser, svg, id) {
+  if (typeof svg.insert === 'undefined') {
+    return;
+  }
+
+  var title_string = yy_parser.getTitle();
+  var description = yy_parser.getAccDescription();
+  svg.attr('role', 'img').attr('aria-labelledby', 'chart-title-' + id + ' chart-desc-' + id);
+  svg.insert('desc', ':first-child').attr('id', 'chart-desc-' + id).text(description);
+  svg.insert('title', ':first-child').attr('id', 'chart-title-' + id).text(title_string);
+}
+
+/***/ }),
+
+/***/ "./src/commonDb.js":
+/*!*************************!*\
+  !*** ./src/commonDb.js ***!
+  \*************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "clear": () => (/* binding */ clear),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "getAccDescription": () => (/* binding */ getAccDescription),
+/* harmony export */   "getTitle": () => (/* binding */ getTitle),
+/* harmony export */   "setAccDescription": () => (/* binding */ setAccDescription),
+/* harmony export */   "setTitle": () => (/* binding */ setTitle)
+/* harmony export */ });
+/* harmony import */ var _diagrams_common_common__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./diagrams/common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ "./src/config.js");
+
+
+var title = '';
+var description = '';
+
+var sanitizeText = function sanitizeText(txt) {
+  return (0,_diagrams_common_common__WEBPACK_IMPORTED_MODULE_0__.sanitizeText)(txt, (0,_config__WEBPACK_IMPORTED_MODULE_1__.getConfig)());
+};
+
+var clear = function clear() {
+  title = '';
+  description = '';
+};
+var setTitle = function setTitle(txt) {
+  title = sanitizeText(txt).replace(/^\s+/g, '');
+};
+var getTitle = function getTitle() {
+  return title;
+};
+var setAccDescription = function setAccDescription(txt) {
+  description = sanitizeText(txt).replace(/\n\s+/g, '\n');
+};
+var getAccDescription = function getAccDescription() {
+  return description;
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  setTitle: setTitle,
+  getTitle: getTitle,
+  getAccDescription: getAccDescription,
+  setAccDescription: setAccDescription,
+  clear: clear
+});
+
+/***/ }),
+
 /***/ "./src/config.js":
 /*!***********************!*\
   !*** ./src/config.js ***!
@@ -8757,17 +9315,17 @@ if ( true && __webpack_require__.c[__webpack_require__.s] === module) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "defaultConfig": () => (/* binding */ defaultConfig),
-/* harmony export */   "updateCurrentConfig": () => (/* binding */ updateCurrentConfig),
-/* harmony export */   "setSiteConfig": () => (/* binding */ setSiteConfig),
-/* harmony export */   "saveConfigFromInitilize": () => (/* binding */ saveConfigFromInitilize),
-/* harmony export */   "updateSiteConfig": () => (/* binding */ updateSiteConfig),
-/* harmony export */   "getSiteConfig": () => (/* binding */ getSiteConfig),
-/* harmony export */   "setConfig": () => (/* binding */ setConfig),
-/* harmony export */   "getConfig": () => (/* binding */ getConfig),
-/* harmony export */   "sanitize": () => (/* binding */ sanitize),
 /* harmony export */   "addDirective": () => (/* binding */ addDirective),
-/* harmony export */   "reset": () => (/* binding */ reset)
+/* harmony export */   "defaultConfig": () => (/* binding */ defaultConfig),
+/* harmony export */   "getConfig": () => (/* binding */ getConfig),
+/* harmony export */   "getSiteConfig": () => (/* binding */ getSiteConfig),
+/* harmony export */   "reset": () => (/* binding */ reset),
+/* harmony export */   "sanitize": () => (/* binding */ sanitize),
+/* harmony export */   "saveConfigFromInitilize": () => (/* binding */ saveConfigFromInitilize),
+/* harmony export */   "setConfig": () => (/* binding */ setConfig),
+/* harmony export */   "setSiteConfig": () => (/* binding */ setSiteConfig),
+/* harmony export */   "updateCurrentConfig": () => (/* binding */ updateCurrentConfig),
+/* harmony export */   "updateSiteConfig": () => (/* binding */ updateSiteConfig)
 /* harmony export */ });
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./logger */ "./src/logger.js");
@@ -8778,7 +9336,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 
 
 
- // debugger;
 
 var defaultConfig = Object.freeze(_defaultConfig__WEBPACK_IMPORTED_MODULE_0__["default"]);
 var siteConfig = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.assignWithDepth)({}, defaultConfig);
@@ -8801,7 +9358,7 @@ var updateCurrentConfig = function updateCurrentConfig(siteCfg, _directives) {
 
   cfg = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.assignWithDepth)(cfg, sumOfDirectives);
 
-  if (sumOfDirectives.theme) {
+  if (sumOfDirectives.theme && _themes__WEBPACK_IMPORTED_MODULE_2__["default"][sumOfDirectives.theme]) {
     var tmpConfigFromInitialize = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.assignWithDepth)({}, configFromInitialize);
     var themeVariables = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.assignWithDepth)(tmpConfigFromInitialize.themeVariables || {}, sumOfDirectives.themeVariables);
     cfg.themeVariables = _themes__WEBPACK_IMPORTED_MODULE_2__["default"][cfg.theme].getThemeVariables(themeVariables);
@@ -8820,7 +9377,7 @@ var updateCurrentConfig = function updateCurrentConfig(siteCfg, _directives) {
  * **Notes:** Sets the siteConfig. The siteConfig is a protected configuration for repeat use. Calls
  * to reset() will reset the currentConfig to siteConfig. Calls to reset(configApi.defaultConfig)
  * will reset siteConfig and currentConfig to the defaultConfig Note: currentConfig is set in this
- * function *Default value: At default, will mirror Global Config**
+ * function _Default value: At default, will mirror Global Config_
  *
  * @param conf - The base currentConfig to use as siteConfig
  * @returns {object} - The siteConfig
@@ -8830,7 +9387,7 @@ var setSiteConfig = function setSiteConfig(conf) {
   siteConfig = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.assignWithDepth)({}, defaultConfig);
   siteConfig = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.assignWithDepth)(siteConfig, conf);
 
-  if (conf.theme) {
+  if (conf.theme && _themes__WEBPACK_IMPORTED_MODULE_2__["default"][conf.theme]) {
     siteConfig.themeVariables = _themes__WEBPACK_IMPORTED_MODULE_2__["default"][conf.theme].getThemeVariables(conf.themeVariables);
   }
 
@@ -8999,9 +9556,9 @@ var reset = function reset() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "insertCluster": () => (/* binding */ insertCluster),
-/* harmony export */   "getClusterTitleWidth": () => (/* binding */ getClusterTitleWidth),
 /* harmony export */   "clear": () => (/* binding */ clear),
+/* harmony export */   "getClusterTitleWidth": () => (/* binding */ getClusterTitleWidth),
+/* harmony export */   "insertCluster": () => (/* binding */ insertCluster),
 /* harmony export */   "positionCluster": () => (/* binding */ positionCluster)
 /* harmony export */ });
 /* harmony import */ var _intersect_intersect_rect__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./intersect/intersect-rect */ "./src/dagre-wrapper/intersect/intersect-rect.js");
@@ -9312,10 +9869,10 @@ var createLabel = function createLabel(_vertexText, style, isTitle, isNode) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "clear": () => (/* binding */ clear),
+/* harmony export */   "insertEdge": () => (/* binding */ insertEdge),
 /* harmony export */   "insertEdgeLabel": () => (/* binding */ insertEdgeLabel),
-/* harmony export */   "positionEdgeLabel": () => (/* binding */ positionEdgeLabel),
 /* harmony export */   "intersection": () => (/* binding */ intersection),
-/* harmony export */   "insertEdge": () => (/* binding */ insertEdge)
+/* harmony export */   "positionEdgeLabel": () => (/* binding */ positionEdgeLabel)
 /* harmony export */ });
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../logger */ "./src/logger.js");
 /* harmony import */ var _createLabel__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./createLabel */ "./src/dagre-wrapper/createLabel.js");
@@ -10595,14 +11152,14 @@ var markers = {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "clusterDb": () => (/* binding */ clusterDb),
-/* harmony export */   "clear": () => (/* binding */ clear),
-/* harmony export */   "extractDecendants": () => (/* binding */ extractDecendants),
-/* harmony export */   "validate": () => (/* binding */ validate),
-/* harmony export */   "findNonClusterChild": () => (/* binding */ findNonClusterChild),
 /* harmony export */   "adjustClustersAndEdges": () => (/* binding */ adjustClustersAndEdges),
+/* harmony export */   "clear": () => (/* binding */ clear),
+/* harmony export */   "clusterDb": () => (/* binding */ clusterDb),
+/* harmony export */   "extractDecendants": () => (/* binding */ extractDecendants),
 /* harmony export */   "extractor": () => (/* binding */ extractor),
-/* harmony export */   "sortNodesByHierarchy": () => (/* binding */ sortNodesByHierarchy)
+/* harmony export */   "findNonClusterChild": () => (/* binding */ findNonClusterChild),
+/* harmony export */   "sortNodesByHierarchy": () => (/* binding */ sortNodesByHierarchy),
+/* harmony export */   "validate": () => (/* binding */ validate)
 /* harmony export */ });
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../logger */ "./src/logger.js");
 /* harmony import */ var graphlib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! graphlib */ "graphlib");
@@ -10989,10 +11546,10 @@ var sortNodesByHierarchy = function sortNodesByHierarchy(graph) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "insertNode": () => (/* binding */ insertNode),
-/* harmony export */   "setNodeElem": () => (/* binding */ setNodeElem),
 /* harmony export */   "clear": () => (/* binding */ clear),
-/* harmony export */   "positionNode": () => (/* binding */ positionNode)
+/* harmony export */   "insertNode": () => (/* binding */ insertNode),
+/* harmony export */   "positionNode": () => (/* binding */ positionNode),
+/* harmony export */   "setNodeElem": () => (/* binding */ setNodeElem)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -11557,10 +12114,34 @@ var circle = function circle(parent, node) {
   return shapeSvg;
 };
 
-var subroutine = function subroutine(parent, node) {
+var doublecircle = function doublecircle(parent, node) {
   var _labelHelper13 = (0,_shapes_util__WEBPACK_IMPORTED_MODULE_3__.labelHelper)(parent, node, undefined, true),
       shapeSvg = _labelHelper13.shapeSvg,
-      bbox = _labelHelper13.bbox;
+      bbox = _labelHelper13.bbox,
+      halfPadding = _labelHelper13.halfPadding;
+
+  var gap = 5;
+  var circleGroup = shapeSvg.insert('g', ':first-child');
+  var outerCircle = circleGroup.insert('circle');
+  var innerCircle = circleGroup.insert('circle'); // center the circle around its coordinate
+
+  outerCircle.attr('style', node.style).attr('rx', node.rx).attr('ry', node.ry).attr('r', bbox.width / 2 + halfPadding + gap).attr('width', bbox.width + node.padding + gap * 2).attr('height', bbox.height + node.padding + gap * 2);
+  innerCircle.attr('style', node.style).attr('rx', node.rx).attr('ry', node.ry).attr('r', bbox.width / 2 + halfPadding).attr('width', bbox.width + node.padding).attr('height', bbox.height + node.padding);
+  _logger__WEBPACK_IMPORTED_MODULE_4__.log.info('DoubleCircle main');
+  (0,_shapes_util__WEBPACK_IMPORTED_MODULE_3__.updateNodeBounds)(node, outerCircle);
+
+  node.intersect = function (point) {
+    _logger__WEBPACK_IMPORTED_MODULE_4__.log.info('DoubleCircle intersect', node, bbox.width / 2 + halfPadding + gap, point);
+    return _intersect_index_js__WEBPACK_IMPORTED_MODULE_5__["default"].circle(node, bbox.width / 2 + halfPadding + gap, point);
+  };
+
+  return shapeSvg;
+};
+
+var subroutine = function subroutine(parent, node) {
+  var _labelHelper14 = (0,_shapes_util__WEBPACK_IMPORTED_MODULE_3__.labelHelper)(parent, node, undefined, true),
+      shapeSvg = _labelHelper14.shapeSvg,
+      bbox = _labelHelper14.bbox;
 
   var w = bbox.width + node.padding;
   var h = bbox.height + node.padding;
@@ -11893,6 +12474,7 @@ var shapes = {
   rectWithTitle: rectWithTitle,
   choice: choice,
   circle: circle,
+  doublecircle: doublecircle,
   stadium: stadium,
   hexagon: hexagon,
   rect_left_inv_arrow: rect_left_inv_arrow,
@@ -12019,9 +12601,9 @@ var note = function note(parent, node) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "insertPolygonShape": () => (/* binding */ insertPolygonShape),
 /* harmony export */   "labelHelper": () => (/* binding */ labelHelper),
-/* harmony export */   "updateNodeBounds": () => (/* binding */ updateNodeBounds),
-/* harmony export */   "insertPolygonShape": () => (/* binding */ insertPolygonShape)
+/* harmony export */   "updateNodeBounds": () => (/* binding */ updateNodeBounds)
 /* harmony export */ });
 /* harmony import */ var _createLabel__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../createLabel */ "./src/dagre-wrapper/createLabel.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../config */ "./src/config.js");
@@ -12221,7 +12803,7 @@ var config = {
   arrowMarkerAbsolute: false,
 
   /**
-   * This option controls which currentConfig keys are considered *secure* and can only be changed
+   * This option controls which currentConfig keys are considered _secure_ and can only be changed
    * via call to mermaidAPI.initialize. Calls to mermaidAPI.reinitialize cannot make changes to the
    * `secure` keys in the current currentConfig. This prevents malicious graph directives from
    * overriding a site's default security.
@@ -12351,6 +12933,8 @@ var config = {
 
   /** The object containing configurations specific for sequence diagrams */
   sequence: {
+    hideUnusedParticipants: false,
+
     /**
      * | Parameter       | Description                  | Type    | Required | Values             |
      * | --------------- | ---------------------------- | ------- | -------- | ------------------ |
@@ -12531,9 +13115,9 @@ var config = {
      * | --------------- | ---------------------------------------------------- | ------ | -------- | --------------------------- |
      * | actorFontFamily | This sets the font family of the actor's description | string | Required | Any Possible CSS FontFamily |
      *
-     * **Notes:** Default value: "'Open-Sans", "sans-serif"'
+     * **Notes:** Default value: "'Open Sans", sans-serif'
      */
-    actorFontFamily: '"Open-Sans", "sans-serif"',
+    actorFontFamily: '"Open Sans", sans-serif',
 
     /**
      * This sets the font weight of the actor's description
@@ -12921,7 +13505,7 @@ var config = {
      */
     rightAngles: false,
     taskFontSize: 14,
-    taskFontFamily: '"Open-Sans", "sans-serif"',
+    taskFontFamily: '"Open Sans", sans-serif',
     taskMargin: 50,
     // width of activation box
     activationWidth: 10,
@@ -12961,24 +13545,6 @@ var config = {
      * Default value: 'dagre-d3'
      */
     defaultRenderer: 'dagre-wrapper'
-  },
-  git: {
-    arrowMarkerAbsolute: false,
-    useWidth: undefined,
-
-    /**
-     * | Parameter   | Description | Type    | Required | Values      |
-     * | ----------- | ----------- | ------- | -------- | ----------- |
-     * | useMaxWidth | See notes   | boolean | 4        | true, false |
-     *
-     * **Notes:**
-     *
-     * When this flag is set the height and width is set to 100% and is then scaling with the
-     * available space if not the absolute space required is used.
-     *
-     * Default value: true
-     */
-    useMaxWidth: true
   },
   state: {
     dividerMargin: 10,
@@ -13181,10 +13747,23 @@ var config = {
     fontSize: 14,
     rect_padding: 10,
     line_height: 20
+  },
+  gitGraph: {
+    diagramPadding: 8,
+    nodeLabel: {
+      width: 75,
+      height: 100,
+      x: -25,
+      y: 0
+    },
+    mainBranchName: 'main',
+    mainBranchOrder: 0,
+    showCommitLabel: true,
+    showBranches: true
   }
 };
 config.class.arrowMarkerAbsolute = config.arrowMarkerAbsolute;
-config.git.arrowMarkerAbsolute = config.arrowMarkerAbsolute;
+config.gitGraph.arrowMarkerAbsolute = config.arrowMarkerAbsolute;
 
 var keyify = function keyify(obj) {
   var prefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
@@ -13213,33 +13792,34 @@ var configKeys = keyify(config, '');
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
+/* harmony export */   "addAnnotation": () => (/* binding */ addAnnotation),
 /* harmony export */   "addClass": () => (/* binding */ addClass),
-/* harmony export */   "lookUpDomId": () => (/* binding */ lookUpDomId),
+/* harmony export */   "addMember": () => (/* binding */ addMember),
+/* harmony export */   "addMembers": () => (/* binding */ addMembers),
+/* harmony export */   "addRelation": () => (/* binding */ addRelation),
+/* harmony export */   "bindFunctions": () => (/* binding */ bindFunctions),
+/* harmony export */   "cleanupLabel": () => (/* binding */ cleanupLabel),
 /* harmony export */   "clear": () => (/* binding */ clear),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "getClass": () => (/* binding */ getClass),
 /* harmony export */   "getClasses": () => (/* binding */ getClasses),
 /* harmony export */   "getRelations": () => (/* binding */ getRelations),
-/* harmony export */   "addRelation": () => (/* binding */ addRelation),
-/* harmony export */   "addAnnotation": () => (/* binding */ addAnnotation),
-/* harmony export */   "addMember": () => (/* binding */ addMember),
-/* harmony export */   "addMembers": () => (/* binding */ addMembers),
-/* harmony export */   "cleanupLabel": () => (/* binding */ cleanupLabel),
-/* harmony export */   "setCssClass": () => (/* binding */ setCssClass),
-/* harmony export */   "setLink": () => (/* binding */ setLink),
-/* harmony export */   "setClickEvent": () => (/* binding */ setClickEvent),
-/* harmony export */   "bindFunctions": () => (/* binding */ bindFunctions),
 /* harmony export */   "lineType": () => (/* binding */ lineType),
+/* harmony export */   "lookUpDomId": () => (/* binding */ lookUpDomId),
+/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
 /* harmony export */   "relationType": () => (/* binding */ relationType),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setClickEvent": () => (/* binding */ setClickEvent),
+/* harmony export */   "setCssClass": () => (/* binding */ setCssClass),
+/* harmony export */   "setLink": () => (/* binding */ setLink)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../config */ "./src/config.js");
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
 /* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
+/* harmony import */ var _commonDb__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../commonDb */ "./src/commonDb.js");
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -13251,6 +13831,7 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symb
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 
 
 
@@ -13331,6 +13912,7 @@ var clear = function clear() {
   classes = {};
   funs = [];
   funs.push(setupToolTips);
+  (0,_commonDb__WEBPACK_IMPORTED_MODULE_4__.clear)();
 };
 var getClass = function getClass(id) {
   return classes[id];
@@ -13342,7 +13924,7 @@ var getRelations = function getRelations() {
   return relations;
 };
 var addRelation = function addRelation(relation) {
-  _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('Adding relation: ' + JSON.stringify(relation));
+  _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('Adding relation: ' + JSON.stringify(relation));
   addClass(relation.id1);
   addClass(relation.id2);
   relation.id1 = splitClassNameAndType(relation.id1).className;
@@ -13375,6 +13957,7 @@ var addAnnotation = function addAnnotation(className, annotation) {
  */
 
 var addMember = function addMember(className, member) {
+  console.log(className, member);
   var validatedClassName = splitClassNameAndType(className).className;
   var theClass = classes[validatedClassName];
 
@@ -13456,7 +14039,7 @@ var setLink = function setLink(ids, linkStr, target) {
     if (_id[0].match(/\d/)) id = MERMAID_DOM_ID_PREFIX + id;
 
     if (typeof classes[id] !== 'undefined') {
-      classes[id].link = _utils__WEBPACK_IMPORTED_MODULE_5__["default"].formatUrl(linkStr, config);
+      classes[id].link = _utils__WEBPACK_IMPORTED_MODULE_6__["default"].formatUrl(linkStr, config);
 
       if (config.securityLevel === 'sandbox') {
         classes[id].linkTarget = '_top';
@@ -13530,7 +14113,7 @@ var setClickFunc = function setClickFunc(domId, functionName, functionArgs) {
 
       if (elem !== null) {
         elem.addEventListener('click', function () {
-          _utils__WEBPACK_IMPORTED_MODULE_5__["default"].runFunc.apply(_utils__WEBPACK_IMPORTED_MODULE_5__["default"], [functionName].concat(_toConsumableArray(argList)));
+          _utils__WEBPACK_IMPORTED_MODULE_6__["default"].runFunc.apply(_utils__WEBPACK_IMPORTED_MODULE_6__["default"], [functionName].concat(_toConsumableArray(argList)));
         }, false);
       }
     });
@@ -13572,7 +14155,7 @@ var setupToolTips = function setupToolTips(element) {
 
     var rect = this.getBoundingClientRect();
     tooltipElem.transition().duration(200).style('opacity', '.9');
-    tooltipElem.html(el.attr('title')).style('left', window.scrollX + rect.left + (rect.right - rect.left) / 2 + 'px').style('top', window.scrollY + rect.top - 14 + document.body.scrollTop + 'px');
+    tooltipElem.text(el.attr('title')).style('left', window.scrollX + rect.left + (rect.right - rect.left) / 2 + 'px').style('top', window.scrollY + rect.top - 14 + document.body.scrollTop + 'px');
     el.classed('hover', true);
   }).on('mouseout', function () {
     tooltipElem.transition().duration(500).style('opacity', 0);
@@ -13594,6 +14177,10 @@ var setDirection = function setDirection(dir) {
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   parseDirective: parseDirective,
+  setTitle: _commonDb__WEBPACK_IMPORTED_MODULE_4__.setTitle,
+  getTitle: _commonDb__WEBPACK_IMPORTED_MODULE_4__.getTitle,
+  getAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_4__.getAccDescription,
+  setAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_4__.setAccDescription,
   getConfig: function getConfig() {
     return _config__WEBPACK_IMPORTED_MODULE_2__.getConfig().class;
   },
@@ -13632,9 +14219,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "addClasses": () => (/* binding */ addClasses),
 /* harmony export */   "addRelations": () => (/* binding */ addRelations),
-/* harmony export */   "setConf": () => (/* binding */ setConf),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -13650,6 +14237,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _dagre_wrapper_index_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../dagre-wrapper/index.js */ "./src/dagre-wrapper/index.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
 
 
 
@@ -13659,6 +14247,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
  // import addHtmlLabel from 'dagre-d3/lib/label/add-html-label.js';
+
 
 
 
@@ -14019,7 +14608,9 @@ var draw = function draw(text, id) {
 
       label.insertBefore(rect, label.firstChild);
     }
-  } // If node has a link, wrap it in an anchor SVG object.
+  }
+
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_10__["default"])(_parser_classDiagram__WEBPACK_IMPORTED_MODULE_3__.parser.yy, svg, id); // If node has a link, wrap it in an anchor SVG object.
   // const keys = Object.keys(classes);
   // keys.forEach(function(key) {
   //   const vertex = classes[key];
@@ -14048,7 +14639,6 @@ var draw = function draw(text, id) {
   //     }
   //   }
   // });
-
 };
 /**
  * Gets the arrow marker for a type index
@@ -14100,9 +14690,9 @@ function getArrowMarker(type) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -14117,6 +14707,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _svgDraw__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./svgDraw */ "./src/diagrams/class/svgDraw.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
+
 
 
 
@@ -14261,6 +14853,7 @@ var draw = function draw(text, id) {
   var vBox = "".concat(svgBounds.x - padding, " ").concat(svgBounds.y - padding, " ").concat(width, " ").concat(height);
   _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug("viewBox ".concat(vBox));
   diagram.attr('viewBox', vBox);
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_9__["default"])(_parser_classDiagram__WEBPACK_IMPORTED_MODULE_3__.parser.yy, diagram, id);
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   setConf: setConf,
@@ -14297,10 +14890,10 @@ var getStyles = function getStyles(options) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "drawEdge": () => (/* binding */ drawEdge),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "drawClass": () => (/* binding */ drawClass),
-/* harmony export */   "parseMember": () => (/* binding */ parseMember),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "drawEdge": () => (/* binding */ drawEdge),
+/* harmony export */   "parseMember": () => (/* binding */ parseMember)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -14683,16 +15276,16 @@ var parseClassifier = function parseClassifier(classifier) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "evaluate": () => (/* binding */ evaluate),
 /* harmony export */   "getRows": () => (/* binding */ getRows),
+/* harmony export */   "hasBreaks": () => (/* binding */ hasBreaks),
+/* harmony export */   "lineBreakRegex": () => (/* binding */ lineBreakRegex),
 /* harmony export */   "removeEscapes": () => (/* binding */ removeEscapes),
 /* harmony export */   "removeScript": () => (/* binding */ removeScript),
 /* harmony export */   "sanitizeText": () => (/* binding */ sanitizeText),
 /* harmony export */   "sanitizeTextOrArray": () => (/* binding */ sanitizeTextOrArray),
-/* harmony export */   "lineBreakRegex": () => (/* binding */ lineBreakRegex),
-/* harmony export */   "hasBreaks": () => (/* binding */ hasBreaks),
-/* harmony export */   "splitBreaks": () => (/* binding */ splitBreaks),
-/* harmony export */   "evaluate": () => (/* binding */ evaluate),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "splitBreaks": () => (/* binding */ splitBreaks)
 /* harmony export */ });
 /* harmony import */ var dompurify__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! dompurify */ "dompurify");
 /* harmony import */ var dompurify__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(dompurify__WEBPACK_IMPORTED_MODULE_0__);
@@ -14756,10 +15349,11 @@ var removeScript = function removeScript(txt) {
   }
 
   var decodedText = removeEscapes(rs);
-  decodedText = decodedText.replace(/script>/gi, '#');
-  decodedText = decodedText.replace(/javascript:/gi, '#');
-  decodedText = decodedText.replace(/onerror=/gi, 'onerror:');
-  decodedText = decodedText.replace(/<iframe/gi, '');
+  decodedText = decodedText.replaceAll(/script>/gi, '#');
+  decodedText = decodedText.replaceAll(/javascript:/gi, '#');
+  decodedText = decodedText.replaceAll(/javascript&colon/gi, '#');
+  decodedText = decodedText.replaceAll(/onerror=/gi, 'onerror:');
+  decodedText = decodedText.replaceAll(/<iframe/gi, '');
   return decodedText;
 };
 
@@ -14790,7 +15384,14 @@ var sanitizeMore = function sanitizeMore(text, config) {
 
 var sanitizeText = function sanitizeText(text, config) {
   if (!text) return text;
-  var txt = dompurify__WEBPACK_IMPORTED_MODULE_0___default().sanitize(sanitizeMore(text, config));
+  var txt = '';
+
+  if (config['dompurifyConfig']) {
+    txt = dompurify__WEBPACK_IMPORTED_MODULE_0___default().sanitize(sanitizeMore(text, config), config['dompurifyConfig']);
+  } else {
+    txt = dompurify__WEBPACK_IMPORTED_MODULE_0___default().sanitize(sanitizeMore(text, config));
+  }
+
   return txt;
 };
 var sanitizeTextOrArray = function sanitizeTextOrArray(a, config) {
@@ -14898,18 +15499,22 @@ var evaluate = function evaluate(val) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "parseDirective": () => (/* binding */ parseDirective)
 /* harmony export */ });
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 /* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _commonDb__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../commonDb */ "./src/commonDb.js");
+
+
 
 
 
 var entities = {};
 var relationships = [];
 var title = '';
+var description = '';
 var Cardinality = {
   ZERO_OR_ONE: 'ZERO_OR_ONE',
   ZERO_OR_MORE: 'ZERO_OR_MORE',
@@ -14973,21 +15578,13 @@ var addRelationship = function addRelationship(entA, rolA, entB, rSpec) {
 
 var getRelationships = function getRelationships() {
   return relationships;
-}; // Keep this - TODO: revisit...allow the diagram to have a title
-
-
-var setTitle = function setTitle(txt) {
-  title = txt;
-};
-
-var getTitle = function getTitle() {
-  return title;
 };
 
 var clear = function clear() {
   entities = {};
   relationships = [];
   title = '';
+  (0,_commonDb__WEBPACK_IMPORTED_MODULE_2__.clear)();
 };
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
@@ -14995,7 +15592,7 @@ var clear = function clear() {
   Identification: Identification,
   parseDirective: parseDirective,
   getConfig: function getConfig() {
-    return _config__WEBPACK_IMPORTED_MODULE_2__.getConfig().er;
+    return _config__WEBPACK_IMPORTED_MODULE_3__.getConfig().er;
   },
   addEntity: addEntity,
   addAttributes: addAttributes,
@@ -15003,8 +15600,10 @@ var clear = function clear() {
   addRelationship: addRelationship,
   getRelationships: getRelationships,
   clear: clear,
-  setTitle: setTitle,
-  getTitle: getTitle
+  setTitle: _commonDb__WEBPACK_IMPORTED_MODULE_2__.setTitle,
+  getTitle: _commonDb__WEBPACK_IMPORTED_MODULE_2__.getTitle,
+  setAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_2__.setAccDescription,
+  getAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_2__.getAccDescription
 });
 
 /***/ }),
@@ -15074,9 +15673,9 @@ var insertMarkers = function insertMarkers(elem, conf) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var graphlib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! graphlib */ "graphlib");
 /* harmony import */ var graphlib__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(graphlib__WEBPACK_IMPORTED_MODULE_0__);
@@ -15091,6 +15690,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 /* harmony import */ var _erMarkers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./erMarkers */ "./src/diagrams/er/erMarkers.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
+
 
 
 
@@ -15510,6 +16111,7 @@ var draw = function draw(text, id) {
   var height = svgBounds.height + padding * 2;
   (0,_utils__WEBPACK_IMPORTED_MODULE_8__.configureSvgSize)(svg, height, width, conf.useMaxWidth);
   svg.attr('viewBox', "".concat(svgBounds.x - padding, " ").concat(svgBounds.y - padding, " ").concat(width, " ").concat(height));
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_9__["default"])(parser.yy, svg, id);
 }; // draw
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
@@ -16011,41 +16613,42 @@ function insertPolygonShape(parent, w, h, points) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
-/* harmony export */   "lookUpDomId": () => (/* binding */ lookUpDomId),
-/* harmony export */   "addVertex": () => (/* binding */ addVertex),
-/* harmony export */   "addSingleLink": () => (/* binding */ addSingleLink),
-/* harmony export */   "addLink": () => (/* binding */ addLink),
-/* harmony export */   "updateLinkInterpolate": () => (/* binding */ updateLinkInterpolate),
-/* harmony export */   "updateLink": () => (/* binding */ updateLink),
 /* harmony export */   "addClass": () => (/* binding */ addClass),
-/* harmony export */   "setDirection": () => (/* binding */ setDirection),
-/* harmony export */   "setClass": () => (/* binding */ setClass),
-/* harmony export */   "setLink": () => (/* binding */ setLink),
-/* harmony export */   "getTooltip": () => (/* binding */ getTooltip),
-/* harmony export */   "setClickEvent": () => (/* binding */ setClickEvent),
-/* harmony export */   "bindFunctions": () => (/* binding */ bindFunctions),
-/* harmony export */   "getDirection": () => (/* binding */ getDirection),
-/* harmony export */   "getVertices": () => (/* binding */ getVertices),
-/* harmony export */   "getEdges": () => (/* binding */ getEdges),
-/* harmony export */   "getClasses": () => (/* binding */ getClasses),
-/* harmony export */   "clear": () => (/* binding */ clear),
-/* harmony export */   "setGen": () => (/* binding */ setGen),
-/* harmony export */   "defaultStyle": () => (/* binding */ defaultStyle),
+/* harmony export */   "addLink": () => (/* binding */ addLink),
+/* harmony export */   "addSingleLink": () => (/* binding */ addSingleLink),
 /* harmony export */   "addSubGraph": () => (/* binding */ addSubGraph),
-/* harmony export */   "getDepthFirstPos": () => (/* binding */ getDepthFirstPos),
-/* harmony export */   "indexNodes": () => (/* binding */ indexNodes),
-/* harmony export */   "getSubGraphs": () => (/* binding */ getSubGraphs),
+/* harmony export */   "addVertex": () => (/* binding */ addVertex),
+/* harmony export */   "bindFunctions": () => (/* binding */ bindFunctions),
+/* harmony export */   "clear": () => (/* binding */ clear),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "defaultStyle": () => (/* binding */ defaultStyle),
 /* harmony export */   "firstGraph": () => (/* binding */ firstGraph),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "getClasses": () => (/* binding */ getClasses),
+/* harmony export */   "getDepthFirstPos": () => (/* binding */ getDepthFirstPos),
+/* harmony export */   "getDirection": () => (/* binding */ getDirection),
+/* harmony export */   "getEdges": () => (/* binding */ getEdges),
+/* harmony export */   "getSubGraphs": () => (/* binding */ getSubGraphs),
+/* harmony export */   "getTooltip": () => (/* binding */ getTooltip),
+/* harmony export */   "getVertices": () => (/* binding */ getVertices),
+/* harmony export */   "indexNodes": () => (/* binding */ indexNodes),
+/* harmony export */   "lookUpDomId": () => (/* binding */ lookUpDomId),
+/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
+/* harmony export */   "setClass": () => (/* binding */ setClass),
+/* harmony export */   "setClickEvent": () => (/* binding */ setClickEvent),
+/* harmony export */   "setDirection": () => (/* binding */ setDirection),
+/* harmony export */   "setGen": () => (/* binding */ setGen),
+/* harmony export */   "setLink": () => (/* binding */ setLink),
+/* harmony export */   "updateLink": () => (/* binding */ updateLink),
+/* harmony export */   "updateLinkInterpolate": () => (/* binding */ updateLinkInterpolate)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../config */ "./src/config.js");
-/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
-/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _commonDb__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../commonDb */ "./src/commonDb.js");
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -16059,6 +16662,7 @@ function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symb
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
 
 
 
@@ -16082,8 +16686,13 @@ var version; // As in graph
 // Functions to be run after graph rendering
 
 var funs = [];
+
+var sanitizeText = function sanitizeText(txt) {
+  return _common_common__WEBPACK_IMPORTED_MODULE_2__["default"].sanitizeText(txt, config);
+};
+
 var parseDirective = function parseDirective(statement, context, type) {
-  _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__["default"].parseDirective(this, statement, context, type);
+  _mermaidAPI__WEBPACK_IMPORTED_MODULE_3__["default"].parseDirective(this, statement, context, type);
 };
 /**
  * Function to lookup domId from id in the graph definition.
@@ -16142,7 +16751,7 @@ var addVertex = function addVertex(_id, text, type, style, classes, dir) {
 
   if (typeof text !== 'undefined') {
     config = _config__WEBPACK_IMPORTED_MODULE_1__.getConfig();
-    txt = _common_common__WEBPACK_IMPORTED_MODULE_3__["default"].sanitizeText(text.trim(), config); // strip quotes if string starts and ends with a quote
+    txt = sanitizeText(text.trim()); // strip quotes if string starts and ends with a quote
 
     if (txt[0] === '"' && txt[txt.length - 1] === '"') {
       txt = txt.substring(1, txt.length - 1);
@@ -16205,7 +16814,7 @@ var addSingleLink = function addSingleLink(_start, _end, type, linktext) {
   linktext = type.text;
 
   if (typeof linktext !== 'undefined') {
-    edge.text = _common_common__WEBPACK_IMPORTED_MODULE_3__["default"].sanitizeText(linktext.trim(), config); // strip quotes if string starts and exnds with a quote
+    edge.text = sanitizeText(linktext.trim()); // strip quotes if string starts and exnds with a quote
 
     if (edge.text[0] === '"' && edge.text[edge.text.length - 1] === '"') {
       edge.text = edge.text.substring(1, edge.text.length - 1);
@@ -16338,7 +16947,7 @@ var setClass = function setClass(ids, className) {
 var setTooltip = function setTooltip(ids, tooltip) {
   ids.split(',').forEach(function (id) {
     if (typeof tooltip !== 'undefined') {
-      tooltips[version === 'gen-1' ? lookUpDomId(id) : id] = _common_common__WEBPACK_IMPORTED_MODULE_3__["default"].sanitizeText(tooltip, config);
+      tooltips[version === 'gen-1' ? lookUpDomId(id) : id] = sanitizeText(tooltip);
     }
   });
 };
@@ -16483,7 +17092,7 @@ var setupToolTips = function setupToolTips(element) {
 
     var rect = this.getBoundingClientRect();
     tooltipElem.transition().duration(200).style('opacity', '.9');
-    tooltipElem.html(el.attr('title')).style('left', window.scrollX + rect.left + (rect.right - rect.left) / 2 + 'px').style('top', window.scrollY + rect.top - 14 + document.body.scrollTop + 'px');
+    tooltipElem.text(el.attr('title')).style('left', window.scrollX + rect.left + (rect.right - rect.left) / 2 + 'px').style('top', window.scrollY + rect.top - 14 + document.body.scrollTop + 'px');
     el.classed('hover', true);
   }).on('mouseout', function () {
     tooltipElem.transition().duration(500).style('opacity', 0);
@@ -16511,6 +17120,7 @@ var clear = function clear(ver) {
   tooltips = [];
   firstGraphFlag = true;
   version = ver || 'gen-1';
+  (0,_commonDb__WEBPACK_IMPORTED_MODULE_5__.clear)();
 };
 var setGen = function setGen(ver) {
   version = ver || 'gen-1';
@@ -16582,7 +17192,7 @@ var addSubGraph = function addSubGraph(_id, list, _title) {
   nodeList = nl;
 
   if (version === 'gen-1') {
-    _logger__WEBPACK_IMPORTED_MODULE_5__.log.warn('LOOKING UP');
+    _logger__WEBPACK_IMPORTED_MODULE_6__.log.warn('LOOKING UP');
 
     for (var i = 0; i < nodeList.length; i++) {
       nodeList[i] = lookUpDomId(nodeList[i]);
@@ -16592,7 +17202,7 @@ var addSubGraph = function addSubGraph(_id, list, _title) {
   id = id || 'subGraph' + subCount; // if (id[0].match(/\d/)) id = lookUpDomId(id);
 
   title = title || '';
-  title = _common_common__WEBPACK_IMPORTED_MODULE_3__["default"].sanitizeText(title, config);
+  title = sanitizeText(title);
   subCount = subCount + 1;
   var subGraph = {
     id: id,
@@ -16601,7 +17211,7 @@ var addSubGraph = function addSubGraph(_id, list, _title) {
     classes: [],
     dir: dir
   };
-  _logger__WEBPACK_IMPORTED_MODULE_5__.log.info('Adding', subGraph.id, subGraph.nodes, subGraph.dir);
+  _logger__WEBPACK_IMPORTED_MODULE_6__.log.info('Adding', subGraph.id, subGraph.nodes, subGraph.dir);
   /** Deletes an id from all subgraphs */
   // const del = _id => {
   //   subGraphs.forEach(sg => {
@@ -16885,6 +17495,10 @@ var makeUniq = function makeUniq(sg, allSubgraphs) {
   defaultConfig: function defaultConfig() {
     return _config__WEBPACK_IMPORTED_MODULE_1__.defaultConfig.flowchart;
   },
+  setTitle: _commonDb__WEBPACK_IMPORTED_MODULE_5__.setTitle,
+  getTitle: _commonDb__WEBPACK_IMPORTED_MODULE_5__.getTitle,
+  getAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_5__.getAccDescription,
+  setAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_5__.setAccDescription,
   addVertex: addVertex,
   lookUpDomId: lookUpDomId,
   addLink: addLink,
@@ -16928,12 +17542,12 @@ var makeUniq = function makeUniq(sg, allSubgraphs) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
-/* harmony export */   "addVertices": () => (/* binding */ addVertices),
 /* harmony export */   "addEdges": () => (/* binding */ addEdges),
-/* harmony export */   "getClasses": () => (/* binding */ getClasses),
+/* harmony export */   "addVertices": () => (/* binding */ addVertices),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "getClasses": () => (/* binding */ getClasses),
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var graphlib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! graphlib */ "graphlib");
 /* harmony import */ var graphlib__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(graphlib__WEBPACK_IMPORTED_MODULE_0__);
@@ -16943,12 +17557,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _parser_flow__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./parser/flow */ "./src/diagrams/flowchart/parser/flow.jison");
 /* harmony import */ var _parser_flow__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_parser_flow__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../config */ "./src/config.js");
-/* harmony import */ var _dagre_wrapper_index_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../dagre-wrapper/index.js */ "./src/dagre-wrapper/index.js");
+/* harmony import */ var _dagre_wrapper_index_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../dagre-wrapper/index.js */ "./src/dagre-wrapper/index.js");
 /* harmony import */ var dagre_d3_lib_label_add_html_label_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! dagre-d3/lib/label/add-html-label.js */ "dagre-d3/lib/label/add-html-label.js");
 /* harmony import */ var dagre_d3_lib_label_add_html_label_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(dagre_d3_lib_label_add_html_label_js__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
+
 
 
 
@@ -17096,6 +17712,10 @@ var addVertices = function addVertices(vert, g, svgId, root, doc) {
         _shape = 'rect';
         break;
 
+      case 'doublecircle':
+        _shape = 'doublecircle';
+        break;
+
       default:
         _shape = 'rect';
     } // Add the node
@@ -17140,7 +17760,7 @@ var addVertices = function addVertices(vert, g, svgId, root, doc) {
   });
 };
 /**
- * Add edges to graph based on parsed graph defninition
+ * Add edges to graph based on parsed graph definition
  *
  * @param {object} edges The edges to add to the graph
  * @param {object} g The graph object
@@ -17346,7 +17966,7 @@ var draw = function draw(text, id) {
   var conf = (0,_config__WEBPACK_IMPORTED_MODULE_5__.getConfig)().flowchart;
   var nodeSpacing = conf.nodeSpacing || 50;
   var rankSpacing = conf.rankSpacing || 50;
-  var securityLevel = (0,_config__WEBPACK_IMPORTED_MODULE_5__.getConfig)().securityLevel; // Handle root and ocument for when rendering in sanbox mode
+  var securityLevel = (0,_config__WEBPACK_IMPORTED_MODULE_5__.getConfig)().securityLevel; // Handle root and document for when rendering in sandbox mode
 
   var sandboxElement;
 
@@ -17377,7 +17997,7 @@ var draw = function draw(text, id) {
     subG = subGraphs[_i];
     _logger__WEBPACK_IMPORTED_MODULE_7__.log.info('Subgraph - ', subG);
     _flowDb__WEBPACK_IMPORTED_MODULE_6__["default"].addVertex(subG.id, subG.title, 'group', undefined, subG.classes, subG.dir);
-  } // Fetch the verices/nodes and edges/links from the parsed graph definition
+  } // Fetch the vertices/nodes and edges/links from the parsed graph definition
 
 
   var vert = _flowDb__WEBPACK_IMPORTED_MODULE_6__["default"].getVertices();
@@ -17402,10 +18022,12 @@ var draw = function draw(text, id) {
   // Set up an SVG group so that we can translate the final graph.
 
   var svg = root.select("[id=\"".concat(id, "\"]"));
-  svg.attr('xmlns:xlink', 'http://www.w3.org/1999/xlink'); // Run the renderer. This is what draws the final graph.
+  svg.attr('xmlns:xlink', 'http://www.w3.org/1999/xlink'); // Adds title and description to the flow chart
+
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_9__["default"])(parser.yy, svg, id); // Run the renderer. This is what draws the final graph.
 
   var element = root.select('#' + id + ' g');
-  (0,_dagre_wrapper_index_js__WEBPACK_IMPORTED_MODULE_9__.render)(element, g, ['point', 'circle', 'cross'], 'flowchart', id);
+  (0,_dagre_wrapper_index_js__WEBPACK_IMPORTED_MODULE_10__.render)(element, g, ['point', 'circle', 'cross'], 'flowchart', id);
   var padding = conf.diagramPadding;
   var svgBounds = svg.node().getBBox();
   var width = svgBounds.width + padding * 2;
@@ -17495,12 +18117,12 @@ var draw = function draw(text, id) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
-/* harmony export */   "addVertices": () => (/* binding */ addVertices),
 /* harmony export */   "addEdges": () => (/* binding */ addEdges),
-/* harmony export */   "getClasses": () => (/* binding */ getClasses),
+/* harmony export */   "addVertices": () => (/* binding */ addVertices),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "getClasses": () => (/* binding */ getClasses),
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var graphlib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! graphlib */ "graphlib");
 /* harmony import */ var graphlib__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(graphlib__WEBPACK_IMPORTED_MODULE_0__);
@@ -17518,6 +18140,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
 /* harmony import */ var _flowChartShapes__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./flowChartShapes */ "./src/diagrams/flowchart/flowChartShapes.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
+
 
 
 
@@ -17689,7 +18313,7 @@ var addVertices = function addVertices(vert, g, svgId, root, _doc) {
   });
 };
 /**
- * Add edges to graph based on parsed graph defninition
+ * Add edges to graph based on parsed graph definition
  *
  * @param {object} edges The edges to add to the graph
  * @param {object} g The graph object
@@ -17773,7 +18397,7 @@ var addEdges = function addEdges(edges, g) {
 
       if ((0,_common_common__WEBPACK_IMPORTED_MODULE_6__.evaluate)((0,_config__WEBPACK_IMPORTED_MODULE_4__.getConfig)().flowchart.htmlLabels)) {
         edgeData.labelType = 'html';
-        edgeData.label = "<span id=\"L-".concat(linkId, "\" class=\"edgeLabel L-").concat(linkNameStart, "' L-").concat(linkNameEnd, "\">").concat(edge.text.replace(/fa[lrsb]?:fa-[\w-]+/g, function (s) {
+        edgeData.label = "<span id=\"L-".concat(linkId, "\" class=\"edgeLabel L-").concat(linkNameStart, "' L-").concat(linkNameEnd, "\" style=\"").concat(edgeData.labelStyle, "\">").concat(edge.text.replace(/fa[lrsb]?:fa-[\w-]+/g, function (s) {
           return "<i class='".concat(s.replace(':', ' '), "'></i>");
         }), "</span>");
       } else {
@@ -17873,7 +18497,7 @@ var draw = function draw(text, id) {
   for (var _i = subGraphs.length - 1; _i >= 0; _i--) {
     subG = subGraphs[_i];
     _flowDb__WEBPACK_IMPORTED_MODULE_8__["default"].addVertex(subG.id, subG.title, 'group', undefined, subG.classes);
-  } // Fetch the verices/nodes and edges/links from the parsed graph definition
+  } // Fetch the vertices/nodes and edges/links from the parsed graph definition
 
 
   var vert = _flowDb__WEBPACK_IMPORTED_MODULE_8__["default"].getVertices();
@@ -17914,7 +18538,9 @@ var draw = function draw(text, id) {
 
   var svg = root.select("[id=\"".concat(id, "\"]"));
   svg.attr('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-  _logger__WEBPACK_IMPORTED_MODULE_7__.log.warn(g); // Run the renderer. This is what draws the final graph.
+  _logger__WEBPACK_IMPORTED_MODULE_7__.log.warn(g); // Adds title and description to the flow chart
+
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_11__["default"])(parser.yy, svg, id); // Run the renderer. This is what draws the final graph.
 
   var element = root.select('#' + id + ' g');
   render(element, g);
@@ -18073,46 +18699,46 @@ var getStyles = function getStyles(options) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
-/* harmony export */   "clear": () => (/* binding */ clear),
-/* harmony export */   "setAxisFormat": () => (/* binding */ setAxisFormat),
-/* harmony export */   "getAxisFormat": () => (/* binding */ getAxisFormat),
-/* harmony export */   "setTodayMarker": () => (/* binding */ setTodayMarker),
-/* harmony export */   "getTodayMarker": () => (/* binding */ getTodayMarker),
-/* harmony export */   "setDateFormat": () => (/* binding */ setDateFormat),
-/* harmony export */   "enableInclusiveEndDates": () => (/* binding */ enableInclusiveEndDates),
-/* harmony export */   "endDatesAreInclusive": () => (/* binding */ endDatesAreInclusive),
-/* harmony export */   "enableTopAxis": () => (/* binding */ enableTopAxis),
-/* harmony export */   "topAxisEnabled": () => (/* binding */ topAxisEnabled),
-/* harmony export */   "getDateFormat": () => (/* binding */ getDateFormat),
-/* harmony export */   "setIncludes": () => (/* binding */ setIncludes),
-/* harmony export */   "getIncludes": () => (/* binding */ getIncludes),
-/* harmony export */   "setExcludes": () => (/* binding */ setExcludes),
-/* harmony export */   "getExcludes": () => (/* binding */ getExcludes),
-/* harmony export */   "getLinks": () => (/* binding */ getLinks),
-/* harmony export */   "setTitle": () => (/* binding */ setTitle),
-/* harmony export */   "getTitle": () => (/* binding */ getTitle),
 /* harmony export */   "addSection": () => (/* binding */ addSection),
+/* harmony export */   "addTask": () => (/* binding */ addTask),
+/* harmony export */   "addTaskOrg": () => (/* binding */ addTaskOrg),
+/* harmony export */   "bindFunctions": () => (/* binding */ bindFunctions),
+/* harmony export */   "clear": () => (/* binding */ clear),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "enableInclusiveEndDates": () => (/* binding */ enableInclusiveEndDates),
+/* harmony export */   "enableTopAxis": () => (/* binding */ enableTopAxis),
+/* harmony export */   "endDatesAreInclusive": () => (/* binding */ endDatesAreInclusive),
+/* harmony export */   "findTaskById": () => (/* binding */ findTaskById),
+/* harmony export */   "getAxisFormat": () => (/* binding */ getAxisFormat),
+/* harmony export */   "getDateFormat": () => (/* binding */ getDateFormat),
+/* harmony export */   "getExcludes": () => (/* binding */ getExcludes),
+/* harmony export */   "getIncludes": () => (/* binding */ getIncludes),
+/* harmony export */   "getLinks": () => (/* binding */ getLinks),
 /* harmony export */   "getSections": () => (/* binding */ getSections),
 /* harmony export */   "getTasks": () => (/* binding */ getTasks),
+/* harmony export */   "getTodayMarker": () => (/* binding */ getTodayMarker),
 /* harmony export */   "isInvalidDate": () => (/* binding */ isInvalidDate),
-/* harmony export */   "addTask": () => (/* binding */ addTask),
-/* harmony export */   "findTaskById": () => (/* binding */ findTaskById),
-/* harmony export */   "addTaskOrg": () => (/* binding */ addTaskOrg),
-/* harmony export */   "setLink": () => (/* binding */ setLink),
+/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
+/* harmony export */   "setAxisFormat": () => (/* binding */ setAxisFormat),
 /* harmony export */   "setClass": () => (/* binding */ setClass),
 /* harmony export */   "setClickEvent": () => (/* binding */ setClickEvent),
-/* harmony export */   "bindFunctions": () => (/* binding */ bindFunctions),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setDateFormat": () => (/* binding */ setDateFormat),
+/* harmony export */   "setExcludes": () => (/* binding */ setExcludes),
+/* harmony export */   "setIncludes": () => (/* binding */ setIncludes),
+/* harmony export */   "setLink": () => (/* binding */ setLink),
+/* harmony export */   "setTodayMarker": () => (/* binding */ setTodayMarker),
+/* harmony export */   "topAxisEnabled": () => (/* binding */ topAxisEnabled)
 /* harmony export */ });
 /* harmony import */ var moment_mini__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! moment-mini */ "moment-mini");
 /* harmony import */ var moment_mini__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(moment_mini__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _braintree_sanitize_url__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @braintree/sanitize-url */ "@braintree/sanitize-url");
 /* harmony import */ var _braintree_sanitize_url__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_braintree_sanitize_url__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../config */ "./src/config.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
-/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _commonDb__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../commonDb */ "./src/commonDb.js");
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -18131,6 +18757,8 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 
 
+
+
 var dateFormat = '';
 var axisFormat = '';
 var todayMarker = '';
@@ -18138,6 +18766,7 @@ var includes = [];
 var excludes = [];
 var links = {};
 var title = '';
+var accDescription = '';
 var sections = [];
 var tasks = [];
 var currentSection = '';
@@ -18147,8 +18776,13 @@ var inclusiveEndDates = false;
 var topAxis = false; // The serial order of the task in the script
 
 var lastOrder = 0;
+
+var sanitizeText = function sanitizeText(txt) {
+  return _common_common__WEBPACK_IMPORTED_MODULE_2__["default"].sanitizeText(txt, _config__WEBPACK_IMPORTED_MODULE_3__.getConfig());
+};
+
 var parseDirective = function parseDirective(statement, context, type) {
-  _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__["default"].parseDirective(this, statement, context, type);
+  _mermaidAPI__WEBPACK_IMPORTED_MODULE_4__["default"].parseDirective(this, statement, context, type);
 };
 var clear = function clear() {
   sections = [];
@@ -18169,6 +18803,7 @@ var clear = function clear() {
   topAxis = false;
   lastOrder = 0;
   links = {};
+  (0,_commonDb__WEBPACK_IMPORTED_MODULE_5__.clear)();
 };
 var setAxisFormat = function setAxisFormat(txt) {
   axisFormat = txt;
@@ -18214,12 +18849,6 @@ var getExcludes = function getExcludes() {
 };
 var getLinks = function getLinks() {
   return links;
-};
-var setTitle = function setTitle(txt) {
-  title = txt;
-};
-var getTitle = function getTitle() {
-  return title;
 };
 var addSection = function addSection(txt) {
   currentSection = txt;
@@ -18326,8 +18955,8 @@ var getStartDate = function getStartDate(prevTime, dateFormat, str) {
   if (mDate.isValid()) {
     return mDate.toDate();
   } else {
-    _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug('Invalid date:' + str);
-    _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug('With date format:' + dateFormat.trim());
+    _logger__WEBPACK_IMPORTED_MODULE_6__.log.debug('Invalid date:' + str);
+    _logger__WEBPACK_IMPORTED_MODULE_6__.log.debug('With date format:' + dateFormat.trim());
   } // Default date - now
 
 
@@ -18623,7 +19252,7 @@ var compileTasks = function compileTasks() {
 var setLink = function setLink(ids, _linkStr) {
   var linkStr = _linkStr;
 
-  if (_config__WEBPACK_IMPORTED_MODULE_4__.getConfig().securityLevel !== 'loose') {
+  if (_config__WEBPACK_IMPORTED_MODULE_3__.getConfig().securityLevel !== 'loose') {
     linkStr = (0,_braintree_sanitize_url__WEBPACK_IMPORTED_MODULE_1__.sanitizeUrl)(_linkStr);
   }
 
@@ -18657,7 +19286,7 @@ var setClass = function setClass(ids, className) {
 };
 
 var setClickFun = function setClickFun(id, functionName, functionArgs) {
-  if (_config__WEBPACK_IMPORTED_MODULE_4__.getConfig().securityLevel !== 'loose') {
+  if (_config__WEBPACK_IMPORTED_MODULE_3__.getConfig().securityLevel !== 'loose') {
     return;
   }
 
@@ -18695,7 +19324,7 @@ var setClickFun = function setClickFun(id, functionName, functionArgs) {
 
   if (typeof rawTask !== 'undefined') {
     pushFun(id, function () {
-      _utils__WEBPACK_IMPORTED_MODULE_5__["default"].runFunc.apply(_utils__WEBPACK_IMPORTED_MODULE_5__["default"], [functionName].concat(_toConsumableArray(argList)));
+      _utils__WEBPACK_IMPORTED_MODULE_7__["default"].runFunc.apply(_utils__WEBPACK_IMPORTED_MODULE_7__["default"], [functionName].concat(_toConsumableArray(argList)));
     });
   }
 };
@@ -18759,7 +19388,7 @@ var bindFunctions = function bindFunctions(element) {
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   parseDirective: parseDirective,
   getConfig: function getConfig() {
-    return _config__WEBPACK_IMPORTED_MODULE_4__.getConfig().gantt;
+    return _config__WEBPACK_IMPORTED_MODULE_3__.getConfig().gantt;
   },
   clear: clear,
   setDateFormat: setDateFormat,
@@ -18772,8 +19401,10 @@ var bindFunctions = function bindFunctions(element) {
   getAxisFormat: getAxisFormat,
   setTodayMarker: setTodayMarker,
   getTodayMarker: getTodayMarker,
-  setTitle: setTitle,
-  getTitle: getTitle,
+  setTitle: _commonDb__WEBPACK_IMPORTED_MODULE_5__.setTitle,
+  getTitle: _commonDb__WEBPACK_IMPORTED_MODULE_5__.getTitle,
+  setAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_5__.setAccDescription,
+  getAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_5__.getAccDescription,
   addSection: addSection,
   getSections: getSections,
   getTasks: getTasks,
@@ -18826,9 +19457,9 @@ function getTaskTags(data, task, tags) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var moment_mini__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! moment-mini */ "moment-mini");
 /* harmony import */ var moment_mini__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(moment_mini__WEBPACK_IMPORTED_MODULE_0__);
@@ -18836,10 +19467,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _parser_gantt__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./parser/gantt */ "./src/diagrams/gantt/parser/gantt.jison");
 /* harmony import */ var _parser_gantt__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_parser_gantt__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
 /* harmony import */ var _ganttDb__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ganttDb */ "./src/diagrams/gantt/ganttDb.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../config */ "./src/config.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
+
 
 
 
@@ -18925,6 +19558,7 @@ var draw = function draw(text, id) {
   makeGant(taskArray, w, h);
   (0,_utils__WEBPACK_IMPORTED_MODULE_5__.configureSvgSize)(svg, h, w, conf.useMaxWidth);
   svg.append('text').text(_parser_gantt__WEBPACK_IMPORTED_MODULE_2__.parser.yy.getTitle()).attr('x', w / 2).attr('y', conf.titleTopMargin).attr('class', 'titleText');
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_6__["default"])(_parser_gantt__WEBPACK_IMPORTED_MODULE_2__.parser.yy, svg, id);
   /**
    * @param tasks
    * @param pageWidth
@@ -19260,7 +19894,7 @@ var draw = function draw(text, id) {
 
     svg.append('g') // without doing this, impossible to put grid lines behind text
     .selectAll('text').data(numOccurances).enter().append(function (d) {
-      var rows = d[0].split(_common_common__WEBPACK_IMPORTED_MODULE_6__["default"].lineBreakRegex);
+      var rows = d[0].split(_common_common__WEBPACK_IMPORTED_MODULE_7__["default"].lineBreakRegex);
       var dy = -(rows.length - 1) / 2;
       var svgLabel = doc.createElementNS('http://www.w3.org/2000/svg', 'text');
       svgLabel.setAttribute('dy', dy + 'em');
@@ -19407,86 +20041,108 @@ var getStyles = function getStyles(options) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setDirection": () => (/* binding */ setDirection),
-/* harmony export */   "setOptions": () => (/* binding */ setOptions),
-/* harmony export */   "getOptions": () => (/* binding */ getOptions),
-/* harmony export */   "commit": () => (/* binding */ commit),
 /* harmony export */   "branch": () => (/* binding */ branch),
-/* harmony export */   "merge": () => (/* binding */ merge),
 /* harmony export */   "checkout": () => (/* binding */ checkout),
-/* harmony export */   "reset": () => (/* binding */ reset),
-/* harmony export */   "prettyPrint": () => (/* binding */ prettyPrint),
 /* harmony export */   "clear": () => (/* binding */ clear),
-/* harmony export */   "getBranchesAsObjArray": () => (/* binding */ getBranchesAsObjArray),
+/* harmony export */   "commit": () => (/* binding */ commit),
+/* harmony export */   "commitType": () => (/* binding */ commitType),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "getBranches": () => (/* binding */ getBranches),
+/* harmony export */   "getBranchesAsObjArray": () => (/* binding */ getBranchesAsObjArray),
 /* harmony export */   "getCommits": () => (/* binding */ getCommits),
 /* harmony export */   "getCommitsArray": () => (/* binding */ getCommitsArray),
 /* harmony export */   "getCurrentBranch": () => (/* binding */ getCurrentBranch),
 /* harmony export */   "getDirection": () => (/* binding */ getDirection),
 /* harmony export */   "getHead": () => (/* binding */ getHead),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "getOptions": () => (/* binding */ getOptions),
+/* harmony export */   "merge": () => (/* binding */ merge),
+/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
+/* harmony export */   "prettyPrint": () => (/* binding */ prettyPrint),
+/* harmony export */   "setDirection": () => (/* binding */ setDirection),
+/* harmony export */   "setOptions": () => (/* binding */ setOptions)
 /* harmony export */ });
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _commonDb__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../commonDb */ "./src/commonDb.js");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
+
+
+
+
+
+
+var mainBranchName = (0,_config__WEBPACK_IMPORTED_MODULE_0__.getConfig)().gitGraph.mainBranchName;
+var mainBranchOrder = (0,_config__WEBPACK_IMPORTED_MODULE_0__.getConfig)().gitGraph.mainBranchOrder;
 var commits = {};
 var head = null;
-var branches = {
-  master: head
+var branchesConfig = {};
+branchesConfig[mainBranchName] = {
+  name: mainBranchName,
+  order: mainBranchOrder
 };
-var curBranch = 'master';
+var branches = {};
+branches[mainBranchName] = head;
+var curBranch = mainBranchName;
 var direction = 'LR';
 var seq = 0;
 
 function getId() {
-  return (0,_utils__WEBPACK_IMPORTED_MODULE_0__.random)({
+  return (0,_utils__WEBPACK_IMPORTED_MODULE_1__.random)({
     length: 7
   });
 }
+
+var parseDirective = function parseDirective(statement, context, type) {
+  _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__["default"].parseDirective(this, statement, context, type);
+}; // /**
+//  * @param currentCommit
+//  * @param otherCommit
+//  */
+// function isfastforwardable(currentCommit, otherCommit) {
+//   log.debug('Entering isfastforwardable:', currentCommit.id, otherCommit.id);
+//   let cnt = 0;
+//   while (currentCommit.seq <= otherCommit.seq && currentCommit !== otherCommit && cnt < 1000) {
+//     cnt++;
+//     // only if other branch has more commits
+//     if (otherCommit.parent == null) break;
+//     if (Array.isArray(otherCommit.parent)) {
+//       log.debug('In merge commit:', otherCommit.parent);
+//       return (
+//         isfastforwardable(currentCommit, commits[otherCommit.parent[0]]) ||
+//         isfastforwardable(currentCommit, commits[otherCommit.parent[1]])
+//       );
+//     } else {
+//       otherCommit = commits[otherCommit.parent];
+//     }
+//   }
+//   log.debug(currentCommit.id, otherCommit.id);
+//   return currentCommit.id === otherCommit.id;
+// }
+
 /**
  * @param currentCommit
  * @param otherCommit
  */
+// function isReachableFrom(currentCommit, otherCommit) {
+//   const currentSeq = currentCommit.seq;
+//   const otherSeq = otherCommit.seq;
+//   if (currentSeq > otherSeq) return isfastforwardable(otherCommit, currentCommit);
+//   return false;
+// }
 
-
-function isfastforwardable(currentCommit, otherCommit) {
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('Entering isfastforwardable:', currentCommit.id, otherCommit.id);
-  var cnt = 0;
-
-  while (currentCommit.seq <= otherCommit.seq && currentCommit !== otherCommit && cnt < 1000) {
-    cnt++; // only if other branch has more commits
-
-    if (otherCommit.parent == null) break;
-
-    if (Array.isArray(otherCommit.parent)) {
-      _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('In merge commit:', otherCommit.parent);
-      return isfastforwardable(currentCommit, commits[otherCommit.parent[0]]) || isfastforwardable(currentCommit, commits[otherCommit.parent[1]]);
-    } else {
-      otherCommit = commits[otherCommit.parent];
-    }
-  }
-
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug(currentCommit.id, otherCommit.id);
-  return currentCommit.id === otherCommit.id;
-}
-/**
- * @param currentCommit
- * @param otherCommit
- */
-
-
-function isReachableFrom(currentCommit, otherCommit) {
-  var currentSeq = currentCommit.seq;
-  var otherSeq = otherCommit.seq;
-  if (currentSeq > otherSeq) return isfastforwardable(otherCommit, currentCommit);
-  return false;
-}
 /**
  * @param list
  * @param fn
  */
-
 
 function uniqBy(list, fn) {
   var recordMap = Object.create(null);
@@ -19507,90 +20163,220 @@ var setDirection = function setDirection(dir) {
 };
 var options = {};
 var setOptions = function setOptions(rawOptString) {
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('options str', rawOptString);
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug('options str', rawOptString);
   rawOptString = rawOptString && rawOptString.trim();
   rawOptString = rawOptString || '{}';
 
   try {
     options = JSON.parse(rawOptString);
   } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.error('error while parsing gitGraph options', e.message);
+    _logger__WEBPACK_IMPORTED_MODULE_3__.log.error('error while parsing gitGraph options', e.message);
   }
 };
 var getOptions = function getOptions() {
   return options;
 };
-var commit = function commit(msg) {
+var commit = function commit(msg, id, type, tag) {
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug('Entering commit:', msg, id, type, tag);
+  id = _common_common__WEBPACK_IMPORTED_MODULE_4__["default"].sanitizeText(id, _config__WEBPACK_IMPORTED_MODULE_0__.getConfig());
+  msg = _common_common__WEBPACK_IMPORTED_MODULE_4__["default"].sanitizeText(msg, _config__WEBPACK_IMPORTED_MODULE_0__.getConfig());
+  tag = _common_common__WEBPACK_IMPORTED_MODULE_4__["default"].sanitizeText(tag, _config__WEBPACK_IMPORTED_MODULE_0__.getConfig());
   var commit = {
-    id: getId(),
+    id: id ? id : seq + '-' + getId(),
     message: msg,
     seq: seq++,
-    parent: head == null ? null : head.id
+    type: type ? type : commitType.NORMAL,
+    tag: tag ? tag : '',
+    parents: head == null ? [] : [head.id],
+    branch: curBranch
   };
   head = commit;
   commits[commit.id] = commit;
   branches[curBranch] = commit.id;
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('in pushCommit ' + commit.id);
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug('in pushCommit ' + commit.id);
 };
-var branch = function branch(name) {
-  branches[name] = head != null ? head.id : null;
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('in createBranch');
+var branch = function branch(name, order) {
+  name = _common_common__WEBPACK_IMPORTED_MODULE_4__["default"].sanitizeText(name, _config__WEBPACK_IMPORTED_MODULE_0__.getConfig());
+
+  if (typeof branches[name] === 'undefined') {
+    branches[name] = head != null ? head.id : null;
+    branchesConfig[name] = {
+      name: name,
+      order: order ? parseInt(order, 10) : null
+    };
+    checkout(name);
+    _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug('in createBranch');
+  } else {
+    var error = new Error('Trying to create an existing branch. (Help: Either use a new name if you want create a new branch or try using "checkout ' + name + '")');
+    error.hash = {
+      text: 'branch ' + name,
+      token: 'branch ' + name,
+      line: '1',
+      loc: {
+        first_line: 1,
+        last_line: 1,
+        first_column: 1,
+        last_column: 1
+      },
+      expected: ['"checkout ' + name + '"']
+    };
+    throw error;
+  }
 };
-var merge = function merge(otherBranch) {
+var merge = function merge(otherBranch, tag) {
+  otherBranch = _common_common__WEBPACK_IMPORTED_MODULE_4__["default"].sanitizeText(otherBranch, _config__WEBPACK_IMPORTED_MODULE_0__.getConfig());
   var currentCommit = commits[branches[curBranch]];
   var otherCommit = commits[branches[otherBranch]];
 
-  if (isReachableFrom(currentCommit, otherCommit)) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('Already merged');
-    return;
-  }
-
-  if (isfastforwardable(currentCommit, otherCommit)) {
-    branches[curBranch] = branches[otherBranch];
-    head = commits[branches[curBranch]];
-  } else {
-    // create merge commit
-    var _commit = {
-      id: getId(),
-      message: 'merged branch ' + otherBranch + ' into ' + curBranch,
-      seq: seq++,
-      parent: [head == null ? null : head.id, branches[otherBranch]]
+  if (curBranch === otherBranch) {
+    var error = new Error('Incorrect usage of "merge". Cannot merge a branch to itself');
+    error.hash = {
+      text: 'merge ' + otherBranch,
+      token: 'merge ' + otherBranch,
+      line: '1',
+      loc: {
+        first_line: 1,
+        last_line: 1,
+        first_column: 1,
+        last_column: 1
+      },
+      expected: ['branch abc']
     };
-    head = _commit;
-    commits[_commit.id] = _commit;
-    branches[curBranch] = _commit.id;
-  }
+    throw error;
+  } else if (typeof currentCommit === 'undefined' || !currentCommit) {
+    var _error = new Error('Incorrect usage of "merge". Current branch (' + curBranch + ')has no commits');
 
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug(branches);
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('in mergeBranch');
+    _error.hash = {
+      text: 'merge ' + otherBranch,
+      token: 'merge ' + otherBranch,
+      line: '1',
+      loc: {
+        first_line: 1,
+        last_line: 1,
+        first_column: 1,
+        last_column: 1
+      },
+      expected: ['commit']
+    };
+    throw _error;
+  } else if (typeof branches[otherBranch] === 'undefined') {
+    var _error2 = new Error('Incorrect usage of "merge". Branch to be merged (' + otherBranch + ') does not exist');
+
+    _error2.hash = {
+      text: 'merge ' + otherBranch,
+      token: 'merge ' + otherBranch,
+      line: '1',
+      loc: {
+        first_line: 1,
+        last_line: 1,
+        first_column: 1,
+        last_column: 1
+      },
+      expected: ['branch ' + otherBranch]
+    };
+    throw _error2;
+  } else if (typeof otherCommit === 'undefined' || !otherCommit) {
+    var _error3 = new Error('Incorrect usage of "merge". Branch to be merged (' + otherBranch + ') has no commits');
+
+    _error3.hash = {
+      text: 'merge ' + otherBranch,
+      token: 'merge ' + otherBranch,
+      line: '1',
+      loc: {
+        first_line: 1,
+        last_line: 1,
+        first_column: 1,
+        last_column: 1
+      },
+      expected: ['"commit"']
+    };
+    throw _error3;
+  } else if (currentCommit === otherCommit) {
+    var _error4 = new Error('Incorrect usage of "merge". Both branches have same head');
+
+    _error4.hash = {
+      text: 'merge ' + otherBranch,
+      token: 'merge ' + otherBranch,
+      line: '1',
+      loc: {
+        first_line: 1,
+        last_line: 1,
+        first_column: 1,
+        last_column: 1
+      },
+      expected: ['branch abc']
+    };
+    throw _error4;
+  } // if (isReachableFrom(currentCommit, otherCommit)) {
+  //   log.debug('Already merged');
+  //   return;
+  // }
+  // if (isfastforwardable(currentCommit, otherCommit)) {
+  //   branches[curBranch] = branches[otherBranch];
+  //   head = commits[branches[curBranch]];
+  // } else {
+  // create merge commit
+
+
+  var commit = {
+    id: seq + '-' + getId(),
+    message: 'merged branch ' + otherBranch + ' into ' + curBranch,
+    seq: seq++,
+    parents: [head == null ? null : head.id, branches[otherBranch]],
+    branch: curBranch,
+    type: commitType.MERGE,
+    tag: tag ? tag : ''
+  };
+  head = commit;
+  commits[commit.id] = commit;
+  branches[curBranch] = commit.id; // }
+
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug(branches);
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug('in mergeBranch');
 };
 var checkout = function checkout(branch) {
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('in checkout');
-  curBranch = branch;
-  var id = branches[curBranch];
-  head = commits[id];
-};
-var reset = function reset(commitRef) {
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('in reset', commitRef);
-  var ref = commitRef.split(':')[0];
-  var parentCount = parseInt(commitRef.split(':')[1]);
-  var commit = ref === 'HEAD' ? head : commits[branches[ref]];
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug(commit, parentCount);
+  branch = _common_common__WEBPACK_IMPORTED_MODULE_4__["default"].sanitizeText(branch, _config__WEBPACK_IMPORTED_MODULE_0__.getConfig());
 
-  while (parentCount > 0) {
-    commit = commits[commit.parent];
-    parentCount--;
-
-    if (!commit) {
-      var err = 'Critical error - unique parent commit not found during reset';
-      _logger__WEBPACK_IMPORTED_MODULE_1__.log.error(err);
-      throw err;
-    }
+  if (typeof branches[branch] === 'undefined') {
+    var error = new Error('Trying to checkout branch which is not yet created. (Help try using "branch ' + branch + '")');
+    error.hash = {
+      text: 'checkout ' + branch,
+      token: 'checkout ' + branch,
+      line: '1',
+      loc: {
+        first_line: 1,
+        last_line: 1,
+        first_column: 1,
+        last_column: 1
+      },
+      expected: ['"branch ' + branch + '"']
+    };
+    throw error; //branches[branch] = head != null ? head.id : null;
+    //log.debug('in createBranch');
+  } else {
+    curBranch = branch;
+    var id = branches[curBranch];
+    head = commits[id];
   }
+}; // export const reset = function (commitRef) {
+//   log.debug('in reset', commitRef);
+//   const ref = commitRef.split(':')[0];
+//   let parentCount = parseInt(commitRef.split(':')[1]);
+//   let commit = ref === 'HEAD' ? head : commits[branches[ref]];
+//   log.debug(commit, parentCount);
+//   while (parentCount > 0) {
+//     commit = commits[commit.parent];
+//     parentCount--;
+//     if (!commit) {
+//       const err = 'Critical error - unique parent commit not found during reset';
+//       log.error(err);
+//       throw err;
+//     }
+//   }
+//   head = commit;
+//   branches[curBranch] = commit.id;
+// };
 
-  head = commit;
-  branches[curBranch] = commit.id;
-};
 /**
  * @param arr
  * @param key
@@ -19628,16 +20414,16 @@ function prettyPrintCommitHistory(commitArr) {
     if (branches[_branch] === commit.id) label.push(_branch);
   }
 
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug(label.join(' '));
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug(label.join(' '));
 
-  if (Array.isArray(commit.parent)) {
-    var newCommit = commits[commit.parent[0]];
+  if (commit.parents && commit.parents.length == 2) {
+    var newCommit = commits[commit.parents[0]];
     upsert(commitArr, commit, newCommit);
-    commitArr.push(commits[commit.parent[1]]);
-  } else if (commit.parent == null) {
+    commitArr.push(commits[commit.parents[1]]);
+  } else if (commit.parents.length == 0) {
     return;
   } else {
-    var nextCommit = commits[commit.parent];
+    var nextCommit = commits[commit.parents];
     upsert(commitArr, commit, nextCommit);
   }
 
@@ -19648,30 +20434,41 @@ function prettyPrintCommitHistory(commitArr) {
 }
 
 var prettyPrint = function prettyPrint() {
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug(commits);
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug(commits);
   var node = getCommitsArray()[0];
   prettyPrintCommitHistory([node]);
 };
 var clear = function clear() {
   commits = {};
   head = null;
-  branches = {
-    master: head
+  var mainBranch = (0,_config__WEBPACK_IMPORTED_MODULE_0__.getConfig)().gitGraph.mainBranchName;
+  var mainBranchOrder = (0,_config__WEBPACK_IMPORTED_MODULE_0__.getConfig)().gitGraph.mainBranchOrder;
+  branches = {};
+  branches[mainBranch] = null;
+  branchesConfig = {};
+  branchesConfig[mainBranch] = {
+    name: mainBranch,
+    order: mainBranchOrder
   };
-  curBranch = 'master';
+  curBranch = mainBranch;
   seq = 0;
+  (0,_commonDb__WEBPACK_IMPORTED_MODULE_5__.clear)();
 };
 var getBranchesAsObjArray = function getBranchesAsObjArray() {
-  var branchArr = [];
-
-  for (var _branch2 in branches) {
-    branchArr.push({
-      name: _branch2,
-      commit: commits[branches[_branch2]]
+  var branchesArray = Object.values(branchesConfig).map(function (branchConfig, i) {
+    if (branchConfig.order !== null) return branchConfig;
+    return _objectSpread(_objectSpread({}, branchConfig), {}, {
+      order: parseFloat("0.".concat(i), 10)
     });
-  }
-
-  return branchArr;
+  }).sort(function (a, b) {
+    return a.order - b.order;
+  }).map(function (_ref) {
+    var name = _ref.name;
+    return {
+      name: name
+    };
+  });
+  return branchesArray;
 };
 var getBranches = function getBranches() {
   return branches;
@@ -19684,10 +20481,10 @@ var getCommitsArray = function getCommitsArray() {
     return commits[key];
   });
   commitArr.forEach(function (o) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug(o.id);
+    _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug(o.id);
   });
   commitArr.sort(function (a, b) {
-    return b.seq - a.seq;
+    return a.seq - b.seq;
   });
   return commitArr;
 };
@@ -19700,7 +20497,17 @@ var getDirection = function getDirection() {
 var getHead = function getHead() {
   return head;
 };
+var commitType = {
+  NORMAL: 0,
+  REVERSE: 1,
+  HIGHLIGHT: 2,
+  MERGE: 3
+};
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  parseDirective: parseDirective,
+  getConfig: function getConfig() {
+    return _config__WEBPACK_IMPORTED_MODULE_0__.getConfig().gitGraph;
+  },
   setDirection: setDirection,
   setOptions: setOptions,
   getOptions: getOptions,
@@ -19708,7 +20515,7 @@ var getHead = function getHead() {
   branch: branch,
   merge: merge,
   checkout: checkout,
-  reset: reset,
+  //reset,
   prettyPrint: prettyPrint,
   clear: clear,
   getBranchesAsObjArray: getBranchesAsObjArray,
@@ -19717,7 +20524,12 @@ var getHead = function getHead() {
   getCommitsArray: getCommitsArray,
   getCurrentBranch: getCurrentBranch,
   getDirection: getDirection,
-  getHead: getHead
+  getHead: getHead,
+  setTitle: _commonDb__WEBPACK_IMPORTED_MODULE_5__.setTitle,
+  getTitle: _commonDb__WEBPACK_IMPORTED_MODULE_5__.getTitle,
+  getAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_5__.getAccDescription,
+  setAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_5__.setAccDescription,
+  commitType: commitType
 });
 
 /***/ }),
@@ -19731,18 +20543,19 @@ var getHead = function getHead() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
-/* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "draw": () => (/* binding */ draw)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _gitGraphAst__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gitGraphAst */ "./src/diagrams/git/gitGraphAst.js");
-/* harmony import */ var _parser_gitGraph__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./parser/gitGraph */ "./src/diagrams/git/parser/gitGraph.jison");
-/* harmony import */ var _parser_gitGraph__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_parser_gitGraph__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _gitGraphAst__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./gitGraphAst */ "./src/diagrams/git/gitGraphAst.js");
+/* harmony import */ var _parser_gitGraph__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./parser/gitGraph */ "./src/diagrams/git/parser/gitGraph.jison");
+/* harmony import */ var _parser_gitGraph__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_parser_gitGraph__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
+
 
 
 
@@ -19751,183 +20564,331 @@ __webpack_require__.r(__webpack_exports__);
 
 var allCommitsDict = {};
 var branchNum;
-var config = {
-  nodeSpacing: 150,
-  nodeFillColor: 'yellow',
-  nodeStrokeWidth: 2,
-  nodeStrokeColor: 'grey',
-  lineStrokeWidth: 4,
-  branchOffset: 50,
-  lineColor: 'grey',
-  leftMargin: 50,
-  branchColors: ['#442f74', '#983351', '#609732', '#AA9A39'],
-  nodeRadius: 10,
-  nodeLabel: {
-    width: 75,
-    height: 100,
-    x: -25,
-    y: 0
-  }
+var commitType = {
+  NORMAL: 0,
+  REVERSE: 1,
+  HIGHLIGHT: 2,
+  MERGE: 3
 };
-var apiConfig = {};
-var setConf = function setConf(c) {
-  apiConfig = c;
+var branchPos = {};
+var commitPos = {};
+var lanes = [];
+var maxPos = 0;
+
+var clear = function clear() {
+  branchPos = {};
+  commitPos = {};
+  allCommitsDict = {};
+  maxPos = 0;
+  lanes = [];
 };
-/** @param svg */
-
-function svgCreateDefs(svg) {
-  svg.append('defs').append('g').attr('id', 'def-commit').append('circle').attr('r', config.nodeRadius).attr('cx', 0).attr('cy', 0);
-  svg.select('#def-commit').append('foreignObject').attr('width', config.nodeLabel.width).attr('height', config.nodeLabel.height).attr('x', config.nodeLabel.x).attr('y', config.nodeLabel.y).attr('class', 'node-label').attr('requiredFeatures', 'http://www.w3.org/TR/SVG11/feature#Extensibility').append('p').html('');
-}
 /**
- * @param svg
- * @param points
- * @param colorIdx
- * @param interpolate
- */
-
-
-function svgDrawLine(svg, points, colorIdx, interpolate) {
-  var curve = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.interpolateToCurve)(interpolate, d3__WEBPACK_IMPORTED_MODULE_0__.curveBasis);
-  var color = config.branchColors[colorIdx % config.branchColors.length];
-  var lineGen = (0,d3__WEBPACK_IMPORTED_MODULE_0__.line)().x(function (d) {
-    return Math.round(d.x);
-  }).y(function (d) {
-    return Math.round(d.y);
-  }).curve(curve);
-  svg.append('svg:path').attr('d', lineGen(points)).style('stroke', color).style('stroke-width', config.lineStrokeWidth).style('fill', 'none');
-}
-/**
- * Pass in the element and its pre-transform coords
+ * Draws a text, used for labels of the branches
  *
- * @param element
- * @param coords
+ * @param {string} txt The text
+ * @returns {SVGElement}
  */
 
 
-function getElementCoords(element, coords) {
-  coords = coords || element.node().getBBox();
-  var ctm = element.node().getCTM();
-  var xn = ctm.e + coords.x * ctm.a;
-  var yn = ctm.f + coords.y * ctm.d;
-  return {
-    left: xn,
-    top: yn,
-    width: coords.width,
-    height: coords.height
-  };
-}
-/**
- * @param svg
- * @param fromId
- * @param toId
- * @param direction
- * @param color
- */
+var drawText = function drawText(txt) {
+  var svgLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  var rows = []; // Handling of new lines in the label
 
-
-function svgDrawLineForCommits(svg, fromId, toId, direction, color) {
-  _logger__WEBPACK_IMPORTED_MODULE_2__.log.debug('svgDrawLineForCommits: ', fromId, toId);
-  var fromBbox = getElementCoords(svg.select('#node-' + fromId + ' circle'));
-  var toBbox = getElementCoords(svg.select('#node-' + toId + ' circle'));
-
-  switch (direction) {
-    case 'LR':
-      // (toBbox)
-      //  +--------
-      //          + (fromBbox)
-      if (fromBbox.left - toBbox.left > config.nodeSpacing) {
-        var lineStart = {
-          x: fromBbox.left - config.nodeSpacing,
-          y: toBbox.top + toBbox.height / 2
-        };
-        var lineEnd = {
-          x: toBbox.left + toBbox.width,
-          y: toBbox.top + toBbox.height / 2
-        };
-        svgDrawLine(svg, [lineStart, lineEnd], color, 'linear');
-        svgDrawLine(svg, [{
-          x: fromBbox.left,
-          y: fromBbox.top + fromBbox.height / 2
-        }, {
-          x: fromBbox.left - config.nodeSpacing / 2,
-          y: fromBbox.top + fromBbox.height / 2
-        }, {
-          x: fromBbox.left - config.nodeSpacing / 2,
-          y: lineStart.y
-        }, lineStart], color);
-      } else {
-        svgDrawLine(svg, [{
-          x: fromBbox.left,
-          y: fromBbox.top + fromBbox.height / 2
-        }, {
-          x: fromBbox.left - config.nodeSpacing / 2,
-          y: fromBbox.top + fromBbox.height / 2
-        }, {
-          x: fromBbox.left - config.nodeSpacing / 2,
-          y: toBbox.top + toBbox.height / 2
-        }, {
-          x: toBbox.left + toBbox.width,
-          y: toBbox.top + toBbox.height / 2
-        }], color);
-      }
-
-      break;
-
-    case 'BT':
-      //      +           (fromBbox)
-      //      |
-      //      |
-      //              +   (toBbox)
-      if (toBbox.top - fromBbox.top > config.nodeSpacing) {
-        var _lineStart = {
-          x: toBbox.left + toBbox.width / 2,
-          y: fromBbox.top + fromBbox.height + config.nodeSpacing
-        };
-        var _lineEnd = {
-          x: toBbox.left + toBbox.width / 2,
-          y: toBbox.top
-        };
-        svgDrawLine(svg, [_lineStart, _lineEnd], color, 'linear');
-        svgDrawLine(svg, [{
-          x: fromBbox.left + fromBbox.width / 2,
-          y: fromBbox.top + fromBbox.height
-        }, {
-          x: fromBbox.left + fromBbox.width / 2,
-          y: fromBbox.top + fromBbox.height + config.nodeSpacing / 2
-        }, {
-          x: toBbox.left + toBbox.width / 2,
-          y: _lineStart.y - config.nodeSpacing / 2
-        }, _lineStart], color);
-      } else {
-        svgDrawLine(svg, [{
-          x: fromBbox.left + fromBbox.width / 2,
-          y: fromBbox.top + fromBbox.height
-        }, {
-          x: fromBbox.left + fromBbox.width / 2,
-          y: fromBbox.top + config.nodeSpacing / 2
-        }, {
-          x: toBbox.left + toBbox.width / 2,
-          y: toBbox.top - config.nodeSpacing / 2
-        }, {
-          x: toBbox.left + toBbox.width / 2,
-          y: toBbox.top
-        }], color);
-      }
-
-      break;
+  if (typeof txt === 'string') {
+    rows = txt.split(/\\n|\n|<br\s*\/?>/gi);
+  } else if (Array.isArray(txt)) {
+    rows = txt;
+  } else {
+    rows = [];
   }
-}
+
+  for (var j = 0; j < rows.length; j++) {
+    var tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+    tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
+    tspan.setAttribute('dy', '1em');
+    tspan.setAttribute('x', '0');
+    tspan.setAttribute('class', 'row');
+    tspan.textContent = rows[j].trim();
+    svgLabel.appendChild(tspan);
+  }
+  /**
+   * @param svg
+   * @param selector
+   */
+
+
+  return svgLabel;
+};
 /**
- * @param svg
- * @param selector
+ * Draws the commits with its symbol and labels. The function has tywo modes, one which only
+ * calculates the positions and one that does the actual drawing. This for a simple way getting the
+ * vertical leyering rcorrect in the graph.
+ *
+ * @param {any} svg
+ * @param {any} commits
+ * @param {any} modifyGraph
  */
 
 
-function cloneNode(svg, selector) {
-  return svg.select(selector).node().cloneNode(true);
-}
+var drawCommits = function drawCommits(svg, commits, modifyGraph) {
+  var gitGraphConfig = (0,_config__WEBPACK_IMPORTED_MODULE_1__.getConfig)().gitGraph;
+  var gBullets = svg.append('g').attr('class', 'commit-bullets');
+  var gLabels = svg.append('g').attr('class', 'commit-labels');
+  var pos = 0;
+  var keys = Object.keys(commits);
+  var sortedKeys = keys.sort(function (a, b) {
+    return commits[a].seq - commits[b].seq;
+  });
+  sortedKeys.forEach(function (key, index) {
+    var commit = commits[key];
+    var y = branchPos[commit.branch].pos;
+    var x = pos + 10; // Don't draw the commits now but calculate the positioning which is used by the branch lines etc.
+
+    if (modifyGraph) {
+      var typeClass;
+
+      switch (commit.type) {
+        case commitType.NORMAL:
+          typeClass = 'commit-normal';
+          break;
+
+        case commitType.REVERSE:
+          typeClass = 'commit-reverse';
+          break;
+
+        case commitType.HIGHLIGHT:
+          typeClass = 'commit-highlight';
+          break;
+
+        case commitType.MERGE:
+          typeClass = 'commit-merge';
+          break;
+
+        default:
+          typeClass = 'commit-normal';
+      }
+
+      if (commit.type === commitType.HIGHLIGHT) {
+        var circle = gBullets.append('rect');
+        circle.attr('x', x - 10);
+        circle.attr('y', y - 10);
+        circle.attr('height', 20);
+        circle.attr('width', 20);
+        circle.attr('class', 'commit ' + commit.id + ' commit-highlight' + branchPos[commit.branch].index + ' ' + typeClass + '-outer');
+        gBullets.append('rect').attr('x', x - 6).attr('y', y - 6).attr('height', 12).attr('width', 12).attr('class', 'commit ' + commit.id + ' commit' + branchPos[commit.branch].index + ' ' + typeClass + '-inner');
+      } else {
+        var _circle = gBullets.append('circle');
+
+        _circle.attr('cx', x);
+
+        _circle.attr('cy', y);
+
+        _circle.attr('r', commit.type === commitType.MERGE ? 9 : 10);
+
+        _circle.attr('class', 'commit ' + commit.id + ' commit' + branchPos[commit.branch].index);
+
+        if (commit.type === commitType.MERGE) {
+          var circle2 = gBullets.append('circle');
+          circle2.attr('cx', x);
+          circle2.attr('cy', y);
+          circle2.attr('r', 6);
+          circle2.attr('class', 'commit ' + typeClass + ' ' + commit.id + ' commit' + branchPos[commit.branch].index);
+        }
+
+        if (commit.type === commitType.REVERSE) {
+          var cross = gBullets.append('path');
+          cross.attr('d', "M ".concat(x - 5, ",").concat(y - 5, "L").concat(x + 5, ",").concat(y + 5, "M").concat(x - 5, ",").concat(y + 5, "L").concat(x + 5, ",").concat(y - 5)).attr('class', 'commit ' + typeClass + ' ' + commit.id + ' commit' + branchPos[commit.branch].index);
+        }
+      }
+    }
+
+    commitPos[commit.id] = {
+      x: pos + 10,
+      y: y
+    }; // The first iteration over the commits are for positioning purposes, this
+    // is required for drawing the lines. The circles and labels is drawn after the labels
+    // placing them on top of the lines.
+
+    if (modifyGraph) {
+      var px = 4;
+      var py = 2; // Draw the commit label
+
+      if (commit.type !== commitType.MERGE && gitGraphConfig.showCommitLabel) {
+        var labelBkg = gLabels.insert('rect').attr('class', 'commit-label-bkg');
+        var text = gLabels.append('text').attr('x', pos).attr('y', y + 25).attr('class', 'commit-label').text(commit.id);
+        var bbox = text.node().getBBox(); // Now we have the label, lets position the background
+
+        labelBkg.attr('x', pos + 10 - bbox.width / 2 - py).attr('y', y + 13.5).attr('width', bbox.width + 2 * py).attr('height', bbox.height + 2 * py);
+        text.attr('x', pos + 10 - bbox.width / 2);
+      }
+
+      if (commit.tag) {
+        var rect = gLabels.insert('polygon');
+        var hole = gLabels.append('circle');
+        var tag = gLabels.append('text') // Note that we are delaying setting the x position until we know the width of the text
+        .attr('y', y - 16).attr('class', 'tag-label').text(commit.tag);
+        var tagBbox = tag.node().getBBox();
+        tag.attr('x', pos + 10 - tagBbox.width / 2);
+        var h2 = tagBbox.height / 2;
+        var ly = y - 19.2;
+        rect.attr('class', 'tag-label-bkg').attr('points', "\n          ".concat(pos - tagBbox.width / 2 - px / 2, ",").concat(ly + py, "\n          ").concat(pos - tagBbox.width / 2 - px / 2, ",").concat(ly - py, "\n          ").concat(pos + 10 - tagBbox.width / 2 - px, ",").concat(ly - h2 - py, "\n          ").concat(pos + 10 + tagBbox.width / 2 + px, ",").concat(ly - h2 - py, "\n          ").concat(pos + 10 + tagBbox.width / 2 + px, ",").concat(ly + h2 + py, "\n          ").concat(pos + 10 - tagBbox.width / 2 - px, ",").concat(ly + h2 + py));
+        hole.attr('cx', pos - tagBbox.width / 2 + px / 2).attr('cy', ly).attr('r', 1.5).attr('class', 'tag-hole');
+      }
+    }
+
+    pos += 50;
+
+    if (pos > maxPos) {
+      maxPos = pos;
+    }
+  });
+};
 /**
+ * Detect if there are other commits between commit1s x-position and commit2s x-position on the same
+ * branch as commit2.
+ *
+ * @param {any} commit1
+ * @param {any} commit2
+ * @param allCommits
+ * @returns
+ */
+
+
+var hasOverlappingCommits = function hasOverlappingCommits(commit1, commit2, allCommits) {
+  var commit1Pos = commitPos[commit2.id];
+  var commit2Pos = commitPos[commit1.id]; // Find commits on the same branch as commit2
+
+  var keys = Object.keys(allCommits);
+  var overlappingComits = keys.filter(function (key) {
+    return allCommits[key].branch === commit2.branch && allCommits[key].seq > commit1.seq && allCommits[key].seq < commit2.seq;
+  });
+  return overlappingComits.length > 0;
+};
+/**
+ * This function find a lane in the y-axis that is not overlapping with any other lanes. This is
+ * used for drawing the lines between commits.
+ *
+ * @param {any} y1
+ * @param {any} y2
+ * @param {any} _depth
+ * @returns
+ */
+
+
+var findLane = function findLane(y1, y2, _depth) {
+  var depth = _depth || 0;
+  var candidate = y1 + Math.abs(y1 - y2) / 2;
+
+  if (depth > 5) {
+    return candidate;
+  }
+
+  var ok = true;
+
+  for (var i = 0; i < lanes.length; i++) {
+    if (Math.abs(lanes[i] - candidate) < 10) {
+      ok = false;
+    }
+  }
+
+  if (ok) {
+    lanes.push(candidate);
+    return candidate;
+  }
+
+  var diff = Math.abs(y1 - y2);
+  return findLane(y1, y2 - diff / 5, depth);
+};
+/**
+ * This function draw trhe lines between the commits. They were arrows initially.
+ *
+ * @param {any} svg
+ * @param {any} commit1
+ * @param {any} commit2
+ * @param {any} allCommits
+ */
+
+
+var drawArrow = function drawArrow(svg, commit1, commit2, allCommits) {
+  var conf = (0,_config__WEBPACK_IMPORTED_MODULE_1__.getConfig)();
+  var p1 = commitPos[commit1.id];
+  var p2 = commitPos[commit2.id];
+  var overlappingCommits = hasOverlappingCommits(commit1, commit2, allCommits); // log.debug('drawArrow', p1, p2, overlappingCommits, commit1.id, commit2.id);
+
+  var url = '';
+
+  if (conf.arrowMarkerAbsolute) {
+    url = window.location.protocol + '//' + window.location.host + window.location.pathname + window.location.search;
+    url = url.replace(/\(/g, '\\(');
+    url = url.replace(/\)/g, '\\)');
+  }
+
+  var arc = '';
+  var arc2 = '';
+  var radius = 0;
+  var offset = 0;
+  var colorClassNum = branchPos[commit2.branch].index;
+  var lineDef;
+
+  if (overlappingCommits) {
+    arc = 'A 10 10, 0, 0, 0,';
+    arc2 = 'A 10 10, 0, 0, 1,';
+    radius = 10;
+    offset = 10; // Figure out the color of the arrow,arrows going down take the color from the destination branch
+
+    colorClassNum = branchPos[commit2.branch].index;
+    var lineY = p1.y < p2.y ? findLane(p1.y, p2.y) : findLane(p2.y, p1.y);
+
+    if (p1.y < p2.y) {
+      lineDef = "M ".concat(p1.x, " ").concat(p1.y, " L ").concat(p1.x, " ").concat(lineY - radius, " ").concat(arc, " ").concat(p1.x + offset, " ").concat(lineY, " L ").concat(p2.x - radius, " ").concat(lineY, " ").concat(arc2, " ").concat(p2.x, " ").concat(lineY + offset, " L ").concat(p2.x, " ").concat(p2.y);
+    } else {
+      lineDef = "M ".concat(p1.x, " ").concat(p1.y, " L ").concat(p1.x, " ").concat(lineY + radius, " ").concat(arc2, " ").concat(p1.x + offset, " ").concat(lineY, " L ").concat(p2.x - radius, " ").concat(lineY, " ").concat(arc, " ").concat(p2.x, " ").concat(lineY - offset, " L ").concat(p2.x, " ").concat(p2.y);
+    }
+  } else {
+    if (p1.y < p2.y) {
+      arc = 'A 20 20, 0, 0, 0,';
+      radius = 20;
+      offset = 20; // Figure out the color of the arrow,arrows going down take the color from the destination branch
+
+      colorClassNum = branchPos[commit2.branch].index;
+      lineDef = "M ".concat(p1.x, " ").concat(p1.y, " L ").concat(p1.x, " ").concat(p2.y - radius, " ").concat(arc, " ").concat(p1.x + offset, " ").concat(p2.y, " L ").concat(p2.x, " ").concat(p2.y);
+    }
+
+    if (p1.y > p2.y) {
+      arc = 'A 20 20, 0, 0, 0,';
+      radius = 20;
+      offset = 20; // Arrows going up take the color from the source branch
+
+      colorClassNum = branchPos[commit1.branch].index;
+      lineDef = "M ".concat(p1.x, " ").concat(p1.y, " L ").concat(p2.x - radius, " ").concat(p1.y, " ").concat(arc, " ").concat(p2.x, " ").concat(p1.y - offset, " L ").concat(p2.x, " ").concat(p2.y);
+    }
+
+    if (p1.y === p2.y) {
+      colorClassNum = branchPos[commit1.branch].index;
+      lineDef = "M ".concat(p1.x, " ").concat(p1.y, " L ").concat(p1.x, " ").concat(p2.y - radius, " ").concat(arc, " ").concat(p1.x + offset, " ").concat(p2.y, " L ").concat(p2.x, " ").concat(p2.y);
+    }
+  }
+
+  var arrow = svg.append('path').attr('d', lineDef).attr('class', 'arrow arrow' + colorClassNum);
+};
+
+var drawArrows = function drawArrows(svg, commits) {
+  var gArrows = svg.append('g').attr('class', 'commit-arrows');
+  var pos = 0;
+  var k = Object.keys(commits);
+  k.forEach(function (key, index) {
+    var commit = commits[key];
+
+    if (commit.parents && commit.parents.length > 0) {
+      commit.parents.forEach(function (parent) {
+        drawArrow(gArrows, commits[parent], commit, commits);
+      });
+    }
+  });
+};
+/**
+ * This function adds the branches and the branches' labels to the svg.
+ *
  * @param svg
  * @param commitid
  * @param branches
@@ -19935,148 +20896,87 @@ function cloneNode(svg, selector) {
  */
 
 
-function renderCommitHistory(svg, commitid, branches, direction) {
-  var commit;
-  var numCommits = Object.keys(allCommitsDict).length;
+var drawBranches = function drawBranches(svg, branches) {
+  var gitGraphConfig = (0,_config__WEBPACK_IMPORTED_MODULE_1__.getConfig)().gitGraph;
+  var g = svg.append('g');
+  branches.forEach(function (branch, index) {
+    var pos = branchPos[branch.name].pos;
+    var line = g.append('line');
+    line.attr('x1', 0);
+    line.attr('y1', pos);
+    line.attr('x2', maxPos);
+    line.attr('y2', pos);
+    line.attr('class', 'branch branch' + index);
+    lanes.push(pos);
+    var name = branch.name; // Create the actual text element
 
-  if (typeof commitid === 'string') {
-    var cnt = 0;
+    var labelElement = drawText(name); // Create outer g, edgeLabel, this will be positioned after graph layout
 
-    do {
-      cnt++;
-      commit = allCommitsDict[commitid];
-      _logger__WEBPACK_IMPORTED_MODULE_2__.log.debug('in renderCommitHistory', commit.id, commit.seq);
+    var bkg = g.insert('rect');
+    var branchLabel = g.insert('g').attr('class', 'branchLabel'); // Create inner g, label, this will be positioned now for centering the text
 
-      if (svg.select('#node-' + commitid).size() > 0) {
-        return;
-      }
-
-      svg.append(function () {
-        return cloneNode(svg, '#def-commit');
-      }).attr('class', 'commit').attr('id', function () {
-        return 'node-' + commit.id;
-      }).attr('transform', function () {
-        switch (direction) {
-          case 'LR':
-            return 'translate(' + (commit.seq * config.nodeSpacing + config.leftMargin) + ', ' + branchNum * config.branchOffset + ')';
-
-          case 'BT':
-            return 'translate(' + (branchNum * config.branchOffset + config.leftMargin) + ', ' + (numCommits - commit.seq) * config.nodeSpacing + ')';
-        }
-      }).attr('fill', config.nodeFillColor).attr('stroke', config.nodeStrokeColor).attr('stroke-width', config.nodeStrokeWidth);
-      var branch = void 0;
-
-      for (var branchName in branches) {
-        if (branches[branchName].commit === commit) {
-          branch = branches[branchName];
-          break;
-        }
-      }
-
-      if (branch) {
-        _logger__WEBPACK_IMPORTED_MODULE_2__.log.debug('found branch ', branch.name);
-        svg.select('#node-' + commit.id + ' p').append('xhtml:span').attr('class', 'branch-label').text(branch.name + ', ');
-      }
-
-      svg.select('#node-' + commit.id + ' p').append('xhtml:span').attr('class', 'commit-id').text(commit.id);
-
-      if (commit.message !== '' && direction === 'BT') {
-        svg.select('#node-' + commit.id + ' p').append('xhtml:span').attr('class', 'commit-msg').text(', ' + commit.message);
-      }
-
-      commitid = commit.parent;
-    } while (commitid && allCommitsDict[commitid] && cnt < 1000);
-  }
-
-  if (Array.isArray(commitid)) {
-    _logger__WEBPACK_IMPORTED_MODULE_2__.log.debug('found merge commmit', commitid);
-    renderCommitHistory(svg, commitid[0], branches, direction);
-    branchNum++;
-    renderCommitHistory(svg, commitid[1], branches, direction);
-    branchNum--;
-  }
-}
+    var label = branchLabel.insert('g').attr('class', 'label branch-label' + index);
+    label.node().appendChild(labelElement);
+    var bbox = labelElement.getBBox();
+    bkg.attr('class', 'branchLabelBkg label' + index).attr('rx', 4).attr('ry', 4).attr('x', -bbox.width - 4).attr('y', -bbox.height / 2 + 8).attr('width', bbox.width + 18).attr('height', bbox.height + 4);
+    label.attr('transform', 'translate(' + (-bbox.width - 14) + ', ' + (pos - bbox.height / 2 - 1) + ')');
+    bkg.attr('transform', 'translate(' + -19 + ', ' + (pos - bbox.height / 2) + ')');
+  });
+};
 /**
  * @param svg
  * @param commit
  * @param direction
  * @param branchColor
+ * @param txt
+ * @param id
+ * @param ver
  */
 
 
-function renderLines(svg, commit, direction, branchColor) {
-  branchColor = branchColor || 0;
-  var cnt = 0;
-
-  while (commit.seq > 0 && !commit.lineDrawn && cnt < 1000) {
-    cnt++;
-
-    if (typeof commit.parent === 'string') {
-      svgDrawLineForCommits(svg, commit.id, commit.parent, direction, branchColor);
-      commit.lineDrawn = true;
-      commit = allCommitsDict[commit.parent];
-    } else if (Array.isArray(commit.parent)) {
-      svgDrawLineForCommits(svg, commit.id, commit.parent[0], direction, branchColor);
-      svgDrawLineForCommits(svg, commit.id, commit.parent[1], direction, branchColor + 1);
-      renderLines(svg, allCommitsDict[commit.parent[1]], direction, branchColor + 1);
-      commit.lineDrawn = true;
-      commit = allCommitsDict[commit.parent[0]];
-    }
-  }
-}
-
 var draw = function draw(txt, id, ver) {
-  try {
-    var parser = (_parser_gitGraph__WEBPACK_IMPORTED_MODULE_3___default().parser);
-    parser.yy = _gitGraphAst__WEBPACK_IMPORTED_MODULE_4__["default"];
-    parser.yy.clear();
-    var securityLevel = (0,_config__WEBPACK_IMPORTED_MODULE_5__.getConfig)().securityLevel; // Handle root and ocument for when rendering in sanbox mode
+  clear();
+  var conf = (0,_config__WEBPACK_IMPORTED_MODULE_1__.getConfig)();
+  var gitGraphConfig = (0,_config__WEBPACK_IMPORTED_MODULE_1__.getConfig)().gitGraph; // try {
 
-    var sandboxElement;
+  var parser = (_parser_gitGraph__WEBPACK_IMPORTED_MODULE_2___default().parser);
+  parser.yy = _gitGraphAst__WEBPACK_IMPORTED_MODULE_3__["default"];
+  parser.yy.clear();
+  _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('in gitgraph renderer', txt + '\n', 'id:', id, ver); // // Parse the graph definition
 
-    if (securityLevel === 'sandbox') {
-      sandboxElement = (0,d3__WEBPACK_IMPORTED_MODULE_0__.select)('#i' + id);
-    }
+  parser.parse(txt + '\n');
+  var direction = _gitGraphAst__WEBPACK_IMPORTED_MODULE_3__["default"].getDirection();
+  allCommitsDict = _gitGraphAst__WEBPACK_IMPORTED_MODULE_3__["default"].getCommits();
+  var branches = _gitGraphAst__WEBPACK_IMPORTED_MODULE_3__["default"].getBranchesAsObjArray(); // Position branches vertically
 
-    var root = securityLevel === 'sandbox' ? (0,d3__WEBPACK_IMPORTED_MODULE_0__.select)(sandboxElement.nodes()[0].contentDocument.body) : (0,d3__WEBPACK_IMPORTED_MODULE_0__.select)('body');
-    var doc = securityLevel === 'sandbox' ? sandboxElement.nodes()[0].contentDocument : document;
-    _logger__WEBPACK_IMPORTED_MODULE_2__.log.debug('in gitgraph renderer', txt + '\n', 'id:', id, ver); // Parse the graph definition
+  var pos = 0;
+  branches.forEach(function (branch, index) {
+    branchPos[branch.name] = {
+      pos: pos,
+      index: index
+    };
+    pos += 50;
+  });
+  var diagram = (0,d3__WEBPACK_IMPORTED_MODULE_0__.select)("[id=\"".concat(id, "\"]")); // Adds title and description to the flow chart
 
-    parser.parse(txt + '\n');
-    config = Object.assign(config, apiConfig, _gitGraphAst__WEBPACK_IMPORTED_MODULE_4__["default"].getOptions());
-    _logger__WEBPACK_IMPORTED_MODULE_2__.log.debug('effective options', config);
-    var direction = _gitGraphAst__WEBPACK_IMPORTED_MODULE_4__["default"].getDirection();
-    allCommitsDict = _gitGraphAst__WEBPACK_IMPORTED_MODULE_4__["default"].getCommits();
-    var branches = _gitGraphAst__WEBPACK_IMPORTED_MODULE_4__["default"].getBranchesAsObjArray();
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_5__["default"])(parser.yy, diagram, id);
+  drawCommits(diagram, allCommitsDict, false);
 
-    if (direction === 'BT') {
-      config.nodeLabel.x = branches.length * config.branchOffset;
-      config.nodeLabel.width = '100%';
-      config.nodeLabel.y = -1 * 2 * config.nodeRadius;
-    }
-
-    var svg = root.select("[id=\"".concat(id, "\"]"));
-    svgCreateDefs(svg);
-    branchNum = 1;
-
-    for (var branch in branches) {
-      var v = branches[branch];
-      renderCommitHistory(svg, v.commit.id, branches, direction);
-      renderLines(svg, v.commit, direction);
-      branchNum++;
-    }
-
-    svg.attr('height', function () {
-      if (direction === 'BT') return Object.keys(allCommitsDict).length * config.nodeSpacing;
-      return (branches.length + 1) * config.branchOffset;
-    });
-  } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_2__.log.error('Error while rendering gitgraph');
-    _logger__WEBPACK_IMPORTED_MODULE_2__.log.error(e.message);
+  if (gitGraphConfig.showBranches) {
+    drawBranches(diagram, branches);
   }
+
+  drawArrows(diagram, allCommitsDict);
+  drawCommits(diagram, allCommitsDict, true);
+  var padding = gitGraphConfig.diagramPadding;
+  var svgBounds = diagram.node().getBBox();
+  var width = svgBounds.width + padding * 2;
+  var height = svgBounds.height + padding * 2;
+  (0,_utils__WEBPACK_IMPORTED_MODULE_6__.configureSvgSize)(diagram, height, width, conf.useMaxWidth);
+  var vBox = "".concat(svgBounds.x - padding, " ").concat(svgBounds.y - padding, " ").concat(width, " ").concat(height);
+  diagram.attr('viewBox', vBox);
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  setConf: setConf,
   draw: draw
 });
 
@@ -20093,8 +20993,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-var getStyles = function getStyles() {
-  return "\n  .commit-id,\n  .commit-msg,\n  .branch-label {\n    fill: lightgrey;\n    color: lightgrey;\n    font-family: 'trebuchet ms', verdana, arial, sans-serif;\n    font-family: var(--mermaid-font-family);\n  }\n";
+var getStyles = function getStyles(options) {
+  return "\n  .commit-id,\n  .commit-msg,\n  .branch-label {\n    fill: lightgrey;\n    color: lightgrey;\n    font-family: 'trebuchet ms', verdana, arial, sans-serif;\n    font-family: var(--mermaid-font-family);\n  }\n  ".concat([0, 1, 2, 3, 4, 5, 6, 7].map(function (i) {
+    return "\n        .branch-label".concat(i, " { fill: ").concat(options['gitBranchLabel' + i], "; }\n        .commit").concat(i, " { stroke: ").concat(options['git' + i], "; fill: ").concat(options['git' + i], "; }\n        .commit-highlight").concat(i, " { stroke: ").concat(options['gitInv' + i], "; fill: ").concat(options['gitInv' + i], "; }\n        .label").concat(i, "  { fill: ").concat(options['git' + i], "; }\n        .arrow").concat(i, " { stroke: ").concat(options['git' + i], "; }\n        ");
+  }).join('\n'), "\n\n  .branch {\n    stroke-width: 1;\n    stroke: ").concat(options.lineColor, ";\n    stroke-dasharray: 2;\n  }\n  .commit-label { font-size: 10px; fill: ").concat(options.commitLabelColor, ";}\n  .commit-label-bkg { font-size: 10px; fill: ").concat(options.commitLabelBackground, "; opacity: 0.5; }\n  .tag-label { font-size: 10px; fill: ").concat(options.tagLabelColor, ";}\n  .tag-label-bkg { fill: ").concat(options.tagLabelBackground, "; stroke: ").concat(options.tagLabelBorder, "; }\n  .tag-hole { fill: ").concat(options.textColor, "; }\n\n  .commit-merge {\n    stroke: ").concat(options.primaryColor, ";\n    fill: ").concat(options.primaryColor, ";\n  }\n  .commit-reverse {\n    stroke: ").concat(options.primaryColor, ";\n    fill: ").concat(options.primaryColor, ";\n    stroke-width: 3;\n  }\n  .commit-highlight-outer {\n  }\n  .commit-highlight-inner {\n    stroke: ").concat(options.primaryColor, ";\n    fill: ").concat(options.primaryColor, ";\n  }\n\n  .arrow { stroke-width: 8; stroke-linecap: round; fill: none}\n  }\n");
 };
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (getStyles);
@@ -20110,11 +21012,11 @@ var getStyles = function getStyles() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setMessage": () => (/* binding */ setMessage),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "getInfo": () => (/* binding */ getInfo),
 /* harmony export */   "getMessage": () => (/* binding */ getMessage),
 /* harmony export */   "setInfo": () => (/* binding */ setInfo),
-/* harmony export */   "getInfo": () => (/* binding */ getInfo),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setMessage": () => (/* binding */ setMessage)
 /* harmony export */ });
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 /** Created by knut on 15-01-14. */
@@ -20156,9 +21058,9 @@ var getInfo = function getInfo() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -20253,35 +21155,40 @@ var getStyles = function getStyles() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "getPieTitle": () => (/* binding */ getPieTitle),
 /* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setPieTitle": () => (/* binding */ setPieTitle)
 /* harmony export */ });
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 /* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _commonDb__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../commonDb */ "./src/commonDb.js");
+
+
 
 
 
 var sections = {};
 var title = '';
+var description = '';
 var showData = false;
 var parseDirective = function parseDirective(statement, context, type) {
   _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].parseDirective(this, statement, context, type);
 };
 
 var addSection = function addSection(id, value) {
+  id = _common_common__WEBPACK_IMPORTED_MODULE_1__["default"].sanitizeText(id, _config__WEBPACK_IMPORTED_MODULE_2__.getConfig());
+
   if (typeof sections[id] === 'undefined') {
     sections[id] = value;
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('Added new section :', id);
+    _logger__WEBPACK_IMPORTED_MODULE_3__.log.debug('Added new section :', id);
   }
 };
 
 var getSections = function getSections() {
   return sections;
-};
-
-var setTitle = function setTitle(txt) {
-  title = txt;
 };
 
 var setShowData = function setShowData(toggle) {
@@ -20290,10 +21197,6 @@ var setShowData = function setShowData(toggle) {
 
 var getShowData = function getShowData() {
   return showData;
-};
-
-var getTitle = function getTitle() {
-  return title;
 };
 
 var cleanupValue = function cleanupValue(value) {
@@ -20309,11 +21212,16 @@ var clear = function clear() {
   sections = {};
   title = '';
   showData = false;
-}; // export const parseError = (err, hash) => {
-//   global.mermaidAPI.parseError(err, hash)
-// }
+  (0,_commonDb__WEBPACK_IMPORTED_MODULE_4__.clear)();
+};
 
-
+var setPieTitle = function setPieTitle(txt) {
+  var sanitizedText = _common_common__WEBPACK_IMPORTED_MODULE_1__["default"].sanitizeText(txt, _config__WEBPACK_IMPORTED_MODULE_2__.getConfig());
+  title = sanitizedText;
+};
+var getPieTitle = function getPieTitle() {
+  return title;
+};
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   parseDirective: parseDirective,
   getConfig: function getConfig() {
@@ -20323,11 +21231,14 @@ var clear = function clear() {
   getSections: getSections,
   cleanupValue: cleanupValue,
   clear: clear,
-  setTitle: setTitle,
-  getTitle: getTitle,
+  setTitle: _commonDb__WEBPACK_IMPORTED_MODULE_4__.setTitle,
+  getTitle: _commonDb__WEBPACK_IMPORTED_MODULE_4__.getTitle,
+  setPieTitle: setPieTitle,
+  getPieTitle: getPieTitle,
   setShowData: setShowData,
-  getShowData: getShowData // parseError
-
+  getShowData: getShowData,
+  getAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_4__.getAccDescription,
+  setAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_4__.setAccDescription
 });
 
 /***/ }),
@@ -20341,8 +21252,8 @@ var clear = function clear() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "draw": () => (/* binding */ draw)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -20352,7 +21263,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
 /** Created by AshishJ on 11-09-2019. */
+
 
 
 
@@ -20405,7 +21318,8 @@ var draw = function draw(txt, id) {
     }
 
     var diagram = root.select('#' + id);
-    (0,_utils__WEBPACK_IMPORTED_MODULE_5__.configureSvgSize)(diagram, height, width, conf.pie.useMaxWidth); // Set viewBox
+    (0,_utils__WEBPACK_IMPORTED_MODULE_5__.configureSvgSize)(diagram, height, width, conf.pie.useMaxWidth);
+    (0,_accessibility__WEBPACK_IMPORTED_MODULE_6__["default"])(parser.yy, diagram, id); // Set viewBox
 
     elem.setAttribute('viewBox', '0 0 ' + width + ' ' + height); // Fetch the default direction, use TD if none was found
 
@@ -20441,7 +21355,7 @@ var draw = function draw(txt, id) {
     }).attr('transform', function (d) {
       return 'translate(' + arcGenerator.centroid(d) + ')';
     }).style('text-anchor', 'middle').attr('class', 'slice');
-    svg.append('text').text(parser.yy.getTitle()).attr('x', 0).attr('y', -(height - 50) / 2).attr('class', 'pieTitleText'); // Add the legends/annotations for each section
+    svg.append('text').text(parser.yy.getPieTitle()).attr('x', 0).attr('y', -(height - 50) / 2).attr('class', 'pieTitleText'); // Add the legends/annotations for each section
 
     var legend = svg.selectAll('.legend').data(color.domain()).enter().append('g').attr('class', 'legend').attr('transform', function (d, i) {
       var height = legendRectSize + legendSpacing;
@@ -20497,12 +21411,16 @@ var getStyles = function getStyles(options) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "parseDirective": () => (/* binding */ parseDirective)
 /* harmony export */ });
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../config */ "./src/config.js");
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
-/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _commonDb__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../commonDb */ "./src/commonDb.js");
+
+
 
 
 
@@ -20511,6 +21429,13 @@ var latestRequirement = {};
 var requirements = {};
 var latestElement = {};
 var elements = {};
+var title = '';
+var accDescription = '';
+
+var sanitizeText = function sanitizeText(txt) {
+  return _common_common__WEBPACK_IMPORTED_MODULE_0__["default"].sanitizeText(txt, _config__WEBPACK_IMPORTED_MODULE_1__.getConfig());
+};
+
 var RequirementType = {
   REQUIREMENT: 'Requirement',
   FUNCTIONAL_REQUIREMENT: 'Functional Requirement',
@@ -20540,7 +21465,7 @@ var Relationships = {
   TRACES: 'traces'
 };
 var parseDirective = function parseDirective(statement, context, type) {
-  _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].parseDirective(this, statement, context, type);
+  _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__["default"].parseDirective(this, statement, context, type);
 };
 
 var addRequirement = function addRequirement(name, type) {
@@ -20594,7 +21519,7 @@ var addElement = function addElement(name) {
       type: latestElement.type,
       docRef: latestElement.docRef
     };
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.info('Added new requirement: ', name);
+    _logger__WEBPACK_IMPORTED_MODULE_3__.log.info('Added new requirement: ', name);
   }
 
   latestElement = {};
@@ -20635,6 +21560,7 @@ var clear = function clear() {
   requirements = {};
   latestElement = {};
   elements = {};
+  (0,_commonDb__WEBPACK_IMPORTED_MODULE_4__.clear)();
 };
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
@@ -20644,7 +21570,7 @@ var clear = function clear() {
   Relationships: Relationships,
   parseDirective: parseDirective,
   getConfig: function getConfig() {
-    return _config__WEBPACK_IMPORTED_MODULE_2__.getConfig().req;
+    return _config__WEBPACK_IMPORTED_MODULE_1__.getConfig().req;
   },
   addRequirement: addRequirement,
   getRequirements: getRequirements,
@@ -20652,6 +21578,10 @@ var clear = function clear() {
   setNewReqText: setNewReqText,
   setNewReqRisk: setNewReqRisk,
   setNewReqVerifyMethod: setNewReqVerifyMethod,
+  setTitle: _commonDb__WEBPACK_IMPORTED_MODULE_4__.setTitle,
+  getTitle: _commonDb__WEBPACK_IMPORTED_MODULE_4__.getTitle,
+  setAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_4__.setAccDescription,
+  getAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_4__.getAccDescription,
   addElement: addElement,
   getElements: getElements,
   setNewElementType: setNewElementType,
@@ -20707,11 +21637,11 @@ var insertLineEndings = function insertLineEndings(parentNode, conf) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
-/* harmony export */   "drawReqs": () => (/* binding */ drawReqs),
-/* harmony export */   "drawElements": () => (/* binding */ drawElements),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "drawElements": () => (/* binding */ drawElements),
+/* harmony export */   "drawReqs": () => (/* binding */ drawReqs),
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -20727,9 +21657,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _requirementDb__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./requirementDb */ "./src/diagrams/requirement/requirementDb.js");
 /* harmony import */ var _requirementMarkers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./requirementMarkers */ "./src/diagrams/requirement/requirementMarkers.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
 
 
  // import * as configApi from '../../config';
+
 
 
 
@@ -20974,7 +21906,9 @@ var draw = function draw(text, id) {
   var width = svgBounds.width + padding * 2;
   var height = svgBounds.height + padding * 2;
   (0,_utils__WEBPACK_IMPORTED_MODULE_9__.configureSvgSize)(svg, height, width, conf.useMaxWidth);
-  svg.attr('viewBox', "".concat(svgBounds.x - padding, " ").concat(svgBounds.y - padding, " ").concat(width, " ").concat(height));
+  svg.attr('viewBox', "".concat(svgBounds.x - padding, " ").concat(svgBounds.y - padding, " ").concat(width, " ").concat(height)); // Adds title and description to the requirements diagram
+
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_10__["default"])(_parser_requirementDiagram__WEBPACK_IMPORTED_MODULE_7__.parser.yy, svg, id);
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   setConf: setConf,
@@ -21012,39 +21946,41 @@ var getStyles = function getStyles(options) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
+/* harmony export */   "ARROWTYPE": () => (/* binding */ ARROWTYPE),
+/* harmony export */   "LINETYPE": () => (/* binding */ LINETYPE),
+/* harmony export */   "PLACEMENT": () => (/* binding */ PLACEMENT),
+/* harmony export */   "addALink": () => (/* binding */ addALink),
 /* harmony export */   "addActor": () => (/* binding */ addActor),
+/* harmony export */   "addDetails": () => (/* binding */ addDetails),
+/* harmony export */   "addLinks": () => (/* binding */ addLinks),
 /* harmony export */   "addMessage": () => (/* binding */ addMessage),
+/* harmony export */   "addNote": () => (/* binding */ addNote),
+/* harmony export */   "addProperties": () => (/* binding */ addProperties),
 /* harmony export */   "addSignal": () => (/* binding */ addSignal),
-/* harmony export */   "getMessages": () => (/* binding */ getMessages),
-/* harmony export */   "getActors": () => (/* binding */ getActors),
-/* harmony export */   "getActor": () => (/* binding */ getActor),
-/* harmony export */   "getActorKeys": () => (/* binding */ getActorKeys),
-/* harmony export */   "getTitle": () => (/* binding */ getTitle),
-/* harmony export */   "getTitleWrapped": () => (/* binding */ getTitleWrapped),
-/* harmony export */   "enableSequenceNumbers": () => (/* binding */ enableSequenceNumbers),
-/* harmony export */   "showSequenceNumbers": () => (/* binding */ showSequenceNumbers),
-/* harmony export */   "setWrap": () => (/* binding */ setWrap),
+/* harmony export */   "apply": () => (/* binding */ apply),
 /* harmony export */   "autoWrap": () => (/* binding */ autoWrap),
 /* harmony export */   "clear": () => (/* binding */ clear),
-/* harmony export */   "parseMessage": () => (/* binding */ parseMessage),
-/* harmony export */   "LINETYPE": () => (/* binding */ LINETYPE),
-/* harmony export */   "ARROWTYPE": () => (/* binding */ ARROWTYPE),
-/* harmony export */   "PLACEMENT": () => (/* binding */ PLACEMENT),
-/* harmony export */   "addNote": () => (/* binding */ addNote),
-/* harmony export */   "addLinks": () => (/* binding */ addLinks),
-/* harmony export */   "addALink": () => (/* binding */ addALink),
-/* harmony export */   "addProperties": () => (/* binding */ addProperties),
-/* harmony export */   "addDetails": () => (/* binding */ addDetails),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "disableSequenceNumbers": () => (/* binding */ disableSequenceNumbers),
+/* harmony export */   "enableSequenceNumbers": () => (/* binding */ enableSequenceNumbers),
+/* harmony export */   "getActor": () => (/* binding */ getActor),
+/* harmony export */   "getActorKeys": () => (/* binding */ getActorKeys),
 /* harmony export */   "getActorProperty": () => (/* binding */ getActorProperty),
-/* harmony export */   "setTitle": () => (/* binding */ setTitle),
-/* harmony export */   "apply": () => (/* binding */ apply),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "getActors": () => (/* binding */ getActors),
+/* harmony export */   "getDiagramTitle": () => (/* binding */ getDiagramTitle),
+/* harmony export */   "getMessages": () => (/* binding */ getMessages),
+/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
+/* harmony export */   "parseMessage": () => (/* binding */ parseMessage),
+/* harmony export */   "setDiagramTitle": () => (/* binding */ setDiagramTitle),
+/* harmony export */   "setWrap": () => (/* binding */ setWrap),
+/* harmony export */   "showSequenceNumbers": () => (/* binding */ showSequenceNumbers)
 /* harmony export */ });
 /* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../config */ "./src/config.js");
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
-/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _commonDb__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../commonDb */ "./src/commonDb.js");
+
 
 
 
@@ -21053,8 +21989,8 @@ var prevActor = undefined;
 var actors = {};
 var messages = [];
 var notes = [];
-var title = '';
-var titleWrapped = false;
+var diagramTitle = '';
+var description = '';
 var sequenceNumbersEnabled = false;
 var wrapEnabled = false;
 var parseDirective = function parseDirective(statement, context, type) {
@@ -21180,14 +22116,11 @@ var getActor = function getActor(id) {
 var getActorKeys = function getActorKeys() {
   return Object.keys(actors);
 };
-var getTitle = function getTitle() {
-  return title;
-};
-var getTitleWrapped = function getTitleWrapped() {
-  return titleWrapped;
-};
 var enableSequenceNumbers = function enableSequenceNumbers() {
   sequenceNumbersEnabled = true;
+};
+var disableSequenceNumbers = function disableSequenceNumbers() {
+  sequenceNumbersEnabled = false;
 };
 var showSequenceNumbers = function showSequenceNumbers() {
   return sequenceNumbersEnabled;
@@ -21201,6 +22134,9 @@ var autoWrap = function autoWrap() {
 var clear = function clear() {
   actors = {};
   messages = [];
+  sequenceNumbersEnabled = false;
+  diagramTitle = '';
+  (0,_commonDb__WEBPACK_IMPORTED_MODULE_1__.clear)();
 };
 var parseMessage = function parseMessage(str) {
   var _str = str.trim();
@@ -21209,7 +22145,7 @@ var parseMessage = function parseMessage(str) {
     text: _str.replace(/^[:]?(?:no)?wrap:/, '').trim(),
     wrap: _str.match(/^[:]?wrap:/) !== null ? true : _str.match(/^[:]?nowrap:/) !== null ? false : undefined
   };
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('parseMessage:', message);
+  _logger__WEBPACK_IMPORTED_MODULE_2__.log.debug('parseMessage:', message);
   return message;
 };
 var LINETYPE = {
@@ -21235,7 +22171,8 @@ var LINETYPE = {
   RECT_START: 22,
   RECT_END: 23,
   SOLID_POINT: 24,
-  DOTTED_POINT: 25
+  DOTTED_POINT: 25,
+  AUTONUMBER: 26
 };
 var ARROWTYPE = {
   FILLED: 0,
@@ -21270,14 +22207,14 @@ var addLinks = function addLinks(actorId, text) {
   var actor = getActor(actorId); // JSON.parse the text
 
   try {
-    var sanitizedText = (0,_common_common__WEBPACK_IMPORTED_MODULE_2__.sanitizeText)(text.text, _config__WEBPACK_IMPORTED_MODULE_3__.getConfig());
+    var sanitizedText = (0,_common_common__WEBPACK_IMPORTED_MODULE_3__.sanitizeText)(text.text, _config__WEBPACK_IMPORTED_MODULE_4__.getConfig());
     sanitizedText = sanitizedText.replace(/&amp;/g, '&');
     sanitizedText = sanitizedText.replace(/&equals;/g, '=');
     var links = JSON.parse(sanitizedText); // add the deserialized text to the actor's links field.
 
     insertLinks(actor, links);
   } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.error('error while parsing actor link text', e);
+    _logger__WEBPACK_IMPORTED_MODULE_2__.log.error('error while parsing actor link text', e);
   }
 };
 var addALink = function addALink(actorId, text) {
@@ -21286,7 +22223,7 @@ var addALink = function addALink(actorId, text) {
 
   try {
     var links = {};
-    var sanitizedText = (0,_common_common__WEBPACK_IMPORTED_MODULE_2__.sanitizeText)(text.text, _config__WEBPACK_IMPORTED_MODULE_3__.getConfig());
+    var sanitizedText = (0,_common_common__WEBPACK_IMPORTED_MODULE_3__.sanitizeText)(text.text, _config__WEBPACK_IMPORTED_MODULE_4__.getConfig());
     var sep = sanitizedText.indexOf('@');
     sanitizedText = sanitizedText.replace(/&amp;/g, '&');
     sanitizedText = sanitizedText.replace(/&equals;/g, '=');
@@ -21296,7 +22233,7 @@ var addALink = function addALink(actorId, text) {
 
     insertLinks(actor, links);
   } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.error('error while parsing actor link text', e);
+    _logger__WEBPACK_IMPORTED_MODULE_2__.log.error('error while parsing actor link text', e);
   }
 };
 /**
@@ -21319,12 +22256,12 @@ var addProperties = function addProperties(actorId, text) {
   var actor = getActor(actorId); // JSON.parse the text
 
   try {
-    var sanitizedText = (0,_common_common__WEBPACK_IMPORTED_MODULE_2__.sanitizeText)(text.text, _config__WEBPACK_IMPORTED_MODULE_3__.getConfig());
+    var sanitizedText = (0,_common_common__WEBPACK_IMPORTED_MODULE_3__.sanitizeText)(text.text, _config__WEBPACK_IMPORTED_MODULE_4__.getConfig());
     var properties = JSON.parse(sanitizedText); // add the deserialized text to the actor's property field.
 
     insertProperties(actor, properties);
   } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.error('error while parsing actor properties text', e);
+    _logger__WEBPACK_IMPORTED_MODULE_2__.log.error('error while parsing actor properties text', e);
   }
 };
 /**
@@ -21359,7 +22296,7 @@ var addDetails = function addDetails(actorId, text) {
       insertLinks(actor, details['links']);
     }
   } catch (e) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.error('error while parsing actor details text', e);
+    _logger__WEBPACK_IMPORTED_MODULE_2__.log.error('error while parsing actor details text', e);
   }
 };
 var getActorProperty = function getActorProperty(actor, key) {
@@ -21369,9 +22306,12 @@ var getActorProperty = function getActorProperty(actor, key) {
 
   return undefined;
 };
-var setTitle = function setTitle(titleWrap) {
-  title = titleWrap.text;
-  titleWrapped = titleWrap.wrap === undefined && autoWrap() || !!titleWrap.wrap;
+var setDiagramTitle = function setDiagramTitle(txt) {
+  var sanitizedText = (0,_common_common__WEBPACK_IMPORTED_MODULE_3__.sanitizeText)(txt, _config__WEBPACK_IMPORTED_MODULE_4__.getConfig());
+  diagramTitle = sanitizedText;
+};
+var getDiagramTitle = function getDiagramTitle() {
+  return diagramTitle;
 };
 var apply = function apply(param) {
   if (param instanceof Array) {
@@ -21380,6 +22320,20 @@ var apply = function apply(param) {
     });
   } else {
     switch (param.type) {
+      case 'sequenceIndex':
+        messages.push({
+          from: undefined,
+          to: undefined,
+          message: {
+            start: param.sequenceIndex,
+            step: param.sequenceIndexStep,
+            visible: param.sequenceVisible
+          },
+          wrap: false,
+          type: param.signalType
+        });
+        break;
+
       case 'addParticipant':
         addActor(param.actor, param.actor, param.description, 'participant');
         break;
@@ -21457,7 +22411,7 @@ var apply = function apply(param) {
         break;
 
       case 'setTitle':
-        setTitle(param.text);
+        (0,_commonDb__WEBPACK_IMPORTED_MODULE_1__.setTitle)(param.text);
         break;
 
       case 'parStart':
@@ -21484,26 +22438,30 @@ var apply = function apply(param) {
   autoWrap: autoWrap,
   setWrap: setWrap,
   enableSequenceNumbers: enableSequenceNumbers,
+  disableSequenceNumbers: disableSequenceNumbers,
   showSequenceNumbers: showSequenceNumbers,
   getMessages: getMessages,
   getActors: getActors,
   getActor: getActor,
   getActorKeys: getActorKeys,
   getActorProperty: getActorProperty,
-  getTitle: getTitle,
+  getTitle: _commonDb__WEBPACK_IMPORTED_MODULE_1__.getTitle,
+  getDiagramTitle: getDiagramTitle,
   parseDirective: parseDirective,
   getConfig: function getConfig() {
-    return _config__WEBPACK_IMPORTED_MODULE_3__.getConfig().sequence;
+    return _config__WEBPACK_IMPORTED_MODULE_4__.getConfig().sequence;
   },
-  getTitleWrapped: getTitleWrapped,
   clear: clear,
   parseMessage: parseMessage,
   LINETYPE: LINETYPE,
   ARROWTYPE: ARROWTYPE,
   PLACEMENT: PLACEMENT,
   addNote: addNote,
-  setTitle: setTitle,
-  apply: apply
+  setTitle: _commonDb__WEBPACK_IMPORTED_MODULE_1__.setTitle,
+  setDiagramTitle: setDiagramTitle,
+  apply: apply,
+  setAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_1__.setAccDescription,
+  getAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_1__.getAccDescription
 });
 
 /***/ }),
@@ -21518,11 +22476,11 @@ var apply = function apply(param) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "bounds": () => (/* binding */ bounds),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "draw": () => (/* binding */ draw),
 /* harmony export */   "drawActors": () => (/* binding */ drawActors),
 /* harmony export */   "drawActorsPopup": () => (/* binding */ drawActorsPopup),
-/* harmony export */   "setConf": () => (/* binding */ setConf),
-/* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -21534,6 +22492,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _sequenceDb__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./sequenceDb */ "./src/diagrams/sequence/sequenceDb.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../config */ "./src/config.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
+
 
 
 
@@ -21825,26 +22785,71 @@ var actorFont = function actorFont(cnf) {
   };
 };
 /**
- * Draws a message
+ * Process a message by adding its dimensions to the bound. It returns the Y coordinate of the
+ * message so it can be drawn later. We do not draw the message at this point so the arrowhead can
+ * be on top of the activation box.
  *
- * @param {any} g - The parent of the message element
+ * @param {any} diagram - The parent of the message element
  * @param {any} msgModel - The model containing fields describing a message
+ * @returns {number} LineStarty - The Y coordinate at which the message line starts
  */
 
 
-var drawMessage = function drawMessage(g, msgModel) {
+var boundMessage = function boundMessage(diagram, msgModel) {
   bounds.bumpVerticalPos(10);
   var startx = msgModel.startx,
       stopx = msgModel.stopx,
-      starty = msgModel.starty,
-      message = msgModel.message,
-      type = msgModel.type,
-      sequenceIndex = msgModel.sequenceIndex;
+      message = msgModel.message;
   var lines = _common_common__WEBPACK_IMPORTED_MODULE_4__["default"].splitBreaks(message).length;
   var textDims = _utils__WEBPACK_IMPORTED_MODULE_5__["default"].calculateTextDimensions(message, messageFont(conf));
   var lineHeight = textDims.height / lines;
   msgModel.height += lineHeight;
   bounds.bumpVerticalPos(lineHeight);
+  var lineStarty;
+  var totalOffset = textDims.height - 10;
+  var textWidth = textDims.width;
+
+  if (startx === stopx) {
+    lineStarty = bounds.getVerticalPos() + totalOffset;
+
+    if (!conf.rightAngles) {
+      totalOffset += conf.boxMargin;
+      lineStarty = bounds.getVerticalPos() + totalOffset;
+    }
+
+    totalOffset += 30;
+    var dx = Math.max(textWidth / 2, conf.width / 2);
+    bounds.insert(startx - dx, bounds.getVerticalPos() - 10 + totalOffset, stopx + dx, bounds.getVerticalPos() + 30 + totalOffset);
+  } else {
+    totalOffset += conf.boxMargin;
+    lineStarty = bounds.getVerticalPos() + totalOffset;
+    bounds.insert(startx, lineStarty - 10, stopx, lineStarty);
+  }
+
+  bounds.bumpVerticalPos(totalOffset);
+  msgModel.height += totalOffset;
+  msgModel.stopy = msgModel.starty + msgModel.height;
+  bounds.insert(msgModel.fromBounds, msgModel.starty, msgModel.toBounds, msgModel.stopy);
+  return lineStarty;
+};
+/**
+ * Draws a message. Note that the bounds have previously been updated by boundMessage.
+ *
+ * @param {any} diagram - The parent of the message element
+ * @param {any} msgModel - The model containing fields describing a message
+ * @param {float} lineStarty - The Y coordinate at which the message line starts
+ */
+
+
+var drawMessage = function drawMessage(diagram, msgModel, lineStarty) {
+  var startx = msgModel.startx,
+      stopx = msgModel.stopx,
+      starty = msgModel.starty,
+      message = msgModel.message,
+      type = msgModel.type,
+      sequenceIndex = msgModel.sequenceIndex,
+      sequenceVisible = msgModel.sequenceVisible;
+  var textDims = _utils__WEBPACK_IMPORTED_MODULE_5__["default"].calculateTextDimensions(message, messageFont(conf));
   var textObj = _svgDraw__WEBPACK_IMPORTED_MODULE_3__["default"].getTextObj();
   textObj.x = startx;
   textObj.y = starty + 10;
@@ -21859,34 +22864,22 @@ var drawMessage = function drawMessage(g, msgModel) {
   textObj.valign = conf.messageAlign;
   textObj.textMargin = conf.wrapPadding;
   textObj.tspan = false;
-  (0,_svgDraw__WEBPACK_IMPORTED_MODULE_3__.drawText)(g, textObj);
-  var totalOffset = textDims.height - 10;
+  (0,_svgDraw__WEBPACK_IMPORTED_MODULE_3__.drawText)(diagram, textObj);
   var textWidth = textDims.width;
-  var line, lineStarty;
+  var line;
 
   if (startx === stopx) {
-    lineStarty = bounds.getVerticalPos() + totalOffset;
-
     if (conf.rightAngles) {
-      line = g.append('path').attr('d', "M  ".concat(startx, ",").concat(lineStarty, " H ").concat(startx + Math.max(conf.width / 2, textWidth / 2), " V ").concat(lineStarty + 25, " H ").concat(startx));
+      line = diagram.append('path').attr('d', "M  ".concat(startx, ",").concat(lineStarty, " H ").concat(startx + Math.max(conf.width / 2, textWidth / 2), " V ").concat(lineStarty + 25, " H ").concat(startx));
     } else {
-      totalOffset += conf.boxMargin;
-      lineStarty = bounds.getVerticalPos() + totalOffset;
-      line = g.append('path').attr('d', 'M ' + startx + ',' + lineStarty + ' C ' + (startx + 60) + ',' + (lineStarty - 10) + ' ' + (startx + 60) + ',' + (lineStarty + 30) + ' ' + startx + ',' + (lineStarty + 20));
+      line = diagram.append('path').attr('d', 'M ' + startx + ',' + lineStarty + ' C ' + (startx + 60) + ',' + (lineStarty - 10) + ' ' + (startx + 60) + ',' + (lineStarty + 30) + ' ' + startx + ',' + (lineStarty + 20));
     }
-
-    totalOffset += 30;
-    var dx = Math.max(textWidth / 2, conf.width / 2);
-    bounds.insert(startx - dx, bounds.getVerticalPos() - 10 + totalOffset, stopx + dx, bounds.getVerticalPos() + 30 + totalOffset);
   } else {
-    totalOffset += conf.boxMargin;
-    lineStarty = bounds.getVerticalPos() + totalOffset;
-    line = g.append('line');
+    line = diagram.append('line');
     line.attr('x1', startx);
     line.attr('y1', lineStarty);
     line.attr('x2', stopx);
     line.attr('y2', lineStarty);
-    bounds.insert(startx, lineStarty - 10, stopx, lineStarty);
   } // Make an SVG Container
   // Draw the line
 
@@ -21924,19 +22917,25 @@ var drawMessage = function drawMessage(g, msgModel) {
   } // add node number
 
 
-  if (_sequenceDb__WEBPACK_IMPORTED_MODULE_2__["default"].showSequenceNumbers() || conf.showSequenceNumbers) {
+  if (sequenceVisible || conf.showSequenceNumbers) {
     line.attr('marker-start', 'url(' + url + '#sequencenumber)');
-    g.append('text').attr('x', startx).attr('y', lineStarty + 4).attr('font-family', 'sans-serif').attr('font-size', '12px').attr('text-anchor', 'middle').attr('textLength', '16px').attr('class', 'sequenceNumber').text(sequenceIndex);
+    diagram.append('text').attr('x', startx).attr('y', lineStarty + 4).attr('font-family', 'sans-serif').attr('font-size', '12px').attr('text-anchor', 'middle').attr('textLength', '16px').attr('class', 'sequenceNumber').text(sequenceIndex);
   }
-
-  bounds.bumpVerticalPos(totalOffset);
-  msgModel.height += totalOffset;
-  msgModel.stopy = msgModel.starty + msgModel.height;
-  bounds.insert(msgModel.fromBounds, msgModel.starty, msgModel.toBounds, msgModel.stopy);
 };
 
-var drawActors = function drawActors(diagram, actors, actorKeys, verticalPos) {
-  // Draw the actors
+var drawActors = function drawActors(diagram, actors, actorKeys, verticalPos, configuration, messages) {
+  if (configuration.hideUnusedParticipants === true) {
+    var newActors = new Set();
+    messages.forEach(function (message) {
+      newActors.add(message.from);
+      newActors.add(message.to);
+    });
+    actorKeys = actorKeys.filter(function (actorKey) {
+      return newActors.has(actorKey);
+    });
+  } // Draw the actors
+
+
   var prevWidth = 0;
   var prevMargin = 0;
   var maxHeight = 0;
@@ -22077,13 +23076,13 @@ var draw = function draw(text, id) {
   var actors = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.getActors();
   var actorKeys = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.getActorKeys();
   var messages = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.getMessages();
-  var title = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.getTitle();
+  var title = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.getDiagramTitle();
   var maxMessageWidthPerActor = getMaxMessageWidthPerActor(actors, messages);
   conf.height = calculateActorMargins(actors, maxMessageWidthPerActor);
   _svgDraw__WEBPACK_IMPORTED_MODULE_3__["default"].insertComputerIcon(diagram);
   _svgDraw__WEBPACK_IMPORTED_MODULE_3__["default"].insertDatabaseIcon(diagram);
   _svgDraw__WEBPACK_IMPORTED_MODULE_3__["default"].insertClockIcon(diagram);
-  drawActors(diagram, actors, actorKeys, 0);
+  drawActors(diagram, actors, actorKeys, 0, conf, messages);
   var loopWidths = calculateLoopBounds(messages, actors, maxMessageWidthPerActor); // The arrow head definition is attached to the svg once
 
   _svgDraw__WEBPACK_IMPORTED_MODULE_3__["default"].insertArrowHead(diagram);
@@ -22109,6 +23108,8 @@ var draw = function draw(text, id) {
 
 
   var sequenceIndex = 1;
+  var sequenceIndexStep = 1;
+  var messagesToDraw = Array();
   messages.forEach(function (msg) {
     var loopModel, noteModel, msgModel;
 
@@ -22203,13 +23204,24 @@ var draw = function draw(text, id) {
         bounds.models.addLoop(loopModel);
         break;
 
+      case _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.LINETYPE.AUTONUMBER:
+        sequenceIndex = msg.message.start || sequenceIndex;
+        sequenceIndexStep = msg.message.step || sequenceIndexStep;
+        if (msg.message.visible) _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.enableSequenceNumbers();else _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.disableSequenceNumbers();
+        break;
+
       default:
         try {
           // lastMsg = msg
           msgModel = msg.msgModel;
           msgModel.starty = bounds.getVerticalPos();
           msgModel.sequenceIndex = sequenceIndex;
-          drawMessage(diagram, msgModel);
+          msgModel.sequenceVisible = _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.showSequenceNumbers();
+          var lineStarty = boundMessage(diagram, msgModel);
+          messagesToDraw.push({
+            messageModel: msgModel,
+            lineStarty: lineStarty
+          });
           bounds.models.addMessage(msgModel);
         } catch (e) {
           _logger__WEBPACK_IMPORTED_MODULE_6__.log.error('error while drawing message', e);
@@ -22219,14 +23231,17 @@ var draw = function draw(text, id) {
 
 
     if ([_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.LINETYPE.SOLID_OPEN, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.LINETYPE.DOTTED_OPEN, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.LINETYPE.SOLID, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.LINETYPE.DOTTED, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.LINETYPE.SOLID_CROSS, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.LINETYPE.DOTTED_CROSS, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.LINETYPE.SOLID_POINT, _parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy.LINETYPE.DOTTED_POINT].includes(msg.type)) {
-      sequenceIndex++;
+      sequenceIndex = sequenceIndex + sequenceIndexStep;
     }
+  });
+  messagesToDraw.forEach(function (e) {
+    return drawMessage(diagram, e.messageModel, e.lineStarty);
   });
 
   if (conf.mirrorActors) {
     // Draw actors below diagram
     bounds.bumpVerticalPos(conf.boxMargin * 2);
-    drawActors(diagram, actors, actorKeys, bounds.getVerticalPos());
+    drawActors(diagram, actors, actorKeys, bounds.getVerticalPos(), conf, messages);
     bounds.bumpVerticalPos(conf.boxMargin);
     (0,_svgDraw__WEBPACK_IMPORTED_MODULE_3__.fixLifeLineHeights)(diagram, bounds.getVerticalPos());
   } // only draw popups for the top row of actors.
@@ -22270,6 +23285,7 @@ var draw = function draw(text, id) {
   (0,_utils__WEBPACK_IMPORTED_MODULE_5__.configureSvgSize)(diagram, height, width, conf.useMaxWidth);
   var extraVertForTitle = title ? 40 : 0;
   diagram.attr('viewBox', box.startx - conf.diagramMarginX + ' -' + (conf.diagramMarginY + extraVertForTitle) + ' ' + width + ' ' + (height + extraVertForTitle));
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_8__["default"])(_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_1__.parser.yy, diagram, id);
   _logger__WEBPACK_IMPORTED_MODULE_6__.log.debug("models:", bounds.models);
 };
 /**
@@ -22629,30 +23645,30 @@ var getStyles = function getStyles(options) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "drawRect": () => (/* binding */ drawRect),
-/* harmony export */   "drawPopup": () => (/* binding */ drawPopup),
-/* harmony export */   "drawImage": () => (/* binding */ drawImage),
-/* harmony export */   "drawEmbeddedImage": () => (/* binding */ drawEmbeddedImage),
-/* harmony export */   "popupMenu": () => (/* binding */ popupMenu),
-/* harmony export */   "popdownMenu": () => (/* binding */ popdownMenu),
-/* harmony export */   "drawText": () => (/* binding */ drawText),
-/* harmony export */   "drawLabel": () => (/* binding */ drawLabel),
-/* harmony export */   "fixLifeLineHeights": () => (/* binding */ fixLifeLineHeights),
-/* harmony export */   "drawActor": () => (/* binding */ drawActor),
 /* harmony export */   "anchorElement": () => (/* binding */ anchorElement),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "drawActivation": () => (/* binding */ drawActivation),
-/* harmony export */   "drawLoop": () => (/* binding */ drawLoop),
+/* harmony export */   "drawActor": () => (/* binding */ drawActor),
 /* harmony export */   "drawBackgroundRect": () => (/* binding */ drawBackgroundRect),
-/* harmony export */   "insertDatabaseIcon": () => (/* binding */ insertDatabaseIcon),
-/* harmony export */   "insertComputerIcon": () => (/* binding */ insertComputerIcon),
-/* harmony export */   "insertClockIcon": () => (/* binding */ insertClockIcon),
-/* harmony export */   "insertArrowHead": () => (/* binding */ insertArrowHead),
-/* harmony export */   "insertArrowFilledHead": () => (/* binding */ insertArrowFilledHead),
-/* harmony export */   "insertSequenceNumber": () => (/* binding */ insertSequenceNumber),
-/* harmony export */   "insertArrowCrossHead": () => (/* binding */ insertArrowCrossHead),
-/* harmony export */   "getTextObj": () => (/* binding */ getTextObj),
+/* harmony export */   "drawEmbeddedImage": () => (/* binding */ drawEmbeddedImage),
+/* harmony export */   "drawImage": () => (/* binding */ drawImage),
+/* harmony export */   "drawLabel": () => (/* binding */ drawLabel),
+/* harmony export */   "drawLoop": () => (/* binding */ drawLoop),
+/* harmony export */   "drawPopup": () => (/* binding */ drawPopup),
+/* harmony export */   "drawRect": () => (/* binding */ drawRect),
+/* harmony export */   "drawText": () => (/* binding */ drawText),
+/* harmony export */   "fixLifeLineHeights": () => (/* binding */ fixLifeLineHeights),
 /* harmony export */   "getNoteRect": () => (/* binding */ getNoteRect),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "getTextObj": () => (/* binding */ getTextObj),
+/* harmony export */   "insertArrowCrossHead": () => (/* binding */ insertArrowCrossHead),
+/* harmony export */   "insertArrowFilledHead": () => (/* binding */ insertArrowFilledHead),
+/* harmony export */   "insertArrowHead": () => (/* binding */ insertArrowHead),
+/* harmony export */   "insertClockIcon": () => (/* binding */ insertClockIcon),
+/* harmony export */   "insertComputerIcon": () => (/* binding */ insertComputerIcon),
+/* harmony export */   "insertDatabaseIcon": () => (/* binding */ insertDatabaseIcon),
+/* harmony export */   "insertSequenceNumber": () => (/* binding */ insertSequenceNumber),
+/* harmony export */   "popdownMenu": () => (/* binding */ popdownMenu),
+/* harmony export */   "popupMenu": () => (/* binding */ popupMenu)
 /* harmony export */ });
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
 /* harmony import */ var _interactionDb__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../interactionDb */ "./src/interactionDb.js");
@@ -23490,11 +24506,11 @@ var _drawMenuItemTextCandidateFunc = function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "set": () => (/* binding */ set),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "get": () => (/* binding */ get),
 /* harmony export */   "keys": () => (/* binding */ keys),
-/* harmony export */   "size": () => (/* binding */ size),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "set": () => (/* binding */ set),
+/* harmony export */   "size": () => (/* binding */ size)
 /* harmony export */ });
 var idCache = {};
 var set = function set(key, val) {
@@ -23527,15 +24543,15 @@ var size = function size() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "drawStartState": () => (/* binding */ drawStartState),
-/* harmony export */   "drawDivider": () => (/* binding */ drawDivider),
-/* harmony export */   "drawSimpleState": () => (/* binding */ drawSimpleState),
-/* harmony export */   "drawDescrState": () => (/* binding */ drawDescrState),
 /* harmony export */   "addTitleAndBox": () => (/* binding */ addTitleAndBox),
-/* harmony export */   "drawText": () => (/* binding */ drawText),
+/* harmony export */   "drawDescrState": () => (/* binding */ drawDescrState),
+/* harmony export */   "drawDivider": () => (/* binding */ drawDivider),
+/* harmony export */   "drawEdge": () => (/* binding */ drawEdge),
 /* harmony export */   "drawNote": () => (/* binding */ drawNote),
+/* harmony export */   "drawSimpleState": () => (/* binding */ drawSimpleState),
+/* harmony export */   "drawStartState": () => (/* binding */ drawStartState),
 /* harmony export */   "drawState": () => (/* binding */ drawState),
-/* harmony export */   "drawEdge": () => (/* binding */ drawEdge)
+/* harmony export */   "drawText": () => (/* binding */ drawText)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -23961,24 +24977,25 @@ var drawEdge = function drawEdge(elem, path, relation) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
+/* harmony export */   "addRelation": () => (/* binding */ addRelation),
 /* harmony export */   "addState": () => (/* binding */ addState),
+/* harmony export */   "cleanupLabel": () => (/* binding */ cleanupLabel),
 /* harmony export */   "clear": () => (/* binding */ clear),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "getRelations": () => (/* binding */ getRelations),
 /* harmony export */   "getState": () => (/* binding */ getState),
 /* harmony export */   "getStates": () => (/* binding */ getStates),
-/* harmony export */   "logDocuments": () => (/* binding */ logDocuments),
-/* harmony export */   "getRelations": () => (/* binding */ getRelations),
-/* harmony export */   "addRelation": () => (/* binding */ addRelation),
-/* harmony export */   "cleanupLabel": () => (/* binding */ cleanupLabel),
 /* harmony export */   "lineType": () => (/* binding */ lineType),
-/* harmony export */   "relationType": () => (/* binding */ relationType),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "logDocuments": () => (/* binding */ logDocuments),
+/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
+/* harmony export */   "relationType": () => (/* binding */ relationType)
 /* harmony export */ });
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
-/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
-/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _commonDb__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../commonDb */ "./src/commonDb.js");
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
 
@@ -23987,17 +25004,22 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 
 
 
+
+var sanitizeText = function sanitizeText(txt) {
+  return _common_common__WEBPACK_IMPORTED_MODULE_0__["default"].sanitizeText(txt, _config__WEBPACK_IMPORTED_MODULE_1__.getConfig());
+};
+
 var clone = function clone(o) {
   return JSON.parse(JSON.stringify(o));
 };
 
 var rootDoc = [];
 var parseDirective = function parseDirective(statement, context, type) {
-  _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].parseDirective(this, statement, context, type);
+  _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__["default"].parseDirective(this, statement, context, type);
 };
 
 var setRootDoc = function setRootDoc(o) {
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.info('Setting root doc', o); // rootDoc = { id: 'root', doc: o };
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.info('Setting root doc', o); // rootDoc = { id: 'root', doc: o };
 
   rootDoc = o;
 };
@@ -24040,7 +25062,7 @@ var docTranslator = function docTranslator(parent, node, first) {
       if (doc.length > 0 && currentDoc.length > 0) {
         var _newNode = {
           stmt: 'state',
-          id: (0,_utils__WEBPACK_IMPORTED_MODULE_2__.generateId)(),
+          id: (0,_utils__WEBPACK_IMPORTED_MODULE_4__.generateId)(),
           type: 'divider',
           doc: clone(currentDoc)
         };
@@ -24082,9 +25104,9 @@ var extract = function extract(_doc) {
   // }
 
 
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.info(doc);
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.info(doc);
   clear();
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.info('Extract', doc);
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.info('Extract', doc);
   doc.forEach(function (item) {
     if (item.stmt === 'state') {
       addState(item.id, item.type, item.doc, item.description, item.note);
@@ -24112,6 +25134,8 @@ var startCnt = 0;
 var endCnt = 0; // eslint-disable-line
 // let stateCnt = 0;
 
+var title = 'State diagram';
+var description = '';
 /**
  * Function called by parser when a node definition has been found.
  *
@@ -24142,7 +25166,7 @@ var addState = function addState(id, type, doc, descr, note) {
   }
 
   if (descr) {
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.info('Adding state ', id, descr);
+    _logger__WEBPACK_IMPORTED_MODULE_3__.log.info('Adding state ', id, descr);
     if (typeof descr === 'string') addDescription(id, descr.trim());
 
     if (_typeof(descr) === 'object') {
@@ -24154,7 +25178,7 @@ var addState = function addState(id, type, doc, descr, note) {
 
   if (note) {
     currentDocument.states[id].note = note;
-    currentDocument.states[id].note.text = _common_common__WEBPACK_IMPORTED_MODULE_3__["default"].sanitizeText(currentDocument.states[id].note.text, _config__WEBPACK_IMPORTED_MODULE_4__.getConfig());
+    currentDocument.states[id].note.text = _common_common__WEBPACK_IMPORTED_MODULE_0__["default"].sanitizeText(currentDocument.states[id].note.text, _config__WEBPACK_IMPORTED_MODULE_1__.getConfig());
   }
 };
 var clear = function clear() {
@@ -24167,6 +25191,7 @@ var clear = function clear() {
   endCnt = 0; // eslint-disable-line
 
   classes = [];
+  (0,_commonDb__WEBPACK_IMPORTED_MODULE_5__.clear)();
 };
 var getState = function getState(id) {
   return currentDocument.states[id];
@@ -24175,7 +25200,7 @@ var getStates = function getStates() {
   return currentDocument.states;
 };
 var logDocuments = function logDocuments() {
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.info('Documents = ', documents);
+  _logger__WEBPACK_IMPORTED_MODULE_3__.log.info('Documents = ', documents);
 };
 var getRelations = function getRelations() {
   return currentDocument.relations;
@@ -24203,7 +25228,7 @@ var addRelation = function addRelation(_id1, _id2, title) {
   currentDocument.relations.push({
     id1: id1,
     id2: id2,
-    title: _common_common__WEBPACK_IMPORTED_MODULE_3__["default"].sanitizeText(title, _config__WEBPACK_IMPORTED_MODULE_4__.getConfig())
+    title: _common_common__WEBPACK_IMPORTED_MODULE_0__["default"].sanitizeText(title, _config__WEBPACK_IMPORTED_MODULE_1__.getConfig())
   });
 };
 
@@ -24215,7 +25240,7 @@ var addDescription = function addDescription(id, _descr) {
     descr = descr.substr(1).trim();
   }
 
-  theState.descriptions.push(_common_common__WEBPACK_IMPORTED_MODULE_3__["default"].sanitizeText(descr, _config__WEBPACK_IMPORTED_MODULE_4__.getConfig()));
+  theState.descriptions.push(_common_common__WEBPACK_IMPORTED_MODULE_0__["default"].sanitizeText(descr, _config__WEBPACK_IMPORTED_MODULE_1__.getConfig()));
 };
 
 var cleanupLabel = function cleanupLabel(label) {
@@ -24266,7 +25291,7 @@ var trimColon = function trimColon(str) {
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   parseDirective: parseDirective,
   getConfig: function getConfig() {
-    return _config__WEBPACK_IMPORTED_MODULE_4__.getConfig().state;
+    return _config__WEBPACK_IMPORTED_MODULE_1__.getConfig().state;
   },
   addState: addState,
   clear: clear,
@@ -24287,7 +25312,11 @@ var trimColon = function trimColon(str) {
   setRootDoc: setRootDoc,
   getRootDocV2: getRootDocV2,
   extract: extract,
-  trimColon: trimColon
+  trimColon: trimColon,
+  getTitle: _commonDb__WEBPACK_IMPORTED_MODULE_5__.getTitle,
+  setTitle: _commonDb__WEBPACK_IMPORTED_MODULE_5__.setTitle,
+  getAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_5__.getAccDescription,
+  setAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_5__.setAccDescription
 });
 
 /***/ }),
@@ -24301,10 +25330,10 @@ var trimColon = function trimColon(str) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
-/* harmony export */   "getClasses": () => (/* binding */ getClasses),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "getClasses": () => (/* binding */ getClasses),
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var graphlib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! graphlib */ "graphlib");
 /* harmony import */ var graphlib__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(graphlib__WEBPACK_IMPORTED_MODULE_0__);
@@ -24318,6 +25347,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
 /* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
+
 
 
 
@@ -24644,6 +25675,8 @@ var draw = function draw(text, id) {
     rect.setAttribute('height', dim.height);
     label.insertBefore(rect, label.firstChild); // }
   }
+
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_9__["default"])(parser.yy, svg, id);
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   setConf: setConf,
@@ -24662,9 +25695,9 @@ var draw = function draw(text, id) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -24674,12 +25707,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var graphlib__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(graphlib__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../logger */ "./src/logger.js");
 /* harmony import */ var _stateDb__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./stateDb */ "./src/diagrams/state/stateDb.js");
-/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
 /* harmony import */ var _parser_stateDiagram__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./parser/stateDiagram */ "./src/diagrams/state/parser/stateDiagram.jison");
 /* harmony import */ var _parser_stateDiagram__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _shapes__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./shapes */ "./src/diagrams/state/shapes.js");
+/* harmony import */ var _shapes__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./shapes */ "./src/diagrams/state/shapes.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../config */ "./src/config.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
 
 
 
@@ -24687,6 +25721,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
  // import idCache from './id-cache';
+
 
 
 
@@ -24753,6 +25788,7 @@ var draw = function draw(text, id) {
   var svgWidth = width * 1.75;
   (0,_utils__WEBPACK_IMPORTED_MODULE_7__.configureSvgSize)(diagram, height, svgWidth, conf.useMaxWidth);
   diagram.attr('viewBox', "".concat(bounds.x - conf.padding, "  ").concat(bounds.y - conf.padding, " ") + width + ' ' + height);
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_8__["default"])(_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_3__.parser.yy, diagram, id);
 };
 
 var getLabelWidth = function getLabelWidth(text) {
@@ -24827,7 +25863,7 @@ var renderDoc = function renderDoc(doc, diagram, parentId, altBkg, root, domDocu
 
       if (first) {
         // first = false;
-        sub = (0,_shapes__WEBPACK_IMPORTED_MODULE_8__.addTitleAndBox)(sub, stateDef, altBkg);
+        sub = (0,_shapes__WEBPACK_IMPORTED_MODULE_9__.addTitleAndBox)(sub, stateDef, altBkg);
         var boxBounds = sub.node().getBBox();
         node.width = boxBounds.width;
         node.height = boxBounds.height + conf.padding / 2;
@@ -24842,7 +25878,7 @@ var renderDoc = function renderDoc(doc, diagram, parentId, altBkg, root, domDocu
         node.height = _boxBounds.height; // transformationLog[stateDef.id] = { y: conf.compositTitleSize };
       }
     } else {
-      node = (0,_shapes__WEBPACK_IMPORTED_MODULE_8__.drawState)(diagram, stateDef, graph);
+      node = (0,_shapes__WEBPACK_IMPORTED_MODULE_9__.drawState)(diagram, stateDef, graph);
     }
 
     if (stateDef.note) {
@@ -24853,7 +25889,7 @@ var renderDoc = function renderDoc(doc, diagram, parentId, altBkg, root, domDocu
         note: stateDef.note,
         type: 'note'
       };
-      var note = (0,_shapes__WEBPACK_IMPORTED_MODULE_8__.drawState)(diagram, noteDef, graph); // graph.setNode(node.id, node);
+      var note = (0,_shapes__WEBPACK_IMPORTED_MODULE_9__.drawState)(diagram, noteDef, graph); // graph.setNode(node.id, node);
 
       if (stateDef.note.position === 'left of') {
         graph.setNode(node.id + '-note', note);
@@ -24882,7 +25918,7 @@ var renderDoc = function renderDoc(doc, diagram, parentId, altBkg, root, domDocu
     graph.setEdge(relation.id1, relation.id2, {
       relation: relation,
       width: getLabelWidth(relation.title),
-      height: conf.labelHeight * _common_common__WEBPACK_IMPORTED_MODULE_9__["default"].getRows(relation.title).length,
+      height: conf.labelHeight * _common_common__WEBPACK_IMPORTED_MODULE_10__["default"].getRows(relation.title).length,
       labelpos: 'c'
     }, 'id' + cnt);
   });
@@ -24920,7 +25956,7 @@ var renderDoc = function renderDoc(doc, diagram, parentId, altBkg, root, domDocu
   graph.edges().forEach(function (e) {
     if (typeof e !== 'undefined' && typeof graph.edge(e) !== 'undefined') {
       _logger__WEBPACK_IMPORTED_MODULE_6__.log.debug('Edge ' + e.v + ' -> ' + e.w + ': ' + JSON.stringify(graph.edge(e)));
-      (0,_shapes__WEBPACK_IMPORTED_MODULE_8__.drawEdge)(diagram, graph.edge(e), graph.edge(e).relation);
+      (0,_shapes__WEBPACK_IMPORTED_MODULE_9__.drawEdge)(diagram, graph.edge(e), graph.edge(e).relation);
     }
   });
   stateBox = svgElem.getBBox();
@@ -24971,19 +26007,19 @@ var getStyles = function getStyles(options) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "parseDirective": () => (/* binding */ parseDirective),
-/* harmony export */   "clear": () => (/* binding */ clear),
-/* harmony export */   "setTitle": () => (/* binding */ setTitle),
-/* harmony export */   "getTitle": () => (/* binding */ getTitle),
 /* harmony export */   "addSection": () => (/* binding */ addSection),
-/* harmony export */   "getSections": () => (/* binding */ getSections),
-/* harmony export */   "getTasks": () => (/* binding */ getTasks),
 /* harmony export */   "addTask": () => (/* binding */ addTask),
 /* harmony export */   "addTaskOrg": () => (/* binding */ addTaskOrg),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "clear": () => (/* binding */ clear),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "getSections": () => (/* binding */ getSections),
+/* harmony export */   "getTasks": () => (/* binding */ getTasks),
+/* harmony export */   "parseDirective": () => (/* binding */ parseDirective)
 /* harmony export */ });
-/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
+/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../mermaidAPI */ "./src/mermaidAPI.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../config */ "./src/config.js");
+/* harmony import */ var _common_common__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../common/common */ "./src/diagrams/common/common.js");
+/* harmony import */ var _commonDb__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../commonDb */ "./src/commonDb.js");
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -24998,26 +26034,30 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 
 
+
+
+
+var sanitizeText = function sanitizeText(txt) {
+  return _common_common__WEBPACK_IMPORTED_MODULE_0__["default"].sanitizeText(txt, _config__WEBPACK_IMPORTED_MODULE_1__.getConfig());
+};
+
 var title = '';
+var description = '';
 var currentSection = '';
 var sections = [];
 var tasks = [];
 var rawTasks = [];
 var parseDirective = function parseDirective(statement, context, type) {
-  _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].parseDirective(this, statement, context, type);
+  _mermaidAPI__WEBPACK_IMPORTED_MODULE_2__["default"].parseDirective(this, statement, context, type);
 };
 var clear = function clear() {
   sections.length = 0;
   tasks.length = 0;
   currentSection = '';
   title = '';
+  description = '';
   rawTasks.length = 0;
-};
-var setTitle = function setTitle(txt) {
-  title = txt;
-};
-var getTitle = function getTitle() {
-  return title;
+  (0,_commonDb__WEBPACK_IMPORTED_MODULE_3__.clear)();
 };
 var addSection = function addSection(txt) {
   currentSection = txt;
@@ -25112,8 +26152,10 @@ var getActors = function getActors() {
     return _config__WEBPACK_IMPORTED_MODULE_1__.getConfig().journey;
   },
   clear: clear,
-  setTitle: setTitle,
-  getTitle: getTitle,
+  setTitle: _commonDb__WEBPACK_IMPORTED_MODULE_3__.setTitle,
+  getTitle: _commonDb__WEBPACK_IMPORTED_MODULE_3__.getTitle,
+  setAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_3__.setAccDescription,
+  getAccDescription: _commonDb__WEBPACK_IMPORTED_MODULE_3__.getAccDescription,
   addSection: addSection,
   getSections: getSections,
   getTasks: getTasks,
@@ -25133,11 +26175,11 @@ var getActors = function getActors() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
-/* harmony export */   "draw": () => (/* binding */ draw),
 /* harmony export */   "bounds": () => (/* binding */ bounds),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "draw": () => (/* binding */ draw),
 /* harmony export */   "drawTasks": () => (/* binding */ drawTasks),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -25147,6 +26189,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _svgDraw__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./svgDraw */ "./src/diagrams/user-journey/svgDraw.js");
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../config */ "./src/config.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../utils */ "./src/utils.js");
+/* harmony import */ var _accessibility__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../accessibility */ "./src/accessibility.js");
+
 
 
 
@@ -25246,6 +26290,7 @@ var draw = function draw(text, id) {
   diagram.attr('viewBox', "".concat(box.startx, " -25 ").concat(width, " ").concat(height + extraVertForTitle));
   diagram.attr('preserveAspectRatio', 'xMinYMin meet');
   diagram.attr('height', height + extraVertForTitle + 25);
+  (0,_accessibility__WEBPACK_IMPORTED_MODULE_6__["default"])(_parser_journey__WEBPACK_IMPORTED_MODULE_1__.parser.yy, diagram, id);
 };
 var bounds = {
   data: {
@@ -25424,17 +26469,17 @@ var getStyles = function getStyles(options) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "drawRect": () => (/* binding */ drawRect),
-/* harmony export */   "drawFace": () => (/* binding */ drawFace),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "drawBackgroundRect": () => (/* binding */ drawBackgroundRect),
 /* harmony export */   "drawCircle": () => (/* binding */ drawCircle),
-/* harmony export */   "drawText": () => (/* binding */ drawText),
+/* harmony export */   "drawFace": () => (/* binding */ drawFace),
 /* harmony export */   "drawLabel": () => (/* binding */ drawLabel),
+/* harmony export */   "drawRect": () => (/* binding */ drawRect),
 /* harmony export */   "drawSection": () => (/* binding */ drawSection),
 /* harmony export */   "drawTask": () => (/* binding */ drawTask),
-/* harmony export */   "drawBackgroundRect": () => (/* binding */ drawBackgroundRect),
-/* harmony export */   "getTextObj": () => (/* binding */ getTextObj),
+/* harmony export */   "drawText": () => (/* binding */ drawText),
 /* harmony export */   "getNoteRect": () => (/* binding */ getNoteRect),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "getTextObj": () => (/* binding */ getTextObj)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -25775,9 +26820,9 @@ var initGraphics = function initGraphics(graphics) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "setConf": () => (/* binding */ setConf),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
 /* harmony export */   "draw": () => (/* binding */ draw),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "setConf": () => (/* binding */ setConf)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
@@ -25878,7 +26923,7 @@ __webpack_require__.r(__webpack_exports__);
 
 /** @typedef {'debug' | 'info' | 'warn' | 'error' | 'fatal'} LogLevel A log level */
 
-/** @type {object<LogLevel, number>} */
+/** @type {Object<LogLevel, number>} */
 
 var LEVELS = {
   debug: 1,
@@ -25969,8 +27014,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./logger */ "./src/logger.js");
-/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./mermaidAPI */ "./src/mermaidAPI.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./logger */ "./src/logger.js");
+/* harmony import */ var _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./mermaidAPI */ "./src/mermaidAPI.js");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
 /**
  * Web page integration module for the mermaid framework. It uses the mermaidAPI for mermaid
@@ -26004,9 +27049,20 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 var init = function init() {
-  var _this = this;
+  try {
+    initThrowsErrors.apply(void 0, arguments);
+  } catch (e) {
+    _logger__WEBPACK_IMPORTED_MODULE_0__.log.warn('Syntax Error rendering');
+    _logger__WEBPACK_IMPORTED_MODULE_0__.log.warn(e);
 
-  var conf = _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].getConfig(); // console.log('Starting rendering diagrams (init) - mermaid.init', conf);
+    if (this.parseError) {
+      this.parseError(e);
+    }
+  }
+};
+
+var initThrowsErrors = function initThrowsErrors() {
+  var conf = _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].getConfig(); // console.log('Starting rendering diagrams (init) - mermaid.init', conf);
 
   var nodes;
 
@@ -26026,31 +27082,31 @@ var init = function init() {
 
   if (typeof arguments[arguments.length - 1] === 'function') {
     callback = arguments[arguments.length - 1];
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('Callback function found');
+    _logger__WEBPACK_IMPORTED_MODULE_0__.log.debug('Callback function found');
   } else {
     if (typeof conf.mermaid !== 'undefined') {
       if (typeof conf.mermaid.callback === 'function') {
         callback = conf.mermaid.callback;
-        _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('Callback function found');
+        _logger__WEBPACK_IMPORTED_MODULE_0__.log.debug('Callback function found');
       } else {
-        _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('No Callback function found');
+        _logger__WEBPACK_IMPORTED_MODULE_0__.log.debug('No Callback function found');
       }
     }
   }
 
   nodes = nodes === undefined ? document.querySelectorAll('.mermaid') : typeof nodes === 'string' ? document.querySelectorAll(nodes) : nodes instanceof window.Node ? [nodes] : nodes; // Last case  - sequence config was passed pick next
 
-  _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('Start On Load before: ' + mermaid.startOnLoad);
+  _logger__WEBPACK_IMPORTED_MODULE_0__.log.debug('Start On Load before: ' + mermaid.startOnLoad);
 
   if (typeof mermaid.startOnLoad !== 'undefined') {
-    _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('Start On Load inner: ' + mermaid.startOnLoad);
-    _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].updateSiteConfig({
+    _logger__WEBPACK_IMPORTED_MODULE_0__.log.debug('Start On Load inner: ' + mermaid.startOnLoad);
+    _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].updateSiteConfig({
       startOnLoad: mermaid.startOnLoad
     });
   }
 
   if (typeof mermaid.ganttConfig !== 'undefined') {
-    _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].updateSiteConfig({
+    _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].updateSiteConfig({
       gantt: mermaid.ganttConfig
     });
   }
@@ -26077,27 +27133,18 @@ var init = function init() {
     var init = _utils__WEBPACK_IMPORTED_MODULE_2__["default"].detectInit(txt);
 
     if (init) {
-      _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('Detected early reinit: ', init);
+      _logger__WEBPACK_IMPORTED_MODULE_0__.log.debug('Detected early reinit: ', init);
     }
 
-    try {
-      _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].render(id, txt, function (svgCode, bindFunctions) {
-        element.innerHTML = svgCode;
+    _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].render(id, txt, function (svgCode, bindFunctions) {
+      element.innerHTML = svgCode;
 
-        if (typeof callback !== 'undefined') {
-          callback(id);
-        }
-
-        if (bindFunctions) bindFunctions(element);
-      }, element);
-    } catch (e) {
-      _logger__WEBPACK_IMPORTED_MODULE_1__.log.warn('Syntax Error rendering');
-      _logger__WEBPACK_IMPORTED_MODULE_1__.log.warn(e);
-
-      if (_this.parseError) {
-        _this.parseError(e);
+      if (typeof callback !== 'undefined') {
+        callback(id);
       }
-    }
+
+      if (bindFunctions) bindFunctions(element);
+    }, element);
   };
 
   for (var i = 0; i < nodes.length; i++) {
@@ -26119,7 +27166,7 @@ var initialize = function initialize(config) {
     }
   }
 
-  _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].initialize(config); // mermaidAPI.reset();
+  _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].initialize(config); // mermaidAPI.reset();
 };
 /**
  * ##contentLoaded Callback function that is called when page is loaded. This functions fetches
@@ -26132,15 +27179,15 @@ var contentLoaded = function contentLoaded() {
 
   if (mermaid.startOnLoad) {
     // No config found, do check API config
-    config = _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].getConfig();
+    config = _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].getConfig();
 
     if (config.startOnLoad) {
       mermaid.init();
     }
   } else {
     if (typeof mermaid.startOnLoad === 'undefined') {
-      _logger__WEBPACK_IMPORTED_MODULE_1__.log.debug('In start, no config');
-      config = _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].getConfig();
+      _logger__WEBPACK_IMPORTED_MODULE_0__.log.debug('In start, no config');
+      config = _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].getConfig();
 
       if (config.startOnLoad) {
         mermaid.init();
@@ -26161,9 +27208,9 @@ if (typeof document !== 'undefined') {
 var mermaid = {
   startOnLoad: true,
   htmlLabels: true,
-  mermaidAPI: _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"],
-  parse: _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].parse,
-  render: _mermaidAPI__WEBPACK_IMPORTED_MODULE_0__["default"].render,
+  mermaidAPI: _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"],
+  parse: _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].parse,
+  render: _mermaidAPI__WEBPACK_IMPORTED_MODULE_1__["default"].render,
   init: init,
   initialize: initialize,
   contentLoaded: contentLoaded
@@ -26181,69 +27228,71 @@ var mermaid = {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "encodeEntities": () => (/* binding */ encodeEntities),
 /* harmony export */   "decodeEntities": () => (/* binding */ decodeEntities),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "encodeEntities": () => (/* binding */ encodeEntities)
 /* harmony export */ });
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! d3 */ "d3");
 /* harmony import */ var d3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(d3__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var stylis__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! stylis */ "stylis");
 /* harmony import */ var stylis__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(stylis__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _package_json__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(/*! ../package.json */ "./package.json");
-/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./config */ "./src/config.js");
-/* harmony import */ var _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagrams/class/classDb */ "./src/diagrams/class/classDb.js");
-/* harmony import */ var _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./diagrams/class/classRenderer */ "./src/diagrams/class/classRenderer.js");
-/* harmony import */ var _diagrams_class_classRenderer_v2__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./diagrams/class/classRenderer-v2 */ "./src/diagrams/class/classRenderer-v2.js");
-/* harmony import */ var _diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./diagrams/class/parser/classDiagram */ "./src/diagrams/class/parser/classDiagram.jison");
-/* harmony import */ var _diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_13__);
-/* harmony import */ var _diagrams_er_erDb__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./diagrams/er/erDb */ "./src/diagrams/er/erDb.js");
-/* harmony import */ var _diagrams_er_erRenderer__WEBPACK_IMPORTED_MODULE_40__ = __webpack_require__(/*! ./diagrams/er/erRenderer */ "./src/diagrams/er/erRenderer.js");
-/* harmony import */ var _diagrams_er_parser_erDiagram__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./diagrams/er/parser/erDiagram */ "./src/diagrams/er/parser/erDiagram.jison");
-/* harmony import */ var _diagrams_er_parser_erDiagram__WEBPACK_IMPORTED_MODULE_21___default = /*#__PURE__*/__webpack_require__.n(_diagrams_er_parser_erDiagram__WEBPACK_IMPORTED_MODULE_21__);
-/* harmony import */ var _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./diagrams/flowchart/flowDb */ "./src/diagrams/flowchart/flowDb.js");
-/* harmony import */ var _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./diagrams/flowchart/flowRenderer */ "./src/diagrams/flowchart/flowRenderer.js");
-/* harmony import */ var _diagrams_flowchart_flowRenderer_v2__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./diagrams/flowchart/flowRenderer-v2 */ "./src/diagrams/flowchart/flowRenderer-v2.js");
-/* harmony import */ var _diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./diagrams/flowchart/parser/flow */ "./src/diagrams/flowchart/parser/flow.jison");
-/* harmony import */ var _diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_8__);
-/* harmony import */ var _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./diagrams/gantt/ganttDb */ "./src/diagrams/gantt/ganttDb.js");
-/* harmony import */ var _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./diagrams/gantt/ganttRenderer */ "./src/diagrams/gantt/ganttRenderer.js");
-/* harmony import */ var _diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./diagrams/gantt/parser/gantt */ "./src/diagrams/gantt/parser/gantt.jison");
-/* harmony import */ var _diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_11__);
+/* harmony import */ var _package_json__WEBPACK_IMPORTED_MODULE_39__ = __webpack_require__(/*! ../package.json */ "./package.json");
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./config */ "./src/config.js");
+/* harmony import */ var _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./diagrams/class/classDb */ "./src/diagrams/class/classDb.js");
+/* harmony import */ var _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./diagrams/class/classRenderer */ "./src/diagrams/class/classRenderer.js");
+/* harmony import */ var _diagrams_class_classRenderer_v2__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./diagrams/class/classRenderer-v2 */ "./src/diagrams/class/classRenderer-v2.js");
+/* harmony import */ var _diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./diagrams/class/parser/classDiagram */ "./src/diagrams/class/parser/classDiagram.jison");
+/* harmony import */ var _diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_14__);
+/* harmony import */ var _diagrams_er_erDb__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./diagrams/er/erDb */ "./src/diagrams/er/erDb.js");
+/* harmony import */ var _diagrams_er_erRenderer__WEBPACK_IMPORTED_MODULE_41__ = __webpack_require__(/*! ./diagrams/er/erRenderer */ "./src/diagrams/er/erRenderer.js");
+/* harmony import */ var _diagrams_er_parser_erDiagram__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./diagrams/er/parser/erDiagram */ "./src/diagrams/er/parser/erDiagram.jison");
+/* harmony import */ var _diagrams_er_parser_erDiagram__WEBPACK_IMPORTED_MODULE_22___default = /*#__PURE__*/__webpack_require__.n(_diagrams_er_parser_erDiagram__WEBPACK_IMPORTED_MODULE_22__);
+/* harmony import */ var _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./diagrams/flowchart/flowDb */ "./src/diagrams/flowchart/flowDb.js");
+/* harmony import */ var _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./diagrams/flowchart/flowRenderer */ "./src/diagrams/flowchart/flowRenderer.js");
+/* harmony import */ var _diagrams_flowchart_flowRenderer_v2__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./diagrams/flowchart/flowRenderer-v2 */ "./src/diagrams/flowchart/flowRenderer-v2.js");
+/* harmony import */ var _diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./diagrams/flowchart/parser/flow */ "./src/diagrams/flowchart/parser/flow.jison");
+/* harmony import */ var _diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./diagrams/gantt/ganttDb */ "./src/diagrams/gantt/ganttDb.js");
+/* harmony import */ var _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./diagrams/gantt/ganttRenderer */ "./src/diagrams/gantt/ganttRenderer.js");
+/* harmony import */ var _diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./diagrams/gantt/parser/gantt */ "./src/diagrams/gantt/parser/gantt.jison");
+/* harmony import */ var _diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_12___default = /*#__PURE__*/__webpack_require__.n(_diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_12__);
 /* harmony import */ var _diagrams_git_gitGraphAst__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./diagrams/git/gitGraphAst */ "./src/diagrams/git/gitGraphAst.js");
-/* harmony import */ var _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./diagrams/git/gitGraphRenderer */ "./src/diagrams/git/gitGraphRenderer.js");
-/* harmony import */ var _diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./diagrams/git/parser/gitGraph */ "./src/diagrams/git/parser/gitGraph.jison");
-/* harmony import */ var _diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _diagrams_info_infoDb__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./diagrams/info/infoDb */ "./src/diagrams/info/infoDb.js");
-/* harmony import */ var _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./diagrams/info/infoRenderer */ "./src/diagrams/info/infoRenderer.js");
-/* harmony import */ var _diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./diagrams/info/parser/info */ "./src/diagrams/info/parser/info.jison");
-/* harmony import */ var _diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(_diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_17__);
-/* harmony import */ var _diagrams_pie_parser_pie__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./diagrams/pie/parser/pie */ "./src/diagrams/pie/parser/pie.jison");
-/* harmony import */ var _diagrams_pie_parser_pie__WEBPACK_IMPORTED_MODULE_19___default = /*#__PURE__*/__webpack_require__.n(_diagrams_pie_parser_pie__WEBPACK_IMPORTED_MODULE_19__);
-/* harmony import */ var _diagrams_pie_pieDb__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./diagrams/pie/pieDb */ "./src/diagrams/pie/pieDb.js");
-/* harmony import */ var _diagrams_pie_pieRenderer__WEBPACK_IMPORTED_MODULE_39__ = __webpack_require__(/*! ./diagrams/pie/pieRenderer */ "./src/diagrams/pie/pieRenderer.js");
-/* harmony import */ var _diagrams_requirement_parser_requirementDiagram__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./diagrams/requirement/parser/requirementDiagram */ "./src/diagrams/requirement/parser/requirementDiagram.jison");
-/* harmony import */ var _diagrams_requirement_parser_requirementDiagram__WEBPACK_IMPORTED_MODULE_25___default = /*#__PURE__*/__webpack_require__.n(_diagrams_requirement_parser_requirementDiagram__WEBPACK_IMPORTED_MODULE_25__);
-/* harmony import */ var _diagrams_requirement_requirementDb__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./diagrams/requirement/requirementDb */ "./src/diagrams/requirement/requirementDb.js");
-/* harmony import */ var _diagrams_requirement_requirementRenderer__WEBPACK_IMPORTED_MODULE_42__ = __webpack_require__(/*! ./diagrams/requirement/requirementRenderer */ "./src/diagrams/requirement/requirementRenderer.js");
-/* harmony import */ var _diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./diagrams/sequence/parser/sequenceDiagram */ "./src/diagrams/sequence/parser/sequenceDiagram.jison");
-/* harmony import */ var _diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./diagrams/git/gitGraphRenderer */ "./src/diagrams/git/gitGraphRenderer.js");
+/* harmony import */ var _diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./diagrams/git/parser/gitGraph */ "./src/diagrams/git/parser/gitGraph.jison");
+/* harmony import */ var _diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _diagrams_info_infoDb__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./diagrams/info/infoDb */ "./src/diagrams/info/infoDb.js");
+/* harmony import */ var _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_38__ = __webpack_require__(/*! ./diagrams/info/infoRenderer */ "./src/diagrams/info/infoRenderer.js");
+/* harmony import */ var _diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./diagrams/info/parser/info */ "./src/diagrams/info/parser/info.jison");
+/* harmony import */ var _diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(_diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_18__);
+/* harmony import */ var _diagrams_pie_parser_pie__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./diagrams/pie/parser/pie */ "./src/diagrams/pie/parser/pie.jison");
+/* harmony import */ var _diagrams_pie_parser_pie__WEBPACK_IMPORTED_MODULE_20___default = /*#__PURE__*/__webpack_require__.n(_diagrams_pie_parser_pie__WEBPACK_IMPORTED_MODULE_20__);
+/* harmony import */ var _diagrams_pie_pieDb__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./diagrams/pie/pieDb */ "./src/diagrams/pie/pieDb.js");
+/* harmony import */ var _diagrams_pie_pieRenderer__WEBPACK_IMPORTED_MODULE_40__ = __webpack_require__(/*! ./diagrams/pie/pieRenderer */ "./src/diagrams/pie/pieRenderer.js");
+/* harmony import */ var _diagrams_requirement_parser_requirementDiagram__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./diagrams/requirement/parser/requirementDiagram */ "./src/diagrams/requirement/parser/requirementDiagram.jison");
+/* harmony import */ var _diagrams_requirement_parser_requirementDiagram__WEBPACK_IMPORTED_MODULE_26___default = /*#__PURE__*/__webpack_require__.n(_diagrams_requirement_parser_requirementDiagram__WEBPACK_IMPORTED_MODULE_26__);
+/* harmony import */ var _diagrams_requirement_requirementDb__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./diagrams/requirement/requirementDb */ "./src/diagrams/requirement/requirementDb.js");
+/* harmony import */ var _diagrams_requirement_requirementRenderer__WEBPACK_IMPORTED_MODULE_43__ = __webpack_require__(/*! ./diagrams/requirement/requirementRenderer */ "./src/diagrams/requirement/requirementRenderer.js");
+/* harmony import */ var _diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./diagrams/sequence/parser/sequenceDiagram */ "./src/diagrams/sequence/parser/sequenceDiagram.jison");
+/* harmony import */ var _diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_11___default = /*#__PURE__*/__webpack_require__.n(_diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_11__);
 /* harmony import */ var _diagrams_sequence_sequenceDb__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./diagrams/sequence/sequenceDb */ "./src/diagrams/sequence/sequenceDb.js");
-/* harmony import */ var _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./diagrams/sequence/sequenceRenderer */ "./src/diagrams/sequence/sequenceRenderer.js");
-/* harmony import */ var _diagrams_state_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./diagrams/state/parser/stateDiagram */ "./src/diagrams/state/parser/stateDiagram.jison");
-/* harmony import */ var _diagrams_state_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(_diagrams_state_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_15__);
-/* harmony import */ var _diagrams_state_stateDb__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./diagrams/state/stateDb */ "./src/diagrams/state/stateDb.js");
-/* harmony import */ var _diagrams_state_stateRenderer__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ./diagrams/state/stateRenderer */ "./src/diagrams/state/stateRenderer.js");
-/* harmony import */ var _diagrams_state_stateRenderer_v2__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./diagrams/state/stateRenderer-v2 */ "./src/diagrams/state/stateRenderer-v2.js");
-/* harmony import */ var _diagrams_user_journey_journeyDb__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./diagrams/user-journey/journeyDb */ "./src/diagrams/user-journey/journeyDb.js");
-/* harmony import */ var _diagrams_user_journey_journeyRenderer__WEBPACK_IMPORTED_MODULE_41__ = __webpack_require__(/*! ./diagrams/user-journey/journeyRenderer */ "./src/diagrams/user-journey/journeyRenderer.js");
-/* harmony import */ var _diagrams_user_journey_parser_journey__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./diagrams/user-journey/parser/journey */ "./src/diagrams/user-journey/parser/journey.jison");
-/* harmony import */ var _diagrams_user_journey_parser_journey__WEBPACK_IMPORTED_MODULE_23___default = /*#__PURE__*/__webpack_require__.n(_diagrams_user_journey_parser_journey__WEBPACK_IMPORTED_MODULE_23__);
-/* harmony import */ var _errorRenderer__WEBPACK_IMPORTED_MODULE_43__ = __webpack_require__(/*! ./errorRenderer */ "./src/errorRenderer.js");
-/* harmony import */ var _interactionDb__WEBPACK_IMPORTED_MODULE_44__ = __webpack_require__(/*! ./interactionDb */ "./src/interactionDb.js");
-/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./logger */ "./src/logger.js");
-/* harmony import */ var _styles__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./styles */ "./src/styles.js");
-/* harmony import */ var _themes__WEBPACK_IMPORTED_MODULE_45__ = __webpack_require__(/*! ./themes */ "./src/themes/index.js");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
+/* harmony import */ var _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./diagrams/sequence/sequenceRenderer */ "./src/diagrams/sequence/sequenceRenderer.js");
+/* harmony import */ var _diagrams_state_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./diagrams/state/parser/stateDiagram */ "./src/diagrams/state/parser/stateDiagram.jison");
+/* harmony import */ var _diagrams_state_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_16___default = /*#__PURE__*/__webpack_require__.n(_diagrams_state_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_16__);
+/* harmony import */ var _diagrams_state_stateDb__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./diagrams/state/stateDb */ "./src/diagrams/state/stateDb.js");
+/* harmony import */ var _diagrams_state_stateRenderer__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ./diagrams/state/stateRenderer */ "./src/diagrams/state/stateRenderer.js");
+/* harmony import */ var _diagrams_state_stateRenderer_v2__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! ./diagrams/state/stateRenderer-v2 */ "./src/diagrams/state/stateRenderer-v2.js");
+/* harmony import */ var _diagrams_user_journey_journeyDb__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./diagrams/user-journey/journeyDb */ "./src/diagrams/user-journey/journeyDb.js");
+/* harmony import */ var _diagrams_user_journey_journeyRenderer__WEBPACK_IMPORTED_MODULE_42__ = __webpack_require__(/*! ./diagrams/user-journey/journeyRenderer */ "./src/diagrams/user-journey/journeyRenderer.js");
+/* harmony import */ var _diagrams_user_journey_parser_journey__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./diagrams/user-journey/parser/journey */ "./src/diagrams/user-journey/parser/journey.jison");
+/* harmony import */ var _diagrams_user_journey_parser_journey__WEBPACK_IMPORTED_MODULE_24___default = /*#__PURE__*/__webpack_require__.n(_diagrams_user_journey_parser_journey__WEBPACK_IMPORTED_MODULE_24__);
+/* harmony import */ var _errorRenderer__WEBPACK_IMPORTED_MODULE_44__ = __webpack_require__(/*! ./errorRenderer */ "./src/errorRenderer.js");
+/* harmony import */ var _interactionDb__WEBPACK_IMPORTED_MODULE_45__ = __webpack_require__(/*! ./interactionDb */ "./src/interactionDb.js");
+/* harmony import */ var _logger__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./logger */ "./src/logger.js");
+/* harmony import */ var _styles__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./styles */ "./src/styles.js");
+/* harmony import */ var _themes__WEBPACK_IMPORTED_MODULE_46__ = __webpack_require__(/*! ./themes */ "./src/themes/index.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./utils */ "./src/utils.js");
+/* harmony import */ var dompurify__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! dompurify */ "dompurify");
+/* harmony import */ var dompurify__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(dompurify__WEBPACK_IMPORTED_MODULE_2__);
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 
 /**
@@ -26309,101 +27358,106 @@ function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" =
 
 
 
+
+
 /**
  * @param text
  * @returns {any}
  */
 
 function parse(text) {
-  var cnf = _config__WEBPACK_IMPORTED_MODULE_2__.getConfig();
-  var graphInit = _utils__WEBPACK_IMPORTED_MODULE_3__["default"].detectInit(text, cnf);
+  text = text + '\n';
+  var cnf = _config__WEBPACK_IMPORTED_MODULE_3__.getConfig();
+  var graphInit = _utils__WEBPACK_IMPORTED_MODULE_4__["default"].detectInit(text, cnf);
 
   if (graphInit) {
     reinitialize(graphInit);
-    _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('reinit ', graphInit);
+    _logger__WEBPACK_IMPORTED_MODULE_5__.log.info('reinit ', graphInit);
   }
 
-  var graphType = _utils__WEBPACK_IMPORTED_MODULE_3__["default"].detectType(text, cnf);
+  var graphType = _utils__WEBPACK_IMPORTED_MODULE_4__["default"].detectType(text, cnf);
   var parser;
-  _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('Type ' + graphType);
+  _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('Type ' + graphType);
 
   switch (graphType) {
-    case 'git':
-      parser = (_diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_5___default());
+    case 'gitGraph':
+      _diagrams_git_gitGraphAst__WEBPACK_IMPORTED_MODULE_6__["default"].clear();
+      parser = (_diagrams_git_parser_gitGraph__WEBPACK_IMPORTED_MODULE_7___default());
       parser.parser.yy = _diagrams_git_gitGraphAst__WEBPACK_IMPORTED_MODULE_6__["default"];
       break;
 
     case 'flowchart':
-      _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_7__["default"].clear();
-      parser = (_diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_8___default());
-      parser.parser.yy = _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_7__["default"];
+      _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_8__["default"].clear();
+      parser = (_diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_9___default());
+      parser.parser.yy = _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_8__["default"];
       break;
 
     case 'flowchart-v2':
-      _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_7__["default"].clear();
-      parser = (_diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_8___default());
-      parser.parser.yy = _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_7__["default"];
+      _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_8__["default"].clear();
+      parser = (_diagrams_flowchart_parser_flow__WEBPACK_IMPORTED_MODULE_9___default());
+      parser.parser.yy = _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_8__["default"];
       break;
 
     case 'sequence':
-      parser = (_diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_9___default());
+      _diagrams_sequence_sequenceDb__WEBPACK_IMPORTED_MODULE_10__["default"].clear();
+      parser = (_diagrams_sequence_parser_sequenceDiagram__WEBPACK_IMPORTED_MODULE_11___default());
       parser.parser.yy = _diagrams_sequence_sequenceDb__WEBPACK_IMPORTED_MODULE_10__["default"];
       break;
 
     case 'gantt':
-      parser = (_diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_11___default());
-      parser.parser.yy = _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_12__["default"];
+      parser = (_diagrams_gantt_parser_gantt__WEBPACK_IMPORTED_MODULE_12___default());
+      parser.parser.yy = _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_13__["default"];
       break;
 
     case 'class':
-      parser = (_diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_13___default());
-      parser.parser.yy = _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_14__["default"];
+      parser = (_diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_14___default());
+      parser.parser.yy = _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_15__["default"];
       break;
 
     case 'classDiagram':
-      parser = (_diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_13___default());
-      parser.parser.yy = _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_14__["default"];
+      parser = (_diagrams_class_parser_classDiagram__WEBPACK_IMPORTED_MODULE_14___default());
+      parser.parser.yy = _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_15__["default"];
       break;
 
     case 'state':
-      parser = (_diagrams_state_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_15___default());
-      parser.parser.yy = _diagrams_state_stateDb__WEBPACK_IMPORTED_MODULE_16__["default"];
+      parser = (_diagrams_state_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_16___default());
+      parser.parser.yy = _diagrams_state_stateDb__WEBPACK_IMPORTED_MODULE_17__["default"];
       break;
 
     case 'stateDiagram':
-      parser = (_diagrams_state_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_15___default());
-      parser.parser.yy = _diagrams_state_stateDb__WEBPACK_IMPORTED_MODULE_16__["default"];
+      parser = (_diagrams_state_parser_stateDiagram__WEBPACK_IMPORTED_MODULE_16___default());
+      parser.parser.yy = _diagrams_state_stateDb__WEBPACK_IMPORTED_MODULE_17__["default"];
       break;
 
     case 'info':
-      _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('info info info');
-      parser = (_diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_17___default());
-      parser.parser.yy = _diagrams_info_infoDb__WEBPACK_IMPORTED_MODULE_18__["default"];
+      _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('info info info');
+      parser = (_diagrams_info_parser_info__WEBPACK_IMPORTED_MODULE_18___default());
+      parser.parser.yy = _diagrams_info_infoDb__WEBPACK_IMPORTED_MODULE_19__["default"];
       break;
 
     case 'pie':
-      _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('pie');
-      parser = (_diagrams_pie_parser_pie__WEBPACK_IMPORTED_MODULE_19___default());
-      parser.parser.yy = _diagrams_pie_pieDb__WEBPACK_IMPORTED_MODULE_20__["default"];
+      _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('pie');
+      parser = (_diagrams_pie_parser_pie__WEBPACK_IMPORTED_MODULE_20___default());
+      parser.parser.yy = _diagrams_pie_pieDb__WEBPACK_IMPORTED_MODULE_21__["default"];
       break;
 
     case 'er':
-      _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('er');
-      parser = (_diagrams_er_parser_erDiagram__WEBPACK_IMPORTED_MODULE_21___default());
-      parser.parser.yy = _diagrams_er_erDb__WEBPACK_IMPORTED_MODULE_22__["default"];
+      _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('er');
+      parser = (_diagrams_er_parser_erDiagram__WEBPACK_IMPORTED_MODULE_22___default());
+      parser.parser.yy = _diagrams_er_erDb__WEBPACK_IMPORTED_MODULE_23__["default"];
       break;
 
     case 'journey':
-      _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('Journey');
-      parser = (_diagrams_user_journey_parser_journey__WEBPACK_IMPORTED_MODULE_23___default());
-      parser.parser.yy = _diagrams_user_journey_journeyDb__WEBPACK_IMPORTED_MODULE_24__["default"];
+      _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('Journey');
+      parser = (_diagrams_user_journey_parser_journey__WEBPACK_IMPORTED_MODULE_24___default());
+      parser.parser.yy = _diagrams_user_journey_journeyDb__WEBPACK_IMPORTED_MODULE_25__["default"];
       break;
 
     case 'requirement':
     case 'requirementDiagram':
-      _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('RequirementDiagram');
-      parser = (_diagrams_requirement_parser_requirementDiagram__WEBPACK_IMPORTED_MODULE_25___default());
-      parser.parser.yy = _diagrams_requirement_requirementDb__WEBPACK_IMPORTED_MODULE_26__["default"];
+      _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('RequirementDiagram');
+      parser = (_diagrams_requirement_parser_requirementDiagram__WEBPACK_IMPORTED_MODULE_26___default());
+      parser.parser.yy = _diagrams_requirement_requirementDb__WEBPACK_IMPORTED_MODULE_27__["default"];
       break;
   }
 
@@ -26482,16 +27536,20 @@ var decodeEntities = function decodeEntities(text) {
  */
 
 var render = function render(id, _txt, cb, container) {
-  _config__WEBPACK_IMPORTED_MODULE_2__.reset();
-  var txt = _txt;
-  var graphInit = _utils__WEBPACK_IMPORTED_MODULE_3__["default"].detectInit(txt);
+  _config__WEBPACK_IMPORTED_MODULE_3__.reset();
+
+  var txt = _txt.replace(/\r\n?/g, '\n'); // parser problems on CRLF ignore all CR and leave LF;;
+
+
+  var graphInit = _utils__WEBPACK_IMPORTED_MODULE_4__["default"].detectInit(txt);
 
   if (graphInit) {
-    (0,_utils__WEBPACK_IMPORTED_MODULE_3__.directiveSanitizer)(graphInit);
-    _config__WEBPACK_IMPORTED_MODULE_2__.addDirective(graphInit);
+    (0,_utils__WEBPACK_IMPORTED_MODULE_4__.directiveSanitizer)(graphInit);
+    _config__WEBPACK_IMPORTED_MODULE_3__.addDirective(graphInit);
   }
 
-  var cnf = _config__WEBPACK_IMPORTED_MODULE_2__.getConfig(); // Check the maximum allowed text size
+  var cnf = _config__WEBPACK_IMPORTED_MODULE_3__.getConfig();
+  _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug(cnf); // Check the maximum allowed text size
 
   if (_txt.length > cnf.maxTextSize) {
     txt = 'graph TB;a[Maximum text size in diagram exceeded];style a fill:#faa';
@@ -26579,7 +27637,7 @@ var render = function render(id, _txt, cb, container) {
   txt = encodeEntities(txt); // Get the tmp element containing the the svg
 
   var element = root.select('#d' + id).node();
-  var graphType = _utils__WEBPACK_IMPORTED_MODULE_3__["default"].detectType(txt, cnf); // insert inline style into svg
+  var graphType = _utils__WEBPACK_IMPORTED_MODULE_4__["default"].detectType(txt, cnf); // insert inline style into svg
 
   var svg = element.firstChild;
   var firstChild = svg.firstChild;
@@ -26601,7 +27659,7 @@ var render = function render(id, _txt, cb, container) {
 
 
   if (graphType === 'flowchart' || graphType === 'flowchart-v2' || graphType === 'graph') {
-    var classes = _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_27__["default"].getClasses(txt);
+    var classes = _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_28__["default"].getClasses(txt);
     var htmlLabels = cnf.htmlLabels || cnf.flowchart.htmlLabels;
 
     for (var className in classes) {
@@ -26627,7 +27685,7 @@ var render = function render(id, _txt, cb, container) {
     return (0,stylis__WEBPACK_IMPORTED_MODULE_1__.serialize)((0,stylis__WEBPACK_IMPORTED_MODULE_1__.compile)("".concat(selector, "{").concat(styles, "}")), stylis__WEBPACK_IMPORTED_MODULE_1__.stringify);
   };
 
-  var rules = stylis("#".concat(id), (0,_styles__WEBPACK_IMPORTED_MODULE_28__["default"])(graphType, userStyles, cnf.themeVariables));
+  var rules = stylis("#".concat(id), (0,_styles__WEBPACK_IMPORTED_MODULE_29__["default"])(graphType, userStyles, cnf.themeVariables));
   var style1 = document.createElement('style');
   style1.innerHTML = "#".concat(id, " ") + rules;
   svg.insertBefore(style1, firstChild); // Verify that the generated svgs are ok before removing this
@@ -26643,22 +27701,22 @@ var render = function render(id, _txt, cb, container) {
 
   try {
     switch (graphType) {
-      case 'git':
-        cnf.flowchart.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_29__["default"].setConf(cnf.git);
-        _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_29__["default"].draw(txt, id, false);
+      case 'gitGraph':
+        // cnf.flowchart.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
+        //gitGraphRenderer.setConf(cnf.git);
+        _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_30__["default"].draw(txt, id, false);
         break;
 
       case 'flowchart':
         cnf.flowchart.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_27__["default"].setConf(cnf.flowchart);
-        _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_27__["default"].draw(txt, id, false);
+        _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_28__["default"].setConf(cnf.flowchart);
+        _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_28__["default"].draw(txt, id, false);
         break;
 
       case 'flowchart-v2':
         cnf.flowchart.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        _diagrams_flowchart_flowRenderer_v2__WEBPACK_IMPORTED_MODULE_30__["default"].setConf(cnf.flowchart);
-        _diagrams_flowchart_flowRenderer_v2__WEBPACK_IMPORTED_MODULE_30__["default"].draw(txt, id, false);
+        _diagrams_flowchart_flowRenderer_v2__WEBPACK_IMPORTED_MODULE_31__["default"].setConf(cnf.flowchart);
+        _diagrams_flowchart_flowRenderer_v2__WEBPACK_IMPORTED_MODULE_31__["default"].draw(txt, id, false);
         break;
 
       case 'sequence':
@@ -26666,82 +27724,82 @@ var render = function render(id, _txt, cb, container) {
 
         if (cnf.sequenceDiagram) {
           // backwards compatibility
-          _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_31__["default"].setConf(Object.assign(cnf.sequence, cnf.sequenceDiagram));
+          _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_32__["default"].setConf(Object.assign(cnf.sequence, cnf.sequenceDiagram));
           console.error('`mermaid config.sequenceDiagram` has been renamed to `config.sequence`. Please update your mermaid config.');
         } else {
-          _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_31__["default"].setConf(cnf.sequence);
+          _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_32__["default"].setConf(cnf.sequence);
         }
 
-        _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_31__["default"].draw(txt, id);
+        _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_32__["default"].draw(txt, id);
         break;
 
       case 'gantt':
         cnf.gantt.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_32__["default"].setConf(cnf.gantt);
-        _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_32__["default"].draw(txt, id);
+        _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_33__["default"].setConf(cnf.gantt);
+        _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_33__["default"].draw(txt, id);
         break;
 
       case 'class':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_33__["default"].setConf(cnf.class);
-        _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_33__["default"].draw(txt, id);
+        _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_34__["default"].setConf(cnf.class);
+        _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_34__["default"].draw(txt, id);
         break;
 
       case 'classDiagram':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        _diagrams_class_classRenderer_v2__WEBPACK_IMPORTED_MODULE_34__["default"].setConf(cnf.class);
-        _diagrams_class_classRenderer_v2__WEBPACK_IMPORTED_MODULE_34__["default"].draw(txt, id);
+        _diagrams_class_classRenderer_v2__WEBPACK_IMPORTED_MODULE_35__["default"].setConf(cnf.class);
+        _diagrams_class_classRenderer_v2__WEBPACK_IMPORTED_MODULE_35__["default"].draw(txt, id);
         break;
 
       case 'state':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        _diagrams_state_stateRenderer__WEBPACK_IMPORTED_MODULE_35__["default"].setConf(cnf.state);
-        _diagrams_state_stateRenderer__WEBPACK_IMPORTED_MODULE_35__["default"].draw(txt, id);
+        _diagrams_state_stateRenderer__WEBPACK_IMPORTED_MODULE_36__["default"].setConf(cnf.state);
+        _diagrams_state_stateRenderer__WEBPACK_IMPORTED_MODULE_36__["default"].draw(txt, id);
         break;
 
       case 'stateDiagram':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        _diagrams_state_stateRenderer_v2__WEBPACK_IMPORTED_MODULE_36__["default"].setConf(cnf.state);
-        _diagrams_state_stateRenderer_v2__WEBPACK_IMPORTED_MODULE_36__["default"].draw(txt, id);
+        _diagrams_state_stateRenderer_v2__WEBPACK_IMPORTED_MODULE_37__["default"].setConf(cnf.state);
+        _diagrams_state_stateRenderer_v2__WEBPACK_IMPORTED_MODULE_37__["default"].draw(txt, id);
         break;
 
       case 'info':
         cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
-        _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_37__["default"].setConf(cnf.class);
-        _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_37__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_38__.version);
+        _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_38__["default"].setConf(cnf.class);
+        _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_38__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_39__.version);
         break;
 
       case 'pie':
         //cnf.class.arrowMarkerAbsolute = cnf.arrowMarkerAbsolute;
         //pieRenderer.setConf(cnf.pie);
-        _diagrams_pie_pieRenderer__WEBPACK_IMPORTED_MODULE_39__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_38__.version);
+        _diagrams_pie_pieRenderer__WEBPACK_IMPORTED_MODULE_40__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_39__.version);
         break;
 
       case 'er':
-        _diagrams_er_erRenderer__WEBPACK_IMPORTED_MODULE_40__["default"].setConf(cnf.er);
-        _diagrams_er_erRenderer__WEBPACK_IMPORTED_MODULE_40__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_38__.version);
+        _diagrams_er_erRenderer__WEBPACK_IMPORTED_MODULE_41__["default"].setConf(cnf.er);
+        _diagrams_er_erRenderer__WEBPACK_IMPORTED_MODULE_41__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_39__.version);
         break;
 
       case 'journey':
-        _diagrams_user_journey_journeyRenderer__WEBPACK_IMPORTED_MODULE_41__["default"].setConf(cnf.journey);
-        _diagrams_user_journey_journeyRenderer__WEBPACK_IMPORTED_MODULE_41__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_38__.version);
+        _diagrams_user_journey_journeyRenderer__WEBPACK_IMPORTED_MODULE_42__["default"].setConf(cnf.journey);
+        _diagrams_user_journey_journeyRenderer__WEBPACK_IMPORTED_MODULE_42__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_39__.version);
         break;
 
       case 'requirement':
-        _diagrams_requirement_requirementRenderer__WEBPACK_IMPORTED_MODULE_42__["default"].setConf(cnf.requirement);
-        _diagrams_requirement_requirementRenderer__WEBPACK_IMPORTED_MODULE_42__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_38__.version);
+        _diagrams_requirement_requirementRenderer__WEBPACK_IMPORTED_MODULE_43__["default"].setConf(cnf.requirement);
+        _diagrams_requirement_requirementRenderer__WEBPACK_IMPORTED_MODULE_43__["default"].draw(txt, id, _package_json__WEBPACK_IMPORTED_MODULE_39__.version);
         break;
     }
   } catch (e) {
     // errorRenderer.setConf(cnf.class);
-    _errorRenderer__WEBPACK_IMPORTED_MODULE_43__["default"].draw(id, _package_json__WEBPACK_IMPORTED_MODULE_38__.version);
+    _errorRenderer__WEBPACK_IMPORTED_MODULE_44__["default"].draw(id, _package_json__WEBPACK_IMPORTED_MODULE_39__.version);
     throw e;
   }
 
   root.select("[id=\"".concat(id, "\"]")).selectAll('foreignobject > *').attr('xmlns', 'http://www.w3.org/1999/xhtml'); // Fix for when the base tag is used
 
   var svgCode = root.select('#d' + id).node().innerHTML;
-  _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('cnf.arrowMarkerAbsolute', cnf.arrowMarkerAbsolute);
+  _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('cnf.arrowMarkerAbsolute', cnf.arrowMarkerAbsolute);
 
   if ((!cnf.arrowMarkerAbsolute || cnf.arrowMarkerAbsolute === 'false') && cnf.arrowMarkerAbsolute !== 'sandbox') {
     svgCode = svgCode.replace(/marker-end="url\(.*?#/g, 'marker-end="url(#', 'g');
@@ -26762,32 +27820,39 @@ var render = function render(id, _txt, cb, container) {
     }
 
     svgCode = "<iframe style=\"width:".concat(width, ";height:").concat(height, ";border:0;margin:0;\" src=\"data:text/html;base64,").concat(btoa('<body style="margin:0">' + svgCode + '</body>'), "\" sandbox=\"allow-top-navigation-by-user-activation allow-popups\">\n  The \u201Ciframe\u201D tag is not supported by your browser.\n</iframe>");
+  } else {
+    if (cnf.securityLevel !== 'loose') {
+      svgCode = dompurify__WEBPACK_IMPORTED_MODULE_2___default().sanitize(svgCode, {
+        ADD_TAGS: ['foreignobject'],
+        ADD_ATTR: ['dominant-baseline']
+      });
+    }
   }
 
   if (typeof cb !== 'undefined') {
     switch (graphType) {
       case 'flowchart':
       case 'flowchart-v2':
-        cb(svgCode, _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_7__["default"].bindFunctions);
+        cb(svgCode, _diagrams_flowchart_flowDb__WEBPACK_IMPORTED_MODULE_8__["default"].bindFunctions);
         break;
 
       case 'gantt':
-        cb(svgCode, _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_12__["default"].bindFunctions);
+        cb(svgCode, _diagrams_gantt_ganttDb__WEBPACK_IMPORTED_MODULE_13__["default"].bindFunctions);
         break;
 
       case 'class':
       case 'classDiagram':
-        cb(svgCode, _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_14__["default"].bindFunctions);
+        cb(svgCode, _diagrams_class_classDb__WEBPACK_IMPORTED_MODULE_15__["default"].bindFunctions);
         break;
 
       default:
         cb(svgCode);
     }
   } else {
-    _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('CB = undefined!');
+    _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('CB = undefined!');
   }
 
-  (0,_interactionDb__WEBPACK_IMPORTED_MODULE_44__.attachFunctions)();
+  (0,_interactionDb__WEBPACK_IMPORTED_MODULE_45__.attachFunctions)();
   var tmpElementSelector = cnf.securityLevel === 'sandbox' ? '#i' + id : '#d' + id;
   var node = (0,d3__WEBPACK_IMPORTED_MODULE_0__.select)(tmpElementSelector).node();
 
@@ -26825,13 +27890,13 @@ var parseDirective = function parseDirective(p, statement, context, type) {
       }
     }
   } catch (error) {
-    _logger__WEBPACK_IMPORTED_MODULE_4__.log.error("Error while rendering sequenceDiagram directive: ".concat(statement, " jison context: ").concat(context));
-    _logger__WEBPACK_IMPORTED_MODULE_4__.log.error(error.message);
+    _logger__WEBPACK_IMPORTED_MODULE_5__.log.error("Error while rendering sequenceDiagram directive: ".concat(statement, " jison context: ").concat(context));
+    _logger__WEBPACK_IMPORTED_MODULE_5__.log.error(error.message);
   }
 };
 
 var handleDirective = function handleDirective(p, directive, type) {
-  _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug("Directive type=".concat(directive.type, " with args:"), directive.args);
+  _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug("Directive type=".concat(directive.type, " with args:"), directive.args);
 
   switch (directive.type) {
     case 'init':
@@ -26847,11 +27912,11 @@ var handleDirective = function handleDirective(p, directive, type) {
             delete directive.args[prop];
           }
         });
-        _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('sanitize in handleDirective', directive.args);
-        (0,_utils__WEBPACK_IMPORTED_MODULE_3__.directiveSanitizer)(directive.args);
-        _logger__WEBPACK_IMPORTED_MODULE_4__.log.debug('sanitize in handleDirective (done)', directive.args);
+        _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('sanitize in handleDirective', directive.args);
+        (0,_utils__WEBPACK_IMPORTED_MODULE_4__.directiveSanitizer)(directive.args);
+        _logger__WEBPACK_IMPORTED_MODULE_5__.log.debug('sanitize in handleDirective (done)', directive.args);
         reinitialize(directive.args);
-        _config__WEBPACK_IMPORTED_MODULE_2__.addDirective(directive.args);
+        _config__WEBPACK_IMPORTED_MODULE_3__.addDirective(directive.args);
         break;
       }
 
@@ -26864,11 +27929,11 @@ var handleDirective = function handleDirective(p, directive, type) {
       break;
 
     case 'themeCss':
-      _logger__WEBPACK_IMPORTED_MODULE_4__.log.warn('themeCss encountered');
+      _logger__WEBPACK_IMPORTED_MODULE_5__.log.warn('themeCss encountered');
       break;
 
     default:
-      _logger__WEBPACK_IMPORTED_MODULE_4__.log.warn("Unhandled directive: source: '%%{".concat(directive.type, ": ").concat(JSON.stringify(directive.args ? directive.args : {}), "}%%"), directive);
+      _logger__WEBPACK_IMPORTED_MODULE_5__.log.warn("Unhandled directive: source: '%%{".concat(directive.type, ": ").concat(JSON.stringify(directive.args ? directive.args : {}), "}%%"), directive);
       break;
   }
 };
@@ -26877,25 +27942,25 @@ var handleDirective = function handleDirective(p, directive, type) {
 
 function updateRendererConfigs(conf) {
   // Todo remove, all diagrams should get config on demoand from the config object, no need for this
-  _diagrams_git_gitGraphRenderer__WEBPACK_IMPORTED_MODULE_29__["default"].setConf(conf.git);
-  _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_27__["default"].setConf(conf.flowchart);
-  _diagrams_flowchart_flowRenderer_v2__WEBPACK_IMPORTED_MODULE_30__["default"].setConf(conf.flowchart);
+  // gitGraphRenderer.setConf(conf.git); // Todo Remove all  of these
+  _diagrams_flowchart_flowRenderer__WEBPACK_IMPORTED_MODULE_28__["default"].setConf(conf.flowchart);
+  _diagrams_flowchart_flowRenderer_v2__WEBPACK_IMPORTED_MODULE_31__["default"].setConf(conf.flowchart);
 
   if (typeof conf['sequenceDiagram'] !== 'undefined') {
-    _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_31__["default"].setConf((0,_utils__WEBPACK_IMPORTED_MODULE_3__.assignWithDepth)(conf.sequence, conf['sequenceDiagram']));
+    _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_32__["default"].setConf((0,_utils__WEBPACK_IMPORTED_MODULE_4__.assignWithDepth)(conf.sequence, conf['sequenceDiagram']));
   }
 
-  _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_31__["default"].setConf(conf.sequence);
-  _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_32__["default"].setConf(conf.gantt);
-  _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_33__["default"].setConf(conf.class);
-  _diagrams_state_stateRenderer__WEBPACK_IMPORTED_MODULE_35__["default"].setConf(conf.state);
-  _diagrams_state_stateRenderer_v2__WEBPACK_IMPORTED_MODULE_36__["default"].setConf(conf.state);
-  _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_37__["default"].setConf(conf.class); // pieRenderer.setConf(conf.class);
+  _diagrams_sequence_sequenceRenderer__WEBPACK_IMPORTED_MODULE_32__["default"].setConf(conf.sequence);
+  _diagrams_gantt_ganttRenderer__WEBPACK_IMPORTED_MODULE_33__["default"].setConf(conf.gantt);
+  _diagrams_class_classRenderer__WEBPACK_IMPORTED_MODULE_34__["default"].setConf(conf.class);
+  _diagrams_state_stateRenderer__WEBPACK_IMPORTED_MODULE_36__["default"].setConf(conf.state);
+  _diagrams_state_stateRenderer_v2__WEBPACK_IMPORTED_MODULE_37__["default"].setConf(conf.state);
+  _diagrams_info_infoRenderer__WEBPACK_IMPORTED_MODULE_38__["default"].setConf(conf.class); // pieRenderer.setConf(conf.class);
 
-  _diagrams_er_erRenderer__WEBPACK_IMPORTED_MODULE_40__["default"].setConf(conf.er);
-  _diagrams_user_journey_journeyRenderer__WEBPACK_IMPORTED_MODULE_41__["default"].setConf(conf.journey);
-  _diagrams_requirement_requirementRenderer__WEBPACK_IMPORTED_MODULE_42__["default"].setConf(conf.requirement);
-  _errorRenderer__WEBPACK_IMPORTED_MODULE_43__["default"].setConf(conf.class);
+  _diagrams_er_erRenderer__WEBPACK_IMPORTED_MODULE_41__["default"].setConf(conf.er);
+  _diagrams_user_journey_journeyRenderer__WEBPACK_IMPORTED_MODULE_42__["default"].setConf(conf.journey);
+  _diagrams_requirement_requirementRenderer__WEBPACK_IMPORTED_MODULE_43__["default"].setConf(conf.requirement);
+  _errorRenderer__WEBPACK_IMPORTED_MODULE_44__["default"].setConf(conf.class);
 }
 /** To be removed */
 
@@ -26934,18 +27999,18 @@ function initialize(options) {
   } // Set default options
 
 
-  _config__WEBPACK_IMPORTED_MODULE_2__.saveConfigFromInitilize(options);
+  _config__WEBPACK_IMPORTED_MODULE_3__.saveConfigFromInitilize(options);
 
-  if (options && options.theme && _themes__WEBPACK_IMPORTED_MODULE_45__["default"][options.theme]) {
+  if (options && options.theme && _themes__WEBPACK_IMPORTED_MODULE_46__["default"][options.theme]) {
     // Todo merge with user options
-    options.themeVariables = _themes__WEBPACK_IMPORTED_MODULE_45__["default"][options.theme].getThemeVariables(options.themeVariables);
+    options.themeVariables = _themes__WEBPACK_IMPORTED_MODULE_46__["default"][options.theme].getThemeVariables(options.themeVariables);
   } else {
-    if (options) options.themeVariables = _themes__WEBPACK_IMPORTED_MODULE_45__["default"]["default"].getThemeVariables(options.themeVariables);
+    if (options) options.themeVariables = _themes__WEBPACK_IMPORTED_MODULE_46__["default"]["default"].getThemeVariables(options.themeVariables);
   }
 
-  var config = _typeof(options) === 'object' ? _config__WEBPACK_IMPORTED_MODULE_2__.setSiteConfig(options) : _config__WEBPACK_IMPORTED_MODULE_2__.getSiteConfig();
+  var config = _typeof(options) === 'object' ? _config__WEBPACK_IMPORTED_MODULE_3__.setSiteConfig(options) : _config__WEBPACK_IMPORTED_MODULE_3__.getSiteConfig();
   updateRendererConfigs(config);
-  (0,_logger__WEBPACK_IMPORTED_MODULE_4__.setLogLevel)(config.logLevel); // log.debug('mermaidAPI.initialize: ', config);
+  (0,_logger__WEBPACK_IMPORTED_MODULE_5__.setLogLevel)(config.logLevel); // log.debug('mermaidAPI.initialize: ', config);
 }
 
 var mermaidAPI = Object.freeze({
@@ -26954,23 +28019,23 @@ var mermaidAPI = Object.freeze({
   parseDirective: parseDirective,
   initialize: initialize,
   reinitialize: reinitialize,
-  getConfig: _config__WEBPACK_IMPORTED_MODULE_2__.getConfig,
-  setConfig: _config__WEBPACK_IMPORTED_MODULE_2__.setConfig,
-  getSiteConfig: _config__WEBPACK_IMPORTED_MODULE_2__.getSiteConfig,
-  updateSiteConfig: _config__WEBPACK_IMPORTED_MODULE_2__.updateSiteConfig,
+  getConfig: _config__WEBPACK_IMPORTED_MODULE_3__.getConfig,
+  setConfig: _config__WEBPACK_IMPORTED_MODULE_3__.setConfig,
+  getSiteConfig: _config__WEBPACK_IMPORTED_MODULE_3__.getSiteConfig,
+  updateSiteConfig: _config__WEBPACK_IMPORTED_MODULE_3__.updateSiteConfig,
   reset: function reset() {
     // console.warn('reset');
-    _config__WEBPACK_IMPORTED_MODULE_2__.reset(); // const siteConfig = configApi.getSiteConfig();
+    _config__WEBPACK_IMPORTED_MODULE_3__.reset(); // const siteConfig = configApi.getSiteConfig();
     // updateRendererConfigs(siteConfig);
   },
   globalReset: function globalReset() {
-    _config__WEBPACK_IMPORTED_MODULE_2__.reset(_config__WEBPACK_IMPORTED_MODULE_2__.defaultConfig);
-    updateRendererConfigs(_config__WEBPACK_IMPORTED_MODULE_2__.getConfig());
+    _config__WEBPACK_IMPORTED_MODULE_3__.reset(_config__WEBPACK_IMPORTED_MODULE_3__.defaultConfig);
+    updateRendererConfigs(_config__WEBPACK_IMPORTED_MODULE_3__.getConfig());
   },
-  defaultConfig: _config__WEBPACK_IMPORTED_MODULE_2__.defaultConfig
+  defaultConfig: _config__WEBPACK_IMPORTED_MODULE_3__.defaultConfig
 });
-(0,_logger__WEBPACK_IMPORTED_MODULE_4__.setLogLevel)(_config__WEBPACK_IMPORTED_MODULE_2__.getConfig().logLevel);
-_config__WEBPACK_IMPORTED_MODULE_2__.reset(_config__WEBPACK_IMPORTED_MODULE_2__.getConfig());
+(0,_logger__WEBPACK_IMPORTED_MODULE_5__.setLogLevel)(_config__WEBPACK_IMPORTED_MODULE_3__.getConfig().logLevel);
+_config__WEBPACK_IMPORTED_MODULE_3__.reset(_config__WEBPACK_IMPORTED_MODULE_3__.getConfig());
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (mermaidAPI);
 /**
  * ## mermaidAPI configuration defaults
@@ -27025,7 +28090,7 @@ _config__WEBPACK_IMPORTED_MODULE_2__.reset(_config__WEBPACK_IMPORTED_MODULE_2__.
  *       leftPadding: 75,
  *       gridLineStartPadding: 35,
  *       fontSize: 11,
- *       fontFamily: '"Open-Sans", "sans-serif"',
+ *       fontFamily: '"Open Sans", sans-serif',
  *       numberSectionStyles: 4,
  *       axisFormat: '%Y-%m-%d',
  *       topAxis: false,
@@ -27082,7 +28147,7 @@ var themes = {
   class: _diagrams_class_styles__WEBPACK_IMPORTED_MODULE_3__["default"],
   stateDiagram: _diagrams_state_styles__WEBPACK_IMPORTED_MODULE_4__["default"],
   state: _diagrams_state_styles__WEBPACK_IMPORTED_MODULE_4__["default"],
-  git: _diagrams_git_styles__WEBPACK_IMPORTED_MODULE_5__["default"],
+  gitGraph: _diagrams_git_styles__WEBPACK_IMPORTED_MODULE_5__["default"],
   info: _diagrams_info_styles__WEBPACK_IMPORTED_MODULE_6__["default"],
   pie: _diagrams_pie_styles__WEBPACK_IMPORTED_MODULE_7__["default"],
   er: _diagrams_er_styles__WEBPACK_IMPORTED_MODULE_8__["default"],
@@ -27208,7 +28273,7 @@ var Theme = /*#__PURE__*/function () {
       // The || is to make sure that if the variable has been defiend by a user override that value is to be used
 
       /* Main */
-      this.primaryTextColor = this.primaryTextColor || (this.darkMode ? '#ddd' : '#333'); // invert(this.primaryColor);
+      this.primaryTextColor = this.primaryTextColor || (this.darkMode ? '#eee' : '#333'); // invert(this.primaryColor);
 
       this.secondaryColor = this.secondaryColor || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
         h: -120
@@ -27376,6 +28441,69 @@ var Theme = /*#__PURE__*/function () {
       this.relationColor = this.relationColor || this.lineColor;
       this.relationLabelBackground = this.relationLabelBackground || (this.darkMode ? (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.secondaryColor, 30) : this.secondaryColor);
       this.relationLabelColor = this.relationLabelColor || this.actorTextColor;
+      /* git */
+
+      this.git0 = this.git0 || this.primaryColor;
+      this.git1 = this.git1 || this.secondaryColor;
+      this.git2 = this.git2 || this.tertiaryColor;
+      this.git3 = this.git3 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -30
+      });
+      this.git4 = this.git4 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -60
+      });
+      this.git5 = this.git5 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -90
+      });
+      this.git6 = this.git6 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: +60
+      });
+      this.git7 = this.git7 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: +120
+      });
+
+      if (this.darkMode) {
+        this.git0 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git0, 25);
+        this.git1 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git1, 25);
+        this.git2 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git2, 25);
+        this.git3 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git3, 25);
+        this.git4 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git4, 25);
+        this.git5 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git5, 25);
+        this.git6 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git6, 25);
+        this.git7 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git7, 25);
+      } else {
+        this.git0 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git0, 25);
+        this.git1 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git1, 25);
+        this.git2 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git2, 25);
+        this.git3 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git3, 25);
+        this.git4 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git4, 25);
+        this.git5 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git5, 25);
+        this.git6 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git6, 25);
+        this.git7 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git7, 25);
+      }
+
+      this.gitInv0 = this.gitInv0 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git0);
+      this.gitInv1 = this.gitInv1 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git1);
+      this.gitInv2 = this.gitInv2 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git2);
+      this.gitInv3 = this.gitInv3 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git3);
+      this.gitInv4 = this.gitInv4 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git4);
+      this.gitInv5 = this.gitInv5 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git5);
+      this.gitInv6 = this.gitInv6 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git6);
+      this.gitInv7 = this.gitInv7 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git7);
+      this.branchLabelColor = this.branchLabelColor || (this.darkMode ? 'black' : this.labelTextColor);
+      this.gitBranchLabel0 = this.gitBranchLabel0 || this.branchLabelColor;
+      this.gitBranchLabel1 = this.gitBranchLabel1 || this.branchLabelColor;
+      this.gitBranchLabel2 = this.gitBranchLabel2 || this.branchLabelColor;
+      this.gitBranchLabel3 = this.gitBranchLabel3 || this.branchLabelColor;
+      this.gitBranchLabel4 = this.gitBranchLabel4 || this.branchLabelColor;
+      this.gitBranchLabel5 = this.gitBranchLabel5 || this.branchLabelColor;
+      this.gitBranchLabel6 = this.gitBranchLabel6 || this.branchLabelColor;
+      this.gitBranchLabel7 = this.gitBranchLabel7 || this.branchLabelColor;
+      this.tagLabelColor = this.tagLabelColor || this.primaryTextColor;
+      this.tagLabelBackground = this.tagLabelBackground || this.primaryColor;
+      this.tagLabelBorder = this.tagBorder || this.primaryBorderColor;
+      this.commitLabelColor = this.commitLabelColor || this.secondaryTextColor;
+      this.commitLabelBackground = this.commitLabelBackground || this.secondaryColor;
     }
   }, {
     key: "calculate",
@@ -27448,7 +28576,7 @@ var Theme = /*#__PURE__*/function () {
     this.tertiaryColor = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
       h: -160
     });
-    this.primaryBorderColor = (0,_theme_helpers__WEBPACK_IMPORTED_MODULE_1__.mkBorder)(this.primaryColor, this.darkMode);
+    this.primaryBorderColor = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.background);
     this.secondaryBorderColor = (0,_theme_helpers__WEBPACK_IMPORTED_MODULE_1__.mkBorder)(this.secondaryColor, this.darkMode);
     this.tertiaryBorderColor = (0,_theme_helpers__WEBPACK_IMPORTED_MODULE_1__.mkBorder)(this.tertiaryColor, this.darkMode);
     this.primaryTextColor = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.primaryColor);
@@ -27634,6 +28762,39 @@ var Theme = /*#__PURE__*/function () {
       this.relationColor = this.relationColor || this.lineColor;
       this.relationLabelBackground = this.relationLabelBackground || (this.darkMode ? (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.secondaryColor, 30) : this.secondaryColor);
       this.relationLabelColor = this.relationLabelColor || this.actorTextColor;
+      /* git */
+
+      this.git0 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.secondaryColor, 20);
+      this.git1 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.pie2 || this.secondaryColor, 20);
+      this.git2 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.pie3 || this.tertiaryColor, 20);
+      this.git3 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.pie4 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -30
+      }), 20);
+      this.git4 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.pie5 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -60
+      }), 20);
+      this.git5 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.pie6 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -90
+      }), 10);
+      this.git6 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.pie7 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: +60
+      }), 10);
+      this.git7 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.pie8 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: +120
+      }), 20);
+      this.gitInv0 = this.gitInv0 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git0);
+      this.gitInv1 = this.gitInv1 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git1);
+      this.gitInv2 = this.gitInv2 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git2);
+      this.gitInv3 = this.gitInv3 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git3);
+      this.gitInv4 = this.gitInv4 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git4);
+      this.gitInv5 = this.gitInv5 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git5);
+      this.gitInv6 = this.gitInv6 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git6);
+      this.gitInv7 = this.gitInv7 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git7);
+      this.tagLabelColor = this.tagLabelColor || this.primaryTextColor;
+      this.tagLabelBackground = this.tagLabelBackground || this.primaryColor;
+      this.tagLabelBorder = this.tagBorder || this.primaryBorderColor;
+      this.commitLabelColor = this.commitLabelColor || this.secondaryTextColor;
+      this.commitLabelBackground = this.commitLabelBackground || this.secondaryColor;
     }
   }, {
     key: "calculate",
@@ -27932,6 +29093,68 @@ var Theme = /*#__PURE__*/function () {
       this.relationColor = this.relationColor || this.lineColor;
       this.relationLabelBackground = this.relationLabelBackground || this.labelBackground;
       this.relationLabelColor = this.relationLabelColor || this.actorTextColor;
+      /* git */
+
+      this.git0 = this.git0 || this.primaryColor;
+      this.git1 = this.git1 || this.secondaryColor;
+      this.git2 = this.git2 || this.tertiaryColor;
+      this.git3 = this.git3 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -30
+      });
+      this.git4 = this.git4 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -60
+      });
+      this.git5 = this.git5 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -90
+      });
+      this.git6 = this.git6 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: +60
+      });
+      this.git7 = this.git7 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: +120
+      });
+
+      if (this.darkMode) {
+        this.git0 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git0, 25);
+        this.git1 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git1, 25);
+        this.git2 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git2, 25);
+        this.git3 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git3, 25);
+        this.git4 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git4, 25);
+        this.git5 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git5, 25);
+        this.git6 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git6, 25);
+        this.git7 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git7, 25);
+      } else {
+        this.git0 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git0, 25);
+        this.git1 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git1, 25);
+        this.git2 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git2, 25);
+        this.git3 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git3, 25);
+        this.git4 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git4, 25);
+        this.git5 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git5, 25);
+        this.git6 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git6, 25);
+        this.git7 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git7, 25);
+      }
+
+      this.gitInv0 = this.gitInv0 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)((0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git0), 25);
+      this.gitInv1 = this.gitInv1 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git1);
+      this.gitInv2 = this.gitInv2 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git2);
+      this.gitInv3 = this.gitInv3 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git3);
+      this.gitInv4 = this.gitInv4 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git4);
+      this.gitInv5 = this.gitInv5 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git5);
+      this.gitInv6 = this.gitInv6 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git6);
+      this.gitInv7 = this.gitInv7 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git7);
+      this.gitBranchLabel0 = this.gitBranchLabel0 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.labelTextColor);
+      this.gitBranchLabel1 = this.gitBranchLabel1 || this.labelTextColor;
+      this.gitBranchLabel2 = this.gitBranchLabel2 || this.labelTextColor;
+      this.gitBranchLabel3 = this.gitBranchLabel3 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.labelTextColor);
+      this.gitBranchLabel4 = this.gitBranchLabel4 || this.labelTextColor;
+      this.gitBranchLabel5 = this.gitBranchLabel5 || this.labelTextColor;
+      this.gitBranchLabel6 = this.gitBranchLabel6 || this.labelTextColor;
+      this.gitBranchLabel7 = this.gitBranchLabel7 || this.labelTextColor;
+      this.tagLabelColor = this.tagLabelColor || this.primaryTextColor;
+      this.tagLabelBackground = this.tagLabelBackground || this.primaryColor;
+      this.tagLabelBorder = this.tagBorder || this.primaryBorderColor;
+      this.commitLabelColor = this.commitLabelColor || this.secondaryTextColor;
+      this.commitLabelBackground = this.commitLabelBackground || this.secondaryColor;
     }
   }, {
     key: "calculate",
@@ -28198,6 +29421,60 @@ var Theme = /*#__PURE__*/function () {
       this.relationColor = this.relationColor || this.lineColor;
       this.relationLabelBackground = this.relationLabelBackground || this.edgeLabelBackground;
       this.relationLabelColor = this.relationLabelColor || this.actorTextColor;
+      /* git */
+
+      this.git0 = this.git0 || this.primaryColor;
+      this.git1 = this.git1 || this.secondaryColor;
+      this.git2 = this.git2 || this.tertiaryColor;
+      this.git3 = this.git3 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -30
+      });
+      this.git4 = this.git4 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -60
+      });
+      this.git5 = this.git5 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -90
+      });
+      this.git6 = this.git6 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: +60
+      });
+      this.git7 = this.git7 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: +120
+      });
+
+      if (this.darkMode) {
+        this.git0 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git0, 25);
+        this.git1 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git1, 25);
+        this.git2 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git2, 25);
+        this.git3 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git3, 25);
+        this.git4 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git4, 25);
+        this.git5 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git5, 25);
+        this.git6 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git6, 25);
+        this.git7 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.lighten)(this.git7, 25);
+      } else {
+        this.git0 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git0, 25);
+        this.git1 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git1, 25);
+        this.git2 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git2, 25);
+        this.git3 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git3, 25);
+        this.git4 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git4, 25);
+        this.git5 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git5, 25);
+        this.git6 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git6, 25);
+        this.git7 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.git7, 25);
+      }
+
+      this.gitInv0 = this.gitInv0 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git0);
+      this.gitInv1 = this.gitInv1 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git1);
+      this.gitInv2 = this.gitInv2 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git2);
+      this.gitInv3 = this.gitInv3 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git3);
+      this.gitInv4 = this.gitInv4 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git4);
+      this.gitInv5 = this.gitInv5 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git5);
+      this.gitInv6 = this.gitInv6 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git6);
+      this.gitInv7 = this.gitInv7 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git7);
+      this.tagLabelColor = this.tagLabelColor || this.primaryTextColor;
+      this.tagLabelBackground = this.tagLabelBackground || this.primaryColor;
+      this.tagLabelBorder = this.tagBorder || this.primaryBorderColor;
+      this.commitLabelColor = this.commitLabelColor || this.secondaryTextColor;
+      this.commitLabelBackground = this.commitLabelBackground || this.secondaryColor;
     }
   }, {
     key: "calculate",
@@ -28504,6 +29781,48 @@ var Theme = /*#__PURE__*/function () {
       this.relationColor = this.relationColor || this.lineColor;
       this.relationLabelBackground = this.relationLabelBackground || this.edgeLabelBackground;
       this.relationLabelColor = this.relationLabelColor || this.actorTextColor;
+      /* git */
+
+      this.git0 = (0,khroma__WEBPACK_IMPORTED_MODULE_0__.darken)(this.pie1, 25) || this.primaryColor;
+      this.git1 = this.pie2 || this.secondaryColor;
+      this.git2 = this.pie3 || this.tertiaryColor;
+      this.git3 = this.pie4 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -30
+      });
+      this.git4 = this.pie5 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -60
+      });
+      this.git5 = this.pie6 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: -90
+      });
+      this.git6 = this.pie7 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: +60
+      });
+      this.git7 = this.pie8 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.adjust)(this.primaryColor, {
+        h: +120
+      });
+      this.gitInv0 = this.gitInv0 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git0);
+      this.gitInv1 = this.gitInv1 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git1);
+      this.gitInv2 = this.gitInv2 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git2);
+      this.gitInv3 = this.gitInv3 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git3);
+      this.gitInv4 = this.gitInv4 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git4);
+      this.gitInv5 = this.gitInv5 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git5);
+      this.gitInv6 = this.gitInv6 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git6);
+      this.gitInv7 = this.gitInv7 || (0,khroma__WEBPACK_IMPORTED_MODULE_0__.invert)(this.git7);
+      this.branchLabelColor = this.branchLabelColor || this.labelTextColor;
+      this.gitBranchLabel0 = this.branchLabelColor;
+      this.gitBranchLabel1 = 'white';
+      this.gitBranchLabel2 = this.branchLabelColor;
+      this.gitBranchLabel3 = 'white';
+      this.gitBranchLabel4 = this.branchLabelColor;
+      this.gitBranchLabel5 = this.branchLabelColor;
+      this.gitBranchLabel6 = this.branchLabelColor;
+      this.gitBranchLabel7 = this.branchLabelColor;
+      this.tagLabelColor = this.tagLabelColor || this.primaryTextColor;
+      this.tagLabelBackground = this.tagLabelBackground || this.primaryColor;
+      this.tagLabelBorder = this.tagBorder || this.primaryBorderColor;
+      this.commitLabelColor = this.commitLabelColor || this.secondaryTextColor;
+      this.commitLabelBackground = this.commitLabelBackground || this.secondaryColor;
     }
   }, {
     key: "calculate",
@@ -28550,30 +29869,30 @@ var getThemeVariables = function getThemeVariables(userOverrides) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "detectInit": () => (/* binding */ detectInit),
-/* harmony export */   "detectDirective": () => (/* binding */ detectDirective),
-/* harmony export */   "detectType": () => (/* binding */ detectType),
-/* harmony export */   "isSubstringInArray": () => (/* binding */ isSubstringInArray),
-/* harmony export */   "interpolateToCurve": () => (/* binding */ interpolateToCurve),
-/* harmony export */   "formatUrl": () => (/* binding */ formatUrl),
-/* harmony export */   "runFunc": () => (/* binding */ runFunc),
-/* harmony export */   "getStylesFromArray": () => (/* binding */ getStylesFromArray),
-/* harmony export */   "generateId": () => (/* binding */ generateId),
-/* harmony export */   "random": () => (/* binding */ random),
 /* harmony export */   "assignWithDepth": () => (/* binding */ assignWithDepth),
-/* harmony export */   "getTextObj": () => (/* binding */ getTextObj),
-/* harmony export */   "drawSimpleText": () => (/* binding */ drawSimpleText),
-/* harmony export */   "wrapLabel": () => (/* binding */ wrapLabel),
+/* harmony export */   "calculateSvgSizeAttrs": () => (/* binding */ calculateSvgSizeAttrs),
+/* harmony export */   "calculateTextDimensions": () => (/* binding */ calculateTextDimensions),
 /* harmony export */   "calculateTextHeight": () => (/* binding */ calculateTextHeight),
 /* harmony export */   "calculateTextWidth": () => (/* binding */ calculateTextWidth),
-/* harmony export */   "calculateTextDimensions": () => (/* binding */ calculateTextDimensions),
-/* harmony export */   "calculateSvgSizeAttrs": () => (/* binding */ calculateSvgSizeAttrs),
 /* harmony export */   "configureSvgSize": () => (/* binding */ configureSvgSize),
-/* harmony export */   "initIdGeneratior": () => (/* binding */ initIdGeneratior),
-/* harmony export */   "entityDecode": () => (/* binding */ entityDecode),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "detectDirective": () => (/* binding */ detectDirective),
+/* harmony export */   "detectInit": () => (/* binding */ detectInit),
+/* harmony export */   "detectType": () => (/* binding */ detectType),
 /* harmony export */   "directiveSanitizer": () => (/* binding */ directiveSanitizer),
+/* harmony export */   "drawSimpleText": () => (/* binding */ drawSimpleText),
+/* harmony export */   "entityDecode": () => (/* binding */ entityDecode),
+/* harmony export */   "formatUrl": () => (/* binding */ formatUrl),
+/* harmony export */   "generateId": () => (/* binding */ generateId),
+/* harmony export */   "getStylesFromArray": () => (/* binding */ getStylesFromArray),
+/* harmony export */   "getTextObj": () => (/* binding */ getTextObj),
+/* harmony export */   "initIdGeneratior": () => (/* binding */ initIdGeneratior),
+/* harmony export */   "interpolateToCurve": () => (/* binding */ interpolateToCurve),
+/* harmony export */   "isSubstringInArray": () => (/* binding */ isSubstringInArray),
+/* harmony export */   "random": () => (/* binding */ random),
+/* harmony export */   "runFunc": () => (/* binding */ runFunc),
 /* harmony export */   "sanitizeCss": () => (/* binding */ sanitizeCss),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   "wrapLabel": () => (/* binding */ wrapLabel)
 /* harmony export */ });
 /* harmony import */ var _braintree_sanitize_url__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @braintree/sanitize-url */ "@braintree/sanitize-url");
 /* harmony import */ var _braintree_sanitize_url__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_braintree_sanitize_url__WEBPACK_IMPORTED_MODULE_0__);
@@ -28811,7 +30130,7 @@ var detectType = function detectType(text, cnf) {
   }
 
   if (text.match(/^\s*gitGraph/)) {
-    return 'git';
+    return 'gitGraph';
   }
 
   if (text.match(/^\s*flowchart/)) {
@@ -30520,7 +31839,7 @@ module.exports = require("stylis");
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"mermaid","version":"8.14.0","description":"Markdownish syntax for generating flowcharts, sequence diagrams, class diagrams, gantt charts and git graphs.","main":"dist/mermaid.core.js","module":"dist/mermaid.esm.min.mjs","exports":{".":{"require":"./dist/mermaid.core.js","import":"./dist/mermaid.esm.min.mjs"},"./*":"./*"},"keywords":["diagram","markdown","flowchart","sequence diagram","gantt","class diagram","git graph"],"scripts":{"build:development":"webpack --mode development --progress --color","build:production":"webpack --mode production --progress --color","build":"concurrently \\"yarn build:development\\" \\"yarn build:production\\"","postbuild":"documentation build src/mermaidAPI.js src/config.js src/defaultConfig.js --shallow -f md --markdown-toc false > docs/Setup.md","build:watch":"yarn build:development --watch","release":"yarn build","lint":"eslint ./ --ext js,html","lint:fix":"yarn lint --fix","e2e:depr":"yarn lint && jest e2e --config e2e/jest.config.js","cypress":"percy exec -- cypress run","e2e":"start-server-and-test dev http://localhost:9000/ cypress","e2e-upd":"yarn lint && jest e2e -u --config e2e/jest.config.js","dev":"webpack serve --config ./.webpack/webpack.config.e2e.babel.js","test":"yarn lint && jest src/.*","test:watch":"jest --watch src","prepublishOnly":"yarn build && yarn test","prepare":"husky install && yarn build","pre-commit":"lint-staged"},"repository":{"type":"git","url":"https://github.com/knsv/mermaid"},"author":"Knut Sveidqvist","license":"MIT","standard":{"ignore":["**/parser/*.js","dist/**/*.js","cypress/**/*.js"],"globals":["page"]},"dependencies":{"@braintree/sanitize-url":"^3.1.0","d3":"^7.0.0","dagre":"^0.8.5","dagre-d3":"^0.6.4","dompurify":"2.3.5","graphlib":"^2.1.8","khroma":"^1.4.1","moment-mini":"^2.24.0","stylis":"^4.0.10"},"devDependencies":{"@babel/core":"^7.14.6","@babel/eslint-parser":"^7.14.7","@babel/preset-env":"^7.14.7","@babel/register":"^7.14.5","@commitlint/cli":"^16.0.0","@commitlint/config-conventional":"^16.0.0","@percy/cli":"^1.0.0-beta.58","@percy/cypress":"^3.1.0","@percy/migrate":"^0.11.0","babel-jest":"^27.0.6","babel-loader":"^8.2.2","concurrently":"^7.0.0","coveralls":"^3.0.2","css-to-string-loader":"^0.1.3","cypress":"9.4.1","documentation":"13.2.0","eslint":"^8.2.0","eslint-config-prettier":"^8.3.0","eslint-plugin-cypress":"^2.12.1","eslint-plugin-html":"^6.2.0","eslint-plugin-jest":"^26.0.0","eslint-plugin-jsdoc":"^37.0.3","eslint-plugin-markdown":"^2.2.1","eslint-plugin-prettier":"^4.0.0","husky":"^7.0.1","identity-obj-proxy":"^3.0.0","jest":"^27.0.6","jison":"^0.4.18","js-base64":"3.7.2","lint-staged":"^12.1.2","moment":"^2.23.0","path-browserify":"^1.0.1","prettier":"^2.3.2","prettier-plugin-jsdoc":"^0.3.30","start-server-and-test":"^1.12.6","terser-webpack-plugin":"^5.2.4","webpack":"^5.53.0","webpack-cli":"^4.7.2","webpack-dev-server":"^4.3.0","webpack-merge":"^5.8.0","webpack-node-externals":"^3.0.0"},"files":["dist"],"sideEffects":["**/*.css","**/*.scss"]}');
+module.exports = JSON.parse('{"name":"mermaid","version":"9.1.1","description":"Markdownish syntax for generating flowcharts, sequence diagrams, class diagrams, gantt charts and git graphs.","main":"dist/mermaid.core.js","module":"dist/mermaid.esm.min.mjs","exports":{".":{"require":"./dist/mermaid.core.js","import":"./dist/mermaid.esm.min.mjs"},"./*":"./*"},"keywords":["diagram","markdown","flowchart","sequence diagram","gantt","class diagram","git graph"],"scripts":{"build:development":"webpack --mode development --progress --color","build:production":"webpack --mode production --progress --color","build":"concurrently \\"yarn build:development\\" \\"yarn build:production\\"","postbuild":"documentation build src/mermaidAPI.js src/config.js src/defaultConfig.js --shallow -f md --markdown-toc false > docs/Setup.md","build:watch":"yarn build:development --watch","release":"yarn build","lint":"eslint ./ --ext js,html","lint:fix":"yarn lint --fix","e2e:depr":"yarn lint && jest e2e --config e2e/jest.config.js","cypress":"cypress run","e2e":"start-server-and-test dev http://localhost:9000/ cypress","e2e-upd":"yarn lint && jest e2e -u --config e2e/jest.config.js","dev":"webpack serve --config ./.webpack/webpack.config.e2e.babel.js","test":"jest src/.*","test:watch":"jest --watch src","prepublishOnly":"yarn build && yarn test","prepare":"husky install && yarn build","pre-commit":"lint-staged"},"repository":{"type":"git","url":"https://github.com/knsv/mermaid"},"author":"Knut Sveidqvist","license":"MIT","standard":{"ignore":["**/parser/*.js","dist/**/*.js","cypress/**/*.js"],"globals":["page"]},"dependencies":{"@braintree/sanitize-url":"^6.0.0","d3":"^7.0.0","dagre":"^0.8.5","dagre-d3":"^0.6.4","dompurify":"2.3.6","graphlib":"^2.1.8","khroma":"^2.0.0","moment-mini":"^2.24.0","stylis":"^4.0.10"},"devDependencies":{"@applitools/eyes-cypress":"^3.25.7","@babel/core":"^7.14.6","@babel/eslint-parser":"^7.14.7","@babel/preset-env":"^7.14.7","@babel/register":"^7.14.5","@commitlint/cli":"^16.0.0","@commitlint/config-conventional":"^16.0.0","babel-jest":"^28.0.3","babel-loader":"^8.2.2","concurrently":"^7.0.0","coveralls":"^3.0.2","css-to-string-loader":"^0.1.3","cypress":"9.6.0","cypress-image-snapshot":"^4.0.1","documentation":"13.2.0","eslint":"^8.2.0","eslint-config-prettier":"^8.3.0","eslint-plugin-cypress":"^2.12.1","eslint-plugin-html":"^6.2.0","eslint-plugin-jest":"^26.0.0","eslint-plugin-jsdoc":"^39.1.0","eslint-plugin-markdown":"^2.2.1","eslint-plugin-prettier":"^4.0.0","husky":"^7.0.1","identity-obj-proxy":"^3.0.0","jest":"^28.0.3","jest-environment-jsdom":"^28.0.2","jison":"^0.4.18","js-base64":"3.7.2","lint-staged":"^12.1.2","moment":"^2.23.0","path-browserify":"^1.0.1","prettier":"^2.3.2","prettier-plugin-jsdoc":"^0.3.30","start-server-and-test":"^1.12.6","terser-webpack-plugin":"^5.2.4","webpack":"^5.53.0","webpack-cli":"^4.7.2","webpack-dev-server":"^4.3.0","webpack-merge":"^5.8.0","webpack-node-externals":"^3.0.0"},"files":["dist"],"sideEffects":["**/*.css","**/*.scss"]}');
 
 /***/ })
 
