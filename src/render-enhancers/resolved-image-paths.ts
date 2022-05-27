@@ -8,7 +8,11 @@ import { MarkdownEngineRenderOption } from "../markdown-engine";
 export default async function enhance(
   $,
   options: MarkdownEngineRenderOption,
-  resolveFilePath: (path: string, useRelativeFilePath: boolean) => string,
+  resolveFilePath: (
+    path: string,
+    useRelativeFilePath: boolean,
+    fileDirectoryPath?: string,
+  ) => string,
   usePandocParser,
 ): Promise<void> {
   // resolve image paths
@@ -47,7 +51,14 @@ export default async function enhance(
       }
     }
 
-    img.attr(srcTag, resolveFilePath(src, options.useRelativeFilePath));
+    img.attr(
+      srcTag,
+      resolveFilePath(
+        src,
+        options.useRelativeFilePath,
+        options.fileDirectoryPath,
+      ),
+    );
   });
 
   if (!usePandocParser) {

@@ -250,7 +250,7 @@ export async function transformMarkdown(
     fileDirectoryPath = "",
     projectDirectoryPath = "",
     filesCache = {},
-    useRelativeFilePath = null,
+    useRelativeFilePath = false,
     forPreview = false,
     forMarkdownExport = false,
     protocolsWhiteListRegExp = null,

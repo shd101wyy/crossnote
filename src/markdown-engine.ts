@@ -66,6 +66,7 @@ export interface MarkdownEngineRenderOption {
   runAllCodeChunks?: boolean;
   emojiToSvg?: boolean;
   vscodePreviewPanel?: vscode.WebviewPanel;
+  fileDirectoryPath?: string;
 }
 
 export interface MarkdownEngineOutput {
@@ -2017,13 +2018,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       $ul.children("li").each((offset, li) => {
         const $li = $(li);
         const $a = $li.children("a").first();
+
         if (!$a.length) {
+          if ($li.children().length >= 1) {
+            getStructure($li.children().last(), level + 1);
+          }
           return;
         }
 
         const filePath = decodeURIComponent($a.attr("href")); // markdown file path
         const heading = $a.html();
-        const id = headingIdGenerator.generateId(heading); // "ebook-heading-id-" + headingOffset;
+        const id = headingIdGenerator.generateId(`ebook-heading-` + heading); // "ebook-heading-id-" + headingOffset;
 
         tocStructure.push({ level, filePath, heading, id });
 
@@ -2039,6 +2044,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ({ heading, id, level, filePath }, offset) => {
         return new Promise((resolve, reject) => {
           filePath = utility.removeFileProtocol(filePath);
+          if (filePath.match(/^https?:\/\//)) {
+            return resolve({ heading, id, level, filePath, html: "", offset });
+          }
           fs.readFile(filePath, { encoding: "utf-8" }, (error, text) => {
             if (error) {
               return reject(error.toString());
@@ -2057,12 +2065,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
                 return openTag + relativePath;
               },
             );
-
             this.parseMD(text, {
               useRelativeFilePath: false,
               isForPreview: false,
               hideFrontMatter: true,
               emojiToSvg,
+              fileDirectoryPath: path.dirname(filePath),
               /* tslint:disable-next-line:no-shadowed-variable */
             }).then(({ html }) => {
               return resolve({ heading, id, level, filePath, html, offset });
@@ -2073,14 +2081,34 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     );
 
     let outputHTML = $.html().replace(/^<div>(.+)<\/div>$/, "$1");
-    let results = await Promise.all(asyncFunctions);
+    let results = (await Promise.all(asyncFunctions)) as {
+      heading: string;
+      id: string;
+      level: number;
+      filePath: string;
+      html?: string;
+    }[];
     results = results.sort((a, b) => a["offset"] - b["offset"]);
 
     /* tslint:disable-next-line:no-shadowed-variable */
     results.forEach(({ heading, id, level, filePath, html }) => {
       /* tslint:disable-next-line:no-shadowed-variable */
+
+      const $$ = cheerio.load(`<div>${html}</div>`);
+      $$("a").each((index, a) => {
+        const $a = $$(a);
+        const href = $a.attr("href");
+        if (href.startsWith("file://")) {
+          results.forEach((result) => {
+            if (result.filePath === utility.removeFileProtocol(href)) {
+              $a.attr("href", "#" + result.id);
+            }
+          });
+        }
+      });
+
       outputHTML += `<div id="${id}" ebook-toc-level-${level +
-        1} heading="${heading}">${html}</div>`; // append new content
+        1} heading="${heading}">${$$.html()}</div>`; // append new content
     });
 
     $ = cheerio.load(outputHTML);
@@ -2228,7 +2256,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     try {
       const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
-
       await utility.write(info.fd, html);
       await ebookConvert(info.path, dest, ebookConfig);
       deleteDownloadedImages();
@@ -2471,7 +2498,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * @param filePath
    * @param relative: whether to use the path relative to filePath or not.
    */
-  private resolveFilePath(filePath: string = "", relative: boolean) {
+  private resolveFilePath(
+    filePath: string = "",
+    relative: boolean,
+    fileDirectoryPath = "",
+  ) {
     if (
       filePath.match(this.protocolsWhiteListRegExp) ||
       filePath.startsWith("data:image/") ||
@@ -2481,7 +2512,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     } else if (filePath[0] === "/") {
       if (relative) {
         return path.relative(
-          this.fileDirectoryPath,
+          fileDirectoryPath || this.fileDirectoryPath,
           path.resolve(this.projectDirectoryPath, "." + filePath),
         );
       } else {
@@ -2495,7 +2526,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         return filePath;
       } else {
         return utility.addFileProtocol(
-          path.resolve(this.fileDirectoryPath, filePath),
+          path.resolve(fileDirectoryPath || this.fileDirectoryPath, filePath),
           this.vscodePreviewPanel,
         );
       }
@@ -2840,7 +2871,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       headings,
       frontMatterString,
     } = await transformMarkdown(inputString, {
-      fileDirectoryPath: this.fileDirectoryPath,
+      fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
       projectDirectoryPath: this.projectDirectoryPath,
       forPreview: options.isForPreview,
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
@@ -2939,7 +2970,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     await enhanceWithFencedDiagrams(
       $,
       this.graphsCache,
-      this.fileDirectoryPath,
+      options.fileDirectoryPath || this.fileDirectoryPath,
       removeFileProtocol(
         this.resolveFilePath(this.config.imageFolderPath, false),
       ),
