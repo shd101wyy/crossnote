@@ -2,7 +2,6 @@ import { resolve } from "path";
 import { scopeForLanguageName } from "../extension-helper";
 import { BlockInfo } from "../lib/block-info";
 import { escapeString, extensionDirectoryPath } from "../utility";
-
 let Prism;
 
 export default async function enhance($: CheerioStatic): Promise<void> {
@@ -47,12 +46,24 @@ export default async function enhance($: CheerioStatic): Promise<void> {
           extensionDirectoryPath,
           "./dependencies/prism/prism.js",
         ));
-        Prism.hooks.add('wrap', (env) => {
-          if (env.type !== 'keyword') {
+        Prism.hooks.add("wrap", (env) => {
+          if (env.type !== "keyword") {
             return;
           }
           env.classes.push(`keyword-${env.content}`);
-        })
+        });
+
+        // Add K and Iele languages syntax highlighting
+        const defineKLanguage = require(resolve(
+          extensionDirectoryPath,
+          "./dependencies/prism/k.js",
+        ));
+        const defineIeleLanguage = require(resolve(
+          extensionDirectoryPath,
+          "./dependencies/prism/iele.js",
+        ));
+        defineKLanguage(Prism);
+        defineIeleLanguage(Prism);
       }
       const html = Prism.highlight(code, Prism.languages[language]);
       $container.html(html);

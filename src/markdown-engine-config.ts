@@ -1,5 +1,64 @@
 export type MathRenderingOption = "None" | "KaTeX" | "MathJax";
 
+export type PreviewTheme =
+  | "atom-dark.css"
+  | "atom-light.css"
+  | "atom-material.css"
+  | "github-dark.css"
+  | "github-light.css"
+  | "gothic.css"
+  | "medium.css"
+  | "monokai.css"
+  | "newsprint.css"
+  | "night.css"
+  | "none.css"
+  | "one-dark.css"
+  | "one-light.css"
+  | "solarized-dark.css"
+  | "solarized-light.css"
+  | "vue.css";
+
+export type CodeBlockTheme =
+  | "auto.css"
+  | "default.css"
+  | "atom-dark.css"
+  | "atom-light.css"
+  | "atom-material.css"
+  | "coy.css"
+  | "darcula.css"
+  | "dark.css"
+  | "funky.css"
+  | "github.css"
+  | "hopscotch.css"
+  | "monokai.css"
+  | "okaidia.css"
+  | "one-dark.css"
+  | "one-light.css"
+  | "pen-paper-coffee.css"
+  | "pojoaque.css"
+  | "solarized-dark.css"
+  | "solarized-light.css"
+  | "twilight.css"
+  | "vue.css"
+  | "vs.css"
+  | "xonokai.css";
+
+export type RevealJsTheme =
+  | "beige.css"
+  | "black.css"
+  | "blood.css"
+  | "league.css"
+  | "moon.css"
+  | "night.css"
+  | "serif.css"
+  | "simple.css"
+  | "sky.css"
+  | "solarized.css"
+  | "white.css"
+  | "none.css";
+
+export type MermaidTheme = "default" | "dark" | "forest";
+
 export interface MarkdownEngineConfig {
   configPath?: string;
   usePandocParser?: boolean;
@@ -17,10 +76,10 @@ export interface MarkdownEngineConfig {
   mathInlineDelimiters?: string[][];
   mathBlockDelimiters?: string[][];
   mathRenderingOnlineService?: string;
-  codeBlockTheme?: string;
-  previewTheme?: string;
-  revealjsTheme?: string;
-  mermaidTheme?: string;
+  codeBlockTheme?: CodeBlockTheme;
+  previewTheme?: PreviewTheme;
+  revealjsTheme?: RevealJsTheme;
+  mermaidTheme?: MermaidTheme;
   frontMatterRenderingOption?: string;
   imageFolderPath?: string;
   printBackground?: boolean;
