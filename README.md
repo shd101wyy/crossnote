@@ -120,7 +120,7 @@ const config = {
   frontMatterRenderingOption: 'none', // 'none' | 'table' | 'code block'
 
   // Mermaid theme
-  mermaidTheme: 'mermaid.css', // 'mermaid.css' | 'mermaid.dark.css' | 'mermaid.forest.css'
+  mermaidTheme: 'default', // 'default' | 'dark' | 'forest'
 
   // Code Block theme
   // If `auto.css` is chosen, then the code block theme that best matches the current preview theme will be picked.

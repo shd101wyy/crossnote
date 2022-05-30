@@ -57,6 +57,8 @@ export type RevealJsTheme =
   | "white.css"
   | "none.css";
 
+export type MermaidTheme = "default" | "dark" | "forest";
+
 export interface MarkdownEngineConfig {
   configPath?: string;
   usePandocParser?: boolean;
@@ -77,7 +79,7 @@ export interface MarkdownEngineConfig {
   codeBlockTheme?: CodeBlockTheme;
   previewTheme?: PreviewTheme;
   revealjsTheme?: RevealJsTheme;
-  mermaidTheme?: string;
+  mermaidTheme?: MermaidTheme;
   frontMatterRenderingOption?: string;
   imageFolderPath?: string;
   printBackground?: boolean;
