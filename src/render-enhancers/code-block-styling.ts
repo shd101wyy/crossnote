@@ -1,10 +1,11 @@
+import { Cheerio, CheerioAPI, Element } from "cheerio";
 import { resolve } from "path";
 import { scopeForLanguageName } from "../extension-helper";
 import { BlockInfo } from "../lib/block-info";
 import { escapeString, extensionDirectoryPath } from "../utility";
 let Prism;
 
-export default async function enhance($: CheerioStatic): Promise<void> {
+export default async function enhance($: CheerioAPI): Promise<void> {
   // spaced code blocks
   // this is for pandoc parser
   $("pre>code").each((i, codeElement) => {
@@ -33,7 +34,7 @@ export default async function enhance($: CheerioStatic): Promise<void> {
     const code = $container.text();
 
     // determine code language
-    const info: BlockInfo = $container.data("normalizedInfo");
+    const info = $container.data("normalizedInfo") as BlockInfo;
     const language = guessPrismLanguage(
       scopeForLanguageName(info.language),
       code,
@@ -135,7 +136,7 @@ function addLineNumbersIfNecessary($container, code: string): void {
  * @param highlight
  */
 function highlightLines(
-  $container: Cheerio,
+  $container: Cheerio<Element>,
   code: string,
   highlight: string | string[] | number,
 ): void {

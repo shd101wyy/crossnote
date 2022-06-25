@@ -1539,7 +1539,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (html.indexOf("task-list-item-checkbox") >= 0) {
       const $ = cheerio.load("<div>" + html + "</div>");
       $(".task-list-item-checkbox").each(
-        (index: number, elem: CheerioElement) => {
+        (index: number, elem: cheerio.Element) => {
           const $elem = $(elem);
           let $li = $elem.parent();
           if (!$li[0].name.match(/^li$/i)) {

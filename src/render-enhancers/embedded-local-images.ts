@@ -1,3 +1,4 @@
+import { CheerioAPI } from "cheerio";
 import { readFile } from "fs";
 import { extname } from "path";
 import { MarkdownEngineConfig } from "../markdown-engine-config";
@@ -7,7 +8,7 @@ import { removeFileProtocol } from "../utility";
  * Embed local images. Load the image file and display it in base64 format
  */
 export default async function enhance(
-  $: CheerioStatic,
+  $: CheerioAPI,
   options: MarkdownEngineConfig,
   resolveFilePath: (path: string, useRelativeFilePath: boolean) => string,
 ): Promise<void> {

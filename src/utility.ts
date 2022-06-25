@@ -1,3 +1,4 @@
+import * as cheerio from "cheerio";
 import * as child_process from "child_process";
 import * as fs from "fs";
 import * as jsYAML from "js-yaml";
@@ -47,7 +48,7 @@ export interface ParserConfig {
   onWillParseMarkdown?: (markdown: string) => Promise<string>;
   onDidParseMarkdown?: (
     html: string,
-    opts: { cheerio: CheerioAPI },
+    opts: { cheerio: typeof cheerio },
   ) => Promise<string>;
   onWillTransformMarkdown?: (markdown: string) => Promise<string>;
   onDidTransformMarkdown?: (markdown: string) => Promise<string>;

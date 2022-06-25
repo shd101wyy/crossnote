@@ -1,3 +1,4 @@
+import { CheerioAPI } from "cheerio";
 import { readFile } from "fs";
 import { extname } from "path";
 import { MarkdownEngineConfig } from "../mume";
@@ -8,7 +9,7 @@ import { removeFileProtocol } from "../utility";
  * @param $
  */
 export default async function enhance(
-  $: CheerioStatic,
+  $: CheerioAPI,
   options: MarkdownEngineConfig,
   resolveFilePath: (path: string, useRelativeFilePath: boolean) => string,
 ): Promise<void> {

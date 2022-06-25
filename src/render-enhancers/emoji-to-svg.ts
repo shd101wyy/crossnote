@@ -1,3 +1,4 @@
+import { CheerioAPI } from "cheerio";
 import { resolve } from "path";
 import * as twemoji from "twemoji";
 
@@ -5,7 +6,7 @@ import * as twemoji from "twemoji";
  * Replace emoji with svg.
  * @param $
  */
-export default function enhance($: CheerioStatic): void {
+export default function enhance($: CheerioAPI): void {
   const html = twemoji.parse($.html(), {
     callback: (icon) => {
       return (

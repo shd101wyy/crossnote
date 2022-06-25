@@ -1,14 +1,16 @@
+import { Cheerio, CheerioAPI, Element } from "cheerio";
+
 /**
  * Extend table syntax to support colspan and rowspan for merging cells
  * @param $
  */
-export default async function enhance($): Promise<void> {
-  const rowspans: [Cheerio, Cheerio][] = []; // ^
-  const colspans: [Cheerio, Cheerio][] = []; // >
-  const colspans2: [Cheerio, Cheerio][] = []; // empty
+export default async function enhance($: CheerioAPI): Promise<void> {
+  const rowspans: [Cheerio<Element>, Cheerio<Element>][] = []; // ^
+  const colspans: [Cheerio<Element>, Cheerio<Element>][] = []; // >
+  const colspans2: [Cheerio<Element>, Cheerio<Element>][] = []; // empty
   $("table").each((i, table) => {
     const $table = $(table);
-    let $prevRow = null;
+    let $prevRow: Cheerio<Element> | null = null;
     $table.children().each((a, headBody) => {
       const $headBody = $(headBody);
       $headBody.children().each((i2, row) => {

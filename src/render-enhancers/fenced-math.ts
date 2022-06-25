@@ -1,3 +1,4 @@
+import { CheerioAPI } from "cheerio";
 import { stringifyBlockAttributes } from "../lib/block-attributes";
 import { BlockInfo } from "../lib/block-info";
 import { MathRenderingOption } from "../markdown-engine-config";
@@ -16,7 +17,7 @@ const supportedLanguages = ["math"];
  * @param $ cheerio element containing the entire document
  */
 export default async function enhance(
-  $,
+  $: CheerioAPI,
   renderingOption: MathRenderingOption,
   mathBlockDelimiters: string[][],
 ): Promise<void> {
@@ -26,7 +27,7 @@ export default async function enhance(
       return;
     }
 
-    const normalizedInfo: BlockInfo = $container.data("normalizedInfo");
+    const normalizedInfo = $container.data("normalizedInfo") as BlockInfo;
     if (
       normalizedInfo.attributes["literate"] === false ||
       normalizedInfo.attributes["cmd"] === false ||
@@ -56,7 +57,7 @@ export default async function enhance(
       $container.data("hiddenByEnhancer", true);
     }
   });
-  return $;
+  return;
 }
 
 const renderMath = (
@@ -64,7 +65,7 @@ const renderMath = (
   normalizedInfo: BlockInfo,
   renderingOption: MathRenderingOption,
   mathBlockDelimiters: string[][],
-): Cheerio => {
+): string => {
   let $output = null;
   try {
     const mathHtml = parseMath({

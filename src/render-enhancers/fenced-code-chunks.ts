@@ -1,4 +1,5 @@
 // tslint:disable:ban-types no-var-requires
+import { Cheerio, CheerioAPI, Element } from "cheerio";
 import { run } from "../code-chunk";
 import { CodeChunkData, CodeChunksData } from "../code-chunk-data";
 import { BlockInfo } from "../lib/block-info";
@@ -7,7 +8,7 @@ import { toc } from "../toc";
 import { extractCommandFromBlockInfo } from "../utility";
 
 export default async function enhance(
-  $,
+  $: CheerioAPI,
   codeChunksData: CodeChunksData,
   renderOptions: MarkdownEngineRenderOption,
   runOptions: RunCodeChunkOptions,
@@ -20,7 +21,7 @@ export default async function enhance(
       return;
     }
 
-    const normalizedInfo: BlockInfo = $container.data("normalizedInfo");
+    const normalizedInfo = $container.data("normalizedInfo") as BlockInfo;
     if (!normalizedInfo.attributes["cmd"]) {
       return;
     }
@@ -43,9 +44,9 @@ export default async function enhance(
 }
 
 export async function renderCodeBlock(
-  $container: Cheerio,
+  $container: Cheerio<Element>,
   normalizedInfo: BlockInfo,
-  $: CheerioStatic,
+  $: CheerioAPI,
   codeChunksData: CodeChunksData,
   arrayOfCodeChunkData: CodeChunkData[],
   renderOptions: MarkdownEngineRenderOption,

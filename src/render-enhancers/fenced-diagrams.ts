@@ -1,4 +1,5 @@
 // tslint:disable:ban-types no-var-requires
+import { Cheerio, CheerioAPI, Element } from "cheerio";
 import * as YAML from "yamljs";
 
 import { render as renderDitaa } from "../ditaa";
@@ -53,7 +54,7 @@ const supportedLanguages = [
  * @return html
  */
 export default async function enhance(
-  $,
+  $: CheerioAPI,
   graphsCache: { [key: string]: string },
   fileDirectoryPath: string,
   imageDirectoryPath: string,
@@ -66,7 +67,7 @@ export default async function enhance(
       return;
     }
 
-    const normalizedInfo: BlockInfo = $container.data("normalizedInfo");
+    const normalizedInfo = $container.data("normalizedInfo") as BlockInfo;
     if (
       normalizedInfo.attributes["literate"] === false ||
       normalizedInfo.attributes["cmd"] === false ||
@@ -97,9 +98,9 @@ export default async function enhance(
 }
 
 async function renderDiagram(
-  $container: Cheerio,
+  $container: Cheerio<Element>,
   normalizedInfo: BlockInfo,
-  $: CheerioStatic,
+  $: CheerioAPI,
   graphsCache: { [key: string]: string },
   fileDirectoryPath: string,
   imageDirectoryPath: string,
