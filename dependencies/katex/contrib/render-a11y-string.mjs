@@ -402,6 +402,12 @@ var handleObject = (tree, a11yStrings, atomType) => {
         break;
       }
 
+    case "pmb":
+      {
+        a11yStrings.push("bold");
+        break;
+      }
+
     case "phantom":
       {
         a11yStrings.push("empty space");
