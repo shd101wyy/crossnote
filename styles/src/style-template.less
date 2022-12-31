@@ -170,6 +170,19 @@ html body[for="html-export"]:not([data-presentation-mode]) {
       ul {
         list-style-type: none;
       }
+
+      .bd-toc-link-wrapper {
+        .bd-toc-link {
+          display: inline;
+          padding: 0.25rem 0;
+        }
+    
+        &.highlighted {
+          .bd-toc-link {
+            font-weight: 800;
+          }
+        }
+      }
     }
 
     .markdown-preview {

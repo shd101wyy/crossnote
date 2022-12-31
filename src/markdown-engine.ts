@@ -43,7 +43,7 @@ import enhanceWithFencedCodeChunks, {
 import enhanceWithFencedDiagrams from "./render-enhancers/fenced-diagrams";
 import enhanceWithFencedMath from "./render-enhancers/fenced-math";
 import enhanceWithResolvedImagePaths from "./render-enhancers/resolved-image-paths";
-import { toc } from "./toc";
+import { generateSidebarToCHTML } from "./toc";
 import { HeadingData, transformMarkdown } from "./transformer";
 import * as utility from "./utility";
 import { removeFileProtocol } from "./utility";
@@ -2948,8 +2948,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const depthTo = tocConfig["depth_to"] || 6;
     const ordered = tocConfig["ordered"];
 
-    const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "  " });
-    this.tocHTML = this.md.render(tocObject.content);
+    // const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "  " });
+    // this.tocHTML = this.md.render(tocObject.content);
+
+    // Collaposible ToC
+    this.tocHTML = generateSidebarToCHTML(
+      headings,
+      this.md.render.bind(this.md),
+      { ordered, depthFrom, depthTo, tab: "  " },
+    );
+
     // }
     this.headings = headings; // reset headings information
 

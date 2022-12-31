@@ -62,16 +62,20 @@ export interface TocOption {
   ignoreLink?: boolean;
 }
 
+export interface HeadingData {
+  content: string;
+  level: number;
+  offset?: number;
+  id?: string;
+}
+
 /**
  *
  * @param opt:TocOption =
  * @param tokens = [{content:string, level:number, id:optional|string }]
  * @return {content, array}
  */
-export function toc(
-  tokens: { content: string; level: number; id?: string }[],
-  opt: TocOption,
-) {
+export function toc(tokens: HeadingData[], opt: TocOption) {
   const headingIdGenerator = new HeadingIdGenerator();
   if (!tokens) {
     return { content: "", array: [] };
@@ -138,4 +142,117 @@ export function toc(
     content: outputArr.join("\n"),
     array: outputArr,
   };
+}
+
+export function generateSidebarToCHTML(
+  headings: HeadingData[],
+  mdRender: (md: string) => string,
+  opt: TocOption,
+): string {
+  if (!headings.length) {
+    return "";
+  }
+  const headingIdGenerator = new HeadingIdGenerator();
+  const depthFrom = opt.depthFrom || 1;
+  const depthTo = opt.depthTo || 6;
+
+  // tslint:disable-next-line:no-console
+  console.log(headings);
+
+  headings = headings.filter((heading) => {
+    return heading.level >= depthFrom && heading.level <= depthTo;
+  });
+  headings = headings.map((heading, index) => {
+    heading.offset = index;
+    return heading;
+  });
+  // tslint:disable-next-line:no-console
+  console.log(headings);
+
+  let tocHtml = "";
+  let smallestLevel = headings[0].level;
+  for (let i = 0; i < headings.length; i++) {
+    if (headings[i].level < smallestLevel) {
+      smallestLevel = headings[i].level;
+    }
+  }
+
+  /**
+   * Get list of sub headers
+   */
+  const getSubHeaders = (
+    headingsData: HeadingData[],
+    expectedLevel: number,
+    startOffset: number,
+  ): HeadingData[] => {
+    const arr = [];
+    for (let i = startOffset; i < headingsData.length; i++) {
+      const heading = headingsData[i];
+      if (heading.level === expectedLevel) {
+        arr.push(heading);
+      } else if (heading.level < expectedLevel) {
+        break;
+      } else {
+        continue;
+      }
+    }
+    return arr;
+  };
+
+  /**
+   * Build the ToC Html
+   */
+  const convertHeadersDataToHTML = (
+    allHeadingsData: HeadingData[],
+    headingsData: HeadingData[],
+  ) => {
+    let result = "";
+    for (let i = 0; i < headingsData.length; i++) {
+      const heading = headingsData[i];
+      const subHeaders = getSubHeaders(
+        allHeadingsData,
+        heading.level + 1,
+        heading.offset + 1,
+      );
+
+      const leftIndentStyle = `padding-left: ${(heading.level - smallestLevel) *
+        8}px;`;
+      const paddingStyle = `padding:0.25rem 0;`;
+
+      const headingHtml = mdRender(heading.content);
+      const headingId =
+        heading.id || headingIdGenerator.generateId(heading.content);
+      if (subHeaders.length) {
+        result += `<details style="${paddingStyle};${leftIndentStyle}" ${
+          "open" // headingsData.length === smallestLevel ? "open" : ""
+        }>
+        <summary class="bd-toc-link-wrapper">
+          <a href="#${headingId}" class="bd-toc-link">${headingHtml}</a>
+          </summary>
+        <div>
+          ${convertHeadersDataToHTML(allHeadingsData, subHeaders)}
+        </div>
+      </details>
+    `;
+      } else {
+        result += `<div class="bd-toc-link-wrapper" style="${paddingStyle}">
+          <a
+            href="#${headingId}"
+            class="bd-toc-link"
+            style="${leftIndentStyle};"
+          >
+            ${headingHtml}
+          </a></div>`;
+      }
+    }
+    return result;
+  };
+
+  tocHtml = `
+<div>
+${convertHeadersDataToHTML(headings, getSubHeaders(headings, smallestLevel, 0))}
+</div>
+`;
+
+  return tocHtml;
 }
