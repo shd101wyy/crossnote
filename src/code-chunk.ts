@@ -179,5 +179,5 @@ const fileExtensionMap = {
 };
 
 function getFileExtension(language: string): string {
-  return fileExtensionMap[language] || `.{language}`;
+  return fileExtensionMap[language] || `.${language}`;
 }
