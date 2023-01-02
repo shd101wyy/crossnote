@@ -175,8 +175,9 @@ const fileExtensionMap = {
   go: ".go",
   javascript: ".js",
   python: ".py",
+  typescript: ".ts",
 };
 
 function getFileExtension(language: string): string {
-  return fileExtensionMap[language] || "";
+  return fileExtensionMap[language] || `.${language}`;
 }
