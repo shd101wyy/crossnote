@@ -266,7 +266,7 @@ export async function transformMarkdown(
   let codeChunkOffset = 0;
   const slideConfigs = [];
   const JSAndCssFiles = [];
-  let headings = [];
+  let headings: HeadingData[] = [];
   let tocBracketEnabled = false;
   let frontMatterString = "";
 

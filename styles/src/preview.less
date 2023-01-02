@@ -112,19 +112,32 @@
             font-size: 14px;
             box-shadow: -4px 0px 12px rgba(150, 150, 150, .33);
             box-sizing: border-box;
+            
             a {
                 // color: @fg;
                 text-decoration: none;
             }
-            ul {
-                padding: 0 1.6em;
-                margin-top: 0.8em;
-            }
-            li {
-                margin-bottom: 0.8em;
-            }
-            ul {
-                list-style-type: none;
+            
+            .md-toc {
+              padding: 0 16px;
+              
+              .md-toc-link-wrapper {
+                .md-toc-link {
+                  display: inline;
+                  padding: 0.25rem 0;
+      
+                  p,
+                  div {
+                    display: inline;
+                  }
+                }
+      
+                &.highlighted {
+                  .md-toc-link {
+                    font-weight: 800;
+                  }
+                }
+              }
             }
         }
         #md-toolbar {

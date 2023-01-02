@@ -62,18 +62,16 @@ export interface TocOption {
   ignoreLink?: boolean;
 }
 
-/**
- *
- * @param opt:TocOption =
- * @param tokens = [{content:string, level:number, id:optional|string }]
- * @return {content, array}
- */
-export function toc(
-  tokens: { content: string; level: number; id?: string }[],
-  opt: TocOption,
-) {
+export interface HeadingData {
+  content: string;
+  level: number;
+  offset?: number;
+  id?: string;
+}
+
+export function toc(headings: HeadingData[], opt: TocOption) {
   const headingIdGenerator = new HeadingIdGenerator();
-  if (!tokens) {
+  if (!headings) {
     return { content: "", array: [] };
   }
 
@@ -87,29 +85,29 @@ export function toc(
     tab = "    ";
   }
 
-  tokens = tokens.filter((token) => {
-    return token.level >= depthFrom && token.level <= depthTo;
+  headings = headings.filter((heading) => {
+    return heading.level >= depthFrom && heading.level <= depthTo;
   });
 
-  if (!tokens.length) {
+  if (!headings.length) {
     return { content: "", array: [] };
   }
 
   const outputArr = [];
-  let smallestLevel = tokens[0].level;
+  let smallestLevel = headings[0].level;
 
   // get smallestLevel
-  for (const token of tokens) {
-    if (token.level < smallestLevel) {
-      smallestLevel = token.level;
+  for (const heading of headings) {
+    if (heading.level < smallestLevel) {
+      smallestLevel = heading.level;
     }
   }
 
   let orderedListNums = [];
-  for (const token of tokens) {
-    const content = token.content.trim();
-    const level = token.level;
-    const slug = token.id || headingIdGenerator.generateId(content);
+  for (const heading of headings) {
+    const content = heading.content.trim();
+    const level = heading.level;
+    const slug = heading.id || headingIdGenerator.generateId(content);
     const n = level - smallestLevel;
     let numStr = "1";
     if (ordered) {
@@ -138,4 +136,115 @@ export function toc(
     content: outputArr.join("\n"),
     array: outputArr,
   };
+}
+
+export function generateSidebarToCHTML(
+  headings: HeadingData[],
+  mdRender: (md: string) => string,
+  opt: TocOption,
+): string {
+  if (!headings.length) {
+    return "";
+  }
+  const headingIdGenerator = new HeadingIdGenerator();
+  const depthFrom = opt.depthFrom || 1;
+  const depthTo = opt.depthTo || 6;
+
+  headings = headings.filter((heading) => {
+    return heading.level >= depthFrom && heading.level <= depthTo;
+  });
+  headings = headings.map((heading, index) => {
+    heading.offset = index;
+    return heading;
+  });
+
+  let tocHtml = "";
+  let smallestLevel = headings[0].level;
+  for (let i = 0; i < headings.length; i++) {
+    if (headings[i].level < smallestLevel) {
+      smallestLevel = headings[i].level;
+    }
+  }
+
+  /**
+   * Get list of sub headers
+   */
+  const getSubHeadings = (
+    headingsData: HeadingData[],
+    expectedLevel: number,
+    startOffset: number,
+  ): HeadingData[] => {
+    const arr = [];
+    for (let i = startOffset; i < headingsData.length; i++) {
+      const heading = headingsData[i];
+      if (heading.level === expectedLevel) {
+        arr.push(heading);
+      } else if (heading.level < expectedLevel) {
+        break;
+      } else {
+        continue;
+      }
+    }
+    return arr;
+  };
+
+  /**
+   * Build the ToC Html
+   */
+  const convertHeadingsDataToHTML = (
+    allHeadingsData: HeadingData[],
+    headingsData: HeadingData[],
+  ) => {
+    let result = "";
+    for (let i = 0; i < headingsData.length; i++) {
+      const heading = headingsData[i];
+      const subHeadings = getSubHeadings(
+        allHeadingsData,
+        heading.level + 1,
+        heading.offset + 1,
+      );
+
+      const leftIndentStyle = `padding-left: ${(heading.level - smallestLevel) *
+        8}px;`;
+      const paddingStyle = `padding:0.25rem 0;`;
+
+      const headingHtml = mdRender(heading.content);
+      const headingId =
+        heading.id || headingIdGenerator.generateId(heading.content);
+      if (subHeadings.length) {
+        result += `<details style="${paddingStyle};${leftIndentStyle}" ${
+          "open" // headingsData.length === smallestLevel ? "open" : ""
+        }>
+        <summary class="md-toc-link-wrapper">
+          <a href="#${headingId}" class="md-toc-link">${headingHtml}</a>
+          </summary>
+        <div>
+          ${convertHeadingsDataToHTML(allHeadingsData, subHeadings)}
+        </div>
+      </details>
+    `;
+      } else {
+        result += `<div class="md-toc-link-wrapper" style="${paddingStyle}">
+          <a
+            href="#${headingId}"
+            class="md-toc-link"
+            style="${leftIndentStyle};"
+          >
+            ${headingHtml}
+          </a></div>`;
+      }
+    }
+    return result;
+  };
+
+  tocHtml = `
+<div class="md-toc">
+${convertHeadingsDataToHTML(
+  headings,
+  getSubHeadings(headings, smallestLevel, 0),
+)}
+</div>
+`;
+
+  return tocHtml;
 }
