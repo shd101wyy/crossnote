@@ -69,15 +69,9 @@ export interface HeadingData {
   id?: string;
 }
 
-/**
- *
- * @param opt:TocOption =
- * @param tokens = [{content:string, level:number, id:optional|string }]
- * @return {content, array}
- */
-export function toc(tokens: HeadingData[], opt: TocOption) {
+export function toc(headings: HeadingData[], opt: TocOption) {
   const headingIdGenerator = new HeadingIdGenerator();
-  if (!tokens) {
+  if (!headings) {
     return { content: "", array: [] };
   }
 
@@ -91,29 +85,29 @@ export function toc(tokens: HeadingData[], opt: TocOption) {
     tab = "    ";
   }
 
-  tokens = tokens.filter((token) => {
-    return token.level >= depthFrom && token.level <= depthTo;
+  headings = headings.filter((heading) => {
+    return heading.level >= depthFrom && heading.level <= depthTo;
   });
 
-  if (!tokens.length) {
+  if (!headings.length) {
     return { content: "", array: [] };
   }
 
   const outputArr = [];
-  let smallestLevel = tokens[0].level;
+  let smallestLevel = headings[0].level;
 
   // get smallestLevel
-  for (const token of tokens) {
-    if (token.level < smallestLevel) {
-      smallestLevel = token.level;
+  for (const heading of headings) {
+    if (heading.level < smallestLevel) {
+      smallestLevel = heading.level;
     }
   }
 
   let orderedListNums = [];
-  for (const token of tokens) {
-    const content = token.content.trim();
-    const level = token.level;
-    const slug = token.id || headingIdGenerator.generateId(content);
+  for (const heading of headings) {
+    const content = heading.content.trim();
+    const level = heading.level;
+    const slug = heading.id || headingIdGenerator.generateId(content);
     const n = level - smallestLevel;
     let numStr = "1";
     if (ordered) {
@@ -156,9 +150,6 @@ export function generateSidebarToCHTML(
   const depthFrom = opt.depthFrom || 1;
   const depthTo = opt.depthTo || 6;
 
-  // tslint:disable-next-line:no-console
-  console.log(headings);
-
   headings = headings.filter((heading) => {
     return heading.level >= depthFrom && heading.level <= depthTo;
   });
@@ -166,8 +157,6 @@ export function generateSidebarToCHTML(
     heading.offset = index;
     return heading;
   });
-  // tslint:disable-next-line:no-console
-  console.log(headings);
 
   let tocHtml = "";
   let smallestLevel = headings[0].level;
@@ -216,7 +205,7 @@ export function generateSidebarToCHTML(
       );
 
       const leftIndentStyle = `padding-left: ${(heading.level - smallestLevel) *
-        8}px;`;
+        16}px;`;
       const paddingStyle = `padding:0.25rem 0;`;
 
       const headingHtml = mdRender(heading.content);
@@ -226,8 +215,8 @@ export function generateSidebarToCHTML(
         result += `<details style="${paddingStyle};${leftIndentStyle}" ${
           "open" // headingsData.length === smallestLevel ? "open" : ""
         }>
-        <summary class="bd-toc-link-wrapper">
-          <a href="#${headingId}" class="bd-toc-link">${headingHtml}</a>
+        <summary class="md-toc-link-wrapper">
+          <a href="#${headingId}" class="md-toc-link">${headingHtml}</a>
           </summary>
         <div>
           ${convertHeadersDataToHTML(allHeadingsData, subHeaders)}
@@ -235,10 +224,10 @@ export function generateSidebarToCHTML(
       </details>
     `;
       } else {
-        result += `<div class="bd-toc-link-wrapper" style="${paddingStyle}">
+        result += `<div class="md-toc-link-wrapper" style="${paddingStyle}">
           <a
             href="#${headingId}"
-            class="bd-toc-link"
+            class="md-toc-link"
             style="${leftIndentStyle};"
           >
             ${headingHtml}
@@ -249,7 +238,7 @@ export function generateSidebarToCHTML(
   };
 
   tocHtml = `
-<div>
+<div class="md-toc">
 ${convertHeadersDataToHTML(headings, getSubHeaders(headings, smallestLevel, 0))}
 </div>
 `;
