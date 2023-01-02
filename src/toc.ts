@@ -169,7 +169,7 @@ export function generateSidebarToCHTML(
   /**
    * Get list of sub headers
    */
-  const getSubHeaders = (
+  const getSubHeadings = (
     headingsData: HeadingData[],
     expectedLevel: number,
     startOffset: number,
@@ -191,27 +191,27 @@ export function generateSidebarToCHTML(
   /**
    * Build the ToC Html
    */
-  const convertHeadersDataToHTML = (
+  const convertHeadingsDataToHTML = (
     allHeadingsData: HeadingData[],
     headingsData: HeadingData[],
   ) => {
     let result = "";
     for (let i = 0; i < headingsData.length; i++) {
       const heading = headingsData[i];
-      const subHeaders = getSubHeaders(
+      const subHeadings = getSubHeadings(
         allHeadingsData,
         heading.level + 1,
         heading.offset + 1,
       );
 
       const leftIndentStyle = `padding-left: ${(heading.level - smallestLevel) *
-        16}px;`;
+        8}px;`;
       const paddingStyle = `padding:0.25rem 0;`;
 
       const headingHtml = mdRender(heading.content);
       const headingId =
         heading.id || headingIdGenerator.generateId(heading.content);
-      if (subHeaders.length) {
+      if (subHeadings.length) {
         result += `<details style="${paddingStyle};${leftIndentStyle}" ${
           "open" // headingsData.length === smallestLevel ? "open" : ""
         }>
@@ -219,7 +219,7 @@ export function generateSidebarToCHTML(
           <a href="#${headingId}" class="md-toc-link">${headingHtml}</a>
           </summary>
         <div>
-          ${convertHeadersDataToHTML(allHeadingsData, subHeaders)}
+          ${convertHeadingsDataToHTML(allHeadingsData, subHeadings)}
         </div>
       </details>
     `;
@@ -239,7 +239,10 @@ export function generateSidebarToCHTML(
 
   tocHtml = `
 <div class="md-toc">
-${convertHeadersDataToHTML(headings, getSubHeaders(headings, smallestLevel, 0))}
+${convertHeadingsDataToHTML(
+  headings,
+  getSubHeadings(headings, smallestLevel, 0),
+)}
 </div>
 `;
 
