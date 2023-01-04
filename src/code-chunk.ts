@@ -176,8 +176,10 @@ const fileExtensionMap = {
   javascript: ".js",
   python: ".py",
   typescript: ".ts",
+  node: ".js",
+  "ts-node": ".ts",
 };
 
-function getFileExtension(language: string): string {
-  return fileExtensionMap[language] || `.${language}`;
+function getFileExtension(cmd: string): string {
+  return fileExtensionMap[cmd] || `.${cmd}`;
 }
