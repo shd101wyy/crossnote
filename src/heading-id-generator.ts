@@ -6,8 +6,22 @@ export default class HeadingIdGenerator {
     this.table = {};
   }
   public generateId(heading: string): string {
-    heading = heading.replace(/。/g, ""); // sanitize
-    let slug = uslug(heading);
+    const replacement = (match: string, capture: string): string => {
+      let sanitized = capture
+        .replace(/[!"#$%&'()*+,./:;<=>?@[\\]^`{|}~]/g, "")
+        .replace(/^\s/, "")
+        .replace(/\s$/, "")
+        .replace(/`/g, "~");
+      return (
+        (capture.match(/^\s+$/) ? "~" : sanitized) +
+        (match.endsWith(" ") && !sanitized.endsWith("~") ? "~" : "")
+      );
+    };
+    heading = heading
+      .replace(/~|。/g, "") // sanitize
+      .replace(/``(.+?)``\s?/g, replacement)
+      .replace(/`(.*?)`\s?/g, replacement);
+    let slug = uslug(heading.replace(/\s/g, "~")).replace(/~/g, "-");
     if (this.table[slug] >= 0) {
       this.table[slug] = this.table[slug] + 1;
       slug += "-" + this.table[slug];
