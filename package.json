@@ -1,6 +1,6 @@
 {
   "name": "@shd101wyy/mume",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "A powerful markdown tool",
   "keywords": [
     "markdown"
@@ -78,6 +78,6 @@
     "ts-jest": "^27.0.5",
     "tslint": "^6.1.3",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^4.4.3"
+    "typescript": "4.9.4"
   }
 }

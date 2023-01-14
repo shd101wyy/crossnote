@@ -195,6 +195,8 @@ export function generateSidebarToCHTML(
     allHeadingsData: HeadingData[],
     headingsData: HeadingData[],
   ) => {
+    const left = 24;
+    const marginLeftDelta = 18;
     let result = "";
     for (let i = 0; i < headingsData.length; i++) {
       const heading = headingsData[i];
@@ -204,9 +206,10 @@ export function generateSidebarToCHTML(
         heading.offset + 1,
       );
 
-      const leftIndentStyle = `padding-left: ${(heading.level - smallestLevel) *
-        8}px;`;
-      const paddingStyle = `padding:0.25rem 0;`;
+      const leftIndentStyle = `padding-left:${
+        heading.level === smallestLevel ? 0 : left
+      }px;`;
+      const paddingStyle = `padding:0;`;
 
       const headingHtml = mdRender(heading.content);
       const headingId =
@@ -224,11 +227,14 @@ export function generateSidebarToCHTML(
       </details>
     `;
       } else {
-        result += `<div class="md-toc-link-wrapper" style="${paddingStyle}">
+        result += `<div class="md-toc-link-wrapper" style="${paddingStyle};display:list-item;list-style:square;margin-left:${
+          heading.level === smallestLevel
+            ? marginLeftDelta
+            : left + marginLeftDelta
+        }px">
           <a
             href="#${headingId}"
             class="md-toc-link"
-            style="${leftIndentStyle};"
           >
             ${headingHtml}
           </a></div>`;

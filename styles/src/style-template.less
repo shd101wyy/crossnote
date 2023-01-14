@@ -72,6 +72,29 @@
       }
     }
   }
+
+  // TOC
+  .md-toc {
+    padding: 0;
+    
+    .md-toc-link-wrapper {
+      .md-toc-link {
+        display: inline;
+        padding: 0.25rem 0;
+
+        p,
+        div {
+          display: inline;
+        }
+      }
+
+      &.highlighted {
+        .md-toc-link {
+          font-weight: 800;
+        }
+      }
+    }
+  }
 }
 
 .scrollbar-style {

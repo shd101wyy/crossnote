@@ -2635,7 +2635,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private parseSlides(
     html: string,
-    slideConfigs: object[],
+    slideConfigs: any[],
     useRelativeFilePath: boolean,
   ) {
     let slides = html.split("<p>[MUMESLIDE]</p>");
@@ -2653,19 +2653,19 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       // resolve paths in slideConfig
       if ("data-background-image" in slideConfig) {
         slideConfig["data-background-image"] = this.resolveFilePath(
-          slideConfig["data-background-image"],
+          slideConfig["data-background-image"] as string,
           useRelativeFilePath,
         );
       }
       if ("data-background-video" in slideConfig) {
         slideConfig["data-background-video"] = this.resolveFilePath(
-          slideConfig["data-background-video"],
+          slideConfig["data-background-video"] as string,
           useRelativeFilePath,
         );
       }
       if ("data-background-iframe" in slideConfig) {
         slideConfig["data-background-iframe"] = this.resolveFilePath(
-          slideConfig["data-background-iframe"],
+          slideConfig["data-background-iframe"] as string,
           useRelativeFilePath,
         );
       }
