@@ -18,6 +18,7 @@ export default class HeadingIdGenerator {
       );
     };
     heading = heading
+      .trim()
       .replace(/~|。/g, "") // sanitize
       .replace(/``(.+?)``\s?/g, replacement)
       .replace(/`(.*?)`\s?/g, replacement);
