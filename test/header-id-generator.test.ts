@@ -9,6 +9,14 @@ const testCasesForHeaderIdGenerator: {
     expected: "hello-world",
   },
   {
+    input: "  Leading space world!",
+    expected: "leading-space-world",
+  },
+  {
+    input: "Trailing space world!   ",
+    expected: "trailing-space-world",
+  },
+  {
     input: "Hello, world!",
     expected: "hello-world-1",
   },
