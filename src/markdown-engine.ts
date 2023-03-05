@@ -1168,7 +1168,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
   Reveal.addEventListener('slidechanged', mermaidRevealHelper)
   Reveal.addEventListener('ready', mermaidRevealHelper)
 } else {
-  mermaid.init(null, document.querySelectorAll('mermaid'))
+  mermaid.init(null, document.querySelectorAll('.mermaid'))
 }
 </script>`;
     }
