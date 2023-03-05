@@ -690,10 +690,10 @@
     "@types/unist" "*"
     "@types/vfile-message" "*"
 
-"@types/vscode@1.40.0":
-  version "1.40.0"
-  resolved "https://registry.npm.taobao.org/@types/vscode/download/@types/vscode-1.40.0.tgz#47d19e9e32da512c986f579fe6afbc8d3e6e0c55"
-  integrity sha1-R9GenjLaUSyYb1ef5q+8jT5uDFU=
+"@types/vscode@1.70.0":
+  version "1.70.0"
+  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.70.0.tgz#9cb14cdaac9f450a7005ae2db49ecee4a084c983"
+  integrity sha512-3/9Fz0F2eBgwciazc94Ien+9u1elnjFg9YAhvAb3qDy/WeFWD9VrOPU7CIytryOVUdbxus8uzL4VZYONA0gDtA==
 
 "@types/yargs-parser@*":
   version "15.0.0"
