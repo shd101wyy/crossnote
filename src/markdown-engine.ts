@@ -569,7 +569,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
   Reveal.addEventListener('ready', mermaidRevealHelper)
 } else {
   // The line below will cause mermaid bug in preview.
-  // mermaid.init(null, document.getElementsByClassName('mermaid'))
+  // mermaid.init(null, document.querySelectorAll('.mermaid'))
 }
 </script>`;
 
@@ -1139,7 +1139,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           "./dependencies/mermaid/mermaid.min.js",
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@9.1.7/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@9.4.0/dist/mermaid.min.js"></script>`;
       }
       const mermaidConfig: string = await utility.getMermaidConfig(
         this.config.configPath,
@@ -1168,7 +1168,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
   Reveal.addEventListener('slidechanged', mermaidRevealHelper)
   Reveal.addEventListener('ready', mermaidRevealHelper)
 } else {
-  mermaid.init(null, document.getElementsByClassName('mermaid'))
+  mermaid.init(null, document.querySelectorAll('mermaid'))
 }
 </script>`;
     }
