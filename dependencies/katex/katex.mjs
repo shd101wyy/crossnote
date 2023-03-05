@@ -8549,8 +8549,7 @@ defineFunction({
   names: ["\\\\"],
   props: {
     numArgs: 0,
-    numOptionalArgs: 1,
-    argTypes: ["size"],
+    numOptionalArgs: 0,
     allowedInText: true
   },
 
@@ -8558,7 +8557,7 @@ defineFunction({
     var {
       parser
     } = _ref;
-    var size = optArgs[0];
+    var size = parser.gullet.future().text === "[" ? parser.parseSizeGroup(true) : null;
     var newLine = !parser.settings.displayMode || !parser.settings.useStrictBehavior("newLineInDisplayMode", "In LaTeX, \\\\ or \\newline " + "does nothing in display mode");
     return {
       type: "cr",
@@ -18297,7 +18296,7 @@ var katex = {
   /**
    * Current KaTeX version
    */
-  version: "0.16.3",
+  version: "0.16.4",
 
   /**
    * Renders the given LaTeX into an HTML+MathML combination, and adds
