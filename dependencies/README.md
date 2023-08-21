@@ -4,7 +4,7 @@ I managed many libraries by myself instead of through npm to reduce overall file
 
 ```json
 {
-  "mermaid": "9.4.0",
+  "mermaid": "9.4.0", // Needs to wait for https://github.com/mermaid-js/mermaid/pull/4281 to upgrade to v10
   "plantuml": "1.2023.2",
   "wavedrom": "2.9.1",
   "reveal": "4.10.0",
