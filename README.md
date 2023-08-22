@@ -251,6 +251,7 @@ const config = {
   // - cdn.jsdelivr.net
   // - fastly.jsdelivr.net
   // - gcore.jsdelivr.net
+  // - testingcf.jsdelivr.net
   jsdelivrCdnHost: "cdn.jsdelivr.net",
 }
 
