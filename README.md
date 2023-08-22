@@ -246,6 +246,13 @@ const config = {
 
   // Render using PlantUML server instead of binary. Leave it empty to use the builtin plantuml.jar binary (`java` is required in system path). Eg: "http://localhost:8080/svg/".
   plantumlServer: "http://localhost:8080/svg/"
+
+  // Example values:
+  // - cdn.jsdelivr.net
+  // - fastly.jsdelivr.net
+  // - gcore.jsdelivr.net
+  // - testingcf.jsdelivr.net
+  jsdelivrCdnHost: "cdn.jsdelivr.net",
 }
 
 // Init Engine
@@ -263,7 +270,7 @@ Global config files are located in the `$XDG_STATE_HOME/mume` directory, which i
 ## Development
 
 [Visual Studio Code](https://code.visualstudio.com/) is recommended.
-Recommended to use Node.js version `lts/dubnium`.
+Recommended to use Node.js version 18.
 
 1.  Clone this project
 2.  Run `yarn` from shell

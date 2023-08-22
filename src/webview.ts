@@ -233,7 +233,16 @@
       if (!this.presentationMode) {
         previewElement.onscroll = this.scrollEvent.bind(this);
 
-        this.postMessage("webviewFinishLoading", [this.sourceUri]);
+        const isDarkColorScheme = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+
+        this.postMessage("webviewFinishLoading", [
+          this.sourceUri,
+          {
+            systemColorScheme: isDarkColorScheme ? "dark" : "light",
+          },
+        ]);
       } else {
         // TODO: presentation preview to source sync
         this.config.scrollSync = true; // <= force to enable scrollSync for presentation
@@ -832,13 +841,12 @@
         if (!validMermaidGraphs.length) {
           return resolve();
         } else {
-          validMermaidGraphs.forEach((mermaidGraph, offset) => {
+          validMermaidGraphs.forEach(async (mermaidGraph, offset) => {
             const svgId = "svg-mermaid-" + Date.now() + "-" + offset;
             const code = mermaidGraph.textContent.trim();
             try {
-              mermaid.render(svgId, code, (svgCode) => {
-                mermaidGraph.innerHTML = svgCode;
-              });
+              const { svg } = await mermaid.render(svgId, code);
+              mermaidGraph.innerHTML = svg;
             } catch (error) {
               const noiseElement = document.getElementById("d" + svgId);
               if (noiseElement) {

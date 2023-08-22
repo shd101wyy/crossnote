@@ -347,7 +347,7 @@ export class MarkdownEngine {
     );
   }
 
-  public updateConfiguration(config) {
+  public updateConfiguration(config: Partial<MarkdownEngineConfig>) {
     this.config = { ...this.config, ...config };
     this.initConfig();
 
@@ -1110,7 +1110,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           "./dependencies/katex/katex.min.css",
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/katex@0.16.8/dist/katex.min.css">`;
       }
     } else {
       mathStyle = "";
@@ -1139,7 +1139,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           "./dependencies/mermaid/mermaid.min.js",
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@9.4.0/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/mermaid@10.3.1/dist/mermaid.min.js"></script>`;
       }
       const mermaidConfig: string = await utility.getMermaidConfig(
         this.config.configPath,
@@ -1224,7 +1224,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
               utility.extensionDirectoryPath,
               `./dependencies/${key}/${key}.min.js`,
             )}" charset="UTF-8"></script>`
-          : `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/${key}@${version}/build/${name}.js"></script>`;
+          : `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${name}.js"></script>`;
       });
 
       vegaInitScript += `<script>
@@ -1310,8 +1310,8 @@ for (var i = 0; i < flowcharts.length; i++) {
         sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webfont/1.6.28/webfontloader.js"></script>`;
         sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`;
         sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>`;
-        sequenceDiagramScript += `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/js-sequence-diagram@2.0.1/dist/sequence-diagram-min.js"></script>`;
-        sequenceDiagramStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/js-sequence-diagram@2.0.1/dist/sequence-diagram-min.css">`;
+        sequenceDiagramScript += `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/js-sequence-diagram@2.0.1/dist/sequence-diagram-min.js"></script>`;
+        sequenceDiagramStyle = `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/js-sequence-diagram@2.0.1/dist/sequence-diagram-min.css">`;
       }
       sequenceDiagramInitScript = `<script>
       var sequenceDiagrams = document.getElementsByClassName('sequence')
@@ -1347,7 +1347,7 @@ for (var i = 0; i < flowcharts.length; i++) {
         )}'></script>`;
       } else {
         presentationScript = `
-        <script src='https://cdn.jsdelivr.net/npm/reveal.js@4.1.0/dist/reveal.js'></script>`;
+        <script src='https://${this.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/reveal.js'></script>`;
       }
 
       const presentationConfig = yamlConfig["presentation"] || {};
@@ -1449,7 +1449,7 @@ for (var i = 0; i < flowcharts.length; i++) {
             `./dependencies/reveal/css/theme/${theme}`,
           )}">`;
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.1.0/dist/theme/${theme}">`;
+          presentationStyle += `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/theme/${theme}">`;
         }
       } else {
         // preview theme
@@ -2149,7 +2149,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig["html"] &&
         ebookConfig["html"].cdn
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/katex@0.16.8/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           extensionDirectoryPath,
