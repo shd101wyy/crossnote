@@ -347,7 +347,7 @@ export class MarkdownEngine {
     );
   }
 
-  public updateConfiguration(config) {
+  public updateConfiguration(config: Partial<MarkdownEngineConfig>) {
     this.config = { ...this.config, ...config };
     this.initConfig();
 

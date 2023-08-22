@@ -233,7 +233,16 @@
       if (!this.presentationMode) {
         previewElement.onscroll = this.scrollEvent.bind(this);
 
-        this.postMessage("webviewFinishLoading", [this.sourceUri]);
+        const isDarkColorScheme = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+
+        this.postMessage("webviewFinishLoading", [
+          this.sourceUri,
+          {
+            systemColorScheme: isDarkColorScheme ? "dark" : "light",
+          },
+        ]);
       } else {
         // TODO: presentation preview to source sync
         this.config.scrollSync = true; // <= force to enable scrollSync for presentation
