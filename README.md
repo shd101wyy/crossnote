@@ -257,6 +257,9 @@ const config = {
   // - gcore.jsdelivr.net
   // - testingcf.jsdelivr.net
   jsdelivrCdnHost: "cdn.jsdelivr.net",
+
+  // Kroki server url.
+  krokiServer: "https://kroki.io",
 }
 
 // Init Engine

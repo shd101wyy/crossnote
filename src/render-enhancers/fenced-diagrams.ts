@@ -77,9 +77,7 @@ export default async function enhance({
 
     const normalizedInfo: BlockInfo = $container.data("normalizedInfo");
     // Check if Kroki is enabled
-    const classNames: string = normalizedInfo.attributes["class"] || "";
-    const isKroki = classNames.split(" ").indexOf("kroki") !== -1;
-
+    const isKroki = !!normalizedInfo.attributes["kroki"];
     if (
       normalizedInfo.attributes["literate"] === false ||
       normalizedInfo.attributes["cmd"] === false ||
@@ -145,7 +143,10 @@ async function renderDiagram({
     // Kroki is a service that can render diagrams from textual descriptions
     // see https://kroki.io/
     const krokiURL = kirokiServer || "https://kroki.io";
-    const krokiDiagramType = normalizedInfo.language;
+    const krokiDiagramType =
+      typeof normalizedInfo.attributes["kroki"] === "string"
+        ? normalizedInfo.attributes["kroki"]
+        : normalizedInfo.language;
     // Convert code to deflate+base64
     const data = Buffer.from(code, "utf8");
     const compressed = pako.deflate(data, { level: 9 });
