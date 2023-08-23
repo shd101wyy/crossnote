@@ -2993,6 +2993,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ),
       plantumlServer: this.config.plantumlServer,
       plantumlJarPath: this.config.plantumlJarPath,
+      kirokiServer: this.config.krokiServer,
     });
     await enhanceWithFencedCodeChunks(
       $,

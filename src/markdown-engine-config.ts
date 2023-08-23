@@ -102,6 +102,7 @@ export interface MarkdownEngineConfig {
   plantumlServer: string;
   plantumlJarPath?: string;
   jsdelivrCdnHost: string;
+  krokiServer: string;
 }
 
 export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
@@ -153,4 +154,5 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   plantumlServer: "",
   plantumlJarPath: "",
   jsdelivrCdnHost: "cdn.jsdelivr.net",
+  krokiServer: "https://kroki.io",
 };
