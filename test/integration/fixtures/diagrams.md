@@ -375,7 +375,7 @@ encoding:
 
 ## [Ditaa](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=ditaa)
 
-`ditaa {cmd=true args=["-E"]}`
+`ditaa {cmd="kroki"}`
 
 ```ditaa {cmd=true args=["-E"]}
 +--------+   +-------+    +-------+

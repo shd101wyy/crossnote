@@ -1,7 +1,6 @@
 // tslint:disable:ban-types no-var-requires
 import * as YAML from "yamljs";
 
-import { render as renderDitaa } from "../ditaa";
 import computeChecksum from "../lib/compute-checksum";
 import { render as renderPlantuml } from "../puml";
 import { escapeString } from "../utility";
@@ -44,7 +43,6 @@ const supportedLanguages = [
   "dot",
   "vega",
   "vega-lite",
-  "ditaa",
 ];
 
 /**
@@ -201,23 +199,6 @@ async function renderDiagram(
             normalizedInfo.attributes,
           )}>${svg}</p>`;
         }
-        break;
-      }
-      case "ditaa": {
-        // historically, ditaa worked only when cmd=true.
-        // Leaving this peculiarity till the next major version
-        // for backwards-compatibility.
-        if (!normalizedInfo.attributes["cmd"]) {
-          break;
-        }
-
-        // ditaa diagram
-        const args = normalizedInfo.attributes["args"] || [];
-
-        const svg = await renderDitaa(code, args);
-        $output = `<p ${stringifyBlockAttributes(
-          normalizedInfo.attributes,
-        )}>${svg}</p>`;
         break;
       }
     }

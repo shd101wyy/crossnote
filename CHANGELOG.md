@@ -1,10 +1,4 @@
-# next next,
-
-Please check the git commit messages...
-
-# next
-
-- Upgrade `vega` to `4.1.0`, `vega-lite` to `2.6.0` and `vega-embed` to `3.18.1` ([#79](https://github.com/shd101wyy/mume/pull/79)).
+# Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/releases for the latest changelog
 
 # 0.3.3
 
