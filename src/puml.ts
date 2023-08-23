@@ -1,13 +1,8 @@
-import { spawn } from "child_process";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import * as path from "path";
 import { getExtensionConfigPath } from "./mume";
 import PlantUMLServerTask from "./puml-server";
-import { extensionDirectoryPath } from "./utility";
-
-const PlantUMLJarPath = path.resolve(
-  extensionDirectoryPath,
-  "./dependencies/plantuml/plantuml.jar",
-);
+import { existsSync } from "fs";
 
 /**
  * key is fileDirectoryPath, value is PlantUMLTask
@@ -25,12 +20,14 @@ const CHUNKS: { [key: string]: string } = {};
 const CALLBACKS: { [key: string]: ((result: string) => void)[] } = {};
 
 class PlantUMLTask {
+  private plantumlJarPath: string;
   private fileDirectoryPath: string;
   private chunks: string;
   private callbacks: ((result: string) => void)[];
-  private task;
+  private task: ChildProcessWithoutNullStreams | null;
 
-  constructor(fileDirectoryPath: string) {
+  constructor(plantumlJarPath: string, fileDirectoryPath: string) {
+    this.plantumlJarPath = plantumlJarPath;
     this.fileDirectoryPath = fileDirectoryPath;
     this.chunks = CHUNKS[this.fileDirectoryPath] || "";
     this.callbacks = CALLBACKS[this.fileDirectoryPath] || [];
@@ -53,7 +50,7 @@ class PlantUMLTask {
       "-Dplantuml.include.path=" +
         [this.fileDirectoryPath, getExtensionConfigPath()].join(path.delimiter),
       "-jar",
-      PlantUMLJarPath,
+      this.plantumlJarPath,
       // '-graphvizdot', 'exe'
       "-pipe",
       "-tsvg",
@@ -102,11 +99,17 @@ class PlantUMLTask {
 }
 
 // async call
-export async function render(
-  content: string,
-  fileDirectoryPath: string = "",
-  serverURL: string = "",
-): Promise<string> {
+export async function render({
+  content,
+  fileDirectoryPath,
+  serverURL,
+  plantumlJarPath,
+}: {
+  content: string;
+  fileDirectoryPath: string;
+  serverURL: string;
+  plantumlJarPath: string;
+}): Promise<string> {
   content = content.trim();
   // ' @mume_file_directory_path:/fileDirectoryPath
   // fileDirectoryPath
@@ -130,8 +133,23 @@ ${content}
     if (!!serverURL) {
       TASKS[fileDirectoryPath] = new PlantUMLServerTask(serverURL);
     } else {
+      if (!existsSync(plantumlJarPath)) {
+        throw new Error(`plantuml.jar file not found: "${plantumlJarPath}"
+
+Please download plantuml.jar from https://plantuml.com/download.  
+
+${
+  plantumlJarPath
+    ? `Then please put it at "${plantumlJarPath}"`
+    : `If you are using VSCode, then please set the setting "markdown-preview-enhanced.plantumlJarPath" to the path of plantuml.jar file.  `
+}
+`);
+      }
       // init `plantuml.jar` task
-      TASKS[fileDirectoryPath] = new PlantUMLTask(fileDirectoryPath);
+      TASKS[fileDirectoryPath] = new PlantUMLTask(
+        plantumlJarPath,
+        fileDirectoryPath,
+      );
     }
   }
 

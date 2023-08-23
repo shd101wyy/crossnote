@@ -183,7 +183,7 @@ export const extensionDirectoryPath = path.resolve(__dirname, "../../");
 /**
  * compile ~/.mumi/style.less and return 'css' content.
  */
-export async function getGlobalStyles(configPath): Promise<string> {
+export async function getGlobalStyles(configPath: string): Promise<string> {
   const globalLessFilePath = configPath
     ? path.resolve(configPath, "./style.less")
     : path.resolve(getConfigPath(), "./style.less");
@@ -251,7 +251,7 @@ export function getConfigPath() {
 /**
  * load ~/.config/mume/mermaid_config.js file.
  */
-export async function getMermaidConfig(configPath): Promise<string> {
+export async function getMermaidConfig(configPath: string): Promise<string> {
   const mermaidConfigPath = configPath
     ? path.resolve(configPath, "./mermaid_config.js")
     : path.resolve(getConfigPath(), "./mermaid_config.js");
@@ -305,7 +305,7 @@ export const defaultKaTeXConfig = {
 /**
  * load ~/.config/mume/mathjax_config.js file.
  */
-export async function getMathJaxConfig(configPath): Promise<object> {
+export async function getMathJaxConfig(configPath: string): Promise<object> {
   const mathjaxConfigPath = configPath
     ? path.resolve(configPath, "./mathjax_config.js")
     : path.resolve(getConfigPath(), "./mathjax_config.js");
@@ -344,7 +344,7 @@ module.exports = {
 /**
  * load ~/.config/mume/katex_config.js file
  */
-export async function getKaTeXConfig(configPath): Promise<object> {
+export async function getKaTeXConfig(configPath: string): Promise<object> {
   const katexConfigPath = configPath
     ? path.resolve(configPath, "./katex_config.js")
     : path.resolve(getConfigPath(), "./katex_config.js");
@@ -368,7 +368,7 @@ module.exports = {
   return katexConfig;
 }
 
-export async function getExtensionConfig(configPath): Promise<object> {
+export async function getExtensionConfig(configPath: string): Promise<object> {
   const extensionConfigFilePath = configPath
     ? path.resolve(configPath, "./config.json")
     : path.resolve(getConfigPath(), "./config.json");
@@ -388,7 +388,9 @@ export async function getExtensionConfig(configPath): Promise<object> {
   return config;
 }
 
-export async function getParserConfig(configPath): Promise<ParserConfig> {
+export async function getParserConfig(
+  configPath: string,
+): Promise<ParserConfig> {
   const parserConfigPath = configPath
     ? path.resolve(configPath, "./parser.js")
     : path.resolve(getConfigPath(), "./parser.js");
@@ -430,23 +432,6 @@ export async function getParserConfig(configPath): Promise<ParserConfig> {
   }
 
   return parserConfig;
-}
-
-/**
- * Check whether two arrays are equal
- * @param x
- * @param y
- */
-export function isArrayEqual(x, y) {
-  if (x.length !== y.length) {
-    return false;
-  }
-  for (let i = 0; i < x.length; i++) {
-    if (x[i] !== y[i]) {
-      return false;
-    }
-  }
-  return true;
 }
 
 let _externalAddFileProtocolFunction: (

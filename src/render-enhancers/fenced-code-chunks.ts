@@ -7,7 +7,7 @@ import { toc } from "../toc";
 import { extractCommandFromBlockInfo } from "../utility";
 
 export default async function enhance(
-  $,
+  $: CheerioStatic,
   codeChunksData: CodeChunksData,
   renderOptions: MarkdownEngineRenderOption,
   runOptions: RunCodeChunkOptions,

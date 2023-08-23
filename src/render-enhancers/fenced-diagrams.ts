@@ -50,13 +50,21 @@ const supportedLanguages = [
  * @param html the html string that we will analyze
  * @return html
  */
-export default async function enhance(
+export default async function enhance({
   $,
-  graphsCache: { [key: string]: string },
-  fileDirectoryPath: string,
-  imageDirectoryPath: string,
-  plantumlServer: string,
-): Promise<void> {
+  graphsCache,
+  fileDirectoryPath,
+  imageDirectoryPath,
+  plantumlServer,
+  plantumlJarPath,
+}: {
+  $: CheerioStatic;
+  graphsCache: { [key: string]: string };
+  fileDirectoryPath: string;
+  imageDirectoryPath: string;
+  plantumlServer: string;
+  plantumlJarPath: string;
+}): Promise<void> {
   const asyncFunctions = [];
   $('[data-role="codeBlock"]').each((i, container) => {
     const $container = $(container);
@@ -80,7 +88,7 @@ export default async function enhance(
     }
 
     asyncFunctions.push(
-      renderDiagram(
+      renderDiagram({
         $container,
         normalizedInfo,
         $,
@@ -88,21 +96,32 @@ export default async function enhance(
         fileDirectoryPath,
         imageDirectoryPath,
         plantumlServer,
-      ),
+        plantumlJarPath,
+      }),
     );
   });
   await Promise.all(asyncFunctions);
 }
 
-async function renderDiagram(
-  $container: Cheerio,
-  normalizedInfo: BlockInfo,
-  $: CheerioStatic,
-  graphsCache: { [key: string]: string },
-  fileDirectoryPath: string,
-  imageDirectoryPath: string,
-  plantumlServer: string,
-): Promise<void> {
+async function renderDiagram({
+  $container,
+  normalizedInfo,
+  $,
+  graphsCache,
+  fileDirectoryPath,
+  imageDirectoryPath,
+  plantumlServer,
+  plantumlJarPath,
+}: {
+  $container: Cheerio;
+  normalizedInfo: BlockInfo;
+  $: CheerioStatic;
+  graphsCache: { [key: string]: string };
+  fileDirectoryPath: string;
+  imageDirectoryPath: string;
+  plantumlJarPath: string;
+  plantumlServer: string;
+}): Promise<void> {
   let $output = null;
 
   const code = $container.text();
@@ -148,7 +167,12 @@ async function renderDiagram(
       case "plantuml": {
         let svg = diagramInCache;
         if (!svg) {
-          svg = await renderPlantuml(code, fileDirectoryPath, plantumlServer);
+          svg = await renderPlantuml({
+            content: code,
+            fileDirectoryPath,
+            serverURL: plantumlServer,
+            plantumlJarPath: plantumlJarPath,
+          });
           graphsCache[checksum] = svg; // store to new cache
         }
         $output = `<p ${stringifyBlockAttributes(

@@ -8,6 +8,7 @@ import { toc } from "./toc";
 import { transformMarkdown } from "./transformer";
 import * as utility from "./utility";
 import mkdirp = require("mkdirp");
+import { CodeChunkData } from "./code-chunk-data";
 
 function getFileExtension(documentType: string) {
   if (
@@ -275,7 +276,8 @@ export async function pandocConvert(
     sourceFilePath,
     filesCache,
     protocolsWhiteListRegExp,
-    /*deleteImages=true,*/ codeChunksData,
+    /*deleteImages=true,*/
+    codeChunksData,
     graphsCache,
     imageDirectoryPath,
     pandocMarkdownFlavor,
@@ -283,9 +285,28 @@ export async function pandocConvert(
     latexEngine,
     imageMagickPath,
     mermaidTheme,
+    plantumlJarPath,
     plantumlServer,
-    onWillTransformMarkdown = null,
-    onDidTransformMarkdown = null,
+    onWillTransformMarkdown,
+    onDidTransformMarkdown,
+  }: {
+    fileDirectoryPath: string;
+    projectDirectoryPath: string;
+    sourceFilePath: string;
+    filesCache: { [key: string]: string };
+    protocolsWhiteListRegExp: RegExp;
+    codeChunksData: { [key: string]: CodeChunkData };
+    graphsCache: { [key: string]: string };
+    imageDirectoryPath: string;
+    pandocPath: string;
+    imageMagickPath: string;
+    mermaidTheme: string;
+    plantumlJarPath: string;
+    plantumlServer: string;
+    pandocMarkdownFlavor: string;
+    latexEngine?: string;
+    onWillTransformMarkdown?: (markdown: string) => Promise<string>;
+    onDidTransformMarkdown?: (markdown: string) => Promise<string>;
   },
   config = {},
 ): Promise<string> {
@@ -448,6 +469,7 @@ export async function pandocConvert(
     mermaidTheme,
     addOptionsStr: true,
     plantumlServer,
+    plantumlJarPath,
   });
 
   // pandoc will cause error if directory doesn't exist,

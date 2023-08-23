@@ -100,6 +100,7 @@ export interface MarkdownEngineConfig {
   usePuppeteerCore?: boolean;
   puppeteerArgs?: string[];
   plantumlServer: string;
+  plantumlJarPath?: string;
   jsdelivrCdnHost: string;
 }
 
@@ -150,5 +151,6 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   usePuppeteerCore: true,
   puppeteerArgs: [],
   plantumlServer: "",
+  plantumlJarPath: "",
   jsdelivrCdnHost: "cdn.jsdelivr.net",
 };

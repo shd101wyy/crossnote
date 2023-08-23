@@ -315,6 +315,13 @@ export class MarkdownEngine {
     this.protocolsWhiteListRegExp = new RegExp(
       "^(" + protocolsWhiteList.join("|") + ")",
     ); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
+
+    if (!this.config.plantumlJarPath) {
+      this.config.plantumlJarPath = path.resolve(
+        this.config.configPath,
+        "./plantuml.jar",
+      );
+    }
   }
 
   public interpolateConfig(
@@ -2324,6 +2331,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         imageMagickPath: this.config.imageMagickPath,
         mermaidTheme: this.config.mermaidTheme,
         plantumlServer: this.config.plantumlServer,
+        plantumlJarPath: this.config.plantumlJarPath,
         onWillTransformMarkdown:
           utility.configs.parserConfig["onWillTransformMarkdown"],
         onDidTransformMarkdown:
@@ -2431,6 +2439,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         usePandocParser: this.config.usePandocParser,
         imageMagickPath: this.config.imageMagickPath,
         mermaidTheme: this.config.mermaidTheme,
+        plantumlJarPath: this.config.plantumlJarPath,
         plantumlServer: this.config.plantumlServer,
         onWillTransformMarkdown:
           utility.configs.parserConfig["onWillTransformMarkdown"],
@@ -2975,15 +2984,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       this.config.mathRenderingOption,
       this.config.mathBlockDelimiters,
     );
-    await enhanceWithFencedDiagrams(
+    await enhanceWithFencedDiagrams({
       $,
-      this.graphsCache,
-      options.fileDirectoryPath || this.fileDirectoryPath,
-      removeFileProtocol(
+      graphsCache: this.graphsCache,
+      fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
+      imageDirectoryPath: removeFileProtocol(
         this.resolveFilePath(this.config.imageFolderPath, false),
       ),
-      this.config.plantumlServer,
-    );
+      plantumlServer: this.config.plantumlServer,
+      plantumlJarPath: this.config.plantumlJarPath,
+    });
     await enhanceWithFencedCodeChunks(
       $,
       this.codeChunksData,

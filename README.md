@@ -244,8 +244,12 @@ const config = {
   // Args passed to puppeteer.launch({args: $puppeteerArgs})
   puppeteerArgs: [],
 
-  // Render using PlantUML server instead of binary. Leave it empty to use the builtin plantuml.jar binary (`java` is required in system path). Eg: "http://localhost:8080/svg/".
-  plantumlServer: "http://localhost:8080/svg/"
+  // Render using PlantUML server instead of binary. Leave it empty to use the plantuml.jar file at `plantumlJarPath` (`java` is required in system path). Eg: "http://localhost:8080/svg/".
+  plantumlServer: "http://localhost:8080/svg/",
+
+  // The absolute of the PlantUML jar file.
+  // The plantuml.jar file could be downloaded from https://sourceforge.net/projects/plantuml/
+  plantumlJarPath: "",
 
   // Example values:
   // - cdn.jsdelivr.net
