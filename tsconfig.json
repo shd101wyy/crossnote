@@ -1,14 +1,18 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es6",
+    "target": "ES2017",
     "sourceMap": true,
     "skipLibCheck": true,
     "outDir": "out",
     "lib": ["es6", "dom"],
     "rootDir": ".",
     "declaration": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "removeComments": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "incremental": true
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"]

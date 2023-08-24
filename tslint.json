@@ -6,6 +6,7 @@
     "no-string-literal": false,
     "object-literal-sort-keys": false,
     "prefer-for-of": false,
-    "no-eval": false
+    "no-eval": false,
+    "no-var-requires": true
   }
 }
