@@ -1,18 +1,18 @@
-import { resolve } from "path";
-import { scopeForLanguageName } from "../extension-helper";
-import { BlockInfo } from "../lib/block-info";
-import { escapeString, extensionDirectoryPath } from "../utility";
+import { resolve } from 'path';
+import { scopeForLanguageName } from '../extension-helper';
+import { BlockInfo } from '../lib/block-info';
+import { escapeString, extensionDirectoryPath } from '../utility';
 let Prism;
 
 export default async function enhance($: CheerioStatic): Promise<void> {
   // spaced code blocks
   // this is for pandoc parser
-  $("pre>code").each((i, codeElement) => {
+  $('pre>code').each((i, codeElement) => {
     const $codeElement = $(codeElement);
     const code = $codeElement.text();
     const $container = $codeElement.parent();
     $codeElement.replaceWith(escapeString(code));
-    $container.addClass("language-text");
+    $container.addClass('language-text');
   });
 
   // fenced code blocks
@@ -21,8 +21,8 @@ export default async function enhance($: CheerioStatic): Promise<void> {
 
     // hide this code block if hide=true in options or if any of previous enhances told so
     const hidden =
-      $container.data("hiddenByEnhancer") ||
-      ($container.data("normalizedInfo") as BlockInfo).attributes["hide"] ===
+      $container.data('hiddenByEnhancer') ||
+      ($container.data('normalizedInfo') as BlockInfo).attributes['hide'] ===
         true;
     if (hidden) {
       $container.remove();
@@ -33,7 +33,7 @@ export default async function enhance($: CheerioStatic): Promise<void> {
     const code = $container.text();
 
     // determine code language
-    const info: BlockInfo = $container.data("normalizedInfo");
+    const info: BlockInfo = $container.data('normalizedInfo');
     const language = guessPrismLanguage(
       scopeForLanguageName(info.language),
       code,
@@ -44,10 +44,10 @@ export default async function enhance($: CheerioStatic): Promise<void> {
       if (!Prism) {
         Prism = require(resolve(
           extensionDirectoryPath,
-          "./dependencies/prism/prism.js",
+          './dependencies/prism/prism.js',
         ));
-        Prism.hooks.add("wrap", (env) => {
-          if (env.type !== "keyword") {
+        Prism.hooks.add('wrap', env => {
+          if (env.type !== 'keyword') {
             return;
           }
           env.classes.push(`keyword-${env.content}`);
@@ -56,11 +56,11 @@ export default async function enhance($: CheerioStatic): Promise<void> {
         // Add K and Iele languages syntax highlighting
         const defineKLanguage = require(resolve(
           extensionDirectoryPath,
-          "./dependencies/prism/k.js",
+          './dependencies/prism/k.js',
         ));
         const defineIeleLanguage = require(resolve(
           extensionDirectoryPath,
-          "./dependencies/prism/iele.js",
+          './dependencies/prism/iele.js',
         ));
         defineKLanguage(Prism);
         defineIeleLanguage(Prism);
@@ -73,18 +73,18 @@ export default async function enhance($: CheerioStatic): Promise<void> {
     }
 
     $container.addClass(`language-${language}`);
-    if (info.attributes["class"]) {
-      $container.addClass(info.attributes["class"]);
+    if (info.attributes['class']) {
+      $container.addClass(info.attributes['class']);
       addLineNumbersIfNecessary($container, code);
     }
     // check highlight
-    if (info.attributes["highlight"]) {
-      highlightLines($container, code, info.attributes["highlight"]);
+    if (info.attributes['highlight']) {
+      highlightLines($container, code, info.attributes['highlight']);
     }
 
     // previously used data is no longer needed, so removing it to reduce output size
-    $container.removeAttr("data-parsed-info");
-    $container.removeAttr("data-normalized-info");
+    $container.removeAttr('data-parsed-info');
+    $container.removeAttr('data-normalized-info');
   });
 }
 
@@ -94,9 +94,9 @@ export default async function enhance($: CheerioStatic): Promise<void> {
  * @param code
  */
 function guessPrismLanguage(language: string, code: string) {
-  if (language === "vega" || language === "vega-lite") {
-    const firstChar = code.match(/^\s*(.)/)[1];
-    return firstChar === "{" ? "json" : "yaml";
+  if (language === 'vega' || language === 'vega-lite') {
+    const firstChar = (code.match(/^\s*(.)/) ?? [])[1];
+    return firstChar === '{' ? 'json' : 'yaml';
   }
   return language;
 }
@@ -107,20 +107,20 @@ function guessPrismLanguage(language: string, code: string) {
  * @param code
  */
 function addLineNumbersIfNecessary($container, code: string): void {
-  if ($container.hasClass("numberLines")) {
-    $container.addClass("line-numbers");
-    $container.removeClass("numberLines");
+  if ($container.hasClass('numberLines')) {
+    $container.addClass('line-numbers');
+    $container.removeClass('numberLines');
   }
 
-  if ($container.hasClass("line-numbers")) {
+  if ($container.hasClass('line-numbers')) {
     if (!code.trim().length) {
       return;
     }
     const match = code.match(/\n(?!$)/g);
     const lineCount = match ? match.length + 1 : 1;
-    let lines = "";
+    let lines = '';
     for (let i = 0; i < lineCount; i++) {
-      lines += "<span></span>";
+      lines += '<span></span>';
     }
     $container.append(
       `<span aria-hidden="true" class="line-numbers-rows">${lines}</span>`,
@@ -142,18 +142,18 @@ function highlightLines(
   if (!code.trim().length) {
     return;
   }
-  if (typeof highlight === "number") {
+  if (typeof highlight === 'number') {
     highlight = [highlight.toString()];
-  } else if (typeof highlight === "string") {
-    highlight = highlight.split(",");
+  } else if (typeof highlight === 'string') {
+    highlight = highlight.split(',');
   }
   const match = code.match(/\n(?!$)/g);
   const lineCount = match ? match.length + 1 : 1;
-  const highlightElements = [];
-  highlight.forEach((h) => {
+  const highlightElements: string[] = [];
+  highlight.forEach(h => {
     h = h.toString();
-    if (h.indexOf("-") > 0) {
-      let [start, end] = h.split("-").map((x) => parseInt(x, 10));
+    if (h.indexOf('-') > 0) {
+      let [start, end] = h.split('-').map(x => parseInt(x, 10));
       if (isNaN(start) || isNaN(end) || start < 0 || end < 0) {
         return;
       }
@@ -163,31 +163,31 @@ function highlightLines(
       if (end > lineCount) {
         return;
       }
-      let lineBreaks = "";
+      let lineBreaks = '';
       for (let i = start; i <= end; i++) {
-        lineBreaks += "\n";
+        lineBreaks += '\n';
       }
-      let preLineBreaks = "";
+      let preLineBreaks = '';
       for (let i = 0; i < start - 1; i++) {
-        preLineBreaks += "\n";
+        preLineBreaks += '\n';
       }
       highlightElements.push(
         `<div class="line-highlight-wrapper">${preLineBreaks}<div aria-hidden="true" class="line-highlight" data-range="${start}-${end}" data-start="${start}" data-end="${end}">${lineBreaks}</div></div>`,
       );
     } else {
-      let preLineBreaks = "";
+      let preLineBreaks = '';
       const start = parseInt(h, 10);
       if (isNaN(start) || start < 0 || start > lineCount) {
         return;
       }
       for (let i = 0; i < start - 1; i++) {
-        preLineBreaks += "\n";
+        preLineBreaks += '\n';
       }
       highlightElements.push(
-        `<div class="line-highlight-wrapper">${preLineBreaks}<div aria-hidden="true" class="line-highlight" data-range="${h}" data-start="${h}">${"\n"}</div></div>`,
+        `<div class="line-highlight-wrapper">${preLineBreaks}<div aria-hidden="true" class="line-highlight" data-range="${h}" data-start="${h}">${'\n'}</div></div>`,
       );
     }
   });
-  $container.append(highlightElements.join(""));
-  $container.attr("data-line", highlight.join(","));
+  $container.append(highlightElements.join(''));
+  $container.attr('data-line', highlight.join(','));
 }

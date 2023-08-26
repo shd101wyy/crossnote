@@ -1,4 +1,4 @@
-import { BlockInfo } from "./lib/block-info";
+import { BlockInfo } from './lib/block-info';
 
 export interface CodeChunkData {
   /**
@@ -33,7 +33,7 @@ export interface CodeChunkData {
   /**
    * next code chunk
    */
-  next: string;
+  next: string | null;
 }
 
 export interface CodeChunksData {

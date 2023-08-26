@@ -21,26 +21,26 @@ npm install --save @shd101wyy/mume
 
 ```javascript
 // node.js
-const path = require("path");
-const mume = require("@shd101wyy/mume");
+const path = require('path');
+const mume = require('@shd101wyy/mume');
 
 // es6
 // import * as mume from "@shd101wyy/mume"
 
 async function main() {
-  const configPath = path.resolve(os.tmpdir(), ".mume");
+  const configPath = path.resolve(os.tmpdir(), '.mume');
 
   // if no configPath is specified, the default is "~/.config/mume"
   // but only if the old location (~/.mume) does not exist
   await mume.init(configPath);
 
   const engine = new mume.MarkdownEngine({
-    filePath: "/Users/wangyiyi/Desktop/markdown-example/test3.md",
+    filePath: '/Users/wangyiyi/Desktop/markdown-example/test3.md',
     config: {
       configPath: configPath,
-      previewTheme: "github-light.css",
+      previewTheme: 'github-light.css',
       // revealjsTheme: "white.css"
-      codeBlockTheme: "default.css",
+      codeBlockTheme: 'default.css',
       printBackground: true,
       enableScriptExecution: true, // <= for running code chunks
     },
@@ -53,13 +53,13 @@ async function main() {
   await engine.htmlExport({ offline: false, runAllCodeChunks: true });
 
   // chrome (puppeteer) export
-  await engine.chromeExport({ fileType: "pdf", runAllCodeChunks: true }); // fileType = 'pdf'|'png'|'jpeg'
+  await engine.chromeExport({ fileType: 'pdf', runAllCodeChunks: true }); // fileType = 'pdf'|'png'|'jpeg'
 
   // prince export
   await engine.princeExport({ runAllCodeChunks: true });
 
   // ebook export
-  await engine.eBookExport({ fileType: "epub" }); // fileType = 'epub'|'pdf'|'mobi'|'html'
+  await engine.eBookExport({ fileType: 'epub' }); // fileType = 'epub'|'pdf'|'mobi'|'html'
 
   // pandoc export
   await engine.pandocExport({ runAllCodeChunks: true });
@@ -237,9 +237,6 @@ const config = {
 
   // Puppeteer waits for a certain timeout in milliseconds before the document export.
   puppeteerWaitForTimeout: 0,
-
-  // If set to true, then locally installed puppeteer-core will be required. Otherwise, the puppeteer globally installed by `npm install -g puppeteer` will be required.
-  usePuppeteerCore: true,
 
   // Args passed to puppeteer.launch({args: $puppeteerArgs})
   puppeteerArgs: [],

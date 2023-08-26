@@ -1,6 +1,6 @@
-import * as path from "path";
-import { MathRenderingOption } from "./markdown-engine-config";
-import { configs, escapeString, extensionDirectoryPath } from "./utility";
+import { MathRenderingOption } from './markdown-engine-config';
+import { configs, escapeString } from './utility';
+import * as katex from 'katex';
 
 // tslint:disable-next-line interface-over-type-literal
 export type ParseMathArgs = {
@@ -10,8 +10,6 @@ export type ParseMathArgs = {
   displayMode?: boolean;
   renderingOption: MathRenderingOption;
 };
-
-let katex;
 
 /**
  *
@@ -29,21 +27,18 @@ export default ({
   renderingOption,
 }: ParseMathArgs) => {
   if (!content) {
-    return "";
+    return '';
   }
-  if (renderingOption === "KaTeX") {
+  if (renderingOption === 'KaTeX') {
     try {
-      if (!katex) {
-        katex = require(path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/katex/katex.min.js",
-        ));
+      // https://github.com/KaTeX/KaTeX/blob/main/contrib/mhchem/README.md
+      /*
         // Add mhchem support
         require(path.resolve(
           extensionDirectoryPath,
-          "./dependencies/katex/contrib/mhchem.min.js",
+          './dependencies/katex/contrib/mhchem.min.js',
         ));
-      }
+        */
       return katex.renderToString(
         content,
         Object.assign({}, configs.katexConfig || {}, { displayMode }),
@@ -51,11 +46,11 @@ export default ({
     } catch (error) {
       return `<span style=\"color: #ee7f49; font-weight: 500;\">${error.toString()}</span>`;
     }
-  } else if (renderingOption === "MathJax") {
-    const text = (openTag + content + closeTag).replace(/\n/g, " ");
-    const tag = displayMode ? "div" : "span";
+  } else if (renderingOption === 'MathJax') {
+    const text = (openTag + content + closeTag).replace(/\n/g, ' ');
+    const tag = displayMode ? 'div' : 'span';
     return `<${tag} class="mathjax-exps">${escapeString(text)}</${tag}>`;
   } else {
-    return "";
+    return '';
   }
 };

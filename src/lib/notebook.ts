@@ -1,19 +1,17 @@
 import * as path from 'path';
-import { Mentions, Note, NoteConfig, Notes } from './lib/note';
-import { Reference, ReferenceMap } from './lib/reference';
-import Search from './lib/search';
+import { Mentions, Note, NoteConfig, Notes } from './note';
+import { Reference, ReferenceMap } from './reference';
+import Search from './search';
 import { Mutex } from 'async-mutex';
 
 // temp
 import MarkdownIt from 'markdown-it';
 import Token from 'markdown-it/lib/token';
-import { matter, matterStringify } from './lib/markdown';
+import { matter, matterStringify } from './markdown';
 import { Stats } from 'fs';
 const md = new MarkdownIt();
 
-interface CrossnoteConfig {
-  configFolder?: string;
-}
+interface CrossnoteConfig {}
 
 type FileSystemApi = {
   readFile: (path: string, encoding?: string) => Promise<string>;
@@ -36,6 +34,9 @@ interface CrossnoteArgs {
 }
 
 interface RefreshNotesArgs {
+  /**
+   * Relative path to the notebook
+   */
   dir: string;
   includeSubdirectories?: boolean;
   refreshRelations?: boolean;
@@ -45,7 +46,7 @@ export const IS_NODE = typeof window === 'undefined';
 
 export class Notebook {
   private notebookPath: string;
-  private config: CrossnoteConfig;
+  // private config: CrossnoteConfig;
   private fs: FileSystemApi;
 
   public notes: Notes = {};
@@ -62,46 +63,15 @@ export class Notebook {
       throw new Error('`workspaceFolder` must be an absolute path');
     }
     this.notebookPath = notebookPath;
-    this.config = config;
+    // this.config = config;
 
     await this.initFS(fs);
-    await this.initConfig();
   }
 
   public static async init(args: CrossnoteArgs) {
     const crossnote = new Notebook();
     await crossnote.init(args);
     return crossnote;
-  }
-
-  private async initConfig() {
-    // Configure configFolder
-    if (!this.config.configFolder) {
-      // Check if `${notebookPath}/.crossnote` exists
-      if (await this.fs.exists(`${this.notebookPath}/.crossnote`)) {
-        this.config.configFolder = `${this.notebookPath}/.crossnote`;
-      } else {
-        if (IS_NODE) {
-          if (
-            typeof process.env.XDG_CONFIG_HOME === 'string' &&
-            process.env.XDG_CONFIG_HOME !== ''
-          ) {
-            this.config.configFolder = path.resolve(
-              process.env.XDG_CONFIG_HOME,
-              './crossnote',
-            );
-          } else {
-            const os = await import('os');
-            this.config.configFolder = path.resolve(
-              os.homedir(),
-              './.crossnote',
-            );
-          }
-        } else {
-          throw new Error('`configFolder` is required');
-        }
-      }
-    }
   }
 
   async initFS(fs?: FileSystemApi) {

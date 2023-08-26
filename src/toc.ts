@@ -1,7 +1,7 @@
-import HeadingIdGenerator from "./heading-id-generator";
+import HeadingIdGenerator from './heading-id-generator';
 
 function nPrefix(str, n) {
-  let output = "";
+  let output = '';
   for (let i = 0; i < n; i++) {
     output += str;
   }
@@ -18,7 +18,7 @@ function nPrefix(str, n) {
  */
 
 function sanitizeContent(content) {
-  let output = "";
+  let output = '';
   let offset = 0;
 
   // test ![...](...)
@@ -26,18 +26,18 @@ function sanitizeContent(content) {
   // <a name="myAnchor"></a>Anchor Header
   // test [^footnote]
   const r = /\!?\[([^\]]*)\]\(([^)]*)\)|<([^>]*)>([^<]*)<\/([^>]*)>|\[\^([^\]]*)\]/g;
-  let match = null;
+  let match: RegExpExecArray | null = null;
   // tslint:disable-next-line:no-conditional-assignment
   while ((match = r.exec(content))) {
     output += content.slice(offset, match.index);
     offset = match.index + match[0].length;
 
-    if (match[0][0] === "<") {
+    if (match[0][0] === '<') {
       output += match[4];
-    } else if (match[0][0] === "[" && match[0][1] === "^") {
+    } else if (match[0][0] === '[' && match[0][1] === '^') {
       //  # footnote
-      output += "";
-    } else if (match[0][0] !== "!") {
+      output += '';
+    } else if (match[0][0] !== '!') {
       output += match[1]; // image
     } else {
       output += match[0];
@@ -72,28 +72,28 @@ export interface HeadingData {
 export function toc(headings: HeadingData[], opt: TocOption) {
   const headingIdGenerator = new HeadingIdGenerator();
   if (!headings) {
-    return { content: "", array: [] };
+    return { content: '', array: [] };
   }
 
   const ordered = opt.ordered;
   const depthFrom = opt.depthFrom || 1;
   const depthTo = opt.depthTo || 6;
-  let tab = opt.tab || "  ";
+  let tab = opt.tab || '  ';
   const ignoreLink = opt.ignoreLink || false;
 
   if (ordered) {
-    tab = "    ";
+    tab = '    ';
   }
 
-  headings = headings.filter((heading) => {
+  headings = headings.filter(heading => {
     return heading.level >= depthFrom && heading.level <= depthTo;
   });
 
   if (!headings.length) {
-    return { content: "", array: [] };
+    return { content: '', array: [] };
   }
 
-  const outputArr = [];
+  const outputArr: string[] = [];
   let smallestLevel = headings[0].level;
 
   // get smallestLevel
@@ -103,13 +103,13 @@ export function toc(headings: HeadingData[], opt: TocOption) {
     }
   }
 
-  let orderedListNums = [];
+  let orderedListNums: number[] = [];
   for (const heading of headings) {
     const content = heading.content.trim();
     const level = heading.level;
     const slug = heading.id || headingIdGenerator.generateId(content);
     const n = level - smallestLevel;
-    let numStr = "1";
+    let numStr: string = '1';
     if (ordered) {
       // number for ordered list
       if (n >= orderedListNums.length) {
@@ -122,9 +122,9 @@ export function toc(headings: HeadingData[], opt: TocOption) {
           orderedListNums[orderedListNums.length - 1]++;
         }
       }
-      numStr = orderedListNums[orderedListNums.length - 1];
+      numStr = orderedListNums[orderedListNums.length - 1].toString();
     }
-    const listItem = `${nPrefix(tab, n)}${ordered ? `${numStr}.` : "-"} ${
+    const listItem = `${nPrefix(tab, n)}${ordered ? `${numStr}.` : '-'} ${
       ignoreLink
         ? sanitizeContent(content)
         : `[${sanitizeContent(content)}](#${slug})`
@@ -133,7 +133,7 @@ export function toc(headings: HeadingData[], opt: TocOption) {
   }
 
   return {
-    content: outputArr.join("\n"),
+    content: outputArr.join('\n'),
     array: outputArr,
   };
 }
@@ -144,13 +144,13 @@ export function generateSidebarToCHTML(
   opt: TocOption,
 ): string {
   if (!headings.length) {
-    return "";
+    return '';
   }
   const headingIdGenerator = new HeadingIdGenerator();
   const depthFrom = opt.depthFrom || 1;
   const depthTo = opt.depthTo || 6;
 
-  headings = headings.filter((heading) => {
+  headings = headings.filter(heading => {
     return heading.level >= depthFrom && heading.level <= depthTo;
   });
   headings = headings.map((heading, index) => {
@@ -158,7 +158,7 @@ export function generateSidebarToCHTML(
     return heading;
   });
 
-  let tocHtml = "";
+  let tocHtml = '';
   let smallestLevel = headings[0].level;
   for (let i = 0; i < headings.length; i++) {
     if (headings[i].level < smallestLevel) {
@@ -174,7 +174,7 @@ export function generateSidebarToCHTML(
     expectedLevel: number,
     startOffset: number,
   ): HeadingData[] => {
-    const arr = [];
+    const arr: HeadingData[] = [];
     for (let i = startOffset; i < headingsData.length; i++) {
       const heading = headingsData[i];
       if (heading.level === expectedLevel) {
@@ -197,9 +197,14 @@ export function generateSidebarToCHTML(
   ) => {
     const left = 24;
     const marginLeftDelta = 18;
-    let result = "";
+    let result = '';
     for (let i = 0; i < headingsData.length; i++) {
       const heading = headingsData[i];
+
+      if (heading.offset === undefined) {
+        continue;
+      }
+
       const subHeadings = getSubHeadings(
         allHeadingsData,
         heading.level + 1,
@@ -216,7 +221,7 @@ export function generateSidebarToCHTML(
         heading.id || headingIdGenerator.generateId(heading.content);
       if (subHeadings.length) {
         result += `<details style="${paddingStyle};${leftIndentStyle}" ${
-          "open" // headingsData.length === smallestLevel ? "open" : ""
+          'open' // headingsData.length === smallestLevel ? "open" : ""
         }>
         <summary class="md-toc-link-wrapper">
           <a href="#${headingId}" class="md-toc-link">${headingHtml}</a>

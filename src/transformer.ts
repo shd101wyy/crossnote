@@ -1,31 +1,27 @@
 // import * as Baby from "babyparse"
-import * as Baby from "babyparse";
-import * as fs from "fs";
-import * as less from "less";
-import * as path from "path";
-import * as request from "request";
-import * as temp from "temp";
-import HeadingIdGenerator from "./heading-id-generator";
+import * as Baby from 'babyparse';
+import * as fs from 'fs';
+import * as less from 'less';
+import * as path from 'path';
+import * as request from 'request';
+import * as temp from 'temp';
+import HeadingIdGenerator from './heading-id-generator';
 import {
+  BlockAttributes,
   parseBlockAttributes,
   stringifyBlockAttributes,
-} from "./lib/block-attributes";
-import computeChecksum from "./lib/compute-checksum";
-import * as utility from "./utility";
+} from './lib/block-attributes';
+import computeChecksum from './lib/compute-checksum';
+import * as utility from './utility';
 
 // import * as request from 'request'
 // import * as less from "less"
 // import * as temp from "temp"
 // temp.track()
 
-import { CustomSubjects } from "./custom-subjects";
-import * as PDF from "./pdf";
-
-export interface HeadingData {
-  content: string;
-  level: number;
-  id: string;
-}
+import { CustomSubjects } from './custom-subjects';
+import * as PDF from './pdf';
+import { HeadingData } from './toc';
 
 export interface TransformMarkdownOutput {
   outputString: string;
@@ -60,21 +56,21 @@ export interface TransformMarkdownOptions {
   useRelativeFilePath: boolean;
   forPreview: boolean;
   forMarkdownExport?: boolean;
-  protocolsWhiteListRegExp: RegExp;
+  protocolsWhiteListRegExp: RegExp | null;
   notSourceFile?: boolean;
   imageDirectoryPath?: string;
   usePandocParser: boolean;
   headingIdGenerator?: HeadingIdGenerator;
-  onWillTransformMarkdown?: (markdown: string) => Promise<string>;
-  onDidTransformMarkdown?: (markdown: string) => Promise<string>;
+  onWillTransformMarkdown?: ((markdown: string) => Promise<string>) | null;
+  onDidTransformMarkdown?: ((markdown: string) => Promise<string>) | null;
 }
 
 const fileExtensionToLanguageMap = {
-  vhd: "vhdl",
-  erl: "erlang",
-  dot: "dot",
-  gv: "dot",
-  viz: "dot",
+  vhd: 'vhdl',
+  erl: 'erlang',
+  dot: 'dot',
+  gv: 'dot',
+  viz: 'dot',
 };
 
 const selfClosingTag = {
@@ -101,27 +97,27 @@ const selfClosingTag = {
  * The first row is headings.
  */
 function twoDArrayToMarkdownTable(twoDArr) {
-  let output = "  \n";
+  let output = '  \n';
   twoDArr.forEach((arr, offset) => {
     let i = 0;
-    output += "|";
+    output += '|';
     while (i < arr.length) {
-      output += arr[i] + "|";
+      output += arr[i] + '|';
       i += 1;
     }
-    output += "  \n";
+    output += '  \n';
     if (offset === 0) {
-      output += "|";
+      output += '|';
       i = 0;
       while (i < arr.length) {
-        output += "---|";
+        output += '---|';
         i += 1;
       }
-      output += "  \n";
+      output += '  \n';
     }
   });
 
-  output += "  ";
+  output += '  ';
   return output;
 }
 
@@ -129,7 +125,7 @@ function createAnchor(lineNo) {
   return `\n\n<p data-line="${lineNo}" class="sync-line" style="margin:0;"></p>\n\n`;
 }
 
-let DOWNLOADS_TEMP_FOLDER = null;
+let DOWNLOADS_TEMP_FOLDER: string | null = null;
 /**
  * download file and return its local path
  */
@@ -140,18 +136,20 @@ function downloadFileIfNecessary(filePath: string): Promise<string> {
     }
 
     if (!DOWNLOADS_TEMP_FOLDER) {
-      DOWNLOADS_TEMP_FOLDER = temp.mkdirSync("mume_downloads");
+      DOWNLOADS_TEMP_FOLDER = temp.mkdirSync('mume_downloads');
     }
     request.get(
-      { url: filePath, encoding: "binary" },
+      { url: filePath, encoding: 'binary' },
       (error, response, body) => {
         if (error) {
           return reject(error);
         } else {
           const localFilePath =
-            path.resolve(DOWNLOADS_TEMP_FOLDER, computeChecksum(filePath)) +
-            path.extname(filePath);
-          fs.writeFile(localFilePath, body, "binary", (error2) => {
+            path.resolve(
+              DOWNLOADS_TEMP_FOLDER ?? '/tmp/mume_downloads',
+              computeChecksum(filePath),
+            ) + path.extname(filePath);
+          fs.writeFile(localFilePath, body, 'binary', error2 => {
             if (error2) {
               return reject(error2);
             } else {
@@ -180,9 +178,9 @@ async function loadFile(
     return filesCache[filePath];
   }
 
-  if (filePath.endsWith(".less")) {
+  if (filePath.endsWith('.less')) {
     // less file
-    const data = await utility.readFile(filePath, { encoding: "utf-8" });
+    const data = await utility.readFile(filePath, { encoding: 'utf-8' });
     return await new Promise<string>((resolve, reject) => {
       less.render(
         data,
@@ -191,12 +189,12 @@ async function loadFile(
           if (error) {
             return reject(error);
           } else {
-            return resolve(output.css || "");
+            return resolve(output.css || '');
           }
         },
       );
     });
-  } else if (filePath.endsWith(".pdf")) {
+  } else if (filePath.endsWith('.pdf')) {
     // pdf file
     const localFilePath = await downloadFileIfNecessary(filePath);
     const svgMarkdown = await PDF.toSVGMarkdown(localFilePath, {
@@ -216,10 +214,10 @@ async function loadFile(
   */
     // online file
     // github
-    if (filePath.startsWith("https://github.com/")) {
+    if (filePath.startsWith('https://github.com/')) {
       filePath = filePath
-        .replace("https://github.com/", "https://raw.githubusercontent.com/")
-        .replace("/blob/", "/");
+        .replace('https://github.com/', 'https://raw.githubusercontent.com/')
+        .replace('/blob/', '/');
     }
 
     return await new Promise<string>((resolve, reject) => {
@@ -233,7 +231,7 @@ async function loadFile(
     });
   } else {
     // local file
-    return await utility.readFile(filePath, { encoding: "utf-8" });
+    return await utility.readFile(filePath, { encoding: 'utf-8' });
   }
 }
 
@@ -247,28 +245,28 @@ async function loadFile(
 export async function transformMarkdown(
   inputString: string,
   {
-    fileDirectoryPath = "",
-    projectDirectoryPath = "",
+    fileDirectoryPath = '',
+    projectDirectoryPath = '',
     filesCache = {},
     useRelativeFilePath = false,
     forPreview = false,
     forMarkdownExport = false,
     protocolsWhiteListRegExp = null,
     notSourceFile = false,
-    imageDirectoryPath = "",
+    imageDirectoryPath = '',
     usePandocParser = false,
     headingIdGenerator = new HeadingIdGenerator(),
     onWillTransformMarkdown = null,
     onDidTransformMarkdown = null,
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
-  let lastOpeningCodeBlockFence: string = null;
+  let lastOpeningCodeBlockFence: string | null = null;
   let codeChunkOffset = 0;
-  const slideConfigs = [];
-  const JSAndCssFiles = [];
+  const slideConfigs: BlockAttributes[] = [];
+  const JSAndCssFiles: string[] = [];
   let headings: HeadingData[] = [];
   let tocBracketEnabled = false;
-  let frontMatterString = "";
+  let frontMatterString = '';
 
   /**
    * As the recursive version of this function will cause the error:
@@ -277,19 +275,22 @@ export async function transformMarkdown(
    * @param i start offset
    * @param lineNo start line number
    */
-  async function helper(i, lineNo = 0): Promise<TransformMarkdownOutput> {
-    let outputString = "";
+  async function helper(
+    i: number,
+    lineNo = 0,
+  ): Promise<TransformMarkdownOutput> {
+    let outputString = '';
 
     while (i < inputString.length) {
-      if (inputString[i] === "\n") {
+      if (inputString[i] === '\n') {
         // return helper(i+1, lineNo+1, outputString+'\n')
         i = i + 1;
         lineNo = lineNo + 1;
-        outputString = outputString + "\n";
+        outputString = outputString + '\n';
         continue;
       }
 
-      let end = inputString.indexOf("\n", i);
+      let end = inputString.indexOf('\n', i);
       if (end < 0) {
         end = inputString.length;
       }
@@ -306,12 +307,13 @@ export async function transformMarkdown(
         const containsCmd = !!line.match(/\"?cmd\"?\s*[:=\s}]/);
         if (!inCodeBlock && !notSourceFile && containsCmd) {
           // it's code chunk, so mark its offset
-          line = line.replace("{", `{code_chunk_offset=${codeChunkOffset}, `);
+          line = line.replace('{', `{code_chunk_offset=${codeChunkOffset}, `);
           codeChunkOffset++;
         }
         if (!inCodeBlock) {
           lastOpeningCodeBlockFence = currentCodeBlockFence;
         } else if (
+          lastOpeningCodeBlockFence !== null &&
           currentCodeBlockFence.length >= lastOpeningCodeBlockFence.length
         ) {
           lastOpeningCodeBlockFence = null;
@@ -320,7 +322,7 @@ export async function transformMarkdown(
         // return helper(end+1, lineNo+1, outputString+line+'\n')
         i = end + 1;
         lineNo = lineNo + 1;
-        outputString = outputString + line + "\n";
+        outputString = outputString + line + '\n';
         continue;
       }
 
@@ -328,7 +330,7 @@ export async function transformMarkdown(
         // return helper(end+1, lineNo+1, outputString+line+'\n')
         i = end + 1;
         lineNo = lineNo + 1;
-        outputString = outputString + line + "\n";
+        outputString = outputString + line + '\n';
         continue;
       }
 
@@ -347,8 +349,8 @@ export async function transformMarkdown(
         */
       if (
         line.match(/^(\!\[|@import)/) &&
-        inputString[i - 1] === "\n" &&
-        inputString[i - 2] === "\n"
+        inputString[i - 1] === '\n' &&
+        inputString[i - 2] === '\n'
       ) {
         if (forPreview) {
           outputString += createAnchor(lineNo); // insert anchor for scroll sync
@@ -367,7 +369,7 @@ export async function transformMarkdown(
         let level;
         let tag;
         // if (headingMatch) {
-        heading = line.replace(headingMatch[1], "");
+        heading = line.replace(headingMatch[1], '');
         tag = headingMatch[1];
         level = tag.length;
         /*} else {
@@ -395,24 +397,24 @@ export async function transformMarkdown(
 
         // check {class:string, id:string, ignore:boolean}
         const optMatch = heading.match(/(\s+\{|^\{)(.+?)\}(\s*)$/);
-        let classes = "";
-        let id = "";
+        let classes = '';
+        let id = '';
         let ignore = false;
         let opt;
         if (optMatch) {
-          heading = heading.replace(optMatch[0], "");
+          heading = heading.replace(optMatch[0], '');
 
           try {
             opt = parseBlockAttributes(optMatch[0]);
 
-            (classes = opt["class"]),
-              (id = opt["id"]),
-              (ignore = opt["ignore"]);
-            delete opt["class"];
-            delete opt["id"];
-            delete opt["ignore"];
+            (classes = opt['class']),
+              (id = opt['id']),
+              (ignore = opt['ignore']);
+            delete opt['class'];
+            delete opt['id'];
+            delete opt['ignore'];
           } catch (e) {
-            heading = "OptionsError: " + optMatch[1];
+            heading = 'OptionsError: ' + optMatch[1];
             ignore = true;
           }
         }
@@ -420,9 +422,9 @@ export async function transformMarkdown(
         if (!id) {
           id = headingIdGenerator.generateId(heading);
           if (usePandocParser) {
-            id = id.replace(/^[\d\-]+/, "");
+            id = id.replace(/^[\d\-]+/, '');
             if (!id) {
-              id = "section";
+              id = 'section';
             }
           }
         }
@@ -433,29 +435,29 @@ export async function transformMarkdown(
 
         if (usePandocParser) {
           // pandoc
-          let optionsStr = "{";
+          let optionsStr = '{';
           if (id) {
             optionsStr += `#${id} `;
           }
           if (classes) {
-            optionsStr += "." + classes.replace(/\s+/g, " .") + " ";
+            optionsStr += '.' + classes.replace(/\s+/g, ' .') + ' ';
           }
           if (opt) {
             for (const key in opt) {
-              if (typeof opt[key] === "number") {
-                optionsStr += " " + key + "=" + opt[key];
+              if (typeof opt[key] === 'number') {
+                optionsStr += ' ' + key + '=' + opt[key];
               } else {
-                optionsStr += " " + key + '="' + opt[key] + '"';
+                optionsStr += ' ' + key + '="' + opt[key] + '"';
               }
             }
           }
-          optionsStr += "}";
+          optionsStr += '}';
 
           // return helper(end+1, lineNo+1, outputString + `${tag} ${heading} ${optionsStr}` + '\n')
           i = end + 1;
           lineNo = lineNo + 1;
           outputString =
-            outputString + `${tag} ${heading} ${optionsStr}` + "\n";
+            outputString + `${tag} ${heading} ${optionsStr}` + '\n';
           continue;
         } else {
           // markdown-it
@@ -469,7 +471,7 @@ export async function transformMarkdown(
           // return helper(end+1, lineNo+1, outputString + line + '\n\n')
           i = end + 1;
           lineNo = lineNo + 1;
-          outputString = outputString + line + "\n\n";
+          outputString = outputString + line + '\n\n';
           continue;
           // I added one extra `\n` here because remarkable renders content below
           // heading differently with `\n` and without `\n`.
@@ -479,14 +481,14 @@ export async function transformMarkdown(
         if (forPreview) {
           outputString += createAnchor(lineNo);
         }
-        let commentEnd = inputString.indexOf("-->", i + 4);
+        let commentEnd = inputString.indexOf('-->', i + 4);
 
         if (commentEnd < 0) {
           // didn't find -->
           // return helper(inputString.length, lineNo+1, outputString+'\n')
           i = inputString.length;
           lineNo = lineNo + 1;
-          outputString = outputString + "\n";
+          outputString = outputString + '\n';
           continue;
         } else {
           commentEnd += 3;
@@ -501,12 +503,12 @@ export async function transformMarkdown(
           // return helper(commentEnd, lineNo + newlines, outputString + '\n')
           i = commentEnd;
           lineNo = lineNo + newlines;
-          outputString = outputString + "\n";
+          outputString = outputString + '\n';
           continue;
         } else {
           const subject = subjectMatch[1];
-          if (subject === "@import") {
-            const commentEnd2 = line.lastIndexOf("-->");
+          if (subject === '@import') {
+            const commentEnd2 = line.lastIndexOf('-->');
             if (commentEnd2 > 0) {
               line = line.slice(4, commentEnd2).trim();
             }
@@ -520,9 +522,9 @@ export async function transformMarkdown(
             if (optionsMatch && optionsMatch[2]) {
               options = parseBlockAttributes(optionsMatch[2]);
             }
-            options["lineNo"] = lineNo;
+            options['lineNo'] = lineNo;
 
-            if (subject === "pagebreak" || subject === "newpage") {
+            if (subject === 'pagebreak' || subject === 'newpage') {
               // pagebreak
               // return helper(commentEnd, lineNo + newlines, outputString + '<div class="pagebreak"> </div>\n')
               i = commentEnd;
@@ -536,13 +538,13 @@ export async function transformMarkdown(
                 // return helper(commentEnd, lineNo + newlines, outputString + `<!-- ${content} -->` + '\n')
                 i = commentEnd;
                 lineNo = lineNo + newlines;
-                outputString = outputString + `<!-- ${content} -->` + "\n";
+                outputString = outputString + `<!-- ${content} -->` + '\n';
                 continue;
               } else {
                 // return helper(commentEnd, lineNo + newlines, outputString + '\n[MUMESLIDE]\n\n')
                 i = commentEnd;
                 lineNo = lineNo + newlines;
-                outputString = outputString + "\n[MUMESLIDE]\n\n";
+                outputString = outputString + '\n[MUMESLIDE]\n\n';
                 continue;
               }
             }
@@ -553,7 +555,7 @@ export async function transformMarkdown(
             // return helper(commentEnd, lineNo + newlines, outputString + '\n')
             i = commentEnd;
             lineNo = lineNo + newlines;
-            outputString = outputString + "\n";
+            outputString = outputString + '\n';
             continue;
           }
         }
@@ -575,14 +577,14 @@ export async function transformMarkdown(
         ))
       ) {
         // task list
-        const checked = taskListItemMatch[1] !== "[ ]";
+        const checked = taskListItemMatch[1] !== '[ ]';
         if (!forMarkdownExport) {
           line = line.replace(
             taskListItemMatch[1],
             `<input type="checkbox" class="task-list-item-checkbox${
-              forPreview ? " sync-line" : ""
-            }" ${forPreview ? `data-line="${lineNo}"` : ""}${
-              checked ? " checked" : ""
+              forPreview ? ' sync-line' : ''
+            }" ${forPreview ? `data-line="${lineNo}"` : ''}${
+              checked ? ' checked' : ''
             }>`,
           );
         }
@@ -637,11 +639,11 @@ export async function transformMarkdown(
         outputString += importMatch[1];
         const filePath = importMatch[3].trim();
 
-        const leftParen = line.indexOf("{");
-        let config = null;
-        let configStr = "";
+        const leftParen = line.indexOf('{');
+        let config: BlockAttributes = {};
+        let configStr = '';
         if (leftParen > 0) {
-          const rightParen = line.lastIndexOf("}");
+          const rightParen = line.lastIndexOf('}');
           if (rightParen > 0) {
             configStr = line.substring(leftParen + 1, rightParen);
             try {
@@ -653,18 +655,21 @@ export async function transformMarkdown(
         }
 
         let absoluteFilePath;
-        if (filePath.match(protocolsWhiteListRegExp)) {
+        if (
+          protocolsWhiteListRegExp &&
+          filePath.match(protocolsWhiteListRegExp)
+        ) {
           absoluteFilePath = filePath;
-        } else if (filePath.startsWith("/")) {
-          absoluteFilePath = path.resolve(projectDirectoryPath, "." + filePath);
+        } else if (filePath.startsWith('/')) {
+          absoluteFilePath = path.resolve(projectDirectoryPath, '.' + filePath);
         } else {
           absoluteFilePath = path.resolve(fileDirectoryPath, filePath);
         }
 
         const extname = path.extname(filePath).toLocaleLowerCase();
-        let output = "";
+        let output = '';
         if (
-          [".jpeg", ".jpg", ".gif", ".png", ".apng", ".svg", ".bmp"].indexOf(
+          ['.jpeg', '.jpg', '.gif', '.png', '.apng', '.svg', '.bmp'].indexOf(
             extname,
           ) >= 0
         ) {
@@ -672,32 +677,35 @@ export async function transformMarkdown(
           let imageSrc: string = filesCache[filePath];
 
           if (!imageSrc) {
-            if (filePath.match(protocolsWhiteListRegExp)) {
+            if (
+              protocolsWhiteListRegExp &&
+              filePath.match(protocolsWhiteListRegExp)
+            ) {
               imageSrc = filePath;
             } else if (useRelativeFilePath) {
               imageSrc =
                 path.relative(fileDirectoryPath, absoluteFilePath) +
-                "?" +
+                '?' +
                 Math.random();
             } else {
               imageSrc =
-                "/" +
+                '/' +
                 path.relative(projectDirectoryPath, absoluteFilePath) +
-                "?" +
+                '?' +
                 Math.random();
             }
             // enchodeURI(imageSrc) is wrong. It will cause issue on Windows
             // #414: https://github.com/shd101wyy/markdown-preview-enhanced/issues/414
-            imageSrc = imageSrc.replace(/ /g, "%20").replace(/\\/g, "/");
+            imageSrc = imageSrc.replace(/ /g, '%20').replace(/\\/g, '/');
             filesCache[filePath] = imageSrc;
           }
 
           if (config) {
             if (
-              config["width"] ||
-              config["height"] ||
-              config["class"] ||
-              config["id"]
+              config['width'] ||
+              config['height'] ||
+              config['class'] ||
+              config['id']
             ) {
               output = `<img src="${imageSrc}" `;
               for (const key in config) {
@@ -705,17 +713,17 @@ export async function transformMarkdown(
                   output += ` ${key}="${config[key]}" `;
                 }
               }
-              output += ">";
+              output += '>';
             } else {
-              output = "![";
-              if (config["alt"]) {
-                output += config["alt"];
+              output = '![';
+              if (config['alt']) {
+                output += config['alt'];
               }
               output += `](${imageSrc}`;
-              if (config["title"]) {
-                output += ` "${config["title"]}"`;
+              if (config['title']) {
+                output += ` "${config['title']}"`;
               }
-              output += ")  ";
+              output += ')  ';
             }
           } else {
             output = `![](${imageSrc})  `;
@@ -723,24 +731,24 @@ export async function transformMarkdown(
           // return helper(end+1, lineNo+1, outputString+output+'\n')
           i = end + 1;
           lineNo = lineNo + 1;
-          outputString = outputString + output + "\n";
+          outputString = outputString + output + '\n';
           continue;
-        } else if (filePath === "[TOC]") {
+        } else if (filePath === '[TOC]') {
           if (!config) {
             config = {
               // same case as in normalized attributes
-              ["depth_from"]: 1,
-              ["depth_to"]: 6,
-              ["ordered_list"]: true,
+              ['depth_from']: 1,
+              ['depth_to']: 6,
+              ['ordered_list']: true,
             };
           }
-          config["cmd"] = "toc";
-          config["hide"] = true;
-          config["run_on_save"] = true;
-          config["modify_source"] = true;
+          config['cmd'] = 'toc';
+          config['hide'] = true;
+          config['run_on_save'] = true;
+          config['modify_source'] = true;
           if (!notSourceFile) {
             // mark code_chunk_offset
-            config["code_chunk_offset"] = codeChunkOffset;
+            config['code_chunk_offset'] = codeChunkOffset;
             codeChunkOffset++;
           }
 
@@ -750,7 +758,7 @@ export async function transformMarkdown(
           // return helper(end+1, lineNo+1, outputString+output+'\n')
           i = end + 1;
           lineNo = lineNo + 1;
-          outputString = outputString + output2 + "\n";
+          outputString = outputString + output2 + '\n';
           continue;
         } else {
           try {
@@ -761,40 +769,40 @@ export async function transformMarkdown(
             );
             filesCache[absoluteFilePath] = fileContent;
 
-            if (config && (config["line_begin"] || config["line_end"])) {
+            if (config && (config['line_begin'] || config['line_end'])) {
               const lines = fileContent.split(/\n/);
               fileContent = lines
                 .slice(
-                  parseInt(config["line_begin"], 10) || 0,
-                  parseInt(config["line_end"], 10) || lines.length,
+                  parseInt(config['line_begin'], 10) || 0,
+                  parseInt(config['line_end'], 10) || lines.length,
                 )
-                .join("\n");
+                .join('\n');
             }
 
-            if (config && config["code_block"]) {
+            if (config && config['code_block']) {
               const fileExtension = extname.slice(1, extname.length);
-              output = `\`\`\`${config["as"] ||
+              output = `\`\`\`${config['as'] ||
                 fileExtensionToLanguageMap[fileExtension] ||
                 fileExtension} ${stringifyBlockAttributes(
                 config,
               )}  \n${fileContent}\n\`\`\`  `;
-            } else if (config && config["cmd"]) {
-              if (!config["id"]) {
+            } else if (config && config['cmd']) {
+              if (!config['id']) {
                 // create `id` for code chunk
-                config["id"] = computeChecksum(absoluteFilePath);
+                config['id'] = computeChecksum(absoluteFilePath);
               }
               if (!notSourceFile) {
                 // mark code_chunk_offset
-                config["code_chunk_offset"] = codeChunkOffset;
+                config['code_chunk_offset'] = codeChunkOffset;
                 codeChunkOffset++;
               }
               const fileExtension = extname.slice(1, extname.length);
-              output = `\`\`\`${config["as"] ||
+              output = `\`\`\`${config['as'] ||
                 fileExtensionToLanguageMap[fileExtension] ||
                 fileExtension} ${stringifyBlockAttributes(
                 config,
               )}  \n${fileContent}\n\`\`\`  `;
-            } else if ([".md", ".markdown", ".mmark"].indexOf(extname) >= 0) {
+            } else if (['.md', '.markdown', '.mmark'].indexOf(extname) >= 0) {
               if (onWillTransformMarkdown) {
                 fileContent = await onWillTransformMarkdown(fileContent);
               }
@@ -823,18 +831,18 @@ export async function transformMarkdown(
                 output2 = await onDidTransformMarkdown(output2);
               }
 
-              output2 = "\n" + output2 + "  ";
+              output2 = '\n' + output2 + '  ';
               headings = headings.concat(headings2);
 
               // return helper(end+1, lineNo+1, outputString+output+'\n')
               i = end + 1;
               lineNo = lineNo + 1;
-              outputString = outputString + output2 + "\n";
+              outputString = outputString + output2 + '\n';
               continue;
-            } else if (extname === ".html") {
+            } else if (extname === '.html') {
               // html file
-              output = "<div>" + fileContent + "</div>  ";
-            } else if (extname === ".csv") {
+              output = '<div>' + fileContent + '</div>  ';
+            } else if (extname === '.csv') {
               // csv file
               const parseResult = Baby.parse(fileContent.trim());
               if (parseResult.errors.length) {
@@ -843,11 +851,14 @@ export async function transformMarkdown(
                 // format csv to markdown table
                 output = twoDArrayToMarkdownTable(parseResult.data);
               }
-            } else if (extname === ".css" || extname === ".js") {
+            } else if (extname === '.css' || extname === '.js') {
               if (!forPreview) {
                 // not for preview, so convert to corresponding HTML tag directly.
                 let sourcePath;
-                if (filePath.match(protocolsWhiteListRegExp)) {
+                if (
+                  protocolsWhiteListRegExp &&
+                  filePath.match(protocolsWhiteListRegExp)
+                ) {
                   sourcePath = filePath;
                 } else if (useRelativeFilePath) {
                   sourcePath = path.relative(
@@ -855,62 +866,62 @@ export async function transformMarkdown(
                     absoluteFilePath,
                   );
                 } else {
-                  sourcePath = "file:///" + absoluteFilePath;
+                  sourcePath = 'file:///' + absoluteFilePath;
                 }
 
-                if (extname === ".js") {
+                if (extname === '.js') {
                   output = `<script type="text/javascript" src="${sourcePath}"></script>`;
                 } else {
                   output = `<link rel="stylesheet" href="${sourcePath}">`;
                 }
               } else {
-                output = "";
+                output = '';
               }
               JSAndCssFiles.push(filePath);
-            } else if (/*extname === '.css' || */ extname === ".less") {
+            } else if (/*extname === '.css' || */ extname === '.less') {
               // css or less file
               output = `<style>${fileContent}</style>`;
-            } else if (extname === ".pdf") {
-              if (config && config["page_no"]) {
+            } else if (extname === '.pdf') {
+              if (config && config['page_no']) {
                 // only disply the nth page. 1-indexed
-                const pages = fileContent.split("\n");
-                let pageNo = parseInt(config["page_no"], 10) - 1;
+                const pages = fileContent.split('\n');
+                let pageNo = parseInt(config['page_no'], 10) - 1;
                 if (pageNo < 0) {
                   pageNo = 0;
                 }
-                output = pages[pageNo] || "";
+                output = pages[pageNo] || '';
               } else if (
                 config &&
-                (config["page_begin"] || config["page_end"])
+                (config['page_begin'] || config['page_end'])
               ) {
-                const pages = fileContent.split("\n");
-                let pageBegin = parseInt(config["page_begin"], 10) - 1 || 0;
-                const pageEnd = config["page_end"] || pages.length - 1;
+                const pages = fileContent.split('\n');
+                let pageBegin = parseInt(config['page_begin'], 10) - 1 || 0;
+                const pageEnd = config['page_end'] || pages.length - 1;
                 if (pageBegin < 0) {
                   pageBegin = 0;
                 }
-                output = pages.slice(pageBegin, pageEnd).join("\n") || "";
+                output = pages.slice(pageBegin, pageEnd).join('\n') || '';
               } else {
                 output = fileContent;
               }
             } else if (
-              extname === ".dot" ||
-              extname === ".gv" ||
-              extname === ".viz" ||
-              extname === ".graphviz"
+              extname === '.dot' ||
+              extname === '.gv' ||
+              extname === '.viz' ||
+              extname === '.graphviz'
             ) {
               // graphviz
               output = `\`\`\`dot ${stringifyBlockAttributes(
                 config,
                 true,
               )}\n${fileContent}\n\`\`\`  `;
-            } else if (extname === ".mermaid") {
+            } else if (extname === '.mermaid') {
               // mermaid
               output = `\`\`\`mermaid ${stringifyBlockAttributes(
                 config,
                 true,
               )}\n${fileContent}\n\`\`\`  `;
-            } else if (extname === ".plantuml" || extname === ".puml") {
+            } else if (extname === '.plantuml' || extname === '.puml') {
               // PlantUML
               output = `\`\`\`puml ${stringifyBlockAttributes(
                 config,
@@ -936,9 +947,9 @@ export async function transformMarkdown(
               // # codeblock
               let aS = null;
               if (config) {
-                aS = config["as"];
+                aS = config['as'];
               }
-              if (config && config["code_block"] === false) {
+              if (config && config['code_block'] === false) {
                 // https://github.com/shd101wyy/markdown-preview-enhanced/issues/916
                 output = fileContent;
               } else {
@@ -946,7 +957,7 @@ export async function transformMarkdown(
                 output = `\`\`\`${aS ||
                   fileExtensionToLanguageMap[fileExtension] ||
                   fileExtension} ${
-                  config ? stringifyBlockAttributes(config) : ""
+                  config ? stringifyBlockAttributes(config) : ''
                 }  \n${fileContent}\n\`\`\`  `;
               }
             }
@@ -954,14 +965,14 @@ export async function transformMarkdown(
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
             lineNo = lineNo + 1;
-            outputString = outputString + output + "\n";
+            outputString = outputString + output + '\n';
             continue;
           } catch (error) {
             output = `<pre>${error.toString()}</pre>  `;
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
             lineNo = lineNo + 1;
-            outputString = outputString + output + "\n";
+            outputString = outputString + output + '\n';
             continue;
           }
         }
@@ -969,7 +980,7 @@ export async function transformMarkdown(
         // return helper(end+1, lineNo+1, outputString+line+'\n')
         i = end + 1;
         lineNo = lineNo + 1;
-        outputString = outputString + line + "\n";
+        outputString = outputString + line + '\n';
         continue;
       }
     }
@@ -987,14 +998,14 @@ export async function transformMarkdown(
 
   let endFrontMatterOffset = 0;
   if (
-    inputString.startsWith("---") &&
+    inputString.startsWith('---') &&
     /* tslint:disable-next-line:no-conditional-assignment */
-    (endFrontMatterOffset = inputString.indexOf("\n---")) > 0
+    (endFrontMatterOffset = inputString.indexOf('\n---')) > 0
   ) {
     frontMatterString = inputString.slice(0, endFrontMatterOffset + 4);
     return await helper(
       frontMatterString.length,
-      frontMatterString.match(/\n/g).length,
+      (frontMatterString.match(/\n/g) ?? []).length,
     );
   } else {
     return await helper(0, 0);

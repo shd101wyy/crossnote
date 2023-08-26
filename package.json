@@ -1,19 +1,19 @@
 {
-  "name": "@shd101wyy/mume",
-  "version": "0.7.8",
+  "name": "@shd101wyy/crossnote",
+  "version": "0.8.0",
   "description": "A powerful markdown tool",
   "keywords": [
     "markdown"
   ],
-  "repository": "https://github.com/shd101wyy/mume",
+  "repository": "https://github.com/shd101wyy/crossnote",
   "license": "NCSA",
   "contributors": [
     "shd101wyy",
     "kachkaev",
     "gabyx"
   ],
-  "main": "out/src/mume.js",
-  "typings": "out/src/mume.d.ts",
+  "main": "out/src/crossnote.js",
+  "typings": "out/src/crossnote.d.ts",
   "files": [
     "dependencies",
     "docs",
@@ -41,6 +41,8 @@
     ]
   },
   "dependencies": {
+    "@types/katex": "^0.16.2",
+    "@viz-js/viz": "^3.1.0",
     "async-mutex": "^0.4.0",
     "babyparse": "^0.4.6",
     "cheerio": "1.0.0-rc.3",
@@ -48,6 +50,7 @@
     "fs-extra": "^8.0.1",
     "imagemagick-cli": "^0.5.0",
     "js-yaml": "^3.13.1",
+    "katex": "^0.16.8",
     "less": "^3.9.0",
     "lodash": "^4.17.15",
     "markdown-it": "^13.0.1",
@@ -56,13 +59,16 @@
     "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
     "pako": "^2.1.0",
-    "puppeteer-core": "1.15.0",
+    "puppeteer-core": "^21.1.0",
     "qiniu": "^7.2.2",
     "request": "^2.88.0",
     "slash": "^2.0.0",
     "temp": "^0.9.0",
     "twemoji": "^13.1.0",
     "uslug": "^1.0.4",
+    "vega": "^5.25.0",
+    "vega-embed": "^6.22.2",
+    "vega-lite": "^5.14.1",
     "vega-loader": "^4.1.0",
     "yamljs": "^0.3.0"
   },

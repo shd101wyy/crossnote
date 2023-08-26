@@ -1,14 +1,14 @@
 // tslint:disable-next-line no-implicit-dependencies
-import { MarkdownIt } from "markdown-it";
-import { resolve } from "path";
-import { MarkdownEngineConfig } from "../markdown-engine-config";
-import { extensionDirectoryPath } from "../utility";
+import MarkdownIt from 'markdown-it';
+import { resolve } from 'path';
+import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { extensionDirectoryPath } from '../utility';
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   md.use(
     require(resolve(
       extensionDirectoryPath,
-      "./dependencies/markdown-it/extensions/markdown-it-emoji.min.js",
+      './dependencies/markdown-it/extensions/markdown-it-emoji.min.js',
     )),
   );
 
@@ -16,7 +16,7 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
     const token = tokens[idx];
     if (config.enableEmojiSyntax) {
       const markup = token.markup;
-      if (markup.startsWith("fa-")) {
+      if (markup.startsWith('fa-')) {
         // font-awesome
         return `<i class="fa ${markup}" aria-hidden="true"></i>`;
       } else {

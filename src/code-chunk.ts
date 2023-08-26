@@ -1,28 +1,28 @@
-import { spawn } from "child_process";
-import { unlink } from "fs-extra";
-import * as path from "path";
-import * as vm from "vm";
+import { spawn } from 'child_process';
+import { unlink } from 'fs-extra';
+import * as path from 'path';
+import * as vm from 'vm';
 
-import * as LaTeX from "./latex";
-import { BlockAttributes } from "./lib/block-attributes";
-import * as utility from "./utility";
+import * as LaTeX from './latex';
+import { BlockAttributes } from './lib/block-attributes';
+import * as utility from './utility';
 
 export async function compileLaTeX(
   content: string,
   fileDirectoryPath: string,
   normalizedAttributes: BlockAttributes,
 ): Promise<string> {
-  const latexEngine = normalizedAttributes["latex_engine"] || "pdflatex";
-  const latexSVGDir = normalizedAttributes["latex_svg_dir"]; // if not provided, the svg files will be stored in temp folder and will be deleted automatically
-  const latexZoom = normalizedAttributes["latex_zoom"];
-  const latexWidth = normalizedAttributes["latex_width"];
-  const latexHeight = normalizedAttributes["latex_height"];
+  const latexEngine = normalizedAttributes['latex_engine'] || 'pdflatex';
+  const latexSVGDir = normalizedAttributes['latex_svg_dir']; // if not provided, the svg files will be stored in temp folder and will be deleted automatically
+  const latexZoom = normalizedAttributes['latex_zoom'];
+  const latexWidth = normalizedAttributes['latex_width'];
+  const latexHeight = normalizedAttributes['latex_height'];
 
   const texFilePath = path.resolve(
     fileDirectoryPath,
     Math.random()
       .toString(36)
-      .substr(2, 9) + "_code_chunk.tex",
+      .substr(2, 9) + '_code_chunk.tex',
   );
 
   await utility.writeFile(texFilePath, content);
@@ -54,7 +54,7 @@ async function runInVm(
   normalizedAttributes: BlockAttributes,
 ): Promise<string> {
   const script = new vm.Script(`((${code})())`);
-  const context = vm.createContext(normalizedAttributes["context"] || {});
+  const context = vm.createContext(normalizedAttributes['context'] || {});
   return script.runInContext(context);
 }
 
@@ -63,10 +63,10 @@ export async function run(
   fileDirectoryPath: string,
   cmd: string,
   normalizedAttributes: BlockAttributes,
-  latexEngine: string = "pdflatex",
+  latexEngine: string = 'pdflatex',
 ): Promise<string> {
-  let args = normalizedAttributes["args"] || [];
-  if (typeof args === "string") {
+  let args = normalizedAttributes['args'] || [];
+  if (typeof args === 'string') {
     args = [args];
   }
 
@@ -76,26 +76,26 @@ export async function run(
     Math.random()
       .toString(36)
       .substr(2, 9) +
-      "_code_chunk" +
+      '_code_chunk' +
       fileExtension,
   );
-  content = content.replace(/\u00A0/g, " ");
+  content = content.replace(/\u00A0/g, ' ');
 
-  if (cmd.match(/(la)?tex/) || cmd === "pdflatex") {
+  if (cmd.match(/(la)?tex/) || cmd === 'pdflatex') {
     const patchedAttributes = {
       ...normalizedAttributes,
-      latex_engine: normalizedAttributes["latex_engine"] || latexEngine,
+      latex_engine: normalizedAttributes['latex_engine'] || latexEngine,
     };
     return compileLaTeX(content, fileDirectoryPath, patchedAttributes);
   }
 
-  if (cmd === "node.vm") {
+  if (cmd === 'node.vm') {
     return runInVm(content, normalizedAttributes);
   }
 
   if (
     cmd.match(/python/) &&
-    (normalizedAttributes["matplotlib"] || normalizedAttributes["mpl"])
+    (normalizedAttributes['matplotlib'] || normalizedAttributes['mpl'])
   ) {
     content =
       `
@@ -129,8 +129,8 @@ except Exception:
 
   // check macros
   let findInputFileMacro = false;
-  args = args.map((arg) => {
-    if (arg === "$input_file") {
+  args = args.map(arg => {
+    if (arg === '$input_file') {
       findInputFileMacro = true;
       return savePath;
     } else {
@@ -138,31 +138,31 @@ except Exception:
     }
   });
 
-  if (!findInputFileMacro && !normalizedAttributes["stdin"]) {
+  if (!findInputFileMacro && !normalizedAttributes['stdin']) {
     args.push(savePath);
   }
 
   return await new Promise<string>((resolve, reject) => {
     const task = spawn(cmd, args, { cwd: fileDirectoryPath });
-    if (normalizedAttributes["stdin"]) {
+    if (normalizedAttributes['stdin']) {
       task.stdin.write(content); // pass content as stdin
     }
     task.stdin.end();
 
-    const chunks = [];
-    task.stdout.on("data", (chunk) => {
+    const chunks: Buffer[] = [];
+    task.stdout.on('data', chunk => {
       chunks.push(chunk);
     });
 
-    task.stderr.on("data", (chunk) => {
+    task.stderr.on('data', chunk => {
       chunks.push(chunk);
     });
 
-    task.on("error", (error) => {
-      chunks.push(Buffer.from(error.toString(), "utf-8"));
+    task.on('error', error => {
+      chunks.push(Buffer.from(error.toString(), 'utf-8'));
     });
 
-    task.on("close", () => {
+    task.on('close', () => {
       unlink(savePath, () => {
         const data = Buffer.concat(chunks).toString();
         resolve(data);
@@ -172,12 +172,12 @@ except Exception:
 }
 
 const fileExtensionMap = {
-  go: ".go",
-  javascript: ".js",
-  python: ".py",
-  typescript: ".ts",
-  node: ".js",
-  "ts-node": ".ts",
+  go: '.go',
+  javascript: '.js',
+  python: '.py',
+  typescript: '.ts',
+  node: '.js',
+  'ts-node': '.ts',
 };
 
 function getFileExtension(cmd: string): string {

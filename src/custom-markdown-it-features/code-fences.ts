@@ -4,10 +4,10 @@
  */
 
 // tslint:disable-next-line no-implicit-dependencies
-import { MarkdownIt } from "markdown-it";
-import { normalizeBlockInfo, parseBlockInfo } from "../lib/block-info";
-import { MarkdownEngineConfig } from "../markdown-engine-config";
-import { escapeString } from "../utility";
+import MarkdownIt from 'markdown-it';
+import { normalizeBlockInfo, parseBlockInfo } from '../lib/block-info';
+import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { escapeString } from '../utility';
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   md.renderer.rules.fence = (tokens, idx, options, env, instance) => {
@@ -23,7 +23,7 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
 
     // copied from getBreak function.
     const finalBreak =
-      idx < tokens.length && tokens[idx].type === "list_item_close" ? "\n" : "";
+      idx < tokens.length && tokens[idx].type === 'list_item_close' ? '\n' : '';
 
     return `<pre data-role="codeBlock" data-info="${escapeString(
       info,

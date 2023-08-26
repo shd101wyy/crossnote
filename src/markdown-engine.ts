@@ -7,7 +7,6 @@ import * as path from 'path';
 import * as request from 'request';
 import * as slash from 'slash';
 import * as vscode from 'vscode';
-import * as YAML from 'yamljs';
 import { CodeChunkData } from './code-chunk-data';
 import useMarkdownAdmonition from './custom-markdown-it-features/admonition';
 import useMarkdownItCodeFences from './custom-markdown-it-features/code-fences';
@@ -23,7 +22,6 @@ import {
   stringifyBlockAttributes,
 } from './lib/block-attributes';
 import { normalizeBlockInfo, parseBlockInfo } from './lib/block-info';
-import { markdownConvert } from './markdown-convert';
 import {
   defaultMarkdownEngineConfig,
   MarkdownEngineConfig,
@@ -43,10 +41,11 @@ import enhanceWithFencedCodeChunks, {
 import enhanceWithFencedDiagrams from './render-enhancers/fenced-diagrams';
 import enhanceWithFencedMath from './render-enhancers/fenced-math';
 import enhanceWithResolvedImagePaths from './render-enhancers/resolved-image-paths';
-import { generateSidebarToCHTML } from './toc';
-import { HeadingData, transformMarkdown } from './transformer';
+import { generateSidebarToCHTML, HeadingData } from './toc';
+import { transformMarkdown } from './transformer';
 import * as utility from './utility';
 import { removeFileProtocol } from './utility';
+import puppeteer, { Browser } from 'puppeteer-core';
 
 const extensionDirectoryPath = utility.extensionDirectoryPath;
 const MarkdownIt = require(path.resolve(
@@ -65,7 +64,7 @@ export interface MarkdownEngineRenderOption {
   triggeredBySave?: boolean;
   runAllCodeChunks?: boolean;
   emojiToSvg?: boolean;
-  vscodePreviewPanel?: vscode.WebviewPanel;
+  vscodePreviewPanel?: vscode.WebviewPanel | null;
   fileDirectoryPath?: string;
 }
 
@@ -116,11 +115,13 @@ const defaults = {
   typographer: true, // Enable smartypants and other sweet transforms
 };
 
-let MODIFY_SOURCE: (
-  codeChunkData: CodeChunkData,
-  result: string,
-  filePath: string,
-) => Promise<string> = null;
+let MODIFY_SOURCE:
+  | ((
+      codeChunkData: CodeChunkData,
+      result: string,
+      filePath: string,
+    ) => Promise<string>)
+  | null = null;
 
 const dependentLibraryMaterials = [
   {
@@ -198,7 +199,7 @@ export class MarkdownEngine {
   /**
    * Dirty variable just made for VSCode preview.
    */
-  private vscodePreviewPanel: vscode.WebviewPanel;
+  private vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
 
   // caches
   private graphsCache: { [key: string]: string } = {};
@@ -231,7 +232,7 @@ export class MarkdownEngine {
     /**
      * Markdown Engine configuration.
      */
-    config?: MarkdownEngineConfig;
+    config: MarkdownEngineConfig;
   }) {
     this.filePath = args.filePath;
     this.fileDirectoryPath = path.dirname(this.filePath);
@@ -297,18 +298,19 @@ export class MarkdownEngine {
     this.interpolateConfig(this.config, this.projectDirectoryPath);
 
     // break on single newline
-    this.breakOnSingleNewLine = this.config.breakOnSingleNewLine;
+    this.breakOnSingleNewLine = !!this.config.breakOnSingleNewLine;
 
     // enable typographer
-    this.enableTypographer = this.config.enableTypographer;
+    this.enableTypographer = !!this.config.enableTypographer;
 
     // enable linkify
-    this.enableLinkify = this.config.enableLinkify;
+    this.enableLinkify = !!this.config.enableLinkify;
 
     // protocal whitelist
     const protocolsWhiteList = (
-      this.config.protocolsWhiteList ||
-      defaultMarkdownEngineConfig.protocolsWhiteList
+      this.config.protocolsWhiteList ??
+      defaultMarkdownEngineConfig.protocolsWhiteList ??
+      ''
     )
       .split(',')
       .map(x => x.trim());
@@ -387,7 +389,7 @@ export class MarkdownEngine {
   public generateScriptsForPreview(
     isForPresentation = false,
     yamlConfig = {},
-    vscodePreviewPanel: vscode.WebviewPanel = null,
+    vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
     let scripts = '';
 
@@ -763,7 +765,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
   public generateStylesForPreview(
     isPresentationMode = false,
     yamlConfig = {},
-    vscodePreviewPanel: vscode.WebviewPanel = null,
+    vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
     let styles = '';
 
@@ -896,8 +898,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
    * @param JSAndCssFiles
    */
   private generateJSAndCssFilesForPreview(
-    JSAndCssFiles = [],
-    vscodePreviewPanel: vscode.WebviewPanel = null,
+    JSAndCssFiles: string[] = [],
+    vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
     let output = '';
     JSAndCssFiles.forEach(sourcePath => {
@@ -1083,9 +1085,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
       this.config.usePandocParser
     ) {
       // TODO
-      const mathJaxConfig = await utility.getMathJaxConfig(
-        this.config.configPath,
-      );
+      const mathJaxConfig = this.config.configPath
+        ? await utility.getMathJaxConfig(this.config.configPath)
+        : {};
       mathJaxConfig['tex2jax']['inlineMath'] = this.config.mathInlineDelimiters;
       mathJaxConfig['tex2jax']['displayMath'] = this.config.mathBlockDelimiters;
 
@@ -1145,9 +1147,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
       } else {
         mermaidScript = `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/mermaid@10.3.1/dist/mermaid.min.js"></script>`;
       }
-      const mermaidConfig: string = await utility.getMermaidConfig(
-        this.config.configPath,
-      );
+      const mermaidConfig: string = this.config.configPath
+        ? await utility.getMermaidConfig(this.config.configPath)
+        : '';
       mermaidInitScript += `<script>
 ${mermaidConfig}
 if (window['MERMAID_CONFIG']) {
@@ -1498,7 +1500,9 @@ for (var i = 0; i < flowcharts.length; i++) {
     // global styles
     let globalStyles = '';
     try {
-      globalStyles = await utility.getGlobalStyles(this.config.configPath);
+      globalStyles = this.config.configPath
+        ? await utility.getGlobalStyles(this.config.configPath)
+        : '';
     } catch (error) {
       // ignore it
     }
@@ -1767,31 +1771,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       offline: true,
     });
 
-    let browser = null;
-    let puppeteer = null;
-    if (this.config.usePuppeteerCore) {
-      puppeteer = require('puppeteer-core');
-      browser = await puppeteer.launch({
-        args: this.config.puppeteerArgs || [],
-        executablePath: this.config.chromePath || require('chrome-location'),
-        headless: true,
-      });
-    } else {
-      const globalNodeModulesPath = (
-        await utility.execFile(
-          process.platform === 'win32' ? 'npm.cmd' : 'npm',
-          ['root', '-g'],
-        )
-      )
-        .trim()
-        .split('\n')[0]
-        .trim();
-      puppeteer = require(path.resolve(globalNodeModulesPath, './puppeteer')); // trim() function here is very necessary.
-      browser = await puppeteer.launch({
-        args: this.config.puppeteerArgs || [],
-        headless: true,
-      });
+    let browser: Browser | null = null;
+
+    if (!this.config.chromePath) {
+      throw new Error('Chrome path is not set.');
     }
+
+    browser = await puppeteer.launch({
+      args: this.config.puppeteerArgs || [],
+      executablePath: this.config.chromePath,
+      headless: true,
+    });
 
     const info = await utility.tempOpen({ prefix: 'mume', suffix: '.html' });
     await utility.writeFile(info.fd, html);
@@ -1827,12 +1817,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       timeout = yamlConfig['puppeteer']['timeout'];
     }
     if (timeout && typeof timeout === 'number') {
-      await page.waitFor(timeout);
+      await page.waitForTimeout(timeout);
     } else if (
       this.config.puppeteerWaitForTimeout &&
       this.config.puppeteerWaitForTimeout > 0
     ) {
-      await page.waitFor(this.config.puppeteerWaitForTimeout);
+      await page.waitForTimeout(this.config.puppeteerWaitForTimeout);
     }
 
     if (fileType === 'pdf') {
@@ -1897,7 +1887,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   private async eBookDownloadImages($, dest): Promise<string[]> {
-    const imagesToDownload = [];
+    const imagesToDownload: Cheerio[] = [];
     if (path.extname(dest) === '.epub' || path.extname('dest') === '.mobi') {
       $('img').each((offset, img) => {
         const $img = $(img);
@@ -2031,7 +2021,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         }
 
         const filePath = decodeURIComponent($a.attr('href')); // markdown file path
-        const heading = $a.html();
+        const heading = $a.html() ?? '';
         const id = headingIdGenerator.generateId(`ebook-heading-` + heading); // "ebook-heading-id-" + headingOffset;
 
         tocStructure.push({ level, filePath, heading, id });
@@ -2216,7 +2206,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // global styles
     let globalStyles = '';
     try {
-      globalStyles = await utility.getGlobalStyles(this.config.configPath);
+      globalStyles = this.config.configPath
+        ? await utility.getGlobalStyles(this.config.configPath)
+        : '';
     } catch (error) {
       // ignore it
     }
@@ -2344,110 +2336,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   /**
-   * markdown(gfm) export
-   */
-  public async markdownExport({ runAllCodeChunks = false }): Promise<string> {
-    let inputString = await utility.readFile(this.filePath, {
-      encoding: 'utf-8',
-    });
-
-    if (runAllCodeChunks) {
-      // this line of code is only used to get this.codeChunksData
-      await this.parseMD(inputString, {
-        useRelativeFilePath: true,
-        isForPreview: false,
-        hideFrontMatter: false,
-        runAllCodeChunks,
-      });
-    }
-
-    let config = {};
-
-    if (inputString.startsWith('---')) {
-      const endFrontMatterOffset = inputString.indexOf('\n---');
-      if (endFrontMatterOffset > 0) {
-        const frontMatterString = inputString.slice(
-          0,
-          endFrontMatterOffset + 4,
-        );
-        inputString = inputString.replace(frontMatterString, ''); // remove front matter
-        config = this.processFrontMatter(frontMatterString, false).data;
-      }
-    }
-
-    /**
-     * markdownConfig has the following properties:
-     *     path:                        destination of the output file
-     *     image_dir:                   where to save the image file
-     *     use_absolute_image_path:      as the name shows.
-     *     ignore_from_front_matter:    default is true.
-     */
-    let markdownConfig = {};
-    if (config['markdown']) {
-      markdownConfig = { ...config['markdown'] };
-    }
-
-    if (!markdownConfig['image_dir']) {
-      markdownConfig['image_dir'] = this.config.imageFolderPath;
-    }
-
-    if (!markdownConfig['path']) {
-      if (this.filePath.match(/\.src\./)) {
-        markdownConfig['path'] = this.filePath.replace(/\.src\./, '.');
-      } else {
-        markdownConfig['path'] = this.filePath.replace(
-          new RegExp(path.extname(this.filePath)),
-          '_' + path.extname(this.filePath),
-        );
-      }
-      markdownConfig['path'] = path.basename(markdownConfig['path']);
-    }
-
-    // ignore_from_front_matter is `true` by default
-    if (
-      markdownConfig['ignore_from_front_matter'] ||
-      !('ignore_from_front_matter' in markdownConfig)
-    ) {
-      // delete markdown config front-matter from the top front matter
-      delete config['markdown'];
-    }
-    if (config['export_on_save']) {
-      delete config['export_on_save'];
-    }
-
-    // put front-matter back
-    if (Object.keys(config).length) {
-      inputString = '---\n' + YAML.stringify(config) + '---\n' + inputString;
-    }
-
-    return await markdownConvert(
-      inputString,
-      {
-        projectDirectoryPath: this.projectDirectoryPath,
-        fileDirectoryPath: this.fileDirectoryPath,
-        protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
-        filesCache: this.filesCache,
-        mathRenderingOption: this.config.mathRenderingOption,
-        mathInlineDelimiters: this.config.mathInlineDelimiters,
-        mathBlockDelimiters: this.config.mathBlockDelimiters,
-        mathRenderingOnlineService: this.config.mathRenderingOnlineService,
-        codeChunksData: this.codeChunksData,
-        graphsCache: this.graphsCache,
-        usePandocParser: this.config.usePandocParser,
-        imageMagickPath: this.config.imageMagickPath,
-        mermaidTheme: this.config.mermaidTheme,
-        plantumlJarPath: this.config.plantumlJarPath,
-        plantumlServer: this.config.plantumlServer,
-        onWillTransformMarkdown:
-          utility.configs.parserConfig['onWillTransformMarkdown'],
-        onDidTransformMarkdown:
-          utility.configs.parserConfig['onDidTransformMarkdown'],
-      },
-      markdownConfig,
-    );
-  }
-
-  /**
    * Eg
    * ---
    * export_on_save:
@@ -2462,9 +2350,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private exportOnSave(data: object) {
     for (const exporter in data) {
-      if (exporter === 'markdown') {
-        this.markdownExport({});
-      } else if (exporter === 'html') {
+      if (exporter === 'html') {
         this.htmlExport({});
       } else if (exporter === 'prince') {
         this.princeExport({ openFileAfterGeneration: false });
@@ -2609,11 +2495,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         return { content: frontMatterString, table: '', data: data || {} };
       } else if (
         hideFrontMatter ||
-        this.config.frontMatterRenderingOption[0] === 'n'
+        (this.config.frontMatterRenderingOption ?? '')[0] === 'n'
       ) {
         // hide
         return { content: '', table: '', data };
-      } else if (this.config.frontMatterRenderingOption[0] === 't') {
+      } else if ((this.config.frontMatterRenderingOption ?? '')[0] === 't') {
         // table
         // to table
         let table;
@@ -2709,10 +2595,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const $ = cheerio.load(output);
     $('li').each((j, elem) => {
       const $elem = $(elem);
-      const html2 = $elem
-        .html()
-        .trim()
-        .split('\n')[0];
+      const html2 = ($elem.html() ?? '').trim().split('\n')[0];
       const attributeMatch = html2.match(/<!--(.+?)-->/);
       if (attributeMatch) {
         const attributes = attributeMatch[1].replace(/\.element\:/, '').trim();
@@ -2827,7 +2710,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             }
           },
         );
-        program.stdin.end(outputString, 'utf-8');
+        program.stdin?.end(outputString, 'utf-8');
       } catch (error) {
         let errorMessage = error.toString();
         if (errorMessage.indexOf('Error: write EPIPE') >= 0) {
@@ -3031,7 +2914,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (utility.configs.parserConfig['onDidParseMarkdown']) {
       html = await utility.configs.parserConfig['onDidParseMarkdown'](html, {
-        cheerio,
+        cheerio: cheerio as any,
       });
     }
 
