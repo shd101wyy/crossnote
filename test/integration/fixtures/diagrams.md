@@ -20,30 +20,6 @@ c2(yes)->io->e
 c2(no)->op2->e
 ```
 
-## [Sequence Diagrams](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=sequence-diagrams)
-
-`sequence`
-
-```sequence
-Title: Here is a title
-A->B: Normal line
-B-->C: Dashed line
-C->>D: Open arrow
-D-->>A: Dashed open arrow
-```
-
----
-
-`sequence {theme=hand}`
-
-```sequence {theme=hand}
-Title: Here is a title
-A->B: Normal line
-B-->C: Dashed line
-C->>D: Open arrow
-D-->>A: Dashed open arrow
-```
-
 ## [Mermaid](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=mermaid)
 
 `mermaid`

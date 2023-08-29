@@ -30,8 +30,6 @@ const ensureClassInAttributes = (
 
 // same order as in docs
 const supportedLanguages = [
-  'flow',
-  'sequence',
   'mermaid',
   'puml',
   'plantuml',
@@ -168,8 +166,6 @@ async function renderDiagram({
 
   try {
     switch (normalizedInfo.language) {
-      case 'flow':
-      case 'sequence':
       case 'mermaid': {
         // these diagrams are rendered on the client
         $output = `<div ${stringifyBlockAttributes(

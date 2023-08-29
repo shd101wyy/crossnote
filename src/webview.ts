@@ -146,7 +146,6 @@
     private zenumlCache = {};
     private wavedromCache = {};
     private flowchartCache = {};
-    private sequenceDiagramCache = {};
 
     /**
      * This controller should be initialized when the html dom is loaded.
@@ -927,39 +926,6 @@
     }
 
     /**
-     * render sequence diagram
-     */
-    private renderSequenceDiagram() {
-      return new Promise<void>((resolve, reject) => {
-        const sequenceDiagrams = this.previewElement.getElementsByClassName(
-          'sequence',
-        );
-        const newSequenceDiagramCache = {};
-        for (let i = 0; i < sequenceDiagrams.length; i++) {
-          const sequence = sequenceDiagrams[i] as HTMLElement;
-          const text = (sequence.textContent ?? '').trim();
-          const theme = sequence.getAttribute('theme') || 'simple';
-          const cacheKey = text + '$' + theme;
-          if (cacheKey in this.sequenceDiagramCache) {
-            sequence.innerHTML = this.sequenceDiagramCache[cacheKey];
-          } else {
-            try {
-              const diagram = window['Diagram'].parse(text);
-              sequence.innerHTML = '';
-              diagram.drawSVG(sequence, { theme });
-            } catch (error) {
-              sequence.innerHTML =
-                '<pre class="language-text">' + error.toString() + '</pre>';
-            }
-          }
-          newSequenceDiagramCache[cacheKey] = sequence.innerHTML;
-        }
-        this.sequenceDiagramCache = newSequenceDiagramCache;
-        resolve();
-      });
-    }
-
-    /**
      * render wavedrom
      */
     private async renderWavedrom() {
@@ -1224,7 +1190,6 @@
       await Promise.all([
         this.renderFlowchart(),
         this.renderInteractiveVega(),
-        this.renderSequenceDiagram(),
         this.renderMermaid(),
       ]);
 
