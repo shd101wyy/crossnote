@@ -145,7 +145,6 @@
      */
     private zenumlCache = {};
     private wavedromCache = {};
-    private flowchartCache = {};
 
     /**
      * This controller should be initialized when the html dom is loaded.
@@ -896,36 +895,6 @@
     }
 
     /**
-     * render flowchart
-     * This function doesn't work with `hiddenPreviewElement`
-     */
-    private renderFlowchart() {
-      return new Promise<void>((resolve, reject) => {
-        const flowcharts = this.previewElement.getElementsByClassName('flow');
-        const newFlowchartCache = {};
-        for (let i = 0; i < flowcharts.length; i++) {
-          const flow = flowcharts[i];
-          const text = (flow.textContent ?? '').trim();
-          if (text in this.flowchartCache) {
-            flow.innerHTML = this.flowchartCache[text];
-          } else {
-            try {
-              const diagram = window['flowchart'].parse(text);
-              flow.innerHTML = '';
-              diagram.drawSVG(flow);
-            } catch (error) {
-              flow.innerHTML =
-                '<pre class="language-text">' + error.toString() + '</pre>';
-            }
-          }
-          newFlowchartCache[text] = flow.innerHTML;
-        }
-        this.flowchartCache = newFlowchartCache;
-        resolve();
-      });
-    }
-
-    /**
      * render wavedrom
      */
     private async renderWavedrom() {
@@ -1187,11 +1156,7 @@
       this.previewElement.innerHTML = this.hiddenPreviewElement.innerHTML;
       this.hiddenPreviewElement.innerHTML = '';
 
-      await Promise.all([
-        this.renderFlowchart(),
-        this.renderInteractiveVega(),
-        this.renderMermaid(),
-      ]);
+      await Promise.all([this.renderInteractiveVega(), this.renderMermaid()]);
 
       this.setupCodeChunks();
 

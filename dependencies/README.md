@@ -20,9 +20,6 @@ I managed many libraries by myself instead of through npm to reduce overall file
   "vega-lite": "4.0.2",
   "vega-embed": "6.2.1",
   "font-awesome": "4.7",
-  "flowchart": "1.11.3",
-  "raphael.js": "2.2.7",
-  // "snap.svg": "0.5.1", // <= Doesn't work well in Preview. Use raphael.js instead
   "prism": "1.29.0"
 }
 ```

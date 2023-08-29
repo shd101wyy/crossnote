@@ -585,39 +585,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       </script>`;
     }
 
-    // flowchart.js
-    scripts += `<script src='${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        './dependencies/raphael/raphael.js',
-      ),
-      vscodePreviewPanel,
-    )}'></script>`;
-    scripts += `<script src='${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        './dependencies/flowchart/flowchart.min.js',
-      ),
-      vscodePreviewPanel,
-    )}'></script>`;
-    // flowchart init script
-    if (isForPresentation) {
-      scripts += `<script>
-      var flowcharts = document.getElementsByClassName('flow')
-      for (var i = 0; i < flowcharts.length; i++) {
-        var flow = flowcharts[i]
-        try {
-          var diagram = flowchart.parse(flow.textContent)
-          flow.id = 'flow_' + i
-          flow.innerHTML = ''
-          diagram.drawSVG(flow.id)
-        } catch (error) {
-          flow.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
-        }
-      }
-      </script>`;
-    }
-
+    // vega
     dependentLibraryMaterials.forEach(({ key }) => {
       scripts += `<script src="${utility.addFileProtocol(
         path.resolve(
@@ -1202,39 +1170,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
       </script>`;
     }
 
-    // flowchart
-    let flowchartScript = ``;
-    let flowchartInitScript = ``;
-    if (html.indexOf(' class="flow') >= 0) {
-      if (options.offline) {
-        flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          './dependencies/raphael/raphael.js',
-        )}" charset="UTF-8"></script>`;
-        flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          './dependencies/flowchart/flowchart.min.js',
-        )}" charset="UTF-8"></script>`;
-      } else {
-        flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`;
-        flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.7.0/flowchart.min.js"></script>`;
-      }
-      flowchartInitScript = `<script>
-var flowcharts = document.getElementsByClassName('flow')
-for (var i = 0; i < flowcharts.length; i++) {
-  var flow = flowcharts[i]
-  try {
-    var diagram = flowchart.parse(flow.textContent)
-    flow.id = 'flow_' + i
-    flow.innerHTML = ''
-    diagram.drawSVG(flow.id)
-  } catch (error) {
-    flow.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
-  }
-}
-</script>`;
-    }
-
     // presentation
     let presentationScript = '';
     let presentationStyle = '';
@@ -1485,7 +1420,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${zenumlScript}
       ${wavedromScript}
       ${vegaScript}
-      ${flowchartScript}
       <style>
       ${styles}
       </style>
@@ -1505,7 +1439,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${mermaidInitScript}
     ${wavedromInitScript}
     ${vegaInitScript}
-    ${flowchartInitScript}
     ${sidebarTOCScript}
   </html>
     `;
