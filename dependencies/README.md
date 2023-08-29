@@ -4,23 +4,23 @@ I managed many libraries by myself instead of through npm to reduce overall file
 
 ```json
 {
-  "mermaid": "10.3.1",
-  "wavedrom": "2.9.1",
-  "reveal": "4.10.0",
-  "viz": "v2.0.0",
-  "MathJax": "v2.7.5",
-  "jquery": "v3.2.1",
-  "jquery-contextmenu": "2.6.3",
-  "markdown-it": "8.4.2",
-  "JavaScript-MD5": "2.7.0",
-  "katex": "v0.16.8",
   "crypto-js": "3.9.1-1",
-  "jquery-modal": "0.8.0",
-  "vega": "5.9.0",
-  "vega-lite": "4.0.2",
-  "vega-embed": "6.2.1",
   "font-awesome": "4.7",
+  "JavaScript-MD5": "2.7.0",
+  "jquery-contextmenu": "2.6.3",
+  "jquery-modal": "0.8.0",
+  "jquery": "v3.2.1",
+  "katex": "v0.16.8",
+  "markdown-it": "8.4.2",
+  "MathJax": "v2.7.5",
+  "mermaid": "10.4.0",
   "prism": "1.29.0"
+  "reveal": "4.10.0",
+  "vega-embed": "6.2.1",
+  "vega-lite": "4.0.2",
+  "vega": "5.9.0",
+  "viz": "v2.0.0",
+  "wavedrom": "2.9.1",
 }
 ```
 
