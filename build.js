@@ -33,10 +33,16 @@ async function main() {
   try {
     if (process.argv.includes('--watch')) {
       // CommonJS
-      const cjsContext = await context(cjsConfig);
+      const cjsContext = await context({
+        ...cjsConfig,
+        sourcemap: true,
+      });
 
       // ESM
-      const esmContext = await context(esmConfig);
+      const esmContext = await context({
+        ...esmConfig,
+        sourcemap: true,
+      });
 
       await Promise.all([cjsContext.watch(), esmContext.watch()]);
     } else {

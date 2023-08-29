@@ -1,7 +1,7 @@
 /**
  * Convert vega-lite to vega first, then render to svg.
  */
-import * as YAML from 'yamljs';
+import * as YAML from 'yaml';
 import * as utility from './utility';
 import * as vega from './vega';
 import * as vegaLite from 'vega-lite';

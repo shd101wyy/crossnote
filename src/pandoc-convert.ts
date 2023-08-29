@@ -1,7 +1,7 @@
 import { execFile } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as YAML from 'yamljs';
+import * as YAML from 'yaml';
 import computeChecksum from './lib/compute-checksum';
 import { processGraphs } from './process-graphs';
 import { toc } from './toc';

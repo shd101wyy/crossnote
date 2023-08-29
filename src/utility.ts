@@ -1,6 +1,6 @@
 import * as child_process from 'child_process';
 import * as fs from 'fs';
-import * as jsYAML from 'js-yaml';
+import * as YAML from 'yaml';
 import * as less from 'less';
 import * as os from 'os';
 import * as path from 'path';
@@ -81,7 +81,7 @@ export function parseYAML(yaml: string = '') {
       .replace(/\r?\n---$/, '');
   }
   try {
-    return jsYAML.safeLoad(yaml);
+    return YAML.parse(yaml);
   } catch (error) {
     return {};
   }

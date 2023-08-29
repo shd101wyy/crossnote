@@ -62,6 +62,7 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
     if (content && !silent) {
       const token = state.push('math', '', 0);
       token.content = content.trim();
+      token.meta = token.meta || {};
       token.meta.openTag = openTag;
       token.meta.closeTag = closeTag;
       token.meta.displayMode = displayMode;

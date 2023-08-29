@@ -75,7 +75,7 @@ export interface MarkdownEngineConfig {
   mathRenderingOption: MathRenderingOption;
   mathInlineDelimiters: string[][];
   mathBlockDelimiters: string[][];
-  mathRenderingOnlineService?: string;
+  mathRenderingOnlineService: string;
   codeBlockTheme: CodeBlockTheme;
   previewTheme: PreviewTheme;
   revealjsTheme: RevealJsTheme;
@@ -118,14 +118,8 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   wikiLinkFileExtension: '.md',
   protocolsWhiteList: 'http://, https://, atom://, file://, mailto:, tel:',
   mathRenderingOption: 'KaTeX',
-  mathInlineDelimiters: [
-    ['$', '$'],
-    ['\\(', '\\)'],
-  ],
-  mathBlockDelimiters: [
-    ['$$', '$$'],
-    ['\\[', '\\]'],
-  ],
+  mathInlineDelimiters: [['$', '$']],
+  mathBlockDelimiters: [['$$', '$$']],
   mathRenderingOnlineService: 'https://latex.codecogs.com/gif.latex',
   codeBlockTheme: 'auto.css',
   previewTheme: 'github-light.css',

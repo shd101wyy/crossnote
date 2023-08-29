@@ -1,5 +1,5 @@
 // tslint:disable:ban-types no-var-requires
-import * as YAML from 'yamljs';
+import * as YAML from 'yaml';
 
 import computeChecksum from '../lib/compute-checksum';
 import { render as renderPlantuml } from '../puml';

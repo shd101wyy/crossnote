@@ -46,12 +46,11 @@ import { transformMarkdown } from './transformer';
 import * as utility from './utility';
 import { removeFileProtocol } from './utility';
 import puppeteer, { Browser } from 'puppeteer-core';
+import MarkdownIt from 'markdown-it';
+import { markdownConvert } from './markdown-convert';
+import * as YAML from 'yaml';
 
 const extensionDirectoryPath = utility.extensionDirectoryPath;
-const MarkdownIt = require(path.resolve(
-  extensionDirectoryPath,
-  './dependencies/markdown-it/markdown-it.min.js',
-));
 const CryptoJS = require(path.resolve(
   extensionDirectoryPath,
   './dependencies/crypto-js/crypto-js.js',
@@ -2333,6 +2332,110 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       utility.openFile(outputFilePath);
     }
     return outputFilePath;
+  }
+
+  /**
+   * markdown(gfm) export
+   */
+  public async markdownExport({ runAllCodeChunks = false }): Promise<string> {
+    let inputString = await utility.readFile(this.filePath, {
+      encoding: 'utf-8',
+    });
+
+    if (runAllCodeChunks) {
+      // this line of code is only used to get this.codeChunksData
+      await this.parseMD(inputString, {
+        useRelativeFilePath: true,
+        isForPreview: false,
+        hideFrontMatter: false,
+        runAllCodeChunks,
+      });
+    }
+
+    let config = {};
+
+    if (inputString.startsWith('---')) {
+      const endFrontMatterOffset = inputString.indexOf('\n---');
+      if (endFrontMatterOffset > 0) {
+        const frontMatterString = inputString.slice(
+          0,
+          endFrontMatterOffset + 4,
+        );
+        inputString = inputString.replace(frontMatterString, ''); // remove front matter
+        config = this.processFrontMatter(frontMatterString, false).data;
+      }
+    }
+
+    /**
+     * markdownConfig has the following properties:
+     *     path:                        destination of the output file
+     *     image_dir:                   where to save the image file
+     *     use_absolute_image_path:      as the name shows.
+     *     ignore_from_front_matter:    default is true.
+     */
+    let markdownConfig = {};
+    if (config['markdown']) {
+      markdownConfig = { ...config['markdown'] };
+    }
+
+    if (!markdownConfig['image_dir']) {
+      markdownConfig['image_dir'] = this.config.imageFolderPath;
+    }
+
+    if (!markdownConfig['path']) {
+      if (this.filePath.match(/\.src\./)) {
+        markdownConfig['path'] = this.filePath.replace(/\.src\./, '.');
+      } else {
+        markdownConfig['path'] = this.filePath.replace(
+          new RegExp(path.extname(this.filePath)),
+          '_' + path.extname(this.filePath),
+        );
+      }
+      markdownConfig['path'] = path.basename(markdownConfig['path']);
+    }
+
+    // ignore_from_front_matter is `true` by default
+    if (
+      markdownConfig['ignore_from_front_matter'] ||
+      !('ignore_from_front_matter' in markdownConfig)
+    ) {
+      // delete markdown config front-matter from the top front matter
+      delete config['markdown'];
+    }
+    if (config['export_on_save']) {
+      delete config['export_on_save'];
+    }
+
+    // put front-matter back
+    if (Object.keys(config).length) {
+      inputString = '---\n' + YAML.stringify(config) + '---\n' + inputString;
+    }
+
+    return await markdownConvert(
+      inputString,
+      {
+        projectDirectoryPath: this.projectDirectoryPath,
+        fileDirectoryPath: this.fileDirectoryPath,
+        protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
+        filesCache: this.filesCache,
+        mathRenderingOption: this.config.mathRenderingOption,
+        mathInlineDelimiters: this.config.mathInlineDelimiters,
+        mathBlockDelimiters: this.config.mathBlockDelimiters,
+        mathRenderingOnlineService: this.config.mathRenderingOnlineService,
+        codeChunksData: this.codeChunksData,
+        graphsCache: this.graphsCache,
+        usePandocParser: this.config.usePandocParser,
+        imageMagickPath: this.config.imageMagickPath,
+        mermaidTheme: this.config.mermaidTheme,
+        plantumlServer: this.config.plantumlServer,
+        plantumlJarPath: this.config.plantumlJarPath,
+        onWillTransformMarkdown:
+          utility.configs.parserConfig['onWillTransformMarkdown'],
+        onDidTransformMarkdown:
+          utility.configs.parserConfig['onDidTransformMarkdown'],
+      },
+      markdownConfig,
+    );
   }
 
   /**

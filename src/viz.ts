@@ -12,7 +12,7 @@ export async function Viz(digraph: string, renderOption: RenderOptions) {
     if (!viz) {
       viz = await instance();
     }
-    return await viz.renderString(digraph, renderOption);
+    return await viz.renderString(digraph, { format: 'svg', ...renderOption });
   } catch (error) {
     // Create a new Viz instance (@see Caveats page for more info)
     viz = null;
