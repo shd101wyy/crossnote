@@ -4,11 +4,10 @@
 import * as YAML from 'yaml';
 import * as utility from './utility';
 import * as vega from './vega';
-import * as vegaLite from 'vega-lite';
 
-let vl = null;
+let vl: any = null;
 
-export async function toSvg(spec: string = '', baseURL: string = '') {
+export async function toSVG(spec: string = '', baseURL: string = '') {
   if (!vl) {
     vl = utility.loadDependency('vega-lite/vega-lite.min.js');
   }
@@ -24,7 +23,7 @@ export async function toSvg(spec: string = '', baseURL: string = '') {
 
   return utility.allowUnsafeEval(() => {
     return utility.allowUnsafeNewFunction(() => {
-      return vega.toSvg(JSON.stringify(vegaLite.compile(d).spec), baseURL);
+      return vega.toSVG(JSON.stringify(vl.compile(d).spec), baseURL);
     });
   });
 }

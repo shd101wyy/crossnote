@@ -1,7 +1,8 @@
 import { loader } from 'vega-loader';
 import * as YAML from 'yaml';
 import * as utility from './utility';
-import * as vega from 'vega';
+
+let vega: any = null;
 
 async function renderVega(spec: object, baseURL): Promise<string> {
   const svgHeader =
@@ -29,10 +30,14 @@ async function renderVega(spec: object, baseURL): Promise<string> {
  * Modifed from the `vg2svg` file.
  * @param spec The vega code.
  */
-export async function toSvg(
+export async function toSVG(
   spec: string = '',
   baseURL: string = '',
 ): Promise<string> {
+  if (!vega) {
+    vega = utility.loadDependency('vega/vega.min.js');
+  }
+
   spec = spec.trim();
   let d;
   if (spec[0] !== '{') {

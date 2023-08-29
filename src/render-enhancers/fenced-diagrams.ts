@@ -4,8 +4,8 @@ import * as YAML from 'yaml';
 import computeChecksum from '../lib/compute-checksum';
 import { render as renderPlantuml } from '../puml';
 import { escapeString } from '../utility';
-import { toSvg as vegaToSvg } from '../vega';
-import { toSvg as vegaLiteToSvg } from '../vega-lite';
+import { toSVG as vegaToSvg } from '../vega';
+import { toSVG as vegaLiteToSvg } from '../vega-lite';
 import { Viz } from '../viz';
 import * as pako from 'pako';
 

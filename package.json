@@ -67,10 +67,7 @@
     "temp": "^0.9.0",
     "twemoji": "^13.1.0",
     "uslug": "^1.0.4",
-    "vega": "^5.25.0",
-    "vega-embed": "^6.22.2",
-    "vega-lite": "^5.14.1",
-    "vega-loader": "^4.1.0",
+    "vega-loader": "^4.5.1",
     "yaml": "^2.3.2"
   },
   "devDependencies": {
