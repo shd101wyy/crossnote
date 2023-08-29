@@ -1,5 +1,5 @@
-import * as snakeCase from "lodash/snakeCase";
-import { BlockAttributes } from "./types";
+import snakeCase from 'lodash/snakeCase';
+import { BlockAttributes } from './types';
 
 /**
  * Walks through attribute keys and makes them snakeCase if needed
@@ -8,7 +8,7 @@ import { BlockAttributes } from "./types";
 export const normalizeBlockAttributes = (
   attributes: BlockAttributes,
 ): BlockAttributes => {
-  if (typeof attributes !== "object") {
+  if (typeof attributes !== 'object') {
     return {};
   }
   let changed = false;

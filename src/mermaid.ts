@@ -3,7 +3,7 @@
  * https://github.com/mermaid-js/mermaid-cli
  */
 
-import * as utility from "./utility";
+import * as utility from './utility';
 
 export async function mermaidToPNG(
   mermaidCode: string,
@@ -12,25 +12,25 @@ export async function mermaidToPNG(
   themeName,
 ): Promise<string> {
   const info = await utility.tempOpen({
-    prefix: "mume-mermaid",
-    suffix: ".mmd",
+    prefix: 'mume-mermaid',
+    suffix: '.mmd',
   });
   await utility.write(info.fd, mermaidCode);
   if (!themeName) {
-    themeName = "null";
+    themeName = 'null';
   }
   try {
     await utility.execFile(
-      "npx",
+      'npx',
       [
-        "-p",
-        "@mermaid-js/mermaid-cli",
-        "mmdc",
-        "--theme",
+        '-p',
+        '@mermaid-js/mermaid-cli',
+        'mmdc',
+        '--theme',
         themeName,
-        "--input",
+        '--input',
         info.path,
-        "--output",
+        '--output',
         pngFilePath,
       ],
       {
@@ -41,7 +41,7 @@ export async function mermaidToPNG(
     return pngFilePath;
   } catch (error) {
     throw new Error(
-      "mermaid CLI is required to be installed.\nCheck https://github.com/mermaid-js/mermaid-cli for more information.\n\n" +
+      'mermaid CLI is required to be installed.\nCheck https://github.com/mermaid-js/mermaid-cli for more information.\n\n' +
         error.toString(),
     );
   }

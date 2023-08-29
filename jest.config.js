@@ -1,11 +1,11 @@
 module.exports = {
   collectCoverage: true,
-  collectCoverageFrom: ["src/**/*.{ts,tsx,js}"],
-  moduleFileExtensions: ["ts", "tsx", "js"],
+  collectCoverageFrom: ['src/**/*.{ts,tsx,js}'],
+  moduleFileExtensions: ['ts', 'tsx', 'js'],
   transform: {
-    "^.+\\.tsx?$": "ts-jest",
+    '^.+\\.tsx?$': 'ts-jest',
   },
-  roots: ["test"],
-  testMatch: ["**/?(*.)(spec|test).(j|t)s?(x)"],
-  testEnvironment: "node",
+  roots: ['test'],
+  testMatch: ['**/?(*.)(spec|test).(j|t)s?(x)'],
+  testEnvironment: 'node',
 };

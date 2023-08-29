@@ -4,7 +4,6 @@
     "target": "ES2017",
     "sourceMap": true,
     "skipLibCheck": true,
-    "outDir": "out",
     "lib": ["es6", "dom"],
     "rootDir": ".",
     "declaration": true,
@@ -12,7 +11,10 @@
     "removeComments": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
-    "incremental": true
+    "incremental": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./out",
+    "outFile": "./out/types/index.d.ts"
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"]

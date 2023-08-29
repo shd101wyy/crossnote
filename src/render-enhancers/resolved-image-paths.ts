@@ -1,4 +1,4 @@
-import { MarkdownEngineRenderOption } from "../markdown-engine";
+import { MarkdownEngineRenderOption } from '../markdown-engine';
 
 /**
  * This function resolves image paths
@@ -16,10 +16,10 @@ export default async function enhance(
   usePandocParser,
 ): Promise<void> {
   // resolve image paths
-  $("img, a").each((i, imgElement) => {
-    let srcTag = "src";
-    if (imgElement.name === "a") {
-      srcTag = "href";
+  $('img, a').each((i, imgElement) => {
+    let srcTag = 'src';
+    if (imgElement.name === 'a') {
+      srcTag = 'href';
     }
 
     const img = $(imgElement);
@@ -28,17 +28,17 @@ export default async function enhance(
     // insert anchor for scroll sync.
     if (
       options.isForPreview &&
-      imgElement.name !== "a" &&
+      imgElement.name !== 'a' &&
       img
         .parent()
         .prev()
-        .hasClass("sync-line")
+        .hasClass('sync-line')
     ) {
       const lineNo = parseInt(
         img
           .parent()
           .prev()
-          .attr("data-line"),
+          .attr('data-line'),
         10,
       );
       if (lineNo) {
@@ -63,13 +63,13 @@ export default async function enhance(
 
   if (!usePandocParser) {
     // check .mume-header in order to add id and class to headers.
-    $(".mume-header").each((i, e) => {
+    $('.mume-header').each((i, e) => {
       const classes = e.attribs.class;
       const id = e.attribs.id;
       const $e = $(e);
       const $h = $e.prev();
       $h.addClass(classes);
-      $h.attr("id", encodeURIComponent(id)); // encodeURIComponent to fix utf-8 header.
+      $h.attr('id', encodeURIComponent(id)); // encodeURIComponent to fix utf-8 header.
       $e.remove();
     });
   }

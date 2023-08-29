@@ -1,6 +1,6 @@
 import { MathRenderingOption } from './markdown-engine-config';
 import { configs, escapeString } from './utility';
-import * as katex from 'katex';
+import { renderToString } from '../dependencies/katex/katex.min.js';
 
 // tslint:disable-next-line interface-over-type-literal
 export type ParseMathArgs = {
@@ -39,7 +39,7 @@ export default ({
           './dependencies/katex/contrib/mhchem.min.js',
         ));
         */
-      return katex.renderToString(
+      return renderToString(
         content,
         Object.assign({}, configs.katexConfig || {}, { displayMode }),
       );

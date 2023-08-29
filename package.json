@@ -12,8 +12,9 @@
     "kachkaev",
     "gabyx"
   ],
-  "main": "out/src/crossnote.js",
-  "typings": "out/src/crossnote.d.ts",
+  "main": "out/cjs/index.js",
+  "module": "out/esm/index.js",
+  "typings": "out/types/index.d.ts",
   "files": [
     "dependencies",
     "docs",
@@ -21,8 +22,10 @@
     "styles"
   ],
   "scripts": {
-    "build": "tsc --project .",
-    "build:watch": "tsc --project . --watch",
+    "build": "rm -rf ./out && yarn build:typings && yarn build:esbuild",
+    "build:esbuild": "node build.js",
+    "build:typings": "tsc --project . --declaration",
+    "build:watch": "concurrently \"tsc --project . --watch\" \"node build.js --watch\"",
     "check:all": "npm run check:prettier && npm run check:tsc && npm run check:tslint",
     "check:prettier": "prettier --check \"**/*.*\"",
     "check:tsc": "tsc --project . --noEmit",
@@ -62,7 +65,7 @@
     "puppeteer-core": "^21.1.0",
     "qiniu": "^7.2.2",
     "request": "^2.88.0",
-    "slash": "^2.0.0",
+    "slash": "^5.1.0",
     "temp": "^0.9.0",
     "twemoji": "^13.1.0",
     "uslug": "^1.0.4",
@@ -82,6 +85,8 @@
     "@types/pako": "^2.0.0",
     "@types/vfile": "^3.0.2",
     "@types/vscode": "1.70.0",
+    "concurrently": "^8.2.1",
+    "esbuild": "^0.19.2",
     "husky": "^7.0.2",
     "jest": "^27.2.4",
     "lint-staged": "^10.3.0",
