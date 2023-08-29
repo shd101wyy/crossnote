@@ -3,7 +3,7 @@ import * as YAML from 'yaml';
 
 import computeChecksum from '../lib/compute-checksum';
 import { render as renderPlantuml } from '../puml';
-import { escapeString } from '../utility';
+import { escape } from 'html-escaper';
 import { toSVG as vegaToSvg } from '../vega';
 import { toSVG as vegaLiteToSvg } from '../vega-lite';
 import { Viz } from '../viz';
@@ -33,9 +33,6 @@ const supportedLanguages = [
   'mermaid',
   'puml',
   'plantuml',
-  'zenuml',
-  'seq',
-  'sequence-diagram',
   'wavedrom',
   'graphviz',
   'viz',
@@ -173,19 +170,7 @@ async function renderDiagram({
             normalizedInfo.attributes,
             normalizedInfo.language,
           ),
-        )}>${escapeString(code)}</div>`;
-        break;
-      }
-      case 'zenuml':
-      case 'seq':
-      case 'sequence-diagram': {
-        // sequence-diagram is a web-component, so we just need to add this tag
-        $output = `<div ${stringifyBlockAttributes(
-          ensureClassInAttributes(
-            normalizedInfo.attributes,
-            normalizedInfo.language,
-          ),
-        )}><sequence-diagram>${code}</sequence-diagram></div>`;
+        )}>${escape(code)}</div>`;
         break;
       }
       case 'wavedrom': {

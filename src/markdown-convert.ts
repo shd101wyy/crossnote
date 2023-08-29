@@ -10,7 +10,7 @@ import computeChecksum from './lib/compute-checksum';
 import { processGraphs } from './process-graphs';
 import { toc } from './toc';
 import { transformMarkdown } from './transformer';
-import * as utility from './utility';
+import { escape } from 'html-escaper';
 
 /**
  * Convert all math expressions inside markdown to images.
@@ -71,7 +71,7 @@ function processMath(
       }
       let math = $2;
       math = math.replace(/\n/g, '').replace(/\#slash\_dollarsign\#/g, '\\$');
-      math = utility.escapeString(math);
+      math = escape(math);
       return `<p align="center"><img src=\"${mathRenderingOnlineService}?${math
         .trim()
         .replace(/ /g, '%20')}\"/></p>  \n`;
@@ -90,7 +90,7 @@ function processMath(
       }
       let math = $2;
       math = math.replace(/\n/g, '').replace(/\#slash\_dollarsign\#/g, '\\$');
-      math = utility.escapeString(math);
+      math = escape(math);
       return `<img src=\"${mathRenderingOnlineService}?${math
         .trim()
         .replace(/ /g, '%20')}\"/>`;

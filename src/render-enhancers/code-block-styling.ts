@@ -1,7 +1,9 @@
 import { resolve } from 'path';
 import { scopeForLanguageName } from '../extension-helper';
 import { BlockInfo } from '../lib/block-info';
-import { escapeString, extensionDirectoryPath } from '../utility';
+import { extensionDirectoryPath } from '../utility';
+import { escape } from 'html-escaper';
+
 let Prism;
 
 export default async function enhance($: CheerioStatic): Promise<void> {
@@ -11,7 +13,7 @@ export default async function enhance($: CheerioStatic): Promise<void> {
     const $codeElement = $(codeElement);
     const code = $codeElement.text();
     const $container = $codeElement.parent();
-    $codeElement.replaceWith(escapeString(code));
+    $codeElement.replaceWith(escape(code));
     $container.addClass('language-text');
   });
 

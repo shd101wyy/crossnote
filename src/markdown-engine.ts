@@ -50,6 +50,7 @@ import MarkdownIt from 'markdown-it';
 import { markdownConvert } from './markdown-convert';
 import * as YAML from 'yaml';
 import CryptoES from 'crypto-es';
+import { escape } from 'html-escaper';
 
 const extensionDirectoryPath = utility.extensionDirectoryPath;
 
@@ -425,22 +426,12 @@ export class MarkdownEngine {
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
-
-    // zenuml
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        './dependencies/sequence-diagram/vue.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        './dependencies/sequence-diagram/sequence-diagram.min.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
+    // TODO: If ZenUML gets integrated into mermaid in the future,
+    //      we can remove the following lines.
+    scripts += `<script type="module">
+    import zenuml from 'https://cdn.jsdelivr.net/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
+    await mermaid.registerExternalDiagrams([zenuml]);
+  </script>`;
 
     // wavedrome
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
@@ -907,7 +898,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       <html>
       <head>
         <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-        <meta id="mume-data" data-config="${utility.escapeString(
+        <meta id="mume-data" data-config="${escape(
           JSON.stringify({ ...this.config, ...config }),
         )}" data-time="${Date.now()}">
         <meta charset="UTF-8">
@@ -1041,12 +1032,20 @@ if (typeof(window['Reveal']) !== 'undefined') {
           './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/mermaid@10.3.1/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script type="module">
+  import mermaid from 'https://${this.config.jsdelivrCdnHost}/npm/mermaid@10.4.0/dist/mermaid.esm.min.mjs';
+</script>`;
       }
+
       const mermaidConfig: string = this.config.configPath
         ? await utility.getMermaidConfig(this.config.configPath)
         : '';
-      mermaidInitScript += `<script>
+      mermaidInitScript += `<script type="module">
+// TODO: If ZenUML gets integrated into mermaid in the future,
+//      we can remove the following lines.
+import zenuml from 'https://${this.config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
+await mermaid.registerExternalDiagrams([zenuml])
+
 ${mermaidConfig}
 if (window['MERMAID_CONFIG']) {
   window['MERMAID_CONFIG'].startOnLoad = false
@@ -1070,26 +1069,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
   Reveal.addEventListener('slidechanged', mermaidRevealHelper)
   Reveal.addEventListener('ready', mermaidRevealHelper)
 } else {
-  mermaid.init(null, document.querySelectorAll('.mermaid'))
+  await mermaid.run({
+    nodes: document.querySelectorAll('.mermaid')
+  })
 }
 </script>`;
-    }
-    // zenuml
-    let zenumlScript = ``;
-    if (html.indexOf(' class="zenuml') >= 0) {
-      if (options.offline) {
-        zenumlScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          './dependencies/sequence-diagram/vue.js',
-        )}" charset="UTF-8"></script>`;
-        zenumlScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          './dependencies/sequence-diagram/sequence-diagram.min.js',
-        )}" charset="UTF-8"></script>`;
-      } else {
-        zenumlScript += `<script type="text/javascript" src="https://unpkg.com/vue"></script>`;
-        zenumlScript += `<script type="text/javascript" src="https://unpkg.com/sequence-diagram"></script>`;
-      }
     }
 
     // wavedrom
@@ -1396,7 +1380,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${fontAwesomeStyle}
       ${presentationScript}
       ${mermaidScript}
-      ${zenumlScript}
       ${wavedromScript}
       ${vegaScript}
       <style>
@@ -2579,11 +2562,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           codeBlockSpacesAhead = match[1].length;
           outputString += `${
             match[1]
-          }\`\`\`{.text data-role="codeBlock" data-info="${utility.escapeString(
+          }\`\`\`{.text data-role="codeBlock" data-info="${escape(
             info,
-          )}" data-parsed-info="${utility.escapeString(
+          )}" data-parsed-info="${escape(
             JSON.stringify(parsedInfo),
-          )}" data-normalized-info="${utility.escapeString(
+          )}" data-normalized-info="${escape(
             JSON.stringify(normalizedInfo),
           )}"}\n`;
         } else if (match[1].length === codeBlockSpacesAhead) {

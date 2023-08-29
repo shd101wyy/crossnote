@@ -1,6 +1,7 @@
 import { MathRenderingOption } from './markdown-engine-config';
-import { configs, escapeString } from './utility';
+import { configs } from './utility';
 import { renderToString } from '../dependencies/katex/katex.min.js';
+import { escape } from 'html-escaper';
 
 // tslint:disable-next-line interface-over-type-literal
 export type ParseMathArgs = {
@@ -49,7 +50,7 @@ export default ({
   } else if (renderingOption === 'MathJax') {
     const text = (openTag + content + closeTag).replace(/\n/g, ' ');
     const tag = displayMode ? 'div' : 'span';
-    return `<${tag} class="mathjax-exps">${escapeString(text)}</${tag}>`;
+    return `<${tag} class="mathjax-exps">${escape(text)}</${tag}>`;
   } else {
     return '';
   }
