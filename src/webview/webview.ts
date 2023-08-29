@@ -1,3 +1,5 @@
+import CryptoES from 'crypto-es';
+
 // preview controller
 (() => {
   interface MarkdownConfig {
@@ -1036,8 +1038,7 @@
           eval(`((function(){${code}$})())`);
           codeChunk.classList.remove('running'); // done running javascript code
 
-          const CryptoJS = window['CryptoJS'];
-          const result = CryptoJS.AES.encrypt(
+          const result = CryptoES.AES.encrypt(
             codeChunk.getElementsByClassName('output-div')[0].outerHTML,
             'mume',
           ).toString();

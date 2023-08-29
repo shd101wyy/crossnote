@@ -1,12 +1,10 @@
-I managed many libraries by myself instead of through npm to reduce overall file size.
+I managed some of the libraries by myself instead of through npm to reduce overall file size.
 
 **Versions**
 
 ```json
 {
-  "crypto-js": "3.9.1-1",
   "font-awesome": "4.7",
-  "JavaScript-MD5": "2.7.0",
   "jquery-contextmenu": "2.6.3",
   "jquery-modal": "0.8.0",
   "jquery": "v3.2.1",
@@ -19,7 +17,6 @@ I managed many libraries by myself instead of through npm to reduce overall file
   "vega-embed": "6.2.1",
   "vega-lite": "4.0.2",
   "vega": "5.9.0",
-  "viz": "v2.0.0",
   "wavedrom": "2.9.1",
 }
 ```

@@ -49,12 +49,9 @@ import puppeteer, { Browser } from 'puppeteer-core';
 import MarkdownIt from 'markdown-it';
 import { markdownConvert } from './markdown-convert';
 import * as YAML from 'yaml';
+import CryptoES from 'crypto-es';
 
 const extensionDirectoryPath = utility.extensionDirectoryPath;
-const CryptoJS = require(path.resolve(
-  extensionDirectoryPath,
-  './dependencies/crypto-js/crypto-js.js',
-));
 
 export interface MarkdownEngineRenderOption {
   useRelativeFilePath: boolean;
@@ -363,22 +360,13 @@ export class MarkdownEngine {
     });
   }
 
-  /*
-  public cacheSVG(code:string, svg:string) {
-    svg = CryptoJS.AES.decrypt(svg, 'markdown-preview-enhanced').toString(CryptoJS.enc.Utf8)
-    // const base64 = new Buffer(svg).toString('base64')
-    // const img = `<img src="data:image/svg+xml;charset=utf-8;base64,${base64}">`
-    this.graphsCache[md5(code)] = svg
-  }
-  */
-
   public cacheCodeChunkResult(id: string, result: string) {
     const codeChunkData = this.codeChunksData[id];
     if (!codeChunkData) {
       return;
     }
-    codeChunkData.result = CryptoJS.AES.decrypt(result, 'mume').toString(
-      CryptoJS.enc.Utf8,
+    codeChunkData.result = CryptoES.AES.decrypt(result, 'mume').toString(
+      CryptoES.enc.Utf8,
     );
   }
 
@@ -425,15 +413,6 @@ export class MarkdownEngine {
       path.resolve(
         utility.extensionDirectoryPath,
         './dependencies/jquery-modal/jquery.modal.min.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-
-    // crpto-js
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        './dependencies/crypto-js/crypto-js.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;

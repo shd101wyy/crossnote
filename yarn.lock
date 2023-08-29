@@ -1527,6 +1527,11 @@ cross-spawn@^7.0.0, cross-spawn@^7.0.3:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
+crypto-es@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/crypto-es/-/crypto-es-2.0.4.tgz#8a7cc6cdf7416a18f9ff85f9b5f45066f5e30366"
+  integrity sha512-GJxgJJ7HjGzwT7iQF0K9RertKkzgSKUXd8X2aQ7RGDS8yMVDzIBFMNHID9hnj48Ep8NAICHWV1CFIETlVNZ/Lg==
+
 css-select@~1.2.0:
   version "1.2.0"
   resolved "https://registry.npm.taobao.org/css-select/download/css-select-1.2.0.tgz#2b3a110539c5355f1cd8d314623e870b121ec858"

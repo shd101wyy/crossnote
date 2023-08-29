@@ -50,6 +50,7 @@
     "babyparse": "^0.4.6",
     "cheerio": "1.0.0-rc.3",
     "chrome-location": "^1.2.1",
+    "crypto-es": "^2.0.4",
     "fs-extra": "^8.0.1",
     "imagemagick-cli": "^0.5.0",
     "less": "^3.9.0",
