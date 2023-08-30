@@ -957,6 +957,11 @@
     "@types/unist" "*"
     "@types/vfile-message" "*"
 
+"@types/vscode-webview@^1.57.2":
+  version "1.57.2"
+  resolved "https://registry.yarnpkg.com/@types/vscode-webview/-/vscode-webview-1.57.2.tgz#aa6a8cf02c23ef7ce4e5f2d257f52b15ddd8ec78"
+  integrity sha512-RpkIso3+FVoi9hFwHj9uBFO+9p8PGym0LnLJ9Yabo9mUJaV39CzOxz6EVtHg8AidA9hAf4cVmG0c+l9pvw6Lbw==
+
 "@types/vscode@1.70.0":
   version "1.70.0"
   resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.70.0.tgz#9cb14cdaac9f450a7005ae2db49ecee4a084c983"
