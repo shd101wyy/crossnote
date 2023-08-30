@@ -19,8 +19,6 @@ I managed some of the libraries by myself instead of through npm to reduce the o
   "prism": "1.29.0", // https://prismjs.com/download.html Then select all languages
   "reveal": "4.10.0",
   "vega-embed": "6.22.2", // https://cdn.jsdelivr.net/npm/vega-embed@6.22.2/build/vega-embed.min.js
-  "vega-lite": "5.14.1", // https://cdn.jsdelivr.net/npm/vega-lite@latest/build/vega-lite.min.js
-  "vega": "5.25.0", // https://cdn.jsdelivr.net/npm/vega@latest/build/vega.min.js
   "wavedrom": "2.9.1"
 }
 ```

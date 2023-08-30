@@ -1,9 +1,7 @@
 import { loader } from 'vega-loader';
 import * as YAML from 'yaml';
 import * as utility from './utility';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let vega: any = null;
+import * as vega from 'vega';
 
 async function renderVega(spec: object, baseURL): Promise<string> {
   const svgHeader =
@@ -35,10 +33,6 @@ export async function toSVG(
   spec: string = '',
   baseURL: string = '',
 ): Promise<string> {
-  if (!vega) {
-    vega = utility.loadDependency('vega/vega.min.js');
-  }
-
   spec = spec.trim();
   let d;
   if (spec[0] !== '{') {

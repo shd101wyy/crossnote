@@ -130,14 +130,6 @@ let MODIFY_SOURCE:
 
 const dependentLibraryMaterials = [
   {
-    key: 'vega',
-    version: '5.25.0',
-  },
-  {
-    key: 'vega-lite',
-    version: '5.14.1',
-  },
-  {
     key: 'vega-embed',
     version: '6.22.2',
   },
@@ -520,13 +512,14 @@ export class MarkdownEngine {
 
     // mermaid init
     scripts += `<script>
+var MERMAID_CONFIG;
 ${utility.configs.mermaidConfig}
-if (window['MERMAID_CONFIG']) {
-  window['MERMAID_CONFIG'].startOnLoad = false
-  window['MERMAID_CONFIG'].cloneCssStyles = false
-  window['MERMAID_CONFIG'].theme = "${this.config.mermaidTheme}"
+if (typeof MERMAID_CONFIG !== 'undefined') {
+  MERMAID_CONFIG.startOnLoad = false
+  MERMAID_CONFIG.cloneCssStyles = false
+  MERMAID_CONFIG.theme = "${this.config.mermaidTheme}"
 }
-mermaid.initialize(window['MERMAID_CONFIG'] || {})
+mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
     var currentSlide = event.currentSlide
@@ -1046,13 +1039,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
 import zenuml from 'https://${this.config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
 await mermaid.registerExternalDiagrams([zenuml])
 
+var MERMAID_CONFIG;
 ${mermaidConfig}
-if (window['MERMAID_CONFIG']) {
-  window['MERMAID_CONFIG'].startOnLoad = false
-  window['MERMAID_CONFIG'].cloneCssStyles = false
-  window['MERMAID_CONFIG'].theme = "${this.config.mermaidTheme}"
+if (typeof MERMAID_CONFIG !== 'undefined') {
+  MERMAID_CONFIG.startOnLoad = false
+  MERMAID_CONFIG.cloneCssStyles = false
+  MERMAID_CONFIG.theme = "${this.config.mermaidTheme}"
 }
-mermaid.initialize(window['MERMAID_CONFIG'] || {})
+mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
     var currentSlide = event.currentSlide
@@ -1110,7 +1104,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
               utility.extensionDirectoryPath,
               `./dependencies/${key}/${key}.min.js`,
             )}" charset="UTF-8"></script>`
-          : `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${name}.js"></script>`;
+          : `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
       });
 
       vegaInitScript += `<script>

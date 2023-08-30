@@ -4,15 +4,9 @@
 import * as YAML from 'yaml';
 import * as utility from './utility';
 import * as vega from './vega';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let vl: any = null;
+import * as vl from 'vega-lite';
 
 export async function toSVG(spec: string = '', baseURL: string = '') {
-  if (!vl) {
-    vl = utility.loadDependency('vega-lite/vega-lite.min.js');
-  }
-
   spec = spec.trim();
   let d;
   if (spec[0] !== '{') {

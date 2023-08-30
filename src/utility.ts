@@ -230,19 +230,19 @@ export async function getMermaidConfig(configPath: string): Promise<string> {
     try {
       mermaidConfig = await readFile(mermaidConfigPath, { encoding: 'utf-8' });
     } catch (e) {
-      mermaidConfig = `MERMAID_CONFIG = {startOnLoad: false}`;
+      mermaidConfig = `var MERMAID_CONFIG = {startOnLoad: false}`;
     }
   } else {
     const fileContent = `// config mermaid init call
 // http://knsv.github.io/mermaid/#configuration
 //
 // You can edit the 'MERMAID_CONFIG' variable below.
-MERMAID_CONFIG = {
+var MERMAID_CONFIG = {
   startOnLoad: false
 }
 `;
     await writeFile(mermaidConfigPath, fileContent, { encoding: 'utf-8' });
-    mermaidConfig = `MERMAID_CONFIG = {startOnLoad: false}`;
+    mermaidConfig = `var MERMAID_CONFIG = {startOnLoad: false}`;
   }
 
   return mermaidConfig;
@@ -480,7 +480,7 @@ export const configs: {
   globalStyle: '',
   mathjaxConfig: defaultMathjaxConfig,
   katexConfig: defaultKaTeXConfig,
-  mermaidConfig: 'MERMAID_CONFIG = {startOnLoad: false}',
+  mermaidConfig: 'var MERMAID_CONFIG = {startOnLoad: false}',
   parserConfig: {},
   config: {},
 };
