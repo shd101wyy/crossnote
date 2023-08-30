@@ -8,6 +8,7 @@ import * as vm from 'vm';
 import * as temp from 'temp';
 import * as vscode from 'vscode';
 import { BlockInfo } from './lib/block-info';
+import { JsonObject } from 'type-fest';
 
 temp.track();
 
@@ -26,14 +27,14 @@ export interface ParserConfig {
  * @param ms
  */
 export function sleep(ms: number) {
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<void>(resolve => {
     setTimeout(() => {
       return resolve();
     }, ms);
   });
 }
 
-export function parseYAML(yaml: string = '') {
+export function parseYAML(yaml: string = ''): JsonObject {
   // YAML doesn't work well with front-matter
   /*
   try {
@@ -67,7 +68,7 @@ export function readFile(file: string, options?): Promise<string> {
   });
 }
 
-export function writeFile(file: string, text, options?) {
+export function writeFile(file: string | number, text, options?) {
   return new Promise<void>((resolve, reject) => {
     fs.writeFile(file, text, options, error => {
       if (error) {
@@ -91,7 +92,7 @@ export function write(fd: number, text: string) {
   });
 }
 
-export function tempOpen(options): Promise<any> {
+export function tempOpen(options): Promise<temp.OpenFile> {
   return new Promise((resolve, reject) => {
     temp.open(options, (error, info) => {
       if (error) {
@@ -115,7 +116,7 @@ export function execFile(
       } else if (stderr) {
         return reject(stderr);
       } else {
-        return resolve(stdout as any);
+        return resolve(stdout as string);
       }
     });
   });
@@ -173,7 +174,7 @@ export async function getGlobalStyles(configPath: string): Promise<string> {
     await writeFile(globalLessFilePath, fileContent, { encoding: 'utf-8' });
   }
 
-  return await new Promise<string>((resolve, reject) => {
+  return await new Promise<string>(resolve => {
     less.render(
       fileContent,
       { paths: [path.dirname(globalLessFilePath)] },
@@ -427,7 +428,7 @@ export function addFileProtocol(
     if (!filePath.startsWith('file://')) {
       filePath = 'file:///' + filePath;
     }
-    filePath = filePath.replace(/^file\:\/+/, 'file:///');
+    filePath = filePath.replace(/^file:\/+/, 'file:///');
   }
   return filePath;
 }
@@ -465,7 +466,6 @@ export function removeFileProtocol(filePath: string): string {
  *
  * files
  */
-// @ts-ignore
 export const configs: {
   globalStyle: string;
   mathjaxConfig: object;
@@ -505,6 +505,7 @@ export function allowUnsafeEval(fn) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function allowUnsafeEvalAync(fn: () => Promise<any>) {
   const previousEval = global.eval;
   try {
@@ -527,6 +528,7 @@ export function allowUnsafeNewFunction(fn) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function allowUnsafeNewFunctionAsync(fn: () => Promise<any>) {
   const previousFunction = global.Function;
   try {
@@ -538,6 +540,7 @@ export async function allowUnsafeNewFunctionAsync(fn: () => Promise<any>) {
 }
 
 export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: () => Promise<any>,
 ) {
   const previousFunction = global.Function;
@@ -572,7 +575,7 @@ export function Function(...args: string[]) {
   let body = '';
   const paramLists: string[] = [];
   if (args.length) {
-    body = arguments[args.length - 1];
+    body = args[args.length - 1];
     for (let i = 0; i < args.length - 1; i++) {
       paramLists.push(args[i]);
     }
@@ -580,10 +583,12 @@ export function Function(...args: string[]) {
 
   const params = [];
   for (let j = 0, len = paramLists.length; j < len; j++) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let paramList: any = paramLists[j];
     if (typeof paramList === 'string') {
       paramList = paramList.split(/\s*,\s*/);
     }
+    // eslint-disable-next-line prefer-spread
     params.push.apply(params, paramList);
   }
 

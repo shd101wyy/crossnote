@@ -17,7 +17,7 @@ export default async function enhance(
     const $img = $(img);
     let src = resolveFilePath($img.attr('src'), false);
 
-    const fileProtocolMatch = src.match(/^(file|vscode\-resource):\/\/+/);
+    const fileProtocolMatch = src.match(/^(file|vscode-resource):\/\/+/);
     if (fileProtocolMatch) {
       src = removeFileProtocol(src);
       src = src.replace(/\?(\.|\d)+$/, ''); // remove cache
@@ -26,7 +26,7 @@ export default async function enhance(
         return;
       }
       asyncFunctions.push(
-        new Promise((resolve, reject) => {
+        new Promise(resolve => {
           readFile(decodeURI(src), (error, data) => {
             if (error) {
               return resolve(null);

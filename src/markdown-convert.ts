@@ -32,7 +32,7 @@ function processMath(
       .map(x => x[0])
       .join('|')
       .replace(/\\/g, '\\\\')
-      .replace(/([\(\)\[\]\$])/g, '\\$1') +
+      .replace(/([()[\]$])/g, '\\$1') +
     ')';
   const inlineEnd =
     '(?:' +
@@ -40,7 +40,7 @@ function processMath(
       .map(x => x[1])
       .join('|')
       .replace(/\\/g, '\\\\')
-      .replace(/([\(\)\[\]\$])/g, '\\$1') +
+      .replace(/([()[\]$])/g, '\\$1') +
     ')';
   const blockBegin =
     '(?:' +
@@ -48,7 +48,7 @@ function processMath(
       .map(x => x[0])
       .join('|')
       .replace(/\\/g, '\\\\')
-      .replace(/([\(\)\[\]\$])/g, '\\$1') +
+      .replace(/([()[\]$])/g, '\\$1') +
     ')';
   const blockEnd =
     '(?:' +
@@ -56,7 +56,7 @@ function processMath(
       .map(x => x[1])
       .join('|')
       .replace(/\\/g, '\\\\')
-      .replace(/([\(\)\[\]\$])/g, '\\$1') +
+      .replace(/([()[\]$])/g, '\\$1') +
     ')';
 
   // display
@@ -70,11 +70,11 @@ function processMath(
         return $1;
       }
       let math = $2;
-      math = math.replace(/\n/g, '').replace(/\#slash\_dollarsign\#/g, '\\$');
+      math = math.replace(/\n/g, '').replace(/#slash_dollarsign#/g, '\\$');
       math = escape(math);
-      return `<p align="center"><img src=\"${mathRenderingOnlineService}?${math
+      return `<p align="center"><img src="${mathRenderingOnlineService}?${math
         .trim()
-        .replace(/ /g, '%20')}\"/></p>  \n`;
+        .replace(/ /g, '%20')}"/></p>  \n`;
     },
   );
 
@@ -89,15 +89,15 @@ function processMath(
         return $1;
       }
       let math = $2;
-      math = math.replace(/\n/g, '').replace(/\#slash\_dollarsign\#/g, '\\$');
+      math = math.replace(/\n/g, '').replace(/#slash_dollarsign#/g, '\\$');
       math = escape(math);
-      return `<img src=\"${mathRenderingOnlineService}?${math
+      return `<img src="${mathRenderingOnlineService}?${math
         .trim()
-        .replace(/ /g, '%20')}\"/>`;
+        .replace(/ /g, '%20')}"/>`;
     },
   );
 
-  line = line.replace(/\#slash\_dollarsign\#/g, '\\$');
+  line = line.replace(/#slash_dollarsign#/g, '\\$');
   return line;
 }
 
@@ -150,7 +150,7 @@ function processPaths(
       return line;
     } else {
       // replace path in ![](...) and []()
-      let r = /(\!?\[.*?]\()([^\)|^'|^"]*)(.*?\))/gi;
+      let r = /(!?\[.*?]\()([^)|^'|^"]*)(.*?\))/gi;
       line = line.replace(r, (whole, a, b, c) => {
         if (b[0] === '<') {
           b = b.slice(1, b.length - 1);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import CryptoES from 'crypto-es';
 
 // preview controller
@@ -265,6 +266,7 @@ import CryptoES from 'crypto-es';
     private postMessage(command: string, args: any[] = []) {
       if (this.config.vscode) {
         if (!this.vscodeApi) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           this.vscodeApi = acquireVsCodeApi();
         }
@@ -826,7 +828,7 @@ import CryptoES from 'crypto-es';
      * render mermaid graphs
      */
     private renderMermaid() {
-      return new Promise<void>((resolve, reject) => {
+      return new Promise<void>(resolve => {
         const mermaid = window['mermaid']; // window.mermaid doesn't work, has to be written as window['mermaid']
         const mermaidGraphs = this.previewElement.getElementsByClassName(
           'mermaid',
@@ -870,7 +872,7 @@ import CryptoES from 'crypto-es';
      * This function is copied from render flowchart
      */
     private renderInteractiveVega() {
-      return new Promise<void>((resolve, reject) => {
+      return new Promise<void>(resolve => {
         const vegaElements = this.previewElement.querySelectorAll(
           '.vega, .vega-lite',
         );
@@ -919,7 +921,7 @@ import CryptoES from 'crypto-es';
           }
 
           try {
-            const content = eval(`(${text})`);
+            const content = window.eval(`(${text})`);
             window['WaveDrom'].RenderWaveForm(i, content, 'wavedrom');
             wavedromCache[text] = el.innerHTML;
           } catch (error) {
@@ -935,7 +937,7 @@ import CryptoES from 'crypto-es';
      * render MathJax expressions
      */
     private renderMathJax() {
-      return new Promise<void>((resolve, reject) => {
+      return new Promise<void>(resolve => {
         if (
           this.config.mathRenderingOption === 'MathJax' ||
           this.config.usePandocParser
@@ -997,7 +999,7 @@ import CryptoES from 'crypto-es';
         // javascript code chunk
         const code = codeChunk.getAttribute('data-code');
         try {
-          eval(`((function(){${code}$})())`);
+          window.eval(`((function(){${code}$})())`);
           codeChunk.classList.remove('running'); // done running javascript code
 
           const result = CryptoES.AES.encrypt(
@@ -1136,7 +1138,7 @@ import CryptoES from 'crypto-es';
           const href = decodeURIComponent(a.getAttribute('href')); // decodeURI here for Chinese like unicode heading
           if (href && href[0] === '#') {
             const targetElement = this.previewElement.querySelector(
-              `[id=\"${encodeURIComponent(href.slice(1))}\"]`,
+              `[id="${encodeURIComponent(href.slice(1))}"]`,
             ) as HTMLElement; // fix number id bug
             if (targetElement) {
               a.onclick = event => {

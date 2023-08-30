@@ -59,9 +59,9 @@ export async function processGraphs(
     const trimmedLine = line.trim();
 
     if (
-      trimmedLine.match(/^```(.+)\"?cmd\"?[:=]/) || // code chunk
+      trimmedLine.match(/^```(.+)"?cmd"?[:=]/) || // code chunk
       trimmedLine.match(
-        /^```(puml|plantuml|dot|viz|mermaid|vega|vega\-lite|wavedrom)/,
+        /^```(puml|plantuml|dot|viz|mermaid|vega|vega-lite|wavedrom)/,
       )
     ) {
       // graphs
@@ -118,7 +118,7 @@ export async function processGraphs(
         .substr(2, 9) + '_';
   }
 
-  imageFilePrefix = imageFilePrefix.replace(/[\/&]/g, '_ss_');
+  imageFilePrefix = imageFilePrefix.replace(/[/&]/g, '_ss_');
   imageFilePrefix = encodeURIComponent(imageFilePrefix);
 
   let imgCount = 0;
@@ -252,7 +252,7 @@ export async function processGraphs(
         clearCodeBlock(lines, start, end);
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
       }
-    } else if (def.match(/^vega\-lite/)) {
+    } else if (def.match(/^vega-lite/)) {
       // vega-lite
       try {
         const checksum = computeChecksum(optionsStr + content);

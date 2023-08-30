@@ -5,7 +5,9 @@ import {
 } from '../../src/lib/block-attributes';
 
 const testCases: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   attributes?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   normalizedAttributes?: any;
   raw?: string | (string | undefined | null)[];
   stringified?: string;
@@ -267,6 +269,7 @@ describe('lib/attributes', () => {
         return;
       }
       // TODO: Fix this
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const attributesToTest: any[] = [];
       if (normalizedAttributes) {
         attributesToTest.push(normalizedAttributes);

@@ -46,11 +46,19 @@ import { transformMarkdown } from './transformer';
 import * as utility from './utility';
 import { removeFileProtocol } from './utility';
 import puppeteer, { Browser } from 'puppeteer-core';
-import MarkdownIt from 'markdown-it';
 import { markdownConvert } from './markdown-convert';
 import * as YAML from 'yaml';
 import CryptoES from 'crypto-es';
 import { escape } from 'html-escaper';
+import { JsonObject } from 'type-fest';
+
+import MarkdownIt from 'markdown-it';
+import MarkdownItFootnote from '../dependencies/markdown-it/extensions/markdown-it-footnote.min.js';
+import MarkdownItSub from '../dependencies/markdown-it/extensions/markdown-it-sub.min.js';
+import MarkdownItSup from '../dependencies/markdown-it/extensions/markdown-it-sup.min.js';
+import MarkdownItDeflist from '../dependencies/markdown-it/extensions/markdown-it-deflist.min.js';
+import MarkdownItAbbr from '../dependencies/markdown-it/extensions/markdown-it-abbr.min.js';
+import MarkdownItMark from '../dependencies/markdown-it/extensions/markdown-it-mark.min.js';
 
 const extensionDirectoryPath = utility.extensionDirectoryPath;
 
@@ -69,7 +77,7 @@ export interface MarkdownEngineOutput {
   html: string;
   markdown: string;
   tocHTML: string;
-  yamlConfig: any;
+  yamlConfig: JsonObject;
   /**
    * imported javascript and css files
    * convert .js file to <script src='...'></script>
@@ -250,22 +258,14 @@ export class MarkdownEngine {
     });
 
     // markdown-it extensions
-    const extensions = [
-      './dependencies/markdown-it/extensions/markdown-it-footnote.min.js',
-      './dependencies/markdown-it/extensions/markdown-it-sub.min.js',
-      './dependencies/markdown-it/extensions/markdown-it-sup.min.js',
-      './dependencies/markdown-it/extensions/markdown-it-deflist.min.js',
-      './dependencies/markdown-it/extensions/markdown-it-abbr.min.js',
-      './dependencies/markdown-it/extensions/markdown-it-mark.min.js',
-    ];
+    this.md.use(MarkdownItFootnote);
+    this.md.use(MarkdownItSub);
+    this.md.use(MarkdownItSup);
+    this.md.use(MarkdownItDeflist);
+    this.md.use(MarkdownItAbbr);
+    this.md.use(MarkdownItMark);
 
-    for (const js of extensions) {
-      const fullPath = path.resolve(extensionDirectoryPath, js);
-      const plugin = require(fullPath);
-      this.md.use(plugin);
-    }
-
-    useMarkdownItCodeFences(this.md, this.config);
+    useMarkdownItCodeFences(this.md);
     useMarkdownItCriticMarkup(this.md, this.config);
     useMarkdownItEmoji(this.md, this.config);
     useMarkdownItHTML5Embed(this.md, this.config);
@@ -798,7 +798,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         );
       } else if (
         sourcePath.match(/^file:\/\//) ||
-        sourcePath.match(/^https?\:\/\//)
+        sourcePath.match(/^https?:\/\//)
       ) {
         // do nothing
       } else {
@@ -854,7 +854,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           <h4>Image Helper</h4>
           <div class="upload-div">
             <label>Link</label>
-            <input type="text" class="url-editor" placeholder="enter image URL here, then press \'Enter\' to insert.">
+            <input type="text" class="url-editor" placeholder="enter image URL here, then press 'Enter' to insert.">
             <div class="splitter"></div>
             <label class="copy-label">Copy image to root /assets folder</label>
             <div class="drop-area paster">
@@ -892,7 +892,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         vscodePreviewPanel,
       },
     );
-    const isPresentationMode = yamlConfig['isPresentationMode'];
+    const isPresentationMode = yamlConfig['isPresentationMode'] as boolean;
 
     const htmlTemplate = `<!DOCTYPE html>
       <html>
@@ -1362,7 +1362,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // move @import ''; to the very start.
     let styles = styleCSS + '\n' + globalStyles;
     let imports = '';
-    styles = styles.replace(/\@import\s+url\(([^)]+)\)\s*;/g, (whole, url) => {
+    styles = styles.replace(/@import\s+url\(([^)]+)\)\s*;/g, whole => {
       imports += whole + '\n';
       return '';
     });
@@ -1436,6 +1436,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     });
     let html;
     let yamlConfig;
+    // eslint-disable-next-line prefer-const
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1475,6 +1476,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     });
     let html;
     let yamlConfig;
+    // eslint-disable-next-line prefer-const
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: true,
       hideFrontMatter: true,
@@ -1545,6 +1547,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     });
     let html;
     let yamlConfig;
+    // eslint-disable-next-line prefer-const
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1643,6 +1646,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     });
     let html;
     let yamlConfig;
+    // eslint-disable-next-line prefer-const
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1683,14 +1687,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       $('img').each((offset, img) => {
         const $img = $(img);
         const src = $img.attr('src') || '';
-        if (src.match(/^https?\:\/\//)) {
+        if (src.match(/^https?:\/\//)) {
           imagesToDownload.push($img);
         }
       });
     }
 
     const asyncFunctions = imagesToDownload.map($img => {
-      return new Promise<string>((resolve, reject) => {
+      return new Promise<string>(resolve => {
         const httpSrc = $img.attr('src');
         let savePath =
           Math.random()
@@ -1733,6 +1737,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const emojiToSvg = fileType === 'pdf';
     let html;
     let yamlConfig;
+    // eslint-disable-next-line prefer-const
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1840,7 +1845,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             // Fix image paths that are relative to the child documents
             const rootPath = path.dirname(this.filePath);
             text = text.replace(
-              /(!\[[^\]]*\]\()(\.[^\)\s]*)/g,
+              /(!\[[^\]]*\]\()(\.[^)\s]*)/g,
               (whole, openTag, imageLink) => {
                 const fullPath = path.resolve(
                   path.dirname(filePath),
@@ -1876,7 +1881,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     results = results.sort((a, b) => a['offset'] - b['offset']);
 
     /* tslint:disable-next-line:no-shadowed-variable */
-    results.forEach(({ heading, id, level, filePath, html }) => {
+    results.forEach(({ heading, id, level, html }) => {
       /* tslint:disable-next-line:no-shadowed-variable */
 
       const $$ = cheerio.load(`<div>${html}</div>`);
@@ -2010,8 +2015,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 <html>
   <head>
     <title>${title}</title>
-    <meta charset=\"utf-8\">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
     ${styleCSS}
     ${globalStyles}
@@ -2035,7 +2040,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // this function will be called later
     function deleteDownloadedImages() {
       downloadedImagePaths.forEach(imagePath => {
-        fs.unlink(imagePath, error => {
+        fs.unlink(imagePath, () => {
           return;
         });
       });
@@ -2243,7 +2248,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * ---
    * @param data
    */
-  private exportOnSave(data: object) {
+  private exportOnSave(data: JsonObject) {
     for (const exporter in data) {
       if (exporter === 'html') {
         this.htmlExport({});
@@ -2259,7 +2264,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         } else if (typeof fileTypes === 'string') {
           func({ fileType: fileTypes, openFileAfterGeneration: false });
         } else if (fileTypes instanceof Array) {
-          fileTypes.forEach(fileType => {
+          fileTypes.forEach((fileType: string) => {
             func({ fileType, openFileAfterGeneration: false });
           });
         }
@@ -2272,7 +2277,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         } else if (typeof fileTypes === 'string') {
           this.eBookExport({ fileType: fileTypes });
         } else if (fileTypes instanceof Array) {
-          fileTypes.forEach(fileType => {
+          fileTypes.forEach((fileType: string) => {
             this.eBookExport({ fileType });
           });
         }
@@ -2350,6 +2355,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       let thead = '<thead><tr>';
       let tbody = '<tbody><tr>';
       for (const key in arg) {
+        // eslint-disable-next-line no-prototype-builtins
         if (arg.hasOwnProperty(key)) {
           thead += `<th>${key}</th>`;
           tbody += `<td>${this.frontMatterToTable(arg[key])}</td>`;
@@ -2383,7 +2389,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     hideFrontMatter = false,
   ) {
     if (frontMatterString) {
-      const data: any = utility.parseYAML(frontMatterString);
+      const data = utility.parseYAML(frontMatterString);
 
       if (this.config.usePandocParser) {
         // use pandoc parser, so don't change inputString
@@ -2422,7 +2428,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private parseSlides(
     html: string,
-    slideConfigs: any[],
+    slideConfigs: JsonObject[],
     useRelativeFilePath: boolean,
   ) {
     let slides = html.split('<p>[MUMESLIDE]</p>');
@@ -2477,7 +2483,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         v += 1;
       }
 
-      output += `<section ${attrString} ${idString}  class=\"slide ${classString}\" data-line="${slideConfig['lineNo']}" data-h=\"${h}\" data-v="${v}">${slide}</section>`;
+      output += `<section ${attrString} ${idString}  class="slide ${classString}" data-line="${slideConfig['lineNo']}" data-h="${h}" data-v="${v}">${slide}</section>`;
       i += 1;
     }
     if (i > 0 && slideConfigs[i - 1]['vertical']) {
@@ -2493,9 +2499,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       const html2 = ($elem.html() ?? '').trim().split('\n')[0];
       const attributeMatch = html2.match(/<!--(.+?)-->/);
       if (attributeMatch) {
-        const attributes = attributeMatch[1].replace(/\.element\:/, '').trim();
+        const attributes = attributeMatch[1].replace(/\.element:/, '').trim();
         const attrObj = parseBlockAttributes(attributes);
         for (const key in attrObj) {
+          // eslint-disable-next-line no-prototype-builtins
           if (attrObj.hasOwnProperty(key)) {
             $elem.attr(key, attrObj[key]);
           }
@@ -2649,10 +2656,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let frontMatterString;
     ({
       outputString,
+      // eslint-disable-next-line prefer-const
       slideConfigs,
+      // eslint-disable-next-line prefer-const
       tocBracketEnabled,
       JSAndCssFiles,
+      // eslint-disable-next-line prefer-const
       headings,
+      // eslint-disable-next-line prefer-const
       frontMatterString,
     } = await transformMarkdown(inputString, {
       fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
@@ -2694,14 +2705,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (this.config.usePandocParser) {
       // pandoc
       try {
-        let args = yamlConfig['pandoc_args'] || [];
+        let args = (yamlConfig['pandoc_args'] || []) as string[];
         if (!(args instanceof Array)) {
           args = [];
         }
 
         // check bibliography
         const noDefaultsOrCiteProc =
-          args.find(el => {
+          args.find((el: string) => {
             return el.includes('pandoc-citeproc') || el.includes('--defaults');
           }) === undefined;
 
@@ -2809,7 +2820,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (utility.configs.parserConfig['onDidParseMarkdown']) {
       html = await utility.configs.parserConfig['onDidParseMarkdown'](html, {
-        cheerio: cheerio as any,
+        cheerio: cheerio.default,
       });
     }
 
@@ -2826,7 +2837,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (options.triggeredBySave && yamlConfig['export_on_save']) {
       // export files
-      this.exportOnSave(yamlConfig['export_on_save']);
+      this.exportOnSave(yamlConfig['export_on_save'] as JsonObject);
     }
 
     if (!this.config.enableScriptExecution) {
@@ -2867,7 +2878,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       modifySource: MarkdownEngine.modifySource.bind(this),
       parseMD: this.parseMD.bind(this),
       headings: this.headings,
-      resolveFilePath: this.resolveFilePath.bind(this),
     };
   }
 }

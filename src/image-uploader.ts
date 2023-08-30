@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as request from 'request';
 import * as utility from './utility';
+import * as qiniu from 'qiniu';
 
 // imgur api
 // referred from node-imgur:
@@ -163,7 +164,6 @@ function qiniuUploadImage(
       return reject('Error: Qiniu Domain is missing');
     }
 
-    const qiniu = require('qiniu');
     const mac = new qiniu.auth.digest.Mac(AccessKey, SecretKey);
     const putPolicy = new qiniu.rs.PutPolicy({ scope: Bucket });
     const uploadToken = putPolicy.uploadToken(mac);

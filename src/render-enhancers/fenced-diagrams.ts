@@ -111,7 +111,6 @@ async function renderDiagram({
   $,
   graphsCache,
   fileDirectoryPath,
-  imageDirectoryPath,
   plantumlServer,
   plantumlJarPath,
   isKroki,
@@ -191,7 +190,7 @@ async function renderDiagram({
             content: code,
             fileDirectoryPath,
             serverURL: plantumlServer,
-            plantumlJarPath: plantumlJarPath,
+            plantumlJarPath,
           });
           graphsCache[checksum] = svg; // store to new cache
         }

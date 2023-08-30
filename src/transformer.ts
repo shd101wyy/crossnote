@@ -131,7 +131,7 @@ let DOWNLOADS_TEMP_FOLDER: string | null = null;
  */
 function downloadFileIfNecessary(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    if (!filePath.match(/^https?\:\/\//)) {
+    if (!filePath.match(/^https?:\/\//)) {
       return resolve(filePath);
     }
 
@@ -171,7 +171,13 @@ function downloadFileIfNecessary(filePath: string): Promise<string> {
  */
 async function loadFile(
   filePath: string,
-  { fileDirectoryPath, forPreview, imageDirectoryPath },
+  {
+    fileDirectoryPath,
+    imageDirectoryPath,
+  }: {
+    fileDirectoryPath: string;
+    imageDirectoryPath: string;
+  },
   filesCache = {},
 ): Promise<string> {
   if (filesCache[filePath]) {
@@ -202,7 +208,7 @@ async function loadFile(
       svgDirectoryPath: imageDirectoryPath,
     });
     return svgMarkdown;
-  } else if (filePath.match(/^https?\:\/\//)) {
+  } else if (filePath.match(/^https?:\/\//)) {
     /*
   else if filePath.endsWith('.js') # javascript file
     requiresJavaScriptFiles(filePath, forPreview).then (jsCode)->
@@ -304,7 +310,7 @@ export async function transformMarkdown(
           outputString += createAnchor(lineNo);
         }
 
-        const containsCmd = !!line.match(/\"?cmd\"?\s*[:=\s}]/);
+        const containsCmd = !!line.match(/"?cmd"?\s*[:=\s}]/);
         if (!inCodeBlock && !notSourceFile && containsCmd) {
           // it's code chunk, so mark its offset
           line = line.replace('{', `{code_chunk_offset=${codeChunkOffset}, `);
@@ -348,7 +354,7 @@ export async function transformMarkdown(
         between...
         */
       if (
-        line.match(/^(\!\[|@import)/) &&
+        line.match(/^(!\[|@import)/) &&
         inputString[i - 1] === '\n' &&
         inputString[i - 2] === '\n'
       ) {
@@ -356,7 +362,7 @@ export async function transformMarkdown(
           outputString += createAnchor(lineNo); // insert anchor for scroll sync
         }
         /* tslint:disable-next-line:no-conditional-assignment */
-      } else if ((headingMatch = line.match(/^(\#{1,7}).*/))) {
+      } else if ((headingMatch = line.match(/^(#{1,7}).*/))) {
         /* ((headingMatch = line.match(/^(\#{1,7})(.+)$/)) ||
                   // the ==== and --- headers don't work well. For example, table and list will affect it, therefore I decide not to support it.
                   (inputString[end + 1] === '=' && inputString[end + 2] === '=') ||
@@ -366,12 +372,10 @@ export async function transformMarkdown(
           outputString += createAnchor(lineNo);
         }
         let heading;
-        let level;
-        let tag;
         // if (headingMatch) {
         heading = line.replace(headingMatch[1], '');
-        tag = headingMatch[1];
-        level = tag.length;
+        const tag = headingMatch[1];
+        const level = tag.length;
         /*} else {
             if (inputString[end + 1] === '=') {
               heading = line.trim()
@@ -422,7 +426,7 @@ export async function transformMarkdown(
         if (!id) {
           id = headingIdGenerator.generateId(heading);
           if (usePandocParser) {
-            id = id.replace(/^[\d\-]+/, '');
+            id = id.replace(/^[\d-]+/, '');
             if (!id) {
               id = 'section';
             }
@@ -476,7 +480,7 @@ export async function transformMarkdown(
           // I added one extra `\n` here because remarkable renders content below
           // heading differently with `\n` and without `\n`.
         }
-      } else if (line.match(/^\<!--/)) {
+      } else if (line.match(/^<!--/)) {
         // custom comment
         if (forPreview) {
           outputString += createAnchor(lineNo);
@@ -494,7 +498,7 @@ export async function transformMarkdown(
           commentEnd += 3;
         }
 
-        const subjectMatch = line.match(/^\<!--\s+([^\s]+)/);
+        const subjectMatch = line.match(/^<!--\s+([^\s]+)/);
         if (!subjectMatch) {
           const content = inputString.slice(i + 4, commentEnd - 3).trim();
           const newlinesMatch = content.match(/\n/g);
@@ -531,7 +535,7 @@ export async function transformMarkdown(
               lineNo = lineNo + newlines;
               outputString = outputString + '<div class="pagebreak"> </div>\n';
               continue;
-            } else if (subject.match(/^\.?slide\:?$/)) {
+            } else if (subject.match(/^\.?slide:?$/)) {
               // slide
               slideConfigs.push(options);
               if (forMarkdownExport) {
@@ -634,7 +638,7 @@ export async function transformMarkdown(
       }
 
       // file import
-      const importMatch = line.match(/^(\s*)\@import(\s+)\"([^\"]+)\";?/);
+      const importMatch = line.match(/^(\s*)@import(\s+)"([^"]+)";?/);
       if (importMatch) {
         outputString += importMatch[1];
         const filePath = importMatch[3].trim();
@@ -709,6 +713,7 @@ export async function transformMarkdown(
             ) {
               output = `<img src="${imageSrc}" `;
               for (const key in config) {
+                // eslint-disable-next-line no-prototype-builtins
                 if (config.hasOwnProperty(key)) {
                   output += ` ${key}="${config[key]}" `;
                 }
@@ -764,7 +769,7 @@ export async function transformMarkdown(
           try {
             let fileContent = await loadFile(
               absoluteFilePath,
-              { fileDirectoryPath, forPreview, imageDirectoryPath },
+              { fileDirectoryPath, /*forPreview,*/ imageDirectoryPath },
               filesCache,
             );
             filesCache[absoluteFilePath] = fileContent;
@@ -812,6 +817,7 @@ export async function transformMarkdown(
               let headings2;
               ({
                 outputString: output2,
+                // eslint-disable-next-line prefer-const
                 headings: headings2,
               } = await transformMarkdown(fileContent, {
                 fileDirectoryPath: path.dirname(absoluteFilePath),

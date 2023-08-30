@@ -1,8 +1,7 @@
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
-import { resolve } from 'path';
 import { MarkdownEngineConfig } from '../markdown-engine-config';
-import { extensionDirectoryPath } from '../utility';
+import MarkdownItHtml5Embed from '../../dependencies/markdown-it/extensions/markdown-it-html5-embed.js';
 
 const optionsFromConfig = (config: MarkdownEngineConfig) => ({
   html5embed: {
@@ -21,11 +20,5 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
     return;
   }
 
-  md.use(
-    require(resolve(
-      extensionDirectoryPath,
-      './dependencies/markdown-it/extensions/markdown-it-html5-embed.js',
-    )),
-    optionsFromConfig(config),
-  );
+  md.use(MarkdownItHtml5Embed, optionsFromConfig(config));
 };

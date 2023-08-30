@@ -12,7 +12,6 @@ import MarkdownIt from 'markdown-it';
 import { MarkdownEngineConfig } from '../markdown-engine-config';
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
-  // @ts-ignore
   md.inline.ruler.before('strikethrough', 'critic-markup', (state, silent) => {
     if (!config.enableCriticMarkupSyntax) {
       return false;

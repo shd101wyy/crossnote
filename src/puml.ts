@@ -36,7 +36,7 @@ class PlantUMLTask {
   }
 
   public generateSVG(content: string): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.callbacks.push(resolve);
       this.task?.stdin.write(content + '\n');
     });
@@ -119,7 +119,7 @@ export async function render({
     fileDirectoryPath = match[1];
   }
 
-  const startMatch = content.match(/^\@start(.+?)\s+/m);
+  const startMatch = content.match(/^@start(.+?)\s+/m);
   if (startMatch) {
     if (!content.match(new RegExp(`^\\@end${startMatch[1]}`, 'm'))) {
       content = '@startuml\n@enduml'; // error
@@ -131,7 +131,7 @@ ${content}
   }
 
   if (!TASKS[fileDirectoryPath]) {
-    if (!!serverURL) {
+    if (serverURL) {
       TASKS[fileDirectoryPath] = new PlantUMLServerTask(serverURL);
     } else {
       if (!existsSync(plantumlJarPath)) {

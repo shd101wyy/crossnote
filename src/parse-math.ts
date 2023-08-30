@@ -45,7 +45,7 @@ export default ({
         Object.assign({}, configs.katexConfig || {}, { displayMode }),
       );
     } catch (error) {
-      return `<span style=\"color: #ee7f49; font-weight: 500;\">${error.toString()}</span>`;
+      return `<span style="color: #ee7f49; font-weight: 500;">${error.toString()}</span>`;
     }
   } else if (renderingOption === 'MathJax') {
     const text = (openTag + content + closeTag).replace(/\n/g, ' ');

@@ -8,7 +8,7 @@ import * as path from 'path';
 import * as temp from 'temp';
 import computeChecksum from './lib/compute-checksum';
 
-let SVG_DIRECTORY_PATH: string | undefined = undefined;
+let SVG_DIRECTORY_PATH: string | undefined;
 
 export function toSVGMarkdown(
   pdfFilePath: string,
@@ -72,8 +72,8 @@ export function toSVGMarkdown(
           }
 
           items = items.sort((a, b) => {
-            const offsetA = parseInt((a.match(/\_(\d+)\.svg$/) ?? [])[1], 10);
-            const offsetB = parseInt((b.match(/\_(\d+)\.svg$/) ?? [])[1], 10);
+            const offsetA = parseInt((a.match(/_(\d+)\.svg$/) ?? [])[1], 10);
+            const offsetB = parseInt((b.match(/_(\d+)\.svg$/) ?? [])[1], 10);
             return offsetA - offsetB;
           });
 
@@ -82,7 +82,7 @@ export function toSVGMarkdown(
 
           items.forEach(fileName => {
             const match = fileName.match(
-              new RegExp(`^${svgFilePrefix}(\\d+)\.svg`),
+              new RegExp(`^${svgFilePrefix}(\\d+).svg`),
             );
             if (match) {
               let svgFilePath = path.relative(
@@ -109,7 +109,7 @@ export function toSVGMarkdown(
                 ); /* Windows file path issue. "..\..\blabla" doesn't work */
 
               if (svgZoom || svgWidth || svgHeight) {
-                svgMarkdown += `<img src=\"${svgFilePath}\" ${
+                svgMarkdown += `<img src="${svgFilePath}" ${
                   svgWidth ? `width="${svgWidth}"` : ''
                 } ${svgHeight ? `height="${svgHeight}"` : ''} ${
                   svgZoom ? `style="zoom:${svgZoom};"` : ''

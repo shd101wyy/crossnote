@@ -3,7 +3,7 @@ import { run } from '../code-chunk';
 import { CodeChunkData, CodeChunksData } from '../code-chunk-data';
 import { BlockInfo } from '../lib/block-info';
 import { MarkdownEngineRenderOption } from '../markdown-engine';
-import { toc } from '../toc';
+import { HeadingData, toc } from '../toc';
 import { extractCommandFromBlockInfo } from '../utility';
 
 export default async function enhance(
@@ -141,11 +141,12 @@ export interface RunCodeChunkOptions {
   fileDirectoryPath: string;
   filePath: string;
   imageFolderPath: string;
-  latexEngine: any;
-  modifySource: any;
+  latexEngine?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  modifySource?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseMD: any;
-  headings: any;
-  resolveFilePath: any;
+  headings: HeadingData[];
 }
 
 export async function runCodeChunk(
@@ -243,7 +244,7 @@ export async function runCodeChunk(
       // do nothing
       result = '';
     } else if (outputFormat === 'html') {
-      result = result;
+      // result = result;
     } else if (outputFormat === 'png') {
       const base64 = new Buffer(result).toString('base64');
       result = `<img src="data:image/png;charset=utf-8;base64,${base64}">`;
@@ -274,6 +275,7 @@ export async function runCodeChunks(
 ) {
   const asyncFunctions: Promise<string>[] = [];
   for (const id in codeChunksData) {
+    // eslint-disable-next-line no-prototype-builtins
     if (codeChunksData.hasOwnProperty(id)) {
       asyncFunctions.push(runCodeChunk(id, codeChunksData, runOptions));
     }

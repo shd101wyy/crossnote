@@ -1,6 +1,9 @@
 // const loadLanguages = require("prismjs/components/");
 // loadLanguages(["python"]);
 
+import { JsonObject } from 'type-fest';
+import * as YAML from 'yaml';
+
 export const TagStopRegExp = /[@#,.!$%^&*()[\]-_+=~`<>?\\，。]/g;
 export function getTags(markdown: string): string[] {
   const tags = new Set(
@@ -14,7 +17,7 @@ export function getTags(markdown: string): string[] {
 }
 
 export function sanitizeTag(tagName: string): string {
-  let tag = tagName.trim() || '';
+  const tag = tagName.trim() || '';
   return tag
     .replace(/\s+/g, ' ')
     .replace(TagStopRegExp, '')
@@ -29,7 +32,7 @@ export function sanitizeNoteTitle(noteTitle: string): string {
 }
 
 export interface MatterOutput {
-  data: any;
+  data: JsonObject;
   content: string;
 }
 
@@ -43,8 +46,10 @@ export function matter(markdown: string): MatterOutput {
   ) {
     const frontMatterString = markdown.slice(3, endFrontMatterOffset);
     try {
-      frontMatter = (window as any)['YAML'].parse(frontMatterString);
-    } catch (error) {}
+      frontMatter = YAML.parse(frontMatterString);
+    } catch {
+      frontMatter = {};
+    }
     markdown = markdown
       .slice(endFrontMatterOffset + 4)
       .replace(/^[ \t]*\n/, '');
@@ -55,9 +60,9 @@ export function matter(markdown: string): MatterOutput {
   };
 }
 
-export function matterStringify(markdown: string, frontMatter: any) {
+export function matterStringify(markdown: string, frontMatter: JsonObject) {
   frontMatter = frontMatter || {};
-  const yamlStr = (window as any)['YAML'].stringify(frontMatter).trim();
+  const yamlStr = YAML.stringify(frontMatter).trim();
   if (yamlStr === '{}' || !yamlStr) {
     return markdown;
   } else {

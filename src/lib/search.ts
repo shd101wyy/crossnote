@@ -2,7 +2,7 @@ import MiniSearch, { SearchOptions, SearchResult } from 'minisearch';
 
 export function slugify(str: string, separater = '-'): string {
   return str.replace(
-    /[\.\s!@#$%^&*()\-=_+~`[\]{}\\<>?\/\|（）【】:：，。]+/g,
+    /[.\s!@#$%^&*()\-=_+~`[\]{}\\<>?/|（）【】:：，。]+/g,
     separater,
   );
 }
@@ -29,11 +29,12 @@ export default class Search {
         if (fieldName === 'aliases') {
           return document['aliases'].join('|');
         } else {
-          return (document as any)[fieldName];
+          return document[fieldName];
         }
       },
       tokenize: string => {
-        return slugify(string, ' ').match(/([^\x00-\x7F]|\w+)/g) || [];
+        // eslint-disable-next-line no-control-regex
+        return slugify(string, ' ').match(/([^\x00-\x7F]|\w+)/g) ?? [];
       },
     });
     this._cache = {};

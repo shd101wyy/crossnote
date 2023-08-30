@@ -7,7 +7,7 @@ export default class HeadingIdGenerator {
   }
   public generateId(heading: string): string {
     const replacement = (match: string, capture: string): string => {
-      let sanitized = capture
+      const sanitized = capture
         .replace(/[!"#$%&'()*+,./:;<=>?@[\\]^`{|}~]/g, '')
         .replace(/^\s/, '')
         .replace(/\s$/, '')

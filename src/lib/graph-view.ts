@@ -47,13 +47,21 @@ export function constructGraphView(notebook: Notebook): GraphViewData {
   };
 
   for (const filePath in notebook.referenceMap.map) {
-    addNode(filePath);
-    for (const referredByFilePath in notebook.referenceMap.map[filePath]) {
-      addNode(referredByFilePath);
-      links.push({
-        source: referredByFilePath,
-        target: filePath,
-      });
+    // eslint-disable-next-line no-prototype-builtins
+    if (notebook.referenceMap.map.hasOwnProperty(filePath)) {
+      addNode(filePath);
+      for (const referredByFilePath in notebook.referenceMap.map[filePath]) {
+        if (
+          // eslint-disable-next-line no-prototype-builtins
+          notebook.referenceMap.map[filePath].hasOwnProperty(referredByFilePath)
+        ) {
+          addNode(referredByFilePath);
+          links.push({
+            source: referredByFilePath,
+            target: filePath,
+          });
+        }
+      }
     }
   }
 

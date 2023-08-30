@@ -1,5 +1,6 @@
 import { BlockAttributes } from './types';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const stringifyArray = (value: any[]) => {
   const parts = ['['];
   value.forEach((v, i) => {

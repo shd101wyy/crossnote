@@ -6,11 +6,10 @@
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
 import { normalizeBlockInfo, parseBlockInfo } from '../lib/block-info';
-import { MarkdownEngineConfig } from '../markdown-engine-config';
 import { escape } from 'html-escaper';
 
-export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
-  md.renderer.rules.fence = (tokens, idx, options, env, instance) => {
+export default (md: MarkdownIt) => {
+  md.renderer.rules.fence = (tokens, idx) => {
     const token = tokens[idx];
 
     // get code info (same line as opening fence)

@@ -142,7 +142,7 @@ except Exception:
     args.push(savePath);
   }
 
-  return await new Promise<string>((resolve, reject) => {
+  return await new Promise<string>(resolve => {
     const task = spawn(cmd, args, { cwd: fileDirectoryPath });
     if (normalizedAttributes['stdin']) {
       task.stdin.write(content); // pass content as stdin

@@ -11,7 +11,9 @@ import { matter, matterStringify } from './markdown';
 import { Stats } from 'fs';
 const md = new MarkdownIt();
 
-interface CrossnoteConfig {}
+interface CrossnoteConfig {
+  _: string;
+}
 
 type FileSystemApi = {
   readFile: (path: string, encoding?: string) => Promise<string>;
@@ -57,7 +59,7 @@ export class Notebook {
 
   private constructor() {}
 
-  private async init({ notebookPath, config, fs }: CrossnoteArgs) {
+  private async init({ notebookPath, fs }: CrossnoteArgs) {
     // Check if workspaceFolder is absolute path
     if (!path.isAbsolute(notebookPath)) {
       throw new Error('`workspaceFolder` must be an absolute path');
@@ -65,7 +67,7 @@ export class Notebook {
     this.notebookPath = notebookPath;
     // this.config = config;
 
-    await this.initFS(fs);
+    await this.initFs(fs);
   }
 
   public static async init(args: CrossnoteArgs) {
@@ -74,38 +76,38 @@ export class Notebook {
     return crossnote;
   }
 
-  async initFS(fs?: FileSystemApi) {
-    if (fs) {
-      this.fs = fs;
+  async initFs(_fs?: FileSystemApi) {
+    if (_fs) {
+      this.fs = _fs;
     } else {
       if (IS_NODE) {
         const fs = await import('fs');
         const fsPromises = fs.promises;
         this.fs = {
-          readFile: async (path: string, encoding = 'utf8') => {
-            return (await fsPromises.readFile(path, encoding)).toString();
+          readFile: async (_path: string, encoding = 'utf8') => {
+            return (await fsPromises.readFile(_path, encoding)).toString();
           },
           writeFile: async (
-            path: string,
+            _path: string,
             content: string,
             encoding = 'utf8',
           ) => {
-            return await fsPromises.writeFile(path, content, encoding);
+            return await fsPromises.writeFile(_path, content, encoding);
           },
-          mkdir: async (path: string) => {
-            return await fsPromises.mkdir(path, { recursive: true });
+          mkdir: async (_path: string) => {
+            return await fsPromises.mkdir(_path, { recursive: true });
           },
-          exists: async (path: string) => {
-            return fs.existsSync(path);
+          exists: async (_path: string) => {
+            return fs.existsSync(_path);
           },
-          stat: async (path: string) => {
-            return await fsPromises.stat(path);
+          stat: async (_path: string) => {
+            return await fsPromises.stat(_path);
           },
-          readdir: async (path: string) => {
-            return await fsPromises.readdir(path);
+          readdir: async (_path: string) => {
+            return await fsPromises.readdir(_path);
           },
-          unlink: async (path: string) => {
-            return await fsPromises.unlink(path);
+          unlink: async (_path: string) => {
+            return await fsPromises.unlink(_path);
           },
         };
       } else {
@@ -118,7 +120,7 @@ export class Notebook {
     if (filePath in this.referenceMap.map) {
       const map = this.referenceMap.map[filePath];
       const notes: Notes = {};
-      for (let rFilePath in map) {
+      for (const rFilePath in map) {
         if (rFilePath === filePath) {
           // Don't include self
           continue;
@@ -182,7 +184,7 @@ export class Notebook {
           // TODO: Support normal links
           const arr = token.content.split('|');
           const text = (arr.length > 1 ? arr[1] : arr[0]).trim();
-          let link = arr[0].trim();
+          const link = arr[0].trim();
           if (link.match(/https?:\/\//)) {
             // TODO: Ignore more protocols
             continue;
@@ -242,7 +244,7 @@ export class Notebook {
     const oldMentions = note.mentions;
 
     // Remove old references
-    for (let filePath in oldMentions) {
+    for (const filePath in oldMentions) {
       this.referenceMap.deleteReferences(filePath, note.filePath);
     }
 
@@ -278,7 +280,7 @@ export class Notebook {
       let markdown = (await this.fs.readFile(absFilePath)) as string;
 
       // Read the noteConfig, which is like <!-- note {...} --> at the end of the markdown file
-      let noteConfig: NoteConfig = {
+      const noteConfig: NoteConfig = {
         createdAt: new Date(stats.ctimeMs),
         modifiedAt: new Date(stats.mtimeMs),
         aliases: [],
@@ -286,31 +288,32 @@ export class Notebook {
 
       try {
         const data = matter(markdown);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const frontMatter: any = Object.assign({}, data.data);
 
         // New note config design in beta 3
         if (data.data['created']) {
-          noteConfig.createdAt = new Date(data.data['created']);
+          noteConfig.createdAt = new Date(data.data['created'] as string);
           delete frontMatter['created'];
         }
         if (data.data['modified']) {
-          noteConfig.modifiedAt = new Date(data.data['modified']);
+          noteConfig.modifiedAt = new Date(data.data['modified'] as string);
           delete frontMatter['modified'];
         }
         if (data.data['pinned']) {
-          noteConfig.pinned = data.data['pinned'];
+          noteConfig.pinned = data.data['pinned'] as boolean;
           delete frontMatter['pinned'];
         }
         if (data.data['favorited']) {
-          noteConfig.favorited = data.data['favorited'];
+          noteConfig.favorited = data.data['favorited'] as boolean;
           delete frontMatter['favorited'];
         }
         if (data.data['icon']) {
-          noteConfig.icon = data.data['icon'];
+          noteConfig.icon = data.data['icon'] as string;
           delete frontMatter['icon'];
         }
         if (data.data['aliases']) {
-          const aliases = data.data['aliases'] || [];
+          const aliases = (data.data['aliases'] || []) as string[] | string;
           if (typeof aliases === 'string') {
             noteConfig.aliases = aliases.split(',').map(x => x.trim());
           } else {
@@ -428,7 +431,7 @@ export class Notebook {
     await Promise.all(refreshNotesPromises);
 
     if (refreshRelations) {
-      for (let filePath in this.notes) {
+      for (const filePath in this.notes) {
         await this.processNoteMentionsAndMentionedBy(filePath);
       }
     }
@@ -457,7 +460,8 @@ export class Notebook {
       markdown = data.content;
       markdown = matterStringify(markdown, frontMatter);
     } catch (error) {
-      markdown = matterStringify(markdown, noteConfig);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      markdown = matterStringify(markdown, noteConfig as any);
     }
 
     await this.fs.writeFile(
@@ -478,7 +482,7 @@ export class Notebook {
       return;
     }
     const mentions = note.mentions;
-    for (let filePath in mentions) {
+    for (const filePath in mentions) {
       this.referenceMap.deleteReferences(filePath, note.filePath);
     }
     delete this.notes[note.filePath];

@@ -25,7 +25,7 @@ function sanitizeContent(content) {
   // test [...](...)
   // <a name="myAnchor"></a>Anchor Header
   // test [^footnote]
-  const r = /\!?\[([^\]]*)\]\(([^)]*)\)|<([^>]*)>([^<]*)<\/([^>]*)>|\[\^([^\]]*)\]/g;
+  const r = /!?\[([^\]]*)\]\(([^)]*)\)|<([^>]*)>([^<]*)<\/([^>]*)>|\[\^([^\]]*)\]/g;
   let match: RegExpExecArray | null = null;
   // tslint:disable-next-line:no-conditional-assignment
   while ((match = r.exec(content))) {

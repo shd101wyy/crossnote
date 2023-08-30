@@ -235,7 +235,7 @@ function processPaths(text, fileDirectoryPath, projectDirectoryPath) {
       return line;
     } else {
       // replace path in ![](...) and []()
-      let r = /(\!?\[.*?]\()([^\)|^'|^"]*)(.*?\))/gi;
+      let r = /(!?\[.*?]\()([^)|^'|^"]*)(.*?\))/gi;
       line = line.replace(r, (whole, a, b, c) => {
         if (b[0] === '<') {
           b = b.slice(1, b.length - 1);
@@ -312,7 +312,7 @@ export async function pandocConvert(
 ): Promise<string> {
   config = loadOutputYAML(fileDirectoryPath, config);
   // TODO =>
-  const args = ['-f', pandocMarkdownFlavor.replace(/\-raw\_tex/, '')];
+  const args = ['-f', pandocMarkdownFlavor.replace(/-raw_tex/, '')];
 
   let extension: string | null = null;
   let outputConfig = null;

@@ -4,7 +4,6 @@ import { MarkdownEngineConfig } from '../markdown-engine-config';
 import parseMath from '../parse-math';
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
-  // @ts-ignore
   md.inline.ruler.before('escape', 'math', (state, silent) => {
     if (config.mathRenderingOption === 'None') {
       return false;

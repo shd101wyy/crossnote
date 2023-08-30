@@ -5,9 +5,14 @@ I managed some of the libraries by myself instead of through npm to reduce the o
 ```json
 {
   "font-awesome": "4.7",
+
+  // ----------------------------------------------------------
+  // Remove the following libraries after migrating the webview
   "jquery-contextmenu": "2.6.3",
   "jquery-modal": "0.8.0",
   "jquery": "v3.2.1",
+  // ----------------------------------------------------------
+
   "katex": "v0.16.8",
   "MathJax": "v2.7.5",
   "mermaid": "10.4.0", // https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js

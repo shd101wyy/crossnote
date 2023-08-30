@@ -1,6 +1,7 @@
 import { BlockAttributes } from './types';
 
 type NodeType = 'stringInQuotes' | 'stringWithBrackets' | 'word' | 'array';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Node = [any, number, NodeType];
 
 const normalizeValue = (value: string): boolean | number | string => {
@@ -9,8 +10,10 @@ const normalizeValue = (value: string): boolean | number | string => {
     return true;
   } else if (value.toLowerCase() === 'false') {
     return false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } else if (!isNaN(value as any)) {
     // number
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return parseFloat(value as any);
   }
 
@@ -95,6 +98,7 @@ const extractArray = (text, start): Node | void => {
   if (text[start] !== '[') {
     return;
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: any[] = [];
   let i = start + 1;
   while (i < text.length) {

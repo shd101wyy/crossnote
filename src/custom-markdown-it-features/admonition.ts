@@ -38,7 +38,7 @@ export default (md: MarkdownIt) => {
   ];
 
   function MarkdownItAdmonition() {
-    md.block.ruler.after('fence', 'admonition', admonition as any, { alt: [] });
+    md.block.ruler.after('fence', 'admonition', admonition, { alt: [] });
     md.renderer.rules['admonition_open'] = render;
     md.renderer.rules['admonition_title_open'] = render;
     md.renderer.rules['admonition_title_close'] = render;
@@ -48,7 +48,9 @@ export default (md: MarkdownIt) => {
   function render(
     tokens: Token[],
     idx: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _options: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     env: any,
     self: Renderer,
   ) {
@@ -62,7 +64,8 @@ export default (md: MarkdownIt) => {
   }
 
   function admonition(
-    state: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    state: any, // StateBlock,
     startLine: number,
     endLine: number,
     silent: boolean,

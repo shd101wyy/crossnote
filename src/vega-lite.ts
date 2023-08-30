@@ -5,6 +5,7 @@ import * as YAML from 'yaml';
 import * as utility from './utility';
 import * as vega from './vega';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let vl: any = null;
 
 export async function toSVG(spec: string = '', baseURL: string = '') {

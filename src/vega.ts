@@ -2,6 +2,7 @@ import { loader } from 'vega-loader';
 import * as YAML from 'yaml';
 import * as utility from './utility';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let vega: any = null;
 
 async function renderVega(spec: object, baseURL): Promise<string> {
