@@ -1,19 +1,19 @@
 // tslint:disable:ban-types no-var-requires
 import * as YAML from 'yaml';
 
-import computeChecksum from '../lib/compute-checksum';
-import { render as renderPlantuml } from '../puml';
 import { escape } from 'html-escaper';
-import { toSVG as vegaToSvg } from '../vega';
-import { toSVG as vegaLiteToSvg } from '../vega-lite';
-import { Viz } from '../viz';
 import * as pako from 'pako';
+import computeChecksum from '../lib/compute-checksum.js';
+import { render as renderPlantuml } from '../puml.js';
+import { toSVG as vegaLiteToSvg } from '../vega-lite.js';
+import { toSVG as vegaToSvg } from '../vega.js';
+import { Viz } from '../viz.js';
 
 import {
   BlockAttributes,
   stringifyBlockAttributes,
-} from '../lib/block-attributes';
-import { BlockInfo } from '../lib/block-info';
+} from '../lib/block-attributes/index.js';
+import { BlockInfo } from '../lib/block-info/index.js';
 
 const ensureClassInAttributes = (
   attributes: BlockAttributes,

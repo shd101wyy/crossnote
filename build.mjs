@@ -1,4 +1,8 @@
-const { context, build } = require('esbuild');
+import { context, build } from "esbuild"
+
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url);
+const { dependencies, devDependencies } = require("./package.json");
 
 /**
  * @type {import('esbuild').BuildOptions}
@@ -7,7 +11,20 @@ const sharedConfig = {
   entryPoints: ['./src/mume.ts'],
   bundle: true,
   minify: true,
-  external: [],
+  // sourcemap: true,
+  external: [
+    'fs',
+    'path',
+    'child_process',
+    'os',
+    'vm',
+    'stream',
+    'node:fs/promises',
+    "url",
+    // === from package.json
+    ...Object.keys(dependencies),
+    ...Object.keys(devDependencies),
+  ],
 };
 
 /**
@@ -16,7 +33,8 @@ const sharedConfig = {
 const cjsConfig = {
   ...sharedConfig,
   platform: 'node', // For CJS
-  outfile: './out/cjs/index.js',
+  outfile: './out/cjs/index.cjs',
+  target: 'node16',
 };
 
 /**
@@ -25,8 +43,8 @@ const cjsConfig = {
 const esmConfig = {
   ...sharedConfig,
   // TODO: Support browser
-  platform: 'node', // For ESM
-  outfile: './out/esm/index.js',
+  platform: 'neutral', // For ESM
+  outfile: './out/esm/index.mjs',
 };
 
 /**
@@ -37,7 +55,7 @@ const webviewConfig = {
   bundle: true,
   minify: true,
   platform: 'browser',
-  outfile: './out/webview/webview.js',
+  outfile: './out/webview/index.js',
 };
 
 async function main() {

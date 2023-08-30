@@ -1,5 +1,5 @@
-import snakeCase from 'lodash/snakeCase';
-import { BlockAttributes } from './types';
+import { snakeCase } from 'snake-case';
+import { BlockAttributes } from './types.js';
 
 /**
  * Walks through attribute keys and makes them snakeCase if needed

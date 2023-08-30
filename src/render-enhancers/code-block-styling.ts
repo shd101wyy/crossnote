@@ -1,15 +1,19 @@
 import { escape } from 'html-escaper';
-import defineIeleLanguage from '../../dependencies/prism/iele.js';
-import defineKLanguage from '../../dependencies/prism/k.js';
-import Prism from '../../dependencies/prism/prism.js';
-import { scopeForLanguageName } from '../extension-helper';
-import { BlockInfo } from '../lib/block-info';
+import Prism from 'prismjs';
+import loadLanguages from 'prismjs/components/index.js';
+import { scopeForLanguageName } from '../extension-helper.js';
+import { BlockInfo } from '../lib/block-info/index.js';
+import defineIeleLanguage from '../prism/iele.js';
+import defineKLanguage from '../prism/k.js';
+
 Prism.hooks.add('wrap', env => {
   if (env.type !== 'keyword') {
     return;
   }
   env.classes.push(`keyword-${env.content}`);
 });
+loadLanguages(); // Load all languages
+
 // Add K and Iele languages syntax highlighting
 defineKLanguage(Prism);
 defineIeleLanguage(Prism);
@@ -51,7 +55,7 @@ export default async function enhance($: CheerioStatic): Promise<void> {
 
     // try use Prism syntax highlighter
     try {
-      const html = Prism.highlight(code, Prism.languages[language]);
+      const html = Prism.highlight(code, Prism.languages[language], language);
       $container.html(html);
     } catch (error) {
       // ...or regarded as plain text on failure

@@ -1,10 +1,10 @@
 /**
  * Convert vega-lite to vega first, then render to svg.
  */
-import * as YAML from 'yaml';
-import * as utility from './utility';
-import * as vega from './vega';
 import * as vl from 'vega-lite';
+import * as YAML from 'yaml';
+import * as utility from './utility.js';
+import * as vega from './vega.js';
 
 export async function toSVG(spec: string = '', baseURL: string = '') {
   spec = spec.trim();

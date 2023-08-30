@@ -9,7 +9,7 @@
 
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
-import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { MarkdownEngineConfig } from '../markdown-engine-config.js';
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   md.inline.ruler.before('strikethrough', 'critic-markup', (state, silent) => {

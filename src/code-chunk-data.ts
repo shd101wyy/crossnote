@@ -1,4 +1,4 @@
-import { BlockInfo } from './lib/block-info';
+import { BlockInfo } from './lib/block-info/index.js';
 
 export interface CodeChunkData {
   /**

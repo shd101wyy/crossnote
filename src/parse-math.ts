@@ -1,9 +1,9 @@
 import { escape } from 'html-escaper';
 // https://github.com/KaTeX/KaTeX/blob/main/contrib/mhchem/README.md
-import '../dependencies/katex/contrib/mhchem.min.js';
-import { renderToString } from '../dependencies/katex/katex.min.js';
-import { MathRenderingOption } from './markdown-engine-config';
-import { configs } from './utility';
+import katex from 'katex';
+import 'katex/contrib/mhchem';
+import { MathRenderingOption } from './markdown-engine-config.js';
+import { configs } from './utility.js';
 
 // tslint:disable-next-line interface-over-type-literal
 export type ParseMathArgs = {
@@ -34,7 +34,7 @@ export default ({
   }
   if (renderingOption === 'KaTeX') {
     try {
-      return renderToString(
+      return katex.renderToString(
         content,
         Object.assign({}, configs.katexConfig || {}, { displayMode }),
       );

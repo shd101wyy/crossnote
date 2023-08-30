@@ -3,9 +3,9 @@ import { unlink } from 'node:fs/promises';
 import * as path from 'path';
 import * as vm from 'vm';
 
-import * as LaTeX from './latex';
-import { BlockAttributes } from './lib/block-attributes';
-import * as utility from './utility';
+import * as LaTeX from './latex.js';
+import { BlockAttributes } from './lib/block-attributes/index.js';
+import * as utility from './utility.js';
 
 export async function compileLaTeX(
   content: string,

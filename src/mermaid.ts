@@ -3,7 +3,7 @@
  * https://github.com/mermaid-js/mermaid-cli
  */
 
-import * as utility from './utility';
+import * as utility from './utility.js';
 
 export async function mermaidToPNG(
   mermaidCode: string,

@@ -2,7 +2,7 @@ import {
   normalizeBlockAttributes,
   parseBlockAttributes,
   stringifyBlockAttributes,
-} from '../../src/lib/block-attributes';
+} from '../../src/lib/block-attributes/index.js';
 
 const testCases: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

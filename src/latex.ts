@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import * as PDF from './pdf';
+import * as PDF from './pdf.js';
 
 function cleanUpFiles(texFilePath: string) {
   const directoryPath = path.dirname(texFilePath);

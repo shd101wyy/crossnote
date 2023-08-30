@@ -1,4 +1,4 @@
-import { BlockAttributes } from './types';
+import { BlockAttributes } from './types.js';
 
 type NodeType = 'stringInQuotes' | 'stringWithBrackets' | 'word' | 'array';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

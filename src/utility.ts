@@ -1,14 +1,14 @@
 import * as child_process from 'child_process';
 import * as fs from 'fs';
-import * as YAML from 'yaml';
-import * as less from 'less';
+import less from 'less';
 import * as os from 'os';
 import * as path from 'path';
-import * as vm from 'vm';
 import * as temp from 'temp';
-import * as vscode from 'vscode';
-import { BlockInfo } from './lib/block-info';
 import { JsonObject } from 'type-fest';
+import * as vm from 'vm';
+import * as vscode from 'vscode';
+import * as YAML from 'yaml';
+import { BlockInfo } from './lib/block-info/types.js';
 
 temp.track();
 
@@ -147,7 +147,19 @@ export function openFile(filePath: string) {
 /**
  * get the directory path of this extension.
  */
-export const extensionDirectoryPath = path.resolve(__dirname, '../../');
+export const extensionDirectoryPath = (() => {
+  if (typeof __dirname !== 'undefined') {
+    return path.resolve(__dirname, '../../');
+  } else {
+    return '';
+    /*
+    // esm
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    return path.resolve(__dirname, '../../');
+    */
+  }
+})();
 
 /**
  * compile ~/.mumi/style.less and return 'css' content.
@@ -186,7 +198,7 @@ export async function getGlobalStyles(configPath: string): Promise<string> {
 }
 .mume.mume { display: none !important; }`);
         } else {
-          return resolve(output.css || '');
+          return resolve(output?.css || '');
         }
       },
     );
@@ -485,7 +497,7 @@ export const configs: {
   config: {},
 };
 
-export { uploadImage } from './image-uploader';
+export { uploadImage } from './image-uploader.js';
 
 /**
  * Allow unsafed `eval` function

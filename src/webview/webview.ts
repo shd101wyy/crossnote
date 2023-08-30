@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import CryptoES from 'crypto-es';
+import CryptoJS from 'crypto-js';
 
 // preview controller
 (() => {
@@ -1002,7 +1002,7 @@ import CryptoES from 'crypto-es';
           window.eval(`((function(){${code}$})())`);
           codeChunk.classList.remove('running'); // done running javascript code
 
-          const result = CryptoES.AES.encrypt(
+          const result = CryptoJS.AES.encrypt(
             codeChunk.getElementsByClassName('output-div')[0].outerHTML,
             'mume',
           ).toString();

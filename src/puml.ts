@@ -1,7 +1,7 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import * as path from 'path';
-import PlantUMLServerTask from './puml-server';
 import { existsSync } from 'fs';
+import * as path from 'path';
+import PlantUMLServerTask from './puml-server.js';
 
 /**
  * key is fileDirectoryPath, value is PlantUMLTask

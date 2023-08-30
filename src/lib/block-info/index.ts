@@ -1,3 +1,3 @@
-export * from './normalizeBlockInfo';
-export * from './parseBlockInfo';
-export * from './types';
+export * from './normalizeBlockInfo.js';
+export * from './parseBlockInfo.js';
+export * from './types.js';

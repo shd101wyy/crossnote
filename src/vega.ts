@@ -1,7 +1,7 @@
+import * as vega from 'vega';
 import { loader } from 'vega-loader';
 import * as YAML from 'yaml';
-import * as utility from './utility';
-import * as vega from 'vega';
+import * as utility from './utility.js';
 
 async function renderVega(spec: object, baseURL): Promise<string> {
   const svgHeader =

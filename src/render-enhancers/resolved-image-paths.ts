@@ -1,4 +1,4 @@
-import { MarkdownEngineRenderOption } from '../markdown-engine';
+import { MarkdownEngineRenderOption } from '../markdown-engine.js';
 
 /**
  * This function resolves image paths

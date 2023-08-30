@@ -1,14 +1,14 @@
 import { Mutex } from 'async-mutex';
 import * as path from 'path';
-import { Mentions, Note, NoteConfig, Notes } from './note';
-import { Reference, ReferenceMap } from './reference';
-import Search from './search';
+import { Mentions, Note, NoteConfig, Notes } from './note.js';
+import { Reference, ReferenceMap } from './reference.js';
+import Search from './search.js';
 
 // temp
 import { Stats } from 'fs';
 import MarkdownIt from 'markdown-it';
-import Token from 'markdown-it/lib/token';
-import { matter, matterStringify } from './markdown';
+import Token from 'markdown-it/lib/token.js';
+import { matter, matterStringify } from './markdown.js';
 const md = new MarkdownIt();
 
 interface CrossnoteConfig {

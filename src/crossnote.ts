@@ -1,2 +1,2 @@
-import { Notebook } from './lib/notebook';
+import { Notebook } from './lib/notebook.js';
 export { Notebook };

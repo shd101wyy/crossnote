@@ -6,11 +6,11 @@ import * as fs from 'fs';
 import { escape } from 'html-escaper';
 import { mkdirp } from 'mkdirp';
 import * as path from 'path';
-import { CodeChunkData } from './code-chunk-data';
-import computeChecksum from './lib/compute-checksum';
-import { processGraphs } from './process-graphs';
-import { toc } from './toc';
-import { transformMarkdown } from './transformer';
+import { CodeChunkData } from './code-chunk-data.js';
+import computeChecksum from './lib/compute-checksum.js';
+import { processGraphs } from './process-graphs.js';
+import { toc } from './toc.js';
+import { transformMarkdown } from './transformer.js';
 
 /**
  * Convert all math expressions inside markdown to images.

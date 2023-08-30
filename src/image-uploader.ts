@@ -1,9 +1,9 @@
 // sm.ms api
 import * as fs from 'fs';
 import * as path from 'path';
-import * as request from 'request';
-import * as utility from './utility';
 import * as qiniu from 'qiniu';
+import * as request from 'request';
+import * as utility from './utility.js';
 
 // imgur api
 // referred from node-imgur:

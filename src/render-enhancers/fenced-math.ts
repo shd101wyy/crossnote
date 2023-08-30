@@ -1,7 +1,7 @@
-import { stringifyBlockAttributes } from '../lib/block-attributes';
-import { BlockInfo } from '../lib/block-info';
-import { MathRenderingOption } from '../markdown-engine-config';
-import parseMath from '../parse-math';
+import { stringifyBlockAttributes } from '../lib/block-attributes/index.js';
+import { BlockInfo } from '../lib/block-info/index.js';
+import { MathRenderingOption } from '../markdown-engine-config.js';
+import parseMath from '../parse-math.js';
 
 const supportedLanguages = ['math'];
 

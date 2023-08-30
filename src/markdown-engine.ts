@@ -2,63 +2,60 @@
 
 import * as cheerio from 'cheerio';
 import { execFile } from 'child_process';
+import CryptoJS from 'crypto-js';
 import * as fs from 'fs';
+import { escape } from 'html-escaper';
+import MarkdownIt from 'markdown-it';
+import MarkdownItAbbr from 'markdown-it-abbr';
+import MarkdownItDeflist from 'markdown-it-deflist';
+import MarkdownItFootnote from 'markdown-it-footnote';
+import MarkdownItMark from 'markdown-it-mark';
+import MarkdownItSub from 'markdown-it-sub';
+import MarkdownItSup from 'markdown-it-sup';
 import * as path from 'path';
+import puppeteer, { Browser } from 'puppeteer-core';
 import request from 'request';
-import slash from 'slash';
+import { JsonObject } from 'type-fest';
 import * as vscode from 'vscode';
-import { CodeChunkData } from './code-chunk-data';
-import useMarkdownAdmonition from './custom-markdown-it-features/admonition';
-import useMarkdownItCodeFences from './custom-markdown-it-features/code-fences';
-import useMarkdownItCriticMarkup from './custom-markdown-it-features/critic-markup';
-import useMarkdownItEmoji from './custom-markdown-it-features/emoji';
-import useMarkdownItHTML5Embed from './custom-markdown-it-features/html5-embed';
-import useMarkdownItMath from './custom-markdown-it-features/math';
-import useMarkdownItWikilink from './custom-markdown-it-features/wikilink';
-import { ebookConvert } from './ebook-convert';
-import HeadingIdGenerator from './heading-id-generator';
-import {
-  parseBlockAttributes,
-  stringifyBlockAttributes,
-} from './lib/block-attributes';
-import { normalizeBlockInfo, parseBlockInfo } from './lib/block-info';
+import * as YAML from 'yaml';
+import { CodeChunkData } from './code-chunk-data.js';
+import useMarkdownAdmonition from './custom-markdown-it-features/admonition.js';
+import useMarkdownItCodeFences from './custom-markdown-it-features/code-fences.js';
+import useMarkdownItCriticMarkup from './custom-markdown-it-features/critic-markup.js';
+import useMarkdownItEmoji from './custom-markdown-it-features/emoji.js';
+import useMarkdownItHTML5Embed from './custom-markdown-it-features/html5-embed.js';
+import useMarkdownItMath from './custom-markdown-it-features/math.js';
+import useMarkdownItWikilink from './custom-markdown-it-features/wikilink.js';
+import { ebookConvert } from './ebook-convert.js';
+import HeadingIdGenerator from './heading-id-generator.js';
+import { parseBlockAttributes } from './lib/block-attributes/parseBlockAttributes.js';
+import { stringifyBlockAttributes } from './lib/block-attributes/stringifyBlockAttributes.js';
+import { normalizeBlockInfo } from './lib/block-info/normalizeBlockInfo.js';
+import { parseBlockInfo } from './lib/block-info/parseBlockInfo.js';
+import slash from './lib/slash.js';
+import { markdownConvert } from './markdown-convert.js';
 import {
   defaultMarkdownEngineConfig,
   MarkdownEngineConfig,
-} from './markdown-engine-config';
-import { pandocConvert } from './pandoc-convert';
-import { princeConvert } from './prince-convert';
-import enhanceWithCodeBlockStyling from './render-enhancers/code-block-styling';
-import enhanceWithEmbeddedLocalImages from './render-enhancers/embedded-local-images';
-import enhanceWithEmbeddedSvgs from './render-enhancers/embedded-svgs';
-// import enhanceWithEmojiToSvg from "./render-enhancers/emoji-to-svg";
-import enhanceWithExtendedTableSyntax from './render-enhancers/extended-table-syntax';
+} from './markdown-engine-config.js';
+import { pandocConvert } from './pandoc-convert.js';
+import { princeConvert } from './prince-convert.js';
+import enhanceWithCodeBlockStyling from './render-enhancers/code-block-styling.js';
+import enhanceWithEmbeddedLocalImages from './render-enhancers/embedded-local-images.js';
+import enhanceWithEmbeddedSvgs from './render-enhancers/embedded-svgs.js';
+import enhanceWithExtendedTableSyntax from './render-enhancers/extended-table-syntax.js';
 import enhanceWithFencedCodeChunks, {
   runCodeChunk,
   RunCodeChunkOptions,
   runCodeChunks,
-} from './render-enhancers/fenced-code-chunks';
-import enhanceWithFencedDiagrams from './render-enhancers/fenced-diagrams';
-import enhanceWithFencedMath from './render-enhancers/fenced-math';
-import enhanceWithResolvedImagePaths from './render-enhancers/resolved-image-paths';
-import { generateSidebarToCHTML, HeadingData } from './toc';
-import { transformMarkdown } from './transformer';
-import * as utility from './utility';
-import { removeFileProtocol } from './utility';
-import puppeteer, { Browser } from 'puppeteer-core';
-import { markdownConvert } from './markdown-convert';
-import * as YAML from 'yaml';
-import CryptoES from 'crypto-es';
-import { escape } from 'html-escaper';
-import { JsonObject } from 'type-fest';
-
-import MarkdownIt from 'markdown-it';
-import MarkdownItFootnote from '../dependencies/markdown-it/extensions/markdown-it-footnote.min.js';
-import MarkdownItSub from '../dependencies/markdown-it/extensions/markdown-it-sub.min.js';
-import MarkdownItSup from '../dependencies/markdown-it/extensions/markdown-it-sup.min.js';
-import MarkdownItDeflist from '../dependencies/markdown-it/extensions/markdown-it-deflist.min.js';
-import MarkdownItAbbr from '../dependencies/markdown-it/extensions/markdown-it-abbr.min.js';
-import MarkdownItMark from '../dependencies/markdown-it/extensions/markdown-it-mark.min.js';
+} from './render-enhancers/fenced-code-chunks.js';
+import enhanceWithFencedDiagrams from './render-enhancers/fenced-diagrams.js';
+import enhanceWithFencedMath from './render-enhancers/fenced-math.js';
+import enhanceWithResolvedImagePaths from './render-enhancers/resolved-image-paths.js';
+import { generateSidebarToCHTML, HeadingData } from './toc.js';
+import { transformMarkdown } from './transformer.js';
+import * as utility from './utility.js';
+import { removeFileProtocol } from './utility.js';
 
 const extensionDirectoryPath = utility.extensionDirectoryPath;
 
@@ -358,8 +355,8 @@ export class MarkdownEngine {
     if (!codeChunkData) {
       return;
     }
-    codeChunkData.result = CryptoES.AES.decrypt(result, 'mume').toString(
-      CryptoES.enc.Utf8,
+    codeChunkData.result = CryptoJS.AES.decrypt(result, 'mume').toString(
+      CryptoJS.enc.Utf8,
     );
   }
 
@@ -824,6 +821,16 @@ if (typeof(window['Reveal']) !== 'undefined') {
     config = {},
     vscodePreviewPanel = null,
     contentSecurityPolicy = '',
+  }: {
+    inputString?: string;
+    body?: string;
+    webviewScript?: string;
+    scripts?: string;
+    styles?: string;
+    head?: string;
+    config: JsonObject;
+    vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
+    contentSecurityPolicy?: string;
   }): Promise<string> {
     if (!inputString) {
       inputString = fs.readFileSync(this.filePath, { encoding: 'utf-8' });

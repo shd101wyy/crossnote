@@ -1,7 +1,7 @@
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
-import { MarkdownEngineConfig } from '../markdown-engine-config';
-import MarkdownItHtml5Embed from '../../dependencies/markdown-it/extensions/markdown-it-html5-embed.js';
+import MarkdownItHtml5Embed from 'markdown-it-html5-embed';
+import { MarkdownEngineConfig } from '../markdown-engine-config.js';
 
 const optionsFromConfig = (config: MarkdownEngineConfig) => ({
   html5embed: {

@@ -1,4 +1,4 @@
-import Token from 'markdown-it/lib/token';
+import Token from 'markdown-it/lib/token.js';
 
 export interface Reference {
   /**

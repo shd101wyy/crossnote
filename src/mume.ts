@@ -2,19 +2,26 @@
  * The core of mume package.
  */
 import * as fs from 'fs';
-import * as path from 'path';
 import * as mkdirp from 'mkdirp';
+import * as path from 'path';
 
-import * as utility_ from './utility';
+import * as utility_ from './utility.js';
 
 let INITIALIZED = false;
 let CONFIG_CHANGE_CALLBACK: (() => void) | null = null;
 
 export const utility = utility_;
 export const configs = utility.configs;
-export { MarkdownEngineConfig } from './markdown-engine-config';
-export { MarkdownEngine } from './markdown-engine';
-export { CodeChunkData } from './code-chunk-data';
+export { CodeChunkData } from './code-chunk-data.js';
+export {
+  CodeBlockTheme,
+  MarkdownEngineConfig,
+  MathRenderingOption,
+  MermaidTheme,
+  PreviewTheme,
+  RevealJsTheme,
+} from './markdown-engine-config.js';
+export { MarkdownEngine } from './markdown-engine.js';
 
 let extensionConfigPath = utility.getConfigPath();
 

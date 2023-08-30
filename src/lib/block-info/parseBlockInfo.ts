@@ -1,6 +1,9 @@
-import { BlockAttributes, parseBlockAttributes } from '../block-attributes';
+import {
+  BlockAttributes,
+  parseBlockAttributes,
+} from '../block-attributes/index.js';
 
-import { BlockInfo } from './types';
+import { BlockInfo } from './types.js';
 
 export const parseBlockInfo = (raw = ''): BlockInfo => {
   let language;

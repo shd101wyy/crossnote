@@ -1,27 +1,27 @@
 // import * as Baby from "babyparse"
 import * as Baby from 'babyparse';
 import * as fs from 'fs';
-import * as less from 'less';
+import less from 'less';
 import * as path from 'path';
 import request from 'request';
 import * as temp from 'temp';
-import HeadingIdGenerator from './heading-id-generator';
+import HeadingIdGenerator from './heading-id-generator.js';
 import {
   BlockAttributes,
   parseBlockAttributes,
   stringifyBlockAttributes,
-} from './lib/block-attributes';
-import computeChecksum from './lib/compute-checksum';
-import * as utility from './utility';
+} from './lib/block-attributes/index.js';
+import computeChecksum from './lib/compute-checksum.js';
+import * as utility from './utility.js';
 
 // import * as request from 'request'
 // import * as less from "less"
 // import * as temp from "temp"
 // temp.track()
 
-import { CustomSubjects } from './custom-subjects';
-import * as PDF from './pdf';
-import { HeadingData } from './toc';
+import { CustomSubjects } from './custom-subjects.js';
+import * as PDF from './pdf.js';
+import { HeadingData } from './toc.js';
 
 export interface TransformMarkdownOutput {
   outputString: string;
@@ -195,7 +195,7 @@ async function loadFile(
           if (error) {
             return reject(error);
           } else {
-            return resolve(output.css || '');
+            return resolve(output?.css || '');
           }
         },
       );

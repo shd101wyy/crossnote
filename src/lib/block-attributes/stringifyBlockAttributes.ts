@@ -1,4 +1,4 @@
-import { BlockAttributes } from './types';
+import { BlockAttributes } from './types.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const stringifyArray = (value: any[]) => {

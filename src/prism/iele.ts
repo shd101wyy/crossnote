@@ -1,4 +1,4 @@
-module.exports = function (Prism) {
+export default function(Prism) {
   Prism.languages.iele = {
     comment: [
       {
@@ -26,4 +26,4 @@ module.exports = function (Prism) {
     operator: /[<>]=?|[!=]=?=?|--?|\+\+?|&&?|\|\|?|[?*/~^%]/,
     punctuation: /[{}[\];(),.:]/,
   };
-};
+}
