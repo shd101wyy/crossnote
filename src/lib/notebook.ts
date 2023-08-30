@@ -1,14 +1,14 @@
+import { Mutex } from 'async-mutex';
 import * as path from 'path';
 import { Mentions, Note, NoteConfig, Notes } from './note';
 import { Reference, ReferenceMap } from './reference';
 import Search from './search';
-import { Mutex } from 'async-mutex';
 
 // temp
+import { Stats } from 'fs';
 import MarkdownIt from 'markdown-it';
 import Token from 'markdown-it/lib/token';
 import { matter, matterStringify } from './markdown';
-import { Stats } from 'fs';
 const md = new MarkdownIt();
 
 interface CrossnoteConfig {
@@ -84,18 +84,21 @@ export class Notebook {
         const fs = await import('fs');
         const fsPromises = fs.promises;
         this.fs = {
-          readFile: async (_path: string, encoding = 'utf8') => {
+          readFile: async (
+            _path: string,
+            encoding: BufferEncoding = 'utf-8',
+          ) => {
             return (await fsPromises.readFile(_path, encoding)).toString();
           },
           writeFile: async (
             _path: string,
             content: string,
-            encoding = 'utf8',
+            encoding: BufferEncoding = 'utf8',
           ) => {
             return await fsPromises.writeFile(_path, content, encoding);
           },
           mkdir: async (_path: string) => {
-            return await fsPromises.mkdir(_path, { recursive: true });
+            await fsPromises.mkdir(_path, { recursive: true });
           },
           exists: async (_path: string) => {
             return fs.existsSync(_path);

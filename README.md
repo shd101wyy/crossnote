@@ -20,11 +20,11 @@ npm install --save @shd101wyy/mume
 ## Example
 
 ```javascript
-// node.js
+// CJS
 const path = require('path');
 const mume = require('@shd101wyy/mume');
 
-// es6
+// ESM
 // import * as mume from "@shd101wyy/mume"
 
 async function main() {
@@ -274,7 +274,7 @@ Global config files are located in the `$XDG_STATE_HOME/mume` directory, which i
 ## Development
 
 [Visual Studio Code](https://code.visualstudio.com/) is recommended.
-Recommended to use Node.js version 18.
+Recommended to use Node.js version 20.
 
 1.  Clone this project
 2.  Run `yarn` from shell

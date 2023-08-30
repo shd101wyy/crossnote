@@ -1,5 +1,5 @@
 import { spawn } from 'child_process';
-import { unlink } from 'fs-extra';
+import { unlink } from 'node:fs/promises';
 import * as path from 'path';
 import * as vm from 'vm';
 
@@ -162,11 +162,10 @@ except Exception:
       chunks.push(Buffer.from(error.toString(), 'utf-8'));
     });
 
-    task.on('close', () => {
-      unlink(savePath, () => {
-        const data = Buffer.concat(chunks).toString();
-        resolve(data);
-      });
+    task.on('close', async () => {
+      await unlink(savePath);
+      const data = Buffer.concat(chunks).toString();
+      resolve(data);
     });
   });
 }

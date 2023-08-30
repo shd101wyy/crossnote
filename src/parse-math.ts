@@ -1,7 +1,9 @@
+import { escape } from 'html-escaper';
+// https://github.com/KaTeX/KaTeX/blob/main/contrib/mhchem/README.md
+import '../dependencies/katex/contrib/mhchem.min.js';
+import { renderToString } from '../dependencies/katex/katex.min.js';
 import { MathRenderingOption } from './markdown-engine-config';
 import { configs } from './utility';
-import { renderToString } from '../dependencies/katex/katex.min.js';
-import { escape } from 'html-escaper';
 
 // tslint:disable-next-line interface-over-type-literal
 export type ParseMathArgs = {
@@ -32,14 +34,6 @@ export default ({
   }
   if (renderingOption === 'KaTeX') {
     try {
-      // https://github.com/KaTeX/KaTeX/blob/main/contrib/mhchem/README.md
-      /*
-        // Add mhchem support
-        require(path.resolve(
-          extensionDirectoryPath,
-          './dependencies/katex/contrib/mhchem.min.js',
-        ));
-        */
       return renderToString(
         content,
         Object.assign({}, configs.katexConfig || {}, { displayMode }),

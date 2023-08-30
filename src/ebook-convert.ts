@@ -1,6 +1,6 @@
-import mkdirp from 'mkdirp';
-import * as path from 'path';
 import { execFile } from 'child_process';
+import { mkdirp } from 'mkdirp';
+import * as path from 'path';
 // ebook-convert is requied (calibre), which can be got from https://calibre-ebook.com/download
 // xpath http://www.w3schools.com/xsl/xpath_syntax.asp
 

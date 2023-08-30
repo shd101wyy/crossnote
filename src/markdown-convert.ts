@@ -3,14 +3,14 @@
  */
 
 import * as fs from 'fs';
-import mkdirp from 'mkdirp';
+import { escape } from 'html-escaper';
+import { mkdirp } from 'mkdirp';
 import * as path from 'path';
 import { CodeChunkData } from './code-chunk-data';
 import computeChecksum from './lib/compute-checksum';
 import { processGraphs } from './process-graphs';
 import { toc } from './toc';
 import { transformMarkdown } from './transformer';
-import { escape } from 'html-escaper';
 
 /**
  * Convert all math expressions inside markdown to images.

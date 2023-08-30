@@ -1,7 +1,7 @@
 /**
  * ImageMagick magick command wrapper
  */
-import imagemagickCli = require('imagemagick-cli');
+import imagemagickCli from 'imagemagick-cli';
 import { execFile, tempOpen, write } from './utility';
 
 export async function svgElementToPNGFile(

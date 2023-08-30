@@ -1,14 +1,14 @@
 import { execFile } from 'child_process';
 import * as fs from 'fs';
+import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as YAML from 'yaml';
+import { CodeChunkData } from './code-chunk-data';
 import computeChecksum from './lib/compute-checksum';
 import { processGraphs } from './process-graphs';
 import { toc } from './toc';
 import { transformMarkdown } from './transformer';
 import * as utility from './utility';
-import mkdirp = require('mkdirp');
-import { CodeChunkData } from './code-chunk-data';
 
 function getFileExtension(documentType: string) {
   if (
@@ -455,7 +455,7 @@ export async function pandocConvert(
   } else {
     imageDirectoryPath = path.resolve(fileDirectoryPath, imageDirectoryPath);
   }
-  await mkdirp(imageDirectoryPath); // create imageDirectoryPath
+  await mkdirp.sync(imageDirectoryPath); // create imageDirectoryPath
 
   const { outputString } = await processGraphs(text, {
     fileDirectoryPath,
@@ -474,7 +474,7 @@ export async function pandocConvert(
 
   // pandoc will cause error if directory doesn't exist,
   // therefore I will create directory first.
-  await mkdirp(path.dirname(outputFilePath));
+  await mkdirp.sync(path.dirname(outputFilePath));
 
   return await new Promise<string>((resolve, reject) => {
     const program = execFile(
