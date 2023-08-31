@@ -76,7 +76,6 @@
     "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
     "pako": "^2.1.0",
-    "prismjs": "^1.29.0",
     "puppeteer-core": "^21.1.0",
     "qiniu": "^7.9.0",
     "request": "^2.88.0",

@@ -57,8 +57,6 @@ import { transformMarkdown } from './transformer.js';
 import * as utility from './utility.js';
 import { removeFileProtocol } from './utility.js';
 
-const extensionDirectoryPath = utility.extensionDirectoryPath;
-
 export interface MarkdownEngineRenderOption {
   useRelativeFilePath: boolean;
   isForPreview: boolean;
@@ -376,7 +374,7 @@ export class MarkdownEngine {
     // jquery
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         './dependencies/jquery/jquery.js',
       ),
       vscodePreviewPanel,
@@ -385,14 +383,14 @@ export class MarkdownEngine {
     // jquery contextmenu
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         './dependencies/jquery-contextmenu/jquery.ui.position.min.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         './dependencies/jquery-contextmenu/jquery.contextMenu.min.js',
       ),
       vscodePreviewPanel,
@@ -401,7 +399,7 @@ export class MarkdownEngine {
     // jquery modal
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         './dependencies/jquery-modal/jquery.modal.min.js',
       ),
       vscodePreviewPanel,
@@ -410,7 +408,7 @@ export class MarkdownEngine {
     // mermaid
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         `./dependencies/mermaid/mermaid.min.js`,
       ),
       vscodePreviewPanel,
@@ -425,14 +423,14 @@ export class MarkdownEngine {
     // wavedrome
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         './dependencies/wavedrom/default.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         './dependencies/wavedrom/wavedrom.min.js',
       ),
       vscodePreviewPanel,
@@ -451,7 +449,7 @@ export class MarkdownEngine {
       mathJaxConfig['root'] = utility.addFileProtocol(
         slash(
           path.resolve(
-            utility.extensionDirectoryPath,
+            utility.getExtensionDirectoryPath(),
             './dependencies/mathjax',
           ),
         ),
@@ -460,7 +458,7 @@ export class MarkdownEngine {
 
       scripts += `<script type="text/javascript" async src="${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/mathjax/MathJax.js',
         ),
         vscodePreviewPanel,
@@ -474,14 +472,14 @@ export class MarkdownEngine {
     if (isForPresentation) {
       scripts += `<script src='${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/reveal/lib/js/head.min.js',
         ),
         vscodePreviewPanel,
       )}'></script>`;
       scripts += `<script src='${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/reveal/js/reveal.js',
         ),
         vscodePreviewPanel,
@@ -549,7 +547,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     dependentLibraryMaterials.forEach(({ key }) => {
       scripts += `<script src="${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           `./dependencies/${key}/${key}.min.js`,
         ),
         vscodePreviewPanel,
@@ -657,14 +655,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // loading.css
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
-      path.resolve(utility.extensionDirectoryPath, './styles/loading.css'),
+      path.resolve(utility.getExtensionDirectoryPath(), './styles/loading.css'),
       vscodePreviewPanel,
     )}">`;
 
     // jquery-contextmenu
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         `./dependencies/jquery-contextmenu/jquery.contextMenu.min.css`,
       ),
       vscodePreviewPanel,
@@ -673,7 +671,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // jquery-modal
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         `./dependencies/jquery-modal/jquery.modal.min.css`,
       ),
       vscodePreviewPanel,
@@ -686,7 +684,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     ) {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/katex/katex.min.css',
         ),
         vscodePreviewPanel,
@@ -696,7 +694,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // check font-awesome
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         `./dependencies/font-awesome/css/font-awesome.min.css`,
       ),
       vscodePreviewPanel,
@@ -706,7 +704,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (!isPresentationMode) {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           `./styles/preview_theme/${this.config.previewTheme}`,
         ),
         vscodePreviewPanel,
@@ -714,14 +712,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
     } else {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/reveal/css/reveal.css',
         ),
         vscodePreviewPanel,
       )}" >`;
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           `./dependencies/reveal/css/theme/${
             yamlConfig['presentation'] &&
             typeof yamlConfig['presentation'] === 'object' &&
@@ -737,7 +735,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // check prism
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         `./styles/prism_theme/${this.getPrismTheme(
           isPresentationMode,
           yamlConfig,
@@ -749,7 +747,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         './styles/style-template.css',
       ),
       vscodePreviewPanel,
@@ -758,7 +756,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // style markdown-it-admonition
     styles += `<link rel="stylesheet" media="screen" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         './styles/markdown-it-admonition.css',
       ),
       vscodePreviewPanel,
@@ -837,7 +835,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
     if (!webviewScript) {
       webviewScript = utility.addFileProtocol(
-        path.resolve(utility.extensionDirectoryPath, './out/webview/index.js'),
+        path.resolve(
+          utility.getExtensionDirectoryPath(),
+          './out/webview/index.js',
+        ),
         vscodePreviewPanel,
       );
     }
@@ -917,7 +918,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
         )}
         ${styles}
         <link rel="stylesheet" href="${utility.addFileProtocol(
-          path.resolve(utility.extensionDirectoryPath, './styles/preview.css'),
+          path.resolve(
+            utility.getExtensionDirectoryPath(),
+            './styles/preview.css',
+          ),
           vscodePreviewPanel,
         )}">
         ${this.generateJSAndCssFilesForPreview(
@@ -984,7 +988,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)});
         </script>
         <script type="text/javascript" async src="file:///${path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/mathjax/MathJax.js',
         )}" charset="UTF-8"></script>
         `;
@@ -999,7 +1003,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     } else if (this.config.mathRenderingOption === 'KaTeX') {
       if (options.offline) {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/katex/katex.min.css',
         )}">`;
       } else {
@@ -1014,7 +1018,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (html.indexOf('<i class="fa ') >= 0) {
       if (options.offline) {
         fontAwesomeStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           `./dependencies/font-awesome/css/font-awesome.min.css`,
         )}">`;
       } else {
@@ -1028,7 +1032,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (html.indexOf(' class="mermaid') >= 0) {
       if (options.offline) {
         mermaidScript = `<script type="text/javascript" src="file:///${path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
@@ -1083,11 +1087,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (html.indexOf(' class="wavedrom') >= 0) {
       if (options.offline) {
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/wavedrom/default.js',
         )}" charset="UTF-8"></script>`;
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/wavedrom/wavedrom.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
@@ -1108,7 +1112,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       dependentLibraryMaterials.forEach(({ key, version }) => {
         vegaScript += options.offline
           ? `<script type="text/javascript" src="file:///${path.resolve(
-              utility.extensionDirectoryPath,
+              utility.getExtensionDirectoryPath(),
               `./dependencies/${key}/${key}.min.js`,
             )}" charset="UTF-8"></script>`
           : `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
@@ -1142,11 +1146,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
       if (options.offline) {
         presentationScript = `
         <script src='file:///${path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/reveal/lib/js/head.min.js',
         )}'></script>
         <script src='file:///${path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/reveal/js/reveal.js',
         )}'></script>`;
       } else {
@@ -1160,7 +1164,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         if (options.offline) {
           dependencies.push({
             src: path.resolve(
-              extensionDirectoryPath,
+              utility.getExtensionDirectoryPath(),
               './dependencies/reveal/plugin/notes/notes.js',
             ),
             async: true,
@@ -1175,7 +1179,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       <style>
       ${fs.readFileSync(
         path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/reveal/css/reveal.css',
         ),
       )}
@@ -1183,7 +1187,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         options.isForPrint
           ? fs.readFileSync(
               path.resolve(
-                extensionDirectoryPath,
+                utility.getExtensionDirectoryPath(),
                 './dependencies/reveal/css/print/pdf.css',
               ),
             )
@@ -1223,14 +1227,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
         !yamlConfig['isPresentationMode']
           ? await utility.readFile(
               path.resolve(
-                extensionDirectoryPath,
+                utility.getExtensionDirectoryPath(),
                 `./styles/prism_theme/github.css`,
               ),
               { encoding: 'utf-8' },
             )
           : await utility.readFile(
               path.resolve(
-                extensionDirectoryPath,
+                utility.getExtensionDirectoryPath(),
                 `./styles/prism_theme/${this.getPrismTheme(
                   yamlConfig['isPresentationMode'],
                   yamlConfig,
@@ -1249,7 +1253,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
         if (options.offline) {
           presentationStyle += `<link rel="stylesheet" href="file:///${path.resolve(
-            extensionDirectoryPath,
+            utility.getExtensionDirectoryPath(),
             `./dependencies/reveal/css/theme/${theme}`,
           )}">`;
         } else {
@@ -1261,14 +1265,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
           !this.config.printBackground && !yamlConfig['print_background']
             ? await utility.readFile(
                 path.resolve(
-                  extensionDirectoryPath,
+                  utility.getExtensionDirectoryPath(),
                   `./styles/preview_theme/github-light.css`,
                 ),
                 { encoding: 'utf-8' },
               )
             : await utility.readFile(
                 path.resolve(
-                  extensionDirectoryPath,
+                  utility.getExtensionDirectoryPath(),
                   `./styles/preview_theme/${this.config.previewTheme}`,
                 ),
                 { encoding: 'utf-8' },
@@ -1277,7 +1281,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
       // style template
       styleCSS += await utility.readFile(
-        path.resolve(extensionDirectoryPath, './styles/style-template.css'),
+        path.resolve(
+          utility.getExtensionDirectoryPath(),
+          './styles/style-template.css',
+        ),
         { encoding: 'utf-8' },
       );
 
@@ -1285,7 +1292,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       if (html.indexOf('admonition') > 0) {
         styleCSS += await utility.readFile(
           path.resolve(
-            extensionDirectoryPath,
+            utility.getExtensionDirectoryPath(),
             './styles/markdown-it-admonition.css',
           ),
           { encoding: 'utf-8' },
@@ -1519,13 +1526,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
       fs.createReadStream(
         path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/reveal/plugin/notes/notes.js',
         ),
       ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.js')));
       fs.createReadStream(
         path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/reveal/plugin/notes/notes.html',
         ),
       ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.html')));
@@ -1943,7 +1950,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         mathStyle = `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/katex@0.16.8/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           './dependencies/katex/katex.min.css',
         )}">`;
       }
@@ -1955,13 +1962,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       const styles = await Promise.all([
         // style template
         utility.readFile(
-          path.resolve(extensionDirectoryPath, './styles/style-template.css'),
+          path.resolve(
+            utility.getExtensionDirectoryPath(),
+            './styles/style-template.css',
+          ),
           { encoding: 'utf-8' },
         ),
         // prism *.css
         utility.readFile(
           path.resolve(
-            extensionDirectoryPath,
+            utility.getExtensionDirectoryPath(),
             `./styles/prism_theme/${
               /*this.getPrismTheme(false)*/ MarkdownEngine.AutoPrismThemeMap[
                 ebookConfig['theme'] || this.config.previewTheme
@@ -1972,13 +1982,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ),
         // twemoji css style
         utility.readFile(
-          path.resolve(extensionDirectoryPath, './styles/twemoji.css'),
+          path.resolve(
+            utility.getExtensionDirectoryPath(),
+            './styles/twemoji.css',
+          ),
           { encoding: 'utf-8' },
         ),
         // preview theme
         utility.readFile(
           path.resolve(
-            extensionDirectoryPath,
+            utility.getExtensionDirectoryPath(),
             `./styles/preview_theme/${ebookConfig['theme'] ||
               this.config.previewTheme}`,
           ),
@@ -1988,7 +2001,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         outputHTML.indexOf('admonition') > 0
           ? utility.readFile(
               path.resolve(
-                extensionDirectoryPath,
+                utility.getExtensionDirectoryPath(),
                 './styles/markdown-it-admonition.css',
               ),
               { encoding: 'utf-8' },

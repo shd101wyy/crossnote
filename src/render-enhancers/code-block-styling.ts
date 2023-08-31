@@ -1,6 +1,6 @@
 import { escape } from 'html-escaper';
-import Prism from 'prismjs';
-import loadLanguages from 'prismjs/components/index.js';
+import Prism from '../prism/prism.js';
+// import loadLanguages from 'prismjs/components/index.js';
 import { scopeForLanguageName } from '../extension-helper.js';
 import { BlockInfo } from '../lib/block-info/index.js';
 import defineIeleLanguage from '../prism/iele.js';
@@ -12,7 +12,7 @@ Prism.hooks.add('wrap', env => {
   }
   env.classes.push(`keyword-${env.content}`);
 });
-loadLanguages(); // Load all languages
+// loadLanguages(); // Load all languages
 
 // Add K and Iele languages syntax highlighting
 defineKLanguage(Prism);

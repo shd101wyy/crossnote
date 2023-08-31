@@ -7,3 +7,5 @@ test.js
 test.mjs
 .direnv
 tsconfig.tsbuildinfo
+.mume
+mume

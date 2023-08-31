@@ -147,7 +147,7 @@ export function openFile(filePath: string) {
 /**
  * get the directory path of this extension.
  */
-export const extensionDirectoryPath = (() => {
+let extensionDirectoryPath_ = (() => {
   if (typeof __dirname !== 'undefined') {
     return path.resolve(__dirname, '../../');
   } else {
@@ -160,6 +160,21 @@ export const extensionDirectoryPath = (() => {
     */
   }
 })();
+
+export function setExtentensionDirectoryPath(path: string) {
+  extensionDirectoryPath_ = path;
+}
+
+/**
+ * Get the directory path of this npm package with the following directory structure:
+ * - out
+ * - dependencies
+ * - styles
+ * @returns
+ */
+export function getExtensionDirectoryPath() {
+  return extensionDirectoryPath_;
+}
 
 /**
  * compile ~/.mumi/style.less and return 'css' content.
@@ -573,7 +588,7 @@ export const loadDependency = (dependencyPath: string) =>
   allowUnsafeEval(() =>
     allowUnsafeNewFunction(() =>
       require(path.resolve(
-        extensionDirectoryPath,
+        getExtensionDirectoryPath(),
         'dependencies',
         dependencyPath,
       )),
