@@ -23,20 +23,19 @@
   "module": "out/esm/index.mjs",
   "types": "out/types/src/mume.d.ts",
   "files": [
-    "dependencies",
     "docs",
-    "out",
-    "styles"
+    "out"
   ],
   "scripts": {
-    "build": "rm -rf ./out && yarn build:typings && yarn build:esbuild",
+    "build": "rm -rf ./out && yarn copy:files && yarn build:typings && yarn build:esbuild",
     "build:esbuild": "node build.js",
     "build:typings": "tsc --project . --declaration",
-    "build:watch": "rm -rf ./out && concurrently \"tsc --project . --watch\" \"node build.js --watch\"",
+    "build:watch": "rm -rf ./out && yarn copy:files && concurrently \"tsc --project . --watch\" \"node build.js --watch\"",
     "check:all": "npm run check:prettier && npm run check:tsc && npm run check:lint",
     "check:lint": "eslint .",
     "check:prettier": "prettier --check \"**/*.*\"",
     "check:tsc": "tsc --project .",
+    "copy:files": "node copy-files.js",
     "fix": "npm run fix:lint && npm run fix:prettier",
     "fix:lint": "eslint --fix .",
     "fix:prettier": "prettier --write \"**/*.*\"",

@@ -835,10 +835,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
     if (!webviewScript) {
       webviewScript = utility.addFileProtocol(
-        path.resolve(
-          utility.getExtensionDirectoryPath(),
-          './out/webview/index.js',
-        ),
+        path.resolve(utility.getExtensionDirectoryPath(), './webview/index.js'),
         vscodePreviewPanel,
       );
     }

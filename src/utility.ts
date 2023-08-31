@@ -145,11 +145,12 @@ export function openFile(filePath: string) {
 }
 
 /**
+ * NOTE: The __dirname is actually the ./out/(esm|cjs) directory
  * get the directory path of this extension.
  */
 let extensionDirectoryPath_ = (() => {
   if (typeof __dirname !== 'undefined') {
-    return path.resolve(__dirname, '../../');
+    return path.resolve(__dirname, '../');
   } else {
     return '';
     /*
