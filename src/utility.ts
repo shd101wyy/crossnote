@@ -277,22 +277,9 @@ var MERMAID_CONFIG = {
 }
 
 export const defaultMathjaxConfig = {
-  extensions: ['tex2jax.js'],
-  jax: ['input/TeX', 'output/HTML-CSS'],
-  messageStyle: 'none',
-  tex2jax: {
-    processEnvironments: false,
-    processEscapes: true,
-  },
-  TeX: {
-    extensions: [
-      'AMSmath.js',
-      'AMSsymbols.js',
-      'noErrors.js',
-      'noUndefined.js',
-    ],
-  },
-  'HTML-CSS': { availableFonts: ['TeX'] },
+  tex: {},
+  options: {},
+  loader: {},
 };
 
 export const defaultKaTeXConfig = {
@@ -300,12 +287,12 @@ export const defaultKaTeXConfig = {
 };
 
 /**
- * load ~/.config/mume/mathjax_config.js file.
+ * load ~/.config/mume/mathjax_config_v3.js file.
  */
 export async function getMathJaxConfig(configPath: string): Promise<object> {
   const mathjaxConfigPath = configPath
-    ? path.resolve(configPath, './mathjax_config.js')
-    : path.resolve(getConfigPath(), './mathjax_config.js');
+    ? path.resolve(configPath, './mathjax_config_v3.js')
+    : path.resolve(getConfigPath(), './mathjax_config_v3.js');
 
   let mathjaxConfig: object;
   if (fs.existsSync(mathjaxConfigPath)) {
@@ -316,19 +303,16 @@ export async function getMathJaxConfig(configPath: string): Promise<object> {
       mathjaxConfig = defaultMathjaxConfig;
     }
   } else {
-    const fileContent = `
+    const fileContent = `// MathJax V2 -> V3 Configuration Converter
+// https://mathjax.github.io/MathJax-demos-web/convert-configuration/convert-configuration.html
+
 module.exports = {
-  extensions: ['tex2jax.js'],
-  jax: ['input/TeX','output/HTML-CSS'],
-  messageStyle: 'none',
-  tex2jax: {
-    processEnvironments: false,
-    processEscapes: true
+  tex: {
   },
-  TeX: {
-    extensions: ['AMSmath.js', 'AMSsymbols.js', 'noErrors.js', 'noUndefined.js']
+  options: {
   },
-  'HTML-CSS': { availableFonts: ['TeX'] }
+  loader: {
+  }
 }
 `;
     await writeFile(mathjaxConfigPath, fileContent, { encoding: 'utf-8' });
@@ -488,7 +472,7 @@ export function removeFileProtocol(filePath: string): string {
 
 /**
  * style.less,
- * mathjax_config.js,
+ * mathjax_config_v3.js,
  * mermaid_config.js
  * config.json
  *

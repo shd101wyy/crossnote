@@ -32,7 +32,6 @@ import { parseBlockAttributes } from './lib/block-attributes/parseBlockAttribute
 import { stringifyBlockAttributes } from './lib/block-attributes/stringifyBlockAttributes.js';
 import { normalizeBlockInfo } from './lib/block-info/normalizeBlockInfo.js';
 import { parseBlockInfo } from './lib/block-info/parseBlockInfo.js';
-import slash from './lib/slash.js';
 import { markdownConvert } from './markdown-convert.js';
 import {
   defaultMarkdownEngineConfig,
@@ -442,30 +441,20 @@ export class MarkdownEngine {
       this.config.usePandocParser
     ) {
       const mathJaxConfig = utility.configs.mathjaxConfig;
-      mathJaxConfig['tex2jax'] = mathJaxConfig['tex2jax'] || {};
-      mathJaxConfig['tex2jax']['inlineMath'] = this.config.mathInlineDelimiters;
-      mathJaxConfig['tex2jax']['displayMath'] = this.config.mathBlockDelimiters;
-      mathJaxConfig['HTML-CSS']['imageFont'] = null; // Disable image font, otherwise the preview will only display black color image.
-      mathJaxConfig['root'] = utility.addFileProtocol(
-        slash(
-          path.resolve(
-            utility.getExtensionDirectoryPath(),
-            './dependencies/mathjax',
-          ),
-        ),
-        vscodePreviewPanel,
-      );
+      mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
+      mathJaxConfig['tex']['inlineMath'] = this.config.mathInlineDelimiters;
+      mathJaxConfig['tex']['displayMath'] = this.config.mathBlockDelimiters;
 
-      scripts += `<script type="text/javascript" async src="${utility.addFileProtocol(
-        path.resolve(
-          utility.getExtensionDirectoryPath(),
-          './dependencies/mathjax/MathJax.js',
-        ),
-        vscodePreviewPanel,
-      )}" charset="UTF-8"></script>`;
-      scripts += `<script type="text/x-mathjax-config"> MathJax.Hub.Config(${JSON.stringify(
+      // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
+      // Disable typesetting on startup
+      mathJaxConfig['startup'] = mathJaxConfig['startup'] || {};
+      mathJaxConfig['startup']['typeset'] = false;
+      mathJaxConfig['startup']['elements'] = ['.hidden-preview']; // Only render on this element
+
+      scripts += `<script type="text/javascript"> window.MathJax = (${JSON.stringify(
         mathJaxConfig,
       )}); </script>`;
+      scripts += `<script type="text/javascript" async src="${this.config.mathjaxV3ScriptSrc}" charset="UTF-8"></script>`;
     }
 
     // reveal.js
@@ -976,25 +965,27 @@ if (typeof(window['Reveal']) !== 'undefined') {
       const mathJaxConfig = this.config.configPath
         ? await utility.getMathJaxConfig(this.config.configPath)
         : {};
-      mathJaxConfig['tex2jax']['inlineMath'] = this.config.mathInlineDelimiters;
-      mathJaxConfig['tex2jax']['displayMath'] = this.config.mathBlockDelimiters;
+      mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
+      mathJaxConfig['tex']['inlineMath'] = this.config.mathInlineDelimiters;
+      mathJaxConfig['tex']['displayMath'] = this.config.mathBlockDelimiters;
 
       if (options.offline) {
         mathStyle = `
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)});
+        <script type="text/javascript">
+          window.MathJax = (${JSON.stringify(mathJaxConfig)});
         </script>
-        <script type="text/javascript" async src="file:///${path.resolve(
-          utility.getExtensionDirectoryPath(),
-          './dependencies/mathjax/MathJax.js',
-        )}" charset="UTF-8"></script>
+        <script type="text/javascript" async src="${
+          this.config.mathjaxV3ScriptSrc
+        }" charset="UTF-8"></script>
         `;
       } else {
         mathStyle = `
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)});
+        <script type="text/javascript">
+          window.MathJax = (${JSON.stringify(mathJaxConfig)});
         </script>
-        <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"></script>
+        <script type="text/javascript" async src="${
+          this.config.mathjaxV3ScriptSrc
+        }"></script>
         `;
       }
     } else if (this.config.mathRenderingOption === 'KaTeX') {

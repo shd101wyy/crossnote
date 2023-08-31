@@ -942,7 +942,6 @@ import CryptoJS from 'crypto-js';
           this.config.mathRenderingOption === 'MathJax' ||
           this.config.usePandocParser
         ) {
-          const MathJax = window['MathJax'];
           // .mathjax-exps, .math.inline, .math.display
           const unprocessedElements = this.hiddenPreviewElement.querySelectorAll(
             '.mathjax-exps, .math.inline, .math.display',
@@ -951,25 +950,25 @@ import CryptoJS from 'crypto-js';
             return resolve();
           }
 
-          window['MathJax'].Hub.Queue(
-            ['Typeset', MathJax.Hub, this.hiddenPreviewElement],
-            [
-              () => {
-                // sometimes the this callback will be called twice
-                // and only the second time will the Math expressions be rendered.
-                // therefore, I added the line below to check whether math is already rendered.
-                if (
-                  !this.hiddenPreviewElement.getElementsByClassName('MathJax')
-                    .length
-                ) {
-                  return;
-                }
-
-                this.scrollMap = null;
+          window['MathJax'].typesetClear(); // Don't pass element here!!!
+          window['MathJax'].startup.document.state(0);
+          window['MathJax'].texReset();
+          window['MathJax']
+            .typesetPromise([this.hiddenPreviewElement])
+            .then(() => {
+              // sometimes the this callback will be called twice
+              // and only the second time will the Math expressions be rendered.
+              // therefore, I added the line below to check whether math is already rendered.
+              if (
+                !this.hiddenPreviewElement.getElementsByClassName('MathJax')
+                  .length
+              ) {
                 return resolve();
-              },
-            ],
-          );
+              }
+
+              this.scrollMap = null;
+              return resolve();
+            });
         } else {
           return resolve();
         }

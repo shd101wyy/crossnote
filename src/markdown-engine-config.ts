@@ -76,6 +76,7 @@ export interface MarkdownEngineConfig {
   mathInlineDelimiters: string[][];
   mathBlockDelimiters: string[][];
   mathRenderingOnlineService: string;
+  mathjaxV3ScriptSrc: string;
   codeBlockTheme: CodeBlockTheme;
   previewTheme: PreviewTheme;
   revealjsTheme: RevealJsTheme;
@@ -121,6 +122,8 @@ export const defaultMarkdownEngineConfig: MarkdownEngineConfig = {
   mathInlineDelimiters: [['$', '$']],
   mathBlockDelimiters: [['$$', '$$']],
   mathRenderingOnlineService: 'https://latex.codecogs.com/gif.latex',
+  mathjaxV3ScriptSrc:
+    'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js',
   codeBlockTheme: 'auto.css',
   previewTheme: 'github-light.css',
   revealjsTheme: 'white.css',

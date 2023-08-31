@@ -64,7 +64,7 @@ export async function init(configPath: string | null = null): Promise<void> {
             CONFIG_CHANGE_CALLBACK();
           }
         });
-      } else if (fileName === 'mathjax_config.js') {
+      } else if (fileName === 'mathjax_config_v3.js') {
         utility.getMathJaxConfig(configPath).then(mathjaxConfig => {
           configs.mathjaxConfig = mathjaxConfig;
           if (CONFIG_CHANGE_CALLBACK) {
