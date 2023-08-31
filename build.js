@@ -1,8 +1,5 @@
-import { context, build } from "esbuild"
-
-import { createRequire } from 'node:module'
-const require = createRequire(import.meta.url);
-const { dependencies, devDependencies } = require("./package.json");
+const { context, build } = require('esbuild');
+const { dependencies, devDependencies } = require('./package.json');
 
 /**
  * @type {import('esbuild').BuildOptions}
@@ -20,7 +17,7 @@ const sharedConfig = {
     'vm',
     'stream',
     'node:fs/promises',
-    "url",
+    'url',
     // === from package.json
     ...Object.keys(dependencies),
     ...Object.keys(devDependencies),

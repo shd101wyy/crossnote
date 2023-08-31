@@ -30,9 +30,9 @@
   ],
   "scripts": {
     "build": "rm -rf ./out && yarn build:typings && yarn build:esbuild",
-    "build:esbuild": "node build.mjs",
+    "build:esbuild": "node build.js",
     "build:typings": "tsc --project . --declaration",
-    "build:watch": "rm -rf ./out && concurrently \"tsc --project . --watch\" \"node build.mjs --watch\"",
+    "build:watch": "rm -rf ./out && concurrently \"tsc --project . --watch\" \"node build.js --watch\"",
     "check:all": "npm run check:prettier && npm run check:tsc && npm run check:lint",
     "check:lint": "eslint .",
     "check:prettier": "prettier --check \"**/*.*\"",
@@ -106,13 +106,12 @@
     "@types/prismjs": "^1.26.0",
     "@types/temp": "^0.9.1",
     "@types/vfile": "^3.0.2",
-    "@types/vscode": "1.70.0",
+    "@types/vscode": "1.80.0",
     "@types/vscode-webview": "^1.57.2",
     "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
     "concurrently": "^8.2.1",
     "esbuild": "^0.19.2",
-    "esbuild-node-externals": "^1.9.0",
     "eslint": "^8.48.0",
     "husky": "^7.0.2",
     "jest": "^27.2.4",
@@ -120,8 +119,6 @@
     "prettier": "^1.19.1",
     "prettier-plugin-packagejson": "^2.2.5",
     "ts-jest": "^27.0.5",
-    "tslint": "^6.1.3",
-    "tslint-config-prettier": "^1.18.0",
     "typescript": "^5.2.2"
   }
 }

@@ -20,5 +20,5 @@
     //     "strict": true
   },
   "include": ["src/**/*", "test/**/*"],
-  "exclude": ["node_modules", "out", "build.mjs"]
+  "exclude": ["node_modules", "out", "build.js"]
 }
