@@ -1,4 +1,5 @@
 import { Mutex } from 'async-mutex';
+import { Stats } from 'fs';
 import MarkdownIt from 'markdown-it';
 import MarkdownItAbbr from 'markdown-it-abbr';
 import MarkdownItDeflist from 'markdown-it-deflist';
@@ -17,7 +18,7 @@ import useMarkdownItMath from '../custom-markdown-it-features/math';
 import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
 import { MarkdownEngine } from '../markdown-engine';
 import { matter, matterStringify } from './markdown.js';
-import { Mentions, Note, NoteConfig, Notes } from './note';
+import { FilePath, Mentions, Note, NoteConfig, Notes } from './note';
 import { Reference, ReferenceMap } from './reference';
 import Search from './search';
 import {
@@ -265,19 +266,25 @@ export class Notebook {
         );
       }
     };
-    const traverse = function(
+    const traverse = (
       tokens: Token[],
       parentToken: Token | null,
       results: Reference[],
       level: number,
-    ): Reference[] {
+    ): Reference[] => {
       for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i];
         if (token.type === 'wikilink') {
           // TODO: Support normal links
           const arr = token.content.split('|');
-          const text = (arr.length > 1 ? arr[1] : arr[0]).trim();
-          const link = arr[0].trim();
+          let text, link: string;
+          if (this.config.useGitHubStylePipedLink) {
+            text = arr[0].trim();
+            link = (arr.length > 1 ? arr[1] : arr[0]).trim();
+          } else {
+            text = (arr.length > 1 ? arr[1] : arr[0]).trim();
+            link = arr[0].trim();
+          }
           if (link.match(/https?:\/\//)) {
             // TODO: Ignore more protocols
             continue;
@@ -333,7 +340,7 @@ export class Notebook {
     };
 
     const references = traverse(tokens, null, [], 0);
-    const mentions: Mentions = {};
+    const mentions: Mentions = new Set<FilePath>();
     const oldMentions = note.mentions;
 
     // Remove old references
@@ -364,7 +371,7 @@ export class Notebook {
       return this.notes[filePath];
     }
     const absFilePath = this.resolveNoteAbsolutePath(filePath);
-    let stats;
+    let stats: Stats;
     try {
       stats = await this.fs.stat(absFilePath);
     } catch (error) {
@@ -425,7 +432,7 @@ export class Notebook {
           markdown;
       }
 
-      let oldMentions = {};
+      let oldMentions: Mentions = new Set<FilePath>();
       const oldNote = this.notes[filePath];
       if (oldNote) {
         oldMentions = oldNote.mentions;

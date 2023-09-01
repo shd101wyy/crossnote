@@ -14,27 +14,27 @@ export interface NoteConfig {
   aliases?: string[];
 }
 
-export type Mentions = { [key: string]: boolean };
+export type Mentions = Set<FilePath>;
 
 export interface Note {
   /**
-   * Absolute path to the notebook
+   * Absolute path to the notebook.
    */
   notebookPath: string;
   /**
-   * Relative path to the note file
+   * Relative path to the note file from the notebook.
    */
   filePath: FilePath;
   /**
-   * Note title
+   * Note title.
    */
   title: string;
   /**
-   * Note content
+   * Note content.
    */
   markdown: string;
   /**
-   * Note config
+   * Note config.
    */
   config: NoteConfig;
   /**

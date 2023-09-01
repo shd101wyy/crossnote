@@ -176,7 +176,7 @@ export interface NotebookConfig {
    * Whether to use GitHub style piped link.
    * - GitHub style: `[[ text | link ]]`
    * - Wiki style: `[[ link | text ]]`
-   * Default: `true`
+   * Default: `false`
    */
   useGitHubStylePipedLink: boolean;
   /**
@@ -457,7 +457,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     enableEmojiSyntax: true,
     enableExtendedTableSyntax: false,
     enableCriticMarkupSyntax: false,
-    useGitHubStylePipedLink: true,
+    useGitHubStylePipedLink: false,
     wikiLinkFileExtension: '.md',
     protocolsWhiteList: 'http://, https://, atom://, file://, mailto:, tel:',
     mathRenderingOption: 'KaTeX',

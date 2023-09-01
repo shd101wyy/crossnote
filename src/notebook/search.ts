@@ -15,7 +15,7 @@ export interface SearchDoc {
 }
 
 export default class Search {
-  public miniSearch: MiniSearch<SearchDoc>;
+  private miniSearch: MiniSearch<SearchDoc>;
 
   /**
    * filePath -> SearchDoc
