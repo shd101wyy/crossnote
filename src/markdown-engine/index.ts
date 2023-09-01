@@ -3,6 +3,7 @@
 import * as cheerio from 'cheerio';
 import { execFile } from 'child_process';
 import CryptoJS from 'crypto-js';
+import * as fs from 'fs';
 import { escape } from 'html-escaper';
 import MarkdownIt from 'markdown-it';
 import MarkdownItAbbr from 'markdown-it-abbr';
@@ -11,7 +12,6 @@ import MarkdownItFootnote from 'markdown-it-footnote';
 import MarkdownItMark from 'markdown-it-mark';
 import MarkdownItSub from 'markdown-it-sub';
 import MarkdownItSup from 'markdown-it-sup';
-import * as fs from 'node:fs';
 import * as path from 'path';
 import puppeteer, { Browser } from 'puppeteer-core';
 import request from 'request';

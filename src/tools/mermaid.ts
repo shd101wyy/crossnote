@@ -3,8 +3,8 @@
  * https://github.com/mermaid-js/mermaid-cli
  */
 
+import * as fs from 'fs';
 import { execFileSync } from 'node:child_process';
-import * as fs from 'node:fs';
 import { tempOpen } from '../environment/nodejs';
 
 export async function mermaidToPNG(
