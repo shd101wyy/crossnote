@@ -1,9 +1,8 @@
 // sm.ms api
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import * as path from 'path';
 import * as qiniu from 'qiniu';
 import * as request from 'request';
-import * as utility from '../utility';
 
 // imgur api
 // referred from node-imgur:
@@ -46,7 +45,7 @@ async function addImageURLToHistory(
   }
   let data: string;
   try {
-    data = await utility.readFile(imageHistoryPath, { encoding: 'utf-8' });
+    data = fs.readFileSync(imageHistoryPath, { encoding: 'utf-8' });
   } catch (e) {
     data = '';
   }
@@ -61,7 +60,7 @@ ${new Date().toString()}
 ---
 
 ` + data;
-  utility.writeFile(imageHistoryPath, data, { encoding: 'utf-8' });
+  fs.writeFileSync(imageHistoryPath, data, { encoding: 'utf-8' });
 }
 
 /**

@@ -1,9 +1,9 @@
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
 import MarkdownItHtml5Embed from 'markdown-it-html5-embed';
-import { MarkdownEngineConfig } from '../markdown-engine/markdown-engine-config';
+import { NotebookConfig } from '../notebook';
 
-const optionsFromConfig = (config: MarkdownEngineConfig) => ({
+const optionsFromConfig = (config: NotebookConfig) => ({
   html5embed: {
     useImageSyntax: config.HTML5EmbedUseImageSyntax,
     useLinkSyntax: config.HTML5EmbedUseLinkSyntax,
@@ -15,7 +15,7 @@ const optionsFromConfig = (config: MarkdownEngineConfig) => ({
   },
 });
 
-export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
+export default (md: MarkdownIt, config: NotebookConfig) => {
   if (!config.enableHTML5Embed) {
     return;
   }

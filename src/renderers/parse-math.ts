@@ -2,8 +2,7 @@ import { escape } from 'html-escaper';
 // https://github.com/KaTeX/KaTeX/blob/main/contrib/mhchem/README.md
 import katex from 'katex';
 import 'katex/contrib/mhchem';
-import { MathRenderingOption } from '../markdown-engine/markdown-engine-config';
-import { configs } from '../utility';
+import { MathRenderingOption } from '../notebook';
 
 // tslint:disable-next-line interface-over-type-literal
 export type ParseMathArgs = {
@@ -12,6 +11,7 @@ export type ParseMathArgs = {
   closeTag: string;
   displayMode?: boolean;
   renderingOption: MathRenderingOption;
+  katexConfig: katex.KatexOptions;
 };
 
 /**
@@ -28,6 +28,7 @@ export default ({
   closeTag,
   displayMode = false,
   renderingOption,
+  katexConfig,
 }: ParseMathArgs) => {
   if (!content) {
     return '';
@@ -36,7 +37,7 @@ export default ({
     try {
       return katex.renderToString(
         content,
-        Object.assign({}, configs.katexConfig || {}, { displayMode }),
+        Object.assign({}, katexConfig, { displayMode }),
       );
     } catch (error) {
       return `<span style="color: #ee7f49; font-weight: 500;">${error.toString()}</span>`;

@@ -1,7 +1,6 @@
 /**
  * Convert Mume markdown to Githb Flavored Markdown
  */
-
 import * as fs from 'fs';
 import { escape } from 'html-escaper';
 import { mkdirp } from 'mkdirp';

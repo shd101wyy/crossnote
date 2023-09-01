@@ -1,10 +1,10 @@
 import { spawn } from 'child_process';
+import * as fs from 'node:fs/promises';
 import { unlink } from 'node:fs/promises';
 import * as path from 'path';
 import * as vm from 'vm';
 import { BlockAttributes } from '../lib/block-attributes';
 import * as LaTeX from '../tools/latex';
-import * as utility from '../utility';
 
 export async function compileLaTeX(
   content: string,
@@ -24,7 +24,7 @@ export async function compileLaTeX(
       .substr(2, 9) + '_code_chunk.tex',
   );
 
-  await utility.writeFile(texFilePath, content);
+  await fs.writeFile(texFilePath, content);
 
   try {
     const svgMarkdown = await LaTeX.toSVGMarkdown(texFilePath, {
@@ -124,7 +124,7 @@ except Exception:
 ` + content;
   }
 
-  await utility.writeFile(savePath, content);
+  await fs.writeFile(savePath, content);
 
   // check macros
   let findInputFileMacro = false;

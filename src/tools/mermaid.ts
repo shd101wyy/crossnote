@@ -3,7 +3,9 @@
  * https://github.com/mermaid-js/mermaid-cli
  */
 
-import * as utility from '../utility';
+import { execFileSync } from 'node:child_process';
+import * as fs from 'node:fs';
+import { tempOpen } from '../environment/nodejs';
 
 export async function mermaidToPNG(
   mermaidCode: string,
@@ -11,16 +13,16 @@ export async function mermaidToPNG(
   projectDirectoryPath: string,
   themeName,
 ): Promise<string> {
-  const info = await utility.tempOpen({
+  const info = await tempOpen({
     prefix: 'mume-mermaid',
     suffix: '.mmd',
   });
-  await utility.write(info.fd, mermaidCode);
+  fs.writeFileSync(info.fd, mermaidCode);
   if (!themeName) {
     themeName = 'null';
   }
   try {
-    await utility.execFile(
+    execFileSync(
       'npx',
       [
         '-p',

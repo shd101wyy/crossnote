@@ -1,6 +1,23 @@
+import { Stats } from 'fs';
 import { KatexOptions } from 'katex';
 import { MermaidConfig } from 'mermaid';
 import { JsonObject } from 'type-fest';
+
+export const IS_NODE = typeof window === 'undefined';
+
+export type FileSystemApi = {
+  readFile: (path: string, encoding?: string) => Promise<string>;
+  writeFile: (
+    path: string,
+    content: string,
+    encoding?: string,
+  ) => Promise<void>;
+  mkdir: (path: string) => Promise<void>;
+  exists: (path: string) => Promise<boolean>;
+  stat: (path: string) => Promise<Stats>;
+  readdir: (path: string) => Promise<string[]>;
+  unlink: (path: string) => Promise<void>;
+};
 
 export type MathRenderingOption = 'None' | 'KaTeX' | 'MathJax';
 
@@ -404,75 +421,77 @@ export interface NotebookConfig {
   isVSCode: boolean;
 }
 
-export const defaultNotebookConfig: NotebookConfig = {
-  globalCss: '',
-  mermaidConfig: {
-    startOnLoad: false,
-  },
-  mathjaxConfig: {
-    tex: {},
-    options: {},
-    loader: {},
-  },
-  katexConfig: {
-    macros: {},
-  },
-  parserConfig: {
-    onWillParseMarkdown: async function(markdown) {
-      return markdown;
+export function getDefaultNotebookConfig(): NotebookConfig {
+  return {
+    globalCss: '',
+    mermaidConfig: {
+      startOnLoad: false,
     },
-    onDidParseMarkdown: async function(html) {
-      return html;
+    mathjaxConfig: {
+      tex: {},
+      options: {},
+      loader: {},
     },
-    onWillTransformMarkdown: async function(markdown) {
-      return markdown;
+    katexConfig: {
+      macros: {},
     },
-    onDidTransformMarkdown: async function(markdown) {
-      return markdown;
+    parserConfig: {
+      onWillParseMarkdown: async function(markdown) {
+        return markdown;
+      },
+      onDidParseMarkdown: async function(html) {
+        return html;
+      },
+      onWillTransformMarkdown: async function(markdown) {
+        return markdown;
+      },
+      onDidTransformMarkdown: async function(markdown) {
+        return markdown;
+      },
     },
-  },
-  usePandocParser: false,
-  breakOnSingleNewLine: true,
-  enableTypographer: false,
-  enableWikiLinkSyntax: true,
-  enableLinkify: true,
-  enableEmojiSyntax: true,
-  enableExtendedTableSyntax: false,
-  enableCriticMarkupSyntax: false,
-  useGitHubStylePipedLink: true,
-  wikiLinkFileExtension: '.md',
-  protocolsWhiteList: 'http://, https://, atom://, file://, mailto:, tel:',
-  mathRenderingOption: 'KaTeX',
-  mathInlineDelimiters: [['$', '$']],
-  mathBlockDelimiters: [['$$', '$$']],
-  mathRenderingOnlineService: 'https://latex.codecogs.com/gif.latex',
-  mathjaxV3ScriptSrc:
-    'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js',
-  codeBlockTheme: 'auto.css',
-  previewTheme: 'github-light.css',
-  revealjsTheme: 'white.css',
-  mermaidTheme: 'default',
-  frontMatterRenderingOption: 'none',
-  imageFolderPath: '/assets',
-  printBackground: false,
-  chromePath: '',
-  imageMagickPath: '',
-  pandocPath: 'pandoc',
-  pandocMarkdownFlavor: 'markdown-raw_tex+tex_math_single_backslash',
-  pandocArguments: [],
-  latexEngine: 'pdflatex',
-  enableScriptExecution: false,
-  enableHTML5Embed: false,
-  HTML5EmbedUseImageSyntax: true,
-  HTML5EmbedUseLinkSyntax: false,
-  HTML5EmbedIsAllowedHttp: false,
-  HTML5EmbedAudioAttributes: 'controls preload="metadata"',
-  HTML5EmbedVideoAttributes: 'controls preload="metadata"',
-  puppeteerWaitForTimeout: 0,
-  puppeteerArgs: [],
-  plantumlServer: '',
-  plantumlJarPath: '',
-  jsdelivrCdnHost: 'cdn.jsdelivr.net',
-  krokiServer: 'https://kroki.io',
-  isVSCode: false,
-};
+    usePandocParser: false,
+    breakOnSingleNewLine: true,
+    enableTypographer: false,
+    enableWikiLinkSyntax: true,
+    enableLinkify: true,
+    enableEmojiSyntax: true,
+    enableExtendedTableSyntax: false,
+    enableCriticMarkupSyntax: false,
+    useGitHubStylePipedLink: true,
+    wikiLinkFileExtension: '.md',
+    protocolsWhiteList: 'http://, https://, atom://, file://, mailto:, tel:',
+    mathRenderingOption: 'KaTeX',
+    mathInlineDelimiters: [['$', '$']],
+    mathBlockDelimiters: [['$$', '$$']],
+    mathRenderingOnlineService: 'https://latex.codecogs.com/gif.latex',
+    mathjaxV3ScriptSrc:
+      'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js',
+    codeBlockTheme: 'auto.css',
+    previewTheme: 'github-light.css',
+    revealjsTheme: 'white.css',
+    mermaidTheme: 'default',
+    frontMatterRenderingOption: 'none',
+    imageFolderPath: '/assets',
+    printBackground: false,
+    chromePath: '',
+    imageMagickPath: '',
+    pandocPath: 'pandoc',
+    pandocMarkdownFlavor: 'markdown-raw_tex+tex_math_single_backslash',
+    pandocArguments: [],
+    latexEngine: 'pdflatex',
+    enableScriptExecution: false,
+    enableHTML5Embed: false,
+    HTML5EmbedUseImageSyntax: true,
+    HTML5EmbedUseLinkSyntax: false,
+    HTML5EmbedIsAllowedHttp: false,
+    HTML5EmbedAudioAttributes: 'controls preload="metadata"',
+    HTML5EmbedVideoAttributes: 'controls preload="metadata"',
+    puppeteerWaitForTimeout: 0,
+    puppeteerArgs: [],
+    plantumlServer: '',
+    plantumlJarPath: '',
+    jsdelivrCdnHost: 'cdn.jsdelivr.net',
+    krokiServer: 'https://kroki.io',
+    isVSCode: false,
+  };
+}

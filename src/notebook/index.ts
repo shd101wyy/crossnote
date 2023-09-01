@@ -1,44 +1,20 @@
 import { Mutex } from 'async-mutex';
-import { Stats } from 'fs';
 import MarkdownIt from 'markdown-it';
 import Token from 'markdown-it/lib/token.js';
 import * as path from 'path';
-import { IS_NODE } from '../utility.js';
 import { matter, matterStringify } from './markdown.js';
 import { Mentions, Note, NoteConfig, Notes } from './note';
 import { Reference, ReferenceMap } from './reference';
 import Search from './search';
-export {
-  CodeBlockTheme,
-  FrontMatterRenderingOption,
-  MathRenderingOption,
-  MermaidTheme,
-  NotebookConfig,
-  ParserConfig,
-  PreviewTheme,
-  RevealJsTheme,
-  defaultNotebookConfig,
-} from './types';
+import { FileSystemApi, IS_NODE } from './types';
+
+export * from './types';
 
 const md = new MarkdownIt();
 
 interface CrossnoteConfig {
   _: string;
 }
-
-type FileSystemApi = {
-  readFile: (path: string, encoding?: string) => Promise<string>;
-  writeFile: (
-    path: string,
-    content: string,
-    encoding?: string,
-  ) => Promise<void>;
-  mkdir: (path: string) => Promise<void>;
-  exists: (path: string) => Promise<boolean>;
-  stat: (path: string) => Promise<Stats>;
-  readdir: (path: string) => Promise<string[]>;
-  unlink: (path: string) => Promise<void>;
-};
 
 interface CrossnoteArgs {
   notebookPath: string;

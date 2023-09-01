@@ -3,26 +3,26 @@
  * https://github.com/wavedrom/cli
  */
 
-import * as utility from '../utility';
+import { execFileSync } from 'node:child_process';
+import * as fs from 'node:fs';
+import { tempOpen } from '../environment/nodejs';
 
 export async function render(
   wavedromCode: string,
   projectDirectoryPath: string,
 ): Promise<string> {
-  const info = await utility.tempOpen({
+  const info = await tempOpen({
     prefix: 'mume-wavedrom',
     suffix: '.js',
   });
-  await utility.write(info.fd, wavedromCode);
+  await fs.writeFileSync(info.fd, wavedromCode);
   try {
-    const svg = await utility.execFile(
-      'npx',
-      ['wavedrom-cli', '-i', info.path],
-      {
+    const svg = (
+      await execFileSync('npx', ['wavedrom-cli', '-i', info.path], {
         shell: true,
         cwd: projectDirectoryPath,
-      },
-    );
+      })
+    ).toString('utf-8');
     return svg;
   } catch (error) {
     throw new Error(

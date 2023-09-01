@@ -1,5 +1,5 @@
-import * as fs from 'fs';
 import less from 'less';
+import * as fs from 'node:fs/promises';
 import * as Papa from 'papaparse';
 import * as path from 'path';
 import request from 'request';
@@ -11,7 +11,6 @@ import {
 } from '../lib/block-attributes';
 import computeChecksum from '../lib/compute-checksum';
 import * as PDF from '../tools/pdf';
-import * as utility from '../utility';
 import { CustomSubjects } from './custom-subjects';
 import HeadingIdGenerator from './heading-id-generator';
 import { HeadingData } from './toc';
@@ -133,7 +132,7 @@ function downloadFileIfNecessary(filePath: string): Promise<string> {
     }
     request.get(
       { url: filePath, encoding: 'binary' },
-      (error, response, body) => {
+      async (error, response, body) => {
         if (error) {
           return reject(error);
         } else {
@@ -142,13 +141,8 @@ function downloadFileIfNecessary(filePath: string): Promise<string> {
               DOWNLOADS_TEMP_FOLDER ?? '/tmp/mume_downloads',
               computeChecksum(filePath),
             ) + path.extname(filePath);
-          fs.writeFile(localFilePath, body, 'binary', error2 => {
-            if (error2) {
-              return reject(error2);
-            } else {
-              return resolve(localFilePath);
-            }
-          });
+          await fs.writeFile(localFilePath, body, 'binary');
+          return localFilePath;
         }
       },
     );
@@ -179,7 +173,7 @@ async function loadFile(
 
   if (filePath.endsWith('.less')) {
     // less file
-    const data = await utility.readFile(filePath, { encoding: 'utf-8' });
+    const data = await fs.readFile(filePath, { encoding: 'utf-8' });
     return await new Promise<string>((resolve, reject) => {
       less.render(
         data,
@@ -230,7 +224,7 @@ async function loadFile(
     });
   } else {
     // local file
-    return await utility.readFile(filePath, { encoding: 'utf-8' });
+    return await fs.readFile(filePath, { encoding: 'utf-8' });
   }
 }
 

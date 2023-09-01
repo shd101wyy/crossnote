@@ -1,9 +1,9 @@
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
-import { MarkdownEngineConfig } from '../markdown-engine/markdown-engine-config';
+import { NotebookConfig } from '../notebook';
 import parseMath from '../renderers/parse-math';
 
-export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
+export default (md: MarkdownIt, config: NotebookConfig) => {
   md.inline.ruler.before('escape', 'math', (state, silent) => {
     if (config.mathRenderingOption === 'None') {
       return false;
@@ -81,6 +81,7 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
       closeTag: tokens[idx].meta.closeTag,
       renderingOption: config.mathRenderingOption,
       displayMode: tokens[idx].meta.displayMode,
+      katexConfig: config.katexConfig,
     });
   };
 };

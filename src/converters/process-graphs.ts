@@ -8,9 +8,9 @@ import * as plantumlAPI from '../renderers/puml';
 import * as vegaAPI from '../renderers/vega';
 import * as vegaLiteAPI from '../renderers/vega-lite';
 import { Viz } from '../renderers/viz';
-import * as wavedromAPI from '../renderers/wavedrom';
 import { svgElementToPNGFile } from '../tools/magick';
 import * as mermaidAPI from '../tools/mermaid';
+import * as wavedromAPI from '../tools/wavedrom';
 import { extractCommandFromBlockInfo } from '../utility';
 
 export async function processGraphs(

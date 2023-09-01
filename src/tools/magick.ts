@@ -2,7 +2,9 @@
  * ImageMagick magick command wrapper
  */
 import imagemagickCli from 'imagemagick-cli';
-import { execFile, tempOpen, write } from '../utility';
+import { execFileSync } from 'node:child_process';
+import * as fs from 'node:fs';
+import { tempOpen } from '../environment/nodejs';
 
 export async function svgElementToPNGFile(
   svgElement: string,
@@ -10,11 +12,11 @@ export async function svgElementToPNGFile(
   imageMagickPath: string = '',
 ): Promise<string> {
   const info = await tempOpen({ prefix: 'mume-svg', suffix: '.svg' });
-  await write(info.fd, svgElement); // write svgElement to temp .svg file
+  fs.writeFileSync(info.fd, svgElement); // write svgElement to temp .svg file
   const args = [info.path, pngFilePath];
   try {
     if (imageMagickPath && imageMagickPath.length) {
-      await execFile(imageMagickPath, args);
+      await execFileSync(imageMagickPath, args);
     } else {
       await imagemagickCli.exec(`convert ${args.join(' ')}`);
     }
