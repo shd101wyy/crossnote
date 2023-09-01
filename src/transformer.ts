@@ -1,10 +1,10 @@
-// import * as Baby from "babyparse"
-import * as Baby from 'babyparse';
 import * as fs from 'fs';
 import less from 'less';
+import * as Papa from 'papaparse';
 import * as path from 'path';
 import request from 'request';
 import * as temp from 'temp';
+import { CustomSubjects } from './custom-subjects';
 import HeadingIdGenerator from './heading-id-generator';
 import {
   BlockAttributes,
@@ -12,16 +12,9 @@ import {
   stringifyBlockAttributes,
 } from './lib/block-attributes';
 import computeChecksum from './lib/compute-checksum';
-import * as utility from './utility';
-
-// import * as request from 'request'
-// import * as less from "less"
-// import * as temp from "temp"
-// temp.track()
-
-import { CustomSubjects } from './custom-subjects';
 import * as PDF from './pdf';
 import { HeadingData } from './toc';
+import * as utility from './utility';
 
 export interface TransformMarkdownOutput {
   outputString: string;
@@ -850,7 +843,7 @@ export async function transformMarkdown(
               output = '<div>' + fileContent + '</div>  ';
             } else if (extname === '.csv') {
               // csv file
-              const parseResult = Baby.parse(fileContent.trim());
+              const parseResult = Papa.parse(fileContent.trim());
               if (parseResult.errors.length) {
                 output = `<pre>${parseResult.errors[0]}</pre>  `;
               } else {

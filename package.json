@@ -51,7 +51,6 @@
   "dependencies": {
     "@viz-js/viz": "^3.1.0",
     "async-mutex": "^0.4.0",
-    "babyparse": "^0.4.6",
     "cheerio": "^1.0.0-rc.12",
     "chrome-location": "^1.2.1",
     "crypto-js": "^4.1.1",
@@ -74,6 +73,7 @@
     "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
     "pako": "^2.1.0",
+    "papaparse": "^5.4.1",
     "puppeteer-core": "^21.1.0",
     "qiniu": "^7.9.0",
     "request": "^2.88.0",
@@ -100,6 +100,7 @@
     "@types/mkdirp": "^1.0.0",
     "@types/node": "^20.5.7",
     "@types/pako": "^2.0.0",
+    "@types/papaparse": "^5.3.8",
     "@types/prismjs": "^1.26.0",
     "@types/temp": "^0.9.1",
     "@types/vfile": "^3.0.2",
