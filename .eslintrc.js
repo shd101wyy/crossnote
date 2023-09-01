@@ -16,5 +16,6 @@ module.exports = {
     'out/**',
     'styles/**',
     'dependencies/**',
+    'src/prism/prism.js',
   ],
 };
