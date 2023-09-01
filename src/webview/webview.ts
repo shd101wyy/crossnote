@@ -827,44 +827,42 @@ import CryptoJS from 'crypto-js';
     /**
      * render mermaid graphs
      */
-    private renderMermaid() {
-      return new Promise<void>(resolve => {
-        const mermaid = window['mermaid']; // window.mermaid doesn't work, has to be written as window['mermaid']
-        const mermaidGraphs = this.previewElement.getElementsByClassName(
-          'mermaid',
-        );
+    private async renderMermaid() {
+      const mermaid = window['mermaid']; // window.mermaid doesn't work, has to be written as window['mermaid']
+      const mermaidGraphs = this.previewElement.getElementsByClassName(
+        'mermaid',
+      );
 
-        const validMermaidGraphs: HTMLElement[] = [];
-        for (let i = 0; i < mermaidGraphs.length; i++) {
-          const mermaidGraph = mermaidGraphs[i] as HTMLElement;
+      const validMermaidGraphs: HTMLElement[] = [];
+      for (let i = 0; i < mermaidGraphs.length; i++) {
+        const mermaidGraph = mermaidGraphs[i] as HTMLElement;
+        try {
+          await mermaid.parse((mermaidGraph.textContent ?? '').trim());
+          validMermaidGraphs.push(mermaidGraph);
+        } catch (error) {
+          mermaidGraph.innerHTML = `<pre class="language-text">${error.toString()}</pre>`;
+        }
+      }
+
+      if (!validMermaidGraphs.length) {
+        return;
+      } else {
+        validMermaidGraphs.forEach(async (mermaidGraph, offset) => {
+          const svgId = 'svg-mermaid-' + Date.now() + '-' + offset;
+          const code = (mermaidGraph.textContent ?? '').trim();
           try {
-            mermaid.parse((mermaidGraph.textContent ?? '').trim());
-            validMermaidGraphs.push(mermaidGraph);
+            const { svg } = await mermaid.render(svgId, code);
+            mermaidGraph.innerHTML = svg;
           } catch (error) {
-            mermaidGraph.innerHTML = `<pre class="language-text">${error.str.toString()}</pre>`;
-          }
-        }
-
-        if (!validMermaidGraphs.length) {
-          return resolve();
-        } else {
-          validMermaidGraphs.forEach(async (mermaidGraph, offset) => {
-            const svgId = 'svg-mermaid-' + Date.now() + '-' + offset;
-            const code = (mermaidGraph.textContent ?? '').trim();
-            try {
-              const { svg } = await mermaid.render(svgId, code);
-              mermaidGraph.innerHTML = svg;
-            } catch (error) {
-              const noiseElement = document.getElementById('d' + svgId);
-              if (noiseElement) {
-                noiseElement.style.display = 'none';
-              }
-              mermaidGraph.innerHTML = `<pre class="language-text">${error.toString()}</pre>`;
+            const noiseElement = document.getElementById('d' + svgId);
+            if (noiseElement) {
+              noiseElement.style.display = 'none';
             }
-          });
-          return resolve();
-        }
-      });
+            mermaidGraph.innerHTML = `<pre class="language-text">${error.toString()}</pre>`;
+          }
+        });
+        return;
+      }
     }
 
     /**
@@ -1113,6 +1111,7 @@ import CryptoJS from 'crypto-js';
      */
     private async initEvents() {
       await Promise.all([this.renderMathJax(), this.renderWavedrom()]);
+
       this.previewElement.innerHTML = this.hiddenPreviewElement.innerHTML;
       this.hiddenPreviewElement.innerHTML = '';
 
