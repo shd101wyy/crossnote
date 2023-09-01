@@ -1,5 +1,5 @@
 /**
- * Convert Mume markdown to Githb Flavored Markdown
+ * Convert Crossnote markdown to Githb Flavored Markdown
  */
 import * as fs from 'fs';
 import { escape } from 'html-escaper';
@@ -271,7 +271,7 @@ export async function markdownConvert(
     text = await onDidTransformMarkdown(text);
   }
 
-  // replace [MUMETOC]
+  // replace [CROSSNOTETOC]
   const tocBracketEnabled = data.tocBracketEnabled;
   if (tocBracketEnabled) {
     // [TOC]
@@ -282,7 +282,10 @@ export async function markdownConvert(
       depthTo: 6,
       tab: '  ',
     });
-    text = text.replace(/^\s*\[MUMETOC\]\s*/gm, '\n\n' + tocMarkdown + '\n\n');
+    text = text.replace(
+      /^\s*\[CROSSNOTETOC\]\s*/gm,
+      '\n\n' + tocMarkdown + '\n\n',
+    );
   }
 
   // change link path to project '/' path

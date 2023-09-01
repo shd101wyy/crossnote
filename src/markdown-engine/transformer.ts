@@ -128,7 +128,7 @@ function downloadFileIfNecessary(filePath: string): Promise<string> {
     }
 
     if (!DOWNLOADS_TEMP_FOLDER) {
-      DOWNLOADS_TEMP_FOLDER = temp.mkdirSync('mume_downloads');
+      DOWNLOADS_TEMP_FOLDER = temp.mkdirSync('crossnote_downloads');
     }
     request.get(
       { url: filePath, encoding: 'binary' },
@@ -138,7 +138,7 @@ function downloadFileIfNecessary(filePath: string): Promise<string> {
         } else {
           const localFilePath =
             path.resolve(
-              DOWNLOADS_TEMP_FOLDER ?? '/tmp/mume_downloads',
+              DOWNLOADS_TEMP_FOLDER ?? '/tmp/crossnote_downloads',
               computeChecksum(filePath),
             ) + path.extname(filePath);
           await fs.writeFile(localFilePath, body, 'binary');
@@ -454,7 +454,7 @@ export async function transformMarkdown(
           // markdown-it
           if (!forMarkdownExport) {
             // convert to <h? ... ></h?>
-            line = `${tag} ${heading}\n<p class="mume-header ${classes}" id="${id}"></p>`;
+            line = `${tag} ${heading}\n<p class="crossnote-header ${classes}" id="${id}"></p>`;
           } else {
             line = `${tag} ${heading}`;
           }
@@ -532,10 +532,10 @@ export async function transformMarkdown(
                 outputString = outputString + `<!-- ${content} -->` + '\n';
                 continue;
               } else {
-                // return helper(commentEnd, lineNo + newlines, outputString + '\n[MUMESLIDE]\n\n')
+                // return helper(commentEnd, lineNo + newlines, outputString + '\n[CROSSNOTESLIDE]\n\n')
                 i = commentEnd;
                 lineNo = lineNo + newlines;
-                outputString = outputString + '\n[MUMESLIDE]\n\n';
+                outputString = outputString + '\n[CROSSNOTESLIDE]\n\n';
                 continue;
               }
             }
@@ -556,10 +556,10 @@ export async function transformMarkdown(
           outputString += createAnchor(lineNo); // insert anchor for scroll sync
         }
         tocBracketEnabled = true;
-        // return helper(end+1, lineNo+1, outputString + `\n[MUMETOC]\n\n`)
+        // return helper(end+1, lineNo+1, outputString + `\n[CROSSNOTETOC]\n\n`)
         i = end + 1;
         lineNo = lineNo + 1;
-        outputString = outputString + `\n[MUMETOC]\n\n`;
+        outputString = outputString + `\n[CROSSNOTETOC]\n\n`;
         continue;
       } else if (
         /* tslint:disable-next-line:no-conditional-assignment */
@@ -919,7 +919,7 @@ export async function transformMarkdown(
               output = `\`\`\`puml ${stringifyBlockAttributes(
                 config,
                 true,
-              )}\n' @mume_file_directory_path:${path.dirname(
+              )}\n' @crossnote_file_directory_path:${path.dirname(
                 absoluteFilePath,
               )}\n${fileContent}\n\`\`\`  `;
             } else {

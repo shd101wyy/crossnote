@@ -1,11 +1,11 @@
 {
-  "name": "@shd101wyy/mume",
-  "version": "0.7.8",
-  "description": "A powerful markdown tool",
+  "name": "crossnote",
+  "version": "0.8.0",
+  "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
   ],
-  "repository": "https://github.com/shd101wyy/mume",
+  "repository": "https://github.com/shd101wyy/crossnote",
   "license": "NCSA",
   "contributors": [
     "shd101wyy",
@@ -16,12 +16,12 @@
     ".": {
       "import": "./out/esm/index.mjs",
       "require": "./out/cjs/index.cjs",
-      "types": "./out/types/src/mume.d.ts"
+      "types": "./out/types/src/index.d.ts"
     }
   },
   "main": "out/cjs/index.cjs",
   "module": "out/esm/index.mjs",
-  "types": "out/types/src/mume.d.ts",
+  "types": "out/types/src/index.d.ts",
   "files": [
     "docs",
     "out"

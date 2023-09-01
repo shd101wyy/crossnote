@@ -112,9 +112,9 @@ export async function render({
   plantumlJarPath: string;
 }): Promise<string> {
   content = content.trim();
-  // ' @mume_file_directory_path:/fileDirectoryPath
+  // ' @crossnote_file_directory_path:/fileDirectoryPath
   // fileDirectoryPath
-  const match = content.match(/^'\s@mume_file_directory_path:(.+)$/m);
+  const match = content.match(/^'\s@crossnote_file_directory_path:(.+)$/m);
   if (match) {
     fileDirectoryPath = match[1];
   }

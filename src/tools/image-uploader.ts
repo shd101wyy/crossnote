@@ -105,7 +105,7 @@ function smmsUploadImage(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const headers = {
       authority: 'sm.ms',
-      'user-agent': 'mume',
+      'user-agent': 'crossnote',
       referer: '',
     };
     request.post(

@@ -29,7 +29,7 @@ export function toSVGMarkdown(
   return new Promise<string>((resolve, reject) => {
     if (!svgDirectoryPath) {
       if (!SVG_DIRECTORY_PATH) {
-        SVG_DIRECTORY_PATH = temp.mkdirSync('mume_pdf');
+        SVG_DIRECTORY_PATH = temp.mkdirSync('crossnote_pdf');
       }
       svgDirectoryPath = SVG_DIRECTORY_PATH;
     }
@@ -41,7 +41,7 @@ export function toSVGMarkdown(
       [
         `"${pdfFilePath}"`,
         `"${path.resolve(
-          svgDirectoryPath ?? `/tmp/mume_pdf`,
+          svgDirectoryPath ?? `/tmp/crossnote_pdf`,
           svgFilePrefix + '%d.svg',
         )}"`,
         'all',

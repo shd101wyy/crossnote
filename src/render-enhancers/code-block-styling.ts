@@ -118,7 +118,6 @@ function addLineNumbersIfNecessary($container, code: string): void {
 }
 
 /**
- * https://github.com/shd101wyy/mume/issues/97
  * @param $container
  * @param code
  * @param highlight

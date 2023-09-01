@@ -11,7 +11,7 @@ export async function svgElementToPNGFile(
   pngFilePath: string,
   imageMagickPath: string = '',
 ): Promise<string> {
-  const info = await tempOpen({ prefix: 'mume-svg', suffix: '.svg' });
+  const info = await tempOpen({ prefix: 'crossnote-svg', suffix: '.svg' });
   fs.writeFileSync(info.fd, svgElement); // write svgElement to temp .svg file
   const args = [info.path, pngFilePath];
   try {

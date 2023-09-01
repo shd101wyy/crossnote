@@ -216,7 +216,7 @@ export class MarkdownEngine {
     if (!codeChunkData) {
       return;
     }
-    codeChunkData.result = CryptoJS.AES.decrypt(result, 'mume').toString(
+    codeChunkData.result = CryptoJS.AES.decrypt(result, 'crossnote').toString(
       CryptoJS.enc.Utf8,
     );
   }
@@ -752,7 +752,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       <html>
       <head>
         <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-        <meta id="mume-data" data-config="${escape(
+        <meta id="crossnote-data" data-config="${escape(
           JSON.stringify({ ...this.notebook.config, ...config }),
         )}" data-time="${Date.now()}">
         <meta charset="UTF-8">
@@ -784,7 +784,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         ${head}
       </head>
       <body class="preview-container">
-        <div class="mume markdown-preview" for="preview" ${
+        <div class="crossnote markdown-preview" for="preview" ${
           isPresentationMode ? 'data-presentation-mode' : ''
         }>
           ${html}
@@ -1238,7 +1238,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     <body ${options.isForPrint ? '' : 'for="html-export"'} ${
       yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
     }>
-      <div class="mume markdown-preview ${princeClass} ${elementClass}" ${
+      <div class="crossnote markdown-preview ${princeClass} ${elementClass}" ${
       yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
     } ${elementId ? `id="${elementId}"` : ''}>
       ${html}
@@ -1298,7 +1298,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     });
     // create temp file
     const info = await utility.tempOpen({
-      prefix: 'mume',
+      prefix: 'crossnote',
       suffix: '.html',
     });
 
@@ -1419,7 +1419,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       headless: true,
     });
 
-    const info = await utility.tempOpen({ prefix: 'mume', suffix: '.html' });
+    const info = await utility.tempOpen({
+      prefix: 'crossnote',
+      suffix: '.html',
+    });
     fs.writeFileSync(info.fd, html);
 
     const page = await browser.newPage();
@@ -1504,7 +1507,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       offline: true,
     });
 
-    const info = await utility.tempOpen({ prefix: 'mume', suffix: '.html' });
+    const info = await utility.tempOpen({
+      prefix: 'crossnote',
+      suffix: '.html',
+    });
     fs.writeFileSync(info.fd, html);
 
     if (yamlConfig['isPresentationMode']) {
@@ -1861,7 +1867,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${mathStyle}
   </head>
   <body ${path.extname(dest) === '.html' ? 'for="html-export"' : ''}>
-    <div class="mume markdown-preview">
+    <div class="crossnote markdown-preview">
     ${outputHTML}
     </div>
   </body>
@@ -1884,7 +1890,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     try {
-      const info = await utility.tempOpen({ prefix: 'mume', suffix: '.html' });
+      const info = await utility.tempOpen({
+        prefix: 'crossnote',
+        suffix: '.html',
+      });
       fs.writeFileSync(info.fd, html);
       await ebookConvert(info.path, dest, ebookConfig);
       deleteDownloadedImages();
@@ -2271,7 +2280,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     slideConfigs: JsonObject[],
     useRelativeFilePath: boolean,
   ) {
-    let slides = html.split('<p>[MUMESLIDE]</p>');
+    let slides = html.split('<p>[CROSSNOTESLIDE]</p>');
     const before = slides[0];
     slides = slides.slice(1);
 
@@ -2428,7 +2437,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
 
       if (line.match(/^\[toc\]/i) && !inCodeBlock) {
-        line = '[MUMETOC]';
+        line = '[CROSSNOTETOC]';
       }
 
       outputString += line + '\n';
@@ -2598,7 +2607,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (tocBracketEnabled) {
       // [TOC]
-      html = html.replace(/^\s*<p>\[MUMETOC\]<\/p>\s*/gm, this.tocHTML);
+      html = html.replace(/^\s*<p>\[CROSSNOTETOC\]<\/p>\s*/gm, this.tocHTML);
     }
 
     /**

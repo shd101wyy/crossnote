@@ -14,7 +14,7 @@ export async function mermaidToPNG(
   themeName,
 ): Promise<string> {
   const info = await tempOpen({
-    prefix: 'mume-mermaid',
+    prefix: 'crossnote-mermaid',
     suffix: '.mmd',
   });
   fs.writeFileSync(info.fd, mermaidCode);

@@ -45,13 +45,13 @@ import CryptoJS from 'crypto-js';
     private doneLoadingPreview: boolean = false;
 
     /**
-     * This is the element with class `mume`
+     * This is the element with class `crossnote`
      * The final html is rendered by that previewElement
      */
     private previewElement: HTMLElement;
 
     /**
-     * .mume.hidden-preview element
+     * .crossnote.hidden-preview element
      * HiddenPreviewElement is used to render html and then put the rendered html result to previewElement
      */
     private hiddenPreviewElement: HTMLElement;
@@ -154,10 +154,10 @@ import CryptoJS from 'crypto-js';
     constructor() {
       /** init preview elements */
       const previewElement = document.getElementsByClassName(
-        'mume',
+        'crossnote',
       )[0] as HTMLElement;
       const hiddenPreviewElement = document.createElement('div');
-      hiddenPreviewElement.classList.add('mume');
+      hiddenPreviewElement.classList.add('crossnote');
       hiddenPreviewElement.classList.add('markdown-preview');
       hiddenPreviewElement.classList.add('hidden-preview');
       hiddenPreviewElement.setAttribute('for', 'preview');
@@ -172,8 +172,9 @@ import CryptoJS from 'crypto-js';
 
       /** load config */
       this.config = JSON.parse(
-        document.getElementById('mume-data')?.getAttribute('data-config') ??
-          '{}',
+        document
+          .getElementById('crossnote-data')
+          ?.getAttribute('data-config') ?? '{}',
       );
       this.sourceUri = this.config['sourceUri'];
 
@@ -1001,7 +1002,7 @@ import CryptoJS from 'crypto-js';
 
           const result = CryptoJS.AES.encrypt(
             codeChunk.getElementsByClassName('output-div')[0].outerHTML,
-            'mume',
+            'crossnote',
           ).toString();
 
           this.postMessage('cacheCodeChunkResult', [
@@ -1256,7 +1257,7 @@ import CryptoJS from 'crypto-js';
         this.previewElement.id = id || '';
         this.previewElement.setAttribute(
           'class',
-          `mume markdown-preview ${classes}`,
+          `crossnote markdown-preview ${classes}`,
         );
 
         // scroll to initial position

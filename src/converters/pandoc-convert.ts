@@ -417,7 +417,7 @@ export async function pandocConvert(
   // add front-matter(yaml) back to text
   text = '---\n' + YAML.stringify(config) + '---\n' + text;
 
-  // replace [MUMETOC]
+  // replace [CROSSNOTETOC]
   const tocBracketEnabled = data.tocBracketEnabled;
   if (tocBracketEnabled) {
     // [TOC]
@@ -428,7 +428,10 @@ export async function pandocConvert(
       depthTo: 6,
       tab: '  ',
     });
-    text = text.replace(/^\s*\[MUMETOC\]\s*/gm, '\n\n' + tocMarkdown + '\n\n');
+    text = text.replace(
+      /^\s*\[CROSSNOTETOC\]\s*/gm,
+      '\n\n' + tocMarkdown + '\n\n',
+    );
   }
 
   // change link path to relative path

@@ -12,7 +12,7 @@ export async function render(
   projectDirectoryPath: string,
 ): Promise<string> {
   const info = await tempOpen({
-    prefix: 'mume-wavedrom',
+    prefix: 'crossnote-wavedrom',
     suffix: '.js',
   });
   await fs.writeFileSync(info.fd, wavedromCode);
