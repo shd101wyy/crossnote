@@ -1,7 +1,7 @@
-import { readFile } from "fs";
-import { extname } from "path";
-import { MarkdownEngineConfig } from "../mume";
-import { removeFileProtocol } from "../utility";
+import { readFile } from 'fs';
+import { extname } from 'path';
+import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { removeFileProtocol } from '../utility';
 
 /**
  * Load local svg files and embed them into html directly.
@@ -12,28 +12,28 @@ export default async function enhance(
   options: MarkdownEngineConfig,
   resolveFilePath: (path: string, useRelativeFilePath: boolean) => string,
 ): Promise<void> {
-  const asyncFunctions = [];
-  $("img").each((i, img) => {
+  const asyncFunctions: Promise<string | null>[] = [];
+  $('img').each((i, img) => {
     const $img = $(img);
-    let src = resolveFilePath($img.attr("src"), false);
+    let src = resolveFilePath($img.attr('src'), false);
 
-    const fileProtocolMatch = src.match(/^(file|vscode\-resource):\/\/+/);
+    const fileProtocolMatch = src.match(/^(file|vscode-resource):\/\/+/);
     if (fileProtocolMatch) {
       src = removeFileProtocol(src);
-      src = src.replace(/\?(\.|\d)+$/, ""); // remove cache
+      src = src.replace(/\?(\.|\d)+$/, ''); // remove cache
       const imageType = extname(src).slice(1);
-      if (imageType !== "svg") {
+      if (imageType !== 'svg') {
         return;
       }
       asyncFunctions.push(
-        new Promise((resolve, reject) => {
+        new Promise(resolve => {
           readFile(decodeURI(src), (error, data) => {
             if (error) {
               return resolve(null);
             }
-            const base64 = new Buffer(data).toString("base64");
+            const base64 = new Buffer(data).toString('base64');
             $img.attr(
-              "src",
+              'src',
               `data:image/svg+xml;charset=utf-8;base64,${base64}`,
             );
             return resolve(base64);

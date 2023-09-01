@@ -1,29 +1,18 @@
-import { resolve } from "path";
-import { extensionDirectoryPath } from "./utility";
+import { instance, RenderOptions } from '@viz-js/viz';
 
-/* tslint:disable-next-line:no-var-requires */
-const _VIZ = require(resolve(
-  extensionDirectoryPath,
-  "./dependencies/viz/viz.js",
-));
+type ValueType<T> = T extends Promise<infer U> ? U : T;
 
-/* tslint:disable-next-line:no-var-requires */
-const { Module, render } = require(resolve(
-  extensionDirectoryPath,
-  "./dependencies/viz/full.render.js",
-));
+let viz: ValueType<ReturnType<typeof instance>> | null = null;
 
-let viz = null;
-/**
- *
+/*
  * @param renderOption https://github.com/mdaines/viz.js/wiki/API#render-options
  */
-export async function Viz(digraph: string, renderOption: object) {
+export async function Viz(digraph: string, renderOption: RenderOptions) {
   try {
     if (!viz) {
-      viz = new _VIZ({ Module, render });
+      viz = await instance();
     }
-    return await viz.renderString(digraph, renderOption);
+    return await viz.renderString(digraph, { format: 'svg', ...renderOption });
   } catch (error) {
     // Create a new Viz instance (@see Caveats page for more info)
     viz = null;

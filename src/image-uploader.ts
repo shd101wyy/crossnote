@@ -1,9 +1,9 @@
 // sm.ms api
-import * as fs from "fs";
-import * as path from "path";
-import * as request from "request";
-import * as utility from "./utility";
-import { getExtensionConfigPath } from "./mume";
+import * as fs from 'fs';
+import * as path from 'path';
+import * as qiniu from 'qiniu';
+import * as request from 'request';
+import * as utility from './utility';
 
 // imgur api
 // referred from node-imgur:
@@ -12,18 +12,22 @@ import { getExtensionConfigPath } from "./mume";
 // registered 'node-imgur' app and is available
 // here for public, anonymous usage via this node
 // module only.
-const IMGUR_API_URL = process.env.IMGUR_API_URL || "https://api.imgur.com/3/";
-const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID || "f0ea04148a54268";
+const IMGUR_API_URL = process.env.IMGUR_API_URL || 'https://api.imgur.com/3/';
+const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID || 'f0ea04148a54268';
 
 /**
  *
  * @param imageFilePath local image file path
  * @param imageUrl http://... image url
  */
-async function addImageURLToHistory(imageFilePath, imageUrl) {
+async function addImageURLToHistory(
+  imageFilePath,
+  imageUrl,
+  imageHistoryPath?: string,
+) {
   let description;
-  if (imageFilePath.lastIndexOf(".")) {
-    description = imageFilePath.slice(0, imageFilePath.lastIndexOf("."));
+  if (imageFilePath.lastIndexOf('.')) {
+    description = imageFilePath.slice(0, imageFilePath.lastIndexOf('.'));
   } else {
     description = imageFilePath;
   }
@@ -31,15 +35,20 @@ async function addImageURLToHistory(imageFilePath, imageUrl) {
   const markdownImage = `![${description}](${imageUrl})`;
 
   // TODO: save to history
+  /*
   const imageHistoryPath = path.resolve(
     getExtensionConfigPath(),
-    "./image_history.md",
+    './image_history.md',
   );
+  */
+  if (!imageHistoryPath) {
+    return;
+  }
   let data: string;
   try {
-    data = await utility.readFile(imageHistoryPath, { encoding: "utf-8" });
+    data = await utility.readFile(imageHistoryPath, { encoding: 'utf-8' });
   } catch (e) {
-    data = "";
+    data = '';
   }
   data =
     `
@@ -52,7 +61,7 @@ ${new Date().toString()}
 ---
 
 ` + data;
-  utility.writeFile(imageHistoryPath, data, { encoding: "utf-8" });
+  utility.writeFile(imageHistoryPath, data, { encoding: 'utf-8' });
 }
 
 /**
@@ -68,7 +77,7 @@ function imgurUploadImage(filePath: string): Promise<string> {
     request.post(
       {
         url: `${IMGUR_API_URL}image`,
-        encoding: "utf8",
+        encoding: 'utf8',
         formData: { image: fs.createReadStream(filePath) },
         json: true,
         headers,
@@ -96,13 +105,13 @@ function imgurUploadImage(filePath: string): Promise<string> {
 function smmsUploadImage(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const headers = {
-      "authority": "sm.ms",
-      "user-agent": "mume",
-      "referer": "",
+      authority: 'sm.ms',
+      'user-agent': 'mume',
+      referer: '',
     };
     request.post(
       {
-        url: "https://sm.ms/api/v2/upload",
+        url: 'https://sm.ms/api/v2/upload',
         formData: { smfile: fs.createReadStream(filePath) },
         headers,
       },
@@ -110,8 +119,8 @@ function smmsUploadImage(filePath: string): Promise<string> {
         try {
           body = JSON.parse(body);
           if (err) {
-            return reject("Failed to upload image");
-          } else if (body.code === "error") {
+            return reject('Failed to upload image');
+          } else if (body.code === 'error') {
             return reject(body.msg);
           } else {
             const url = body.data.url;
@@ -119,7 +128,7 @@ function smmsUploadImage(filePath: string): Promise<string> {
             return resolve(url);
           }
         } catch (error) {
-          return reject("Failed to connect to sm.ms host");
+          return reject('Failed to connect to sm.ms host');
         }
       },
     );
@@ -143,19 +152,18 @@ function qiniuUploadImage(
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!AccessKey) {
-      return reject("Error: Qiniu AccessKey is missing");
+      return reject('Error: Qiniu AccessKey is missing');
     }
     if (!SecretKey) {
-      return reject("Error: Qiniu SecretKey is missing");
+      return reject('Error: Qiniu SecretKey is missing');
     }
     if (!Bucket) {
-      return reject("Error: Qiniu Bucket is missing");
+      return reject('Error: Qiniu Bucket is missing');
     }
     if (!Domain) {
-      return reject("Error: Qiniu Domain is missing");
+      return reject('Error: Qiniu Domain is missing');
     }
 
-    const qiniu = require("qiniu");
     const mac = new qiniu.auth.digest.Mac(AccessKey, SecretKey);
     const putPolicy = new qiniu.rs.PutPolicy({ scope: Bucket });
     const uploadToken = putPolicy.uploadToken(mac);
@@ -197,13 +205,13 @@ function qiniuUploadImage(
 export function uploadImage(
   imageFilePath: string,
   {
-    method = "imgur",
-    qiniu = { AccessKey: "", SecretKey: "", Bucket: "", Domain: "" },
+    method = 'imgur',
+    qiniu = { AccessKey: '', SecretKey: '', Bucket: '', Domain: '' },
   },
 ): Promise<string> {
-  if (method === "imgur") {
+  if (method === 'imgur') {
     return imgurUploadImage(imageFilePath);
-  } else if (method === "qiniu") {
+  } else if (method === 'qiniu') {
     return qiniuUploadImage(
       imageFilePath,
       qiniu.AccessKey,

@@ -1,20 +1,26 @@
 /**
  * The core of mume package.
  */
-import * as fs from "fs";
-import * as path from "path";
-import * as mkdirp from "mkdirp";
-
-import * as utility_ from "./utility";
+import * as fs from 'fs';
+import * as mkdirp from 'mkdirp';
+import * as path from 'path';
+import * as utility_ from './utility';
 
 let INITIALIZED = false;
-let CONFIG_CHANGE_CALLBACK: () => void = null;
+let CONFIG_CHANGE_CALLBACK: (() => void) | null = null;
 
 export const utility = utility_;
 export const configs = utility.configs;
-export { MarkdownEngineConfig } from "./markdown-engine-config";
-export { MarkdownEngine } from "./markdown-engine";
-export { CodeChunkData } from "./code-chunk-data";
+export { CodeChunkData } from './code-chunk-data.js';
+export {
+  CodeBlockTheme,
+  MarkdownEngineConfig,
+  MathRenderingOption,
+  MermaidTheme,
+  PreviewTheme,
+  RevealJsTheme,
+} from './markdown-engine-config.js';
+export { MarkdownEngine } from './markdown-engine.js';
 
 let extensionConfigPath = utility.getConfigPath();
 
@@ -41,45 +47,45 @@ export async function init(configPath: string | null = null): Promise<void> {
   configs.config = await utility.getExtensionConfig(configPath);
 
   fs.watch(configPath, (eventType, fileName) => {
-    if (eventType === "change") {
-      if (fileName === "style.less") {
+    if (eventType === 'change' && configPath) {
+      if (fileName === 'style.less') {
         // || fileName==='mermaid_config.js' || fileName==='mathjax_config')
-        utility.getGlobalStyles(configPath).then((css) => {
+        utility.getGlobalStyles(configPath).then(css => {
           configs.globalStyle = css;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }
         });
-      } else if (fileName === "mermaid_config.js") {
-        utility.getMermaidConfig(configPath).then((mermaidConfig) => {
+      } else if (fileName === 'mermaid_config.js') {
+        utility.getMermaidConfig(configPath).then(mermaidConfig => {
           configs.mermaidConfig = mermaidConfig;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }
         });
-      } else if (fileName === "mathjax_config.js") {
-        utility.getMathJaxConfig(configPath).then((mathjaxConfig) => {
+      } else if (fileName === 'mathjax_config_v3.js') {
+        utility.getMathJaxConfig(configPath).then(mathjaxConfig => {
           configs.mathjaxConfig = mathjaxConfig;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }
         });
-      } else if (fileName === "katex_config.js") {
-        utility.getKaTeXConfig(configPath).then((katexConfig) => {
+      } else if (fileName === 'katex_config.js') {
+        utility.getKaTeXConfig(configPath).then(katexConfig => {
           configs.katexConfig = katexConfig;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }
         });
-      } else if (fileName === "parser.js") {
-        utility.getParserConfig(configPath).then((parserConfig) => {
+      } else if (fileName === 'parser.js') {
+        utility.getParserConfig(configPath).then(parserConfig => {
           configs.parserConfig = parserConfig;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();
           }
         });
-      } else if (fileName === "config.json") {
-        utility.getExtensionConfig(configPath).then((config) => {
+      } else if (fileName === 'config.json') {
+        utility.getExtensionConfig(configPath).then(config => {
           configs.config = config;
           if (CONFIG_CHANGE_CALLBACK) {
             CONFIG_CHANGE_CALLBACK();

@@ -1,18 +1,12 @@
-import { spawn } from "child_process";
-import * as path from "path";
-import { getExtensionConfigPath } from "./mume";
-import PlantUMLServerTask from "./puml-server";
-import { extensionDirectoryPath } from "./utility";
-
-const PlantUMLJarPath = path.resolve(
-  extensionDirectoryPath,
-  "./dependencies/plantuml/plantuml.jar",
-);
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import { existsSync } from 'fs';
+import * as path from 'path';
+import PlantUMLServerTask from './puml-server';
 
 /**
  * key is fileDirectoryPath, value is PlantUMLTask
  */
-const TASKS: { [key: string]: PlantUMLTask | PlantUMLServerTask } = {};
+const TASKS: { [key: string]: PlantUMLTask | PlantUMLServerTask | null } = {};
 
 /**
  * key is fileDirectoryPath, value is String
@@ -25,14 +19,16 @@ const CHUNKS: { [key: string]: string } = {};
 const CALLBACKS: { [key: string]: ((result: string) => void)[] } = {};
 
 class PlantUMLTask {
+  private plantumlJarPath: string;
   private fileDirectoryPath: string;
   private chunks: string;
   private callbacks: ((result: string) => void)[];
-  private task;
+  private task: ChildProcessWithoutNullStreams | null;
 
-  constructor(fileDirectoryPath: string) {
+  constructor(plantumlJarPath: string, fileDirectoryPath: string) {
+    this.plantumlJarPath = plantumlJarPath;
     this.fileDirectoryPath = fileDirectoryPath;
-    this.chunks = CHUNKS[this.fileDirectoryPath] || "";
+    this.chunks = CHUNKS[this.fileDirectoryPath] || '';
     this.callbacks = CALLBACKS[this.fileDirectoryPath] || [];
     this.task = null;
 
@@ -40,55 +36,57 @@ class PlantUMLTask {
   }
 
   public generateSVG(content: string): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       this.callbacks.push(resolve);
-      this.task.stdin.write(content + "\n");
+      this.task?.stdin.write(content + '\n');
     });
   }
 
   private startTask() {
-    this.task = spawn("java", [
-      "-Djava.awt.headless=true",
-      "-Dfile.encoding=UTF-8",
-      "-Dplantuml.include.path=" +
-        [this.fileDirectoryPath, getExtensionConfigPath()].join(path.delimiter),
-      "-jar",
-      PlantUMLJarPath,
+    this.task = spawn('java', [
+      '-Djava.awt.headless=true',
+      '-Dfile.encoding=UTF-8',
+      '-Dplantuml.include.path=' +
+        [this.fileDirectoryPath /*getExtensionConfigPath()*/].join(
+          path.delimiter,
+        ),
+      '-jar',
+      this.plantumlJarPath,
       // '-graphvizdot', 'exe'
-      "-pipe",
-      "-tsvg",
-      "-charset",
-      "UTF-8",
+      '-pipe',
+      '-tsvg',
+      '-charset',
+      'UTF-8',
     ]);
 
-    this.task.stdout.on("data", (chunk) => {
+    this.task.stdout.on('data', chunk => {
       let data = chunk.toString();
       this.chunks += data;
       if (
-        this.chunks.trimRight().endsWith("</svg>") &&
-        this.chunks.match(/<svg/g).length ===
-          this.chunks.match(/<\/svg>/g).length
+        this.chunks.trimRight().endsWith('</svg>') &&
+        (this.chunks.match(/<svg/g) ?? []).length ===
+          (this.chunks.match(/<\/svg>/g) ?? []).length
       ) {
         data = this.chunks;
-        this.chunks = ""; // clear CHUNKS
-        const diagrams = data.split("<?xml ");
-        diagrams.forEach((diagram) => {
+        this.chunks = ''; // clear CHUNKS
+        const diagrams = data.split('<?xml ');
+        diagrams.forEach(diagram => {
           if (diagram.length) {
             const callback = this.callbacks.shift();
             if (callback) {
-              callback(diagram.startsWith("<") ? diagram : "<?xml " + diagram);
+              callback(diagram.startsWith('<') ? diagram : '<?xml ' + diagram);
             }
           }
         });
       }
     });
 
-    this.task.on("error", (err) => {
+    this.task.on('error', err => {
       // Return error object to rendered doc
-      this.callbacks.forEach((cb) => cb(JSON.stringify(err)));
+      this.callbacks.forEach(cb => cb(JSON.stringify(err)));
       this.closeSelf();
     });
-    this.task.on("exit", () => this.closeSelf());
+    this.task.on('exit', () => this.closeSelf());
   }
 
   /**
@@ -102,11 +100,17 @@ class PlantUMLTask {
 }
 
 // async call
-export async function render(
-  content: string,
-  fileDirectoryPath: string = "",
-  serverURL: string = "",
-): Promise<string> {
+export async function render({
+  content,
+  fileDirectoryPath,
+  serverURL,
+  plantumlJarPath,
+}: {
+  content: string;
+  fileDirectoryPath: string;
+  serverURL: string;
+  plantumlJarPath: string;
+}): Promise<string> {
   content = content.trim();
   // ' @mume_file_directory_path:/fileDirectoryPath
   // fileDirectoryPath
@@ -115,10 +119,10 @@ export async function render(
     fileDirectoryPath = match[1];
   }
 
-  const startMatch = content.match(/^\@start(.+?)\s+/m);
+  const startMatch = content.match(/^@start(.+?)\s+/m);
   if (startMatch) {
-    if (!content.match(new RegExp(`^\\@end${startMatch[1]}`, "m"))) {
-      content = "@startuml\n@enduml"; // error
+    if (!content.match(new RegExp(`^\\@end${startMatch[1]}`, 'm'))) {
+      content = '@startuml\n@enduml'; // error
     }
   } else {
     content = `@startuml
@@ -127,13 +131,25 @@ ${content}
   }
 
   if (!TASKS[fileDirectoryPath]) {
-    if (!!serverURL) {
+    if (serverURL) {
       TASKS[fileDirectoryPath] = new PlantUMLServerTask(serverURL);
     } else {
+      if (!existsSync(plantumlJarPath)) {
+        throw new Error(`plantuml.jar file not found: "${plantumlJarPath}"
+
+Please download plantuml.jar from https://plantuml.com/download.  
+${plantumlJarPath ? `Then please put it at "${plantumlJarPath}"` : ``}
+
+If you are using VSCode, then please set the setting "markdown-preview-enhanced.plantumlJarPath" to the absolute path of plantuml.jar file. 
+`);
+      }
       // init `plantuml.jar` task
-      TASKS[fileDirectoryPath] = new PlantUMLTask(fileDirectoryPath);
+      TASKS[fileDirectoryPath] = new PlantUMLTask(
+        plantumlJarPath,
+        fileDirectoryPath,
+      );
     }
   }
 
-  return await TASKS[fileDirectoryPath].generateSVG(content);
+  return (await TASKS[fileDirectoryPath]?.generateSVG(content)) ?? '';
 }

@@ -20,27 +20,27 @@ npm install --save @shd101wyy/mume
 ## Example
 
 ```javascript
-// node.js
-const path = require("path");
-const mume = require("@shd101wyy/mume");
+// CJS
+const path = require('path');
+const mume = require('@shd101wyy/mume');
 
-// es6
+// ESM
 // import * as mume from "@shd101wyy/mume"
 
 async function main() {
-  const configPath = path.resolve(os.tmpdir(), ".mume");
+  const configPath = path.resolve(os.tmpdir(), '.mume');
 
   // if no configPath is specified, the default is "~/.config/mume"
   // but only if the old location (~/.mume) does not exist
   await mume.init(configPath);
 
   const engine = new mume.MarkdownEngine({
-    filePath: "/Users/wangyiyi/Desktop/markdown-example/test3.md",
+    filePath: '/Users/wangyiyi/Desktop/markdown-example/test3.md',
     config: {
       configPath: configPath,
-      previewTheme: "github-light.css",
+      previewTheme: 'github-light.css',
       // revealjsTheme: "white.css"
-      codeBlockTheme: "default.css",
+      codeBlockTheme: 'default.css',
       printBackground: true,
       enableScriptExecution: true, // <= for running code chunks
     },
@@ -53,13 +53,13 @@ async function main() {
   await engine.htmlExport({ offline: false, runAllCodeChunks: true });
 
   // chrome (puppeteer) export
-  await engine.chromeExport({ fileType: "pdf", runAllCodeChunks: true }); // fileType = 'pdf'|'png'|'jpeg'
+  await engine.chromeExport({ fileType: 'pdf', runAllCodeChunks: true }); // fileType = 'pdf'|'png'|'jpeg'
 
   // prince export
   await engine.princeExport({ runAllCodeChunks: true });
 
   // ebook export
-  await engine.eBookExport({ fileType: "epub" }); // fileType = 'epub'|'pdf'|'mobi'|'html'
+  await engine.eBookExport({ fileType: 'epub' }); // fileType = 'epub'|'pdf'|'mobi'|'html'
 
   // pandoc export
   await engine.pandocExport({ runAllCodeChunks: true });
@@ -97,6 +97,7 @@ const config = {
   mathInlineDelimiters: [["$", "$"], ["\\(", "\\)"]],
   mathBlockDelimiters: [["$$", "$$"], ["\\[", "\\]"]],
   mathRenderingOnLineService: "https://latex.codecogs.com/gif.latex", // "https://latex.codecogs.com/svg.latex", "https://latex.codecogs.com/png.latex"
+  mathjaxV3ScriptSrc: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js',
 
   // Enable Wiki Link syntax support. More information can be found a  https://help.github.com/articles/adding-links-to-wikis/
   enableWikiLinkSyntax: true,
@@ -238,14 +239,17 @@ const config = {
   // Puppeteer waits for a certain timeout in milliseconds before the document export.
   puppeteerWaitForTimeout: 0,
 
-  // If set to true, then locally installed puppeteer-core will be required. Otherwise, the puppeteer globally installed by `npm install -g puppeteer` will be required.
-  usePuppeteerCore: true,
-
   // Args passed to puppeteer.launch({args: $puppeteerArgs})
   puppeteerArgs: [],
 
-  // Render using PlantUML server instead of binary. Leave it empty to use the builtin plantuml.jar binary (`java` is required in system path). Eg: "http://localhost:8080/svg/".
-  plantumlServer: "http://localhost:8080/svg/"
+  // Render using PlantUML server instead of binary. Leave it empty to use the plantuml.jar file at `plantumlJarPath` (`java` is required in system path). Eg: "http://localhost:8080/svg/".
+  // You run start a plantuml server by running:
+  // $ docker run -d -p 8080:8080 plantuml/plantuml-server:jetty
+  plantumlServer: "http://localhost:8080/svg/",
+
+  // The absolute of the PlantUML jar file.
+  // The plantuml.jar file could be downloaded from https://sourceforge.net/projects/plantuml/
+  plantumlJarPath: "",
 
   // Example values:
   // - cdn.jsdelivr.net
@@ -253,6 +257,9 @@ const config = {
   // - gcore.jsdelivr.net
   // - testingcf.jsdelivr.net
   jsdelivrCdnHost: "cdn.jsdelivr.net",
+
+  // Kroki server url.
+  krokiServer: "https://kroki.io",
 }
 
 // Init Engine
@@ -270,7 +277,7 @@ Global config files are located in the `$XDG_STATE_HOME/mume` directory, which i
 ## Development
 
 [Visual Studio Code](https://code.visualstudio.com/) is recommended.
-Recommended to use Node.js version 18.
+Recommended to use Node.js version 20.
 
 1.  Clone this project
 2.  Run `yarn` from shell

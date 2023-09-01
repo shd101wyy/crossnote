@@ -1,81 +1,81 @@
-import * as mkdirp from "mkdirp";
-import * as path from "path";
-import { execFile } from "child_process";
+import { execFile } from 'child_process';
+import { mkdirp } from 'mkdirp';
+import * as path from 'path';
 // ebook-convert is requied (calibre), which can be got from https://calibre-ebook.com/download
 // xpath http://www.w3schools.com/xsl/xpath_syntax.asp
 
 function processMetadata(config = {}, args) {
-  const title = config["title"] || "No Title";
-  args.push("--title", title);
+  const title = config['title'] || 'No Title';
+  args.push('--title', title);
 
-  if (config["authors"]) {
-    args.push("--authors", config["authors"]);
+  if (config['authors']) {
+    args.push('--authors', config['authors']);
   }
 
-  if (config["cover"]) {
-    args.push("--cover", config["cover"]);
+  if (config['cover']) {
+    args.push('--cover', config['cover']);
   }
 
-  if (config["comment"]) {
-    args.push("--comments", config["comments"]);
+  if (config['comment']) {
+    args.push('--comments', config['comments']);
   }
 
-  if (config["publisher"]) {
-    args.push("--publisher", config["publisher"]);
+  if (config['publisher']) {
+    args.push('--publisher', config['publisher']);
   }
 
-  if (config["book-producer"]) {
-    args.push("--book-producer", config["book-producer"]);
+  if (config['book-producer']) {
+    args.push('--book-producer', config['book-producer']);
   }
 
-  if (config["pubdate"]) {
-    args.push("--pubdate", config["pubdate"]);
+  if (config['pubdate']) {
+    args.push('--pubdate', config['pubdate']);
   }
 
-  if (config["language"]) {
-    args.push("--language", config["language"]);
+  if (config['language']) {
+    args.push('--language', config['language']);
   }
 
-  if (config["isbn"]) {
-    args.push("--isbn", config["isbn"]);
+  if (config['isbn']) {
+    args.push('--isbn', config['isbn']);
   }
 
-  if (config["tags"]) {
-    args.push("--tags", config["tags"]);
+  if (config['tags']) {
+    args.push('--tags', config['tags']);
   }
 
-  if (config["series"]) {
-    args.push("--series", config["series"]);
+  if (config['series']) {
+    args.push('--series', config['series']);
   }
 
-  if (config["rating"]) {
-    args.push("--rating", config["rating"]);
+  if (config['rating']) {
+    args.push('--rating', config['rating']);
   }
 }
 
 function processAppearance(config = {}, args) {
-  if (config["asciiize"]) {
-    args.push("--asciiize");
+  if (config['asciiize']) {
+    args.push('--asciiize');
   }
 
-  if (config["base-font-size"]) {
-    args.push("--base-font-size=" + config["base-font-size"]);
+  if (config['base-font-size']) {
+    args.push('--base-font-size=' + config['base-font-size']);
   }
 
-  if (config["disable-font-rescaling"]) {
-    args.push("--disable-font-rescaling");
+  if (config['disable-font-rescaling']) {
+    args.push('--disable-font-rescaling');
   }
 
-  if (config["line-height"]) {
-    args.push("--line-height=" + config["line-height"]);
+  if (config['line-height']) {
+    args.push('--line-height=' + config['line-height']);
   }
 
   let marginTop = 72;
   let marginRight = 72;
   let marginBottom = 72;
   let marginLeft = 72;
-  if (config["margin"]) {
-    const margin: number[] | number = config["margin"];
+  if (config['margin']) {
+    const margin: number[] | number = config['margin'];
     if (margin instanceof Array) {
       if (margin.length === 1) {
         marginTop = margin[0];
@@ -93,68 +93,68 @@ function processAppearance(config = {}, args) {
         marginBottom = margin[2];
         marginLeft = margin[3];
       }
-    } else if (typeof margin === "number") {
+    } else if (typeof margin === 'number') {
       marginTop = margin;
       marginBottom = margin;
       marginLeft = margin;
       marginRight = margin;
     }
   } else {
-    if (config["margin-top"]) {
-      marginTop = config["margin-top"];
+    if (config['margin-top']) {
+      marginTop = config['margin-top'];
     }
-    if (config["margin-right"]) {
-      marginRight = config["margin-right"];
+    if (config['margin-right']) {
+      marginRight = config['margin-right'];
     }
-    if (config["margin-bottom"]) {
-      marginBottom = config["margin-bottom"];
+    if (config['margin-bottom']) {
+      marginBottom = config['margin-bottom'];
     }
-    if (config["margin-left"]) {
-      marginLeft = config["margin-left"];
+    if (config['margin-left']) {
+      marginLeft = config['margin-left'];
     }
   }
 
-  args.push("--margin-top=" + marginTop);
-  args.push("--margin-bottom=" + marginBottom);
-  args.push("--margin-left=" + marginLeft);
-  args.push("--margin-right=" + marginRight);
+  args.push('--margin-top=' + marginTop);
+  args.push('--margin-bottom=' + marginBottom);
+  args.push('--margin-left=' + marginLeft);
+  args.push('--margin-right=' + marginRight);
 }
 
 function processEPub(config = {}, args) {
-  if (config["no-default-epub-cover"]) {
-    args.push("--no-default-epub-cover");
+  if (config['no-default-epub-cover']) {
+    args.push('--no-default-epub-cover');
   }
-  if (config["no-svg-cover"]) {
-    args.push("--no-svg-cover");
+  if (config['no-svg-cover']) {
+    args.push('--no-svg-cover');
   }
-  if (config["pretty-print"]) {
-    args.push("--pretty-print");
+  if (config['pretty-print']) {
+    args.push('--pretty-print');
   }
 }
 
 function processPDF(config = {}, args) {
-  if (config["paper-size"]) {
-    args.push("--paper-size", config["paper-size"]);
+  if (config['paper-size']) {
+    args.push('--paper-size', config['paper-size']);
   }
 
-  if (config["default-font-size"]) {
-    args.push("--pdf-default-font-size=" + config["default-font-size"]);
+  if (config['default-font-size']) {
+    args.push('--pdf-default-font-size=' + config['default-font-size']);
   }
 
-  if (config["header-template"]) {
-    args.push("--pdf-header-template", config["header-template"]);
+  if (config['header-template']) {
+    args.push('--pdf-header-template', config['header-template']);
   }
 
-  if (config["footer-template"]) {
-    args.push("--pdf-footer-template", config["footer-template"]);
+  if (config['footer-template']) {
+    args.push('--pdf-footer-template', config['footer-template']);
   }
 
-  if (config["page-numbers"]) {
-    args.push("--pdf-page-numbers");
+  if (config['page-numbers']) {
+    args.push('--pdf-page-numbers');
   }
 
-  if (config["pretty-print"]) {
-    args.push("--pretty-print");
+  if (config['pretty-print']) {
+    args.push('--pretty-print');
   }
 }
 
@@ -168,13 +168,13 @@ export function ebookConvert(src, dest, config = {}) {
     const args = [
       src,
       dest,
-      "--level1-toc",
-      "//*[@ebook-toc-level-1]/@heading",
-      "--level2-toc",
-      "//*[@ebook-toc-level-2]/@heading",
-      "--level3-toc",
-      "//*[@ebook-toc-level-3]/@heading",
-      "--no-chapters-in-toc",
+      '--level1-toc',
+      '//*[@ebook-toc-level-1]/@heading',
+      '--level2-toc',
+      '//*[@ebook-toc-level-2]/@heading',
+      '--level3-toc',
+      '//*[@ebook-toc-level-3]/@heading',
+      '--no-chapters-in-toc',
     ];
 
     processMetadata(config, args);
@@ -182,15 +182,15 @@ export function ebookConvert(src, dest, config = {}) {
 
     // output formats
     const format = path.extname(dest).slice(1);
-    if (format === "epub") {
-      processEPub(config["epub"], args);
-    } else if (format === "pdf") {
-      processPDF(config["pdf"], args);
+    if (format === 'epub') {
+      processEPub(config['epub'], args);
+    } else if (format === 'pdf') {
+      processPDF(config['pdf'], args);
     }
 
     // arguments
-    const ebookArgs = config["args"] || [];
-    ebookArgs.forEach((arg) => {
+    const ebookArgs = config['args'] || [];
+    ebookArgs.forEach(arg => {
       args.push(arg);
     });
 
@@ -198,7 +198,7 @@ export function ebookConvert(src, dest, config = {}) {
     // therefore I will create directory first.
     mkdirp(path.dirname(dest))
       .then(() => {
-        execFile("ebook-convert", args, (error2) => {
+        execFile('ebook-convert', args, error2 => {
           if (error2) {
             return reject(error2.toString());
           } else {
@@ -206,7 +206,7 @@ export function ebookConvert(src, dest, config = {}) {
           }
         });
       })
-      .catch((error) => {
+      .catch(error => {
         if (error) {
           return reject(error);
         }

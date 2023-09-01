@@ -15,10 +15,11 @@
 coverage
 node_modules
 out
-test.js
-
 
 ## special cases
 dependencies/**
 !dependencies/README.md
 styles
+
+test.js
+test.mjs

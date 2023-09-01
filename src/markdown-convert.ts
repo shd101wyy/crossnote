@@ -2,15 +2,15 @@
  * Convert Mume markdown to Githb Flavored Markdown
  */
 
-import * as fs from "fs";
-import * as mkdirp from "mkdirp";
-import * as path from "path";
-import { CodeChunkData } from "./code-chunk-data";
-import computeChecksum from "./lib/compute-checksum";
-import { processGraphs } from "./process-graphs";
-import { toc } from "./toc";
-import { transformMarkdown } from "./transformer";
-import * as utility from "./utility";
+import * as fs from 'fs';
+import { escape } from 'html-escaper';
+import { mkdirp } from 'mkdirp';
+import * as path from 'path';
+import { CodeChunkData } from './code-chunk-data';
+import computeChecksum from './lib/compute-checksum';
+import { processGraphs } from './process-graphs';
+import { toc } from './toc';
+import { transformMarkdown } from './transformer';
 
 /**
  * Convert all math expressions inside markdown to images.
@@ -21,60 +21,60 @@ function processMath(
   text: string,
   { mathInlineDelimiters, mathBlockDelimiters, mathRenderingOnlineService },
 ): string {
-  let line = text.replace(/\\\$/g, "#slash_dollarsign#");
+  let line = text.replace(/\\\$/g, '#slash_dollarsign#');
 
   const inline = mathInlineDelimiters;
   const block = mathBlockDelimiters;
 
   const inlineBegin =
-    "(?:" +
+    '(?:' +
     inline
-      .map((x) => x[0])
-      .join("|")
-      .replace(/\\/g, "\\\\")
-      .replace(/([\(\)\[\]\$])/g, "\\$1") +
-    ")";
+      .map(x => x[0])
+      .join('|')
+      .replace(/\\/g, '\\\\')
+      .replace(/([()[\]$])/g, '\\$1') +
+    ')';
   const inlineEnd =
-    "(?:" +
+    '(?:' +
     inline
-      .map((x) => x[1])
-      .join("|")
-      .replace(/\\/g, "\\\\")
-      .replace(/([\(\)\[\]\$])/g, "\\$1") +
-    ")";
+      .map(x => x[1])
+      .join('|')
+      .replace(/\\/g, '\\\\')
+      .replace(/([()[\]$])/g, '\\$1') +
+    ')';
   const blockBegin =
-    "(?:" +
+    '(?:' +
     block
-      .map((x) => x[0])
-      .join("|")
-      .replace(/\\/g, "\\\\")
-      .replace(/([\(\)\[\]\$])/g, "\\$1") +
-    ")";
+      .map(x => x[0])
+      .join('|')
+      .replace(/\\/g, '\\\\')
+      .replace(/([()[\]$])/g, '\\$1') +
+    ')';
   const blockEnd =
-    "(?:" +
+    '(?:' +
     block
-      .map((x) => x[1])
-      .join("|")
-      .replace(/\\/g, "\\\\")
-      .replace(/([\(\)\[\]\$])/g, "\\$1") +
-    ")";
+      .map(x => x[1])
+      .join('|')
+      .replace(/\\/g, '\\\\')
+      .replace(/([()[\]$])/g, '\\$1') +
+    ')';
 
   // display
   line = line.replace(
     new RegExp(
       `(\`\`\`(?:[\\s\\S]+?)\`\`\`\\s*(?:\\n|$))|(?:${blockBegin}([\\s\\S]+?)${blockEnd})`,
-      "g",
+      'g',
     ),
     ($0, $1, $2) => {
       if ($1) {
         return $1;
       }
       let math = $2;
-      math = math.replace(/\n/g, "").replace(/\#slash\_dollarsign\#/g, "\\$");
-      math = utility.escapeString(math);
-      return `<p align="center"><img src=\"${mathRenderingOnlineService}?${math
+      math = math.replace(/\n/g, '').replace(/#slash_dollarsign#/g, '\\$');
+      math = escape(math);
+      return `<p align="center"><img src="${mathRenderingOnlineService}?${math
         .trim()
-        .replace(/ /g, "%20")}\"/></p>  \n`;
+        .replace(/ /g, '%20')}"/></p>  \n`;
     },
   );
 
@@ -82,22 +82,22 @@ function processMath(
   line = line.replace(
     new RegExp(
       `(\`\`\`(?:[\\s\\S]+?)\`\`\`\\s*(?:\\n|$))|(?:${inlineBegin}([\\s\\S]+?)${inlineEnd})`,
-      "g",
+      'g',
     ),
     ($0, $1, $2) => {
       if ($1) {
         return $1;
       }
       let math = $2;
-      math = math.replace(/\n/g, "").replace(/\#slash\_dollarsign\#/g, "\\$");
-      math = utility.escapeString(math);
-      return `<img src=\"${mathRenderingOnlineService}?${math
+      math = math.replace(/\n/g, '').replace(/#slash_dollarsign#/g, '\\$');
+      math = escape(math);
+      return `<img src="${mathRenderingOnlineService}?${math
         .trim()
-        .replace(/ /g, "%20")}\"/>`;
+        .replace(/ /g, '%20')}"/>`;
     },
   );
 
-  line = line.replace(/\#slash\_dollarsign\#/g, "\\$");
+  line = line.replace(/#slash_dollarsign#/g, '\\$');
   return line;
 }
 
@@ -120,29 +120,29 @@ function processPaths(
     if (src.match(protocolsWhiteListRegExp)) {
       // do nothing
     } else if (useRelativeFilePath) {
-      if (src.startsWith("/")) {
+      if (src.startsWith('/')) {
         src = path.relative(
           fileDirectoryPath,
-          path.resolve(projectDirectoryPath, "." + src),
+          path.resolve(projectDirectoryPath, '.' + src),
         );
       }
     } else {
-      if (!src.startsWith("/")) {
+      if (!src.startsWith('/')) {
         // ./test.png or test.png
         src =
-          "/" +
+          '/' +
           path.relative(
             projectDirectoryPath,
             path.resolve(fileDirectoryPath, src),
           );
       }
     }
-    return src.replace(/\\/g, "/"); // https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/17
+    return src.replace(/\\/g, '/'); // https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/17
   }
 
   let inBlock = false;
-  let lines = text.split("\n");
-  lines = lines.map((line) => {
+  let lines = text.split('\n');
+  lines = lines.map(line => {
     if (line.match(/^\s*```/)) {
       inBlock = !inBlock;
       return line;
@@ -150,13 +150,13 @@ function processPaths(
       return line;
     } else {
       // replace path in ![](...) and []()
-      let r = /(\!?\[.*?]\()([^\)|^'|^"]*)(.*?\))/gi;
+      let r = /(!?\[.*?]\()([^)|^'|^"]*)(.*?\))/gi;
       line = line.replace(r, (whole, a, b, c) => {
-        if (b[0] === "<") {
+        if (b[0] === '<') {
           b = b.slice(1, b.length - 1);
-          return a + "<" + resolvePath(b.trim()) + "> " + c;
+          return a + '<' + resolvePath(b.trim()) + '> ' + c;
         } else {
-          return a + resolvePath(b.trim()) + " " + c;
+          return a + resolvePath(b.trim()) + ' ' + c;
         }
       });
 
@@ -169,7 +169,7 @@ function processPaths(
     }
   });
 
-  return lines.join("\n");
+  return lines.join('\n');
 }
 
 export async function markdownConvert(
@@ -189,6 +189,7 @@ export async function markdownConvert(
     imageMagickPath,
     mermaidTheme,
     plantumlServer,
+    plantumlJarPath,
     onWillTransformMarkdown = null,
     onDidTransformMarkdown = null,
   }: {
@@ -206,44 +207,45 @@ export async function markdownConvert(
     imageMagickPath: string;
     mermaidTheme: string;
     plantumlServer: string;
-    onWillTransformMarkdown?: (markdown: string) => Promise<string>;
-    onDidTransformMarkdown?: (markdown: string) => Promise<string>;
+    plantumlJarPath: string;
+    onWillTransformMarkdown?: ((markdown: string) => Promise<string>) | null;
+    onDidTransformMarkdown?: ((markdown: string) => Promise<string>) | null;
   },
   config: object,
 ): Promise<string> {
-  if (!config["path"]) {
-    throw new Error("{path} has to be specified");
+  if (!config['path']) {
+    throw new Error('{path} has to be specified');
   }
 
-  if (!config["image_dir"]) {
-    throw new Error("{image_dir} has to be specified");
+  if (!config['image_dir']) {
+    throw new Error('{image_dir} has to be specified');
   }
 
   // dest
   let outputFilePath;
-  if (config["path"][0] === "/") {
-    outputFilePath = path.resolve(projectDirectoryPath, "." + config["path"]);
+  if (config['path'][0] === '/') {
+    outputFilePath = path.resolve(projectDirectoryPath, '.' + config['path']);
   } else {
-    outputFilePath = path.resolve(fileDirectoryPath, config["path"]);
+    outputFilePath = path.resolve(fileDirectoryPath, config['path']);
   }
 
   for (const key in filesCache) {
-    if (key.endsWith(".pdf")) {
+    if (key.endsWith('.pdf')) {
       delete filesCache[key];
     }
   }
 
   let imageDirectoryPath: string;
-  if (config["image_dir"][0] === "/") {
+  if (config['image_dir'][0] === '/') {
     imageDirectoryPath = path.resolve(
       projectDirectoryPath,
-      "." + config["image_dir"],
+      '.' + config['image_dir'],
     );
   } else {
-    imageDirectoryPath = path.resolve(fileDirectoryPath, config["image_dir"]);
+    imageDirectoryPath = path.resolve(fileDirectoryPath, config['image_dir']);
   }
 
-  const useRelativeFilePath = !config["absolute_image_path"];
+  const useRelativeFilePath = !config['absolute_image_path'];
 
   if (onWillTransformMarkdown) {
     text = await onWillTransformMarkdown(text);
@@ -279,9 +281,9 @@ export async function markdownConvert(
       ordered: false,
       depthFrom: 1,
       depthTo: 6,
-      tab: "  ",
+      tab: '  ',
     });
-    text = text.replace(/^\s*\[MUMETOC\]\s*/gm, "\n\n" + tocMarkdown + "\n\n");
+    text = text.replace(/^\s*\[MUMETOC\]\s*/gm, '\n\n' + tocMarkdown + '\n\n');
   }
 
   // change link path to project '/' path
@@ -295,7 +297,7 @@ export async function markdownConvert(
   );
 
   text =
-    mathRenderingOption !== "None"
+    mathRenderingOption !== 'None'
       ? processMath(text, {
           mathInlineDelimiters,
           mathBlockDelimiters,
@@ -318,14 +320,15 @@ export async function markdownConvert(
           mermaidTheme,
           addOptionsStr: false,
           plantumlServer,
+          plantumlJarPath,
         }).then(({ outputString }) => {
           outputString = data.frontMatterString + outputString; // put the front-matter back.
 
           fs.writeFile(
             outputFilePath,
             outputString,
-            { encoding: "utf-8" },
-            (error2) => {
+            { encoding: 'utf-8' },
+            error2 => {
               if (error2) {
                 return reject(error2.toString());
               }
@@ -334,7 +337,7 @@ export async function markdownConvert(
           );
         });
       })
-      .catch((error) => {
+      .catch(error => {
         if (error) {
           return reject(error.toString());
         }

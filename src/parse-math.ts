@@ -1,6 +1,9 @@
-import * as path from "path";
-import { MathRenderingOption } from "./markdown-engine-config";
-import { configs, escapeString, extensionDirectoryPath } from "./utility";
+import { escape } from 'html-escaper';
+// https://github.com/KaTeX/KaTeX/blob/main/contrib/mhchem/README.md
+import katex from 'katex';
+import 'katex/contrib/mhchem';
+import { MathRenderingOption } from './markdown-engine-config';
+import { configs } from './utility';
 
 // tslint:disable-next-line interface-over-type-literal
 export type ParseMathArgs = {
@@ -10,8 +13,6 @@ export type ParseMathArgs = {
   displayMode?: boolean;
   renderingOption: MathRenderingOption;
 };
-
-let katex;
 
 /**
  *
@@ -29,33 +30,22 @@ export default ({
   renderingOption,
 }: ParseMathArgs) => {
   if (!content) {
-    return "";
+    return '';
   }
-  if (renderingOption === "KaTeX") {
+  if (renderingOption === 'KaTeX') {
     try {
-      if (!katex) {
-        katex = require(path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/katex/katex.min.js",
-        ));
-        // Add mhchem support
-        require(path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/katex/contrib/mhchem.min.js",
-        ));
-      }
       return katex.renderToString(
         content,
         Object.assign({}, configs.katexConfig || {}, { displayMode }),
       );
     } catch (error) {
-      return `<span style=\"color: #ee7f49; font-weight: 500;\">${error.toString()}</span>`;
+      return `<span style="color: #ee7f49; font-weight: 500;">${error.toString()}</span>`;
     }
-  } else if (renderingOption === "MathJax") {
-    const text = (openTag + content + closeTag).replace(/\n/g, " ");
-    const tag = displayMode ? "div" : "span";
-    return `<${tag} class="mathjax-exps">${escapeString(text)}</${tag}>`;
+  } else if (renderingOption === 'MathJax') {
+    const text = (openTag + content + closeTag).replace(/\n/g, ' ');
+    const tag = displayMode ? 'div' : 'span';
+    return `<${tag} class="mathjax-exps">${escape(text)}</${tag}>`;
   } else {
-    return "";
+    return '';
   }
 };

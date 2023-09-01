@@ -1,16 +1,19 @@
-import { BlockAttributes } from "./types";
+import { BlockAttributes } from './types';
 
-type NodeType = "stringInQuotes" | "stringWithBrackets" | "word" | "array";
+type NodeType = 'stringInQuotes' | 'stringWithBrackets' | 'word' | 'array';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Node = [any, number, NodeType];
 
 const normalizeValue = (value: string): boolean | number | string => {
   // boolean
-  if (value.toLowerCase() === "true") {
+  if (value.toLowerCase() === 'true') {
     return true;
-  } else if (value.toLowerCase() === "false") {
+  } else if (value.toLowerCase() === 'false') {
     return false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } else if (!isNaN(value as any)) {
     // number
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return parseFloat(value as any);
   }
 
@@ -18,15 +21,15 @@ const normalizeValue = (value: string): boolean | number | string => {
 };
 
 const extractStringWithBrackets = (text, start): Node | void => {
-  if (text[start] !== "(") {
+  if (text[start] !== '(') {
     return;
   }
   let bracketDepth = 1;
   let end = start + 1;
   while (end < text.length) {
-    if (text[end] === "(") {
+    if (text[end] === '(') {
       bracketDepth += 1;
-    } else if (text[end] === ")") {
+    } else if (text[end] === ')') {
       bracketDepth -= 1;
     }
     end += 1;
@@ -35,18 +38,18 @@ const extractStringWithBrackets = (text, start): Node | void => {
     }
   }
 
-  return [text.substring(start, end), end, "stringWithBrackets"];
+  return [text.substring(start, end), end, 'stringWithBrackets'];
 };
 
 const extractStringInQuotes = (text, start): Node | void => {
   const quote = text[start];
-  if (!"'\"`".includes(quote)) {
+  if (!'\'"`'.includes(quote)) {
     return;
   }
   let end = start + 1;
   const chars: string[] = [];
   while (end < text.length) {
-    if (text[end] === "\\") {
+    if (text[end] === '\\') {
       if (end + 1 < text.length) {
         chars.push(text[end + 1]);
       }
@@ -61,7 +64,7 @@ const extractStringInQuotes = (text, start): Node | void => {
     end += 1;
   }
 
-  return [chars.join(""), end, "stringInQuotes"];
+  return [chars.join(''), end, 'stringInQuotes'];
 };
 
 const wordCharRegExp = /^[^,;=\s]$/;
@@ -74,9 +77,9 @@ const extractWord = (text: string, start: number): Node | void => {
     if (!wordCharRegExp.test(char)) {
       break;
     }
-    if (char === "[") {
+    if (char === '[') {
       bracketDepth += 1;
-    } else if (char === "]") {
+    } else if (char === ']') {
       bracketDepth -= 1;
     }
     if (bracketDepth < 0) {
@@ -88,18 +91,19 @@ const extractWord = (text: string, start: number): Node | void => {
     return;
   }
 
-  return [text.substring(start, i), i, "word"];
+  return [text.substring(start, i), i, 'word'];
 };
 
 const extractArray = (text, start): Node | void => {
-  if (text[start] !== "[") {
+  if (text[start] !== '[') {
     return;
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: any[] = [];
   let i = start + 1;
   while (i < text.length) {
     const char = text[i];
-    if (char === "]") {
+    if (char === ']') {
       i += 1;
       break;
     }
@@ -111,7 +115,7 @@ const extractArray = (text, start): Node | void => {
       extractWord(text, i);
     if (node) {
       const [rawValue, subEnd, nodeType] = node;
-      const value = nodeType === "word" ? normalizeValue(rawValue) : rawValue;
+      const value = nodeType === 'word' ? normalizeValue(rawValue) : rawValue;
       i = subEnd;
       result.push(value);
     } else {
@@ -119,17 +123,17 @@ const extractArray = (text, start): Node | void => {
     }
   }
 
-  return [result, i, "array"];
+  return [result, i, 'array'];
 };
 
 /**
  * Parses block attributes
  * @param text e.g. {#identifier .class1 .class2 key1=value1 key2=value2}
  */
-export const parseBlockAttributes = (text?: string): BlockAttributes => {
+export const parseBlockAttributes = (text?: string | null): BlockAttributes => {
   // remove surrounding { } if exist
-  let textToParse = (text || "").trim();
-  if (textToParse[0] === "{" && textToParse[textToParse.length - 1] === "}") {
+  let textToParse = (text || '').trim();
+  if (textToParse[0] === '{' && textToParse[textToParse.length - 1] === '}') {
     textToParse = textToParse.slice(1, -1);
   }
 
@@ -143,27 +147,27 @@ export const parseBlockAttributes = (text?: string): BlockAttributes => {
       extractStringInQuotes(textToParse, i) ||
       extractWord(textToParse, i);
     if (node) {
-      const keyIsPending = typeof pendingKey === "string";
+      const keyIsPending = typeof pendingKey === 'string';
       const [rawValue, subEnd, nodeType] = node;
       const value =
-        nodeType === "word" && keyIsPending
+        nodeType === 'word' && keyIsPending
           ? normalizeValue(rawValue)
           : rawValue;
       i = subEnd;
       if (keyIsPending) {
         output[pendingKey!] = value;
         pendingKey = undefined;
-      } else if (textToParse[i] === "=") {
+      } else if (textToParse[i] === '=') {
         pendingKey = value;
       } else {
         const firstChar = value[0];
         let specialAttribute;
         switch (firstChar) {
-          case ".":
-            specialAttribute = "class";
+          case '.':
+            specialAttribute = 'class';
             break;
-          case "#":
-            specialAttribute = "id";
+          case '#':
+            specialAttribute = 'id';
             break;
         }
         if (specialAttribute) {
@@ -171,12 +175,12 @@ export const parseBlockAttributes = (text?: string): BlockAttributes => {
           if (specialValue.length) {
             const previousValue = output[specialAttribute];
             output[specialAttribute] =
-              typeof previousValue === "undefined"
+              typeof previousValue === 'undefined'
                 ? specialValue
                 : `${previousValue} ${specialValue}`;
           }
         } else {
-          if (typeof value === "string") {
+          if (typeof value === 'string') {
             output[value] = true;
           }
         }

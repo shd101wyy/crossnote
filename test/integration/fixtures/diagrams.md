@@ -1,48 +1,4 @@
-## [Flow Charts](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=flow-charts)
-
-`flow`
-
-```flow
-st=>start: Start|past:>http://www.google.com[blank]
-e=>end: End|future:>http://www.google.com
-op1=>operation: My Operation|past
-op2=>operation: Stuff|current
-sub1=>subroutine: My Subroutine|invalid
-cond=>condition: Yes
-or No?|approved:>http://www.google.com
-c2=>condition: Good idea|rejected
-io=>inputoutput: catch something...|future
-
-st->op1(right)->cond
-cond(yes, right)->c2
-cond(no)->sub1(left)->op1
-c2(yes)->io->e
-c2(no)->op2->e
-```
-
-## [Sequence Diagrams](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=sequence-diagrams)
-
-`sequence`
-
-```sequence
-Title: Here is a title
-A->B: Normal line
-B-->C: Dashed line
-C->>D: Open arrow
-D-->>A: Dashed open arrow
-```
-
----
-
-`sequence {theme=hand}`
-
-```sequence {theme=hand}
-Title: Here is a title
-A->B: Normal line
-B-->C: Dashed line
-C->>D: Open arrow
-D-->>A: Dashed open arrow
-```
+# Diagrams
 
 ## [Mermaid](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=mermaid)
 
@@ -373,11 +329,36 @@ encoding:
 }
 ```
 
-## [Ditaa](https://shd101wyy.github.io/markdown-preview-enhanced/#/diagrams?id=ditaa)
+---
 
-`ditaa {cmd=true args=["-E"]}`
+`vega-embed`
 
-```ditaa {cmd=true args=["-E"]}
+```vega-lite
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+  "description": "A simple bar chart with embedded data.",
+  "width": 360,
+  "data": {
+    "values": [
+      {"a": "A","b": 28}, {"a": "B","b": 55}, {"a": "C","b": 43},
+      {"a": "D","b": 91}, {"a": "E","b": 81}, {"a": "F","b": 53},
+      {"a": "G","b": 19}, {"a": "H","b": 87}, {"a": "I","b": 52}
+    ]
+  },
+  "mark": "bar",
+  "encoding": {
+    "x": {"field": "a", "type": "ordinal"},
+    "y": {"field": "b", "type": "quantitative"},
+    "tooltip": {"field": "b", "type": "quantitative"}
+  }
+}
+```
+
+## Kroki
+
+`ditaa {kroki=true}`
+
+```ditaa {kroki=true}
 +--------+   +-------+    +-------+
 |        | --+ ditaa +--> |       |
 |  Text  |   +-------+    |diagram|

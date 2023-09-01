@@ -8,31 +8,30 @@
  */
 
 // tslint:disable-next-line no-implicit-dependencies
-import { MarkdownIt } from "markdown-it";
-import { MarkdownEngineConfig } from "../markdown-engine-config";
+import MarkdownIt from 'markdown-it';
+import { MarkdownEngineConfig } from '../markdown-engine-config';
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
-  // @ts-ignore
-  md.inline.ruler.before("strikethrough", "critic-markup", (state, silent) => {
+  md.inline.ruler.before('strikethrough', 'critic-markup', (state, silent) => {
     if (!config.enableCriticMarkupSyntax) {
       return false;
     }
 
     const { src, pos } = state;
     if (
-      src[pos] === "{" &&
-      ((src[pos + 1] === "-" && src[pos + 2] === "-") ||
-        (src[pos + 1] === "+" && src[pos + 2] === "+") ||
-        (src[pos + 1] === "~" && src[pos + 2] === "~") ||
-        (src[pos + 1] === "=" && src[pos + 2] === "=") ||
-        (src[pos + 1] === ">" && src[pos + 2] === ">"))
+      src[pos] === '{' &&
+      ((src[pos + 1] === '-' && src[pos + 2] === '-') ||
+        (src[pos + 1] === '+' && src[pos + 2] === '+') ||
+        (src[pos + 1] === '~' && src[pos + 2] === '~') ||
+        (src[pos + 1] === '=' && src[pos + 2] === '=') ||
+        (src[pos + 1] === '>' && src[pos + 2] === '>'))
     ) {
       const tag = src.slice(pos + 1, pos + 3);
-      const closeTag = tag[0] === ">" ? "<<}" : `${tag}}`;
+      const closeTag = tag[0] === '>' ? '<<}' : `${tag}}`;
 
       let i = pos + 3;
       let end = -1;
-      let content = null;
+      let content: string | null = null;
       while (i < src.length) {
         if (src.startsWith(closeTag, i)) {
           end = i;
@@ -49,10 +48,9 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
       }
 
       if (content && !silent) {
-        const token = state.push("critic-markup");
+        const token = state.push('critic-markup', '', 0);
         token.content = content;
         token.tag = tag;
-
         state.pos = end + closeTag.length;
         return true;
       } else {
@@ -66,21 +64,21 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   /**
    * CriticMarkup renderer
    */
-  md.renderer.rules["critic-markup"] = (tokens, idx) => {
+  md.renderer.rules['critic-markup'] = (tokens, idx) => {
     const token = tokens[idx];
     const tag = token.tag;
     const content = token.content;
-    if (tag === "--") {
+    if (tag === '--') {
       return `<del>${content}</del>`;
-    } else if (tag === "++") {
+    } else if (tag === '++') {
       return `<ins>${content}</ins>`;
-    } else if (tag === "==") {
+    } else if (tag === '==') {
       return `<mark>${content}</mark>`;
-    } else if (tag === ">>") {
+    } else if (tag === '>>') {
       return `<span style="display:none">${content}</span>`;
     } else {
       // {~~[text1]~>[text2]~~}
-      const arr = content.split("~>");
+      const arr = content.split('~>');
       if (arr.length === 2) {
         return `<del>${arr[0]}</del><ins>${arr[1]}</ins>`;
       } else {

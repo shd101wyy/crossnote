@@ -1,19 +1,17 @@
-import * as cheerio from "cheerio";
-import * as path from "path";
-
-import { compileLaTeX } from "./code-chunk";
-import { CodeChunkData } from "./code-chunk-data";
-import { parseBlockAttributes } from "./lib/block-attributes";
-import computeChecksum from "./lib/compute-checksum";
-import { svgElementToPNGFile } from "./magick";
-import * as plantumlAPI from "./puml";
-import * as vegaAPI from "./vega";
-import * as vegaLiteAPI from "./vega-lite";
-import { Viz } from "./viz";
-import * as mermaidAPI from "./mermaid";
-import * as wavedromAPI from "./wavedrom";
-import * as ditaaAPI from "./ditaa";
-import { extractCommandFromBlockInfo } from "./utility";
+import * as cheerio from 'cheerio';
+import * as path from 'path';
+import { compileLaTeX } from './code-chunk';
+import { CodeChunkData } from './code-chunk-data';
+import { parseBlockAttributes } from './lib/block-attributes';
+import computeChecksum from './lib/compute-checksum';
+import { svgElementToPNGFile } from './magick';
+import * as mermaidAPI from './mermaid';
+import * as plantumlAPI from './puml';
+import { extractCommandFromBlockInfo } from './utility';
+import * as vegaAPI from './vega';
+import * as vegaLiteAPI from './vega-lite';
+import { Viz } from './viz';
+import * as wavedromAPI from './wavedrom';
 
 export async function processGraphs(
   text: string,
@@ -28,6 +26,7 @@ export async function processGraphs(
     imageMagickPath,
     mermaidTheme,
     addOptionsStr,
+    plantumlJarPath,
     plantumlServer,
   }: {
     fileDirectoryPath: string;
@@ -40,10 +39,11 @@ export async function processGraphs(
     imageMagickPath: string;
     mermaidTheme: string;
     addOptionsStr: boolean;
+    plantumlJarPath: string;
     plantumlServer: string;
   },
 ): Promise<{ outputString: string; imagePaths: string[] }> {
-  const lines = text.split("\n");
+  const lines = text.split('\n');
   const codes: {
     start: number;
     end: number;
@@ -58,22 +58,22 @@ export async function processGraphs(
     const trimmedLine = line.trim();
 
     if (
-      trimmedLine.match(/^```(.+)\"?cmd\"?[:=]/) || // code chunk
+      trimmedLine.match(/^```(.+)"?cmd"?[:=]/) || // code chunk
       trimmedLine.match(
-        /^```(puml|plantuml|dot|viz|mermaid|vega|vega\-lite|ditaa|wavedrom)/,
+        /^```(puml|plantuml|dot|viz|mermaid|vega|vega-lite|wavedrom)/,
       )
     ) {
       // graphs
-      const numOfSpacesAhead = line.match(/^\s*/).length;
+      const numOfSpacesAhead = (line.match(/^\s*/) ?? []).length;
       let j = i + 1;
-      let content = "";
+      let content = '';
       while (j < lines.length) {
         if (
-          lines[j].trim() === "```" &&
-          lines[j].match(/^\s*/).length === numOfSpacesAhead
+          lines[j].trim() === '```' &&
+          (lines[j].match(/^\s*/) ?? []).length === numOfSpacesAhead
         ) {
           let options = {};
-          let optionsStr = "";
+          let optionsStr = '';
           const optionsMatch = trimmedLine.match(/\{(.+)\}$/);
           if (optionsMatch) {
             try {
@@ -94,17 +94,17 @@ export async function processGraphs(
           i = j;
           break;
         }
-        content += lines[j] + "\n";
+        content += lines[j] + '\n';
         j += 1;
       }
     } else if (trimmedLine.match(/^```\S/)) {
       // remove {...} after ```lang
-      const indexOfFirstSpace = line.indexOf(" ", line.indexOf("```"));
+      const indexOfFirstSpace = line.indexOf(' ', line.indexOf('```'));
       if (indexOfFirstSpace > 0) {
         lines[i] = line.slice(0, indexOfFirstSpace);
       }
     } else if (!trimmedLine) {
-      lines[i] = "  ";
+      lines[i] = '  ';
     }
 
     i += 1;
@@ -114,18 +114,18 @@ export async function processGraphs(
     imageFilePrefix =
       Math.random()
         .toString(36)
-        .substr(2, 9) + "_";
+        .substr(2, 9) + '_';
   }
 
-  imageFilePrefix = imageFilePrefix.replace(/[\/&]/g, "_ss_");
+  imageFilePrefix = imageFilePrefix.replace(/[/&]/g, '_ss_');
   imageFilePrefix = encodeURIComponent(imageFilePrefix);
 
   let imgCount = 0;
 
   const asyncFunctions = [];
-  const imagePaths = [];
+  const imagePaths: string[] = [];
 
-  let currentCodeChunk: CodeChunkData = null;
+  let currentCodeChunk: CodeChunkData | null = null;
   for (const key in codeChunksData) {
     // get the first code chunk.
     if (!codeChunksData[key].prev) {
@@ -138,13 +138,13 @@ export async function processGraphs(
   function clearCodeBlock(lines: string[], start: number, end: number) {
     let s = start;
     while (s <= end) {
-      lines[s] = "";
+      lines[s] = '';
       s += 1;
     }
   }
 
   async function convertSVGToPNGFile(
-    outFileName = "",
+    outFileName = '',
     svg: string,
     /* tslint:disable-next-line:no-shadowed-variable */
     lines: string[],
@@ -155,7 +155,7 @@ export async function processGraphs(
     optionsStr: string,
   ) {
     if (!outFileName) {
-      outFileName = imageFilePrefix + imgCount + ".png";
+      outFileName = imageFilePrefix + imgCount + '.png';
     }
 
     const pngFilePath = path.resolve(imageDirectoryPath, outFileName);
@@ -163,15 +163,15 @@ export async function processGraphs(
     let displayPNGFilePath;
     if (useRelativeFilePath) {
       displayPNGFilePath =
-        path.relative(fileDirectoryPath, pngFilePath) + "?" + Math.random();
+        path.relative(fileDirectoryPath, pngFilePath) + '?' + Math.random();
     } else {
       displayPNGFilePath =
-        "/" +
+        '/' +
         path.relative(projectDirectoryPath, pngFilePath) +
-        "?" +
+        '?' +
         Math.random();
     }
-    displayPNGFilePath = displayPNGFilePath.replace(/\\/g, "/"); // fix windows path error.
+    displayPNGFilePath = displayPNGFilePath.replace(/\\/g, '/'); // fix windows path error.
 
     imgCount++;
 
@@ -179,14 +179,14 @@ export async function processGraphs(
       clearCodeBlock(lines, start, end);
       let altCaption = altName;
       if (altCaption == null) {
-        altCaption = "";
+        altCaption = '';
       }
-      let imageOptions = "";
+      let imageOptions = '';
       if (addOptionsStr) {
         imageOptions = `{${optionsStr}}`;
       }
       lines[end] +=
-        "\n" + `![${altCaption}](${displayPNGFilePath})${imageOptions}  `;
+        '\n' + `![${altCaption}](${displayPNGFilePath})${imageOptions}  `;
     }
 
     imagePaths.push(pngFilePath);
@@ -200,7 +200,7 @@ export async function processGraphs(
       .slice(3)
       .trim();
 
-    if (options["code_block"]) {
+    if (options['code_block']) {
       // Do Nothing
     } else if (def.match(/^(puml|plantuml)/)) {
       try {
@@ -208,20 +208,21 @@ export async function processGraphs(
         let svg = graphsCache[checksum];
         if (!svg) {
           // check whether in cache
-          svg = await plantumlAPI.render(
+          svg = await plantumlAPI.render({
             content,
             fileDirectoryPath,
-            plantumlServer,
-          );
+            plantumlJarPath,
+            serverURL: plantumlServer,
+          });
         }
         await convertSVGToPNGFile(
-          options["filename"],
+          options['filename'],
           svg,
           lines,
           start,
           end,
           true,
-          options["alt"],
+          options['alt'],
           optionsStr,
         );
       } catch (error) {
@@ -233,24 +234,24 @@ export async function processGraphs(
         const checksum = computeChecksum(optionsStr + content);
         let svg = graphsCache[checksum];
         if (!svg) {
-          const engine = options["engine"] || "dot";
+          const engine = options['engine'] || 'dot';
           svg = await Viz(content, { engine });
         }
         await convertSVGToPNGFile(
-          options["filename"],
+          options['filename'],
           svg,
           lines,
           start,
           end,
           true,
-          options["alt"],
+          options['alt'],
           optionsStr,
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
       }
-    } else if (def.match(/^vega\-lite/)) {
+    } else if (def.match(/^vega-lite/)) {
       // vega-lite
       try {
         const checksum = computeChecksum(optionsStr + content);
@@ -259,13 +260,13 @@ export async function processGraphs(
           svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath);
         }
         await convertSVGToPNGFile(
-          options["filename"],
+          options['filename'],
           svg,
           lines,
           start,
           end,
           true,
-          options["alt"],
+          options['alt'],
           optionsStr,
         );
       } catch (error) {
@@ -281,13 +282,13 @@ export async function processGraphs(
           svg = await vegaAPI.toSVG(content, fileDirectoryPath);
         }
         await convertSVGToPNGFile(
-          options["filename"],
+          options['filename'],
           svg,
           lines,
           start,
           end,
           true,
-          options["alt"],
+          options['alt'],
           optionsStr,
         );
       } catch (error) {
@@ -297,9 +298,9 @@ export async function processGraphs(
     } else if (def.match(/^mermaid/)) {
       // mermaid-cli Ver.8.4.8 has a bug, render in png https://github.com/mermaid-js/mermaid/issues/664
       try {
-        let pngFileName = options["filename"];
+        let pngFileName = options['filename'];
         if (!pngFileName) {
-          pngFileName = imageFilePrefix + imgCount + ".png";
+          pngFileName = imageFilePrefix + imgCount + '.png';
         }
         const pngFilePath = path.resolve(imageDirectoryPath, pngFileName);
         imgCount++;
@@ -313,29 +314,29 @@ export async function processGraphs(
         let displayPNGFilePath;
         if (useRelativeFilePath) {
           displayPNGFilePath =
-            path.relative(fileDirectoryPath, pngFilePath) + "?" + Math.random();
+            path.relative(fileDirectoryPath, pngFilePath) + '?' + Math.random();
         } else {
           displayPNGFilePath =
-            "/" +
+            '/' +
             path.relative(projectDirectoryPath, pngFilePath) +
-            "?" +
+            '?' +
             Math.random();
         }
         clearCodeBlock(lines, start, end);
 
-        let altCaption = options["alt"];
+        let altCaption = options['alt'];
         if (altCaption == null) {
-          altCaption = "";
+          altCaption = '';
         }
-        let imageOptions = "";
+        let imageOptions = '';
         if (addOptionsStr) {
           imageOptions = `{${optionsStr}}`;
         }
         lines[end] +=
-          "\n" +
+          '\n' +
           `![${altCaption}](${displayPNGFilePath.replace(
             /\\/g,
-            "/",
+            '/',
           )})${imageOptions}  `;
 
         imagePaths.push(pngFilePath);
@@ -352,35 +353,13 @@ export async function processGraphs(
           svg = await wavedromAPI.render(content, projectDirectoryPath);
         }
         await convertSVGToPNGFile(
-          options["filename"],
+          options['filename'],
           svg,
           lines,
           start,
           end,
           true,
-          options["alt"],
-          optionsStr,
-        );
-      } catch (error) {
-        clearCodeBlock(lines, start, end);
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
-      }
-    } else if (def.match(/^ditaa/)) {
-      try {
-        const checksum = computeChecksum(optionsStr + content);
-        let svg = graphsCache[checksum];
-        if (!svg) {
-          // check whether in cache
-          svg = await ditaaAPI.render(content, options["args"]);
-        }
-        await convertSVGToPNGFile(
-          options["filename"],
-          svg,
-          lines,
-          start,
-          end,
-          true,
-          options["alt"],
+          options['alt'],
           optionsStr,
         );
       } catch (error) {
@@ -389,13 +368,13 @@ export async function processGraphs(
       }
     } else if (currentCodeChunk) {
       // code chunk
-      if (currentCodeChunk.normalizedInfo.attributes["hide"]) {
+      if (currentCodeChunk.normalizedInfo.attributes['hide']) {
         // remove code block
         clearCodeBlock(lines, start, end);
       } else {
         // remove {...} after ```lang
         const line = lines[start];
-        const indexOfFirstSpace = line.indexOf(" ", line.indexOf("```"));
+        const indexOfFirstSpace = line.indexOf(' ', line.indexOf('```'));
         lines[start] = line.slice(0, indexOfFirstSpace);
       }
 
@@ -403,28 +382,28 @@ export async function processGraphs(
         // append result
         let result = currentCodeChunk.result;
         const attributes = currentCodeChunk.normalizedInfo.attributes;
-        if (attributes["output"] === "html" || attributes["matplotlib"]) {
+        if (attributes['output'] === 'html' || attributes['matplotlib']) {
           // check svg and convert it to png
           const $ = cheerio.load(currentCodeChunk.result); // xmlMode here is necessary...
-          const svg = $("svg");
+          const svg = $('svg');
           if (svg.length === 1) {
             const pngFilePath = (
               await convertSVGToPNGFile(
-                attributes["filename"],
-                $.html("svg"),
+                attributes['filename'],
+                $.html('svg'),
                 lines,
                 start,
                 end,
                 false,
-                options["alt"],
+                options['alt'],
                 optionsStr,
               )
-            ).replace(/\\/g, "/");
+            ).replace(/\\/g, '/');
             result = `![](${pngFilePath})  \n`;
           }
         } else if (
           (
-            extractCommandFromBlockInfo(currentCodeChunk.normalizedInfo) || ""
+            extractCommandFromBlockInfo(currentCodeChunk.normalizedInfo) || ''
           ).match(/^(la)?tex$/)
         ) {
           // for latex, need to run it again to generate svg file in currect directory.
@@ -436,21 +415,25 @@ export async function processGraphs(
             }),
           );
         } else if (
-          currentCodeChunk.normalizedInfo.attributes["output"] === "markdown"
+          currentCodeChunk.normalizedInfo.attributes['output'] === 'markdown'
         ) {
           result = currentCodeChunk.plainResult;
-        } else if (!attributes["output"] || attributes["output"] === "text") {
+        } else if (!attributes['output'] || attributes['output'] === 'text') {
           result = `\n\`\`\`\n${currentCodeChunk.plainResult}\`\`\`\n`;
         }
 
-        lines[end] += "\n" + result;
+        lines[end] += '\n' + result;
       }
-      currentCodeChunk = codeChunksData[currentCodeChunk.next];
+      if (currentCodeChunk.next) {
+        currentCodeChunk = codeChunksData[currentCodeChunk.next];
+      } else {
+        currentCodeChunk = null;
+      }
     }
   }
 
   await Promise.all(asyncFunctions);
 
-  const outputString = lines.filter((line) => line).join("\n");
+  const outputString = lines.filter(line => line).join('\n');
   return { outputString, imagePaths };
 }

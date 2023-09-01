@@ -1,22 +1,21 @@
-import { spawn } from "child_process";
-import * as fs from "fs";
-import * as path from "path";
-
-import * as PDF from "./pdf";
+import { spawn } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as PDF from './pdf';
 
 function cleanUpFiles(texFilePath: string) {
   const directoryPath = path.dirname(texFilePath);
   const extensionName = path.extname(texFilePath);
   const filePrefix = path
     .basename(texFilePath)
-    .replace(new RegExp(extensionName + "$"), "");
+    .replace(new RegExp(extensionName + '$'), '');
 
   fs.readdir(directoryPath, (error, items) => {
     if (error) {
       return;
     }
 
-    items.forEach((fileName) => {
+    items.forEach(fileName => {
       if (fileName.startsWith(filePrefix) && !fileName.match(/\.(la)?tex/)) {
         fs.unlink(path.resolve(directoryPath, fileName), () => {
           return;
@@ -29,7 +28,7 @@ function cleanUpFiles(texFilePath: string) {
 export function toSVGMarkdown(
   texFilePath: string,
   {
-    latexEngine = "pdflatex",
+    latexEngine = 'pdflatex',
     svgDirectoryPath,
     markdownDirectoryPath,
     svgZoom,
@@ -50,33 +49,33 @@ export function toSVGMarkdown(
       shell: true,
     });
 
-    const chunks = [];
-    task.stdout.on("data", (chunk) => {
+    const chunks: Buffer[] = [];
+    task.stdout.on('data', chunk => {
       chunks.push(chunk);
     });
 
-    const errorChunks = [];
-    task.stderr.on("data", (chunk) => {
+    const errorChunks: Buffer[] = [];
+    task.stderr.on('data', chunk => {
       errorChunks.push(chunk);
     });
 
-    task.on("error", (error) => {
-      errorChunks.push(Buffer.from(error.toString(), "utf-8"));
+    task.on('error', error => {
+      errorChunks.push(Buffer.from(error.toString(), 'utf-8'));
     });
 
-    task.on("close", () => {
+    task.on('close', () => {
       if (errorChunks.length) {
         cleanUpFiles(texFilePath);
         return reject(Buffer.concat(errorChunks).toString());
       } else {
         const output = Buffer.concat(chunks).toString();
-        if (output.indexOf("LaTeX Error") >= 0) {
+        if (output.indexOf('LaTeX Error') >= 0) {
           // meet error
           cleanUpFiles(texFilePath);
           return reject(output);
         }
 
-        const pdfFilePath = texFilePath.replace(/\.(la)?tex$/, ".pdf");
+        const pdfFilePath = texFilePath.replace(/\.(la)?tex$/, '.pdf');
 
         PDF.toSVGMarkdown(pdfFilePath, {
           svgDirectoryPath,
@@ -85,11 +84,11 @@ export function toSVGMarkdown(
           svgWidth,
           svgHeight,
         })
-          .then((svgMarkdown) => {
+          .then(svgMarkdown => {
             cleanUpFiles(texFilePath);
             return resolve(svgMarkdown);
           })
-          .catch((error) => {
+          .catch(error => {
             cleanUpFiles(texFilePath);
             return reject(error);
           });

@@ -1,62 +1,60 @@
 // tslint:disable no-var-requires member-ordering
 
-import * as cheerio from "cheerio";
-import { execFile } from "child_process";
-import * as fs from "fs";
-import * as path from "path";
-import * as request from "request";
-import * as slash from "slash";
-import * as vscode from "vscode";
-import * as YAML from "yamljs";
-import { CodeChunkData } from "./code-chunk-data";
-import useMarkdownAdmonition from "./custom-markdown-it-features/admonition";
-import useMarkdownItCodeFences from "./custom-markdown-it-features/code-fences";
-import useMarkdownItCriticMarkup from "./custom-markdown-it-features/critic-markup";
-import useMarkdownItEmoji from "./custom-markdown-it-features/emoji";
-import useMarkdownItHTML5Embed from "./custom-markdown-it-features/html5-embed";
-import useMarkdownItMath from "./custom-markdown-it-features/math";
-import useMarkdownItWikilink from "./custom-markdown-it-features/wikilink";
-import { ebookConvert } from "./ebook-convert";
-import HeadingIdGenerator from "./heading-id-generator";
-import {
-  parseBlockAttributes,
-  stringifyBlockAttributes,
-} from "./lib/block-attributes";
-import { normalizeBlockInfo, parseBlockInfo } from "./lib/block-info";
-import { markdownConvert } from "./markdown-convert";
+import * as cheerio from 'cheerio';
+import { execFile } from 'child_process';
+import CryptoJS from 'crypto-js';
+import * as fs from 'fs';
+import { escape } from 'html-escaper';
+import MarkdownIt from 'markdown-it';
+import MarkdownItAbbr from 'markdown-it-abbr';
+import MarkdownItDeflist from 'markdown-it-deflist';
+import MarkdownItFootnote from 'markdown-it-footnote';
+import MarkdownItMark from 'markdown-it-mark';
+import MarkdownItSub from 'markdown-it-sub';
+import MarkdownItSup from 'markdown-it-sup';
+import * as path from 'path';
+import puppeteer, { Browser } from 'puppeteer-core';
+import request from 'request';
+import { JsonObject } from 'type-fest';
+import * as vscode from 'vscode';
+import * as YAML from 'yaml';
+import { CodeChunkData } from './code-chunk-data';
+import useMarkdownAdmonition from './custom-markdown-it-features/admonition';
+import useMarkdownItCodeFences from './custom-markdown-it-features/code-fences';
+import useMarkdownItCriticMarkup from './custom-markdown-it-features/critic-markup';
+import useMarkdownItEmoji from './custom-markdown-it-features/emoji';
+import useMarkdownItHTML5Embed from './custom-markdown-it-features/html5-embed';
+import useMarkdownItMath from './custom-markdown-it-features/math';
+import useMarkdownItWikilink from './custom-markdown-it-features/wikilink';
+import { ebookConvert } from './ebook-convert';
+import HeadingIdGenerator from './heading-id-generator';
+import { parseBlockAttributes } from './lib/block-attributes/parseBlockAttributes';
+import { stringifyBlockAttributes } from './lib/block-attributes/stringifyBlockAttributes';
+import { normalizeBlockInfo } from './lib/block-info/normalizeBlockInfo';
+import { parseBlockInfo } from './lib/block-info/parseBlockInfo';
+import { markdownConvert } from './markdown-convert';
 import {
   defaultMarkdownEngineConfig,
   MarkdownEngineConfig,
-} from "./markdown-engine-config";
-import { pandocConvert } from "./pandoc-convert";
-import { princeConvert } from "./prince-convert";
-import enhanceWithCodeBlockStyling from "./render-enhancers/code-block-styling";
-import enhanceWithEmbeddedLocalImages from "./render-enhancers/embedded-local-images";
-import enhanceWithEmbeddedSvgs from "./render-enhancers/embedded-svgs";
-// import enhanceWithEmojiToSvg from "./render-enhancers/emoji-to-svg";
-import enhanceWithExtendedTableSyntax from "./render-enhancers/extended-table-syntax";
+} from './markdown-engine-config';
+import { pandocConvert } from './pandoc-convert';
+import { princeConvert } from './prince-convert';
+import enhanceWithCodeBlockStyling from './render-enhancers/code-block-styling';
+import enhanceWithEmbeddedLocalImages from './render-enhancers/embedded-local-images';
+import enhanceWithEmbeddedSvgs from './render-enhancers/embedded-svgs';
+import enhanceWithExtendedTableSyntax from './render-enhancers/extended-table-syntax';
 import enhanceWithFencedCodeChunks, {
   runCodeChunk,
   RunCodeChunkOptions,
   runCodeChunks,
-} from "./render-enhancers/fenced-code-chunks";
-import enhanceWithFencedDiagrams from "./render-enhancers/fenced-diagrams";
-import enhanceWithFencedMath from "./render-enhancers/fenced-math";
-import enhanceWithResolvedImagePaths from "./render-enhancers/resolved-image-paths";
-import { generateSidebarToCHTML } from "./toc";
-import { HeadingData, transformMarkdown } from "./transformer";
-import * as utility from "./utility";
-import { removeFileProtocol } from "./utility";
-
-const extensionDirectoryPath = utility.extensionDirectoryPath;
-const MarkdownIt = require(path.resolve(
-  extensionDirectoryPath,
-  "./dependencies/markdown-it/markdown-it.min.js",
-));
-const CryptoJS = require(path.resolve(
-  extensionDirectoryPath,
-  "./dependencies/crypto-js/crypto-js.js",
-));
+} from './render-enhancers/fenced-code-chunks';
+import enhanceWithFencedDiagrams from './render-enhancers/fenced-diagrams';
+import enhanceWithFencedMath from './render-enhancers/fenced-math';
+import enhanceWithResolvedImagePaths from './render-enhancers/resolved-image-paths';
+import { generateSidebarToCHTML, HeadingData } from './toc';
+import { transformMarkdown } from './transformer';
+import * as utility from './utility';
+import { removeFileProtocol } from './utility';
 
 export interface MarkdownEngineRenderOption {
   useRelativeFilePath: boolean;
@@ -65,7 +63,7 @@ export interface MarkdownEngineRenderOption {
   triggeredBySave?: boolean;
   runAllCodeChunks?: boolean;
   emojiToSvg?: boolean;
-  vscodePreviewPanel?: vscode.WebviewPanel;
+  vscodePreviewPanel?: vscode.WebviewPanel | null;
   fileDirectoryPath?: string;
 }
 
@@ -73,7 +71,7 @@ export interface MarkdownEngineOutput {
   html: string;
   markdown: string;
   tocHTML: string;
-  yamlConfig: any;
+  yamlConfig: JsonObject;
   /**
    * imported javascript and css files
    * convert .js file to <script src='...'></script>
@@ -110,30 +108,24 @@ const defaults = {
   html: true, // Enable HTML tags in source
   xhtmlOut: false, // Use '/' to close single tags (<br />)
   breaks: true, // Convert '\n' in paragraphs into <br>
-  langPrefix: "language-", // CSS language prefix for fenced blocks
+  langPrefix: 'language-', // CSS language prefix for fenced blocks
   linkify: true, // autoconvert URL-like texts to links
-  linkTarget: "", // set target to open link in
+  linkTarget: '', // set target to open link in
   typographer: true, // Enable smartypants and other sweet transforms
 };
 
-let MODIFY_SOURCE: (
-  codeChunkData: CodeChunkData,
-  result: string,
-  filePath: string,
-) => Promise<string> = null;
+let MODIFY_SOURCE:
+  | ((
+      codeChunkData: CodeChunkData,
+      result: string,
+      filePath: string,
+    ) => Promise<string>)
+  | null = null;
 
 const dependentLibraryMaterials = [
   {
-    key: "vega",
-    version: "5.4.0",
-  },
-  {
-    key: "vega-lite",
-    version: "3.3.0",
-  },
-  {
-    key: "vega-embed",
-    version: "4.2.0",
+    key: 'vega-embed',
+    version: '6.22.2',
   },
 ];
 
@@ -198,7 +190,7 @@ export class MarkdownEngine {
   /**
    * Dirty variable just made for VSCode preview.
    */
-  private vscodePreviewPanel: vscode.WebviewPanel;
+  private vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
 
   // caches
   private graphsCache: { [key: string]: string } = {};
@@ -231,7 +223,7 @@ export class MarkdownEngine {
     /**
      * Markdown Engine configuration.
      */
-    config?: MarkdownEngineConfig;
+    config: MarkdownEngineConfig;
   }) {
     this.filePath = args.filePath;
     this.fileDirectoryPath = path.dirname(this.filePath);
@@ -242,7 +234,7 @@ export class MarkdownEngine {
     this.resetConfig();
 
     this.headings = [];
-    this.tocHTML = "";
+    this.tocHTML = '';
 
     this.md = new MarkdownIt({
       ...defaults,
@@ -252,22 +244,14 @@ export class MarkdownEngine {
     });
 
     // markdown-it extensions
-    const extensions = [
-      "./dependencies/markdown-it/extensions/markdown-it-footnote.min.js",
-      "./dependencies/markdown-it/extensions/markdown-it-sub.min.js",
-      "./dependencies/markdown-it/extensions/markdown-it-sup.min.js",
-      "./dependencies/markdown-it/extensions/markdown-it-deflist.min.js",
-      "./dependencies/markdown-it/extensions/markdown-it-abbr.min.js",
-      "./dependencies/markdown-it/extensions/markdown-it-mark.min.js",
-    ];
+    this.md.use(MarkdownItFootnote);
+    this.md.use(MarkdownItSub);
+    this.md.use(MarkdownItSup);
+    this.md.use(MarkdownItDeflist);
+    this.md.use(MarkdownItAbbr);
+    this.md.use(MarkdownItMark);
 
-    for (const js of extensions) {
-      const fullPath = path.resolve(extensionDirectoryPath, js);
-      const plugin = require(fullPath);
-      this.md.use(plugin);
-    }
-
-    useMarkdownItCodeFences(this.md, this.config);
+    useMarkdownItCodeFences(this.md);
     useMarkdownItCriticMarkup(this.md, this.config);
     useMarkdownItEmoji(this.md, this.config);
     useMarkdownItHTML5Embed(this.md, this.config);
@@ -297,23 +281,24 @@ export class MarkdownEngine {
     this.interpolateConfig(this.config, this.projectDirectoryPath);
 
     // break on single newline
-    this.breakOnSingleNewLine = this.config.breakOnSingleNewLine;
+    this.breakOnSingleNewLine = !!this.config.breakOnSingleNewLine;
 
     // enable typographer
-    this.enableTypographer = this.config.enableTypographer;
+    this.enableTypographer = !!this.config.enableTypographer;
 
     // enable linkify
-    this.enableLinkify = this.config.enableLinkify;
+    this.enableLinkify = !!this.config.enableLinkify;
 
     // protocal whitelist
     const protocolsWhiteList = (
-      this.config.protocolsWhiteList ||
-      defaultMarkdownEngineConfig.protocolsWhiteList
+      this.config.protocolsWhiteList ??
+      defaultMarkdownEngineConfig.protocolsWhiteList ??
+      ''
     )
-      .split(",")
-      .map((x) => x.trim());
+      .split(',')
+      .map(x => x.trim());
     this.protocolsWhiteListRegExp = new RegExp(
-      "^(" + protocolsWhiteList.join("|") + ")",
+      '^(' + protocolsWhiteList.join('|') + ')',
     ); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
   }
 
@@ -345,6 +330,10 @@ export class MarkdownEngine {
       pattern,
       (match, token) => replacements[token] || match,
     );
+    config.plantumlJarPath = config.plantumlJarPath?.replace(
+      pattern,
+      (match, token) => replacements[token] || match,
+    );
   }
 
   public updateConfiguration(config: Partial<MarkdownEngineConfig>) {
@@ -358,21 +347,12 @@ export class MarkdownEngine {
     });
   }
 
-  /*
-  public cacheSVG(code:string, svg:string) {
-    svg = CryptoJS.AES.decrypt(svg, 'markdown-preview-enhanced').toString(CryptoJS.enc.Utf8)
-    // const base64 = new Buffer(svg).toString('base64')
-    // const img = `<img src="data:image/svg+xml;charset=utf-8;base64,${base64}">`
-    this.graphsCache[md5(code)] = svg
-  }
-  */
-
   public cacheCodeChunkResult(id: string, result: string) {
     const codeChunkData = this.codeChunksData[id];
     if (!codeChunkData) {
       return;
     }
-    codeChunkData.result = CryptoJS.AES.decrypt(result, "mume").toString(
+    codeChunkData.result = CryptoJS.AES.decrypt(result, 'mume').toString(
       CryptoJS.enc.Utf8,
     );
   }
@@ -383,9 +363,9 @@ export class MarkdownEngine {
   public generateScriptsForPreview(
     isForPresentation = false,
     yamlConfig = {},
-    vscodePreviewPanel: vscode.WebviewPanel = null,
+    vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
-    let scripts = "";
+    let scripts = '';
 
     // prevent `id="exports"` element from linked to `window` object.
     scripts += `<script>var exports = undefined</script>`;
@@ -393,8 +373,8 @@ export class MarkdownEngine {
     // jquery
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/jquery/jquery.js",
+        utility.getExtensionDirectoryPath(),
+        './dependencies/jquery/jquery.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
@@ -402,15 +382,15 @@ export class MarkdownEngine {
     // jquery contextmenu
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/jquery-contextmenu/jquery.ui.position.min.js",
+        utility.getExtensionDirectoryPath(),
+        './dependencies/jquery-contextmenu/jquery.ui.position.min.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/jquery-contextmenu/jquery.contextMenu.min.js",
+        utility.getExtensionDirectoryPath(),
+        './dependencies/jquery-contextmenu/jquery.contextMenu.min.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
@@ -418,17 +398,8 @@ export class MarkdownEngine {
     // jquery modal
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/jquery-modal/jquery.modal.min.js",
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-
-    // crpto-js
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/crypto-js/crypto-js.js",
+        utility.getExtensionDirectoryPath(),
+        './dependencies/jquery-modal/jquery.modal.min.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
@@ -436,102 +407,82 @@ export class MarkdownEngine {
     // mermaid
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         `./dependencies/mermaid/mermaid.min.js`,
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
-
-    // zenuml
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/sequence-diagram/vue.js",
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/sequence-diagram/sequence-diagram.min.js",
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
+    // TODO: If ZenUML gets integrated into mermaid in the future,
+    //      we can remove the following lines.
+    scripts += `<script type="module">
+    import zenuml from 'https://cdn.jsdelivr.net/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
+    await mermaid.registerExternalDiagrams([zenuml]);
+  </script>`;
 
     // wavedrome
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/wavedrom/default.js",
+        utility.getExtensionDirectoryPath(),
+        './dependencies/wavedrom/default.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/wavedrom/wavedrom.min.js",
+        utility.getExtensionDirectoryPath(),
+        './dependencies/wavedrom/wavedrom.min.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
 
     // math
     if (
-      this.config.mathRenderingOption === "MathJax" ||
+      this.config.mathRenderingOption === 'MathJax' ||
       this.config.usePandocParser
     ) {
       const mathJaxConfig = utility.configs.mathjaxConfig;
-      mathJaxConfig["tex2jax"] = mathJaxConfig["tex2jax"] || {};
-      mathJaxConfig["tex2jax"]["inlineMath"] = this.config.mathInlineDelimiters;
-      mathJaxConfig["tex2jax"]["displayMath"] = this.config.mathBlockDelimiters;
-      mathJaxConfig["HTML-CSS"]["imageFont"] = null; // Disable image font, otherwise the preview will only display black color image.
-      mathJaxConfig["root"] = utility.addFileProtocol(
-        slash(
-          path.resolve(
-            utility.extensionDirectoryPath,
-            "./dependencies/mathjax",
-          ),
-        ),
-        vscodePreviewPanel,
-      );
+      mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
+      mathJaxConfig['tex']['inlineMath'] = this.config.mathInlineDelimiters;
+      mathJaxConfig['tex']['displayMath'] = this.config.mathBlockDelimiters;
 
-      scripts += `<script type="text/javascript" async src="${utility.addFileProtocol(
-        path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/mathjax/MathJax.js",
-        ),
-        vscodePreviewPanel,
-      )}" charset="UTF-8"></script>`;
-      scripts += `<script type="text/x-mathjax-config"> MathJax.Hub.Config(${JSON.stringify(
+      // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
+      // Disable typesetting on startup
+      mathJaxConfig['startup'] = mathJaxConfig['startup'] || {};
+      mathJaxConfig['startup']['typeset'] = false;
+      mathJaxConfig['startup']['elements'] = ['.hidden-preview']; // Only render on this element
+
+      scripts += `<script type="text/javascript"> window.MathJax = (${JSON.stringify(
         mathJaxConfig,
       )}); </script>`;
+      scripts += `<script type="text/javascript" async src="${this.config.mathjaxV3ScriptSrc}" charset="UTF-8"></script>`;
     }
 
     // reveal.js
     if (isForPresentation) {
       scripts += `<script src='${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/reveal/lib/js/head.min.js",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/reveal/lib/js/head.min.js',
         ),
         vscodePreviewPanel,
       )}'></script>`;
       scripts += `<script src='${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/reveal/js/reveal.js",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/reveal/js/reveal.js',
         ),
         vscodePreviewPanel,
       )}'></script>`;
 
-      let presentationConfig = yamlConfig["presentation"] || {};
-      if (typeof presentationConfig !== "object") {
+      let presentationConfig = yamlConfig['presentation'] || {};
+      if (typeof presentationConfig !== 'object') {
         presentationConfig = {};
       }
-      let dependencies = presentationConfig["dependencies"] || [];
+      let dependencies = presentationConfig['dependencies'] || [];
       if (!(dependencies instanceof Array)) {
         dependencies = [];
       }
-      presentationConfig["dependencies"] = dependencies;
+      presentationConfig['dependencies'] = dependencies;
 
       scripts += `
       <script>
@@ -545,13 +496,14 @@ export class MarkdownEngine {
 
     // mermaid init
     scripts += `<script>
+var MERMAID_CONFIG;
 ${utility.configs.mermaidConfig}
-if (window['MERMAID_CONFIG']) {
-  window['MERMAID_CONFIG'].startOnLoad = false
-  window['MERMAID_CONFIG'].cloneCssStyles = false
-  window['MERMAID_CONFIG'].theme = "${this.config.mermaidTheme}"
+if (typeof MERMAID_CONFIG !== 'undefined') {
+  MERMAID_CONFIG.startOnLoad = false
+  MERMAID_CONFIG.cloneCssStyles = false
+  MERMAID_CONFIG.theme = "${this.config.mermaidTheme}"
 }
-mermaid.initialize(window['MERMAID_CONFIG'] || {})
+mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
     var currentSlide = event.currentSlide
@@ -580,43 +532,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
       </script>`;
     }
 
-    // flowchart.js
-    scripts += `<script src='${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/raphael/raphael.js",
-      ),
-      vscodePreviewPanel,
-    )}'></script>`;
-    scripts += `<script src='${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/flowchart/flowchart.min.js",
-      ),
-      vscodePreviewPanel,
-    )}'></script>`;
-    // flowchart init script
-    if (isForPresentation) {
-      scripts += `<script>
-      var flowcharts = document.getElementsByClassName('flow')
-      for (var i = 0; i < flowcharts.length; i++) {
-        var flow = flowcharts[i]
-        try {
-          var diagram = flowchart.parse(flow.textContent)
-          flow.id = 'flow_' + i
-          flow.innerHTML = ''
-          diagram.drawSVG(flow.id)
-        } catch (error) {
-          flow.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
-        }
-      }
-      </script>`;
-    }
-
+    // vega
     dependentLibraryMaterials.forEach(({ key }) => {
       scripts += `<script src="${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           `./dependencies/${key}/${key}.min.js`,
         ),
         vscodePreviewPanel,
@@ -644,47 +564,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
       </script>`;
     }
 
-    // sequence diagram
-    scripts += `<script src='${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/webfont/webfontloader.js",
-      ),
-      vscodePreviewPanel,
-    )}'></script>`;
-    scripts += `<script src='${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/underscore/underscore.js",
-      ),
-      vscodePreviewPanel,
-    )}'></script>`;
-    scripts += `<script src='${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        "./dependencies/js-sequence-diagrams/sequence-diagram-min.js",
-      ),
-      vscodePreviewPanel,
-    )}'></script>`;
-    // sequence diagram init script
-    if (isForPresentation) {
-      scripts += `<script>
-      var sequenceDiagrams = document.getElementsByClassName('sequence')
-      for (var i = 0; i < sequenceDiagrams.length; i++) {
-        var sequence = sequenceDiagrams[i]
-        try {
-          var diagram = Diagram.parse(sequence.textContent)
-          var theme = sequence.getAttribute('theme') || 'simple'
-          sequence.id = 'sequence_' + i
-          sequence.innerHTML = ''
-          diagram.drawSVG(sequence.id, {theme: theme})
-        } catch (error) {
-          sequence.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
-        }
-      }
-      </script>`;
-    }
-
     return scripts;
   }
 
@@ -692,60 +571,60 @@ if (typeof(window['Reveal']) !== 'undefined') {
    * Map preview theme to prism theme.
    */
   private static AutoPrismThemeMap = {
-    "atom-dark.css": "atom-dark.css",
-    "atom-light.css": "atom-light.css",
-    "atom-material.css": "atom-material.css",
-    "github-dark.css": "atom-dark.css",
-    "github-light.css": "github.css",
-    "gothic.css": "github.css",
-    "medium.css": "github.css",
-    "monokai.css": "monokai.css",
-    "newsprint.css": "pen-paper-coffee.css", // <= this is bad
-    "night.css": "darcula.css", // <= this is bad
-    "one-dark.css": "one-dark.css",
-    "one-light.css": "one-light.css",
-    "solarized-light.css": "solarized-light.css",
-    "solarized-dark.css": "solarized-dark.css",
-    "vue.css": "vue.css",
+    'atom-dark.css': 'atom-dark.css',
+    'atom-light.css': 'atom-light.css',
+    'atom-material.css': 'atom-material.css',
+    'github-dark.css': 'atom-dark.css',
+    'github-light.css': 'github.css',
+    'gothic.css': 'github.css',
+    'medium.css': 'github.css',
+    'monokai.css': 'monokai.css',
+    'newsprint.css': 'pen-paper-coffee.css', // <= this is bad
+    'night.css': 'darcula.css', // <= this is bad
+    'one-dark.css': 'one-dark.css',
+    'one-light.css': 'one-light.css',
+    'solarized-light.css': 'solarized-light.css',
+    'solarized-dark.css': 'solarized-dark.css',
+    'vue.css': 'vue.css',
   };
 
   private static AutoPrismThemeMapForPresentation = {
-    "beige.css": "pen-paper-coffee.css",
-    "black.css": "one-dark.css",
-    "blood.css": "monokai.css",
-    "league.css": "okaidia.css",
-    "moon.css": "funky.css",
-    "night.css": "atom-dark.css",
-    "serif.css": "github.css",
-    "simple.css": "github.css",
-    "sky.css": "default.css",
-    "solarized.css": "solarized-light.css",
-    "white.css": "default.css",
+    'beige.css': 'pen-paper-coffee.css',
+    'black.css': 'one-dark.css',
+    'blood.css': 'monokai.css',
+    'league.css': 'okaidia.css',
+    'moon.css': 'funky.css',
+    'night.css': 'atom-dark.css',
+    'serif.css': 'github.css',
+    'simple.css': 'github.css',
+    'sky.css': 'default.css',
+    'solarized.css': 'solarized-light.css',
+    'white.css': 'default.css',
   };
 
   /**
    * Automatically pick code block theme for preview.
    */
   private getPrismTheme(isPresentationMode = false, yamlConfig = {}) {
-    if (this.config.codeBlockTheme === "auto.css") {
+    if (this.config.codeBlockTheme === 'auto.css') {
       /**
        * Automatically pick code block theme for preview.
        */
       if (isPresentationMode) {
         const presentationTheme =
-          yamlConfig["presentation"] &&
-          typeof yamlConfig["presentation"] === "object" &&
-          yamlConfig["presentation"]["theme"]
-            ? yamlConfig["presentation"]["theme"]
+          yamlConfig['presentation'] &&
+          typeof yamlConfig['presentation'] === 'object' &&
+          yamlConfig['presentation']['theme']
+            ? yamlConfig['presentation']['theme']
             : this.config.revealjsTheme;
         return (
           MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] ||
-          "default.css"
+          'default.css'
         );
       } else {
         return (
           MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] ||
-          "default.css"
+          'default.css'
         );
       }
     } else {
@@ -759,20 +638,20 @@ if (typeof(window['Reveal']) !== 'undefined') {
   public generateStylesForPreview(
     isPresentationMode = false,
     yamlConfig = {},
-    vscodePreviewPanel: vscode.WebviewPanel = null,
+    vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
-    let styles = "";
+    let styles = '';
 
     // loading.css
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
-      path.resolve(utility.extensionDirectoryPath, "./styles/loading.css"),
+      path.resolve(utility.getExtensionDirectoryPath(), './styles/loading.css'),
       vscodePreviewPanel,
     )}">`;
 
     // jquery-contextmenu
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         `./dependencies/jquery-contextmenu/jquery.contextMenu.min.css`,
       ),
       vscodePreviewPanel,
@@ -781,7 +660,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // jquery-modal
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         `./dependencies/jquery-modal/jquery.modal.min.css`,
       ),
       vscodePreviewPanel,
@@ -789,31 +668,22 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // check math
     if (
-      this.config.mathRenderingOption === "KaTeX" &&
+      this.config.mathRenderingOption === 'KaTeX' &&
       !this.config.usePandocParser
     ) {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/katex/katex.min.css",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/katex/katex.min.css',
         ),
         vscodePreviewPanel,
       )}">`;
     }
 
-    // check sequence diagram
-    styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
-      path.resolve(
-        utility.extensionDirectoryPath,
-        `./dependencies/js-sequence-diagrams/sequence-diagram-min.css`,
-      ),
-      vscodePreviewPanel,
-    )}">`;
-
     // check font-awesome
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         `./dependencies/font-awesome/css/font-awesome.min.css`,
       ),
       vscodePreviewPanel,
@@ -823,7 +693,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (!isPresentationMode) {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          utility.extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           `./styles/preview_theme/${this.config.previewTheme}`,
         ),
         vscodePreviewPanel,
@@ -831,19 +701,19 @@ if (typeof(window['Reveal']) !== 'undefined') {
     } else {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/reveal/css/reveal.css",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/reveal/css/reveal.css',
         ),
         vscodePreviewPanel,
       )}" >`;
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           `./dependencies/reveal/css/theme/${
-            yamlConfig["presentation"] &&
-            typeof yamlConfig["presentation"] === "object" &&
-            yamlConfig["presentation"]["theme"]
-              ? yamlConfig["presentation"]["theme"]
+            yamlConfig['presentation'] &&
+            typeof yamlConfig['presentation'] === 'object' &&
+            yamlConfig['presentation']['theme']
+              ? yamlConfig['presentation']['theme']
               : this.config.revealjsTheme
           }`,
         ),
@@ -854,7 +724,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // check prism
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
+        utility.getExtensionDirectoryPath(),
         `./styles/prism_theme/${this.getPrismTheme(
           isPresentationMode,
           yamlConfig,
@@ -866,8 +736,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
-        "./styles/style-template.css",
+        utility.getExtensionDirectoryPath(),
+        './styles/style-template.css',
       ),
       vscodePreviewPanel,
     )}">`;
@@ -875,8 +745,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // style markdown-it-admonition
     styles += `<link rel="stylesheet" media="screen" href="${utility.addFileProtocol(
       path.resolve(
-        utility.extensionDirectoryPath,
-        "./styles/markdown-it-admonition.css",
+        utility.getExtensionDirectoryPath(),
+        './styles/markdown-it-admonition.css',
       ),
       vscodePreviewPanel,
     )}">`;
@@ -892,20 +762,20 @@ if (typeof(window['Reveal']) !== 'undefined') {
    * @param JSAndCssFiles
    */
   private generateJSAndCssFilesForPreview(
-    JSAndCssFiles = [],
-    vscodePreviewPanel: vscode.WebviewPanel = null,
+    JSAndCssFiles: string[] = [],
+    vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
-    let output = "";
-    JSAndCssFiles.forEach((sourcePath) => {
+    let output = '';
+    JSAndCssFiles.forEach(sourcePath => {
       let absoluteFilePath = sourcePath;
-      if (sourcePath[0] === "/") {
+      if (sourcePath[0] === '/') {
         absoluteFilePath = utility.addFileProtocol(
-          path.resolve(this.projectDirectoryPath, "." + sourcePath),
+          path.resolve(this.projectDirectoryPath, '.' + sourcePath),
           vscodePreviewPanel,
         );
       } else if (
         sourcePath.match(/^file:\/\//) ||
-        sourcePath.match(/^https?\:\/\//)
+        sourcePath.match(/^https?:\/\//)
       ) {
         // do nothing
       } else {
@@ -915,7 +785,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         );
       }
 
-      if (absoluteFilePath.endsWith(".js")) {
+      if (absoluteFilePath.endsWith('.js')) {
         output += `<script type="text/javascript" src="${absoluteFilePath}"></script>`;
       } else {
         // css
@@ -929,22 +799,32 @@ if (typeof(window['Reveal']) !== 'undefined') {
    * Generate html template for preview.
    */
   public async generateHTMLTemplateForPreview({
-    inputString = "",
-    body = "",
-    webviewScript = "",
-    scripts = "",
-    styles = "",
+    inputString = '',
+    body = '',
+    webviewScript = '',
+    scripts = '',
+    styles = '',
     head = `<base href="${this.filePath}">`,
     config = {},
     vscodePreviewPanel = null,
-    contentSecurityPolicy = "",
+    contentSecurityPolicy = '',
+  }: {
+    inputString?: string;
+    body?: string;
+    webviewScript?: string;
+    scripts?: string;
+    styles?: string;
+    head?: string;
+    config: JsonObject;
+    vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
+    contentSecurityPolicy?: string;
   }): Promise<string> {
     if (!inputString) {
-      inputString = fs.readFileSync(this.filePath, { encoding: "utf-8" });
+      inputString = fs.readFileSync(this.filePath, { encoding: 'utf-8' });
     }
     if (!webviewScript) {
       webviewScript = utility.addFileProtocol(
-        path.resolve(utility.extensionDirectoryPath, "./out/src/webview.js"),
+        path.resolve(utility.getExtensionDirectoryPath(), './webview/index.js'),
         vscodePreviewPanel,
       );
     }
@@ -961,7 +841,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           <h4>Image Helper</h4>
           <div class="upload-div">
             <label>Link</label>
-            <input type="text" class="url-editor" placeholder="enter image URL here, then press \'Enter\' to insert.">
+            <input type="text" class="url-editor" placeholder="enter image URL here, then press 'Enter' to insert.">
             <div class="splitter"></div>
             <label class="copy-label">Copy image to root /assets folder</label>
             <div class="drop-area paster">
@@ -999,13 +879,13 @@ if (typeof(window['Reveal']) !== 'undefined') {
         vscodePreviewPanel,
       },
     );
-    const isPresentationMode = yamlConfig["isPresentationMode"];
+    const isPresentationMode = yamlConfig['isPresentationMode'] as boolean;
 
     const htmlTemplate = `<!DOCTYPE html>
       <html>
       <head>
         <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-        <meta id="mume-data" data-config="${utility.escapeString(
+        <meta id="mume-data" data-config="${escape(
           JSON.stringify({ ...this.config, ...config }),
         )}" data-time="${Date.now()}">
         <meta charset="UTF-8">
@@ -1015,7 +895,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           http-equiv="Content-Security-Policy"
           content="${contentSecurityPolicy}"
         />`
-            : ""
+            : ''
         }
         ${this.generateStylesForPreview(
           isPresentationMode,
@@ -1024,7 +904,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
         )}
         ${styles}
         <link rel="stylesheet" href="${utility.addFileProtocol(
-          path.resolve(utility.extensionDirectoryPath, "./styles/preview.css"),
+          path.resolve(
+            utility.getExtensionDirectoryPath(),
+            './styles/preview.css',
+          ),
           vscodePreviewPanel,
         )}">
         ${this.generateJSAndCssFilesForPreview(
@@ -1035,7 +918,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       </head>
       <body class="preview-container">
         <div class="mume markdown-preview" for="preview" ${
-          isPresentationMode ? "data-presentation-mode" : ""
+          isPresentationMode ? 'data-presentation-mode' : ''
         }>
           ${html}
         </div>
@@ -1065,63 +948,65 @@ if (typeof(window['Reveal']) !== 'undefined') {
     options: HTMLTemplateOption,
   ): Promise<string> {
     // get `id` and `class`
-    const elementId = yamlConfig["id"] || "";
-    let elementClass = yamlConfig["class"] || [];
-    if (typeof elementClass === "string") {
+    const elementId = yamlConfig['id'] || '';
+    let elementClass = yamlConfig['class'] || [];
+    if (typeof elementClass === 'string') {
       elementClass = [elementClass];
     }
-    elementClass = elementClass.join(" ");
+    elementClass = elementClass.join(' ');
 
     // math style and script
-    let mathStyle = "";
+    let mathStyle = '';
     if (
-      this.config.mathRenderingOption === "MathJax" ||
+      this.config.mathRenderingOption === 'MathJax' ||
       this.config.usePandocParser
     ) {
       // TODO
-      const mathJaxConfig = await utility.getMathJaxConfig(
-        this.config.configPath,
-      );
-      mathJaxConfig["tex2jax"]["inlineMath"] = this.config.mathInlineDelimiters;
-      mathJaxConfig["tex2jax"]["displayMath"] = this.config.mathBlockDelimiters;
+      const mathJaxConfig = this.config.configPath
+        ? await utility.getMathJaxConfig(this.config.configPath)
+        : {};
+      mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
+      mathJaxConfig['tex']['inlineMath'] = this.config.mathInlineDelimiters;
+      mathJaxConfig['tex']['displayMath'] = this.config.mathBlockDelimiters;
 
       if (options.offline) {
         mathStyle = `
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)});
+        <script type="text/javascript">
+          window.MathJax = (${JSON.stringify(mathJaxConfig)});
         </script>
-        <script type="text/javascript" async src="file:///${path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/mathjax/MathJax.js",
-        )}" charset="UTF-8"></script>
+        <script type="text/javascript" async src="${
+          this.config.mathjaxV3ScriptSrc
+        }" charset="UTF-8"></script>
         `;
       } else {
         mathStyle = `
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config(${JSON.stringify(mathJaxConfig)});
+        <script type="text/javascript">
+          window.MathJax = (${JSON.stringify(mathJaxConfig)});
         </script>
-        <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"></script>
+        <script type="text/javascript" async src="${
+          this.config.mathjaxV3ScriptSrc
+        }"></script>
         `;
       }
-    } else if (this.config.mathRenderingOption === "KaTeX") {
+    } else if (this.config.mathRenderingOption === 'KaTeX') {
       if (options.offline) {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/katex/katex.min.css",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/katex/katex.min.css',
         )}">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/katex@0.16.8/dist/katex.min.css">`;
       }
     } else {
-      mathStyle = "";
+      mathStyle = '';
     }
 
     // font-awesome
-    let fontAwesomeStyle = "";
+    let fontAwesomeStyle = '';
     if (html.indexOf('<i class="fa ') >= 0) {
       if (options.offline) {
         fontAwesomeStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          extensionDirectoryPath,
+          utility.getExtensionDirectoryPath(),
           `./dependencies/font-awesome/css/font-awesome.min.css`,
         )}">`;
       } else {
@@ -1130,28 +1015,37 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
 
     // mermaid
-    let mermaidScript = "";
-    let mermaidInitScript = "";
+    let mermaidScript = '';
+    let mermaidInitScript = '';
     if (html.indexOf(' class="mermaid') >= 0) {
       if (options.offline) {
         mermaidScript = `<script type="text/javascript" src="file:///${path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/mermaid/mermaid.min.js",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/mermaid@10.3.1/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script type="module">
+  import mermaid from 'https://${this.config.jsdelivrCdnHost}/npm/mermaid@10.4.0/dist/mermaid.esm.min.mjs';
+</script>`;
       }
-      const mermaidConfig: string = await utility.getMermaidConfig(
-        this.config.configPath,
-      );
-      mermaidInitScript += `<script>
+
+      const mermaidConfig: string = this.config.configPath
+        ? await utility.getMermaidConfig(this.config.configPath)
+        : '';
+      mermaidInitScript += `<script type="module">
+// TODO: If ZenUML gets integrated into mermaid in the future,
+//      we can remove the following lines.
+import zenuml from 'https://${this.config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
+await mermaid.registerExternalDiagrams([zenuml])
+
+var MERMAID_CONFIG;
 ${mermaidConfig}
-if (window['MERMAID_CONFIG']) {
-  window['MERMAID_CONFIG'].startOnLoad = false
-  window['MERMAID_CONFIG'].cloneCssStyles = false
-  window['MERMAID_CONFIG'].theme = "${this.config.mermaidTheme}"
+if (typeof MERMAID_CONFIG !== 'undefined') {
+  MERMAID_CONFIG.startOnLoad = false
+  MERMAID_CONFIG.cloneCssStyles = false
+  MERMAID_CONFIG.theme = "${this.config.mermaidTheme}"
 }
-mermaid.initialize(window['MERMAID_CONFIG'] || {})
+mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
     var currentSlide = event.currentSlide
@@ -1168,26 +1062,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
   Reveal.addEventListener('slidechanged', mermaidRevealHelper)
   Reveal.addEventListener('ready', mermaidRevealHelper)
 } else {
-  mermaid.init(null, document.querySelectorAll('.mermaid'))
+  await mermaid.run({
+    nodes: document.querySelectorAll('.mermaid')
+  })
 }
 </script>`;
-    }
-    // zenuml
-    let zenumlScript = ``;
-    if (html.indexOf(' class="zenuml') >= 0) {
-      if (options.offline) {
-        zenumlScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/sequence-diagram/vue.js",
-        )}" charset="UTF-8"></script>`;
-        zenumlScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/sequence-diagram/sequence-diagram.min.js",
-        )}" charset="UTF-8"></script>`;
-      } else {
-        zenumlScript += `<script type="text/javascript" src="https://unpkg.com/vue"></script>`;
-        zenumlScript += `<script type="text/javascript" src="https://unpkg.com/sequence-diagram"></script>`;
-      }
     }
 
     // wavedrom
@@ -1196,12 +1075,12 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (html.indexOf(' class="wavedrom') >= 0) {
       if (options.offline) {
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/wavedrom/default.js",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/wavedrom/default.js',
         )}" charset="UTF-8"></script>`;
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/wavedrom/wavedrom.min.js",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/wavedrom/wavedrom.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
         wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.9.1/skins/default.js"></script>`;
@@ -1221,10 +1100,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
       dependentLibraryMaterials.forEach(({ key, version }) => {
         vegaScript += options.offline
           ? `<script type="text/javascript" src="file:///${path.resolve(
-              utility.extensionDirectoryPath,
+              utility.getExtensionDirectoryPath(),
               `./dependencies/${key}/${key}.min.js`,
             )}" charset="UTF-8"></script>`
-          : `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${name}.js"></script>`;
+          : `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
       });
 
       vegaInitScript += `<script>
@@ -1247,143 +1126,60 @@ if (typeof(window['Reveal']) !== 'undefined') {
       </script>`;
     }
 
-    // flowchart
-    let flowchartScript = ``;
-    let flowchartInitScript = ``;
-    if (html.indexOf(' class="flow') >= 0) {
-      if (options.offline) {
-        flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/raphael/raphael.js",
-        )}" charset="UTF-8"></script>`;
-        flowchartScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/flowchart/flowchart.min.js",
-        )}" charset="UTF-8"></script>`;
-      } else {
-        flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`;
-        flowchartScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.7.0/flowchart.min.js"></script>`;
-      }
-      flowchartInitScript = `<script>
-var flowcharts = document.getElementsByClassName('flow')
-for (var i = 0; i < flowcharts.length; i++) {
-  var flow = flowcharts[i]
-  try {
-    var diagram = flowchart.parse(flow.textContent)
-    flow.id = 'flow_' + i
-    flow.innerHTML = ''
-    diagram.drawSVG(flow.id)
-  } catch (error) {
-    flow.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
-  }
-}
-</script>`;
-    }
-
-    // sequence diagrams
-    let sequenceDiagramScript = ``;
-    let sequenceDiagramStyle = ``;
-    let sequenceDiagramInitScript = ``;
-    if (html.indexOf(' class="sequence') >= 0) {
-      if (options.offline) {
-        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/webfont/webfontloader.js",
-        )}" charset="UTF-8"></script>`;
-        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/raphael/raphael.js",
-        )}" charset="UTF-8"></script>`;
-        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/underscore/underscore.js",
-        )}" charset="UTF-8"></script>`;
-        sequenceDiagramScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.extensionDirectoryPath,
-          "./dependencies/js-sequence-diagrams/sequence-diagram-min.js",
-        )}" charset="UTF-8"></script>`;
-        sequenceDiagramStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          extensionDirectoryPath,
-          `./dependencies/js-sequence-diagrams/sequence-diagram-min.css`,
-        )}">`;
-      } else {
-        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webfont/1.6.28/webfontloader.js"></script>`;
-        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.min.js"></script>`;
-        sequenceDiagramScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>`;
-        sequenceDiagramScript += `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/js-sequence-diagram@2.0.1/dist/sequence-diagram-min.js"></script>`;
-        sequenceDiagramStyle = `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/js-sequence-diagram@2.0.1/dist/sequence-diagram-min.css">`;
-      }
-      sequenceDiagramInitScript = `<script>
-      var sequenceDiagrams = document.getElementsByClassName('sequence')
-      for (var i = 0; i < sequenceDiagrams.length; i++) {
-        var sequence = sequenceDiagrams[i]
-        try {
-          var diagram = Diagram.parse(sequence.textContent)
-          var theme = sequence.getAttribute('theme') || 'simple'
-          sequence.id = 'sequence_' + i
-          sequence.innerHTML = ''
-          diagram.drawSVG(sequence.id, {theme: theme})
-        } catch (error) {
-          sequence.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
-        }
-      }
-      </script>`;
-    }
-
     // presentation
-    let presentationScript = "";
-    let presentationStyle = "";
-    let presentationInitScript = "";
-    if (yamlConfig["isPresentationMode"]) {
+    let presentationScript = '';
+    let presentationStyle = '';
+    let presentationInitScript = '';
+    if (yamlConfig['isPresentationMode']) {
       if (options.offline) {
         presentationScript = `
         <script src='file:///${path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/reveal/lib/js/head.min.js",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/reveal/lib/js/head.min.js',
         )}'></script>
         <script src='file:///${path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/reveal/js/reveal.js",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/reveal/js/reveal.js',
         )}'></script>`;
       } else {
         presentationScript = `
         <script src='https://${this.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/reveal.js'></script>`;
       }
 
-      const presentationConfig = yamlConfig["presentation"] || {};
-      const dependencies = presentationConfig["dependencies"] || [];
-      if (presentationConfig["enableSpeakerNotes"]) {
+      const presentationConfig = yamlConfig['presentation'] || {};
+      const dependencies = presentationConfig['dependencies'] || [];
+      if (presentationConfig['enableSpeakerNotes']) {
         if (options.offline) {
           dependencies.push({
             src: path.resolve(
-              extensionDirectoryPath,
-              "./dependencies/reveal/plugin/notes/notes.js",
+              utility.getExtensionDirectoryPath(),
+              './dependencies/reveal/plugin/notes/notes.js',
             ),
             async: true,
           });
         } else {
-          dependencies.push({ src: "revealjs_deps/notes.js", async: true }); // TODO: copy notes.js file to corresponding folder
+          dependencies.push({ src: 'revealjs_deps/notes.js', async: true }); // TODO: copy notes.js file to corresponding folder
         }
       }
-      presentationConfig["dependencies"] = dependencies;
+      presentationConfig['dependencies'] = dependencies;
 
       presentationStyle = `
       <style>
       ${fs.readFileSync(
         path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/reveal/css/reveal.css",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/reveal/css/reveal.css',
         ),
       )}
       ${
         options.isForPrint
           ? fs.readFileSync(
               path.resolve(
-                extensionDirectoryPath,
-                "./dependencies/reveal/css/print/pdf.css",
+                utility.getExtensionDirectoryPath(),
+                './dependencies/reveal/css/print/pdf.css',
               ),
             )
-          : ""
+          : ''
       }
       </style>
       `;
@@ -1398,54 +1194,54 @@ for (var i = 0; i < flowcharts.length; i++) {
     }
 
     // prince
-    let princeClass = "";
+    let princeClass = '';
     if (options.isForPrince) {
-      princeClass = "prince";
+      princeClass = 'prince';
     }
 
     let title = path.basename(this.filePath);
     title = title.slice(0, title.length - path.extname(title).length); // remove '.md'
-    if (yamlConfig["title"]) {
-      title = yamlConfig["title"];
+    if (yamlConfig['title']) {
+      title = yamlConfig['title'];
     }
 
     // prism and preview theme
-    let styleCSS = "";
+    let styleCSS = '';
     try {
       // prism *.css
       styleCSS +=
         !this.config.printBackground &&
-        !yamlConfig["print_background"] &&
-        !yamlConfig["isPresentationMode"]
+        !yamlConfig['print_background'] &&
+        !yamlConfig['isPresentationMode']
           ? await utility.readFile(
               path.resolve(
-                extensionDirectoryPath,
+                utility.getExtensionDirectoryPath(),
                 `./styles/prism_theme/github.css`,
               ),
-              { encoding: "utf-8" },
+              { encoding: 'utf-8' },
             )
           : await utility.readFile(
               path.resolve(
-                extensionDirectoryPath,
+                utility.getExtensionDirectoryPath(),
                 `./styles/prism_theme/${this.getPrismTheme(
-                  yamlConfig["isPresentationMode"],
+                  yamlConfig['isPresentationMode'],
                   yamlConfig,
                 )}`,
               ),
-              { encoding: "utf-8" },
+              { encoding: 'utf-8' },
             );
 
-      if (yamlConfig["isPresentationMode"]) {
+      if (yamlConfig['isPresentationMode']) {
         const theme =
-          yamlConfig["presentation"] &&
-          typeof yamlConfig["presentation"] === "object" &&
-          yamlConfig["presentation"]["theme"]
-            ? yamlConfig["presentation"]["theme"]
+          yamlConfig['presentation'] &&
+          typeof yamlConfig['presentation'] === 'object' &&
+          yamlConfig['presentation']['theme']
+            ? yamlConfig['presentation']['theme']
             : this.config.revealjsTheme;
 
         if (options.offline) {
           presentationStyle += `<link rel="stylesheet" href="file:///${path.resolve(
-            extensionDirectoryPath,
+            utility.getExtensionDirectoryPath(),
             `./dependencies/reveal/css/theme/${theme}`,
           )}">`;
         } else {
@@ -1454,61 +1250,66 @@ for (var i = 0; i < flowcharts.length; i++) {
       } else {
         // preview theme
         styleCSS +=
-          !this.config.printBackground && !yamlConfig["print_background"]
+          !this.config.printBackground && !yamlConfig['print_background']
             ? await utility.readFile(
                 path.resolve(
-                  extensionDirectoryPath,
+                  utility.getExtensionDirectoryPath(),
                   `./styles/preview_theme/github-light.css`,
                 ),
-                { encoding: "utf-8" },
+                { encoding: 'utf-8' },
               )
             : await utility.readFile(
                 path.resolve(
-                  extensionDirectoryPath,
+                  utility.getExtensionDirectoryPath(),
                   `./styles/preview_theme/${this.config.previewTheme}`,
                 ),
-                { encoding: "utf-8" },
+                { encoding: 'utf-8' },
               );
       }
 
       // style template
       styleCSS += await utility.readFile(
-        path.resolve(extensionDirectoryPath, "./styles/style-template.css"),
-        { encoding: "utf-8" },
+        path.resolve(
+          utility.getExtensionDirectoryPath(),
+          './styles/style-template.css',
+        ),
+        { encoding: 'utf-8' },
       );
 
       // markdown-it-admonition
-      if (html.indexOf("admonition") > 0) {
+      if (html.indexOf('admonition') > 0) {
         styleCSS += await utility.readFile(
           path.resolve(
-            extensionDirectoryPath,
-            "./styles/markdown-it-admonition.css",
+            utility.getExtensionDirectoryPath(),
+            './styles/markdown-it-admonition.css',
           ),
-          { encoding: "utf-8" },
+          { encoding: 'utf-8' },
         );
       }
     } catch (e) {
-      styleCSS = "";
+      styleCSS = '';
     }
 
     // global styles
-    let globalStyles = "";
+    let globalStyles = '';
     try {
-      globalStyles = await utility.getGlobalStyles(this.config.configPath);
+      globalStyles = this.config.configPath
+        ? await utility.getGlobalStyles(this.config.configPath)
+        : '';
     } catch (error) {
       // ignore it
     }
 
     // sidebar toc
-    let sidebarTOC = "";
-    let sidebarTOCScript = "";
-    let sidebarTOCBtn = "";
+    let sidebarTOC = '';
+    let sidebarTOCScript = '';
+    let sidebarTOCBtn = '';
     if (
       this.config.enableScriptExecution &&
-      !yamlConfig["isPresentationMode"] &&
+      !yamlConfig['isPresentationMode'] &&
       !options.isForPrint &&
-      (!("html" in yamlConfig) ||
-        (yamlConfig["html"] && yamlConfig["html"]["toc"] !== false))
+      (!('html' in yamlConfig) ||
+        (yamlConfig['html'] && yamlConfig['html']['toc'] !== false))
     ) {
       // enable sidebar toc by default
       sidebarTOC = `<div class="md-sidebar-toc">${this.tocHTML}</div>`;
@@ -1518,9 +1319,9 @@ for (var i = 0; i < flowcharts.length; i++) {
       sidebarTOCScript = `
 <script>
 ${
-  yamlConfig["html"] && yamlConfig["html"]["toc"]
+  yamlConfig['html'] && yamlConfig['html']['toc']
     ? `document.body.setAttribute('html-show-sidebar-toc', true)`
-    : ""
+    : ''
 }
 var sidebarTOCBtn = document.getElementById('sidebar-toc-btn')
 sidebarTOCBtn.addEventListener('click', function(event) {
@@ -1536,9 +1337,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     // task list script
-    if (html.indexOf("task-list-item-checkbox") >= 0) {
-      const $ = cheerio.load("<div>" + html + "</div>");
-      $(".task-list-item-checkbox").each(
+    if (html.indexOf('task-list-item-checkbox') >= 0) {
+      const $ = cheerio.load('<div>' + html + '</div>');
+      $('.task-list-item-checkbox').each(
         (index: number, elem: CheerioElement) => {
           const $elem = $(elem);
           let $li = $elem.parent();
@@ -1546,7 +1347,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             $li = $li.parent();
           }
           if ($li[0].name.match(/^li$/i)) {
-            $li.addClass("task-list-item");
+            $li.addClass('task-list-item');
           }
         },
       );
@@ -1555,11 +1356,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // process styles
     // move @import ''; to the very start.
-    let styles = styleCSS + "\n" + globalStyles;
-    let imports = "";
-    styles = styles.replace(/\@import\s+url\(([^)]+)\)\s*;/g, (whole, url) => {
-      imports += whole + "\n";
-      return "";
+    let styles = styleCSS + '\n' + globalStyles;
+    let imports = '';
+    styles = styles.replace(/@import\s+url\(([^)]+)\)\s*;/g, whole => {
+      imports += whole + '\n';
+      return '';
     });
     styles = imports + styles;
 
@@ -1572,25 +1373,21 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       ${presentationStyle}
       ${mathStyle}
-      ${sequenceDiagramStyle}
       ${fontAwesomeStyle}
       ${presentationScript}
       ${mermaidScript}
-      ${zenumlScript}
       ${wavedromScript}
       ${vegaScript}
-      ${flowchartScript}
-      ${sequenceDiagramScript}
       <style>
       ${styles}
       </style>
     </head>
-    <body ${options.isForPrint ? "" : 'for="html-export"'} ${
-      yamlConfig["isPresentationMode"] ? "data-presentation-mode" : ""
+    <body ${options.isForPrint ? '' : 'for="html-export"'} ${
+      yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
     }>
       <div class="mume markdown-preview ${princeClass} ${elementClass}" ${
-      yamlConfig["isPresentationMode"] ? "data-presentation-mode" : ""
-    } ${elementId ? `id="${elementId}"` : ""}>
+      yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
+    } ${elementId ? `id="${elementId}"` : ''}>
       ${html}
       </div>
       ${sidebarTOC}
@@ -1600,8 +1397,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${mermaidInitScript}
     ${wavedromInitScript}
     ${vegaInitScript}
-    ${flowchartInitScript}
-    ${sequenceDiagramInitScript}
     ${sidebarTOCScript}
   </html>
     `;
@@ -1633,10 +1428,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   public async openInBrowser({ runAllCodeChunks = false }): Promise<void> {
     const inputString = await utility.readFile(this.filePath, {
-      encoding: "utf-8",
+      encoding: 'utf-8',
     });
     let html;
     let yamlConfig;
+    // eslint-disable-next-line prefer-const
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1651,8 +1447,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     });
     // create temp file
     const info = await utility.tempOpen({
-      prefix: "mume",
-      suffix: ".html",
+      prefix: 'mume',
+      suffix: '.html',
     });
 
     await utility.write(info.fd, html);
@@ -1672,30 +1468,31 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     runAllCodeChunks = false,
   }): Promise<string> {
     const inputString = await utility.readFile(this.filePath, {
-      encoding: "utf-8",
+      encoding: 'utf-8',
     });
     let html;
     let yamlConfig;
+    // eslint-disable-next-line prefer-const
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: true,
       hideFrontMatter: true,
       isForPreview: false,
       runAllCodeChunks,
     }));
-    const htmlConfig = yamlConfig["html"] || {};
-    if ("offline" in htmlConfig) {
-      offline = htmlConfig["offline"];
+    const htmlConfig = yamlConfig['html'] || {};
+    if ('offline' in htmlConfig) {
+      offline = htmlConfig['offline'];
     }
-    const embedLocalImages = htmlConfig["embed_local_images"]; // <= embedLocalImages is disabled by default.
+    const embedLocalImages = htmlConfig['embed_local_images']; // <= embedLocalImages is disabled by default.
 
     let embedSVG = true; // <= embedSvg is enabled by default.
-    if ("embed_svg" in htmlConfig) {
-      embedSVG = htmlConfig["embed_svg"];
+    if ('embed_svg' in htmlConfig) {
+      embedSVG = htmlConfig['embed_svg'];
     }
 
     let dest = this.filePath;
     const extname = path.extname(dest);
-    dest = dest.replace(new RegExp(extname + "$"), ".html");
+    dest = dest.replace(new RegExp(extname + '$'), '.html');
 
     html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
       isForPrint: false,
@@ -1711,22 +1508,22 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       !offline &&
       html.indexOf('[{"src":"revealjs_deps/notes.js","async":true}]') >= 0
     ) {
-      const depsDirName = path.resolve(path.dirname(dest), "revealjs_deps");
+      const depsDirName = path.resolve(path.dirname(dest), 'revealjs_deps');
       if (!fs.existsSync(depsDirName)) {
         fs.mkdirSync(depsDirName);
       }
       fs.createReadStream(
         path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/reveal/plugin/notes/notes.js",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/reveal/plugin/notes/notes.js',
         ),
-      ).pipe(fs.createWriteStream(path.resolve(depsDirName, "notes.js")));
+      ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.js')));
       fs.createReadStream(
         path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/reveal/plugin/notes/notes.html",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/reveal/plugin/notes/notes.html',
         ),
-      ).pipe(fs.createWriteStream(path.resolve(depsDirName, "notes.html")));
+      ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.html')));
     }
 
     await utility.writeFile(dest, html);
@@ -1737,15 +1534,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * Chrome (puppeteer) file export
    */
   public async chromeExport({
-    fileType = "pdf",
+    fileType = 'pdf',
     runAllCodeChunks = false,
     openFileAfterGeneration = false,
   }): Promise<string> {
     const inputString = await utility.readFile(this.filePath, {
-      encoding: "utf-8",
+      encoding: 'utf-8',
     });
     let html;
     let yamlConfig;
+    // eslint-disable-next-line prefer-const
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1754,7 +1552,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }));
     let dest = this.filePath;
     const extname = path.extname(dest);
-    dest = dest.replace(new RegExp(extname + "$"), "." + fileType);
+    dest = dest.replace(new RegExp(extname + '$'), '.' + fileType);
 
     html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
       isForPrint: true,
@@ -1763,78 +1561,64 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       offline: true,
     });
 
-    let browser = null;
-    let puppeteer = null;
-    if (this.config.usePuppeteerCore) {
-      puppeteer = require("puppeteer-core");
-      browser = await puppeteer.launch({
-        args: this.config.puppeteerArgs || [],
-        executablePath: this.config.chromePath || require("chrome-location"),
-        headless: true,
-      });
-    } else {
-      const globalNodeModulesPath = (
-        await utility.execFile(
-          process.platform === "win32" ? "npm.cmd" : "npm",
-          ["root", "-g"],
-        )
-      )
-        .trim()
-        .split("\n")[0]
-        .trim();
-      puppeteer = require(path.resolve(globalNodeModulesPath, "./puppeteer")); // trim() function here is very necessary.
-      browser = await puppeteer.launch({
-        args: this.config.puppeteerArgs || [],
-        headless: true,
-      });
+    let browser: Browser | null = null;
+
+    if (!this.config.chromePath) {
+      throw new Error('Chrome path is not set.');
     }
 
-    const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
+    browser = await puppeteer.launch({
+      args: this.config.puppeteerArgs || [],
+      executablePath: this.config.chromePath,
+      headless: true,
+    });
+
+    const info = await utility.tempOpen({ prefix: 'mume', suffix: '.html' });
     await utility.writeFile(info.fd, html);
 
     const page = await browser.newPage();
     const loadPath =
-      "file:///" +
+      'file:///' +
       info.path +
-      (yamlConfig["isPresentationMode"] ? "?print-pdf" : "");
+      (yamlConfig['isPresentationMode'] ? '?print-pdf' : '');
     await page.goto(loadPath);
 
     const puppeteerConfig = {
       path: dest,
-      ...(yamlConfig["isPresentationMode"]
+      ...(yamlConfig['isPresentationMode']
         ? {}
         : {
             margin: {
-              top: "1cm",
-              bottom: "1cm",
-              left: "1cm",
-              right: "1cm",
+              top: '1cm',
+              bottom: '1cm',
+              left: '1cm',
+              right: '1cm',
             },
           }),
       printBackground: this.config.printBackground,
-      ...(yamlConfig["chrome"] || yamlConfig["puppeteer"] || {}),
+      ...(yamlConfig['chrome'] || yamlConfig['puppeteer'] || {}),
     };
 
     // wait for timeout
     let timeout = 0;
-    if (yamlConfig["chrome"] && yamlConfig["chrome"]["timeout"]) {
-      timeout = yamlConfig["chrome"]["timeout"];
-    } else if (yamlConfig["puppeteer"] && yamlConfig["puppeteer"]["timeout"]) {
-      timeout = yamlConfig["puppeteer"]["timeout"];
+    if (yamlConfig['chrome'] && yamlConfig['chrome']['timeout']) {
+      timeout = yamlConfig['chrome']['timeout'];
+    } else if (yamlConfig['puppeteer'] && yamlConfig['puppeteer']['timeout']) {
+      timeout = yamlConfig['puppeteer']['timeout'];
     }
-    if (timeout && typeof timeout === "number") {
-      await page.waitFor(timeout);
+    if (timeout && typeof timeout === 'number') {
+      await page.waitForTimeout(timeout);
     } else if (
       this.config.puppeteerWaitForTimeout &&
       this.config.puppeteerWaitForTimeout > 0
     ) {
-      await page.waitFor(this.config.puppeteerWaitForTimeout);
+      await page.waitForTimeout(this.config.puppeteerWaitForTimeout);
     }
 
-    if (fileType === "pdf") {
+    if (fileType === 'pdf') {
       await page.pdf(puppeteerConfig);
     } else {
-      puppeteerConfig["fullPage"] = true; // <= set to fullPage by default
+      puppeteerConfig['fullPage'] = true; // <= set to fullPage by default
       await page.screenshot(puppeteerConfig);
     }
     browser.close();
@@ -1854,10 +1638,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     openFileAfterGeneration = false,
   }): Promise<string> {
     const inputString = await utility.readFile(this.filePath, {
-      encoding: "utf-8",
+      encoding: 'utf-8',
     });
     let html;
     let yamlConfig;
+    // eslint-disable-next-line prefer-const
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1866,7 +1651,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }));
     let dest = this.filePath;
     const extname = path.extname(dest);
-    dest = dest.replace(new RegExp(extname + "$"), ".pdf");
+    dest = dest.replace(new RegExp(extname + '$'), '.pdf');
 
     html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
       isForPrint: true,
@@ -1875,11 +1660,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       offline: true,
     });
 
-    const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
+    const info = await utility.tempOpen({ prefix: 'mume', suffix: '.html' });
     await utility.writeFile(info.fd, html);
 
-    if (yamlConfig["isPresentationMode"]) {
-      const url = "file:///" + info.path + "?print-pdf";
+    if (yamlConfig['isPresentationMode']) {
+      const url = 'file:///' + info.path + '?print-pdf';
       return url;
     } else {
       await princeConvert(info.path, dest);
@@ -1893,32 +1678,32 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   private async eBookDownloadImages($, dest): Promise<string[]> {
-    const imagesToDownload = [];
-    if (path.extname(dest) === ".epub" || path.extname("dest") === ".mobi") {
-      $("img").each((offset, img) => {
+    const imagesToDownload: Cheerio[] = [];
+    if (path.extname(dest) === '.epub' || path.extname('dest') === '.mobi') {
+      $('img').each((offset, img) => {
         const $img = $(img);
-        const src = $img.attr("src") || "";
-        if (src.match(/^https?\:\/\//)) {
+        const src = $img.attr('src') || '';
+        if (src.match(/^https?:\/\//)) {
           imagesToDownload.push($img);
         }
       });
     }
 
-    const asyncFunctions = imagesToDownload.map(($img) => {
-      return new Promise<string>((resolve, reject) => {
-        const httpSrc = $img.attr("src");
+    const asyncFunctions = imagesToDownload.map($img => {
+      return new Promise<string>(resolve => {
+        const httpSrc = $img.attr('src');
         let savePath =
           Math.random()
             .toString(36)
             .substr(2, 9) +
-          "_" +
+          '_' +
           path.basename(httpSrc);
         savePath = path.resolve(this.fileDirectoryPath, savePath);
 
         const stream = request(httpSrc).pipe(fs.createWriteStream(savePath));
 
-        stream.on("finish", () => {
-          $img.attr("src", "file:///" + savePath);
+        stream.on('finish', () => {
+          $img.attr('src', 'file:///' + savePath);
           return resolve(savePath);
         });
       });
@@ -1933,7 +1718,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * @return dest if success, error if failure
    */
   public async eBookExport({
-    fileType = "epub",
+    fileType = 'epub',
     runAllCodeChunks = false,
   }: {
     /**
@@ -1943,11 +1728,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     runAllCodeChunks?: boolean;
   }): Promise<string> {
     const inputString = await utility.readFile(this.filePath, {
-      encoding: "utf-8",
+      encoding: 'utf-8',
     });
-    const emojiToSvg = fileType === "pdf";
+    const emojiToSvg = fileType === 'pdf';
     let html;
     let yamlConfig;
+    // eslint-disable-next-line prefer-const
     ({ html, yamlConfig } = await this.parseMD(inputString, {
       useRelativeFilePath: false,
       hideFrontMatter: true,
@@ -1959,21 +1745,21 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let dest = this.filePath;
     const extname = path.extname(dest);
     dest = dest.replace(
-      new RegExp(extname + "$"),
-      "." + fileType.toLowerCase(),
+      new RegExp(extname + '$'),
+      '.' + fileType.toLowerCase(),
     );
 
-    const ebookConfig = yamlConfig["ebook"] || {};
+    const ebookConfig = yamlConfig['ebook'] || {};
     if (!ebookConfig) {
       throw new Error(
-        "eBook config not found. Please insert ebook front-matter to your markdown file.",
+        'eBook config not found. Please insert ebook front-matter to your markdown file.',
       );
     }
 
-    if (ebookConfig["cover"]) {
+    if (ebookConfig['cover']) {
       // change cover to absolute path if necessary
-      const cover = ebookConfig["cover"];
-      ebookConfig["cover"] = utility.removeFileProtocol(
+      const cover = ebookConfig['cover'];
+      ebookConfig['cover'] = utility.removeFileProtocol(
         this.resolveFilePath(cover, false),
       );
     }
@@ -1986,9 +1772,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       id: string;
     }[] = [];
     const headingIdGenerator = new HeadingIdGenerator();
-    const $toc = $("div > ul").last();
+    const $toc = $('div > ul').last();
     if ($toc.length) {
-      if (ebookConfig["include_toc"] === false) {
+      if (ebookConfig['include_toc'] === false) {
         // remove itself and the heading ahead
         const $prev = $toc.prev();
         if ($prev.length && $prev[0].name.match(/^h\d$/i)) {
@@ -1996,18 +1782,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         }
       }
 
-      $("h1, h2, h3, h4, h5, h6").each((offset, h) => {
+      $('h1, h2, h3, h4, h5, h6').each((offset, h) => {
         const $h = $(h);
         const level = parseInt($h[0].name.slice(1), 10) - 1;
 
         // $h.attr('id', id)
-        $h.attr("ebook-toc-level-" + (level + 1), "");
-        $h.attr("heading", $h.html());
+        $h.attr('ebook-toc-level-' + (level + 1), '');
+        $h.attr('heading', $h.html());
       });
 
       getStructure($toc, 0); // analyze TOC
 
-      if (ebookConfig["include_toc"] === false) {
+      if (ebookConfig['include_toc'] === false) {
         // remove itself and the heading ahead
         $toc.remove();
       }
@@ -2015,9 +1801,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // load the last ul as TOC, analyze toc links
     function getStructure($ul, level) {
-      $ul.children("li").each((offset, li) => {
+      $ul.children('li').each((offset, li) => {
         const $li = $(li);
-        const $a = $li.children("a").first();
+        const $a = $li.children('a').first();
 
         if (!$a.length) {
           if ($li.children().length >= 1) {
@@ -2026,13 +1812,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           return;
         }
 
-        const filePath = decodeURIComponent($a.attr("href")); // markdown file path
-        const heading = $a.html();
+        const filePath = decodeURIComponent($a.attr('href')); // markdown file path
+        const heading = $a.html() ?? '';
         const id = headingIdGenerator.generateId(`ebook-heading-` + heading); // "ebook-heading-id-" + headingOffset;
 
         tocStructure.push({ level, filePath, heading, id });
 
-        $a.attr("href", "#" + id); // change id
+        $a.attr('href', '#' + id); // change id
         if ($li.children().length > 1) {
           getStructure($li.children().last(), level + 1);
         }
@@ -2045,9 +1831,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         return new Promise((resolve, reject) => {
           filePath = utility.removeFileProtocol(filePath);
           if (filePath.match(/^https?:\/\//)) {
-            return resolve({ heading, id, level, filePath, html: "", offset });
+            return resolve({ heading, id, level, filePath, html: '', offset });
           }
-          fs.readFile(filePath, { encoding: "utf-8" }, (error, text) => {
+          fs.readFile(filePath, { encoding: 'utf-8' }, (error, text) => {
             if (error) {
               return reject(error.toString());
             }
@@ -2055,7 +1841,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             // Fix image paths that are relative to the child documents
             const rootPath = path.dirname(this.filePath);
             text = text.replace(
-              /(!\[[^\]]*\]\()(\.[^\)\s]*)/g,
+              /(!\[[^\]]*\]\()(\.[^)\s]*)/g,
               (whole, openTag, imageLink) => {
                 const fullPath = path.resolve(
                   path.dirname(filePath),
@@ -2080,7 +1866,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       },
     );
 
-    let outputHTML = $.html().replace(/^<div>(.+)<\/div>$/, "$1");
+    let outputHTML = $.html().replace(/^<div>(.+)<\/div>$/, '$1');
     let results = (await Promise.all(asyncFunctions)) as {
       heading: string;
       id: string;
@@ -2088,20 +1874,20 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       filePath: string;
       html?: string;
     }[];
-    results = results.sort((a, b) => a["offset"] - b["offset"]);
+    results = results.sort((a, b) => a['offset'] - b['offset']);
 
     /* tslint:disable-next-line:no-shadowed-variable */
-    results.forEach(({ heading, id, level, filePath, html }) => {
+    results.forEach(({ heading, id, level, html }) => {
       /* tslint:disable-next-line:no-shadowed-variable */
 
       const $$ = cheerio.load(`<div>${html}</div>`);
-      $$("a").each((index, a) => {
+      $$('a').each((index, a) => {
         const $a = $$(a);
-        const href = $a.attr("href");
-        if (href.startsWith("file://")) {
-          results.forEach((result) => {
+        const href = $a.attr('href');
+        if (href.startsWith('file://')) {
+          results.forEach(result => {
             if (result.filePath === utility.removeFileProtocol(href)) {
-              $a.attr("href", "#" + result.id);
+              $a.attr('href', '#' + result.id);
             }
           });
         }
@@ -2115,14 +1901,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const downloadedImagePaths = await this.eBookDownloadImages($, dest);
 
     // convert image to base64 if output html
-    if (path.extname(dest) === ".html") {
+    if (path.extname(dest) === '.html') {
       // check cover
-      if (ebookConfig["cover"]) {
+      if (ebookConfig['cover']) {
         const cover =
-          ebookConfig["cover"][0] === "/"
-            ? "file:///" + ebookConfig["cover"]
-            : ebookConfig["cover"];
-        $(":root")
+          ebookConfig['cover'][0] === '/'
+            ? 'file:///' + ebookConfig['cover']
+            : ebookConfig['cover'];
+        $(':root')
           .children()
           .first()
           .prepend(
@@ -2139,80 +1925,88 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // retrieve html
     outputHTML = $.html();
-    const title = ebookConfig["title"] || "no title";
+    const title = ebookConfig['title'] || 'no title';
 
     // math
-    let mathStyle = "";
+    let mathStyle = '';
     if (outputHTML.indexOf('class="katex"') > 0) {
       if (
-        path.extname(dest) === ".html" &&
-        ebookConfig["html"] &&
-        ebookConfig["html"].cdn
+        path.extname(dest) === '.html' &&
+        ebookConfig['html'] &&
+        ebookConfig['html'].cdn
       ) {
         mathStyle = `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/katex@0.16.8/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          extensionDirectoryPath,
-          "./dependencies/katex/katex.min.css",
+          utility.getExtensionDirectoryPath(),
+          './dependencies/katex/katex.min.css',
         )}">`;
       }
     }
 
     // prism and preview theme
-    let styleCSS = "";
+    let styleCSS = '';
     try {
       const styles = await Promise.all([
         // style template
         utility.readFile(
-          path.resolve(extensionDirectoryPath, "./styles/style-template.css"),
-          { encoding: "utf-8" },
+          path.resolve(
+            utility.getExtensionDirectoryPath(),
+            './styles/style-template.css',
+          ),
+          { encoding: 'utf-8' },
         ),
         // prism *.css
         utility.readFile(
           path.resolve(
-            extensionDirectoryPath,
+            utility.getExtensionDirectoryPath(),
             `./styles/prism_theme/${
               /*this.getPrismTheme(false)*/ MarkdownEngine.AutoPrismThemeMap[
-                ebookConfig["theme"] || this.config.previewTheme
+                ebookConfig['theme'] || this.config.previewTheme
               ]
             }`,
           ),
-          { encoding: "utf-8" },
+          { encoding: 'utf-8' },
         ),
         // twemoji css style
         utility.readFile(
-          path.resolve(extensionDirectoryPath, "./styles/twemoji.css"),
-          { encoding: "utf-8" },
+          path.resolve(
+            utility.getExtensionDirectoryPath(),
+            './styles/twemoji.css',
+          ),
+          { encoding: 'utf-8' },
         ),
         // preview theme
         utility.readFile(
           path.resolve(
-            extensionDirectoryPath,
-            `./styles/preview_theme/${ebookConfig["theme"] ||
+            utility.getExtensionDirectoryPath(),
+            `./styles/preview_theme/${ebookConfig['theme'] ||
               this.config.previewTheme}`,
           ),
-          { encoding: "utf-8" },
+          { encoding: 'utf-8' },
         ),
         // markdown-it-admonition
-        outputHTML.indexOf("admonition") > 0
+        outputHTML.indexOf('admonition') > 0
           ? utility.readFile(
               path.resolve(
-                extensionDirectoryPath,
-                "./styles/markdown-it-admonition.css",
+                utility.getExtensionDirectoryPath(),
+                './styles/markdown-it-admonition.css',
               ),
-              { encoding: "utf-8" },
+              { encoding: 'utf-8' },
             )
-          : "",
+          : '',
       ]);
-      styleCSS = styles.join("");
+      styleCSS = styles.join('');
     } catch (e) {
-      styleCSS = "";
+      styleCSS = '';
     }
 
     // global styles
-    let globalStyles = "";
+    let globalStyles = '';
     try {
-      globalStyles = await utility.getGlobalStyles(this.config.configPath);
+      globalStyles = this.config.configPath
+        ? await utility.getGlobalStyles(this.config.configPath)
+        : '';
     } catch (error) {
       // ignore it
     }
@@ -2223,15 +2017,15 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 <html>
   <head>
     <title>${title}</title>
-    <meta charset=\"utf-8\">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
     ${styleCSS}
     ${globalStyles}
     </style>
     ${mathStyle}
   </head>
-  <body ${path.extname(dest) === ".html" ? 'for="html-export"' : ""}>
+  <body ${path.extname(dest) === '.html' ? 'for="html-export"' : ''}>
     <div class="mume markdown-preview">
     ${outputHTML}
     </div>
@@ -2240,22 +2034,22 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 `;
 
     // save as html
-    if (path.extname(dest) === ".html") {
+    if (path.extname(dest) === '.html') {
       await utility.writeFile(dest, html);
       return dest;
     }
 
     // this function will be called later
     function deleteDownloadedImages() {
-      downloadedImagePaths.forEach((imagePath) => {
-        fs.unlink(imagePath, (error) => {
+      downloadedImagePaths.forEach(imagePath => {
+        fs.unlink(imagePath, () => {
           return;
         });
       });
     }
 
     try {
-      const info = await utility.tempOpen({ prefix: "mume", suffix: ".html" });
+      const info = await utility.tempOpen({ prefix: 'mume', suffix: '.html' });
       await utility.write(info.fd, html);
       await ebookConvert(info.path, dest, ebookConfig);
       deleteDownloadedImages();
@@ -2274,11 +2068,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     openFileAfterGeneration = false,
   }): Promise<string> {
     let inputString = await utility.readFile(this.filePath, {
-      encoding: "utf-8",
+      encoding: 'utf-8',
     });
 
-    if (utility.configs.parserConfig["onWillParseMarkdown"]) {
-      inputString = await utility.configs.parserConfig["onWillParseMarkdown"](
+    if (utility.configs.parserConfig['onWillParseMarkdown']) {
+      inputString = await utility.configs.parserConfig['onWillParseMarkdown'](
         inputString,
       );
     }
@@ -2295,8 +2089,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     let config = {};
 
-    if (inputString.startsWith("---")) {
-      const endFrontMatterOffset = inputString.indexOf("\n---");
+    if (inputString.startsWith('---')) {
+      const endFrontMatterOffset = inputString.indexOf('\n---');
       if (endFrontMatterOffset > 0) {
         const frontMatterString = inputString.slice(
           0,
@@ -2324,10 +2118,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         imageMagickPath: this.config.imageMagickPath,
         mermaidTheme: this.config.mermaidTheme,
         plantumlServer: this.config.plantumlServer,
+        plantumlJarPath: this.config.plantumlJarPath,
         onWillTransformMarkdown:
-          utility.configs.parserConfig["onWillTransformMarkdown"],
+          utility.configs.parserConfig['onWillTransformMarkdown'],
         onDidTransformMarkdown:
-          utility.configs.parserConfig["onDidTransformMarkdown"],
+          utility.configs.parserConfig['onDidTransformMarkdown'],
       },
       config,
     );
@@ -2343,7 +2138,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   public async markdownExport({ runAllCodeChunks = false }): Promise<string> {
     let inputString = await utility.readFile(this.filePath, {
-      encoding: "utf-8",
+      encoding: 'utf-8',
     });
 
     if (runAllCodeChunks) {
@@ -2358,14 +2153,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     let config = {};
 
-    if (inputString.startsWith("---")) {
-      const endFrontMatterOffset = inputString.indexOf("\n---");
+    if (inputString.startsWith('---')) {
+      const endFrontMatterOffset = inputString.indexOf('\n---');
       if (endFrontMatterOffset > 0) {
         const frontMatterString = inputString.slice(
           0,
           endFrontMatterOffset + 4,
         );
-        inputString = inputString.replace(frontMatterString, ""); // remove front matter
+        inputString = inputString.replace(frontMatterString, ''); // remove front matter
         config = this.processFrontMatter(frontMatterString, false).data;
       }
     }
@@ -2378,41 +2173,41 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      *     ignore_from_front_matter:    default is true.
      */
     let markdownConfig = {};
-    if (config["markdown"]) {
-      markdownConfig = { ...config["markdown"] };
+    if (config['markdown']) {
+      markdownConfig = { ...config['markdown'] };
     }
 
-    if (!markdownConfig["image_dir"]) {
-      markdownConfig["image_dir"] = this.config.imageFolderPath;
+    if (!markdownConfig['image_dir']) {
+      markdownConfig['image_dir'] = this.config.imageFolderPath;
     }
 
-    if (!markdownConfig["path"]) {
+    if (!markdownConfig['path']) {
       if (this.filePath.match(/\.src\./)) {
-        markdownConfig["path"] = this.filePath.replace(/\.src\./, ".");
+        markdownConfig['path'] = this.filePath.replace(/\.src\./, '.');
       } else {
-        markdownConfig["path"] = this.filePath.replace(
+        markdownConfig['path'] = this.filePath.replace(
           new RegExp(path.extname(this.filePath)),
-          "_" + path.extname(this.filePath),
+          '_' + path.extname(this.filePath),
         );
       }
-      markdownConfig["path"] = path.basename(markdownConfig["path"]);
+      markdownConfig['path'] = path.basename(markdownConfig['path']);
     }
 
     // ignore_from_front_matter is `true` by default
     if (
-      markdownConfig["ignore_from_front_matter"] ||
-      !("ignore_from_front_matter" in markdownConfig)
+      markdownConfig['ignore_from_front_matter'] ||
+      !('ignore_from_front_matter' in markdownConfig)
     ) {
       // delete markdown config front-matter from the top front matter
-      delete config["markdown"];
+      delete config['markdown'];
     }
-    if (config["export_on_save"]) {
-      delete config["export_on_save"];
+    if (config['export_on_save']) {
+      delete config['export_on_save'];
     }
 
     // put front-matter back
     if (Object.keys(config).length) {
-      inputString = "---\n" + YAML.stringify(config) + "---\n" + inputString;
+      inputString = '---\n' + YAML.stringify(config) + '---\n' + inputString;
     }
 
     return await markdownConvert(
@@ -2432,10 +2227,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         imageMagickPath: this.config.imageMagickPath,
         mermaidTheme: this.config.mermaidTheme,
         plantumlServer: this.config.plantumlServer,
+        plantumlJarPath: this.config.plantumlJarPath,
         onWillTransformMarkdown:
-          utility.configs.parserConfig["onWillTransformMarkdown"],
+          utility.configs.parserConfig['onWillTransformMarkdown'],
         onDidTransformMarkdown:
-          utility.configs.parserConfig["onDidTransformMarkdown"],
+          utility.configs.parserConfig['onDidTransformMarkdown'],
       },
       markdownConfig,
     );
@@ -2454,38 +2250,36 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * ---
    * @param data
    */
-  private exportOnSave(data: object) {
+  private exportOnSave(data: JsonObject) {
     for (const exporter in data) {
-      if (exporter === "markdown") {
-        this.markdownExport({});
-      } else if (exporter === "html") {
+      if (exporter === 'html') {
         this.htmlExport({});
-      } else if (exporter === "prince") {
+      } else if (exporter === 'prince') {
         this.princeExport({ openFileAfterGeneration: false });
-      } else if (exporter === "puppeteer" || exporter === "chrome") {
+      } else if (exporter === 'puppeteer' || exporter === 'chrome') {
         const fileTypes = data[exporter];
         let func = this.chromeExport;
         func = func.bind(this);
 
         if (fileTypes === true) {
-          func({ fileType: "pdf", openFileAfterGeneration: false });
-        } else if (typeof fileTypes === "string") {
+          func({ fileType: 'pdf', openFileAfterGeneration: false });
+        } else if (typeof fileTypes === 'string') {
           func({ fileType: fileTypes, openFileAfterGeneration: false });
         } else if (fileTypes instanceof Array) {
-          fileTypes.forEach((fileType) => {
+          fileTypes.forEach((fileType: string) => {
             func({ fileType, openFileAfterGeneration: false });
           });
         }
-      } else if (exporter === "pandoc") {
+      } else if (exporter === 'pandoc') {
         this.pandocExport({ openFileAfterGeneration: false });
-      } else if (exporter === "ebook") {
+      } else if (exporter === 'ebook') {
         const fileTypes = data[exporter];
         if (fileTypes === true) {
-          this.eBookExport({ fileType: "epub" });
-        } else if (typeof fileTypes === "string") {
+          this.eBookExport({ fileType: 'epub' });
+        } else if (typeof fileTypes === 'string') {
           this.eBookExport({ fileType: fileTypes });
         } else if (fileTypes instanceof Array) {
-          fileTypes.forEach((fileType) => {
+          fileTypes.forEach((fileType: string) => {
             this.eBookExport({ fileType });
           });
         }
@@ -2499,25 +2293,25 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * @param relative: whether to use the path relative to filePath or not.
    */
   private resolveFilePath(
-    filePath: string = "",
+    filePath: string = '',
     relative: boolean,
-    fileDirectoryPath = "",
+    fileDirectoryPath = '',
   ) {
     if (
       filePath.match(this.protocolsWhiteListRegExp) ||
-      filePath.startsWith("data:image/") ||
-      filePath[0] === "#"
+      filePath.startsWith('data:image/') ||
+      filePath[0] === '#'
     ) {
       return filePath;
-    } else if (filePath[0] === "/") {
+    } else if (filePath[0] === '/') {
       if (relative) {
         return path.relative(
           fileDirectoryPath || this.fileDirectoryPath,
-          path.resolve(this.projectDirectoryPath, "." + filePath),
+          path.resolve(this.projectDirectoryPath, '.' + filePath),
         );
       } else {
         return utility.addFileProtocol(
-          path.resolve(this.projectDirectoryPath, "." + filePath),
+          path.resolve(this.projectDirectoryPath, '.' + filePath),
           this.vscodePreviewPanel,
         );
       }
@@ -2553,23 +2347,24 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
   private frontMatterToTable(arg) {
     if (arg instanceof Array) {
-      let tbody = "<tbody><tr>";
+      let tbody = '<tbody><tr>';
       arg.forEach(
-        (item) => (tbody += `<td>${this.frontMatterToTable(item)}</td>`),
+        item => (tbody += `<td>${this.frontMatterToTable(item)}</td>`),
       );
-      tbody += "</tr></tbody>";
+      tbody += '</tr></tbody>';
       return `<table>${tbody}</table>`;
-    } else if (typeof arg === "object") {
-      let thead = "<thead><tr>";
-      let tbody = "<tbody><tr>";
+    } else if (typeof arg === 'object') {
+      let thead = '<thead><tr>';
+      let tbody = '<tbody><tr>';
       for (const key in arg) {
+        // eslint-disable-next-line no-prototype-builtins
         if (arg.hasOwnProperty(key)) {
           thead += `<th>${key}</th>`;
           tbody += `<td>${this.frontMatterToTable(arg[key])}</td>`;
         }
       }
-      thead += "</tr></thead>";
-      tbody += "</tr></tbody>";
+      thead += '</tr></thead>';
+      tbody += '</tr></tbody>';
 
       return `<table>${thead}${tbody}</table>`;
     } else {
@@ -2596,37 +2391,37 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     hideFrontMatter = false,
   ) {
     if (frontMatterString) {
-      const data: any = utility.parseYAML(frontMatterString);
+      const data = utility.parseYAML(frontMatterString);
 
       if (this.config.usePandocParser) {
         // use pandoc parser, so don't change inputString
-        return { content: frontMatterString, table: "", data: data || {} };
+        return { content: frontMatterString, table: '', data: data || {} };
       } else if (
         hideFrontMatter ||
-        this.config.frontMatterRenderingOption[0] === "n"
+        (this.config.frontMatterRenderingOption ?? '')[0] === 'n'
       ) {
         // hide
-        return { content: "", table: "", data };
-      } else if (this.config.frontMatterRenderingOption[0] === "t") {
+        return { content: '', table: '', data };
+      } else if ((this.config.frontMatterRenderingOption ?? '')[0] === 't') {
         // table
         // to table
         let table;
-        if (typeof data === "object") {
+        if (typeof data === 'object') {
           table = this.frontMatterToTable(data);
         } else {
-          table = "<pre>Failed to parse YAML.</pre>";
+          table = '<pre>Failed to parse YAML.</pre>';
         }
 
-        return { content: "", table, data };
+        return { content: '', table, data };
       } else {
         // # if frontMatterRenderingOption[0] == 'c' # code block
         const content = frontMatterString
-          .replace(/^---/, "```yaml")
-          .replace(/\n---$/, "\n```\n");
-        return { content, table: "", data };
+          .replace(/^---/, '```yaml')
+          .replace(/\n---$/, '\n```\n');
+        return { content, table: '', data };
       }
     } else {
-      return { content: frontMatterString, table: "", data: {} };
+      return { content: frontMatterString, table: '', data: {} };
     }
   }
 
@@ -2635,14 +2430,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private parseSlides(
     html: string,
-    slideConfigs: any[],
+    slideConfigs: JsonObject[],
     useRelativeFilePath: boolean,
   ) {
-    let slides = html.split("<p>[MUMESLIDE]</p>");
+    let slides = html.split('<p>[MUMESLIDE]</p>');
     const before = slides[0];
     slides = slides.slice(1);
 
-    let output = "";
+    let output = '';
     let i = 0;
     let h = -1; // horizontal
     let v = 0; // vertical
@@ -2651,67 +2446,65 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       const slideConfig = slideConfigs[i];
 
       // resolve paths in slideConfig
-      if ("data-background-image" in slideConfig) {
-        slideConfig["data-background-image"] = this.resolveFilePath(
-          slideConfig["data-background-image"] as string,
+      if ('data-background-image' in slideConfig) {
+        slideConfig['data-background-image'] = this.resolveFilePath(
+          slideConfig['data-background-image'] as string,
           useRelativeFilePath,
         );
       }
-      if ("data-background-video" in slideConfig) {
-        slideConfig["data-background-video"] = this.resolveFilePath(
-          slideConfig["data-background-video"] as string,
+      if ('data-background-video' in slideConfig) {
+        slideConfig['data-background-video'] = this.resolveFilePath(
+          slideConfig['data-background-video'] as string,
           useRelativeFilePath,
         );
       }
-      if ("data-background-iframe" in slideConfig) {
-        slideConfig["data-background-iframe"] = this.resolveFilePath(
-          slideConfig["data-background-iframe"] as string,
+      if ('data-background-iframe' in slideConfig) {
+        slideConfig['data-background-iframe'] = this.resolveFilePath(
+          slideConfig['data-background-iframe'] as string,
           useRelativeFilePath,
         );
       }
 
       const attrString = stringifyBlockAttributes(slideConfig, false); // parseAttrString(slideConfig)
-      const classString = slideConfig["class"] || "";
-      const idString = slideConfig["id"] ? `id="${slideConfig["id"]}"` : "";
+      const classString = slideConfig['class'] || '';
+      const idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : '';
 
-      if (!slideConfig["vertical"]) {
+      if (!slideConfig['vertical']) {
         h += 1;
-        if (i > 0 && slideConfigs[i - 1]["vertical"]) {
+        if (i > 0 && slideConfigs[i - 1]['vertical']) {
           // end of vertical slides
-          output += "</section>";
+          output += '</section>';
           v = 0;
         }
-        if (i < slides.length - 1 && slideConfigs[i + 1]["vertical"]) {
+        if (i < slides.length - 1 && slideConfigs[i + 1]['vertical']) {
           // start of vertical slides
-          output += "<section>";
+          output += '<section>';
         }
       } else {
         // vertical slide
         v += 1;
       }
 
-      output += `<section ${attrString} ${idString}  class=\"slide ${classString}\" data-line="${slideConfig["lineNo"]}" data-h=\"${h}\" data-v="${v}">${slide}</section>`;
+      output += `<section ${attrString} ${idString}  class="slide ${classString}" data-line="${slideConfig['lineNo']}" data-h="${h}" data-v="${v}">${slide}</section>`;
       i += 1;
     }
-    if (i > 0 && slideConfigs[i - 1]["vertical"]) {
+    if (i > 0 && slideConfigs[i - 1]['vertical']) {
       // end of vertical slides
-      output += "</section>";
+      output += '</section>';
     }
 
     // check list item attribtues
     // issue: https://github.com/shd101wyy/markdown-preview-enhanced/issues/559
     const $ = cheerio.load(output);
-    $("li").each((j, elem) => {
+    $('li').each((j, elem) => {
       const $elem = $(elem);
-      const html2 = $elem
-        .html()
-        .trim()
-        .split("\n")[0];
+      const html2 = ($elem.html() ?? '').trim().split('\n')[0];
       const attributeMatch = html2.match(/<!--(.+?)-->/);
       if (attributeMatch) {
-        const attributes = attributeMatch[1].replace(/\.element\:/, "").trim();
+        const attributes = attributeMatch[1].replace(/\.element:/, '').trim();
         const attrObj = parseBlockAttributes(attributes);
         for (const key in attrObj) {
+          // eslint-disable-next-line no-prototype-builtins
           if (attrObj.hasOwnProperty(key)) {
             $elem.attr(key, attrObj[key]);
           }
@@ -2730,34 +2523,34 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   public async pandocRender(
-    text: string = "",
+    text: string = '',
     args: string[],
   ): Promise<string> {
     let mathRenderer;
     switch (this.config.mathRenderingOption) {
-      case "MathJax":
-        mathRenderer = "--mathjax";
+      case 'MathJax':
+        mathRenderer = '--mathjax';
         break;
-      case "KaTeX":
-        mathRenderer = "--katex";
+      case 'KaTeX':
+        mathRenderer = '--katex';
         break;
       default:
-        mathRenderer = "";
+        mathRenderer = '';
     }
     args = args || [];
     args = [
-      "--from=" + this.config.pandocMarkdownFlavor, // -tex_math_dollars doesn't work properly
-      "--to=html",
+      '--from=' + this.config.pandocMarkdownFlavor, // -tex_math_dollars doesn't work properly
+      '--to=html',
       mathRenderer,
     ]
       .concat(args)
-      .filter((arg) => arg.length);
+      .filter(arg => arg.length);
 
     /*
       convert pandoc code block to markdown-it code block
     */
-    let outputString = "";
-    const lines = text.split("\n");
+    let outputString = '';
+    const lines = text.split('\n');
     let i = 0;
     let inCodeBlock = false;
     let codeBlockSpacesAhead = 0;
@@ -2770,7 +2563,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         if (inCodeBlock) {
           let info = line.slice(match[0].length).trim();
           if (!info) {
-            info = "text";
+            info = 'text';
           }
           const parsedInfo = parseBlockInfo(info);
           const normalizedInfo = normalizeBlockInfo(parsedInfo);
@@ -2778,18 +2571,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           codeBlockSpacesAhead = match[1].length;
           outputString += `${
             match[1]
-          }\`\`\`{.text data-role="codeBlock" data-info="${utility.escapeString(
+          }\`\`\`{.text data-role="codeBlock" data-info="${escape(
             info,
-          )}" data-parsed-info="${utility.escapeString(
+          )}" data-parsed-info="${escape(
             JSON.stringify(parsedInfo),
-          )}" data-normalized-info="${utility.escapeString(
+          )}" data-normalized-info="${escape(
             JSON.stringify(normalizedInfo),
           )}"}\n`;
         } else if (match[1].length === codeBlockSpacesAhead) {
           outputString += `${match[1]}\`\`\`\n`;
         } else {
           inCodeBlock = !inCodeBlock;
-          outputString += line + "\n";
+          outputString += line + '\n';
         }
 
         i += 1;
@@ -2797,10 +2590,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
 
       if (line.match(/^\[toc\]/i) && !inCodeBlock) {
-        line = "[MUMETOC]";
+        line = '[MUMETOC]';
       }
 
-      outputString += line + "\n";
+      outputString += line + '\n';
       i += 1;
     }
 
@@ -2815,16 +2608,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             if (error) {
               return reject(error);
             } else if (stderr) {
-              return resolve("<pre>" + stderr + "</pre>" + stdout);
+              return resolve('<pre>' + stderr + '</pre>' + stdout);
             } else {
               return resolve(stdout);
             }
           },
         );
-        program.stdin.end(outputString, "utf-8");
+        program.stdin?.end(outputString, 'utf-8');
       } catch (error) {
         let errorMessage = error.toString();
-        if (errorMessage.indexOf("Error: write EPIPE") >= 0) {
+        if (errorMessage.indexOf('Error: write EPIPE') >= 0) {
           errorMessage = `"pandoc" is required to be installed.\nCheck "http://pandoc.org/installing.html" website.`;
         }
         return reject(errorMessage);
@@ -2838,21 +2631,21 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   ): Promise<MarkdownEngineOutput> {
     if (!inputString) {
       inputString = await utility.readFile(this.filePath, {
-        encoding: "utf-8",
+        encoding: 'utf-8',
       });
     }
 
     this.vscodePreviewPanel = options.vscodePreviewPanel;
 
-    if (utility.configs.parserConfig["onWillParseMarkdown"]) {
-      inputString = await utility.configs.parserConfig["onWillParseMarkdown"](
+    if (utility.configs.parserConfig['onWillParseMarkdown']) {
+      inputString = await utility.configs.parserConfig['onWillParseMarkdown'](
         inputString,
       );
     }
 
-    if (utility.configs.parserConfig["onWillTransformMarkdown"]) {
+    if (utility.configs.parserConfig['onWillTransformMarkdown']) {
       inputString = await utility.configs.parserConfig[
-        "onWillTransformMarkdown"
+        'onWillTransformMarkdown'
       ](inputString);
     }
 
@@ -2865,10 +2658,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let frontMatterString;
     ({
       outputString,
+      // eslint-disable-next-line prefer-const
       slideConfigs,
+      // eslint-disable-next-line prefer-const
       tocBracketEnabled,
       JSAndCssFiles,
+      // eslint-disable-next-line prefer-const
       headings,
+      // eslint-disable-next-line prefer-const
       frontMatterString,
     } = await transformMarkdown(inputString, {
       fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
@@ -2879,14 +2676,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       filesCache: this.filesCache,
       usePandocParser: this.config.usePandocParser,
       onWillTransformMarkdown:
-        utility.configs.parserConfig["onWillTransformMarkdown"],
+        utility.configs.parserConfig['onWillTransformMarkdown'],
       onDidTransformMarkdown:
-        utility.configs.parserConfig["onDidTransformMarkdown"],
+        utility.configs.parserConfig['onDidTransformMarkdown'],
     }));
 
-    if (utility.configs.parserConfig["onDidTransformMarkdown"]) {
+    if (utility.configs.parserConfig['onDidTransformMarkdown']) {
       outputString = await utility.configs.parserConfig[
-        "onDidTransformMarkdown"
+        'onDidTransformMarkdown'
       ](outputString);
     }
 
@@ -2897,7 +2694,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     );
     const frontMatterTable = fm.table;
     let yamlConfig = fm.data || {};
-    if (typeof yamlConfig !== "object") {
+    if (typeof yamlConfig !== 'object') {
       yamlConfig = {};
     }
 
@@ -2910,22 +2707,22 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (this.config.usePandocParser) {
       // pandoc
       try {
-        let args = yamlConfig["pandoc_args"] || [];
+        let args = (yamlConfig['pandoc_args'] || []) as string[];
         if (!(args instanceof Array)) {
           args = [];
         }
 
         // check bibliography
         const noDefaultsOrCiteProc =
-          args.find((el) => {
-            return el.includes("pandoc-citeproc") || el.includes("--defaults");
+          args.find((el: string) => {
+            return el.includes('pandoc-citeproc') || el.includes('--defaults');
           }) === undefined;
 
         if (
           noDefaultsOrCiteProc &&
-          (yamlConfig["bibliography"] || yamlConfig["references"])
+          (yamlConfig['bibliography'] || yamlConfig['references'])
         ) {
-          args.push("--citeproc");
+          args.push('--citeproc');
         }
 
         args = this.config.pandocArguments.concat(args);
@@ -2943,10 +2740,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * render tocHTML for [TOC] and sidebar TOC
      */
     // if (!utility.isArrayEqual(headings, this.headings)) { // <== this code is wrong, as it will always be true...
-    const tocConfig = yamlConfig["toc"] || {};
-    const depthFrom = tocConfig["depth_from"] || 1;
-    const depthTo = tocConfig["depth_to"] || 6;
-    const ordered = tocConfig["ordered"];
+    const tocConfig = yamlConfig['toc'] || {};
+    const depthFrom = tocConfig['depth_from'] || 1;
+    const depthTo = tocConfig['depth_to'] || 6;
+    const ordered = tocConfig['ordered'];
 
     // const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "  " });
     // this.tocHTML = this.md.render(tocObject.content);
@@ -2955,7 +2752,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     this.tocHTML = generateSidebarToCHTML(
       headings,
       this.md.render.bind(this.md),
-      { ordered, depthFrom, depthTo, tab: "  " },
+      { ordered, depthFrom, depthTo, tab: '  ' },
     );
 
     // }
@@ -2975,15 +2772,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       this.config.mathRenderingOption,
       this.config.mathBlockDelimiters,
     );
-    await enhanceWithFencedDiagrams(
+    await enhanceWithFencedDiagrams({
       $,
-      this.graphsCache,
-      options.fileDirectoryPath || this.fileDirectoryPath,
-      removeFileProtocol(
+      graphsCache: this.graphsCache,
+      fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
+      imageDirectoryPath: removeFileProtocol(
         this.resolveFilePath(this.config.imageFolderPath, false),
       ),
-      this.config.plantumlServer,
-    );
+      plantumlServer: this.config.plantumlServer,
+      plantumlJarPath: this.config.plantumlJarPath,
+      kirokiServer: this.config.krokiServer,
+    });
     await enhanceWithFencedCodeChunks(
       $,
       this.codeChunksData,
@@ -3009,7 +2808,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     //   enhanceWithEmojiToSvg($);
     // }
 
-    html = frontMatterTable + $("head").html() + $("body").html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
+    html = frontMatterTable + $('head').html() + $('body').html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
 
     /**
      * check slides
@@ -3017,13 +2816,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (slideConfigs.length) {
       html = this.parseSlides(html, slideConfigs, options.useRelativeFilePath);
       if (yamlConfig) {
-        yamlConfig["isPresentationMode"] = true; // mark as presentation mode
+        yamlConfig['isPresentationMode'] = true; // mark as presentation mode
       }
     }
 
-    if (utility.configs.parserConfig["onDidParseMarkdown"]) {
-      html = await utility.configs.parserConfig["onDidParseMarkdown"](html, {
-        cheerio,
+    if (utility.configs.parserConfig['onDidParseMarkdown']) {
+      html = await utility.configs.parserConfig['onDidParseMarkdown'](html, {
+        cheerio: cheerio.default,
       });
     }
 
@@ -3038,9 +2837,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       this.isPreviewInPresentationMode = !!slideConfigs.length; // check presentation mode
     }
 
-    if (options.triggeredBySave && yamlConfig["export_on_save"]) {
+    if (options.triggeredBySave && yamlConfig['export_on_save']) {
       // export files
-      this.exportOnSave(yamlConfig["export_on_save"]);
+      this.exportOnSave(yamlConfig['export_on_save'] as JsonObject);
     }
 
     if (!this.config.enableScriptExecution) {
@@ -3081,7 +2880,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       modifySource: MarkdownEngine.modifySource.bind(this),
       parseMD: this.parseMD.bind(this),
       headings: this.headings,
-      resolveFilePath: this.resolveFilePath.bind(this),
     };
   }
 }
