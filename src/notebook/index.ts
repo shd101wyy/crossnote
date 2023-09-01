@@ -72,7 +72,11 @@ export class Notebook {
 
   private constructor() {}
 
-  private async init({ notebookPath, fs, config }: NotebookConstructorArgs) {
+  private async init({
+    notebookPath,
+    fs,
+    config = {},
+  }: NotebookConstructorArgs) {
     // Check if workspaceFolder is absolute path
     if (!path.isAbsolute(notebookPath)) {
       throw new Error('`notebookDirectoryPath` must be an absolute path');
@@ -80,6 +84,7 @@ export class Notebook {
     this.notebookPath = notebookPath;
     this.initConfig(config);
     this.initMarkdownIt();
+    this.updateConfig({});
     await this.initFs(fs);
   }
 
@@ -94,16 +99,10 @@ export class Notebook {
       ...getDefaultNotebookConfig(),
       ...config,
     };
-    this.updateConfig({});
   }
 
   private initMarkdownIt() {
-    this.md = new MarkdownIt({
-      ...defaultMarkdownItConfig,
-      typographer: !!this.config.enableTypographer,
-      breaks: !!this.config.breakOnSingleNewLine,
-      linkify: !!this.config.enableLinkify,
-    });
+    this.md = new MarkdownIt(defaultMarkdownItConfig);
 
     // markdown-it extensions
     this.md.use(MarkdownItFootnote);

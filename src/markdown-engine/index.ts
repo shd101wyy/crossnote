@@ -199,7 +199,7 @@ export class MarkdownEngine {
     this.tocHTML = '';
   }
 
-  get protocolsWhiteListRegExp() {
+  private get protocolsWhiteListRegExp() {
     // protocal whitelist
     const protocolsWhiteList = (
       this.notebook.config.protocolsWhiteList ??
@@ -901,10 +901,12 @@ if (typeof(window['Reveal']) !== 'undefined') {
       mermaidInitScript += `<script type="module">
 // TODO: If ZenUML gets integrated into mermaid in the future,
 //      we can remove the following lines.
-import zenuml from 'https://${this.notebook.config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
+import zenuml from 'https://${
+        this.notebook.config.jsdelivrCdnHost
+      }/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
 await mermaid.registerExternalDiagrams([zenuml])
 
-var MERMAID_CONFIG = (JSON.stringify(${this.notebook.config.mermaidConfig}));
+var MERMAID_CONFIG = (${JSON.stringify(this.notebook.config.mermaidConfig)});
 if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.startOnLoad = false
   MERMAID_CONFIG.cloneCssStyles = false
