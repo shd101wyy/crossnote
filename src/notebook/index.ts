@@ -1,24 +1,49 @@
 import { Mutex } from 'async-mutex';
 import MarkdownIt from 'markdown-it';
+import MarkdownItAbbr from 'markdown-it-abbr';
+import MarkdownItDeflist from 'markdown-it-deflist';
+import MarkdownItFootnote from 'markdown-it-footnote';
+import MarkdownItMark from 'markdown-it-mark';
+import MarkdownItSub from 'markdown-it-sub';
+import MarkdownItSup from 'markdown-it-sup';
 import Token from 'markdown-it/lib/token.js';
 import * as path from 'path';
+import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
+import useMarkdownItCodeFences from '../custom-markdown-it-features/code-fences';
+import useMarkdownItCriticMarkup from '../custom-markdown-it-features/critic-markup';
+import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
+import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed';
+import useMarkdownItMath from '../custom-markdown-it-features/math';
+import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
+import { MarkdownEngine } from '../markdown-engine';
 import { matter, matterStringify } from './markdown.js';
 import { Mentions, Note, NoteConfig, Notes } from './note';
 import { Reference, ReferenceMap } from './reference';
 import Search from './search';
-import { FileSystemApi, IS_NODE } from './types';
+import {
+  FileSystemApi,
+  IS_NODE,
+  NotebookConfig,
+  getDefaultNotebookConfig,
+} from './types';
 
 export * from './types';
 
-const md = new MarkdownIt();
+const defaultMarkdownItConfig: Partial<MarkdownIt.Options> = {
+  html: true, // Enable HTML tags in source
+  xhtmlOut: false, // Use '/' to close single tags (<br />)
+  breaks: true, // Convert '\n' in paragraphs into <br>
+  langPrefix: 'language-', // CSS language prefix for fenced blocks
+  linkify: true, // autoconvert URL-like texts to links
+  typographer: true, // Enable smartypants and other sweet transforms
+};
 
-interface CrossnoteConfig {
-  _: string;
-}
-
-interface CrossnoteArgs {
+interface NotebookConstructorArgs {
+  /**
+   * Absolute path to the notebook directory
+   */
   notebookPath: string;
-  config: CrossnoteConfig;
+  config: Partial<NotebookConfig>;
   fs?: FileSystemApi;
 }
 
@@ -32,9 +57,9 @@ interface RefreshNotesArgs {
 }
 
 export class Notebook {
-  private notebookPath: string;
-  // private config: CrossnoteConfig;
-  private fs: FileSystemApi;
+  public notebookPath: string;
+  public config: NotebookConfig;
+  public fs: FileSystemApi;
 
   public notes: Notes = {};
   public hasLoadedNotes: boolean = false;
@@ -42,23 +67,59 @@ export class Notebook {
   public search: Search = new Search();
   private refreshNotesIfNotLoadedMutex: Mutex = new Mutex();
 
+  public md: MarkdownIt;
+  private markdownEngines: { [key: string]: MarkdownEngine } = {};
+
   private constructor() {}
 
-  private async init({ notebookPath, fs }: CrossnoteArgs) {
+  private async init({ notebookPath, fs, config }: NotebookConstructorArgs) {
     // Check if workspaceFolder is absolute path
     if (!path.isAbsolute(notebookPath)) {
-      throw new Error('`workspaceFolder` must be an absolute path');
+      throw new Error('`notebookDirectoryPath` must be an absolute path');
     }
     this.notebookPath = notebookPath;
-    // this.config = config;
-
+    this.initConfig(config);
+    this.initMarkdownIt();
     await this.initFs(fs);
   }
 
-  public static async init(args: CrossnoteArgs) {
+  public static async init(args: NotebookConstructorArgs) {
     const crossnote = new Notebook();
     await crossnote.init(args);
     return crossnote;
+  }
+
+  private initConfig(config: Partial<NotebookConfig>) {
+    this.config = {
+      ...getDefaultNotebookConfig(),
+      ...config,
+    };
+    this.updateConfig({});
+  }
+
+  private initMarkdownIt() {
+    this.md = new MarkdownIt({
+      ...defaultMarkdownItConfig,
+      typographer: !!this.config.enableTypographer,
+      breaks: !!this.config.breakOnSingleNewLine,
+      linkify: !!this.config.enableLinkify,
+    });
+
+    // markdown-it extensions
+    this.md.use(MarkdownItFootnote);
+    this.md.use(MarkdownItSub);
+    this.md.use(MarkdownItSup);
+    this.md.use(MarkdownItDeflist);
+    this.md.use(MarkdownItAbbr);
+    this.md.use(MarkdownItMark);
+
+    useMarkdownItCodeFences(this.md);
+    useMarkdownItCriticMarkup(this.md, this.config);
+    useMarkdownItEmoji(this.md, this.config);
+    useMarkdownItHTML5Embed(this.md, this.config);
+    useMarkdownItMath(this.md, this.config);
+    useMarkdownItWikilink(this.md, this.config);
+    useMarkdownAdmonition(this.md);
   }
 
   async initFs(_fs?: FileSystemApi) {
@@ -104,7 +165,52 @@ export class Notebook {
     }
   }
 
+  public updateConfig(config: Partial<NotebookConfig>) {
+    this.config = {
+      ...this.config,
+      ...config,
+    };
+
+    // Interpolate config
+    this.interpolateConfig();
+
+    // Update markdown-it
+    this.md.set({
+      typographer: !!this.config.enableTypographer,
+      breaks: !!this.config.breakOnSingleNewLine,
+      linkify: !!this.config.enableLinkify,
+    });
+  }
+
+  private interpolateConfig() {
+    const pattern = /\${\s*(\w+?)\s*}/g; // Replace ${property}
+
+    const replacements = {
+      projectDir: this.notebookPath,
+      workspaceFolder: this.notebookPath, // vscode abreviation
+    };
+
+    // Replace certains paths
+    this.config.imageFolderPath = this.config.imageFolderPath?.replace(
+      pattern,
+      (match, token) => replacements[token] || match,
+    );
+    this.config.imageMagickPath = this.config.imageMagickPath?.replace(
+      pattern,
+      (match, token) => replacements[token] || match,
+    );
+    this.config.chromePath = this.config.chromePath?.replace(
+      pattern,
+      (match, token) => replacements[token] || match,
+    );
+    this.config.plantumlJarPath = this.config.plantumlJarPath?.replace(
+      pattern,
+      (match, token) => replacements[token] || match,
+    );
+  }
+
   public async getBacklinkedNotes(filePath: string): Promise<Notes> {
+    filePath = this.resolveNoteRelativePath(filePath);
     if (filePath in this.referenceMap.map) {
       const map = this.referenceMap.map[filePath];
       const notes: Notes = {};
@@ -129,8 +235,8 @@ export class Notebook {
     backlinkedNoteFilePath: string,
   ) {
     return this.referenceMap.getReferences(
-      noteFilePath,
-      backlinkedNoteFilePath,
+      this.resolveNoteRelativePath(noteFilePath),
+      this.resolveNoteRelativePath(backlinkedNoteFilePath),
     );
   }
 
@@ -140,7 +246,7 @@ export class Notebook {
       return;
     }
     // Get mentions
-    const tokens = md.parse(note.markdown, {});
+    const tokens = this.md.parse(note.markdown, {});
     const resolveLink = (link: string) => {
       if (!link.endsWith('.md')) {
         link = link + '.md';
@@ -254,10 +360,11 @@ export class Notebook {
     filePath: string,
     refreshNoteRelations = false,
   ): Promise<Note | null> {
+    filePath = this.resolveNoteRelativePath(filePath);
     if (!refreshNoteRelations && filePath in this.notes) {
       return this.notes[filePath];
     }
-    const absFilePath = path.resolve(this.notebookPath, filePath);
+    const absFilePath = this.resolveNoteAbsolutePath(filePath);
     let stats;
     try {
       stats = await this.fs.stat(absFilePath);
@@ -452,10 +559,7 @@ export class Notebook {
       markdown = matterStringify(markdown, noteConfig as any);
     }
 
-    await this.fs.writeFile(
-      path.resolve(this.notebookPath, filePath),
-      markdown,
-    );
+    await this.fs.writeFile(this.resolveNoteAbsolutePath(filePath), markdown);
 
     const note = await this.getNote(filePath, true);
     if (note) {
@@ -477,8 +581,9 @@ export class Notebook {
   }
 
   public async deleteNote(filePath: string) {
-    if (await this.fs.exists(path.resolve(this.notebookPath, filePath))) {
-      await this.fs.unlink(path.resolve(this.notebookPath, filePath));
+    const absFilePath = this.resolveNoteAbsolutePath(filePath);
+    if (await this.fs.exists(absFilePath)) {
+      await this.fs.unlink(absFilePath);
       await this.removeNoteRelations(filePath);
       this.search.remove(filePath);
     }
@@ -493,5 +598,32 @@ export class Notebook {
     const newFilePath = filePath.replace(/\.md$/, '.copy.md');
     await this.writeNote(newFilePath, oldNote.markdown, noteConfig);
     return await this.getNote(newFilePath, true);
+  }
+
+  private resolveNoteAbsolutePath(filePath: string) {
+    if (path.isAbsolute(filePath)) {
+      return filePath;
+    } else {
+      return path.resolve(this.notebookPath, filePath);
+    }
+  }
+
+  private resolveNoteRelativePath(filePath: string) {
+    if (path.isAbsolute(filePath)) {
+      return path.relative(this.notebookPath, filePath);
+    } else {
+      return filePath;
+    }
+  }
+
+  public getNoteMarkdownEngine(filePath: string) {
+    filePath = this.resolveNoteRelativePath(filePath);
+    if (!(filePath in this.markdownEngines)) {
+      this.markdownEngines[filePath] = new MarkdownEngine({
+        notebook: this,
+        filePath: this.resolveNoteAbsolutePath(filePath),
+      });
+    }
+    return this.markdownEngines[filePath];
   }
 }

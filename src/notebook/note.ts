@@ -17,10 +17,25 @@ export interface NoteConfig {
 export type Mentions = { [key: string]: boolean };
 
 export interface Note {
+  /**
+   * Absolute path to the notebook
+   */
   notebookPath: string;
+  /**
+   * Relative path to the note file
+   */
   filePath: FilePath;
+  /**
+   * Note title
+   */
   title: string;
+  /**
+   * Note content
+   */
   markdown: string;
+  /**
+   * Note config
+   */
   config: NoteConfig;
   /**
    * @param key: mentioned note file path

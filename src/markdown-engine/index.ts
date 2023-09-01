@@ -5,13 +5,6 @@ import { execFile } from 'child_process';
 import CryptoJS from 'crypto-js';
 import * as fs from 'fs';
 import { escape } from 'html-escaper';
-import MarkdownIt from 'markdown-it';
-import MarkdownItAbbr from 'markdown-it-abbr';
-import MarkdownItDeflist from 'markdown-it-deflist';
-import MarkdownItFootnote from 'markdown-it-footnote';
-import MarkdownItMark from 'markdown-it-mark';
-import MarkdownItSub from 'markdown-it-sub';
-import MarkdownItSup from 'markdown-it-sup';
 import * as path from 'path';
 import puppeteer, { Browser } from 'puppeteer-core';
 import request from 'request';
@@ -23,23 +16,11 @@ import { ebookConvert } from '../converters/ebook-convert';
 import { markdownConvert } from '../converters/markdown-convert';
 import { pandocConvert } from '../converters/pandoc-convert';
 import { princeConvert } from '../converters/prince-convert';
-import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
-import useMarkdownItCodeFences from '../custom-markdown-it-features/code-fences';
-import useMarkdownItCriticMarkup from '../custom-markdown-it-features/critic-markup';
-import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
-import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed';
-import useMarkdownItMath from '../custom-markdown-it-features/math';
-import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
-import { openFile, tempOpen } from '../environment/nodejs';
 import { parseBlockAttributes } from '../lib/block-attributes/parseBlockAttributes';
 import { stringifyBlockAttributes } from '../lib/block-attributes/stringifyBlockAttributes';
 import { normalizeBlockInfo } from '../lib/block-info/normalizeBlockInfo';
 import { parseBlockInfo } from '../lib/block-info/parseBlockInfo';
-import {
-  FileSystemApi,
-  NotebookConfig,
-  getDefaultNotebookConfig,
-} from '../notebook';
+import { FileSystemApi, Notebook, getDefaultNotebookConfig } from '../notebook';
 import enhanceWithCodeBlockStyling from '../render-enhancers/code-block-styling';
 import enhanceWithEmbeddedLocalImages from '../render-enhancers/embedded-local-images';
 import enhanceWithEmbeddedSvgs from '../render-enhancers/embedded-svgs';
@@ -57,6 +38,17 @@ import { removeFileProtocol } from '../utility';
 import HeadingIdGenerator from './heading-id-generator';
 import { HeadingData, generateSidebarToCHTML } from './toc';
 import { transformMarkdown } from './transformer';
+
+interface MarkdownEngineConstructorArgs {
+  /**
+   * The notebook
+   */
+  notebook: Notebook;
+  /**
+   * The note file path. It needs to be absolute path.
+   */
+  filePath: string;
+}
 
 export interface MarkdownEngineRenderOption {
   useRelativeFilePath: boolean;
@@ -105,16 +97,6 @@ export interface HTMLTemplateOption {
    */
   embedSVG?: boolean;
 }
-
-const defaults = {
-  html: true, // Enable HTML tags in source
-  xhtmlOut: false, // Use '/' to close single tags (<br />)
-  breaks: true, // Convert '\n' in paragraphs into <br>
-  langPrefix: 'language-', // CSS language prefix for fenced blocks
-  linkify: true, // autoconvert URL-like texts to links
-  linkTarget: '', // set target to open link in
-  typographer: true, // Enable smartypants and other sweet transforms
-};
 
 let MODIFY_SOURCE:
   | ((
@@ -175,20 +157,11 @@ export class MarkdownEngine {
   private readonly filePath: string;
   private readonly fileDirectoryPath: string;
   private readonly projectDirectoryPath: string;
+  private readonly notebook: Notebook;
   private readonly fs: FileSystemApi;
-
-  private originalConfig: NotebookConfig;
-  private config: NotebookConfig;
-
-  private breakOnSingleNewLine: boolean;
-  private enableTypographer: boolean;
-  private enableLinkify: boolean;
-  private protocolsWhiteListRegExp: RegExp;
 
   private headings: HeadingData[];
   private tocHTML: string;
-
-  private md;
 
   /**
    * Dirty variable just made for VSCode preview.
@@ -214,142 +187,28 @@ export class MarkdownEngine {
    */
   public isPreviewInPresentationMode: boolean = false;
 
-  constructor({
-    filePath,
-    projectDirectoryPath,
-    config,
-    fs,
-  }: {
-    /**
-     * The markdown file path.
-     */
-    filePath: string;
-    /**
-     * The project directory path.
-     */
-    projectDirectoryPath: string;
-    /**
-     * Markdown Engine configuration.
-     */
-    config: NotebookConfig;
-    /**
-     * File system API.
-     */
-    fs: FileSystemApi;
-  }) {
+  constructor({ filePath, notebook }: MarkdownEngineConstructorArgs) {
     this.filePath = filePath;
+    this.notebook = notebook;
     this.fileDirectoryPath = path.dirname(this.filePath);
-    this.projectDirectoryPath = projectDirectoryPath || this.fileDirectoryPath;
-    this.fs = fs;
-
-    this.originalConfig = config;
-    this.resetConfig();
+    this.projectDirectoryPath =
+      this.notebook.notebookPath || this.fileDirectoryPath;
+    this.fs = this.notebook.fs;
 
     this.headings = [];
     this.tocHTML = '';
-
-    this.md = new MarkdownIt({
-      ...defaults,
-      typographer: this.enableTypographer,
-      breaks: this.breakOnSingleNewLine,
-      linkify: this.enableLinkify,
-    });
-
-    // markdown-it extensions
-    this.md.use(MarkdownItFootnote);
-    this.md.use(MarkdownItSub);
-    this.md.use(MarkdownItSup);
-    this.md.use(MarkdownItDeflist);
-    this.md.use(MarkdownItAbbr);
-    this.md.use(MarkdownItMark);
-
-    useMarkdownItCodeFences(this.md);
-    useMarkdownItCriticMarkup(this.md, this.config);
-    useMarkdownItEmoji(this.md, this.config);
-    useMarkdownItHTML5Embed(this.md, this.config);
-    useMarkdownItMath(this.md, this.config);
-    useMarkdownItWikilink(this.md, this.config);
-    useMarkdownAdmonition(this.md);
   }
 
-  /**
-   * Reset config
-   */
-  public resetConfig() {
-    this.config = {
-      ...getDefaultNotebookConfig(),
-      ...(this.originalConfig || {}),
-    };
-    this.initConfig();
-  }
-
-  /**
-   * Set default values
-   */
-  private initConfig() {
-    this.interpolateConfig(this.config, this.projectDirectoryPath);
-
-    // break on single newline
-    this.breakOnSingleNewLine = !!this.config.breakOnSingleNewLine;
-
-    // enable typographer
-    this.enableTypographer = !!this.config.enableTypographer;
-
-    // enable linkify
-    this.enableLinkify = !!this.config.enableLinkify;
-
+  get protocolsWhiteListRegExp() {
     // protocal whitelist
     const protocolsWhiteList = (
-      this.config.protocolsWhiteList ??
+      this.notebook.config.protocolsWhiteList ??
       getDefaultNotebookConfig().protocolsWhiteList ??
       ''
     )
       .split(',')
       .map(x => x.trim());
-    this.protocolsWhiteListRegExp = new RegExp(
-      '^(' + protocolsWhiteList.join('|') + ')',
-    ); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
-  }
-
-  public interpolateConfig(
-    config: NotebookConfig,
-    projectDirectoryPath: string,
-  ) {
-    const pattern = /\${\s*(\w+?)\s*}/g; // Replace ${property}
-
-    const replacements = {
-      projectDir: projectDirectoryPath,
-      workspaceFolder: projectDirectoryPath, // vscode abreviation
-    };
-
-    // Replace certains paths
-    config.imageFolderPath = config.imageFolderPath?.replace(
-      pattern,
-      (match, token) => replacements[token] || match,
-    );
-    config.imageMagickPath = config.imageMagickPath?.replace(
-      pattern,
-      (match, token) => replacements[token] || match,
-    );
-    config.chromePath = config.chromePath?.replace(
-      pattern,
-      (match, token) => replacements[token] || match,
-    );
-    config.plantumlJarPath = config.plantumlJarPath?.replace(
-      pattern,
-      (match, token) => replacements[token] || match,
-    );
-  }
-
-  public updateConfiguration(config: Partial<NotebookConfig>) {
-    this.config = { ...this.config, ...config };
-    this.initConfig();
-
-    this.md.set({
-      breaks: this.breakOnSingleNewLine,
-      typographer: this.enableTypographer,
-      linkify: this.enableLinkify,
-    });
+    return new RegExp('^(' + protocolsWhiteList.join('|') + ')'); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
   }
 
   public cacheCodeChunkResult(id: string, result: string) {
@@ -365,7 +224,7 @@ export class MarkdownEngine {
   /**
    * Generate scripts string for preview usage.
    */
-  public generateScriptsForPreview(
+  private generateScriptsForPreview(
     isForPresentation = false,
     yamlConfig = {},
     vscodePreviewPanel: vscode.WebviewPanel | null = null,
@@ -442,13 +301,17 @@ export class MarkdownEngine {
 
     // math
     if (
-      this.config.mathRenderingOption === 'MathJax' ||
-      this.config.usePandocParser
+      this.notebook.config.mathRenderingOption === 'MathJax' ||
+      this.notebook.config.usePandocParser
     ) {
-      const mathJaxConfig = this.config.mathjaxConfig;
+      const mathJaxConfig = this.notebook.config.mathjaxConfig;
       mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
-      mathJaxConfig['tex']['inlineMath'] = this.config.mathInlineDelimiters;
-      mathJaxConfig['tex']['displayMath'] = this.config.mathBlockDelimiters;
+      mathJaxConfig['tex'][
+        'inlineMath'
+      ] = this.notebook.config.mathInlineDelimiters;
+      mathJaxConfig['tex'][
+        'displayMath'
+      ] = this.notebook.config.mathBlockDelimiters;
 
       // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
       // Disable typesetting on startup
@@ -459,7 +322,7 @@ export class MarkdownEngine {
       scripts += `<script type="text/javascript"> window.MathJax = (${JSON.stringify(
         mathJaxConfig,
       )}); </script>`;
-      scripts += `<script type="text/javascript" async src="${this.config.mathjaxV3ScriptSrc}" charset="UTF-8"></script>`;
+      scripts += `<script type="text/javascript" async src="${this.notebook.config.mathjaxV3ScriptSrc}" charset="UTF-8"></script>`;
     }
 
     // reveal.js
@@ -501,11 +364,11 @@ export class MarkdownEngine {
 
     // mermaid init
     scripts += `<script>
-var MERMAID_CONFIG = (${JSON.stringify(this.config.mermaidConfig)});
+var MERMAID_CONFIG = (${JSON.stringify(this.notebook.config.mermaidConfig)});
 if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.startOnLoad = false
   MERMAID_CONFIG.cloneCssStyles = false
-  MERMAID_CONFIG.theme = "${this.config.mermaidTheme}"
+  MERMAID_CONFIG.theme = "${this.notebook.config.mermaidTheme}"
 }
 mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
@@ -610,7 +473,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
    * Automatically pick code block theme for preview.
    */
   private getPrismTheme(isPresentationMode = false, yamlConfig = {}) {
-    if (this.config.codeBlockTheme === 'auto.css') {
+    if (this.notebook.config.codeBlockTheme === 'auto.css') {
       /**
        * Automatically pick code block theme for preview.
        */
@@ -620,26 +483,26 @@ if (typeof(window['Reveal']) !== 'undefined') {
           typeof yamlConfig['presentation'] === 'object' &&
           yamlConfig['presentation']['theme']
             ? yamlConfig['presentation']['theme']
-            : this.config.revealjsTheme;
+            : this.notebook.config.revealjsTheme;
         return (
           MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] ||
           'default.css'
         );
       } else {
         return (
-          MarkdownEngine.AutoPrismThemeMap[this.config.previewTheme] ||
+          MarkdownEngine.AutoPrismThemeMap[this.notebook.config.previewTheme] ||
           'default.css'
         );
       }
     } else {
-      return this.config.codeBlockTheme;
+      return this.notebook.config.codeBlockTheme;
     }
   }
 
   /**
    * Generate styles string for preview usage.
    */
-  public generateStylesForPreview(
+  private generateStylesForPreview(
     isPresentationMode = false,
     yamlConfig = {},
     vscodePreviewPanel: vscode.WebviewPanel | null = null,
@@ -672,8 +535,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // check math
     if (
-      this.config.mathRenderingOption === 'KaTeX' &&
-      !this.config.usePandocParser
+      this.notebook.config.mathRenderingOption === 'KaTeX' &&
+      !this.notebook.config.usePandocParser
     ) {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
@@ -698,7 +561,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
           utility.getExtensionDirectoryPath(),
-          `./styles/preview_theme/${this.config.previewTheme}`,
+          `./styles/preview_theme/${this.notebook.config.previewTheme}`,
         ),
         vscodePreviewPanel,
       )}">`;
@@ -718,7 +581,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
             typeof yamlConfig['presentation'] === 'object' &&
             yamlConfig['presentation']['theme']
               ? yamlConfig['presentation']['theme']
-              : this.config.revealjsTheme
+              : this.notebook.config.revealjsTheme
           }`,
         ),
         vscodePreviewPanel,
@@ -756,7 +619,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     )}">`;
 
     // global styles
-    styles += `<style>${this.config.globalCss}</style>`;
+    styles += `<style>${this.notebook.config.globalCss}</style>`;
 
     return styles;
   }
@@ -890,7 +753,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       <head>
         <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
         <meta id="mume-data" data-config="${escape(
-          JSON.stringify({ ...this.config, ...config }),
+          JSON.stringify({ ...this.notebook.config, ...config }),
         )}" data-time="${Date.now()}">
         <meta charset="UTF-8">
         ${
@@ -962,14 +825,18 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // math style and script
     let mathStyle = '';
     if (
-      this.config.mathRenderingOption === 'MathJax' ||
-      this.config.usePandocParser
+      this.notebook.config.mathRenderingOption === 'MathJax' ||
+      this.notebook.config.usePandocParser
     ) {
       // TODO
-      const mathJaxConfig = this.config.mathjaxConfig;
+      const mathJaxConfig = this.notebook.config.mathjaxConfig;
       mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
-      mathJaxConfig['tex']['inlineMath'] = this.config.mathInlineDelimiters;
-      mathJaxConfig['tex']['displayMath'] = this.config.mathBlockDelimiters;
+      mathJaxConfig['tex'][
+        'inlineMath'
+      ] = this.notebook.config.mathInlineDelimiters;
+      mathJaxConfig['tex'][
+        'displayMath'
+      ] = this.notebook.config.mathBlockDelimiters;
 
       if (options.offline) {
         mathStyle = `
@@ -977,7 +844,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           window.MathJax = (${JSON.stringify(mathJaxConfig)});
         </script>
         <script type="text/javascript" async src="${
-          this.config.mathjaxV3ScriptSrc
+          this.notebook.config.mathjaxV3ScriptSrc
         }" charset="UTF-8"></script>
         `;
       } else {
@@ -986,18 +853,18 @@ if (typeof(window['Reveal']) !== 'undefined') {
           window.MathJax = (${JSON.stringify(mathJaxConfig)});
         </script>
         <script type="text/javascript" async src="${
-          this.config.mathjaxV3ScriptSrc
+          this.notebook.config.mathjaxV3ScriptSrc
         }"></script>
         `;
       }
-    } else if (this.config.mathRenderingOption === 'KaTeX') {
+    } else if (this.notebook.config.mathRenderingOption === 'KaTeX') {
       if (options.offline) {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           utility.getExtensionDirectoryPath(),
           './dependencies/katex/katex.min.css',
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/katex@0.16.8/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.8/dist/katex.min.css">`;
       }
     } else {
       mathStyle = '';
@@ -1027,21 +894,21 @@ if (typeof(window['Reveal']) !== 'undefined') {
         )}" charset="UTF-8"></script>`;
       } else {
         mermaidScript = `<script type="module">
-  import mermaid from 'https://${this.config.jsdelivrCdnHost}/npm/mermaid@10.4.0/dist/mermaid.esm.min.mjs';
+  import mermaid from 'https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@10.4.0/dist/mermaid.esm.min.mjs';
 </script>`;
       }
 
       mermaidInitScript += `<script type="module">
 // TODO: If ZenUML gets integrated into mermaid in the future,
 //      we can remove the following lines.
-import zenuml from 'https://${this.config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
+import zenuml from 'https://${this.notebook.config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
 await mermaid.registerExternalDiagrams([zenuml])
 
-var MERMAID_CONFIG = (JSON.stringify(${this.config.mermaidConfig}));
+var MERMAID_CONFIG = (JSON.stringify(${this.notebook.config.mermaidConfig}));
 if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.startOnLoad = false
   MERMAID_CONFIG.cloneCssStyles = false
-  MERMAID_CONFIG.theme = "${this.config.mermaidTheme}"
+  MERMAID_CONFIG.theme = "${this.notebook.config.mermaidTheme}"
 }
 mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
@@ -1101,7 +968,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
               utility.getExtensionDirectoryPath(),
               `./dependencies/${key}/${key}.min.js`,
             )}" charset="UTF-8"></script>`
-          : `<script type="text/javascript" src="https://${this.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
+          : `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
       });
 
       vegaInitScript += `<script>
@@ -1141,7 +1008,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         )}'></script>`;
       } else {
         presentationScript = `
-        <script src='https://${this.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/reveal.js'></script>`;
+        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/reveal.js'></script>`;
       }
 
       const presentationConfig = yamlConfig['presentation'] || {};
@@ -1208,7 +1075,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     try {
       // prism *.css
       styleCSS +=
-        !this.config.printBackground &&
+        !this.notebook.config.printBackground &&
         !yamlConfig['print_background'] &&
         !yamlConfig['isPresentationMode']
           ? await this.fs.readFile(
@@ -1233,7 +1100,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           typeof yamlConfig['presentation'] === 'object' &&
           yamlConfig['presentation']['theme']
             ? yamlConfig['presentation']['theme']
-            : this.config.revealjsTheme;
+            : this.notebook.config.revealjsTheme;
 
         if (options.offline) {
           presentationStyle += `<link rel="stylesheet" href="file:///${path.resolve(
@@ -1241,12 +1108,13 @@ if (typeof(window['Reveal']) !== 'undefined') {
             `./dependencies/reveal/css/theme/${theme}`,
           )}">`;
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/theme/${theme}">`;
+          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/theme/${theme}">`;
         }
       } else {
         // preview theme
         styleCSS +=
-          !this.config.printBackground && !yamlConfig['print_background']
+          !this.notebook.config.printBackground &&
+          !yamlConfig['print_background']
             ? await this.fs.readFile(
                 path.resolve(
                   utility.getExtensionDirectoryPath(),
@@ -1256,7 +1124,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
             : await this.fs.readFile(
                 path.resolve(
                   utility.getExtensionDirectoryPath(),
-                  `./styles/preview_theme/${this.config.previewTheme}`,
+                  `./styles/preview_theme/${this.notebook.config.previewTheme}`,
                 ),
               );
       }
@@ -1283,14 +1151,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
 
     // global styles
-    const globalStyles = this.config.globalCss;
+    const globalStyles = this.notebook.config.globalCss;
 
     // sidebar toc
     let sidebarTOC = '';
     let sidebarTOCScript = '';
     let sidebarTOCBtn = '';
     if (
-      this.config.enableScriptExecution &&
+      this.notebook.config.enableScriptExecution &&
       !yamlConfig['isPresentationMode'] &&
       !options.isForPrint &&
       (!('html' in yamlConfig) ||
@@ -1391,14 +1259,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (options.embedLocalImages) {
         await enhanceWithEmbeddedLocalImages(
           $,
-          this.config,
+          this.notebook.config,
           this.resolveFilePath.bind(this),
         );
       }
       if (options.embedSVG) {
         await enhanceWithEmbeddedSvgs(
           $,
-          this.config,
+          this.notebook.config,
           this.resolveFilePath.bind(this),
         );
       }
@@ -1429,14 +1297,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       embedLocalImages: false,
     });
     // create temp file
-    const info = await tempOpen({
+    const info = await utility.tempOpen({
       prefix: 'mume',
       suffix: '.html',
     });
 
     fs.writeFileSync(info.fd, html);
     // open in browser
-    openFile(info.path);
+    utility.openFile(info.path);
     return;
   }
 
@@ -1541,17 +1409,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     let browser: Browser | null = null;
 
-    if (!this.config.chromePath) {
+    if (!this.notebook.config.chromePath) {
       throw new Error('Chrome path is not set.');
     }
 
     browser = await puppeteer.launch({
-      args: this.config.puppeteerArgs || [],
-      executablePath: this.config.chromePath,
+      args: this.notebook.config.puppeteerArgs || [],
+      executablePath: this.notebook.config.chromePath,
       headless: true,
     });
 
-    const info = await tempOpen({ prefix: 'mume', suffix: '.html' });
+    const info = await utility.tempOpen({ prefix: 'mume', suffix: '.html' });
     fs.writeFileSync(info.fd, html);
 
     const page = await browser.newPage();
@@ -1573,7 +1441,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
               right: '1cm',
             },
           }),
-      printBackground: this.config.printBackground,
+      printBackground: this.notebook.config.printBackground,
       ...(yamlConfig['chrome'] || yamlConfig['puppeteer'] || {}),
     };
 
@@ -1587,10 +1455,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (timeout && typeof timeout === 'number') {
       await page.waitForTimeout(timeout);
     } else if (
-      this.config.puppeteerWaitForTimeout &&
-      this.config.puppeteerWaitForTimeout > 0
+      this.notebook.config.puppeteerWaitForTimeout &&
+      this.notebook.config.puppeteerWaitForTimeout > 0
     ) {
-      await page.waitForTimeout(this.config.puppeteerWaitForTimeout);
+      await page.waitForTimeout(this.notebook.config.puppeteerWaitForTimeout);
     }
 
     if (fileType === 'pdf') {
@@ -1602,7 +1470,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     browser.close();
 
     if (openFileAfterGeneration) {
-      openFile(dest);
+      utility.openFile(dest);
     }
     return dest;
   }
@@ -1636,7 +1504,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       offline: true,
     });
 
-    const info = await tempOpen({ prefix: 'mume', suffix: '.html' });
+    const info = await utility.tempOpen({ prefix: 'mume', suffix: '.html' });
     fs.writeFileSync(info.fd, html);
 
     if (yamlConfig['isPresentationMode']) {
@@ -1647,7 +1515,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
       //  open pdf
       if (openFileAfterGeneration) {
-        openFile(dest);
+        utility.openFile(dest);
       }
       return dest;
     }
@@ -1892,7 +1760,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
       await enhanceWithEmbeddedLocalImages(
         $,
-        this.config,
+        this.notebook.config,
         this.resolveFilePath.bind(this),
       );
     }
@@ -1909,7 +1777,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig['html'] &&
         ebookConfig['html'].cdn
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://${this.config.jsdelivrCdnHost}/npm/katex@0.16.8/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.8/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           utility.getExtensionDirectoryPath(),
@@ -1935,7 +1803,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             utility.getExtensionDirectoryPath(),
             `./styles/prism_theme/${
               /*this.getPrismTheme(false)*/ MarkdownEngine.AutoPrismThemeMap[
-                ebookConfig['theme'] || this.config.previewTheme
+                ebookConfig['theme'] || this.notebook.config.previewTheme
               ]
             }`,
           ),
@@ -1952,7 +1820,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           path.resolve(
             utility.getExtensionDirectoryPath(),
             `./styles/preview_theme/${ebookConfig['theme'] ||
-              this.config.previewTheme}`,
+              this.notebook.config.previewTheme}`,
           ),
         ),
         // markdown-it-admonition
@@ -1973,7 +1841,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // global styles
     let globalStyles = '';
     try {
-      globalStyles = this.config.globalCss;
+      globalStyles = this.notebook.config.globalCss;
     } catch (error) {
       // ignore it
     }
@@ -2016,7 +1884,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     try {
-      const info = await tempOpen({ prefix: 'mume', suffix: '.html' });
+      const info = await utility.tempOpen({ prefix: 'mume', suffix: '.html' });
       fs.writeFileSync(info.fd, html);
       await ebookConvert(info.path, dest, ebookConfig);
       deleteDownloadedImages();
@@ -2036,10 +1904,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }): Promise<string> {
     let inputString = await this.fs.readFile(this.filePath);
 
-    if (this.config.parserConfig['onWillParseMarkdown']) {
-      inputString = await this.config.parserConfig['onWillParseMarkdown'](
-        inputString,
-      );
+    if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
+      inputString = await this.notebook.config.parserConfig[
+        'onWillParseMarkdown'
+      ](inputString);
     }
 
     if (runAllCodeChunks) {
@@ -2076,18 +1944,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         filesCache: this.filesCache,
         codeChunksData: this.codeChunksData,
         graphsCache: this.graphsCache,
-        imageDirectoryPath: this.config.imageFolderPath,
-        pandocMarkdownFlavor: this.config.pandocMarkdownFlavor,
-        pandocPath: this.config.pandocPath,
-        latexEngine: this.config.latexEngine,
-        imageMagickPath: this.config.imageMagickPath,
-        mermaidTheme: this.config.mermaidTheme,
-        plantumlServer: this.config.plantumlServer,
-        plantumlJarPath: this.config.plantumlJarPath,
-        onWillTransformMarkdown: this.config.parserConfig[
+        imageDirectoryPath: this.notebook.config.imageFolderPath,
+        pandocMarkdownFlavor: this.notebook.config.pandocMarkdownFlavor,
+        pandocPath: this.notebook.config.pandocPath,
+        latexEngine: this.notebook.config.latexEngine,
+        imageMagickPath: this.notebook.config.imageMagickPath,
+        mermaidTheme: this.notebook.config.mermaidTheme,
+        plantumlServer: this.notebook.config.plantumlServer,
+        plantumlJarPath: this.notebook.config.plantumlJarPath,
+        onWillTransformMarkdown: this.notebook.config.parserConfig[
           'onWillTransformMarkdown'
         ],
-        onDidTransformMarkdown: this.config.parserConfig[
+        onDidTransformMarkdown: this.notebook.config.parserConfig[
           'onDidTransformMarkdown'
         ],
       },
@@ -2095,7 +1963,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     );
 
     if (openFileAfterGeneration) {
-      openFile(outputFilePath);
+      utility.openFile(outputFilePath);
     }
     return outputFilePath;
   }
@@ -2143,7 +2011,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     if (!markdownConfig['image_dir']) {
-      markdownConfig['image_dir'] = this.config.imageFolderPath;
+      markdownConfig['image_dir'] = this.notebook.config.imageFolderPath;
     }
 
     if (!markdownConfig['path']) {
@@ -2182,21 +2050,22 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         fileDirectoryPath: this.fileDirectoryPath,
         protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
         filesCache: this.filesCache,
-        mathRenderingOption: this.config.mathRenderingOption,
-        mathInlineDelimiters: this.config.mathInlineDelimiters,
-        mathBlockDelimiters: this.config.mathBlockDelimiters,
-        mathRenderingOnlineService: this.config.mathRenderingOnlineService,
+        mathRenderingOption: this.notebook.config.mathRenderingOption,
+        mathInlineDelimiters: this.notebook.config.mathInlineDelimiters,
+        mathBlockDelimiters: this.notebook.config.mathBlockDelimiters,
+        mathRenderingOnlineService: this.notebook.config
+          .mathRenderingOnlineService,
         codeChunksData: this.codeChunksData,
         graphsCache: this.graphsCache,
-        usePandocParser: this.config.usePandocParser,
-        imageMagickPath: this.config.imageMagickPath,
-        mermaidTheme: this.config.mermaidTheme,
-        plantumlServer: this.config.plantumlServer,
-        plantumlJarPath: this.config.plantumlJarPath,
-        onWillTransformMarkdown: this.config.parserConfig[
+        usePandocParser: this.notebook.config.usePandocParser,
+        imageMagickPath: this.notebook.config.imageMagickPath,
+        mermaidTheme: this.notebook.config.mermaidTheme,
+        plantumlServer: this.notebook.config.plantumlServer,
+        plantumlJarPath: this.notebook.config.plantumlJarPath,
+        onWillTransformMarkdown: this.notebook.config.parserConfig[
           'onWillTransformMarkdown'
         ],
-        onDidTransformMarkdown: this.config.parserConfig[
+        onDidTransformMarkdown: this.notebook.config.parserConfig[
           'onDidTransformMarkdown'
         ],
       },
@@ -2360,16 +2229,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (frontMatterString) {
       const data = utility.parseYAML(frontMatterString);
 
-      if (this.config.usePandocParser) {
+      if (this.notebook.config.usePandocParser) {
         // use pandoc parser, so don't change inputString
         return { content: frontMatterString, table: '', data: data || {} };
       } else if (
         hideFrontMatter ||
-        (this.config.frontMatterRenderingOption ?? '')[0] === 'n'
+        (this.notebook.config.frontMatterRenderingOption ?? '')[0] === 'n'
       ) {
         // hide
         return { content: '', table: '', data };
-      } else if ((this.config.frontMatterRenderingOption ?? '')[0] === 't') {
+      } else if (
+        (this.notebook.config.frontMatterRenderingOption ?? '')[0] === 't'
+      ) {
         // table
         // to table
         let table;
@@ -2494,7 +2365,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     args: string[],
   ): Promise<string> {
     let mathRenderer;
-    switch (this.config.mathRenderingOption) {
+    switch (this.notebook.config.mathRenderingOption) {
       case 'MathJax':
         mathRenderer = '--mathjax';
         break;
@@ -2506,7 +2377,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
     args = args || [];
     args = [
-      '--from=' + this.config.pandocMarkdownFlavor, // -tex_math_dollars doesn't work properly
+      '--from=' + this.notebook.config.pandocMarkdownFlavor, // -tex_math_dollars doesn't work properly
       '--to=html',
       mathRenderer,
     ]
@@ -2564,7 +2435,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       i += 1;
     }
 
-    const pandocPath = this.config.pandocPath;
+    const pandocPath = this.notebook.config.pandocPath;
     return await new Promise<string>((resolve, reject) => {
       try {
         const program = execFile(
@@ -2602,16 +2473,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     this.vscodePreviewPanel = options.vscodePreviewPanel;
 
-    if (this.config.parserConfig['onWillParseMarkdown']) {
-      inputString = await this.config.parserConfig['onWillParseMarkdown'](
-        inputString,
-      );
+    if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
+      inputString = await this.notebook.config.parserConfig[
+        'onWillParseMarkdown'
+      ](inputString);
     }
 
-    if (this.config.parserConfig['onWillTransformMarkdown']) {
-      inputString = await this.config.parserConfig['onWillTransformMarkdown'](
-        inputString,
-      );
+    if (this.notebook.config.parserConfig['onWillTransformMarkdown']) {
+      inputString = await this.notebook.config.parserConfig[
+        'onWillTransformMarkdown'
+      ](inputString);
     }
 
     // import external files and insert anchors if necessary
@@ -2639,19 +2510,19 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
-      usePandocParser: this.config.usePandocParser,
-      onWillTransformMarkdown: this.config.parserConfig[
+      usePandocParser: this.notebook.config.usePandocParser,
+      onWillTransformMarkdown: this.notebook.config.parserConfig[
         'onWillTransformMarkdown'
       ],
-      onDidTransformMarkdown: this.config.parserConfig[
+      onDidTransformMarkdown: this.notebook.config.parserConfig[
         'onDidTransformMarkdown'
       ],
     }));
 
-    if (this.config.parserConfig['onDidTransformMarkdown']) {
-      outputString = await this.config.parserConfig['onDidTransformMarkdown'](
-        outputString,
-      );
+    if (this.notebook.config.parserConfig['onDidTransformMarkdown']) {
+      outputString = await this.notebook.config.parserConfig[
+        'onDidTransformMarkdown'
+      ](outputString);
     }
 
     // process front-matter
@@ -2671,7 +2542,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * render markdown to html
      */
     let html;
-    if (this.config.usePandocParser) {
+    if (this.notebook.config.usePandocParser) {
       // pandoc
       try {
         let args = (yamlConfig['pandoc_args'] || []) as string[];
@@ -2692,7 +2563,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           args.push('--citeproc');
         }
 
-        args = this.config.pandocArguments.concat(args);
+        args = this.notebook.config.pandocArguments.concat(args);
 
         html = await this.pandocRender(outputString, args);
       } catch (error) {
@@ -2700,7 +2571,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
     } else {
       // markdown-it
-      html = this.md.render(outputString);
+      html = this.notebook.md.render(outputString);
     }
 
     /**
@@ -2713,12 +2584,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const ordered = tocConfig['ordered'];
 
     // const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "  " });
-    // this.tocHTML = this.md.render(tocObject.content);
+    // this.tocHTML = this.notebook.md.render(tocObject.content);
 
     // Collaposible ToC
     this.tocHTML = generateSidebarToCHTML(
       headings,
-      this.md.render.bind(this.md),
+      this.notebook.md.render.bind(this.notebook.md),
       { ordered, depthFrom, depthTo, tab: '  ' },
     );
 
@@ -2736,20 +2607,20 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const $ = cheerio.load(html);
     await enhanceWithFencedMath(
       $,
-      this.config.mathRenderingOption,
-      this.config.mathBlockDelimiters,
-      this.config.katexConfig,
+      this.notebook.config.mathRenderingOption,
+      this.notebook.config.mathBlockDelimiters,
+      this.notebook.config.katexConfig,
     );
     await enhanceWithFencedDiagrams({
       $,
       graphsCache: this.graphsCache,
       fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
       imageDirectoryPath: removeFileProtocol(
-        this.resolveFilePath(this.config.imageFolderPath, false),
+        this.resolveFilePath(this.notebook.config.imageFolderPath, false),
       ),
-      plantumlServer: this.config.plantumlServer,
-      plantumlJarPath: this.config.plantumlJarPath,
-      kirokiServer: this.config.krokiServer,
+      plantumlServer: this.notebook.config.plantumlServer,
+      plantumlJarPath: this.notebook.config.plantumlJarPath,
+      kirokiServer: this.notebook.config.krokiServer,
     });
     await enhanceWithFencedCodeChunks(
       $,
@@ -2762,10 +2633,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       $,
       options,
       this.resolveFilePath.bind(this),
-      this.config.usePandocParser,
+      this.notebook.config.usePandocParser,
     );
 
-    if (this.config.enableExtendedTableSyntax) {
+    if (this.notebook.config.enableExtendedTableSyntax) {
       // extend table
       await enhanceWithExtendedTableSyntax($);
     }
@@ -2788,10 +2659,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
     }
 
-    if (this.config.parserConfig['onDidParseMarkdown']) {
-      html = await this.config.parserConfig['onDidParseMarkdown'](html, {
-        cheerio: cheerio.default,
-      });
+    if (this.notebook.config.parserConfig['onDidParseMarkdown']) {
+      html = await this.notebook.config.parserConfig['onDidParseMarkdown'](
+        html,
+        {
+          cheerio: cheerio.default,
+        },
+      );
     }
 
     if (options.runAllCodeChunks) {
@@ -2810,7 +2684,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       this.exportOnSave(yamlConfig['export_on_save'] as JsonObject);
     }
 
-    if (!this.config.enableScriptExecution) {
+    if (!this.notebook.config.enableScriptExecution) {
       // disable importing js and css files.
       JSAndCssFiles = [];
     }
@@ -2840,11 +2714,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
   private generateRunOptions(): RunCodeChunkOptions {
     return {
-      enableScriptExecution: this.config.enableScriptExecution,
+      enableScriptExecution: this.notebook.config.enableScriptExecution,
       fileDirectoryPath: this.fileDirectoryPath,
       filePath: this.filePath,
-      imageFolderPath: this.config.imageFolderPath,
-      latexEngine: this.config.latexEngine,
+      imageFolderPath: this.notebook.config.imageFolderPath,
+      latexEngine: this.notebook.config.latexEngine,
       modifySource: MarkdownEngine.modifySource.bind(this),
       parseMD: this.parseMD.bind(this),
       headings: this.headings,

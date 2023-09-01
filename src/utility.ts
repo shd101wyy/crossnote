@@ -1,9 +1,47 @@
+import * as child_process from 'child_process';
 import * as path from 'path';
+import * as temp from 'temp';
 import { JsonObject } from 'type-fest';
 import * as vm from 'vm';
 import * as vscode from 'vscode';
 import * as YAML from 'yaml';
 import { BlockInfo } from './lib/block-info';
+
+temp.track();
+
+export function tempOpen(options): Promise<temp.OpenFile> {
+  return new Promise((resolve, reject) => {
+    temp.open(options, (error, info) => {
+      if (error) {
+        return reject(error.toString());
+      } else {
+        return resolve(info);
+      }
+    });
+  });
+}
+
+/**
+ * open html file in browser or open pdf file in reader ... etc
+ * @param filePath
+ */
+export function openFile(filePath: string) {
+  if (process.platform === 'win32') {
+    if (filePath.match(/^[a-zA-Z]:\\/)) {
+      // C:\ like url.
+      filePath = 'file:///' + filePath;
+    }
+    if (filePath.startsWith('file:///')) {
+      return child_process.execFile('explorer.exe', [filePath]);
+    } else {
+      return child_process.exec(`start ${filePath}`);
+    }
+  } else if (process.platform === 'darwin') {
+    child_process.execFile('open', [filePath]);
+  } else {
+    child_process.execFile('xdg-open', [filePath]);
+  }
+}
 
 /**
  * Do nothing and sleep for `ms` milliseconds
