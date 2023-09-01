@@ -4,10 +4,10 @@ import * as YAML from 'yaml';
 import { escape } from 'html-escaper';
 import * as pako from 'pako';
 import computeChecksum from '../lib/compute-checksum';
-import { render as renderPlantuml } from '../puml';
-import { toSVG as vegaToSvg } from '../vega';
-import { toSVG as vegaLiteToSvg } from '../vega-lite';
-import { Viz } from '../viz';
+import { render as renderPlantuml } from '../renderers/puml';
+import { toSVG as vegaToSvg } from '../renderers/vega';
+import { toSVG as vegaLiteToSvg } from '../renderers/vega-lite';
+import { Viz } from '../renderers/viz';
 
 import {
   BlockAttributes,

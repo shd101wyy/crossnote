@@ -3,12 +3,12 @@ import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
 import * as YAML from 'yaml';
-import { CodeChunkData } from './code-chunk-data';
-import computeChecksum from './lib/compute-checksum';
+import { CodeChunkData } from '../code-chunk/code-chunk-data';
+import computeChecksum from '../lib/compute-checksum';
+import { toc } from '../markdown-engine/toc';
+import { transformMarkdown } from '../markdown-engine/transformer';
+import * as utility from '../utility';
 import { processGraphs } from './process-graphs';
-import { toc } from './toc';
-import { transformMarkdown } from './transformer';
-import * as utility from './utility';
 
 function getFileExtension(documentType: string) {
   if (

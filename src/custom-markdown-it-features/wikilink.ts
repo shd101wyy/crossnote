@@ -4,7 +4,7 @@
  */
 
 import MarkdownIt from 'markdown-it';
-import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { MarkdownEngineConfig } from '../markdown-engine/markdown-engine-config';
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   md.inline.ruler.before('autolink', 'wikilink', (state, silent) => {

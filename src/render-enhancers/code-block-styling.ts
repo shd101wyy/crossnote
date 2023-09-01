@@ -1,6 +1,6 @@
 import { escape } from 'html-escaper';
-import { scopeForLanguageName } from '../extension-helper';
 import { BlockInfo } from '../lib/block-info/index';
+import { scopeForLanguageName } from '../markdown-engine/extension-helper';
 import defineIeleLanguage from '../prism/iele';
 import defineKLanguage from '../prism/k';
 import Prism from '../prism/prism';

@@ -1,17 +1,17 @@
 import * as cheerio from 'cheerio';
 import * as path from 'path';
-import { compileLaTeX } from './code-chunk';
-import { CodeChunkData } from './code-chunk-data';
-import { parseBlockAttributes } from './lib/block-attributes';
-import computeChecksum from './lib/compute-checksum';
-import { svgElementToPNGFile } from './magick';
-import * as mermaidAPI from './mermaid';
-import * as plantumlAPI from './puml';
-import { extractCommandFromBlockInfo } from './utility';
-import * as vegaAPI from './vega';
-import * as vegaLiteAPI from './vega-lite';
-import { Viz } from './viz';
-import * as wavedromAPI from './wavedrom';
+import { compileLaTeX } from '../code-chunk/code-chunk';
+import { CodeChunkData } from '../code-chunk/code-chunk-data';
+import { parseBlockAttributes } from '../lib/block-attributes';
+import computeChecksum from '../lib/compute-checksum';
+import * as plantumlAPI from '../renderers/puml';
+import * as vegaAPI from '../renderers/vega';
+import * as vegaLiteAPI from '../renderers/vega-lite';
+import { Viz } from '../renderers/viz';
+import * as wavedromAPI from '../renderers/wavedrom';
+import { svgElementToPNGFile } from '../tools/magick';
+import * as mermaidAPI from '../tools/mermaid';
+import { extractCommandFromBlockInfo } from '../utility';
 
 export async function processGraphs(
   text: string,

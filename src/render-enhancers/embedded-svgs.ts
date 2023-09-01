@@ -1,6 +1,6 @@
 import { readFile } from 'fs';
 import { extname } from 'path';
-import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { MarkdownEngineConfig } from '../markdown-engine/markdown-engine-config';
 import { removeFileProtocol } from '../utility';
 
 /**

@@ -6,7 +6,7 @@ import { spawn } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as temp from 'temp';
-import computeChecksum from './lib/compute-checksum';
+import computeChecksum from '../lib/compute-checksum';
 
 let SVG_DIRECTORY_PATH: string | undefined;
 

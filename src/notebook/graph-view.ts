@@ -1,6 +1,6 @@
 import hash from 'object-hash';
 import { basename } from 'path';
-import { Notebook } from './notebook';
+import { Notebook } from '.';
 export interface GraphViewNode {
   id: string;
   label: string;

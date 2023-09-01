@@ -1,7 +1,7 @@
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
 import MarkdownItEmoji from 'markdown-it-emoji';
-import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { MarkdownEngineConfig } from '../markdown-engine/markdown-engine-config';
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   md.use(MarkdownItEmoji);

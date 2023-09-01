@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as qiniu from 'qiniu';
 import * as request from 'request';
-import * as utility from './utility';
+import * as utility from '../utility';
 
 // imgur api
 // referred from node-imgur:

@@ -18,43 +18,43 @@ import request from 'request';
 import { JsonObject } from 'type-fest';
 import * as vscode from 'vscode';
 import * as YAML from 'yaml';
-import { CodeChunkData } from './code-chunk-data';
-import useMarkdownAdmonition from './custom-markdown-it-features/admonition';
-import useMarkdownItCodeFences from './custom-markdown-it-features/code-fences';
-import useMarkdownItCriticMarkup from './custom-markdown-it-features/critic-markup';
-import useMarkdownItEmoji from './custom-markdown-it-features/emoji';
-import useMarkdownItHTML5Embed from './custom-markdown-it-features/html5-embed';
-import useMarkdownItMath from './custom-markdown-it-features/math';
-import useMarkdownItWikilink from './custom-markdown-it-features/wikilink';
-import { ebookConvert } from './ebook-convert';
-import HeadingIdGenerator from './heading-id-generator';
-import { parseBlockAttributes } from './lib/block-attributes/parseBlockAttributes';
-import { stringifyBlockAttributes } from './lib/block-attributes/stringifyBlockAttributes';
-import { normalizeBlockInfo } from './lib/block-info/normalizeBlockInfo';
-import { parseBlockInfo } from './lib/block-info/parseBlockInfo';
-import { markdownConvert } from './markdown-convert';
-import {
-  defaultMarkdownEngineConfig,
-  MarkdownEngineConfig,
-} from './markdown-engine-config';
-import { pandocConvert } from './pandoc-convert';
-import { princeConvert } from './prince-convert';
-import enhanceWithCodeBlockStyling from './render-enhancers/code-block-styling';
-import enhanceWithEmbeddedLocalImages from './render-enhancers/embedded-local-images';
-import enhanceWithEmbeddedSvgs from './render-enhancers/embedded-svgs';
-import enhanceWithExtendedTableSyntax from './render-enhancers/extended-table-syntax';
+import { CodeChunkData } from '../code-chunk/code-chunk-data';
+import { ebookConvert } from '../converters/ebook-convert';
+import { markdownConvert } from '../converters/markdown-convert';
+import { pandocConvert } from '../converters/pandoc-convert';
+import { princeConvert } from '../converters/prince-convert';
+import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
+import useMarkdownItCodeFences from '../custom-markdown-it-features/code-fences';
+import useMarkdownItCriticMarkup from '../custom-markdown-it-features/critic-markup';
+import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
+import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed';
+import useMarkdownItMath from '../custom-markdown-it-features/math';
+import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
+import { parseBlockAttributes } from '../lib/block-attributes/parseBlockAttributes';
+import { stringifyBlockAttributes } from '../lib/block-attributes/stringifyBlockAttributes';
+import { normalizeBlockInfo } from '../lib/block-info/normalizeBlockInfo';
+import { parseBlockInfo } from '../lib/block-info/parseBlockInfo';
+import enhanceWithCodeBlockStyling from '../render-enhancers/code-block-styling';
+import enhanceWithEmbeddedLocalImages from '../render-enhancers/embedded-local-images';
+import enhanceWithEmbeddedSvgs from '../render-enhancers/embedded-svgs';
+import enhanceWithExtendedTableSyntax from '../render-enhancers/extended-table-syntax';
 import enhanceWithFencedCodeChunks, {
   runCodeChunk,
   RunCodeChunkOptions,
   runCodeChunks,
-} from './render-enhancers/fenced-code-chunks';
-import enhanceWithFencedDiagrams from './render-enhancers/fenced-diagrams';
-import enhanceWithFencedMath from './render-enhancers/fenced-math';
-import enhanceWithResolvedImagePaths from './render-enhancers/resolved-image-paths';
+} from '../render-enhancers/fenced-code-chunks';
+import enhanceWithFencedDiagrams from '../render-enhancers/fenced-diagrams';
+import enhanceWithFencedMath from '../render-enhancers/fenced-math';
+import enhanceWithResolvedImagePaths from '../render-enhancers/resolved-image-paths';
+import * as utility from '../utility';
+import { removeFileProtocol } from '../utility';
+import HeadingIdGenerator from './heading-id-generator';
+import {
+  defaultMarkdownEngineConfig,
+  MarkdownEngineConfig,
+} from './markdown-engine-config';
 import { generateSidebarToCHTML, HeadingData } from './toc';
 import { transformMarkdown } from './transformer';
-import * as utility from './utility';
-import { removeFileProtocol } from './utility';
 
 export interface MarkdownEngineRenderOption {
   useRelativeFilePath: boolean;

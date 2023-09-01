@@ -2,8 +2,8 @@ import { escape } from 'html-escaper';
 // https://github.com/KaTeX/KaTeX/blob/main/contrib/mhchem/README.md
 import katex from 'katex';
 import 'katex/contrib/mhchem';
-import { MathRenderingOption } from './markdown-engine-config';
-import { configs } from './utility';
+import { MathRenderingOption } from '../markdown-engine/markdown-engine-config';
+import { configs } from '../utility';
 
 // tslint:disable-next-line interface-over-type-literal
 export type ParseMathArgs = {

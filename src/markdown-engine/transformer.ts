@@ -4,17 +4,17 @@ import * as Papa from 'papaparse';
 import * as path from 'path';
 import request from 'request';
 import * as temp from 'temp';
-import { CustomSubjects } from './custom-subjects';
-import HeadingIdGenerator from './heading-id-generator';
 import {
   BlockAttributes,
   parseBlockAttributes,
   stringifyBlockAttributes,
-} from './lib/block-attributes';
-import computeChecksum from './lib/compute-checksum';
-import * as PDF from './pdf';
+} from '../lib/block-attributes';
+import computeChecksum from '../lib/compute-checksum';
+import * as PDF from '../tools/pdf';
+import * as utility from '../utility';
+import { CustomSubjects } from './custom-subjects';
+import HeadingIdGenerator from './heading-id-generator';
 import { HeadingData } from './toc';
-import * as utility from './utility';
 
 export interface TransformMarkdownOutput {
   outputString: string;

@@ -1,7 +1,7 @@
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
-import { MarkdownEngineConfig } from '../markdown-engine-config';
-import parseMath from '../parse-math';
+import { MarkdownEngineConfig } from '../markdown-engine/markdown-engine-config';
+import parseMath from '../renderers/parse-math';
 
 export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
   md.inline.ruler.before('escape', 'math', (state, silent) => {

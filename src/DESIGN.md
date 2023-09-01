@@ -1,7 +1,7 @@
 ```typescript
-import Crossnote from 'crossnote';
+import { Notebook } from 'crossnote';
 
-const notebook = new Crossnote({
+const notebook = new Notebook({
   workspaceFolder: '/path/to/workspace',
   fn: {
     fs,
@@ -10,22 +10,5 @@ const notebook = new Crossnote({
   config: {
     configFolder: '/path/to/config',
   },
-});
-
-await notebook.addNote({
-  filePath: '/path/to/note.md',
-});
-
-await notebook.updateConfig({
-  previewTheme: 'dark',
-});
-
-await note.deleteNote({
-  filePath: '/path/to/note.md',
-});
-
-await notebook.openInBrowser({
-  filePath: '/path/to/note.md',
-  runAllCodeChunks: true,
 });
 ```

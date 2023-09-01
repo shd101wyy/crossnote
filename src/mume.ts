@@ -11,7 +11,8 @@ let CONFIG_CHANGE_CALLBACK: (() => void) | null = null;
 
 export const utility = utility_;
 export const configs = utility.configs;
-export { CodeChunkData } from './code-chunk-data.js';
+export { CodeChunkData } from './code-chunk/code-chunk-data.js';
+export { MarkdownEngine } from './markdown-engine/index.js';
 export {
   CodeBlockTheme,
   MarkdownEngineConfig,
@@ -19,8 +20,7 @@ export {
   MermaidTheme,
   PreviewTheme,
   RevealJsTheme,
-} from './markdown-engine-config.js';
-export { MarkdownEngine } from './markdown-engine.js';
+} from './markdown-engine/markdown-engine-config.js';
 
 let extensionConfigPath = utility.getConfigPath();
 

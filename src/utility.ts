@@ -497,7 +497,7 @@ export const configs: {
   config: {},
 };
 
-export { uploadImage } from './image-uploader.js';
+export { uploadImage } from './tools/image-uploader.js';
 
 /**
  * Allow unsafed `eval` function
