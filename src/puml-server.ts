@@ -1,5 +1,5 @@
-import { Readable } from 'stream';
 import fetch from 'node-fetch';
+import { Readable } from 'stream';
 
 export default class PlantUMLServerTask {
   private serverURL: string;

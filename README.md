@@ -243,6 +243,8 @@ const config = {
   puppeteerArgs: [],
 
   // Render using PlantUML server instead of binary. Leave it empty to use the plantuml.jar file at `plantumlJarPath` (`java` is required in system path). Eg: "http://localhost:8080/svg/".
+  // You run start a plantuml server by running:
+  // $ docker run -d -p 8080:8080 plantuml/plantuml-server:jetty
   plantumlServer: "http://localhost:8080/svg/",
 
   // The absolute of the PlantUML jar file.
