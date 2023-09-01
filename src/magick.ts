@@ -2,7 +2,7 @@
  * ImageMagick magick command wrapper
  */
 import imagemagickCli from 'imagemagick-cli';
-import { execFile, tempOpen, write } from './utility.js';
+import { execFile, tempOpen, write } from './utility';
 
 export async function svgElementToPNGFile(
   svgElement: string,

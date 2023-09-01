@@ -1,18 +1,17 @@
 import * as cheerio from 'cheerio';
 import * as path from 'path';
-
-import { CodeChunkData } from './code-chunk-data.js';
-import { compileLaTeX } from './code-chunk.js';
-import { parseBlockAttributes } from './lib/block-attributes/index.js';
-import computeChecksum from './lib/compute-checksum.js';
-import { svgElementToPNGFile } from './magick.js';
-import * as mermaidAPI from './mermaid.js';
-import * as plantumlAPI from './puml.js';
-import { extractCommandFromBlockInfo } from './utility.js';
-import * as vegaLiteAPI from './vega-lite.js';
-import * as vegaAPI from './vega.js';
-import { Viz } from './viz.js';
-import * as wavedromAPI from './wavedrom.js';
+import { compileLaTeX } from './code-chunk';
+import { CodeChunkData } from './code-chunk-data';
+import { parseBlockAttributes } from './lib/block-attributes';
+import computeChecksum from './lib/compute-checksum';
+import { svgElementToPNGFile } from './magick';
+import * as mermaidAPI from './mermaid';
+import * as plantumlAPI from './puml';
+import { extractCommandFromBlockInfo } from './utility';
+import * as vegaAPI from './vega';
+import * as vegaLiteAPI from './vega-lite';
+import { Viz } from './viz';
+import * as wavedromAPI from './wavedrom';
 
 export async function processGraphs(
   text: string,

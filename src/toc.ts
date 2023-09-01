@@ -1,4 +1,4 @@
-import HeadingIdGenerator from './heading-id-generator.js';
+import HeadingIdGenerator from './heading-id-generator';
 
 function nPrefix(str, n) {
   let output = '';

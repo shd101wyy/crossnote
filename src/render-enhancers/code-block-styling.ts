@@ -1,10 +1,9 @@
 import { escape } from 'html-escaper';
-import Prism from '../prism/prism.js';
-// import loadLanguages from 'prismjs/components/index.js';
-import { scopeForLanguageName } from '../extension-helper.js';
-import { BlockInfo } from '../lib/block-info/index.js';
-import defineIeleLanguage from '../prism/iele.js';
-import defineKLanguage from '../prism/k.js';
+import { scopeForLanguageName } from '../extension-helper';
+import { BlockInfo } from '../lib/block-info/index';
+import defineIeleLanguage from '../prism/iele';
+import defineKLanguage from '../prism/k';
+import Prism from '../prism/prism';
 
 Prism.hooks.add('wrap', env => {
   if (env.type !== 'keyword') {

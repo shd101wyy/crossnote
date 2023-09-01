@@ -20,3 +20,6 @@ out
 dependencies/**
 !dependencies/README.md
 styles
+
+test.js
+test.mjs

@@ -8,7 +8,7 @@ import { JsonObject } from 'type-fest';
 import * as vm from 'vm';
 import * as vscode from 'vscode';
 import * as YAML from 'yaml';
-import { BlockInfo } from './lib/block-info/types.js';
+import { BlockInfo } from './lib/block-info/types';
 
 temp.track();
 

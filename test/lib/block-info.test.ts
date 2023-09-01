@@ -2,7 +2,7 @@ import {
   BlockInfo,
   normalizeBlockInfo,
   parseBlockInfo,
-} from '../../src/lib/block-info/index.js';
+} from '../../src/lib/block-info';
 
 const testCasesForParseBlockInfo: {
   info: object;

@@ -1,4 +1,4 @@
-import HeadingIdGenerator from '../src/heading-id-generator.js';
+import HeadingIdGenerator from '../src/heading-id-generator';
 
 const testCasesForHeaderIdGenerator: {
   input: string;

@@ -4,8 +4,7 @@
 import * as fs from 'fs';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
-
-import * as utility_ from './utility.js';
+import * as utility_ from './utility';
 
 let INITIALIZED = false;
 let CONFIG_CHANGE_CALLBACK: (() => void) | null = null;

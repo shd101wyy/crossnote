@@ -1,5 +1,5 @@
 import { snakeCase } from 'snake-case';
-import { BlockAttributes } from './types.js';
+import { BlockAttributes } from './types';
 
 /**
  * Walks through attribute keys and makes them snakeCase if needed

@@ -3,7 +3,7 @@
  * https://github.com/wavedrom/cli
  */
 
-import * as utility from './utility.js';
+import * as utility from './utility';
 
 export async function render(
   wavedromCode: string,

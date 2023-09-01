@@ -1,10 +1,10 @@
 // tslint:disable:ban-types no-var-requires
-import { CodeChunkData, CodeChunksData } from '../code-chunk-data.js';
-import { run } from '../code-chunk.js';
-import { BlockInfo } from '../lib/block-info/index.js';
-import { MarkdownEngineRenderOption } from '../markdown-engine.js';
-import { HeadingData, toc } from '../toc.js';
-import { extractCommandFromBlockInfo } from '../utility.js';
+import { run } from '../code-chunk';
+import { CodeChunkData, CodeChunksData } from '../code-chunk-data';
+import { BlockInfo } from '../lib/block-info';
+import { MarkdownEngineRenderOption } from '../markdown-engine';
+import { HeadingData, toc } from '../toc';
+import { extractCommandFromBlockInfo } from '../utility';
 
 export default async function enhance(
   $: CheerioStatic,

@@ -3,8 +3,8 @@
  */
 import * as vl from 'vega-lite';
 import * as YAML from 'yaml';
-import * as utility from './utility.js';
-import * as vega from './vega.js';
+import * as utility from './utility';
+import * as vega from './vega';
 
 export async function toSVG(spec: string = '', baseURL: string = '') {
   spec = spec.trim();

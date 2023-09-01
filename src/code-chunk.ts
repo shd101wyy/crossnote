@@ -2,10 +2,9 @@ import { spawn } from 'child_process';
 import { unlink } from 'node:fs/promises';
 import * as path from 'path';
 import * as vm from 'vm';
-
-import * as LaTeX from './latex.js';
-import { BlockAttributes } from './lib/block-attributes/index.js';
-import * as utility from './utility.js';
+import * as LaTeX from './latex';
+import { BlockAttributes } from './lib/block-attributes';
+import * as utility from './utility';
 
 export async function compileLaTeX(
   content: string,

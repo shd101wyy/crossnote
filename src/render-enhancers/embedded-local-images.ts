@@ -1,7 +1,7 @@
 import { readFile } from 'fs';
 import { extname } from 'path';
-import { MarkdownEngineConfig } from '../markdown-engine-config.js';
-import { removeFileProtocol } from '../utility.js';
+import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { removeFileProtocol } from '../utility';
 
 /**
  * Embed local images. Load the image file and display it in base64 format

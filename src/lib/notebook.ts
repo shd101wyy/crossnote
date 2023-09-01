@@ -1,8 +1,8 @@
 import { Mutex } from 'async-mutex';
 import * as path from 'path';
-import { Mentions, Note, NoteConfig, Notes } from './note.js';
-import { Reference, ReferenceMap } from './reference.js';
-import Search from './search.js';
+import { Mentions, Note, NoteConfig, Notes } from './note';
+import { Reference, ReferenceMap } from './reference';
+import Search from './search';
 
 // temp
 import { Stats } from 'fs';

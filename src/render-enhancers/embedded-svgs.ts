@@ -1,7 +1,7 @@
 import { readFile } from 'fs';
 import { extname } from 'path';
-import { MarkdownEngineConfig } from '../markdown-engine-config.js';
-import { removeFileProtocol } from '../utility.js';
+import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { removeFileProtocol } from '../utility';
 
 /**
  * Load local svg files and embed them into html directly.
