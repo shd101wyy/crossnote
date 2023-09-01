@@ -1,14 +1,25 @@
 import { Mutex } from 'async-mutex';
-import * as path from 'path';
-import { Mentions, Note, NoteConfig, Notes } from './note';
-import { Reference, ReferenceMap } from './reference';
-import Search from './search';
-
-// temp
 import { Stats } from 'fs';
 import MarkdownIt from 'markdown-it';
 import Token from 'markdown-it/lib/token.js';
+import * as path from 'path';
+import { IS_NODE } from '../utility.js';
 import { matter, matterStringify } from './markdown.js';
+import { Mentions, Note, NoteConfig, Notes } from './note';
+import { Reference, ReferenceMap } from './reference';
+import Search from './search';
+export {
+  CodeBlockTheme,
+  FrontMatterRenderingOption,
+  MathRenderingOption,
+  MermaidTheme,
+  NotebookConfig,
+  ParserConfig,
+  PreviewTheme,
+  RevealJsTheme,
+  defaultNotebookConfig,
+} from './types';
+
 const md = new MarkdownIt();
 
 interface CrossnoteConfig {
@@ -43,8 +54,6 @@ interface RefreshNotesArgs {
   includeSubdirectories?: boolean;
   refreshRelations?: boolean;
 }
-
-export const IS_NODE = typeof window === 'undefined';
 
 export class Notebook {
   private notebookPath: string;

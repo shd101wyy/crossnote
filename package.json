@@ -68,6 +68,7 @@
     "markdown-it-sub": "^1.0.0",
     "markdown-it-sup": "^1.0.0",
     "md5": "^2.3.0",
+    "mermaid": "^10.4.0",
     "minisearch": "^6.1.0",
     "mkdirp": "^3.0.1",
     "node-fetch": "^2.6.1",

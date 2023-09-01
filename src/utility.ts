@@ -12,6 +12,8 @@ import { BlockInfo } from './lib/block-info/types';
 
 temp.track();
 
+export const IS_NODE = typeof window === 'undefined';
+
 export interface ParserConfig {
   onWillParseMarkdown?: (markdown: string) => Promise<string>;
   onDidParseMarkdown?: (

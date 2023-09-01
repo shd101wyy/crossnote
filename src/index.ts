@@ -1,1 +1,1 @@
-export { Notebook } from './notebook';
+export * from './notebook';
