@@ -1,4 +1,5 @@
 import { Mutex } from 'async-mutex';
+import * as fs from 'fs';
 import { Stats } from 'fs';
 import MarkdownIt from 'markdown-it';
 import MarkdownItAbbr from 'markdown-it-abbr';
@@ -17,6 +18,7 @@ import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed'
 import useMarkdownItMath from '../custom-markdown-it-features/math';
 import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
 import { MarkdownEngine } from '../markdown-engine';
+import loadConfigFromFiles from './config-helper';
 import { matter, matterStringify } from './markdown.js';
 import { FilePath, Mentions, Note, NoteConfig, Notes } from './note';
 import { Reference, ReferenceMap } from './reference';
@@ -84,10 +86,10 @@ export class Notebook {
       throw new Error('`notebookDirectoryPath` must be an absolute path');
     }
     this.notebookPath = notebookPath;
-    this.initConfig(config);
+    this.initFs(fs);
+    await this.initConfig(config);
     this.initMarkdownIt();
     this.updateConfig({});
-    await this.initFs(fs);
   }
 
   public static async init(args: NotebookConstructorArgs) {
@@ -96,9 +98,11 @@ export class Notebook {
     return crossnote;
   }
 
-  private initConfig(config: Partial<NotebookConfig>) {
+  private async initConfig(config: Partial<NotebookConfig>) {
+    const extraConfig = await loadConfigFromFiles(this.notebookPath, this.fs);
     this.config = {
       ...getDefaultNotebookConfig(),
+      ...extraConfig,
       ...config,
     };
   }
@@ -123,12 +127,11 @@ export class Notebook {
     useMarkdownAdmonition(this.md);
   }
 
-  async initFs(_fs?: FileSystemApi) {
+  initFs(_fs?: FileSystemApi) {
     if (_fs) {
       this.fs = _fs;
     } else {
       if (IS_NODE) {
-        const fs = await import('fs');
         const fsPromises = fs.promises;
         this.fs = {
           readFile: async (

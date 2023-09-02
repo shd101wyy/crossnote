@@ -421,34 +421,50 @@ export interface NotebookConfig {
   isVSCode: boolean;
 }
 
+export function getDefaultMermaidConfig(): MermaidConfig {
+  return {
+    startOnLoad: false,
+  };
+}
+
+export function getDefaultMathjaxConfig(): JsonObject {
+  return {
+    tex: {},
+    options: {},
+    loader: {},
+  };
+}
+
+export function getDefaultKatexConfig(): KatexOptions {
+  return {
+    macros: {},
+  };
+}
+
+export function getDefaultParserConfig(): ParserConfig {
+  return {
+    onWillParseMarkdown: async function(markdown) {
+      return markdown;
+    },
+    onDidParseMarkdown: async function(html) {
+      return html;
+    },
+    onWillTransformMarkdown: async function(markdown) {
+      return markdown;
+    },
+    onDidTransformMarkdown: async function(markdown) {
+      return markdown;
+    },
+  };
+}
+
 export function getDefaultNotebookConfig(): NotebookConfig {
   return {
     globalCss: '',
-    mermaidConfig: {
-      startOnLoad: false,
-    },
-    mathjaxConfig: {
-      tex: {},
-      options: {},
-      loader: {},
-    },
-    katexConfig: {
-      macros: {},
-    },
-    parserConfig: {
-      onWillParseMarkdown: async function(markdown) {
-        return markdown;
-      },
-      onDidParseMarkdown: async function(html) {
-        return html;
-      },
-      onWillTransformMarkdown: async function(markdown) {
-        return markdown;
-      },
-      onDidTransformMarkdown: async function(markdown) {
-        return markdown;
-      },
-    },
+    mermaidConfig: getDefaultMermaidConfig(),
+    mathjaxConfig: getDefaultMathjaxConfig(),
+    katexConfig: getDefaultKatexConfig(),
+    parserConfig: getDefaultParserConfig(),
     usePandocParser: false,
     breakOnSingleNewLine: true,
     enableTypographer: false,
