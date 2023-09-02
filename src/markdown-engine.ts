@@ -13,7 +13,6 @@ import MarkdownItMark from 'markdown-it-mark';
 import MarkdownItSub from 'markdown-it-sub';
 import MarkdownItSup from 'markdown-it-sup';
 import * as path from 'path';
-import puppeteer, { Browser } from 'puppeteer-core';
 import request from 'request';
 import { JsonObject } from 'type-fest';
 import * as vscode from 'vscode';
@@ -1561,15 +1560,33 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       offline: true,
     });
 
-    let browser: Browser | null = null;
-
-    if (!this.config.chromePath) {
-      throw new Error('Chrome path is not set.');
+    let executablePath = '';
+    try {
+      executablePath = this.config.chromePath;
+      if (!executablePath) {
+        const chromePaths = (await import('chrome-paths')).default;
+        executablePath =
+          chromePaths.chrome ||
+          chromePaths.chromeCanary ||
+          chromePaths.chromium;
+      }
+    } catch {
+      executablePath = '';
+    }
+    if (!executablePath) {
+      throw new Error('Chrome executable path is not set.');
     }
 
-    browser = await puppeteer.launch({
+    // NOTE: Use the puppeteer-core esm module will cause problem
+    // in the bundled version of the VSCode extension.
+    // So we use the cjs module instead.
+    // TypeError: Invalid host defined options
+    const puppeteer = await import(
+      'puppeteer-core/lib/cjs/puppeteer/puppeteer-core.js'
+    );
+    const browser = await puppeteer.launch({
       args: this.config.puppeteerArgs || [],
-      executablePath: this.config.chromePath,
+      executablePath,
       headless: true,
     });
 

@@ -1,6 +1,6 @@
 {
   "name": "@shd101wyy/mume",
-  "version": "0.7.8",
+  "version": "0.7.9",
   "description": "A powerful markdown tool",
   "keywords": [
     "markdown"
@@ -52,7 +52,7 @@
     "@viz-js/viz": "^3.1.0",
     "async-mutex": "^0.4.0",
     "cheerio": "^1.0.0-rc.12",
-    "chrome-location": "^1.2.1",
+    "chrome-paths": "^1.0.1",
     "crypto-js": "^4.1.1",
     "html-escaper": "^3.0.3",
     "imagemagick-cli": "^0.5.0",
