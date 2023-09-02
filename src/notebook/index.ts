@@ -65,8 +65,9 @@ export class Notebook {
   public notes: Notes = {};
   public hasLoadedNotes: boolean = false;
   public referenceMap: ReferenceMap = new ReferenceMap();
-  public search: Search = new Search();
   private refreshNotesIfNotLoadedMutex: Mutex = new Mutex();
+
+  private search: Search = new Search();
 
   public md: MarkdownIt;
   private markdownEngines: { [key: string]: MarkdownEngine } = {};

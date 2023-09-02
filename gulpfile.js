@@ -28,6 +28,13 @@ gulp.task('compile-less', function(cb) {
   cb();
 });
 
+// Whenever there is a change in ./styles, run 'compile-less' task
+gulp.task('watch-less', function(cb) {
+  gulp.watch('./styles/**/*', gulp.series('compile-less'));
+
+  cb();
+});
+
 gulp.task('copy-files', function(cb) {
   // Copy ./dependencies to ./out
   gulp.src('./dependencies/**/*').pipe(gulp.dest('./out/dependencies'));

@@ -30,7 +30,7 @@
     "build": "rm -rf ./out && yarn copy:files && yarn compile:less && yarn build:typings && yarn build:esbuild",
     "build:esbuild": "node build.js",
     "build:typings": "tsc --project . --declaration",
-    "build:watch": "rm -rf ./out && yarn copy:files && yarn compile:less && concurrently \"tsc --project . --watch\" \"node build.js --watch\"",
+    "build:watch": "rm -rf ./out && yarn copy:files && yarn compile:less && concurrently \"tsc --project . --watch\" \"node build.js --watch\" \"gulp watch-less\"",
     "check:all": "npm run check:prettier && npm run check:tsc && npm run check:lint",
     "check:lint": "eslint .",
     "check:prettier": "prettier --check \"**/*.*\"",
