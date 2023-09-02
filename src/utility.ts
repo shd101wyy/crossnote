@@ -115,7 +115,10 @@ let _externalAddFileProtocolFunction:
   | null = null;
 
 export function useExternalAddFileProtocolFunction(
-  func: (filePath: string, vscodePreviewPanel: vscode.WebviewPanel) => string,
+  func: (
+    filePath: string,
+    vscodePreviewPanel?: vscode.WebviewPanel | null,
+  ) => string,
 ) {
   _externalAddFileProtocolFunction = func;
 }

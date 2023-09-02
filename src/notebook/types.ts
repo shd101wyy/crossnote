@@ -98,14 +98,14 @@ export interface NotebookConfig {
    *
    * This will be inserted into HTML `<style>` tag.
    *
-   * Default: `''`
+   * Default: `${notebookPath}/.crossnote/style.less` or  `''`
    */
   globalCss: string;
 
   /**
    * Mermaid configuration.
    *
-   * Default: `{ startOnLoad: false }`
+   * Default: `${notebookPath}/.crossnote/mermaid.json` or `{ startOnLoad: false }`
    */
   mermaidConfig: MermaidConfig;
 
@@ -114,7 +114,7 @@ export interface NotebookConfig {
    *
    * https://docs.mathjax.org/en/latest/options/index.html
    *
-   * Default:
+   * Default: `${notebookPath}/.crossnote/mathjax_v3.json` or
    * ```
    * {
    *   tex: {},
@@ -129,7 +129,7 @@ export interface NotebookConfig {
    *
    * https://katex.org/docs/options.html
    *
-   * Default: `{ macros: {} }`
+   * Default: `${notebookPath}/.crossnote/katex.json` or `{ macros: {} }`
    */
   katexConfig: KatexOptions;
 
@@ -143,6 +143,7 @@ export interface NotebookConfig {
   /**
    * Parser configuration.
    *
+   * Default: `${notebookPath}/.crossnote/parser.js` or `{}`
    */
   parserConfig: ParserConfig;
 

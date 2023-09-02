@@ -18,7 +18,7 @@ import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed'
 import useMarkdownItMath from '../custom-markdown-it-features/math';
 import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
 import { MarkdownEngine } from '../markdown-engine';
-import loadConfigFromFiles from './config-helper';
+import { loadConfigFromFiles } from './config-helper';
 import { matter, matterStringify } from './markdown.js';
 import { FilePath, Mentions, Note, NoteConfig, Notes } from './note';
 import { Reference, ReferenceMap } from './reference';
@@ -72,7 +72,11 @@ export class Notebook {
   private search: Search = new Search();
 
   public md: MarkdownIt;
-  private markdownEngines: { [key: string]: MarkdownEngine } = {};
+  /**
+   * Markdown engines for each note
+   * key is the relative path of the note
+   */
+  private markdownEngines: { [key: FilePath]: MarkdownEngine } = {};
 
   private constructor() {}
 
@@ -626,6 +630,9 @@ export class Notebook {
     }
   }
 
+  // -------------------------------------------------
+  // Functions below are for markdown engine
+
   public getNoteMarkdownEngine(filePath: string) {
     filePath = this.resolveNoteRelativePath(filePath);
     if (!(filePath in this.markdownEngines)) {
@@ -635,5 +642,15 @@ export class Notebook {
       });
     }
     return this.markdownEngines[filePath];
+  }
+
+  public getNoteMarkdownEngines() {
+    return this.markdownEngines;
+  }
+
+  public clearAllNoteMarkdownEngineCaches() {
+    for (const filePath in this.markdownEngines) {
+      this.markdownEngines[filePath].clearCaches();
+    }
   }
 }

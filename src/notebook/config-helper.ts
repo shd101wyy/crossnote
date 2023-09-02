@@ -16,7 +16,7 @@ import {
 /**  Check if .crossnote directory exists under the `notebook` directory.
  * If yes, then process the following files
  */
-export default async function loadConfigFromFiles(
+export async function loadConfigFromFiles(
   notebookPath: string,
   fs: FileSystemApi,
 ): Promise<{

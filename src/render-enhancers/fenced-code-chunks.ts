@@ -2,7 +2,10 @@
 import { run } from '../code-chunk/code-chunk';
 import { CodeChunkData, CodeChunksData } from '../code-chunk/code-chunk-data';
 import { BlockInfo } from '../lib/block-info';
-import { MarkdownEngineRenderOption } from '../markdown-engine';
+import {
+  MarkdownEngineOutput,
+  MarkdownEngineRenderOption,
+} from '../markdown-engine';
 import { HeadingData, toc } from '../markdown-engine/toc';
 import { extractCommandFromBlockInfo } from '../utility';
 
@@ -142,10 +145,16 @@ export interface RunCodeChunkOptions {
   filePath: string;
   imageFolderPath: string;
   latexEngine?: string;
+  modifySource: (
+    codeChunkData: CodeChunkData,
+    result: string,
+    filePath: string,
+  ) => Promise<string>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modifySource?: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parseMD: any;
+  parseMD: (
+    inputString: string,
+    options: MarkdownEngineRenderOption,
+  ) => Promise<MarkdownEngineOutput>;
   headings: HeadingData[];
 }
 

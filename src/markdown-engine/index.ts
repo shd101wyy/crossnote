@@ -97,14 +97,6 @@ export interface HTMLTemplateOption {
   embedSVG?: boolean;
 }
 
-let MODIFY_SOURCE:
-  | ((
-      codeChunkData: CodeChunkData,
-      result: string,
-      filePath: string,
-    ) => Promise<string>)
-  | null = null;
-
 const dependentLibraryMaterials = [
   {
     key: 'vega-embed',
@@ -117,41 +109,7 @@ const dependentLibraryMaterials = [
  */
 export class MarkdownEngine {
   /**
-   * Modify markdown source, append `result` after corresponding code chunk.
-   * @param codeChunkData
-   * @param result
-   */
-  public static async modifySource(
-    codeChunkData: CodeChunkData,
-    result: string,
-    filePath: string,
-  ) {
-    if (MODIFY_SOURCE) {
-      await MODIFY_SOURCE(codeChunkData, result, filePath);
-    } else {
-      // TODO: directly modify the local file.
-    }
-
-    codeChunkData.running = false;
-    return result;
-  }
-
-  /**
-   * Bind cb to MODIFY_SOURCE
-   * @param cb
-   */
-  public static onModifySource(
-    cb: (
-      codeChunkData: CodeChunkData,
-      result: string,
-      filePath: string,
-    ) => Promise<string>,
-  ) {
-    MODIFY_SOURCE = cb;
-  }
-
-  /**
-   * markdown file path
+   * markdown file absolute path
    */
   private readonly filePath: string;
   private readonly fileDirectoryPath: string;
@@ -2740,6 +2698,120 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     return runCodeChunk(id, this.codeChunksData, this.generateRunOptions());
   }
 
+  /**
+   * Modify markdown source, append `result` after corresponding code chunk.
+   * @param codeChunkData
+   * @param result
+   */
+  private async modifySource(
+    codeChunkData: CodeChunkData,
+    result: string,
+    filePath: string,
+  ) {
+    const doneRunning = () => {
+      // Done with the code chunk
+      codeChunkData.running = false;
+      return result;
+    };
+
+    const note = await this.notebook.getNote(filePath);
+    if (!note) {
+      return doneRunning();
+    }
+
+    const insertResult = async (i: number, lines: string[]) => {
+      const lineCount = lines.length;
+      let start = 0;
+      // find <!-- code_chunk_output -->
+      for (let j = i + 1; j < i + 6 && j < lineCount; j++) {
+        if (lines[j].startsWith('<!-- code_chunk_output -->')) {
+          start = j;
+          break;
+        }
+      }
+      if (start) {
+        // found
+        // TODO: modify exited output
+        let end = start + 1;
+        while (end < lineCount) {
+          if (lines[end].startsWith('<!-- /code_chunk_output -->')) {
+            break;
+          }
+          end += 1;
+        }
+
+        // if output not changed, then no need to modify editor buffer
+        let r = '';
+        for (let i = start + 2; i < end - 1; i++) {
+          r += lines[i] + '\n';
+        }
+        if (r === result + '\n') {
+          // no need to modify output
+          return '';
+        }
+
+        const newLines = [
+          ...lines.slice(0, start + 2),
+          result + '\n',
+          ...lines.slice(end - 1),
+        ];
+
+        // Write newLines to file
+        await this.notebook.writeNote(
+          filePath,
+          newLines.join('\n'),
+          note.config,
+        );
+        return '';
+      } else {
+        const newLines = [
+          ...lines.slice(0, i + 1),
+          `\n<!-- code_chunk_output -->\n\n${result}\n\n<!-- /code_chunk_output -->\n`,
+          ...lines.slice(i + 1),
+        ];
+
+        // Write newLines to file
+        await this.notebook.writeNote(
+          filePath,
+          newLines.join('\n'),
+          note.config,
+        );
+        return '';
+      }
+    };
+
+    const lines = note.markdown.split('\n') || [];
+    const lineCount = lines.length;
+    let codeChunkOffset = 0;
+    const targetCodeChunkOffset =
+      codeChunkData.normalizedInfo.attributes['code_chunk_offset'];
+    for (let i = 0; i < lineCount; i++) {
+      const line = lines[i];
+      if (line.match(/^```(.+)"?cmd"?\s*[=\s}]/)) {
+        if (codeChunkOffset === targetCodeChunkOffset) {
+          i = i + 1;
+          while (i < lineCount) {
+            if (lines[i].match(/^```\s*/)) {
+              break;
+            }
+            i += 1;
+          }
+          return await insertResult(i, lines);
+        } else {
+          codeChunkOffset++;
+        }
+      } else if (line.match(/@import\s+(.+)"?cmd"?\s*[=\s}]/)) {
+        if (codeChunkOffset === targetCodeChunkOffset) {
+          return await insertResult(i, lines);
+        } else {
+          codeChunkOffset++;
+        }
+      }
+    }
+    // Done with the code chunk
+    return doneRunning();
+  }
+
   private generateRunOptions(): RunCodeChunkOptions {
     return {
       enableScriptExecution: this.notebook.config.enableScriptExecution,
@@ -2747,7 +2819,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       filePath: this.filePath,
       imageFolderPath: this.notebook.config.imageFolderPath,
       latexEngine: this.notebook.config.latexEngine,
-      modifySource: MarkdownEngine.modifySource.bind(this),
+      modifySource: this.modifySource.bind(this),
       parseMD: this.parseMD.bind(this),
       headings: this.headings,
     };
