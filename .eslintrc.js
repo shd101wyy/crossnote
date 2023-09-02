@@ -6,8 +6,7 @@ module.exports = {
   root: true,
   ignorePatterns: [
     'build.js',
-    'copy-files.js',
-    'compile-less.js',
+    'gulpfile.js',
     '.eslintrc.js',
     'jest.config.js',
     'prettier.config.js',
