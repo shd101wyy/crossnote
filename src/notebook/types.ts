@@ -143,7 +143,7 @@ export interface NotebookConfig {
   /**
    * Parser configuration.
    *
-   * Default: `${notebookPath}/.crossnote/parser.js` or `{}`
+   * Default: `${notebookPath}/.crossnote/parser.mjs` or `{}`
    */
   parserConfig: ParserConfig;
 

@@ -79,7 +79,7 @@ export function parseYAML(yaml: string = ''): JsonObject {
 
 /**
  * NOTE: The __dirname is actually the ./out/(esm|cjs) directory
- * get the directory path of this extension.
+ * Get the `./out` directory.
  */
 let crossnoteBuildDirectory_ = (() => {
   if (typeof __dirname !== 'undefined') {
@@ -101,9 +101,16 @@ export function setCrossnoteBuildDirectory(path: string) {
 
 /**
  * Get the directory path of this npm package with the following directory structure:
- * - out
- * - dependencies
- * - styles
+ * You can use the `setCrossnoteBuildDirectory` function to set the directory path.
+ * ```
+ *  out
+ *  ├── cjs
+ *  ├── dependencies
+ *  ├── esm
+ *  ├── styles
+ *  ├── types
+ *  └── webview
+ * ```
  * @returns
  */
 export function getCrossnoteBuildDirectory() {

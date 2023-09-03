@@ -3,6 +3,7 @@ import {
   getCrossnoteBuildDirectory,
   openFile,
   setCrossnoteBuildDirectory,
+  uploadImage,
   useExternalAddFileProtocolFunction,
 } from './utility';
 export const utility = {
@@ -11,6 +12,7 @@ export const utility = {
   openFile,
   setCrossnoteBuildDirectory,
   useExternalAddFileProtocolFunction,
+  uploadImage,
 };
 export * from './code-chunk/code-chunk-data';
 export * from './markdown-engine';

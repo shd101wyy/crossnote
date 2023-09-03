@@ -175,15 +175,18 @@ export async function getParserConfig(
   fs: FileSystemApi,
 ): Promise<ParserConfig> {
   const defaultParserConfig = getDefaultParserConfig();
-  const parserConfigPath = path.join(configPath, './parser.js');
+  const parserConfigPath = path.join(configPath, './parser.mjs');
   if (await fs.exists(parserConfigPath)) {
     try {
-      const result = await import(parserConfigPath);
+      const result = await import(
+        parserConfigPath + `?version=${Number(new Date())}`
+      );
       return {
         ...defaultParserConfig,
         ...(result ?? {}),
       };
     } catch (e) {
+      console.error(e);
       return defaultParserConfig;
     }
   } else {
