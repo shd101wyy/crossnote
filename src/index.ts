@@ -15,3 +15,7 @@ export const utility = {
 export * from './code-chunk/code-chunk-data';
 export * from './markdown-engine';
 export * from './notebook';
+export {
+  loadConfigsInDirectory,
+  wrapNodeFSAsApi,
+} from './notebook/config-helper';

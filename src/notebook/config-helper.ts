@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { KatexOptions } from 'katex';
 import * as less from 'less';
 import { MermaidConfig } from 'mermaid';
@@ -13,12 +14,14 @@ import {
   getDefaultParserConfig,
 } from './types';
 
-/**  Check if .crossnote directory exists under the `notebook` directory.
- * If yes, then process the following files
+/**
+ * Load the configs from the given directory path.
+ * If the directory does not exist and `createDirectoryIfNotExists` is `true`, create it and return the default configs.
  */
-export async function loadConfigFromFiles(
-  notebookPath: string,
-  fs: FileSystemApi,
+export async function loadConfigsInDirectory(
+  directoryPath: string,
+  fileSystem: FileSystemApi,
+  createDirectoryIfNotExists: boolean = false,
 ): Promise<{
   globalCss: string;
   mermaidConfig: MermaidConfig;
@@ -27,7 +30,7 @@ export async function loadConfigFromFiles(
   parserConfig: ParserConfig;
 }> {
   const defaultConfig = getDefaultNotebookConfig();
-  const config = {
+  const loadedConfig = {
     globalCss: defaultConfig.globalCss,
     mermaidConfig: defaultConfig.mermaidConfig,
     mathjaxConfig: defaultConfig.mathjaxConfig,
@@ -35,15 +38,27 @@ export async function loadConfigFromFiles(
     parserConfig: defaultConfig.parserConfig,
   };
 
-  const configPath = path.join(notebookPath, './.crossnote');
-  if (await fs.exists(configPath)) {
-    config.globalCss = await getGlobalStyles(configPath, fs);
-    config.mermaidConfig = await getMermaidConfig(configPath, fs);
-    config.mathjaxConfig = await getMathjaxConfig(configPath, fs);
-    config.katexConfig = await getKatexConfig(configPath, fs);
-    config.parserConfig = await getParserConfig(configPath, fs);
+  if (createDirectoryIfNotExists) {
+    await fileSystem.mkdir(directoryPath);
   }
-  return config;
+
+  if (await fileSystem.exists(directoryPath)) {
+    loadedConfig.globalCss = await getGlobalStyles(directoryPath, fileSystem);
+    loadedConfig.mermaidConfig = await getMermaidConfig(
+      directoryPath,
+      fileSystem,
+    );
+    loadedConfig.mathjaxConfig = await getMathjaxConfig(
+      directoryPath,
+      fileSystem,
+    );
+    loadedConfig.katexConfig = await getKatexConfig(directoryPath, fileSystem);
+    loadedConfig.parserConfig = await getParserConfig(
+      directoryPath,
+      fileSystem,
+    );
+  }
+  return loadedConfig;
 }
 
 async function getGlobalStyles(configPath: string, fs: FileSystemApi) {
@@ -191,4 +206,35 @@ export async function onDidTransformMarkdown(markdown) {
     );
     return defaultParserConfig;
   }
+}
+
+export function wrapNodeFSAsApi(): FileSystemApi {
+  const fsPromises = fs.promises;
+  return {
+    readFile: async (_path: string, encoding: BufferEncoding = 'utf-8') => {
+      return (await fsPromises.readFile(_path, encoding)).toString();
+    },
+    writeFile: async (
+      _path: string,
+      content: string,
+      encoding: BufferEncoding = 'utf8',
+    ) => {
+      return await fsPromises.writeFile(_path, content, encoding);
+    },
+    mkdir: async (_path: string) => {
+      await fsPromises.mkdir(_path, { recursive: true });
+    },
+    exists: async (_path: string) => {
+      return fs.existsSync(_path);
+    },
+    stat: async (_path: string) => {
+      return await fsPromises.stat(_path);
+    },
+    readdir: async (_path: string) => {
+      return await fsPromises.readdir(_path);
+    },
+    unlink: async (_path: string) => {
+      return await fsPromises.unlink(_path);
+    },
+  };
 }

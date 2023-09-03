@@ -1,5 +1,4 @@
 import { Mutex } from 'async-mutex';
-import * as fs from 'fs';
 import { Stats } from 'fs';
 import MarkdownIt from 'markdown-it';
 import MarkdownItAbbr from 'markdown-it-abbr';
@@ -18,7 +17,7 @@ import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed'
 import useMarkdownItMath from '../custom-markdown-it-features/math';
 import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
 import { MarkdownEngine } from '../markdown-engine';
-import { loadConfigFromFiles } from './config-helper';
+import { loadConfigsInDirectory, wrapNodeFSAsApi } from './config-helper';
 import { matter, matterStringify } from './markdown.js';
 import { FilePath, Mentions, Note, NoteConfig, Notes } from './note';
 import { Reference, ReferenceMap } from './reference';
@@ -103,7 +102,10 @@ export class Notebook {
   }
 
   private async initConfig(config: Partial<NotebookConfig>) {
-    const extraConfig = await loadConfigFromFiles(this.notebookPath, this.fs);
+    const extraConfig = await loadConfigsInDirectory(
+      path.join(this.notebookPath, './crossnote'),
+      this.fs,
+    );
     this.config = {
       ...getDefaultNotebookConfig(),
       ...extraConfig,
@@ -136,37 +138,7 @@ export class Notebook {
       this.fs = _fs;
     } else {
       if (IS_NODE) {
-        const fsPromises = fs.promises;
-        this.fs = {
-          readFile: async (
-            _path: string,
-            encoding: BufferEncoding = 'utf-8',
-          ) => {
-            return (await fsPromises.readFile(_path, encoding)).toString();
-          },
-          writeFile: async (
-            _path: string,
-            content: string,
-            encoding: BufferEncoding = 'utf8',
-          ) => {
-            return await fsPromises.writeFile(_path, content, encoding);
-          },
-          mkdir: async (_path: string) => {
-            await fsPromises.mkdir(_path, { recursive: true });
-          },
-          exists: async (_path: string) => {
-            return fs.existsSync(_path);
-          },
-          stat: async (_path: string) => {
-            return await fsPromises.stat(_path);
-          },
-          readdir: async (_path: string) => {
-            return await fsPromises.readdir(_path);
-          },
-          unlink: async (_path: string) => {
-            return await fsPromises.unlink(_path);
-          },
-        };
+        this.fs = wrapNodeFSAsApi();
       } else {
         throw new Error('`fs` is required');
       }
