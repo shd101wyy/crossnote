@@ -1,15 +1,15 @@
 import {
   addFileProtocol,
-  getExtensionDirectoryPath,
+  getCrossnoteBuildDirectory,
   openFile,
-  setExtentensionDirectoryPath,
+  setCrossnoteBuildDirectory,
   useExternalAddFileProtocolFunction,
 } from './utility';
 export const utility = {
   addFileProtocol,
-  getExtensionDirectoryPath,
+  getCrossnoteBuildDirectory,
   openFile,
-  setExtentensionDirectoryPath,
+  setCrossnoteBuildDirectory,
   useExternalAddFileProtocolFunction,
 };
 export * from './code-chunk/code-chunk-data';

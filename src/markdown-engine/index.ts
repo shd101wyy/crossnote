@@ -194,7 +194,7 @@ export class MarkdownEngine {
     // jquery
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         './dependencies/jquery/jquery.js',
       ),
       vscodePreviewPanel,
@@ -203,14 +203,14 @@ export class MarkdownEngine {
     // jquery contextmenu
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         './dependencies/jquery-contextmenu/jquery.ui.position.min.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         './dependencies/jquery-contextmenu/jquery.contextMenu.min.js',
       ),
       vscodePreviewPanel,
@@ -219,7 +219,7 @@ export class MarkdownEngine {
     // jquery modal
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         './dependencies/jquery-modal/jquery.modal.min.js',
       ),
       vscodePreviewPanel,
@@ -228,7 +228,7 @@ export class MarkdownEngine {
     // mermaid
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         `./dependencies/mermaid/mermaid.min.js`,
       ),
       vscodePreviewPanel,
@@ -243,14 +243,14 @@ export class MarkdownEngine {
     // wavedrome
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         './dependencies/wavedrom/default.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         './dependencies/wavedrom/wavedrom.min.js',
       ),
       vscodePreviewPanel,
@@ -286,14 +286,14 @@ export class MarkdownEngine {
     if (isForPresentation) {
       scripts += `<script src='${utility.addFileProtocol(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/lib/js/head.min.js',
         ),
         vscodePreviewPanel,
       )}'></script>`;
       scripts += `<script src='${utility.addFileProtocol(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/js/reveal.js',
         ),
         vscodePreviewPanel,
@@ -360,7 +360,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     dependentLibraryMaterials.forEach(({ key }) => {
       scripts += `<script src="${utility.addFileProtocol(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           `./dependencies/${key}/${key}.min.js`,
         ),
         vscodePreviewPanel,
@@ -468,14 +468,17 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // loading.css
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
-      path.resolve(utility.getExtensionDirectoryPath(), './styles/loading.css'),
+      path.resolve(
+        utility.getCrossnoteBuildDirectory(),
+        './styles/loading.css',
+      ),
       vscodePreviewPanel,
     )}">`;
 
     // jquery-contextmenu
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         `./dependencies/jquery-contextmenu/jquery.contextMenu.min.css`,
       ),
       vscodePreviewPanel,
@@ -484,7 +487,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // jquery-modal
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         `./dependencies/jquery-modal/jquery.modal.min.css`,
       ),
       vscodePreviewPanel,
@@ -497,7 +500,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     ) {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/katex/katex.min.css',
         ),
         vscodePreviewPanel,
@@ -507,7 +510,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // check font-awesome
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         `./dependencies/font-awesome/css/font-awesome.min.css`,
       ),
       vscodePreviewPanel,
@@ -517,7 +520,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (!isPresentationMode) {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           `./styles/preview_theme/${this.notebook.config.previewTheme}`,
         ),
         vscodePreviewPanel,
@@ -525,14 +528,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
     } else {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/css/reveal.css',
         ),
         vscodePreviewPanel,
       )}" >`;
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           `./dependencies/reveal/css/theme/${
             yamlConfig['presentation'] &&
             typeof yamlConfig['presentation'] === 'object' &&
@@ -548,7 +551,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // check prism
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         `./styles/prism_theme/${this.getPrismTheme(
           isPresentationMode,
           yamlConfig,
@@ -560,7 +563,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // style template
     styles += `<link rel="stylesheet" media="screen" href="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         './styles/style-template.css',
       ),
       vscodePreviewPanel,
@@ -569,7 +572,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     // style markdown-it-admonition
     styles += `<link rel="stylesheet" media="screen" href="${utility.addFileProtocol(
       path.resolve(
-        utility.getExtensionDirectoryPath(),
+        utility.getCrossnoteBuildDirectory(),
         './styles/markdown-it-admonition.css',
       ),
       vscodePreviewPanel,
@@ -648,7 +651,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
     if (!webviewScript) {
       webviewScript = utility.addFileProtocol(
-        path.resolve(utility.getExtensionDirectoryPath(), './webview/index.js'),
+        path.resolve(
+          utility.getCrossnoteBuildDirectory(),
+          './webview/index.js',
+        ),
         vscodePreviewPanel,
       );
     }
@@ -729,7 +735,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         ${styles}
         <link rel="stylesheet" href="${utility.addFileProtocol(
           path.resolve(
-            utility.getExtensionDirectoryPath(),
+            utility.getCrossnoteBuildDirectory(),
             './styles/preview.css',
           ),
           vscodePreviewPanel,
@@ -817,7 +823,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     } else if (this.notebook.config.mathRenderingOption === 'KaTeX') {
       if (options.offline) {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/katex/katex.min.css',
         )}">`;
       } else {
@@ -832,7 +838,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (html.indexOf('<i class="fa ') >= 0) {
       if (options.offline) {
         fontAwesomeStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           `./dependencies/font-awesome/css/font-awesome.min.css`,
         )}">`;
       } else {
@@ -846,7 +852,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (html.indexOf(' class="mermaid') >= 0) {
       if (options.offline) {
         mermaidScript = `<script type="text/javascript" src="file:///${path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
@@ -899,11 +905,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (html.indexOf(' class="wavedrom') >= 0) {
       if (options.offline) {
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/wavedrom/default.js',
         )}" charset="UTF-8"></script>`;
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/wavedrom/wavedrom.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
@@ -924,7 +930,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       dependentLibraryMaterials.forEach(({ key, version }) => {
         vegaScript += options.offline
           ? `<script type="text/javascript" src="file:///${path.resolve(
-              utility.getExtensionDirectoryPath(),
+              utility.getCrossnoteBuildDirectory(),
               `./dependencies/${key}/${key}.min.js`,
             )}" charset="UTF-8"></script>`
           : `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
@@ -958,11 +964,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
       if (options.offline) {
         presentationScript = `
         <script src='file:///${path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/lib/js/head.min.js',
         )}'></script>
         <script src='file:///${path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/js/reveal.js',
         )}'></script>`;
       } else {
@@ -976,7 +982,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         if (options.offline) {
           dependencies.push({
             src: path.resolve(
-              utility.getExtensionDirectoryPath(),
+              utility.getCrossnoteBuildDirectory(),
               './dependencies/reveal/plugin/notes/notes.js',
             ),
             async: true,
@@ -991,7 +997,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       <style>
       ${await this.fs.readFile(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/css/reveal.css',
         ),
       )}
@@ -999,7 +1005,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
         options.isForPrint
           ? await this.fs.readFile(
               path.resolve(
-                utility.getExtensionDirectoryPath(),
+                utility.getCrossnoteBuildDirectory(),
                 './dependencies/reveal/css/print/pdf.css',
               ),
             )
@@ -1039,13 +1045,13 @@ if (typeof(window['Reveal']) !== 'undefined') {
         !yamlConfig['isPresentationMode']
           ? await this.fs.readFile(
               path.resolve(
-                utility.getExtensionDirectoryPath(),
+                utility.getCrossnoteBuildDirectory(),
                 `./styles/prism_theme/github.css`,
               ),
             )
           : await this.fs.readFile(
               path.resolve(
-                utility.getExtensionDirectoryPath(),
+                utility.getCrossnoteBuildDirectory(),
                 `./styles/prism_theme/${this.getPrismTheme(
                   yamlConfig['isPresentationMode'],
                   yamlConfig,
@@ -1063,7 +1069,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
         if (options.offline) {
           presentationStyle += `<link rel="stylesheet" href="file:///${path.resolve(
-            utility.getExtensionDirectoryPath(),
+            utility.getCrossnoteBuildDirectory(),
             `./dependencies/reveal/css/theme/${theme}`,
           )}">`;
         } else {
@@ -1076,13 +1082,13 @@ if (typeof(window['Reveal']) !== 'undefined') {
           !yamlConfig['print_background']
             ? await this.fs.readFile(
                 path.resolve(
-                  utility.getExtensionDirectoryPath(),
+                  utility.getCrossnoteBuildDirectory(),
                   `./styles/preview_theme/github-light.css`,
                 ),
               )
             : await this.fs.readFile(
                 path.resolve(
-                  utility.getExtensionDirectoryPath(),
+                  utility.getCrossnoteBuildDirectory(),
                   `./styles/preview_theme/${this.notebook.config.previewTheme}`,
                 ),
               );
@@ -1091,7 +1097,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       // style template
       styleCSS += await this.fs.readFile(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './styles/style-template.css',
         ),
       );
@@ -1100,7 +1106,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       if (html.indexOf('admonition') > 0) {
         styleCSS += await this.fs.readFile(
           path.resolve(
-            utility.getExtensionDirectoryPath(),
+            utility.getCrossnoteBuildDirectory(),
             './styles/markdown-it-admonition.css',
           ),
         );
@@ -1321,13 +1327,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
       fs.createReadStream(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/plugin/notes/notes.js',
         ),
       ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.js')));
       fs.createReadStream(
         path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/plugin/notes/notes.html',
         ),
       ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.html')));
@@ -1763,7 +1769,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.8/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          utility.getExtensionDirectoryPath(),
+          utility.getCrossnoteBuildDirectory(),
           './dependencies/katex/katex.min.css',
         )}">`;
       }
@@ -1776,14 +1782,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         // style template
         await this.fs.readFile(
           path.resolve(
-            utility.getExtensionDirectoryPath(),
+            utility.getCrossnoteBuildDirectory(),
             './styles/style-template.css',
           ),
         ),
         // prism *.css
         await this.fs.readFile(
           path.resolve(
-            utility.getExtensionDirectoryPath(),
+            utility.getCrossnoteBuildDirectory(),
             `./styles/prism_theme/${
               /*this.getPrismTheme(false)*/ MarkdownEngine.AutoPrismThemeMap[
                 ebookConfig['theme'] || this.notebook.config.previewTheme
@@ -1794,14 +1800,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         // twemoji css style
         await this.fs.readFile(
           path.resolve(
-            utility.getExtensionDirectoryPath(),
+            utility.getCrossnoteBuildDirectory(),
             './styles/twemoji.css',
           ),
         ),
         // preview theme
         await this.fs.readFile(
           path.resolve(
-            utility.getExtensionDirectoryPath(),
+            utility.getCrossnoteBuildDirectory(),
             `./styles/preview_theme/${ebookConfig['theme'] ||
               this.notebook.config.previewTheme}`,
           ),
@@ -1810,7 +1816,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         outputHTML.indexOf('admonition') > 0
           ? await this.fs.readFile(
               path.resolve(
-                utility.getExtensionDirectoryPath(),
+                utility.getCrossnoteBuildDirectory(),
                 './styles/markdown-it-admonition.css',
               ),
             )

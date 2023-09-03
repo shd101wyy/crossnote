@@ -81,7 +81,7 @@ export function parseYAML(yaml: string = ''): JsonObject {
  * NOTE: The __dirname is actually the ./out/(esm|cjs) directory
  * get the directory path of this extension.
  */
-let extensionDirectoryPath_ = (() => {
+let crossnoteBuildDirectory_ = (() => {
   if (typeof __dirname !== 'undefined') {
     return path.resolve(__dirname, '../');
   } else {
@@ -95,8 +95,8 @@ let extensionDirectoryPath_ = (() => {
   }
 })();
 
-export function setExtentensionDirectoryPath(path: string) {
-  extensionDirectoryPath_ = path;
+export function setCrossnoteBuildDirectory(path: string) {
+  crossnoteBuildDirectory_ = path;
 }
 
 /**
@@ -106,8 +106,8 @@ export function setExtentensionDirectoryPath(path: string) {
  * - styles
  * @returns
  */
-export function getExtensionDirectoryPath() {
-  return extensionDirectoryPath_;
+export function getCrossnoteBuildDirectory() {
+  return crossnoteBuildDirectory_;
 }
 
 let _externalAddFileProtocolFunction:
@@ -244,7 +244,7 @@ export const loadDependency = (dependencyPath: string) =>
   allowUnsafeEval(() =>
     allowUnsafeNewFunction(() =>
       require(path.resolve(
-        getExtensionDirectoryPath(),
+        getCrossnoteBuildDirectory(),
         'dependencies',
         dependencyPath,
       )),
