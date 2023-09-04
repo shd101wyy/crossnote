@@ -1,7 +1,8 @@
+import { KatexOptions } from 'katex';
 import { stringifyBlockAttributes } from '../lib/block-attributes';
 import { BlockInfo } from '../lib/block-info';
-import { MathRenderingOption } from '../markdown-engine-config';
-import parseMath from '../parse-math';
+import { MathRenderingOption } from '../notebook';
+import parseMath from '../renderers/parse-math';
 
 const supportedLanguages = ['math'];
 
@@ -19,6 +20,7 @@ export default async function enhance(
   $,
   renderingOption: MathRenderingOption,
   mathBlockDelimiters: string[][],
+  katexConfig: KatexOptions,
 ): Promise<void> {
   $('[data-role="codeBlock"]').each((i, container) => {
     const $container = $(container);
@@ -47,6 +49,7 @@ export default async function enhance(
       normalizedInfo,
       renderingOption,
       mathBlockDelimiters,
+      katexConfig,
     );
     normalizedInfo.attributes['output_first'] === true
       ? $container.before($renderedMath)
@@ -64,6 +67,7 @@ const renderMath = (
   normalizedInfo: BlockInfo,
   renderingOption: MathRenderingOption,
   mathBlockDelimiters: string[][],
+  katexConfig: KatexOptions,
 ): string => {
   let $output: string | null = null;
   try {
@@ -73,6 +77,7 @@ const renderMath = (
       openTag: mathBlockDelimiters.length ? mathBlockDelimiters[0][0] : '',
       closeTag: mathBlockDelimiters.length ? mathBlockDelimiters[0][1] : '',
       renderingOption,
+      katexConfig,
     });
     $output = `<p ${stringifyBlockAttributes(
       normalizedInfo.attributes,

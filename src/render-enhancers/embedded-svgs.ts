@@ -1,6 +1,6 @@
 import { readFile } from 'fs';
 import { extname } from 'path';
-import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { NotebookConfig } from '../notebook';
 import { removeFileProtocol } from '../utility';
 
 /**
@@ -9,7 +9,7 @@ import { removeFileProtocol } from '../utility';
  */
 export default async function enhance(
   $: CheerioStatic,
-  options: MarkdownEngineConfig,
+  options: NotebookConfig,
   resolveFilePath: (path: string, useRelativeFilePath: boolean) => string,
 ): Promise<void> {
   const asyncFunctions: Promise<string | null>[] = [];

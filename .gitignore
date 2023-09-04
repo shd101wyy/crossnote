@@ -7,5 +7,9 @@ test.js
 test.mjs
 .direnv
 tsconfig.tsbuildinfo
+yarn-error.log
 .mume
 mume
+.crossnote
+crossnote
+styles/*.css

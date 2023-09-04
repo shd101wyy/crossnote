@@ -5,7 +5,7 @@ const { dependencies, devDependencies } = require('./package.json');
  * @type {import('esbuild').BuildOptions}
  */
 const sharedConfig = {
-  entryPoints: ['./src/mume.ts'],
+  entryPoints: ['./src/index.ts'],
   bundle: true,
   minify: true,
   // sourcemap: true,

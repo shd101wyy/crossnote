@@ -1,11 +1,11 @@
 {
-  "name": "@shd101wyy/mume",
-  "version": "0.7.9",
-  "description": "A powerful markdown tool",
+  "name": "crossnote",
+  "version": "0.8.2",
+  "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
   ],
-  "repository": "https://github.com/shd101wyy/mume",
+  "repository": "https://github.com/shd101wyy/crossnote",
   "license": "NCSA",
   "contributors": [
     "shd101wyy",
@@ -16,26 +16,27 @@
     ".": {
       "import": "./out/esm/index.mjs",
       "require": "./out/cjs/index.cjs",
-      "types": "./out/types/src/mume.d.ts"
+      "types": "./out/types/src/index.d.ts"
     }
   },
   "main": "out/cjs/index.cjs",
   "module": "out/esm/index.mjs",
-  "types": "out/types/src/mume.d.ts",
+  "types": "out/types/src/index.d.ts",
   "files": [
     "docs",
     "out"
   ],
   "scripts": {
-    "build": "rm -rf ./out && yarn copy:files && yarn build:typings && yarn build:esbuild",
+    "build": "rm -rf ./out && yarn copy:files && yarn compile:less && yarn build:typings && yarn build:esbuild",
     "build:esbuild": "node build.js",
     "build:typings": "tsc --project . --declaration",
-    "build:watch": "rm -rf ./out && yarn copy:files && concurrently \"tsc --project . --watch\" \"node build.js --watch\"",
+    "build:watch": "rm -rf ./out && yarn copy:files && yarn compile:less && concurrently \"tsc --project . --watch\" \"node build.js --watch\" \"gulp watch-less\"",
     "check:all": "npm run check:prettier && npm run check:tsc && npm run check:lint",
     "check:lint": "eslint .",
     "check:prettier": "prettier --check \"**/*.*\"",
     "check:tsc": "tsc --project .",
-    "copy:files": "node copy-files.js",
+    "compile:less": "gulp compile-less",
+    "copy:files": "gulp copy-files",
     "fix": "npm run fix:lint && npm run fix:prettier",
     "fix:lint": "eslint --fix .",
     "fix:prettier": "prettier --write \"**/*.*\"",
@@ -68,6 +69,7 @@
     "markdown-it-sub": "^1.0.0",
     "markdown-it-sup": "^1.0.0",
     "md5": "^2.3.0",
+    "mermaid": "^10.4.0",
     "minisearch": "^6.1.0",
     "mkdirp": "^3.0.1",
     "node-fetch": "^2.6.1",
@@ -111,6 +113,9 @@
     "concurrently": "^8.2.1",
     "esbuild": "^0.19.2",
     "eslint": "^8.48.0",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-less": "^5.0.0",
     "husky": "^7.0.2",
     "jest": "^27.2.4",
     "lint-staged": "^10.3.0",

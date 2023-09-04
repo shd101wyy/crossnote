@@ -1,25 +1,46 @@
 import * as child_process from 'child_process';
-import * as fs from 'fs';
-import less from 'less';
-import * as os from 'os';
 import * as path from 'path';
 import * as temp from 'temp';
 import { JsonObject } from 'type-fest';
 import * as vm from 'vm';
 import * as vscode from 'vscode';
 import * as YAML from 'yaml';
-import { BlockInfo } from './lib/block-info/types';
+import { BlockInfo } from './lib/block-info';
 
 temp.track();
 
-export interface ParserConfig {
-  onWillParseMarkdown?: (markdown: string) => Promise<string>;
-  onDidParseMarkdown?: (
-    html: string,
-    opts: { cheerio: CheerioAPI },
-  ) => Promise<string>;
-  onWillTransformMarkdown?: (markdown: string) => Promise<string>;
-  onDidTransformMarkdown?: (markdown: string) => Promise<string>;
+export function tempOpen(options): Promise<temp.OpenFile> {
+  return new Promise((resolve, reject) => {
+    temp.open(options, (error, info) => {
+      if (error) {
+        return reject(error.toString());
+      } else {
+        return resolve(info);
+      }
+    });
+  });
+}
+
+/**
+ * open html file in browser or open pdf file in reader ... etc
+ * @param filePath
+ */
+export function openFile(filePath: string) {
+  if (process.platform === 'win32') {
+    if (filePath.match(/^[a-zA-Z]:\\/)) {
+      // C:\ like url.
+      filePath = 'file:///' + filePath;
+    }
+    if (filePath.startsWith('file:///')) {
+      return child_process.execFile('explorer.exe', [filePath]);
+    } else {
+      return child_process.exec(`start ${filePath}`);
+    }
+  } else if (process.platform === 'darwin') {
+    child_process.execFile('open', [filePath]);
+  } else {
+    child_process.execFile('xdg-open', [filePath]);
+  }
 }
 
 /**
@@ -56,99 +77,11 @@ export function parseYAML(yaml: string = ''): JsonObject {
   }
 }
 
-export function readFile(file: string, options?): Promise<string> {
-  return new Promise((resolve, reject) => {
-    fs.readFile(file, options, (error, text) => {
-      if (error) {
-        return reject(error.toString());
-      } else {
-        return resolve(text.toString());
-      }
-    });
-  });
-}
-
-export function writeFile(file: string | number, text, options?) {
-  return new Promise<void>((resolve, reject) => {
-    fs.writeFile(file, text, options, error => {
-      if (error) {
-        return reject(error.toString());
-      } else {
-        return resolve();
-      }
-    });
-  });
-}
-
-export function write(fd: number, text: string) {
-  return new Promise<void>((resolve, reject) => {
-    fs.write(fd, text, error => {
-      if (error) {
-        return reject(error.toString());
-      } else {
-        return resolve();
-      }
-    });
-  });
-}
-
-export function tempOpen(options): Promise<temp.OpenFile> {
-  return new Promise((resolve, reject) => {
-    temp.open(options, (error, info) => {
-      if (error) {
-        return reject(error.toString());
-      } else {
-        return resolve(info);
-      }
-    });
-  });
-}
-
-export function execFile(
-  file: string,
-  args: string[],
-  options?: object,
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    child_process.execFile(file, args, options, (error, stdout, stderr) => {
-      if (error) {
-        return reject(error.toString());
-      } else if (stderr) {
-        return reject(stderr);
-      } else {
-        return resolve(stdout as string);
-      }
-    });
-  });
-}
-
-/**
- * open html file in browser or open pdf file in reader ... etc
- * @param filePath
- */
-export function openFile(filePath: string) {
-  if (process.platform === 'win32') {
-    if (filePath.match(/^[a-zA-Z]:\\/)) {
-      // C:\ like url.
-      filePath = 'file:///' + filePath;
-    }
-    if (filePath.startsWith('file:///')) {
-      return child_process.execFile('explorer.exe', [filePath]);
-    } else {
-      return child_process.exec(`start ${filePath}`);
-    }
-  } else if (process.platform === 'darwin') {
-    child_process.execFile('open', [filePath]);
-  } else {
-    child_process.execFile('xdg-open', [filePath]);
-  }
-}
-
 /**
  * NOTE: The __dirname is actually the ./out/(esm|cjs) directory
- * get the directory path of this extension.
+ * Get the `./out` directory.
  */
-let extensionDirectoryPath_ = (() => {
+let crossnoteBuildDirectory_ = (() => {
   if (typeof __dirname !== 'undefined') {
     return path.resolve(__dirname, '../');
   } else {
@@ -162,257 +95,26 @@ let extensionDirectoryPath_ = (() => {
   }
 })();
 
-export function setExtentensionDirectoryPath(path: string) {
-  extensionDirectoryPath_ = path;
+export function setCrossnoteBuildDirectory(path: string) {
+  crossnoteBuildDirectory_ = path;
 }
 
 /**
  * Get the directory path of this npm package with the following directory structure:
- * - out
- * - dependencies
- * - styles
+ * You can use the `setCrossnoteBuildDirectory` function to set the directory path.
+ * ```
+ *  out
+ *  ├── cjs
+ *  ├── dependencies
+ *  ├── esm
+ *  ├── styles
+ *  ├── types
+ *  └── webview
+ * ```
  * @returns
  */
-export function getExtensionDirectoryPath() {
-  return extensionDirectoryPath_;
-}
-
-/**
- * compile ~/.mumi/style.less and return 'css' content.
- */
-export async function getGlobalStyles(configPath: string): Promise<string> {
-  const globalLessFilePath = configPath
-    ? path.resolve(configPath, './style.less')
-    : path.resolve(getConfigPath(), './style.less');
-
-  let fileContent: string;
-  try {
-    fileContent = await readFile(globalLessFilePath, { encoding: 'utf-8' });
-  } catch (e) {
-    // create style.less file
-    fileContent = `
-/* Please visit the URL below for more information: */
-/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
-
-.markdown-preview.markdown-preview {
-  // modify your style here
-  // eg: background-color: blue;
-}
-`;
-    await writeFile(globalLessFilePath, fileContent, { encoding: 'utf-8' });
-  }
-
-  return await new Promise<string>(resolve => {
-    less.render(
-      fileContent,
-      { paths: [path.dirname(globalLessFilePath)] },
-      (error, output) => {
-        if (error) {
-          return resolve(`html body:before {
-  content: "Failed to compile \`style.less\`. ${error}" !important;
-  padding: 2em !important;
-}
-.mume.mume { display: none !important; }`);
-        } else {
-          return resolve(output?.css || '');
-        }
-      },
-    );
-  });
-}
-
-/**
- * Get default config path
- * @
- */
-export function getConfigPath() {
-  const oldDefault = path.resolve(os.homedir(), './.mume');
-
-  // For compatibility, use the old directory if either it exists
-  // or the user is on windows
-  if (fs.existsSync(oldDefault) || process.platform === 'win32') {
-    return oldDefault;
-  } else {
-    // Calculate new default
-    if (
-      typeof process.env.XDG_CONFIG_HOME === 'string' &&
-      process.env.XDG_CONFIG_HOME !== ''
-    ) {
-      return path.resolve(process.env.XDG_CONFIG_HOME, './mume');
-    } else {
-      return path.resolve(os.homedir(), './.local/state/mume');
-    }
-  }
-}
-
-/**
- * load ~/.config/mume/mermaid_config.js file.
- */
-export async function getMermaidConfig(configPath: string): Promise<string> {
-  const mermaidConfigPath = configPath
-    ? path.resolve(configPath, './mermaid_config.js')
-    : path.resolve(getConfigPath(), './mermaid_config.js');
-
-  let mermaidConfig: string;
-  if (fs.existsSync(mermaidConfigPath)) {
-    try {
-      mermaidConfig = await readFile(mermaidConfigPath, { encoding: 'utf-8' });
-    } catch (e) {
-      mermaidConfig = `var MERMAID_CONFIG = {startOnLoad: false}`;
-    }
-  } else {
-    const fileContent = `// config mermaid init call
-// http://knsv.github.io/mermaid/#configuration
-//
-// You can edit the 'MERMAID_CONFIG' variable below.
-var MERMAID_CONFIG = {
-  startOnLoad: false
-}
-`;
-    await writeFile(mermaidConfigPath, fileContent, { encoding: 'utf-8' });
-    mermaidConfig = `var MERMAID_CONFIG = {startOnLoad: false}`;
-  }
-
-  return mermaidConfig;
-}
-
-export const defaultMathjaxConfig = {
-  tex: {},
-  options: {},
-  loader: {},
-};
-
-export const defaultKaTeXConfig = {
-  macros: {},
-};
-
-/**
- * load ~/.config/mume/mathjax_config_v3.js file.
- */
-export async function getMathJaxConfig(configPath: string): Promise<object> {
-  const mathjaxConfigPath = configPath
-    ? path.resolve(configPath, './mathjax_config_v3.js')
-    : path.resolve(getConfigPath(), './mathjax_config_v3.js');
-
-  let mathjaxConfig: object;
-  if (fs.existsSync(mathjaxConfigPath)) {
-    try {
-      delete require.cache[mathjaxConfigPath]; // return uncached
-      mathjaxConfig = require(mathjaxConfigPath);
-    } catch (e) {
-      mathjaxConfig = defaultMathjaxConfig;
-    }
-  } else {
-    const fileContent = `// MathJax V2 -> V3 Configuration Converter
-// https://mathjax.github.io/MathJax-demos-web/convert-configuration/convert-configuration.html
-
-module.exports = {
-  tex: {
-  },
-  options: {
-  },
-  loader: {
-  }
-}
-`;
-    await writeFile(mathjaxConfigPath, fileContent, { encoding: 'utf-8' });
-    mathjaxConfig = defaultMathjaxConfig;
-  }
-
-  return mathjaxConfig;
-}
-
-/**
- * load ~/.config/mume/katex_config.js file
- */
-export async function getKaTeXConfig(configPath: string): Promise<object> {
-  const katexConfigPath = configPath
-    ? path.resolve(configPath, './katex_config.js')
-    : path.resolve(getConfigPath(), './katex_config.js');
-
-  let katexConfig: object;
-  if (fs.existsSync(katexConfigPath)) {
-    try {
-      delete require.cache[katexConfigPath]; // return uncached
-      katexConfig = require(katexConfigPath);
-    } catch (e) {
-      katexConfig = defaultKaTeXConfig;
-    }
-  } else {
-    const fileContent = `
-module.exports = {
-  macros: {}
-}`;
-    await writeFile(katexConfigPath, fileContent, { encoding: 'utf-8' });
-    katexConfig = defaultKaTeXConfig;
-  }
-  return katexConfig;
-}
-
-export async function getExtensionConfig(configPath: string): Promise<object> {
-  const extensionConfigFilePath = configPath
-    ? path.resolve(configPath, './config.json')
-    : path.resolve(getConfigPath(), './config.json');
-
-  let config: object;
-  if (fs.existsSync(extensionConfigFilePath)) {
-    try {
-      delete require.cache[extensionConfigFilePath]; // return uncached
-      config = require(extensionConfigFilePath);
-    } catch (error) {
-      config = { error };
-    }
-  } else {
-    config = {};
-    await writeFile(extensionConfigFilePath, '{}', { encoding: 'utf-8' });
-  }
-  return config;
-}
-
-export async function getParserConfig(
-  configPath: string,
-): Promise<ParserConfig> {
-  const parserConfigPath = configPath
-    ? path.resolve(configPath, './parser.js')
-    : path.resolve(getConfigPath(), './parser.js');
-
-  let parserConfig: ParserConfig;
-  if (fs.existsSync(parserConfigPath)) {
-    try {
-      delete require.cache[parserConfigPath]; // return uncached
-      parserConfig = require(parserConfigPath);
-    } catch (error) {
-      parserConfig = {};
-    }
-  } else {
-    const template = `module.exports = {
-  onWillParseMarkdown: function(markdown) {
-    return new Promise((resolve, reject)=> {
-      return resolve(markdown)
-    })
-  },
-  onDidParseMarkdown: function(html, {cheerio}) {
-    return new Promise((resolve, reject)=> {
-      return resolve(html)
-    })
-  },
-  onWillTransformMarkdown: function (markdown) {
-        return new Promise((resolve, reject) => {
-            return resolve(markdown);
-        });
-    },
-  onDidTransformMarkdown: function (markdown) {
-      return new Promise((resolve, reject) => {
-          return resolve(markdown);
-      });
-  }
-}`;
-    await writeFile(parserConfigPath, template, { encoding: 'utf-8' });
-
-    parserConfig = {};
-  }
-
-  return parserConfig;
+export function getCrossnoteBuildDirectory() {
+  return crossnoteBuildDirectory_;
 }
 
 let _externalAddFileProtocolFunction:
@@ -420,7 +122,10 @@ let _externalAddFileProtocolFunction:
   | null = null;
 
 export function useExternalAddFileProtocolFunction(
-  func: (filePath: string, vscodePreviewPanel: vscode.WebviewPanel) => string,
+  func: (
+    filePath: string,
+    vscodePreviewPanel?: vscode.WebviewPanel | null,
+  ) => string,
 ) {
   _externalAddFileProtocolFunction = func;
 }
@@ -470,34 +175,7 @@ export function removeFileProtocol(filePath: string): string {
   });
 }
 
-/**
- * style.less,
- * mathjax_config_v3.js,
- * mermaid_config.js
- * config.json
- *
- * files
- */
-export const configs: {
-  globalStyle: string;
-  mathjaxConfig: object;
-  katexConfig: object;
-  mermaidConfig: string;
-  parserConfig: ParserConfig;
-  /**
-   * Please note that this is not necessarily MarkdownEngineConfig
-   */
-  config: object;
-} = {
-  globalStyle: '',
-  mathjaxConfig: defaultMathjaxConfig,
-  katexConfig: defaultKaTeXConfig,
-  mermaidConfig: 'var MERMAID_CONFIG = {startOnLoad: false}',
-  parserConfig: {},
-  config: {},
-};
-
-export { uploadImage } from './image-uploader.js';
+export { uploadImage } from './tools/image-uploader.js';
 
 /**
  * Allow unsafed `eval` function
@@ -506,48 +184,48 @@ export { uploadImage } from './image-uploader.js';
  * @param fn
  */
 export function allowUnsafeEval(fn) {
-  const previousEval = global.eval;
+  const previousEval = globalThis.eval;
   try {
-    global.eval = source => {
+    globalThis.eval = source => {
       vm.runInThisContext(source);
     };
     return fn();
   } finally {
-    global.eval = previousEval;
+    globalThis.eval = previousEval;
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function allowUnsafeEvalAync(fn: () => Promise<any>) {
-  const previousEval = global.eval;
+  const previousEval = globalThis.eval;
   try {
-    global.eval = source => {
+    globalThis.eval = source => {
       vm.runInThisContext(source);
     };
     return await fn();
   } finally {
-    global.eval = previousEval;
+    globalThis.eval = previousEval;
   }
 }
 
 export function allowUnsafeNewFunction(fn) {
-  const previousFunction = global.Function;
+  const previousFunction = globalThis.Function;
   try {
-    global.Function = Function as FunctionConstructor;
+    globalThis.Function = Function as FunctionConstructor;
     return fn();
   } finally {
-    global.Function = previousFunction;
+    globalThis.Function = previousFunction;
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function allowUnsafeNewFunctionAsync(fn: () => Promise<any>) {
-  const previousFunction = global.Function;
+  const previousFunction = globalThis.Function;
   try {
-    global.Function = Function as FunctionConstructor;
+    globalThis.Function = Function as FunctionConstructor;
     return await fn();
   } finally {
-    global.Function = previousFunction;
+    globalThis.Function = previousFunction;
   }
 }
 
@@ -555,17 +233,17 @@ export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: () => Promise<any>,
 ) {
-  const previousFunction = global.Function;
-  const previousEval = global.eval;
+  const previousFunction = globalThis.Function;
+  const previousEval = globalThis.eval;
   try {
-    global.Function = Function as FunctionConstructor;
-    global.eval = source => {
+    globalThis.Function = Function as FunctionConstructor;
+    globalThis.eval = source => {
       vm.runInThisContext(source);
     };
     return await fn();
   } finally {
-    global.eval = previousEval;
-    global.Function = previousFunction;
+    globalThis.eval = previousEval;
+    globalThis.Function = previousFunction;
   }
 }
 
@@ -573,7 +251,7 @@ export const loadDependency = (dependencyPath: string) =>
   allowUnsafeEval(() =>
     allowUnsafeNewFunction(() =>
       require(path.resolve(
-        getExtensionDirectoryPath(),
+        getCrossnoteBuildDirectory(),
         'dependencies',
         dependencyPath,
       )),
@@ -610,4 +288,8 @@ export function Function(...args: string[]) {
     })
   `);
 }
-Function.prototype = global.Function.prototype;
+Function.prototype = globalThis.Function.prototype;
+
+export function isVSCodeWebExtension() {
+  return process.env.IS_VSCODE_WEB_EXTENSION === 'true';
+}

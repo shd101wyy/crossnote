@@ -1,6 +1,6 @@
 import { escape } from 'html-escaper';
-import { scopeForLanguageName } from '../extension-helper';
 import { BlockInfo } from '../lib/block-info/index';
+import { scopeForLanguageName } from '../markdown-engine/extension-helper';
 import defineIeleLanguage from '../prism/iele';
 import defineKLanguage from '../prism/k';
 import Prism from '../prism/prism';
@@ -118,7 +118,6 @@ function addLineNumbersIfNecessary($container, code: string): void {
 }
 
 /**
- * https://github.com/shd101wyy/mume/issues/97
  * @param $container
  * @param code
  * @param highlight

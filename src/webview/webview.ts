@@ -45,13 +45,13 @@ import CryptoJS from 'crypto-js';
     private doneLoadingPreview: boolean = false;
 
     /**
-     * This is the element with class `mume`
+     * This is the element with class `crossnote`
      * The final html is rendered by that previewElement
      */
     private previewElement: HTMLElement;
 
     /**
-     * .mume.hidden-preview element
+     * .crossnote.hidden-preview element
      * HiddenPreviewElement is used to render html and then put the rendered html result to previewElement
      */
     private hiddenPreviewElement: HTMLElement;
@@ -114,6 +114,11 @@ import CryptoJS from 'crypto-js';
     private presentationMode: boolean;
 
     /**
+     * Whether this is rendering in VSCode Web extension.
+     */
+    private isVSCodeWebExtension: boolean = false;
+
+    /**
      * Track the slide line number, and (h, v) indices
      */
     private slidesData: {
@@ -144,6 +149,11 @@ import CryptoJS from 'crypto-js';
     private sourceUri: string | null = null;
 
     /**
+     * Source scheme
+     */
+    private sourceScheme = 'file';
+
+    /**
      * Caches
      */
     private wavedromCache = {};
@@ -154,15 +164,19 @@ import CryptoJS from 'crypto-js';
     constructor() {
       /** init preview elements */
       const previewElement = document.getElementsByClassName(
-        'mume',
+        'crossnote',
       )[0] as HTMLElement;
       const hiddenPreviewElement = document.createElement('div');
-      hiddenPreviewElement.classList.add('mume');
+      hiddenPreviewElement.classList.add('crossnote');
       hiddenPreviewElement.classList.add('markdown-preview');
       hiddenPreviewElement.classList.add('hidden-preview');
       hiddenPreviewElement.setAttribute('for', 'preview');
       hiddenPreviewElement.style.zIndex = '0';
       previewElement.insertAdjacentElement('beforebegin', hiddenPreviewElement);
+
+      this.isVSCodeWebExtension = document.body.classList.contains(
+        'vscode-web-extension',
+      );
 
       /** init `window` events */
       this.initWindowEvents();
@@ -172,8 +186,9 @@ import CryptoJS from 'crypto-js';
 
       /** load config */
       this.config = JSON.parse(
-        document.getElementById('mume-data')?.getAttribute('data-config') ??
-          '{}',
+        document
+          .getElementById('crossnote-data')
+          ?.getAttribute('data-config') ?? '{}',
       );
       this.sourceUri = this.config['sourceUri'];
 
@@ -237,8 +252,8 @@ import CryptoJS from 'crypto-js';
         ).matches;
 
         this.postMessage('webviewFinishLoading', [
-          this.sourceUri,
           {
+            uri: this.sourceUri,
             systemColorScheme: isDarkColorScheme ? 'dark' : 'light',
           },
         ]);
@@ -378,19 +393,28 @@ import CryptoJS from 'crypto-js';
       window['$']['contextMenu']({
         selector: '.preview-container',
         items: {
-          open_in_browser: {
-            name: 'Open in Browser',
-            callback: () => this.postMessage('openInBrowser', [this.sourceUri]),
-          },
-          sep1: '---------',
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                open_in_browser: {
+                  name: 'Open in Browser',
+                  callback: () =>
+                    this.postMessage('openInBrowser', [this.sourceUri]),
+                },
+                sep1: '---------',
+              }),
           html_export: {
             name: 'HTML',
             items: {
-              html_offline: {
-                name: 'HTML (offline)',
-                callback: () =>
-                  this.postMessage('htmlExport', [this.sourceUri, true]),
-              },
+              ...(this.isVSCodeWebExtension
+                ? {}
+                : {
+                    html_offline: {
+                      name: 'HTML (offline)',
+                      callback: () =>
+                        this.postMessage('htmlExport', [this.sourceUri, true]),
+                    },
+                  }),
               html_cdn: {
                 name: 'HTML (cdn hosted)',
                 callback: () =>
@@ -398,69 +422,116 @@ import CryptoJS from 'crypto-js';
               },
             },
           },
-          chrome_export: {
-            name: 'Chrome (Puppeteer)',
-            items: {
-              chrome_pdf: {
-                name: 'PDF',
-                callback: () =>
-                  this.postMessage('chromeExport', [this.sourceUri, 'pdf']),
-              },
-              chrome_png: {
-                name: 'PNG',
-                callback: () =>
-                  this.postMessage('chromeExport', [this.sourceUri, 'png']),
-              },
-              chrome_jpeg: {
-                name: 'JPEG',
-                callback: () =>
-                  this.postMessage('chromeExport', [this.sourceUri, 'jpeg']),
-              },
-            },
-          },
-          prince_export: {
-            name: 'PDF (prince)',
-            callback: () => this.postMessage('princeExport', [this.sourceUri]),
-          },
-          ebook_export: {
-            name: 'eBook',
-            items: {
-              ebook_epub: {
-                name: 'ePub',
-                callback: () =>
-                  this.postMessage('eBookExport', [this.sourceUri, 'epub']),
-              },
-              ebook_mobi: {
-                name: 'mobi',
-                callback: () =>
-                  this.postMessage('eBookExport', [this.sourceUri, 'mobi']),
-              },
-              ebook_pdf: {
-                name: 'PDF',
-                callback: () =>
-                  this.postMessage('eBookExport', [this.sourceUri, 'pdf']),
-              },
-              ebook_html: {
-                name: 'HTML',
-                callback: () =>
-                  this.postMessage('eBookExport', [this.sourceUri, 'html']),
-              },
-            },
-          },
-          pandoc_export: {
-            name: 'Pandoc',
-            callback: () => this.postMessage('pandocExport', [this.sourceUri]),
-          },
-          save_as_markdown: {
-            name: 'Save as Markdown',
-            callback: () =>
-              this.postMessage('markdownExport', [this.sourceUri]),
-          },
-          sep2: '---------',
-          image_helper: {
-            name: 'Image Helper',
-            callback: () => window['$']('#image-helper-view').modal(),
-          },
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                chrome_export: {
+                  name: 'Chrome (Puppeteer)',
+                  items: {
+                    chrome_pdf: {
+                      name: 'PDF',
+                      callback: () =>
+                        this.postMessage('chromeExport', [
+                          this.sourceUri,
+                          'pdf',
+                        ]),
+                    },
+                    chrome_png: {
+                      name: 'PNG',
+                      callback: () =>
+                        this.postMessage('chromeExport', [
+                          this.sourceUri,
+                          'png',
+                        ]),
+                    },
+                    chrome_jpeg: {
+                      name: 'JPEG',
+                      callback: () =>
+                        this.postMessage('chromeExport', [
+                          this.sourceUri,
+                          'jpeg',
+                        ]),
+                    },
+                  },
+                },
+              }),
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                prince_export: {
+                  name: 'PDF (prince)',
+                  callback: () =>
+                    this.postMessage('princeExport', [this.sourceUri]),
+                },
+              }),
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                ebook_export: {
+                  name: 'eBook',
+                  items: {
+                    ebook_epub: {
+                      name: 'ePub',
+                      callback: () =>
+                        this.postMessage('eBookExport', [
+                          this.sourceUri,
+                          'epub',
+                        ]),
+                    },
+                    ebook_mobi: {
+                      name: 'mobi',
+                      callback: () =>
+                        this.postMessage('eBookExport', [
+                          this.sourceUri,
+                          'mobi',
+                        ]),
+                    },
+                    ebook_pdf: {
+                      name: 'PDF',
+                      callback: () =>
+                        this.postMessage('eBookExport', [
+                          this.sourceUri,
+                          'pdf',
+                        ]),
+                    },
+                    ebook_html: {
+                      name: 'HTML',
+                      callback: () =>
+                        this.postMessage('eBookExport', [
+                          this.sourceUri,
+                          'html',
+                        ]),
+                    },
+                  },
+                },
+              }),
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                pandoc_export: {
+                  name: 'Pandoc',
+                  callback: () =>
+                    this.postMessage('pandocExport', [this.sourceUri]),
+                },
+              }),
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                save_as_markdown: {
+                  name: 'Save as Markdown',
+                  callback: () =>
+                    this.postMessage('markdownExport', [this.sourceUri]),
+                },
+              }),
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                sep2: '---------',
+                image_helper: {
+                  name: 'Image Helper',
+                  callback: () => window['$']('#image-helper-view').modal(),
+                },
+              }),
           sep3: '---------',
           sync_source: {
             name: 'Sync Source',
@@ -1001,7 +1072,7 @@ import CryptoJS from 'crypto-js';
 
           const result = CryptoJS.AES.encrypt(
             codeChunk.getElementsByClassName('output-div')[0].outerHTML,
-            'mume',
+            'crossnote',
           ).toString();
 
           this.postMessage('cacheCodeChunkResult', [
@@ -1130,10 +1201,14 @@ import CryptoJS from 'crypto-js';
      * Bind <a href="..."></a> click events.
      */
     private bindTagAClickEvent() {
-      const helper = as => {
+      const helper = (as: HTMLAnchorElement[]) => {
         for (let i = 0; i < as.length; i++) {
           const a = as[i];
-          const href = decodeURIComponent(a.getAttribute('href')); // decodeURI here for Chinese like unicode heading
+          const hrefAttr = a.getAttribute('href');
+          if (!hrefAttr) {
+            continue;
+          }
+          const href = decodeURIComponent(hrefAttr); // decodeURI here for Chinese like unicode heading
           if (href && href[0] === '#') {
             const targetElement = this.previewElement.querySelector(
               `[id="${encodeURIComponent(href.slice(1))}"]`,
@@ -1165,22 +1240,32 @@ import CryptoJS from 'crypto-js';
                 event.stopPropagation();
               };
             }
+          } else if (
+            // External links, like https://google.com
+            this.isVSCodeWebExtension &&
+            href.startsWith('https://') &&
+            !href.startsWith('https://file+.vscode-resource.vscode-cdn.net')
+          ) {
+            continue;
           } else {
             a.onclick = event => {
               event.preventDefault();
               event.stopPropagation();
               this.postMessage('clickTagA', [
-                this.sourceUri,
-                encodeURIComponent(href.replace(/\\/g, '/')),
+                {
+                  uri: this.sourceUri,
+                  href: encodeURIComponent(href.replace(/\\/g, '/')),
+                  scheme: this.sourceScheme,
+                },
               ]);
             };
           }
         }
       };
-      helper(this.previewElement.getElementsByTagName('a'));
+      helper(Array.from(this.previewElement.getElementsByTagName('a')));
 
       if (this.sidebarTOC) {
-        helper(this.sidebarTOC.getElementsByTagName('a'));
+        helper(Array.from(this.sidebarTOC.getElementsByTagName('a')));
       }
     }
 
@@ -1256,7 +1341,7 @@ import CryptoJS from 'crypto-js';
         this.previewElement.id = id || '';
         this.previewElement.setAttribute(
           'class',
-          `mume markdown-preview ${classes}`,
+          `crossnote markdown-preview ${classes}`,
         );
 
         // scroll to initial position
@@ -1633,6 +1718,7 @@ import CryptoJS from 'crypto-js';
             this.totalLineCount = data.totalLineCount;
             this.sidebarTOCHTML = data.tocHTML;
             this.sourceUri = data.sourceUri;
+            this.sourceScheme = data.sourceScheme;
             this.renderSidebarTOC();
             this.updateHTML(data.html, data.id, data.class);
           } else if (

@@ -1,4 +1,4 @@
-import HeadingIdGenerator from '../src/heading-id-generator';
+import HeadingIdGenerator from '../src/markdown-engine/heading-id-generator';
 
 const testCasesForHeaderIdGenerator: {
   input: string;

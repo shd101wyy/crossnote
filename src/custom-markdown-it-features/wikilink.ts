@@ -4,9 +4,9 @@
  */
 
 import MarkdownIt from 'markdown-it';
-import { MarkdownEngineConfig } from '../markdown-engine-config';
+import { NotebookConfig } from '../notebook';
 
-export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
+export default (md: MarkdownIt, config: NotebookConfig) => {
   md.inline.ruler.before('autolink', 'wikilink', (state, silent) => {
     if (
       !config.enableWikiLinkSyntax ||
@@ -55,22 +55,36 @@ export default (md: MarkdownIt, config: MarkdownEngineConfig) => {
     }
 
     const splits = content.split('|');
-    let wikiLink: string;
-    let linkText: string;
+    let link: string;
+    let text: string;
     if (splits.length === 1) {
-      linkText = splits[0].trim();
-      const filename = linkText.replace(/\s/g, '_');
-      wikiLink = `${filename}${config.wikiLinkFileExtension}`;
+      text = splits[0].trim();
+
+      const result = config.parserConfig.processWikiLink({
+        text: text,
+        link: undefined,
+      });
+      text = result.text;
+      link = result.link;
     } else {
       if (config.useGitHubStylePipedLink) {
-        linkText = splits[0].trim();
-        wikiLink = `${splits[1].trim()}${config.wikiLinkFileExtension}`;
+        const result = config.parserConfig.processWikiLink({
+          text: splits[0].trim(),
+          link: splits[1].trim(),
+        });
+
+        text = result.text;
+        link = result.link;
       } else {
-        linkText = splits[1].trim();
-        wikiLink = `${splits[0].trim()}${config.wikiLinkFileExtension}`;
+        const result = config.parserConfig.processWikiLink({
+          text: splits[1].trim(),
+          link: splits[0].trim(),
+        });
+        text = result.text;
+        link = result.link;
       }
     }
 
-    return `<a href="${wikiLink}">${linkText}</a>`;
+    return `<a href="${link}">${text}</a>`;
   };
 };

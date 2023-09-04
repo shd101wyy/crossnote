@@ -1,50 +1,48 @@
-# MUME
+# Crossnote `[WIP]`
 
-[![Build Status](https://travis-ci.org/shd101wyy/mume.svg?branch=master)](https://travis-ci.org/shd101wyy/mume)
+Also called as `mume` before.
+
+[![npm](https://img.shields.io/npm/v/crossnote.svg)](https://www.npmjs.com/package/crossnote)
+[![npm](https://img.shields.io/npm/dt/crossnote.svg)](https://www.npmjs.com/package/crossnote)
+[![npm](https://img.shields.io/npm/l/crossnote.svg)](https://www.npmjs.com/package/crossnote)
 
 This library powers:
 
-- [markdown preview enhanced for atom](https://github.com/shd101wyy/markdown-preview-enhanced)
 - [markdown preview enhanced for vscode](https://github.com/shd101wyy/vscode-markdown-preview-enhanced)
-
-and other external projects such as:
-
-- [TechnicalMarkdown](https://github.com/gabyx/TechnicalMarkdown) up to commit 13856d37030483679
 
 ## Installation
 
 ```sh
-npm install --save @shd101wyy/mume
+# If you are using npm
+$ npm install --save crossnote
+
+# If you are using yarn
+$ yarn add crossnote
 ```
 
 ## Example
 
 ```javascript
 // CJS
-const path = require('path');
-const mume = require('@shd101wyy/mume');
+const { Notebook } = require('crossnote');
 
 // ESM
-// import * as mume from "@shd101wyy/mume"
+// import { Notebook } from "crossnote"
 
 async function main() {
-  const configPath = path.resolve(os.tmpdir(), '.mume');
-
-  // if no configPath is specified, the default is "~/.config/mume"
-  // but only if the old location (~/.mume) does not exist
-  await mume.init(configPath);
-
-  const engine = new mume.MarkdownEngine({
-    filePath: '/Users/wangyiyi/Desktop/markdown-example/test3.md',
+  const notebook = await Notebook.init({
+    notebookPath: '/absolute/path/to/your/notebook',
     config: {
-      configPath: configPath,
       previewTheme: 'github-light.css',
-      // revealjsTheme: "white.css"
-      codeBlockTheme: 'default.css',
+      mathRenderingOption: 'KaTeX',
+      codeBlockTheme: 'github.css',
       printBackground: true,
-      enableScriptExecution: true, // <= for running code chunks
+      enableScriptExecution: true, // <= For running code chunks.
     },
   });
+
+  // Get the markdown engine for a specific note file in your notebook.
+  const engine = notebook.getNoteMarkdownEngine('README.md');
 
   // open in browser
   await engine.openInBrowser({ runAllCodeChunks: true });
@@ -73,13 +71,10 @@ async function main() {
 main();
 ```
 
-## Markdown Engine Configuration
+## Notebook Configuration
 
 ```js
 const config = {
-  // Default config directory; `null` means "~/.config/mume"
-  configPath : null,
-
   // Enable this option will render markdown by pandoc instead of markdown-it.
   usePandocParser: false,
 
@@ -104,8 +99,6 @@ const config = {
   // If checked, we use GitHub style piped wiki links, i.e. [[linkText|wikiLink]]. Otherwise, we use
   // [[wikiLink|linkText]] as the original Wikipedia style.
   useGitHubStylePipedLink: true
-  // By default, the extension for wikilink is `.md`. For example: [[test]] will direct to file path `test.md`.
-  wikiLinkFileExtension: '.md'
 
   // Enable emoji & font-awesome plugin. This only works for markdown-it parser, but not pandoc parser.
   enableEmojiSyntax: true
@@ -261,29 +254,32 @@ const config = {
   // Kroki server url.
   krokiServer: "https://kroki.io",
 }
-
-// Init Engine
-const engine = new mume.MarkdownEngine({
-  filePath: '...',
-  projectDirectoryPath: '...',
-  config: config
-})
 ```
 
-## Global Configuration
+## Notebook Local Configuration
 
-Global config files are located in the `$XDG_STATE_HOME/mume` directory, which is `~/.config/mume` by default
+If your notebook has `.crossnote` directory, then when you run `await Notebook.init`, it will automatically create several configuration files in `.crossnote` directory and load the configurations.
+
+```
+.crossnote
+├── katex.json
+├── mathjax_v3.json
+├── mermaid.json
+├── parser.mjs
+└── style.less
+```
 
 ## Development
 
-[Visual Studio Code](https://code.visualstudio.com/) is recommended.
-Recommended to use Node.js version 20.
-
-1.  Clone this project
-2.  Run `yarn` from shell
-3.  Open in vscode, then `cmd+shift+b` to build
-4.  Run the tests with `yarn test`
+1.  Clone this project.
+2.  Run `yarn install` from shell.
+3.  Run `yarn build:watch` to start the watch mode.
+4.  Run `yarn build` to build the project.
 
 Or
 
 If you already have [nix](https://nixos.org/download.html) and [direnv](https://direnv.net/) installed, simply cd to the project directory, then run `direnv allow` once.
+
+## License
+
+[University of Illinois/NCSA Open Source License](LICENSE.md)

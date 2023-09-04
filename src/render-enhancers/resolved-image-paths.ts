@@ -62,8 +62,8 @@ export default async function enhance(
   });
 
   if (!usePandocParser) {
-    // check .mume-header in order to add id and class to headers.
-    $('.mume-header').each((i, e) => {
+    // check .crossnote-header in order to add id and class to headers.
+    $('.crossnote-header').each((i, e) => {
       const classes = e.attribs.class;
       const id = e.attribs.id;
       const $e = $(e);

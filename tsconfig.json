@@ -20,11 +20,5 @@
     //     "strict": true
   },
   "include": ["src/**/*", "test/**/*"],
-  "exclude": [
-    "node_modules",
-    "out",
-    "build.js",
-    "copy-files.js",
-    "compile-less.js"
-  ]
+  "exclude": ["node_modules", "out", "build.js", "gulpfile.js"]
 }
