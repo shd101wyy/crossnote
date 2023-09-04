@@ -635,6 +635,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     config = {},
     vscodePreviewPanel = null,
     contentSecurityPolicy = '',
+    isVSCodeWebExtension,
   }: {
     inputString?: string;
     body?: string;
@@ -645,6 +646,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     config: JsonObject;
     vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
     contentSecurityPolicy?: string;
+    isVSCodeWebExtension?: boolean;
   }): Promise<string> {
     if (!inputString) {
       inputString = await this.fs.readFile(this.filePath);
@@ -746,7 +748,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
         )}
         ${head}
       </head>
-      <body class="preview-container">
+      <body class="preview-container ${
+        isVSCodeWebExtension ? 'vscode-web-extension' : ''
+      }">
         <div class="crossnote markdown-preview" for="preview" ${
           isPresentationMode ? 'data-presentation-mode' : ''
         }>

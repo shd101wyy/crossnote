@@ -1,7 +1,6 @@
 // sm.ms api
 import * as fs from 'fs';
 import * as path from 'path';
-import * as qiniu from 'qiniu';
 import * as request from 'request';
 
 // imgur api
@@ -163,35 +162,39 @@ function qiniuUploadImage(
       return reject('Error: Qiniu Domain is missing');
     }
 
-    const mac = new qiniu.auth.digest.Mac(AccessKey, SecretKey);
-    const putPolicy = new qiniu.rs.PutPolicy({ scope: Bucket });
-    const uploadToken = putPolicy.uploadToken(mac);
-    const config = new qiniu.conf.Config();
-    const key = path.basename(filePath);
-    const formUploader = new qiniu.form_up.FormUploader(config);
-    const putExtra = new qiniu.form_up.PutExtra();
+    import('qiniu')
+      .then(qiniu => {
+        const mac = new qiniu.auth.digest.Mac(AccessKey, SecretKey);
+        const putPolicy = new qiniu.rs.PutPolicy({ scope: Bucket });
+        const uploadToken = putPolicy.uploadToken(mac);
+        const config = new qiniu.conf.Config();
+        const key = path.basename(filePath);
+        const formUploader = new qiniu.form_up.FormUploader(config);
+        const putExtra = new qiniu.form_up.PutExtra();
 
-    return formUploader.putFile(
-      uploadToken,
-      key,
-      filePath,
-      putExtra,
-      (respErr, respBody, respInfo) => {
-        if (respErr) {
-          // console.log(respErr);
-          return reject(respErr.message);
-        }
+        return formUploader.putFile(
+          uploadToken,
+          key,
+          filePath,
+          putExtra,
+          (respErr, respBody, respInfo) => {
+            if (respErr) {
+              // console.log(respErr);
+              return reject(respErr.message);
+            }
 
-        if (respInfo.statusCode === 200) {
-          const bucketManager = new qiniu.rs.BucketManager(mac, config);
-          const url = bucketManager.publicDownloadUrl(Domain, key);
-          return resolve(url);
-        } else {
-          // console.log(respInfo);
-          return reject(respInfo.error);
-        }
-      },
-    );
+            if (respInfo.statusCode === 200) {
+              const bucketManager = new qiniu.rs.BucketManager(mac, config);
+              const url = bucketManager.publicDownloadUrl(Domain, key);
+              return resolve(url);
+            } else {
+              // console.log(respInfo);
+              return reject(respInfo.error);
+            }
+          },
+        );
+      })
+      .catch(error => reject(error));
   });
 }
 

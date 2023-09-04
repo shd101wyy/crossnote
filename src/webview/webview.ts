@@ -114,6 +114,11 @@ import CryptoJS from 'crypto-js';
     private presentationMode: boolean;
 
     /**
+     * Whether this is rendering in VSCode Web extension.
+     */
+    private isVSCodeWebExtension: boolean = false;
+
+    /**
      * Track the slide line number, and (h, v) indices
      */
     private slidesData: {
@@ -163,6 +168,10 @@ import CryptoJS from 'crypto-js';
       hiddenPreviewElement.setAttribute('for', 'preview');
       hiddenPreviewElement.style.zIndex = '0';
       previewElement.insertAdjacentElement('beforebegin', hiddenPreviewElement);
+
+      this.isVSCodeWebExtension = document.body.classList.contains(
+        'vscode-web-extension',
+      );
 
       /** init `window` events */
       this.initWindowEvents();
@@ -399,69 +408,112 @@ import CryptoJS from 'crypto-js';
               },
             },
           },
-          chrome_export: {
-            name: 'Chrome (Puppeteer)',
-            items: {
-              chrome_pdf: {
-                name: 'PDF',
-                callback: () =>
-                  this.postMessage('chromeExport', [this.sourceUri, 'pdf']),
-              },
-              chrome_png: {
-                name: 'PNG',
-                callback: () =>
-                  this.postMessage('chromeExport', [this.sourceUri, 'png']),
-              },
-              chrome_jpeg: {
-                name: 'JPEG',
-                callback: () =>
-                  this.postMessage('chromeExport', [this.sourceUri, 'jpeg']),
-              },
-            },
-          },
-          prince_export: {
-            name: 'PDF (prince)',
-            callback: () => this.postMessage('princeExport', [this.sourceUri]),
-          },
-          ebook_export: {
-            name: 'eBook',
-            items: {
-              ebook_epub: {
-                name: 'ePub',
-                callback: () =>
-                  this.postMessage('eBookExport', [this.sourceUri, 'epub']),
-              },
-              ebook_mobi: {
-                name: 'mobi',
-                callback: () =>
-                  this.postMessage('eBookExport', [this.sourceUri, 'mobi']),
-              },
-              ebook_pdf: {
-                name: 'PDF',
-                callback: () =>
-                  this.postMessage('eBookExport', [this.sourceUri, 'pdf']),
-              },
-              ebook_html: {
-                name: 'HTML',
-                callback: () =>
-                  this.postMessage('eBookExport', [this.sourceUri, 'html']),
-              },
-            },
-          },
-          pandoc_export: {
-            name: 'Pandoc',
-            callback: () => this.postMessage('pandocExport', [this.sourceUri]),
-          },
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                chrome_export: {
+                  name: 'Chrome (Puppeteer)',
+                  items: {
+                    chrome_pdf: {
+                      name: 'PDF',
+                      callback: () =>
+                        this.postMessage('chromeExport', [
+                          this.sourceUri,
+                          'pdf',
+                        ]),
+                    },
+                    chrome_png: {
+                      name: 'PNG',
+                      callback: () =>
+                        this.postMessage('chromeExport', [
+                          this.sourceUri,
+                          'png',
+                        ]),
+                    },
+                    chrome_jpeg: {
+                      name: 'JPEG',
+                      callback: () =>
+                        this.postMessage('chromeExport', [
+                          this.sourceUri,
+                          'jpeg',
+                        ]),
+                    },
+                  },
+                },
+              }),
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                prince_export: {
+                  name: 'PDF (prince)',
+                  callback: () =>
+                    this.postMessage('princeExport', [this.sourceUri]),
+                },
+              }),
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                ebook_export: {
+                  name: 'eBook',
+                  items: {
+                    ebook_epub: {
+                      name: 'ePub',
+                      callback: () =>
+                        this.postMessage('eBookExport', [
+                          this.sourceUri,
+                          'epub',
+                        ]),
+                    },
+                    ebook_mobi: {
+                      name: 'mobi',
+                      callback: () =>
+                        this.postMessage('eBookExport', [
+                          this.sourceUri,
+                          'mobi',
+                        ]),
+                    },
+                    ebook_pdf: {
+                      name: 'PDF',
+                      callback: () =>
+                        this.postMessage('eBookExport', [
+                          this.sourceUri,
+                          'pdf',
+                        ]),
+                    },
+                    ebook_html: {
+                      name: 'HTML',
+                      callback: () =>
+                        this.postMessage('eBookExport', [
+                          this.sourceUri,
+                          'html',
+                        ]),
+                    },
+                  },
+                },
+              }),
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                pandoc_export: {
+                  name: 'Pandoc',
+                  callback: () =>
+                    this.postMessage('pandocExport', [this.sourceUri]),
+                },
+              }),
           save_as_markdown: {
             name: 'Save as Markdown',
             callback: () =>
               this.postMessage('markdownExport', [this.sourceUri]),
           },
-          sep2: '---------',
-          image_helper: {
-            name: 'Image Helper',
-            callback: () => window['$']('#image-helper-view').modal(),
-          },
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                sep2: '---------',
+                image_helper: {
+                  name: 'Image Helper',
+                  callback: () => window['$']('#image-helper-view').modal(),
+                },
+              }),
           sep3: '---------',
           sync_source: {
             name: 'Sync Source',

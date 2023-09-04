@@ -1,9 +1,17 @@
-import { Stats } from 'fs';
 import { KatexOptions } from 'katex';
 import { MermaidConfig } from 'mermaid';
 import { JsonObject } from 'type-fest';
 
 export const IS_NODE = typeof window === 'undefined';
+
+export type FileSystemStats = {
+  mtimeMs: number;
+  ctimeMs: number;
+  size: number;
+  isFile: () => boolean;
+  isDirectory: () => boolean;
+  isSymbolicLink: () => boolean;
+};
 
 export type FileSystemApi = {
   readFile: (path: string, encoding?: string) => Promise<string>;
@@ -14,7 +22,7 @@ export type FileSystemApi = {
   ) => Promise<void>;
   mkdir: (path: string) => Promise<void>;
   exists: (path: string) => Promise<boolean>;
-  stat: (path: string) => Promise<Stats>;
+  stat: (path: string) => Promise<FileSystemStats>;
   readdir: (path: string) => Promise<string[]>;
   unlink: (path: string) => Promise<void>;
 };
@@ -98,14 +106,14 @@ export interface NotebookConfig {
    *
    * This will be inserted into HTML `<style>` tag.
    *
-   * Default: `${notebookPath}/.crossnote/style.less` or  `''`
+   * @default `${notebookPath}/.crossnote/style.less` or  `''`
    */
   globalCss: string;
 
   /**
    * Mermaid configuration.
    *
-   * Default: `${notebookPath}/.crossnote/mermaid.json` or `{ startOnLoad: false }`
+   * @default `${notebookPath}/.crossnote/mermaid.json` or `{ startOnLoad: false }`
    */
   mermaidConfig: MermaidConfig;
 
@@ -129,21 +137,21 @@ export interface NotebookConfig {
    *
    * https://katex.org/docs/options.html
    *
-   * Default: `${notebookPath}/.crossnote/katex.json` or `{ macros: {} }`
+   * @default `${notebookPath}/.crossnote/katex.json` or `{ macros: {} }`
    */
   katexConfig: KatexOptions;
 
   /**
    * Whether to use Pandoc parser.
    *
-   * Default: `false`
+   * @default false
    */
   usePandocParser: boolean;
 
   /**
    * Parser configuration.
    *
-   * Default: `${notebookPath}/.crossnote/parser.mjs` or `{}`
+   * @default `${notebookPath}/.crossnote/parser.mjs` or `{}`
    */
   parserConfig: ParserConfig;
 
@@ -152,32 +160,32 @@ export interface NotebookConfig {
    *
    * If set to `false`, then two spaces at the end of line will be required to break a line.
    *
-   * Default: `true`
+   * @default true
    */
   breakOnSingleNewLine: boolean;
   /**
    * Whether to enable typographer.
    *
-   * Default: `false`
+   * @default false
    */
   enableTypographer: boolean;
   /**
    * Whether to enable wiki link syntax.
    *
-   * Default: `true`
+   * @default true
    */
   enableWikiLinkSyntax: boolean;
   /**
    * Whether to enable linkify.
    *
-   * Default: `true`
+   * @default true
    */
   enableLinkify: boolean;
   /**
    * Whether to use GitHub style piped link.
    * - GitHub style: `[[ text | link ]]`
    * - Wiki style: `[[ link | text ]]`
-   * Default: `false`
+   * @default false
    */
   useGitHubStylePipedLink: boolean;
   /**
@@ -185,37 +193,37 @@ export interface NotebookConfig {
    *
    * For example, if the file extension is `.md`, then `[[ link ]]` will link to `link.md`.
    *
-   * Default: `.md`
+   * @default `.md`
    */
   wikiLinkFileExtension: string;
   /**
    * Whether to enable emoji syntax.
    *
-   * Default: `true`
+   * @default true
    */
   enableEmojiSyntax: boolean;
   /**
    * Whether to enable extended table syntax.
    *
-   * Default: `false`
+   * @default false
    */
   enableExtendedTableSyntax: boolean;
   /**
    * Whether to enable critic markup syntax.
    *
-   * Default: `false`
+   * @default false
    */
   enableCriticMarkupSyntax: boolean;
   /**
    * The protocols white list.
    *
-   * Default: `http://, https://, atom://, file://, mailto:, tel:`
+   * @default `http://, https://, atom://, file://, mailto:, tel:`
    */
   protocolsWhiteList: string;
   /**
    * The math rendering option.
    *
-   * Default: `KaTeX`
+   * @default `KaTeX`
    */
   mathRenderingOption: MathRenderingOption;
   /**
@@ -223,7 +231,7 @@ export interface NotebookConfig {
    *
    * For example, `[["$", "$"]]` will render `$x$` as inline math.
    *
-   * Default: `[['$', '$']]`
+   * @default [['$', '$']]
    */
   mathInlineDelimiters: string[][];
   /**
@@ -231,61 +239,61 @@ export interface NotebookConfig {
    *
    * For example, `[["$$", "$$"]]` will render `$$x$$` as block math.
    *
-   * Default: `[['$$', '$$']]`
+   * @default [['$$', '$$']]
    */
   mathBlockDelimiters: string[][];
   /**
    * The online math rendering service used for markdown export.
    *
-   * Default: `https://latex.codecogs.com/gif.latex`
+   * @default `https://latex.codecogs.com/gif.latex`
    */
   mathRenderingOnlineService: string;
   /**
    * The script source for MathJax v3.
    *
-   * Default: https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+   * @default `https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js`
    */
   mathjaxV3ScriptSrc: string;
   /**
    * The code block theme.
    *
-   * Default: `auto.css`
+   * @default `auto.css`
    */
   codeBlockTheme: CodeBlockTheme;
   /**
    * The preview theme.
    *
-   * Default: `github-light.css`
+   * @default `github-light.css`
    */
   previewTheme: PreviewTheme;
   /**
    * The reveal.js theme.
    *
-   * Default: `white.css`
+   * @default `white.css`
    */
   revealjsTheme: RevealJsTheme;
   /**
    * The mermaid theme.
    *
-   * Default: `default`
+   * @default `default`
    */
   mermaidTheme: MermaidTheme;
   /**
    * The front matter rendering option.
    *
-   * Default: `none`
+   * @default `none`
    */
   frontMatterRenderingOption: FrontMatterRenderingOption;
   /**
    * The folder path for storing images.
    *
-   * Default: `/assets`
+   * @default `/assets`
    */
   imageFolderPath: string;
   /**
    * Whether to print background for file export.
    *
-   * Default: `false`
+   * @default false
    */
   printBackground: boolean;
   /**
@@ -293,7 +301,7 @@ export interface NotebookConfig {
    *
    * This is used for puppeteer to generate pdf or images.
    *
-   * Default: `''`
+   * @default ''
    */
   chromePath: string;
   /**
@@ -301,31 +309,31 @@ export interface NotebookConfig {
    *
    * This is used for converting svg to png.
    *
-   * Default: `''`
+   * @default ''
    */
   imageMagickPath: string;
   /**
    * The path of the `pandoc` command.
    *
-   * Default: `pandoc`
+   * @default `pandoc`
    */
   pandocPath: string;
   /**
    * The pandoc markdown flavor.
    *
-   * Default: `markdown-raw_tex+tex_math_single_backslash`
+   * @default `markdown-raw_tex+tex_math_single_backslash`
    */
   pandocMarkdownFlavor: string;
   /**
    * The arguments for running the `pandoc` command.
    *
-   * Default: `[]`
+   * @default []
    */
   pandocArguments: string[];
   /**
    * The latex engine.
    *
-   * Default: `pdflatex`
+   * @default `pdflatex`
    */
   latexEngine: string;
   /**
@@ -333,7 +341,7 @@ export interface NotebookConfig {
    *
    * **Note:** This is dangerous and should be used with caution.
    *
-   * Default: `false`
+   * @default false
    */
   enableScriptExecution: boolean;
   /**
@@ -341,37 +349,37 @@ export interface NotebookConfig {
    *
    * **Note:** This is dangerous and should be used with caution.
    *
-   * Default: `false`
+   * @default false
    */
   enableHTML5Embed: boolean;
   /**
    * Whether to use image syntax for HTML5 embed.
    *
-   * Default: `true`
+   * @default true
    */
   HTML5EmbedUseImageSyntax: boolean;
   /**
    * Whether to use link syntax for HTML5 embed.
    *
-   * Default: `false`
+   * @default false
    */
   HTML5EmbedUseLinkSyntax: boolean;
   /**
    * Whether to allow HTTP protocol for HTML5 embed.
    *   *
-   * Default: `false`
+   * @default false
    */
   HTML5EmbedIsAllowedHttp: boolean;
   /**
    * The audio attributes for HTML5 embed.
    *
-   * Default: `controls preload="metadata"`
+   * @default `controls preload="metadata"`
    */
   HTML5EmbedAudioAttributes: string;
   /**
    * The video attributes for HTML5 embed.
    *
-   * Default: `controls preload="metadata"`
+   * @default `controls preload="metadata"`
    */
   HTML5EmbedVideoAttributes: string;
   /**
@@ -379,13 +387,13 @@ export interface NotebookConfig {
    *
    * Increase the timeout if the exported file is incomplete.
    *
-   * Default: `0`
+   * @default 0
    */
   puppeteerWaitForTimeout: number;
   /**
    * The arguments for running puppeteer.
    *
-   * Default: `[]`
+   * @default []
    */
   puppeteerArgs: string[];
   /**
@@ -396,28 +404,34 @@ export interface NotebookConfig {
    * You run start a plantuml server by running:
    *
    * $ docker run -d -p 8080:8080 plantuml/plantuml-server:jetty
+   *
+   * @default ''
    */
   plantumlServer: string;
   /**
    * The path of the plantuml.jar file.
-   *   *
+   *
    * The plantuml.jar file could be downloaded from https://sourceforge.net/projects/plantuml/
+   *
+   * @default ''
    */
   plantumlJarPath: string;
   /**
    * The host of jsdelivr CDN.
    *
-   * Default: `cdn.jsdelivr.net`
+   * @default `cdn.jsdelivr.net`
    */
   jsdelivrCdnHost: string;
   /**
    * The Kroki server used to render diagrams.
    *
-   * Default: `https://kroki.io`
+   * @default `https://kroki.io`
    */
   krokiServer: string;
   /**
    * Whether the current environment is VSCode.
+   *
+   * @default false
    */
   isVSCode: boolean;
 }

@@ -184,48 +184,48 @@ export { uploadImage } from './tools/image-uploader.js';
  * @param fn
  */
 export function allowUnsafeEval(fn) {
-  const previousEval = global.eval;
+  const previousEval = globalThis.eval;
   try {
-    global.eval = source => {
+    globalThis.eval = source => {
       vm.runInThisContext(source);
     };
     return fn();
   } finally {
-    global.eval = previousEval;
+    globalThis.eval = previousEval;
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function allowUnsafeEvalAync(fn: () => Promise<any>) {
-  const previousEval = global.eval;
+  const previousEval = globalThis.eval;
   try {
-    global.eval = source => {
+    globalThis.eval = source => {
       vm.runInThisContext(source);
     };
     return await fn();
   } finally {
-    global.eval = previousEval;
+    globalThis.eval = previousEval;
   }
 }
 
 export function allowUnsafeNewFunction(fn) {
-  const previousFunction = global.Function;
+  const previousFunction = globalThis.Function;
   try {
-    global.Function = Function as FunctionConstructor;
+    globalThis.Function = Function as FunctionConstructor;
     return fn();
   } finally {
-    global.Function = previousFunction;
+    globalThis.Function = previousFunction;
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function allowUnsafeNewFunctionAsync(fn: () => Promise<any>) {
-  const previousFunction = global.Function;
+  const previousFunction = globalThis.Function;
   try {
-    global.Function = Function as FunctionConstructor;
+    globalThis.Function = Function as FunctionConstructor;
     return await fn();
   } finally {
-    global.Function = previousFunction;
+    globalThis.Function = previousFunction;
   }
 }
 
@@ -233,17 +233,17 @@ export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: () => Promise<any>,
 ) {
-  const previousFunction = global.Function;
-  const previousEval = global.eval;
+  const previousFunction = globalThis.Function;
+  const previousEval = globalThis.eval;
   try {
-    global.Function = Function as FunctionConstructor;
-    global.eval = source => {
+    globalThis.Function = Function as FunctionConstructor;
+    globalThis.eval = source => {
       vm.runInThisContext(source);
     };
     return await fn();
   } finally {
-    global.eval = previousEval;
-    global.Function = previousFunction;
+    globalThis.eval = previousEval;
+    globalThis.Function = previousFunction;
   }
 }
 
@@ -288,4 +288,4 @@ export function Function(...args: string[]) {
     })
   `);
 }
-Function.prototype = global.Function.prototype;
+Function.prototype = globalThis.Function.prototype;

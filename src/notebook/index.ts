@@ -1,5 +1,4 @@
 import { Mutex } from 'async-mutex';
-import { Stats } from 'fs';
 import MarkdownIt from 'markdown-it';
 import MarkdownItAbbr from 'markdown-it-abbr';
 import MarkdownItDeflist from 'markdown-it-deflist';
@@ -24,6 +23,7 @@ import { Reference, ReferenceMap } from './reference';
 import Search from './search';
 import {
   FileSystemApi,
+  FileSystemStats,
   IS_NODE,
   NotebookConfig,
   getDefaultNotebookConfig,
@@ -351,7 +351,7 @@ export class Notebook {
       return this.notes[filePath];
     }
     const absFilePath = this.resolveNoteAbsolutePath(filePath);
-    let stats: Stats;
+    let stats: FileSystemStats;
     try {
       stats = await this.fs.stat(absFilePath);
     } catch (error) {

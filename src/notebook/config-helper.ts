@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { KatexOptions } from 'katex';
-import * as less from 'less';
+import * as less from 'less/lib/less-node';
 import { MermaidConfig } from 'mermaid';
 import * as path from 'path';
 import { JsonObject } from 'type-fest';
