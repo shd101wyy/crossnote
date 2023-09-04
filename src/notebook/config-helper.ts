@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { KatexOptions } from 'katex';
-import * as less from 'less/lib/less-node';
+import * as less from 'less';
 import { MermaidConfig } from 'mermaid';
 import * as path from 'path';
 import { JsonObject } from 'type-fest';
@@ -82,16 +82,20 @@ async function getGlobalStyles(configPath: string, fs: FileSystemApi) {
   }
 
   return await new Promise<string>(resolve => {
+    const generateErrorMessage = error => {
+      return `html body:before {
+        content: "Failed to compile \`style.less\`. ${error}" !important;
+        padding: 2em !important;
+      }
+      .crossnote.crossnote { display: none !important; }`;
+    };
+
     less.render(
       fileContent,
       { paths: [path.dirname(globalLessPath)] },
       (error, output) => {
         if (error) {
-          return resolve(`html body:before {
-  content: "Failed to compile \`style.less\`. ${error}" !important;
-  padding: 2em !important;
-}
-.mume.mume { display: none !important; }`);
+          return resolve(generateErrorMessage(error));
         } else {
           return resolve(output?.css || '');
         }
@@ -200,12 +204,23 @@ export async function onWillParseMarkdown(markdown) {
 export async function onDidParseMarkdown(html, {cheerio}) {
   return html;
 }
+
 export async function onWillTransformMarkdown(markdown) {
   return markdown;
 }
+
 export async function onDidTransformMarkdown(markdown) {
   return markdown;
-}`,
+}
+
+export function processWikiLink({text, link}) {
+  return { 
+    text,  
+    link: link ? link : text.endsWith('.md') ? text : \`\${text}.md\`,
+  };
+}
+
+`,
     );
     return defaultParserConfig;
   }

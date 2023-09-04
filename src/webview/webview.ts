@@ -1244,6 +1244,7 @@ import CryptoJS from 'crypto-js';
             }
           } else if (
             // External links, like https://google.com
+            this.isVSCodeWebExtension &&
             href.startsWith('https://') &&
             !href.startsWith('https://file+.vscode-resource.vscode-cdn.net')
           ) {

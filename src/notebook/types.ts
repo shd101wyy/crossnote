@@ -29,14 +29,22 @@ export type FileSystemApi = {
 
 export type MathRenderingOption = 'None' | 'KaTeX' | 'MathJax';
 
+export interface ProcessWikiLinkArgs {
+  text: string;
+  link?: string;
+}
+
 export interface ParserConfig {
-  onWillParseMarkdown?: (markdown: string) => Promise<string>;
-  onDidParseMarkdown?: (
+  onWillParseMarkdown: (markdown: string) => Promise<string>;
+  onDidParseMarkdown: (
     html: string,
     opts: { cheerio: CheerioAPI },
   ) => Promise<string>;
-  onWillTransformMarkdown?: (markdown: string) => Promise<string>;
-  onDidTransformMarkdown?: (markdown: string) => Promise<string>;
+  onWillTransformMarkdown: (markdown: string) => Promise<string>;
+  onDidTransformMarkdown: (markdown: string) => Promise<string>;
+  processWikiLink: (
+    args: ProcessWikiLinkArgs,
+  ) => { text: string; link: string };
 }
 
 export type PreviewTheme =
@@ -188,14 +196,6 @@ export interface NotebookConfig {
    * @default false
    */
   useGitHubStylePipedLink: boolean;
-  /**
-   * The file extension for wiki link.
-   *
-   * For example, if the file extension is `.md`, then `[[ link ]]` will link to `link.md`.
-   *
-   * @default `.md`
-   */
-  wikiLinkFileExtension: string;
   /**
    * Whether to enable emoji syntax.
    *
@@ -470,6 +470,12 @@ export function getDefaultParserConfig(): ParserConfig {
     onDidTransformMarkdown: async function(markdown) {
       return markdown;
     },
+    processWikiLink: function({ text, link }) {
+      return {
+        text,
+        link: link ? link : text.endsWith('.md') ? text : `${text}.md`,
+      };
+    },
   };
 }
 
@@ -489,7 +495,6 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     enableExtendedTableSyntax: false,
     enableCriticMarkupSyntax: false,
     useGitHubStylePipedLink: false,
-    wikiLinkFileExtension: '.md',
     protocolsWhiteList: 'http://, https://, atom://, file://, mailto:, tel:',
     mathRenderingOption: 'KaTeX',
     mathInlineDelimiters: [['$', '$']],

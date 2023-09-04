@@ -289,3 +289,7 @@ export function Function(...args: string[]) {
   `);
 }
 Function.prototype = globalThis.Function.prototype;
+
+export function isVSCodeWebExtension() {
+  return process.env.IS_VSCODE_WEB_EXTENSION === 'true';
+}

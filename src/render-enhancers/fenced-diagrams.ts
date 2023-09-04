@@ -14,6 +14,7 @@ import {
   stringifyBlockAttributes,
 } from '../lib/block-attributes/index.js';
 import { BlockInfo } from '../lib/block-info/index.js';
+import { isVSCodeWebExtension } from '../utility';
 
 const ensureClassInAttributes = (
   attributes: BlockAttributes,
@@ -133,14 +134,26 @@ async function renderDiagram({
   const checksum = computeChecksum(JSON.stringify(normalizedInfo) + code);
   const diagramInCache: string = graphsCache[checksum];
 
-  if (isKroki) {
+  console.log('IS_VSCODE_WEB_EXTENSION: ', isVSCodeWebExtension());
+
+  if (
+    isKroki ||
+    // For VSCode Web Extension, we render plantuml diagrams on the kroki server
+    (isVSCodeWebExtension() &&
+      ['plantuml', 'puml'].includes(normalizedInfo.language))
+  ) {
     // Kroki is a service that can render diagrams from textual descriptions
     // see https://kroki.io/
     const krokiURL = kirokiServer || 'https://kroki.io';
-    const krokiDiagramType =
+
+    let krokiDiagramType =
       typeof normalizedInfo.attributes['kroki'] === 'string'
         ? normalizedInfo.attributes['kroki']
         : normalizedInfo.language;
+    if (krokiDiagramType === 'puml') {
+      krokiDiagramType = 'plantuml';
+    }
+
     // Convert code to deflate+base64
     const data = Buffer.from(code, 'utf8');
     const compressed = pako.deflate(data, { level: 9 });
@@ -158,95 +171,95 @@ async function renderDiagram({
     )}><img src="${krokiDiagramURL}" alt="${
       normalizedInfo.language
     } diagram"></div>`;
-  }
-
-  try {
-    switch (normalizedInfo.language) {
-      case 'mermaid': {
-        // these diagrams are rendered on the client
-        $output = `<div ${stringifyBlockAttributes(
-          ensureClassInAttributes(
-            normalizedInfo.attributes,
-            normalizedInfo.language,
-          ),
-        )}>${escape(code)}</div>`;
-        break;
-      }
-      case 'wavedrom': {
-        // wavedrom is also rendered on the client, but using <script>
-        $output = `<div ${stringifyBlockAttributes(
-          ensureClassInAttributes(
-            normalizedInfo.attributes,
-            normalizedInfo.language,
-          ),
-        )}><script type="WaveDrom">${code}</script></div>`;
-        break;
-      }
-      case 'puml':
-      case 'plantuml': {
-        let svg = diagramInCache;
-        if (!svg) {
-          svg = await renderPlantuml({
-            content: code,
-            fileDirectoryPath,
-            serverURL: plantumlServer,
-            plantumlJarPath,
-          });
-          graphsCache[checksum] = svg; // store to new cache
+  } else {
+    try {
+      switch (normalizedInfo.language) {
+        case 'mermaid': {
+          // these diagrams are rendered on the client
+          $output = `<div ${stringifyBlockAttributes(
+            ensureClassInAttributes(
+              normalizedInfo.attributes,
+              normalizedInfo.language,
+            ),
+          )}>${escape(code)}</div>`;
+          break;
         }
-        $output = `<p ${stringifyBlockAttributes(
-          normalizedInfo.attributes,
-        )}>${svg}</p>`;
-        break;
-      }
-      case 'graphviz':
-      case 'viz':
-      case 'dot': {
-        let svg = diagramInCache;
-        if (!svg) {
-          const engine = normalizedInfo.attributes['engine'] || 'dot';
-          svg = await Viz(code, { engine });
-          graphsCache[checksum] = svg; // store to new cache
+        case 'wavedrom': {
+          // wavedrom is also rendered on the client, but using <script>
+          $output = `<div ${stringifyBlockAttributes(
+            ensureClassInAttributes(
+              normalizedInfo.attributes,
+              normalizedInfo.language,
+            ),
+          )}><script type="WaveDrom">${code}</script></div>`;
+          break;
         }
-        $output = `<p ${stringifyBlockAttributes(
-          normalizedInfo.attributes,
-        )}>${svg}</p>`;
-        break;
-      }
-      case 'vega':
-      case 'vega-lite': {
-        if (normalizedInfo.attributes['interactive'] === true) {
-          const rawSpec = code.trim();
-          let spec;
-          if (rawSpec[0] !== '{') {
-            // yaml
-            spec = YAML.parse(rawSpec);
-          } else {
-            // json
-            spec = JSON.parse(rawSpec);
-          }
-          $output = hiddenCode(
-            JSON.stringify(spec).replace('<', '&lt;'),
-            normalizedInfo.attributes,
-            normalizedInfo.language,
-          );
-        } else {
+        case 'puml':
+        case 'plantuml': {
           let svg = diagramInCache;
           if (!svg) {
-            const vegaFunctionToCall =
-              normalizedInfo.language === 'vega' ? vegaToSvg : vegaLiteToSvg;
-            svg = await vegaFunctionToCall(code, fileDirectoryPath);
+            svg = await renderPlantuml({
+              content: code,
+              fileDirectoryPath,
+              serverURL: plantumlServer,
+              plantumlJarPath,
+            });
             graphsCache[checksum] = svg; // store to new cache
           }
           $output = `<p ${stringifyBlockAttributes(
             normalizedInfo.attributes,
           )}>${svg}</p>`;
+          break;
         }
-        break;
+        case 'graphviz':
+        case 'viz':
+        case 'dot': {
+          let svg = diagramInCache;
+          if (!svg) {
+            const engine = normalizedInfo.attributes['engine'] || 'dot';
+            svg = await Viz(code, { engine });
+            graphsCache[checksum] = svg; // store to new cache
+          }
+          $output = `<p ${stringifyBlockAttributes(
+            normalizedInfo.attributes,
+          )}>${svg}</p>`;
+          break;
+        }
+        case 'vega':
+        case 'vega-lite': {
+          if (normalizedInfo.attributes['interactive'] === true) {
+            const rawSpec = code.trim();
+            let spec;
+            if (rawSpec[0] !== '{') {
+              // yaml
+              spec = YAML.parse(rawSpec);
+            } else {
+              // json
+              spec = JSON.parse(rawSpec);
+            }
+            $output = hiddenCode(
+              JSON.stringify(spec).replace('<', '&lt;'),
+              normalizedInfo.attributes,
+              normalizedInfo.language,
+            );
+          } else {
+            let svg = diagramInCache;
+            if (!svg) {
+              const vegaFunctionToCall =
+                normalizedInfo.language === 'vega' ? vegaToSvg : vegaLiteToSvg;
+              svg = await vegaFunctionToCall(code, fileDirectoryPath);
+              graphsCache[checksum] = svg; // store to new cache
+            }
+            $output = `<p ${stringifyBlockAttributes(
+              normalizedInfo.attributes,
+            )}>${svg}</p>`;
+          }
+          break;
+        }
       }
+    } catch (error) {
+      $output = $(`<pre class="language-text">${error.toString()}</pre>`);
     }
-  } catch (error) {
-    $output = $(`<pre class="language-text">${error.toString()}</pre>`);
   }
 
   if ($output !== null) {

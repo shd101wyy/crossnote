@@ -1,5 +1,5 @@
 import * as fs from 'fs/promises';
-import * as less from 'less/lib/less-node';
+import * as less from 'less';
 import * as Papa from 'papaparse';
 import * as path from 'path';
 import request from 'request';
