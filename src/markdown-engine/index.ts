@@ -2724,8 +2724,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       return result;
     };
 
-    const note = await this.notebook.getNote(filePath);
-    if (!note) {
+    const markdown = await this.notebook.fs.readFile(filePath);
+    if (!markdown) {
       return doneRunning();
     }
 
@@ -2762,16 +2762,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
         const newLines = [
           ...lines.slice(0, start + 2),
-          result + '\n',
+          result,
           ...lines.slice(end - 1),
         ];
 
         // Write newLines to file
-        await this.notebook.writeNote(
-          filePath,
-          newLines.join('\n'),
-          note.config,
-        );
+        await this.notebook.fs.writeFile(filePath, newLines.join('\n'));
         return '';
       } else {
         const newLines = [
@@ -2781,16 +2777,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ];
 
         // Write newLines to file
-        await this.notebook.writeNote(
-          filePath,
-          newLines.join('\n'),
-          note.config,
-        );
+        await this.notebook.fs.writeFile(filePath, newLines.join('\n'));
         return '';
       }
     };
 
-    const lines = note.markdown.split('\n') || [];
+    const lines = markdown.split('\n') || [];
     const lineCount = lines.length;
     let codeChunkOffset = 0;
     const targetCodeChunkOffset =
@@ -2806,18 +2798,21 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             }
             i += 1;
           }
-          return await insertResult(i, lines);
+          await insertResult(i, lines);
+          break;
         } else {
           codeChunkOffset++;
         }
       } else if (line.match(/@import\s+(.+)"?cmd"?\s*[=\s}]/)) {
         if (codeChunkOffset === targetCodeChunkOffset) {
-          return await insertResult(i, lines);
+          await insertResult(i, lines);
+          break;
         } else {
           codeChunkOffset++;
         }
       }
     }
+
     // Done with the code chunk
     return doneRunning();
   }

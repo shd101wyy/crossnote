@@ -525,15 +525,15 @@ export class Notebook {
     markdown: string,
     noteConfig: NoteConfig,
   ): Promise<Note | null> {
-    noteConfig.modifiedAt = new Date();
+    // noteConfig.modifiedAt = new Date();
     const oMarkdown = markdown;
     try {
       const data = matter(markdown);
-      if (data.data['note'] && data.data['note'] instanceof Object) {
-        noteConfig = Object.assign({}, noteConfig, data.data['note'] || {});
-      }
+      // if (data.data['note'] && data.data['note'] instanceof Object) {
+      //   noteConfig = Object.assign({}, noteConfig, data.data['note'] || {});
+      // }
       const frontMatter = Object.assign(data.data || {}, noteConfig);
-      delete frontMatter['note'];
+      // delete frontMatter['note'];
       const aliases = frontMatter['aliases'];
       if (!aliases || !aliases.length) {
         delete frontMatter['aliases'];

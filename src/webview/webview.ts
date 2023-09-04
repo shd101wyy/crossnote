@@ -1201,11 +1201,9 @@ import CryptoJS from 'crypto-js';
      * Bind <a href="..."></a> click events.
      */
     private bindTagAClickEvent() {
-      console.log('* bindTagAClickEvent');
       const helper = (as: HTMLAnchorElement[]) => {
         for (let i = 0; i < as.length; i++) {
           const a = as[i];
-          console.log('** process: ', a);
           const hrefAttr = a.getAttribute('href');
           if (!hrefAttr) {
             continue;
@@ -1251,11 +1249,6 @@ import CryptoJS from 'crypto-js';
             continue;
           } else {
             a.onclick = event => {
-              console.log('! clicked tag a: ', {
-                uri: this.sourceUri,
-                href: encodeURIComponent(href.replace(/\\/g, '/')),
-                scheme: this.sourceScheme,
-              });
               event.preventDefault();
               event.stopPropagation();
               this.postMessage('clickTagA', [
@@ -1722,7 +1715,6 @@ import CryptoJS from 'crypto-js';
           // console.log('receive message: ' + data.command)
 
           if (data.command === 'updateHTML') {
-            console.log('* updateHTML: ', data);
             this.totalLineCount = data.totalLineCount;
             this.sidebarTOCHTML = data.tocHTML;
             this.sourceUri = data.sourceUri;

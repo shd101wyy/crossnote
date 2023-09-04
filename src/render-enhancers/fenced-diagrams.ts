@@ -134,8 +134,6 @@ async function renderDiagram({
   const checksum = computeChecksum(JSON.stringify(normalizedInfo) + code);
   const diagramInCache: string = graphsCache[checksum];
 
-  console.log('IS_VSCODE_WEB_EXTENSION: ', isVSCodeWebExtension());
-
   if (
     isKroki ||
     // For VSCode Web Extension, we render plantuml diagrams on the kroki server
