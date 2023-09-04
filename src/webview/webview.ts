@@ -149,6 +149,11 @@ import CryptoJS from 'crypto-js';
     private sourceUri: string | null = null;
 
     /**
+     * Source scheme
+     */
+    private sourceScheme = 'file';
+
+    /**
      * Caches
      */
     private wavedromCache = {};
@@ -247,8 +252,8 @@ import CryptoJS from 'crypto-js';
         ).matches;
 
         this.postMessage('webviewFinishLoading', [
-          this.sourceUri,
           {
+            uri: this.sourceUri,
             systemColorScheme: isDarkColorScheme ? 'dark' : 'light',
           },
         ]);
@@ -388,19 +393,28 @@ import CryptoJS from 'crypto-js';
       window['$']['contextMenu']({
         selector: '.preview-container',
         items: {
-          open_in_browser: {
-            name: 'Open in Browser',
-            callback: () => this.postMessage('openInBrowser', [this.sourceUri]),
-          },
-          sep1: '---------',
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                open_in_browser: {
+                  name: 'Open in Browser',
+                  callback: () =>
+                    this.postMessage('openInBrowser', [this.sourceUri]),
+                },
+                sep1: '---------',
+              }),
           html_export: {
             name: 'HTML',
             items: {
-              html_offline: {
-                name: 'HTML (offline)',
-                callback: () =>
-                  this.postMessage('htmlExport', [this.sourceUri, true]),
-              },
+              ...(this.isVSCodeWebExtension
+                ? {}
+                : {
+                    html_offline: {
+                      name: 'HTML (offline)',
+                      callback: () =>
+                        this.postMessage('htmlExport', [this.sourceUri, true]),
+                    },
+                  }),
               html_cdn: {
                 name: 'HTML (cdn hosted)',
                 callback: () =>
@@ -500,11 +514,15 @@ import CryptoJS from 'crypto-js';
                     this.postMessage('pandocExport', [this.sourceUri]),
                 },
               }),
-          save_as_markdown: {
-            name: 'Save as Markdown',
-            callback: () =>
-              this.postMessage('markdownExport', [this.sourceUri]),
-          },
+          ...(this.isVSCodeWebExtension
+            ? {}
+            : {
+                save_as_markdown: {
+                  name: 'Save as Markdown',
+                  callback: () =>
+                    this.postMessage('markdownExport', [this.sourceUri]),
+                },
+              }),
           ...(this.isVSCodeWebExtension
             ? {}
             : {
@@ -1183,10 +1201,16 @@ import CryptoJS from 'crypto-js';
      * Bind <a href="..."></a> click events.
      */
     private bindTagAClickEvent() {
-      const helper = as => {
+      console.log('* bindTagAClickEvent');
+      const helper = (as: HTMLAnchorElement[]) => {
         for (let i = 0; i < as.length; i++) {
           const a = as[i];
-          const href = decodeURIComponent(a.getAttribute('href')); // decodeURI here for Chinese like unicode heading
+          console.log('** process: ', a);
+          const hrefAttr = a.getAttribute('href');
+          if (!hrefAttr) {
+            continue;
+          }
+          const href = decodeURIComponent(hrefAttr); // decodeURI here for Chinese like unicode heading
           if (href && href[0] === '#') {
             const targetElement = this.previewElement.querySelector(
               `[id="${encodeURIComponent(href.slice(1))}"]`,
@@ -1218,22 +1242,36 @@ import CryptoJS from 'crypto-js';
                 event.stopPropagation();
               };
             }
+          } else if (
+            // External links, like https://google.com
+            href.startsWith('https://') &&
+            !href.startsWith('https://file+.vscode-resource.vscode-cdn.net')
+          ) {
+            continue;
           } else {
             a.onclick = event => {
+              console.log('! clicked tag a: ', {
+                uri: this.sourceUri,
+                href: encodeURIComponent(href.replace(/\\/g, '/')),
+                scheme: this.sourceScheme,
+              });
               event.preventDefault();
               event.stopPropagation();
               this.postMessage('clickTagA', [
-                this.sourceUri,
-                encodeURIComponent(href.replace(/\\/g, '/')),
+                {
+                  uri: this.sourceUri,
+                  href: encodeURIComponent(href.replace(/\\/g, '/')),
+                  scheme: this.sourceScheme,
+                },
               ]);
             };
           }
         }
       };
-      helper(this.previewElement.getElementsByTagName('a'));
+      helper(Array.from(this.previewElement.getElementsByTagName('a')));
 
       if (this.sidebarTOC) {
-        helper(this.sidebarTOC.getElementsByTagName('a'));
+        helper(Array.from(this.sidebarTOC.getElementsByTagName('a')));
       }
     }
 
@@ -1683,9 +1721,11 @@ import CryptoJS from 'crypto-js';
           // console.log('receive message: ' + data.command)
 
           if (data.command === 'updateHTML') {
+            console.log('* updateHTML: ', data);
             this.totalLineCount = data.totalLineCount;
             this.sidebarTOCHTML = data.tocHTML;
             this.sourceUri = data.sourceUri;
+            this.sourceScheme = data.sourceScheme;
             this.renderSidebarTOC();
             this.updateHTML(data.html, data.id, data.class);
           } else if (

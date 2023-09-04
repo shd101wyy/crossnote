@@ -81,8 +81,8 @@ export class Notebook {
 
   private async init({
     notebookPath,
-    fs,
     config = {},
+    fs,
   }: NotebookConstructorArgs) {
     // Check if workspaceFolder is absolute path
     if (!path.isAbsolute(notebookPath)) {
@@ -103,7 +103,7 @@ export class Notebook {
 
   private async initConfig(config: Partial<NotebookConfig>) {
     const extraConfig = await loadConfigsInDirectory(
-      path.join(this.notebookPath, './crossnote'),
+      path.join(this.notebookPath, './.crossnote'),
       this.fs,
     );
     this.config = {
