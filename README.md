@@ -1,7 +1,5 @@
 # Crossnote `[WIP]`
 
-:fa-car:
-
 Also called as `mume` before.
 
 [![npm](https://img.shields.io/npm/v/crossnote.svg)](https://www.npmjs.com/package/crossnote)
