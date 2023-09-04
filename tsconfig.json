@@ -14,7 +14,8 @@
     "incremental": true,
     "emitDeclarationOnly": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./out/types/"
+    "outDir": "./out/types/",
+    "resolveJsonModule": true
     // "declarationMap": true
     // "outFile": "./out/types/index.d.ts"
     //     "strict": true

@@ -1,24 +1,24 @@
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
 import MarkdownItHtml5Embed from 'markdown-it-html5-embed';
-import { NotebookConfig } from '../notebook';
+import { Notebook } from '../notebook';
 
-const optionsFromConfig = (config: NotebookConfig) => ({
+const optionsFromConfig = (notebook: Notebook) => ({
   html5embed: {
-    useImageSyntax: config.HTML5EmbedUseImageSyntax,
-    useLinkSyntax: config.HTML5EmbedUseLinkSyntax,
-    isAllowedHttp: config.HTML5EmbedIsAllowedHttp,
+    useImageSyntax: notebook.config.HTML5EmbedUseImageSyntax,
+    useLinkSyntax: notebook.config.HTML5EmbedUseLinkSyntax,
+    isAllowedHttp: notebook.config.HTML5EmbedIsAllowedHttp,
     attributes: {
-      audio: config.HTML5EmbedAudioAttributes,
-      video: config.HTML5EmbedVideoAttributes,
+      audio: notebook.config.HTML5EmbedAudioAttributes,
+      video: notebook.config.HTML5EmbedVideoAttributes,
     },
   },
 });
 
-export default (md: MarkdownIt, config: NotebookConfig) => {
-  if (!config.enableHTML5Embed) {
+export default (md: MarkdownIt, notebook: Notebook) => {
+  if (!notebook.config.enableHTML5Embed) {
     return;
   }
 
-  md.use(MarkdownItHtml5Embed, optionsFromConfig(config));
+  md.use(MarkdownItHtml5Embed, optionsFromConfig(notebook));
 };

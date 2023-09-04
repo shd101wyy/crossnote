@@ -9,10 +9,11 @@
 
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
-import { NotebookConfig } from '../notebook';
+import { Notebook } from '../notebook';
 
-export default (md: MarkdownIt, config: NotebookConfig) => {
+export default (md: MarkdownIt, notebook: Notebook) => {
   md.inline.ruler.before('strikethrough', 'critic-markup', (state, silent) => {
+    const config = notebook.config;
     if (!config.enableCriticMarkupSyntax) {
       return false;
     }

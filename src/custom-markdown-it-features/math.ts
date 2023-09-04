@@ -1,11 +1,11 @@
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
-import { NotebookConfig } from '../notebook';
+import { Notebook } from '../notebook';
 import parseMath from '../renderers/parse-math';
 
-export default (md: MarkdownIt, config: NotebookConfig) => {
+export default (md: MarkdownIt, notebook: Notebook) => {
   md.inline.ruler.before('escape', 'math', (state, silent) => {
-    if (config.mathRenderingOption === 'None') {
+    if (notebook.config.mathRenderingOption === 'None') {
       return false;
     }
 
@@ -15,7 +15,7 @@ export default (md: MarkdownIt, config: NotebookConfig) => {
     const {
       mathBlockDelimiters: blockDelimiters,
       mathInlineDelimiters: inlineDelimiters,
-    } = config;
+    } = notebook.config;
 
     for (const tagPair of blockDelimiters) {
       if (state.src.startsWith(tagPair[0], state.pos)) {
@@ -79,9 +79,9 @@ export default (md: MarkdownIt, config: NotebookConfig) => {
       content,
       openTag: tokens[idx].meta.openTag,
       closeTag: tokens[idx].meta.closeTag,
-      renderingOption: config.mathRenderingOption,
+      renderingOption: notebook.config.mathRenderingOption,
       displayMode: tokens[idx].meta.displayMode,
-      katexConfig: config.katexConfig,
+      katexConfig: notebook.config.katexConfig,
     });
   };
 };
