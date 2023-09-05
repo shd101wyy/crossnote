@@ -1,8 +1,7 @@
 // tslint:disable:ban-types no-var-requires
-import * as YAML from 'yaml';
-
+import fetch from 'cross-fetch';
 import { escape } from 'html-escaper';
-import * as pako from 'pako';
+import * as YAML from 'yaml';
 import computeChecksum from '../lib/compute-checksum';
 import { render as renderPlantuml } from '../renderers/puml';
 import { toSVG as vegaToSvg } from '../renderers/vega';
@@ -14,7 +13,6 @@ import {
   stringifyBlockAttributes,
 } from '../lib/block-attributes/index.js';
 import { BlockInfo } from '../lib/block-info/index.js';
-import { isVSCodeWebExtension } from '../utility';
 
 const ensureClassInAttributes = (
   attributes: BlockAttributes,
@@ -134,12 +132,7 @@ async function renderDiagram({
   const checksum = computeChecksum(JSON.stringify(normalizedInfo) + code);
   const diagramInCache: string = graphsCache[checksum];
 
-  if (
-    isKroki ||
-    // For VSCode Web Extension, we render plantuml diagrams on the kroki server
-    (isVSCodeWebExtension() &&
-      ['plantuml', 'puml'].includes(normalizedInfo.language))
-  ) {
+  if (isKroki) {
     if (diagramInCache) {
       $output = diagramInCache;
     } else {
@@ -147,15 +140,15 @@ async function renderDiagram({
       // see https://kroki.io/
       const krokiURL = kirokiServer || 'https://kroki.io';
 
-      let krokiDiagramType =
+      const krokiDiagramType =
         typeof normalizedInfo.attributes['kroki'] === 'string'
           ? normalizedInfo.attributes['kroki']
           : normalizedInfo.language;
-      if (krokiDiagramType === 'puml') {
-        krokiDiagramType = 'plantuml';
-      }
 
+      // NOTE: Code below are using GET request, but it's not working for large diagrams
+      // So we use POST request instead
       // Convert code to deflate+base64
+      /*
       const data = Buffer.from(code, 'utf8');
       const compressed = pako.deflate(data, { level: 9 });
       const result = Buffer.from(compressed)
@@ -164,17 +157,31 @@ async function renderDiagram({
         .replace(/\//g, '_');
       const krokiDiagramURL = `${krokiURL}/${krokiDiagramType}/${normalizedInfo
         .attributes['output'] ?? 'svg'}/${result}`;
+      */
+      try {
+        const req = await fetch(
+          `${krokiURL}/${krokiDiagramType}/${normalizedInfo.attributes[
+            'output'
+          ] ?? 'svg'}`,
+          {
+            method: 'POST',
+            body: code,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+          },
+        );
+        const diagram = await req.text();
 
-      $output = `<div ${stringifyBlockAttributes(
-        ensureClassInAttributes(
-          normalizedInfo.attributes,
-          normalizedInfo.language,
-        ),
-      )}><img src="${krokiDiagramURL}" alt="${
-        normalizedInfo.language
-      } diagram"></div>`;
+        $output = `<div ${stringifyBlockAttributes(
+          ensureClassInAttributes(
+            normalizedInfo.attributes,
+            normalizedInfo.language,
+          ),
+        )}>${diagram}</div>`;
 
-      graphsCache[checksum] = $output; // store to new cache
+        graphsCache[checksum] = $output; // store to new cache
+      } catch (error) {
+        $output = `<pre class="language-text">${error}</pre>`;
+      }
     }
   } else {
     try {

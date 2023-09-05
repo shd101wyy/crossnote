@@ -141,6 +141,9 @@ Please download plantuml.jar from https://plantuml.com/download.
 ${plantumlJarPath ? `Then please put it at "${plantumlJarPath}"` : ``}
 
 If you are using VSCode, then please set the setting "markdown-preview-enhanced.plantumlJarPath" to the absolute path of plantuml.jar file. 
+
+If you don't want to use plantuml.jar, then you can use the online plantuml server 
+by setting the setting "markdown-preview-enhanced.plantumlServer" to the URL of the online plantuml server, for example: https://kroki.io/plantuml/svg/
 `);
       }
       // init `plantuml.jar` task
