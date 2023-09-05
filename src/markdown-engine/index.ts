@@ -2624,9 +2624,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (this.notebook.config.parserConfig['onDidParseMarkdown']) {
       html = await this.notebook.config.parserConfig['onDidParseMarkdown'](
         html,
-        {
-          cheerio: cheerio.default,
-        },
       );
     }
 

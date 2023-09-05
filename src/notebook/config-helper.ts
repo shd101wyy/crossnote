@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as less from 'less';
 import * as path from 'path';
+import { interpretJS } from '../utility';
 import {
   FileSystemApi,
   NotebookConfig,
@@ -95,23 +96,20 @@ async function getConfigs(
   configPath: string,
   fs: FileSystemApi,
 ): Promise<Partial<NotebookConfig>> {
-  const configScriptPath = path.join(configPath, './config.mjs');
+  const configScriptPath = path.join(configPath, './config.js');
   const setupDefaultConfigScript = async () => {
     const defaultKatexConfig = getDefaultKatexConfig();
     const defaultMathjaxConfig = getDefaultMathjaxConfig();
     const defaultMermaidConfig = getDefaultMermaidConfig();
     await fs.writeFile(
       configScriptPath,
-      `export const katexConfig = ${JSON.stringify(
-        defaultKatexConfig,
-        null,
-        2,
-      )};
-
-export const mathjaxConfig = ${JSON.stringify(defaultMathjaxConfig, null, 2)};
-
-export const mermaidConfig = ${JSON.stringify(defaultMermaidConfig, null, 2)};
-`,
+      `({
+  katexConfig: ${JSON.stringify(defaultKatexConfig, null, 2)},
+  
+  mathjaxConfig: ${JSON.stringify(defaultMathjaxConfig, null, 2)},
+  
+  mermaidConfig: ${JSON.stringify(defaultMermaidConfig, null, 2)},
+})`,
     );
     return {
       katexConfig: defaultKatexConfig,
@@ -122,9 +120,20 @@ export const mermaidConfig = ${JSON.stringify(defaultMermaidConfig, null, 2)};
 
   if (await fs.exists(configScriptPath)) {
     try {
-      const result = await import(
-        configScriptPath + `?version=${Number(new Date())}`
-      );
+      // HACK: Dyamic import here doesn't work for the VSCode packaged extension.
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      /*
+      const result = isVSCodeWebExtension()
+        ? await import(configScriptPath + `?version=${Date.now()}`)
+        : (() => {
+            delete require.cache[require.resolve(configScriptPath)];
+            return require(configScriptPath);
+          })();
+      */
+      // NOTE: Never mind, the above code doesn't work in VSCode Web extension
+
+      const script = await fs.readFile(configScriptPath);
+      const result = interpretJS(script);
       if (Object.keys(result ?? {}).length === 0) {
         return await setupDefaultConfigScript();
       }
@@ -143,12 +152,22 @@ async function getParserConfig(
   fs: FileSystemApi,
 ): Promise<ParserConfig> {
   const defaultParserConfig = getDefaultParserConfig();
-  const parserConfigPath = path.join(configPath, './parser.mjs');
+  const parserConfigPath = path.join(configPath, './parser.js');
   if (await fs.exists(parserConfigPath)) {
     try {
-      const result = await import(
-        parserConfigPath + `?version=${Number(new Date())}`
-      );
+      // HACK: Dyamic import here doesn't work for the VSCode packaged extension.
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      /*
+      const result = isVSCodeWebExtension()
+        ? await import(parserConfigPath)
+        : (() => {
+            delete require.cache[require.resolve(parserConfigPath)];
+            return require(parserConfigPath);
+          })();
+      */
+      // NOTE: Never mind, the above code doesn't work in VSCode Web extension
+      const script = await fs.readFile(parserConfigPath);
+      const result = interpretJS(script);
       return {
         ...defaultParserConfig,
         ...(result ?? {}),
@@ -160,31 +179,30 @@ async function getParserConfig(
   } else {
     await fs.writeFile(
       parserConfigPath,
-      `
-export async function onWillParseMarkdown(markdown) {
-  return markdown;
-}
-      
-export async function onDidParseMarkdown(html, {cheerio}) {
-  return html;
-}
+      `({
+  onWillParseMarkdown: async function(markdown) {
+    return markdown;
+  },
 
-export async function onWillTransformMarkdown(markdown) {
-  return markdown;
-}
+  onDidParseMarkdown: async function(html) {
+    return html;
+  },
+  
+  onWillTransformMarkdown: async function(markdown) {
+    return markdown;
+  },
+  
+  onDidTransformMarkdown: async function(markdown) {
+    return markdown;
+  },
 
-export async function onDidTransformMarkdown(markdown) {
-  return markdown;
-}
-
-export function processWikiLink({text, link}) {
-  return { 
-    text,  
-    link: link ? link : text.endsWith('.md') ? text : \`\${text}.md\`,
-  };
-}
-
-`,
+  processWikiLink: function({text, link}) {
+    return { 
+      text,  
+      link: link ? link : text.endsWith('.md') ? text : \`\${text}.md\`,
+    };
+  }
+})`,
     );
     return defaultParserConfig;
   }

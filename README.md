@@ -262,8 +262,8 @@ If your notebook has `.crossnote` directory, then when you run `await Notebook.i
 
 ```
 .crossnote
-├── config.mjs
-├── parser.mjs
+├── config.js
+├── parser.js
 └── style.less
 ```
 

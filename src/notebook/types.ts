@@ -38,8 +38,9 @@ export interface ParserConfig {
   onWillParseMarkdown: (markdown: string) => Promise<string>;
   onDidParseMarkdown: (
     html: string,
-    opts: { cheerio: CheerioAPI },
-  ) => Promise<string>;
+  ) => // NOTE: We disabled this for now
+  // opts: { cheerio: CheerioAPI },
+  Promise<string>;
   onWillTransformMarkdown: (markdown: string) => Promise<string>;
   onDidTransformMarkdown: (markdown: string) => Promise<string>;
   processWikiLink: (
@@ -121,7 +122,7 @@ export interface NotebookConfig {
   /**
    * Mermaid configuration.
    *
-   * @default Defined in `${notebookPath}/.crossnote/configs.mjs` or `{ startOnLoad: false }`
+   * @default Defined in `${notebookPath}/.crossnote/configs.js` or `{ startOnLoad: false }`
    */
   mermaidConfig: MermaidConfig;
 
@@ -130,7 +131,7 @@ export interface NotebookConfig {
    *
    * https://docs.mathjax.org/en/latest/options/index.html
    *
-   * Default: Defined in `${notebookPath}/.crossnote/configs.mjs` or
+   * Default: Defined in `${notebookPath}/.crossnote/configs.js` or
    * ```
    * {
    *   tex: {},
@@ -145,7 +146,7 @@ export interface NotebookConfig {
    *
    * https://katex.org/docs/options.html
    *
-   * @default Defined in `${notebookPath}/.crossnote/configs.mjs` or `{ macros: {} }`
+   * @default Defined in `${notebookPath}/.crossnote/configs.js` or `{ macros: {} }`
    */
   katexConfig: KatexOptions;
 
@@ -159,7 +160,7 @@ export interface NotebookConfig {
   /**
    * Parser configuration.
    *
-   * @default `${notebookPath}/.crossnote/parser.mjs` or `{}`
+   * @default `${notebookPath}/.crossnote/parser.js` or `{}`
    */
   parserConfig: ParserConfig;
 
