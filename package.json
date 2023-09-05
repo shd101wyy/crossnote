@@ -76,6 +76,7 @@
     "object-hash": "^3.0.0",
     "pako": "^2.1.0",
     "papaparse": "^5.4.1",
+    "plantuml-encoder": "^1.4.0",
     "puppeteer-core": "^21.1.0",
     "qiniu": "^7.9.0",
     "request": "^2.88.0",
