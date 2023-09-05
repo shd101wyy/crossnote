@@ -262,7 +262,8 @@ export class MarkdownEngine {
       this.notebook.config.mathRenderingOption === 'MathJax' ||
       this.notebook.config.usePandocParser
     ) {
-      const mathJaxConfig = copy(this.notebook.config.mathjaxConfig);
+      // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
+      const mathJaxConfig = copy({ ...this.notebook.config.mathjaxConfig });
       mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
       mathJaxConfig['tex'][
         'inlineMath'
@@ -796,7 +797,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
       this.notebook.config.mathRenderingOption === 'MathJax' ||
       this.notebook.config.usePandocParser
     ) {
-      const mathJaxConfig = copy(this.notebook.config.mathjaxConfig);
+      // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
+      const mathJaxConfig = copy({ ...this.notebook.config.mathjaxConfig });
       mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
       mathJaxConfig['tex'][
         'inlineMath'
