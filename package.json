@@ -1,6 +1,6 @@
 {
   "name": "crossnote",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
@@ -54,6 +54,7 @@
     "async-mutex": "^0.4.0",
     "cheerio": "^1.0.0-rc.12",
     "chrome-paths": "^1.0.1",
+    "cross-fetch": "^4.0.0",
     "crypto-js": "^4.1.1",
     "html-escaper": "^3.0.3",
     "imagemagick-cli": "^0.5.0",
@@ -72,10 +73,10 @@
     "mermaid": "^10.4.0",
     "minisearch": "^6.1.0",
     "mkdirp": "^3.0.1",
-    "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
     "pako": "^2.1.0",
     "papaparse": "^5.4.1",
+    "plantuml-encoder": "^1.4.0",
     "puppeteer-core": "^21.1.0",
     "qiniu": "^7.9.0",
     "request": "^2.88.0",

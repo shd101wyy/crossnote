@@ -125,11 +125,11 @@ export class Notebook {
     this.md.use(MarkdownItMark);
 
     useMarkdownItCodeFences(this.md);
-    useMarkdownItCriticMarkup(this.md, this.config);
-    useMarkdownItEmoji(this.md, this.config);
-    useMarkdownItHTML5Embed(this.md, this.config);
-    useMarkdownItMath(this.md, this.config);
-    useMarkdownItWikilink(this.md, this.config);
+    useMarkdownItCriticMarkup(this.md, this);
+    useMarkdownItEmoji(this.md, this);
+    useMarkdownItHTML5Embed(this.md, this);
+    useMarkdownItMath(this.md, this);
+    useMarkdownItWikilink(this.md, this);
     useMarkdownAdmonition(this.md);
   }
 

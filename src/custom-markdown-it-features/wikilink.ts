@@ -4,12 +4,12 @@
  */
 
 import MarkdownIt from 'markdown-it';
-import { NotebookConfig } from '../notebook';
+import { Notebook } from '../notebook';
 
-export default (md: MarkdownIt, config: NotebookConfig) => {
+export default (md: MarkdownIt, notebook: Notebook) => {
   md.inline.ruler.before('autolink', 'wikilink', (state, silent) => {
     if (
-      !config.enableWikiLinkSyntax ||
+      !notebook.config.enableWikiLinkSyntax ||
       !state.src.startsWith('[[', state.pos)
     ) {
       return false;
@@ -60,15 +60,15 @@ export default (md: MarkdownIt, config: NotebookConfig) => {
     if (splits.length === 1) {
       text = splits[0].trim();
 
-      const result = config.parserConfig.processWikiLink({
+      const result = notebook.config.parserConfig.processWikiLink({
         text: text,
         link: undefined,
       });
       text = result.text;
       link = result.link;
     } else {
-      if (config.useGitHubStylePipedLink) {
-        const result = config.parserConfig.processWikiLink({
+      if (notebook.config.useGitHubStylePipedLink) {
+        const result = notebook.config.parserConfig.processWikiLink({
           text: splits[0].trim(),
           link: splits[1].trim(),
         });
@@ -76,7 +76,7 @@ export default (md: MarkdownIt, config: NotebookConfig) => {
         text = result.text;
         link = result.link;
       } else {
-        const result = config.parserConfig.processWikiLink({
+        const result = notebook.config.parserConfig.processWikiLink({
           text: splits[1].trim(),
           link: splits[0].trim(),
         });
