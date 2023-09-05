@@ -1,4 +1,4 @@
-// tslint:disable:ban-types no-var-requires
+import { escape } from 'html-escaper';
 import { run } from '../code-chunk/code-chunk';
 import { CodeChunkData, CodeChunksData } from '../code-chunk/code-chunk-data';
 import { BlockInfo } from '../lib/block-info';
@@ -194,7 +194,7 @@ export async function runCodeChunk(
   const cmd = extractCommandFromBlockInfo(codeChunkData.normalizedInfo);
 
   codeChunkData.running = true;
-  let result;
+  let result: string;
   let outputFormat = 'text';
   let blockModifiesSource =
     codeChunkData.normalizedInfo.attributes['modify_source'];
@@ -267,7 +267,8 @@ export async function runCodeChunk(
     } else if (outputFormat === 'none') {
       result = '';
     } else {
-      result = `<pre class="language-text">${result}</pre>`;
+      // text
+      result = `<pre class="language-text">${escape(result)}</pre>`;
     }
   } catch (error) {
     result = `<pre class="language-text">${error}</pre>`;
