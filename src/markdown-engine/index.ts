@@ -2,6 +2,7 @@
 
 import * as cheerio from 'cheerio';
 import { execFile } from 'child_process';
+import { copy } from 'copy-anything';
 import CryptoJS from 'crypto-js';
 import * as fs from 'fs';
 import { escape } from 'html-escaper';
@@ -261,7 +262,7 @@ export class MarkdownEngine {
       this.notebook.config.mathRenderingOption === 'MathJax' ||
       this.notebook.config.usePandocParser
     ) {
-      const mathJaxConfig = this.notebook.config.mathjaxConfig;
+      const mathJaxConfig = copy(this.notebook.config.mathjaxConfig);
       mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
       mathJaxConfig['tex'][
         'inlineMath'
@@ -795,8 +796,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       this.notebook.config.mathRenderingOption === 'MathJax' ||
       this.notebook.config.usePandocParser
     ) {
-      // TODO
-      const mathJaxConfig = this.notebook.config.mathjaxConfig;
+      const mathJaxConfig = copy(this.notebook.config.mathjaxConfig);
       mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
       mathJaxConfig['tex'][
         'inlineMath'
@@ -1940,20 +1940,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         filesCache: this.filesCache,
         codeChunksData: this.codeChunksData,
         graphsCache: this.graphsCache,
-        imageDirectoryPath: this.notebook.config.imageFolderPath,
-        pandocMarkdownFlavor: this.notebook.config.pandocMarkdownFlavor,
-        pandocPath: this.notebook.config.pandocPath,
-        latexEngine: this.notebook.config.latexEngine,
-        imageMagickPath: this.notebook.config.imageMagickPath,
-        mermaidTheme: this.notebook.config.mermaidTheme,
-        plantumlServer: this.notebook.config.plantumlServer,
-        plantumlJarPath: this.notebook.config.plantumlJarPath,
-        onWillTransformMarkdown: this.notebook.config.parserConfig[
-          'onWillTransformMarkdown'
-        ],
-        onDidTransformMarkdown: this.notebook.config.parserConfig[
-          'onDidTransformMarkdown'
-        ],
+        notebook: this.notebook,
       },
       config,
     );
@@ -2046,24 +2033,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         fileDirectoryPath: this.fileDirectoryPath,
         protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
         filesCache: this.filesCache,
-        mathRenderingOption: this.notebook.config.mathRenderingOption,
-        mathInlineDelimiters: this.notebook.config.mathInlineDelimiters,
-        mathBlockDelimiters: this.notebook.config.mathBlockDelimiters,
-        mathRenderingOnlineService: this.notebook.config
-          .mathRenderingOnlineService,
         codeChunksData: this.codeChunksData,
         graphsCache: this.graphsCache,
-        usePandocParser: this.notebook.config.usePandocParser,
-        imageMagickPath: this.notebook.config.imageMagickPath,
-        mermaidTheme: this.notebook.config.mermaidTheme,
-        plantumlServer: this.notebook.config.plantumlServer,
-        plantumlJarPath: this.notebook.config.plantumlJarPath,
-        onWillTransformMarkdown: this.notebook.config.parserConfig[
-          'onWillTransformMarkdown'
-        ],
-        onDidTransformMarkdown: this.notebook.config.parserConfig[
-          'onDidTransformMarkdown'
-        ],
+        notebook: this.notebook,
       },
       markdownConfig,
     );
@@ -2506,13 +2478,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
-      usePandocParser: this.notebook.config.usePandocParser,
-      onWillTransformMarkdown: this.notebook.config.parserConfig[
-        'onWillTransformMarkdown'
-      ],
-      onDidTransformMarkdown: this.notebook.config.parserConfig[
-        'onDidTransformMarkdown'
-      ],
+      notebook: this.notebook,
     }));
 
     if (this.notebook.config.parserConfig['onDidTransformMarkdown']) {
@@ -2658,9 +2624,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (this.notebook.config.parserConfig['onDidParseMarkdown']) {
       html = await this.notebook.config.parserConfig['onDidParseMarkdown'](
         html,
-        {
-          cheerio: cheerio.default,
-        },
       );
     }
 

@@ -262,10 +262,8 @@ If your notebook has `.crossnote` directory, then when you run `await Notebook.i
 
 ```
 .crossnote
-├── katex.json
-├── mathjax_v3.json
-├── mermaid.json
-├── parser.mjs
+├── config.js
+├── parser.js
 └── style.less
 ```
 

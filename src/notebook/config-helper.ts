@@ -1,11 +1,10 @@
 import * as fs from 'fs';
-import { KatexOptions } from 'katex';
 import * as less from 'less';
-import { MermaidConfig } from 'mermaid';
 import * as path from 'path';
-import { JsonObject } from 'type-fest';
+import { interpretJS } from '../utility';
 import {
   FileSystemApi,
+  NotebookConfig,
   ParserConfig,
   getDefaultKatexConfig,
   getDefaultMathjaxConfig,
@@ -22,15 +21,9 @@ export async function loadConfigsInDirectory(
   directoryPath: string,
   fileSystem: FileSystemApi,
   createDirectoryIfNotExists: boolean = false,
-): Promise<{
-  globalCss: string;
-  mermaidConfig: MermaidConfig;
-  mathjaxConfig: JsonObject;
-  katexConfig: KatexOptions;
-  parserConfig: ParserConfig;
-}> {
+): Promise<Partial<NotebookConfig>> {
   const defaultConfig = getDefaultNotebookConfig();
-  const loadedConfig = {
+  let loadedConfig = {
     globalCss: defaultConfig.globalCss,
     mermaidConfig: defaultConfig.mermaidConfig,
     mathjaxConfig: defaultConfig.mathjaxConfig,
@@ -44,19 +37,14 @@ export async function loadConfigsInDirectory(
 
   if (await fileSystem.exists(directoryPath)) {
     loadedConfig.globalCss = await getGlobalStyles(directoryPath, fileSystem);
-    loadedConfig.mermaidConfig = await getMermaidConfig(
-      directoryPath,
-      fileSystem,
-    );
-    loadedConfig.mathjaxConfig = await getMathjaxConfig(
-      directoryPath,
-      fileSystem,
-    );
-    loadedConfig.katexConfig = await getKatexConfig(directoryPath, fileSystem);
     loadedConfig.parserConfig = await getParserConfig(
       directoryPath,
       fileSystem,
     );
+    loadedConfig = {
+      ...loadedConfig,
+      ...(await getConfigs(directoryPath, fileSystem)),
+    };
   }
   return loadedConfig;
 }
@@ -104,87 +92,82 @@ async function getGlobalStyles(configPath: string, fs: FileSystemApi) {
   });
 }
 
-export async function getMermaidConfig(
+async function getConfigs(
   configPath: string,
   fs: FileSystemApi,
-): Promise<MermaidConfig> {
-  const defaultMermaidConfig = getDefaultMermaidConfig();
-  const mermaidConfigFilePath = path.join(configPath, './mermaid.json');
-  if (await fs.exists(mermaidConfigFilePath)) {
+): Promise<Partial<NotebookConfig>> {
+  const configScriptPath = path.join(configPath, './config.js');
+  const setupDefaultConfigScript = async () => {
+    const defaultKatexConfig = getDefaultKatexConfig();
+    const defaultMathjaxConfig = getDefaultMathjaxConfig();
+    const defaultMermaidConfig = getDefaultMermaidConfig();
+    await fs.writeFile(
+      configScriptPath,
+      `({
+  katexConfig: ${JSON.stringify(defaultKatexConfig, null, 2)},
+  
+  mathjaxConfig: ${JSON.stringify(defaultMathjaxConfig, null, 2)},
+  
+  mermaidConfig: ${JSON.stringify(defaultMermaidConfig, null, 2)},
+})`,
+    );
+    return {
+      katexConfig: defaultKatexConfig,
+      mathjaxConfig: defaultMathjaxConfig,
+      mermaidConfig: defaultMermaidConfig,
+    };
+  };
+
+  if (await fs.exists(configScriptPath)) {
     try {
-      const mermaidConfig = JSON.parse(
-        await fs.readFile(mermaidConfigFilePath),
-      );
-      return mermaidConfig;
+      // HACK: Dyamic import here doesn't work for the VSCode packaged extension.
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      /*
+      const result = isVSCodeWebExtension()
+        ? await import(configScriptPath + `?version=${Date.now()}`)
+        : (() => {
+            delete require.cache[require.resolve(configScriptPath)];
+            return require(configScriptPath);
+          })();
+      */
+      // NOTE: Never mind, the above code doesn't work in VSCode Web extension
+
+      const script = await fs.readFile(configScriptPath);
+      const result = interpretJS(script);
+      if (Object.keys(result ?? {}).length === 0) {
+        return await setupDefaultConfigScript();
+      }
+      return result;
     } catch (e) {
-      return defaultMermaidConfig;
+      console.error(e);
+      return {};
     }
   } else {
-    await fs.writeFile(
-      mermaidConfigFilePath,
-      JSON.stringify(defaultMermaidConfig, null, 2),
-    );
-    return defaultMermaidConfig;
+    return setupDefaultConfigScript();
   }
 }
 
-export async function getMathjaxConfig(
-  configPath: string,
-  fs: FileSystemApi,
-): Promise<JsonObject> {
-  const defaultMathjaxConfig = getDefaultMathjaxConfig();
-  const mathjaxConfigFilePath = path.join(configPath, './mathjax_v3.json');
-  if (await fs.exists(mathjaxConfigFilePath)) {
-    try {
-      const mathjaxConfig = JSON.parse(
-        await fs.readFile(mathjaxConfigFilePath),
-      );
-      return mathjaxConfig;
-    } catch (e) {
-      return defaultMathjaxConfig;
-    }
-  } else {
-    await fs.writeFile(
-      mathjaxConfigFilePath,
-      JSON.stringify(defaultMathjaxConfig, null, 2),
-    );
-    return defaultMathjaxConfig;
-  }
-}
-
-export async function getKatexConfig(
-  configPath: string,
-  fs: FileSystemApi,
-): Promise<KatexOptions> {
-  const defaultKatexConfig = getDefaultKatexConfig();
-  const katexConfigFilePath = path.join(configPath, './katex.json');
-  if (await fs.exists(katexConfigFilePath)) {
-    try {
-      const katexConfig = JSON.parse(await fs.readFile(katexConfigFilePath));
-      return katexConfig;
-    } catch (e) {
-      return defaultKatexConfig;
-    }
-  } else {
-    await fs.writeFile(
-      katexConfigFilePath,
-      JSON.stringify(defaultKatexConfig, null, 2),
-    );
-    return defaultKatexConfig;
-  }
-}
-
-export async function getParserConfig(
+async function getParserConfig(
   configPath: string,
   fs: FileSystemApi,
 ): Promise<ParserConfig> {
   const defaultParserConfig = getDefaultParserConfig();
-  const parserConfigPath = path.join(configPath, './parser.mjs');
+  const parserConfigPath = path.join(configPath, './parser.js');
   if (await fs.exists(parserConfigPath)) {
     try {
-      const result = await import(
-        parserConfigPath + `?version=${Number(new Date())}`
-      );
+      // HACK: Dyamic import here doesn't work for the VSCode packaged extension.
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      /*
+      const result = isVSCodeWebExtension()
+        ? await import(parserConfigPath)
+        : (() => {
+            delete require.cache[require.resolve(parserConfigPath)];
+            return require(parserConfigPath);
+          })();
+      */
+      // NOTE: Never mind, the above code doesn't work in VSCode Web extension
+      const script = await fs.readFile(parserConfigPath);
+      const result = interpretJS(script);
       return {
         ...defaultParserConfig,
         ...(result ?? {}),
@@ -196,31 +179,30 @@ export async function getParserConfig(
   } else {
     await fs.writeFile(
       parserConfigPath,
-      `
-export async function onWillParseMarkdown(markdown) {
-  return markdown;
-}
-      
-export async function onDidParseMarkdown(html, {cheerio}) {
-  return html;
-}
+      `({
+  onWillParseMarkdown: async function(markdown) {
+    return markdown;
+  },
 
-export async function onWillTransformMarkdown(markdown) {
-  return markdown;
-}
+  onDidParseMarkdown: async function(html) {
+    return html;
+  },
+  
+  onWillTransformMarkdown: async function(markdown) {
+    return markdown;
+  },
+  
+  onDidTransformMarkdown: async function(markdown) {
+    return markdown;
+  },
 
-export async function onDidTransformMarkdown(markdown) {
-  return markdown;
-}
-
-export function processWikiLink({text, link}) {
-  return { 
-    text,  
-    link: link ? link : text.endsWith('.md') ? text : \`\${text}.md\`,
-  };
-}
-
-`,
+  processWikiLink: function({text, link}) {
+    return { 
+      text,  
+      link: link ? link : text.endsWith('.md') ? text : \`\${text}.md\`,
+    };
+  }
+})`,
     );
     return defaultParserConfig;
   }

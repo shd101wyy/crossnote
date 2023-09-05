@@ -10,6 +10,7 @@ import {
   stringifyBlockAttributes,
 } from '../lib/block-attributes';
 import computeChecksum from '../lib/compute-checksum';
+import { Notebook } from '../notebook';
 import * as PDF from '../tools/pdf';
 import { CustomSubjects } from './custom-subjects';
 import HeadingIdGenerator from './heading-id-generator';
@@ -51,10 +52,8 @@ export interface TransformMarkdownOptions {
   protocolsWhiteListRegExp: RegExp | null;
   notSourceFile?: boolean;
   imageDirectoryPath?: string;
-  usePandocParser: boolean;
   headingIdGenerator?: HeadingIdGenerator;
-  onWillTransformMarkdown?: ((markdown: string) => Promise<string>) | null;
-  onDidTransformMarkdown?: ((markdown: string) => Promise<string>) | null;
+  notebook: Notebook;
 }
 
 const fileExtensionToLanguageMap = {
@@ -161,9 +160,11 @@ async function loadFile(
   {
     fileDirectoryPath,
     imageDirectoryPath,
+    notebook,
   }: {
     fileDirectoryPath: string;
     imageDirectoryPath: string;
+    notebook: Notebook;
   },
   filesCache = {},
 ): Promise<string> {
@@ -173,7 +174,7 @@ async function loadFile(
 
   if (filePath.endsWith('.less')) {
     // less file
-    const data = await fs.readFile(filePath, { encoding: 'utf-8' });
+    const data = await notebook.fs.readFile(filePath);
     return await new Promise<string>((resolve, reject) => {
       less.render(
         data,
@@ -224,7 +225,7 @@ async function loadFile(
     });
   } else {
     // local file
-    return await fs.readFile(filePath, { encoding: 'utf-8' });
+    return await notebook.fs.readFile(filePath);
   }
 }
 
@@ -247,10 +248,8 @@ export async function transformMarkdown(
     protocolsWhiteListRegExp = null,
     notSourceFile = false,
     imageDirectoryPath = '',
-    usePandocParser = false,
     headingIdGenerator = new HeadingIdGenerator(),
-    onWillTransformMarkdown = null,
-    onDidTransformMarkdown = null,
+    notebook,
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
   let lastOpeningCodeBlockFence: string | null = null;
@@ -412,7 +411,7 @@ export async function transformMarkdown(
 
         if (!id) {
           id = headingIdGenerator.generateId(heading);
-          if (usePandocParser) {
+          if (notebook.config.usePandocParser) {
             id = id.replace(/^[\d-]+/, '');
             if (!id) {
               id = 'section';
@@ -424,7 +423,7 @@ export async function transformMarkdown(
           headings.push({ content: heading, level, id });
         }
 
-        if (usePandocParser) {
+        if (notebook.config.usePandocParser) {
           // pandoc
           let optionsStr = '{';
           if (id) {
@@ -756,7 +755,11 @@ export async function transformMarkdown(
           try {
             let fileContent = await loadFile(
               absoluteFilePath,
-              { fileDirectoryPath, /*forPreview,*/ imageDirectoryPath },
+              {
+                fileDirectoryPath,
+                /*forPreview,*/ imageDirectoryPath,
+                notebook,
+              },
               filesCache,
             );
             filesCache[absoluteFilePath] = fileContent;
@@ -795,8 +798,10 @@ export async function transformMarkdown(
                 config,
               )}  \n${fileContent}\n\`\`\`  `;
             } else if (['.md', '.markdown', '.mmark'].indexOf(extname) >= 0) {
-              if (onWillTransformMarkdown) {
-                fileContent = await onWillTransformMarkdown(fileContent);
+              if (notebook.config.parserConfig.onWillTransformMarkdown) {
+                fileContent = await notebook.config.parserConfig.onWillTransformMarkdown(
+                  fileContent,
+                );
               }
               // markdown files
               // this return here is necessary
@@ -816,12 +821,14 @@ export async function transformMarkdown(
                 protocolsWhiteListRegExp,
                 notSourceFile: true, // <= this is not the sourcefile
                 imageDirectoryPath,
-                usePandocParser,
+                notebook,
                 headingIdGenerator,
               }));
 
-              if (onDidTransformMarkdown) {
-                output2 = await onDidTransformMarkdown(output2);
+              if (notebook.config.parserConfig) {
+                output2 = await notebook.config.parserConfig.onDidTransformMarkdown(
+                  output2,
+                );
               }
 
               output2 = '\n' + output2 + '  ';

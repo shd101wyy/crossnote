@@ -4,6 +4,7 @@ import { compileLaTeX } from '../code-chunk/code-chunk';
 import { CodeChunkData } from '../code-chunk/code-chunk-data';
 import { parseBlockAttributes } from '../lib/block-attributes';
 import computeChecksum from '../lib/compute-checksum';
+import { Notebook } from '../notebook';
 import * as plantumlAPI from '../renderers/puml';
 import * as vegaAPI from '../renderers/vega';
 import * as vegaLiteAPI from '../renderers/vega-lite';
@@ -23,11 +24,8 @@ export async function processGraphs(
     useRelativeFilePath,
     codeChunksData,
     graphsCache,
-    imageMagickPath,
-    mermaidTheme,
     addOptionsStr,
-    plantumlJarPath,
-    plantumlServer,
+    notebook,
   }: {
     fileDirectoryPath: string;
     projectDirectoryPath: string;
@@ -36,11 +34,8 @@ export async function processGraphs(
     useRelativeFilePath: boolean;
     codeChunksData: { [key: string]: CodeChunkData };
     graphsCache: { [key: string]: string };
-    imageMagickPath: string;
-    mermaidTheme: string;
     addOptionsStr: boolean;
-    plantumlJarPath: string;
-    plantumlServer: string;
+    notebook: Notebook;
   },
 ): Promise<{ outputString: string; imagePaths: string[] }> {
   const lines = text.split('\n');
@@ -159,7 +154,11 @@ export async function processGraphs(
     }
 
     const pngFilePath = path.resolve(imageDirectoryPath, outFileName);
-    await svgElementToPNGFile(svg, pngFilePath, imageMagickPath);
+    await svgElementToPNGFile(
+      svg,
+      pngFilePath,
+      notebook.config.imageMagickPath,
+    );
     let displayPNGFilePath;
     if (useRelativeFilePath) {
       displayPNGFilePath =
@@ -211,8 +210,8 @@ export async function processGraphs(
           svg = await plantumlAPI.render({
             content,
             fileDirectoryPath,
-            plantumlJarPath,
-            serverURL: plantumlServer,
+            plantumlJarPath: notebook.config.plantumlJarPath,
+            serverURL: notebook.config.plantumlServer,
           });
         }
         await convertSVGToPNGFile(
@@ -308,7 +307,7 @@ export async function processGraphs(
           content,
           pngFilePath,
           projectDirectoryPath,
-          mermaidTheme,
+          notebook.config.mermaidTheme,
         );
 
         let displayPNGFilePath;

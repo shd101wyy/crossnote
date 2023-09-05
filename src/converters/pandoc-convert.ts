@@ -7,6 +7,7 @@ import { CodeChunkData } from '../code-chunk/code-chunk-data';
 import computeChecksum from '../lib/compute-checksum';
 import { toc } from '../markdown-engine/toc';
 import { transformMarkdown } from '../markdown-engine/transformer';
+import { Notebook } from '../notebook';
 import * as utility from '../utility';
 import { processGraphs } from './process-graphs';
 
@@ -279,16 +280,7 @@ export async function pandocConvert(
     /*deleteImages=true,*/
     codeChunksData,
     graphsCache,
-    imageDirectoryPath,
-    pandocMarkdownFlavor,
-    pandocPath,
-    latexEngine,
-    imageMagickPath,
-    mermaidTheme,
-    plantumlJarPath,
-    plantumlServer,
-    onWillTransformMarkdown,
-    onDidTransformMarkdown,
+    notebook,
   }: {
     fileDirectoryPath: string;
     projectDirectoryPath: string;
@@ -297,22 +289,16 @@ export async function pandocConvert(
     protocolsWhiteListRegExp: RegExp;
     codeChunksData: { [key: string]: CodeChunkData };
     graphsCache: { [key: string]: string };
-    imageDirectoryPath: string;
-    pandocPath: string;
-    imageMagickPath: string;
-    mermaidTheme: string;
-    plantumlJarPath: string;
-    plantumlServer: string;
-    pandocMarkdownFlavor: string;
-    latexEngine?: string;
-    onWillTransformMarkdown?: (markdown: string) => Promise<string>;
-    onDidTransformMarkdown?: (markdown: string) => Promise<string>;
+    notebook: Notebook;
   },
   config = {},
 ): Promise<string> {
   config = loadOutputYAML(fileDirectoryPath, config);
   // TODO =>
-  const args = ['-f', pandocMarkdownFlavor.replace(/-raw_tex/, '')];
+  const args = [
+    '-f',
+    notebook.config.pandocMarkdownFlavor.replace(/-raw_tex/, ''),
+  ];
 
   let extension: string | null = null;
   let outputConfig = null;
@@ -390,10 +376,10 @@ export async function pandocConvert(
   // processConfigPaths config, fileDirectoryPath, projectDirectoryPath
 
   // process output config
-  processOutputConfig(outputConfig || {}, args, latexEngine);
+  processOutputConfig(outputConfig || {}, args, notebook.config.latexEngine);
 
-  if (onWillTransformMarkdown) {
-    text = await onWillTransformMarkdown(text);
+  if (notebook.config.parserConfig.onWillTransformMarkdown) {
+    text = await notebook.config.parserConfig.onWillTransformMarkdown(text);
   }
 
   // import external files
@@ -404,14 +390,12 @@ export async function pandocConvert(
     filesCache,
     protocolsWhiteListRegExp,
     forPreview: false,
-    usePandocParser: true,
-    onWillTransformMarkdown,
-    onDidTransformMarkdown,
+    notebook,
   });
   text = data.outputString;
 
-  if (onDidTransformMarkdown) {
-    text = await onDidTransformMarkdown(text);
+  if (notebook.config.parserConfig.onDidTransformMarkdown) {
+    text = await notebook.config.parserConfig.onDidTransformMarkdown(text);
   }
 
   // add front-matter(yaml) back to text
@@ -450,6 +434,7 @@ export async function pandocConvert(
     args.push('--citeproc');
   }
 
+  let imageDirectoryPath = notebook.config.imageFolderPath;
   if (imageDirectoryPath[0] === '/') {
     imageDirectoryPath = path.resolve(
       projectDirectoryPath,
@@ -468,11 +453,8 @@ export async function pandocConvert(
     useRelativeFilePath: true,
     codeChunksData,
     graphsCache,
-    imageMagickPath,
-    mermaidTheme,
     addOptionsStr: true,
-    plantumlServer,
-    plantumlJarPath,
+    notebook,
   });
 
   // pandoc will cause error if directory doesn't exist,
@@ -481,7 +463,7 @@ export async function pandocConvert(
 
   return await new Promise<string>((resolve, reject) => {
     const program = execFile(
-      pandocPath,
+      notebook.config.pandocPath,
       args,
       { cwd: fileDirectoryPath },
       error => {

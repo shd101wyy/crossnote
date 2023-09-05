@@ -9,6 +9,7 @@ import { CodeChunkData } from '../code-chunk/code-chunk-data';
 import computeChecksum from '../lib/compute-checksum';
 import { toc } from '../markdown-engine/toc';
 import { transformMarkdown } from '../markdown-engine/transformer';
+import { Notebook } from '../notebook';
 import { processGraphs } from './process-graphs';
 
 /**
@@ -178,37 +179,17 @@ export async function markdownConvert(
     fileDirectoryPath,
     protocolsWhiteListRegExp,
     filesCache,
-    mathRenderingOption,
-    mathInlineDelimiters,
-    mathBlockDelimiters,
-    mathRenderingOnlineService,
     codeChunksData,
     graphsCache,
-    usePandocParser,
-    imageMagickPath,
-    mermaidTheme,
-    plantumlServer,
-    plantumlJarPath,
-    onWillTransformMarkdown = null,
-    onDidTransformMarkdown = null,
+    notebook,
   }: {
     projectDirectoryPath: string;
     fileDirectoryPath: string;
     protocolsWhiteListRegExp: RegExp;
     filesCache: { [key: string]: string };
-    mathRenderingOption: string;
-    mathInlineDelimiters: string[][];
-    mathBlockDelimiters: string[][];
-    mathRenderingOnlineService: string;
     codeChunksData: { [key: string]: CodeChunkData };
     graphsCache: { [key: string]: string };
-    usePandocParser: boolean;
-    imageMagickPath: string;
-    mermaidTheme: string;
-    plantumlServer: string;
-    plantumlJarPath: string;
-    onWillTransformMarkdown?: ((markdown: string) => Promise<string>) | null;
-    onDidTransformMarkdown?: ((markdown: string) => Promise<string>) | null;
+    notebook: Notebook;
   },
   config: object,
 ): Promise<string> {
@@ -246,8 +227,8 @@ export async function markdownConvert(
 
   const useRelativeFilePath = !config['absolute_image_path'];
 
-  if (onWillTransformMarkdown) {
-    text = await onWillTransformMarkdown(text);
+  if (notebook.config.parserConfig.onWillTransformMarkdown) {
+    text = await notebook.config.parserConfig.onWillTransformMarkdown(text);
   }
 
   // import external files
@@ -260,15 +241,13 @@ export async function markdownConvert(
     forMarkdownExport: true,
     protocolsWhiteListRegExp,
     imageDirectoryPath,
-    usePandocParser,
-    onWillTransformMarkdown,
-    onDidTransformMarkdown,
+    notebook,
   });
 
   text = data.outputString;
 
-  if (onDidTransformMarkdown) {
-    text = await onDidTransformMarkdown(text);
+  if (notebook.config.parserConfig.onDidTransformMarkdown) {
+    text = await notebook.config.parserConfig.onDidTransformMarkdown(text);
   }
 
   // replace [CROSSNOTETOC]
@@ -299,11 +278,12 @@ export async function markdownConvert(
   );
 
   text =
-    mathRenderingOption !== 'None'
+    notebook.config.mathRenderingOption !== 'None'
       ? processMath(text, {
-          mathInlineDelimiters,
-          mathBlockDelimiters,
-          mathRenderingOnlineService,
+          mathInlineDelimiters: notebook.config.mathInlineDelimiters,
+          mathBlockDelimiters: notebook.config.mathBlockDelimiters,
+          mathRenderingOnlineService:
+            notebook.config.mathRenderingOnlineService,
         })
       : text;
 
@@ -318,11 +298,8 @@ export async function markdownConvert(
           useRelativeFilePath,
           codeChunksData,
           graphsCache,
-          imageMagickPath,
-          mermaidTheme,
           addOptionsStr: false,
-          plantumlServer,
-          plantumlJarPath,
+          notebook,
         }).then(({ outputString }) => {
           outputString = data.frontMatterString + outputString; // put the front-matter back.
 

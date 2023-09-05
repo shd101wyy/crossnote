@@ -1,5 +1,6 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
+import Sval from 'sval';
 import * as temp from 'temp';
 import { JsonObject } from 'type-fest';
 import * as vm from 'vm';
@@ -186,9 +187,8 @@ export { uploadImage } from './tools/image-uploader.js';
 export function allowUnsafeEval(fn) {
   const previousEval = globalThis.eval;
   try {
-    globalThis.eval = source => {
-      vm.runInThisContext(source);
-    };
+    globalThis.eval = source => vm.runInThisContext(source);
+
     return fn();
   } finally {
     globalThis.eval = previousEval;
@@ -199,9 +199,8 @@ export function allowUnsafeEval(fn) {
 export async function allowUnsafeEvalAync(fn: () => Promise<any>) {
   const previousEval = globalThis.eval;
   try {
-    globalThis.eval = source => {
-      vm.runInThisContext(source);
-    };
+    globalThis.eval = source => vm.runInThisContext(source);
+
     return await fn();
   } finally {
     globalThis.eval = previousEval;
@@ -237,9 +236,7 @@ export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
   const previousEval = globalThis.eval;
   try {
     globalThis.Function = Function as FunctionConstructor;
-    globalThis.eval = source => {
-      vm.runInThisContext(source);
-    };
+    globalThis.eval = source => vm.runInThisContext(source);
     return await fn();
   } finally {
     globalThis.eval = previousEval;
@@ -292,4 +289,24 @@ Function.prototype = globalThis.Function.prototype;
 
 export function isVSCodeWebExtension() {
   return process.env.IS_VSCODE_WEB_EXTENSION === 'true';
+}
+
+/**
+ * This function is used to evaluate the config.js and parser.js
+ * @param code
+ */
+export function interpretJS(code: string) {
+  code.trim().replace(/[;,]+$/, '');
+  if (isVSCodeWebExtension()) {
+    const interpreter = new Sval({
+      sandBox: true,
+      ecmaVer: 2019,
+    });
+    interpreter.run(`exports.result = (${code})`);
+    return interpreter.exports.result;
+  } else {
+    const context = {};
+    vm.runInNewContext(`result = (${code})`, context);
+    return context['result'];
+  }
 }
