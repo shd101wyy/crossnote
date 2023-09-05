@@ -140,35 +140,42 @@ async function renderDiagram({
     (isVSCodeWebExtension() &&
       ['plantuml', 'puml'].includes(normalizedInfo.language))
   ) {
-    // Kroki is a service that can render diagrams from textual descriptions
-    // see https://kroki.io/
-    const krokiURL = kirokiServer || 'https://kroki.io';
+    if (diagramInCache) {
+      $output = diagramInCache;
+    } else {
+      // Kroki is a service that can render diagrams from textual descriptions
+      // see https://kroki.io/
+      const krokiURL = kirokiServer || 'https://kroki.io';
 
-    let krokiDiagramType =
-      typeof normalizedInfo.attributes['kroki'] === 'string'
-        ? normalizedInfo.attributes['kroki']
-        : normalizedInfo.language;
-    if (krokiDiagramType === 'puml') {
-      krokiDiagramType = 'plantuml';
+      let krokiDiagramType =
+        typeof normalizedInfo.attributes['kroki'] === 'string'
+          ? normalizedInfo.attributes['kroki']
+          : normalizedInfo.language;
+      if (krokiDiagramType === 'puml') {
+        krokiDiagramType = 'plantuml';
+      }
+
+      // Convert code to deflate+base64
+      const data = Buffer.from(code, 'utf8');
+      const compressed = pako.deflate(data, { level: 9 });
+      const result = Buffer.from(compressed)
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+      const krokiDiagramURL = `${krokiURL}/${krokiDiagramType}/${normalizedInfo
+        .attributes['output'] ?? 'svg'}/${result}`;
+
+      $output = `<div ${stringifyBlockAttributes(
+        ensureClassInAttributes(
+          normalizedInfo.attributes,
+          normalizedInfo.language,
+        ),
+      )}><img src="${krokiDiagramURL}" alt="${
+        normalizedInfo.language
+      } diagram"></div>`;
+
+      graphsCache[checksum] = $output; // store to new cache
     }
-
-    // Convert code to deflate+base64
-    const data = Buffer.from(code, 'utf8');
-    const compressed = pako.deflate(data, { level: 9 });
-    const result = Buffer.from(compressed)
-      .toString('base64')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_');
-    const krokiDiagramURL = `${krokiURL}/${krokiDiagramType}/${normalizedInfo
-      .attributes['output'] ?? 'svg'}/${result}`;
-    $output = `<div ${stringifyBlockAttributes(
-      ensureClassInAttributes(
-        normalizedInfo.attributes,
-        normalizedInfo.language,
-      ),
-    )}><img src="${krokiDiagramURL}" alt="${
-      normalizedInfo.language
-    } diagram"></div>`;
   } else {
     try {
       switch (normalizedInfo.language) {
