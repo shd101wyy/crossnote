@@ -296,7 +296,7 @@ export function isVSCodeWebExtension() {
  * @param code
  */
 export function interpretJS(code: string) {
-  code.trim().replace(/[;,]+$/, '');
+  code = code.trim().replace(/[;,]+$/, '');
   if (isVSCodeWebExtension()) {
     const interpreter = new Sval({
       sandBox: true,
