@@ -1230,14 +1230,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (options.embedLocalImages) {
         await enhanceWithEmbeddedLocalImages(
           $,
-          this.notebook.config,
+          this.notebook,
           this.resolveFilePath.bind(this),
         );
       }
       if (options.embedSVG) {
         await enhanceWithEmbeddedSvgs(
           $,
-          this.notebook.config,
+          this.notebook,
           this.resolveFilePath.bind(this),
         );
       }
@@ -1755,7 +1755,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
       await enhanceWithEmbeddedLocalImages(
         $,
-        this.notebook.config,
+        this.notebook,
         this.resolveFilePath.bind(this),
       );
     }
