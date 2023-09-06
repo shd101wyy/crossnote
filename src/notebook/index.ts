@@ -357,7 +357,10 @@ export class Notebook {
     } catch (error) {
       return null;
     }
-    if (stats.isFile() && filePath.endsWith('.md')) {
+    if (
+      stats.isFile() &&
+      this.config.markdownFileExtensions.includes(path.extname(filePath))
+    ) {
       let markdown = (await this.fs.readFile(absFilePath)) as string;
 
       // Read the noteConfig, which is like <!-- note {...} --> at the end of the markdown file
@@ -479,6 +482,7 @@ export class Notebook {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
 
+      // TODO: Check .gitignore
       // ignore several directories
       if (file.match(/^(node_modules|\.git)$/)) {
         continue;
