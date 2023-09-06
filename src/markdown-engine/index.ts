@@ -18,8 +18,8 @@ import { pandocConvert } from '../converters/pandoc-convert';
 import { princeConvert } from '../converters/prince-convert';
 import { parseBlockAttributes } from '../lib/block-attributes/parseBlockAttributes';
 import { stringifyBlockAttributes } from '../lib/block-attributes/stringifyBlockAttributes';
-import { normalizeBlockInfo } from '../lib/block-info/normalizeBlockInfo';
-import { parseBlockInfo } from '../lib/block-info/parseBlockInfo';
+import { normalizeBlockInfo } from '../lib/block-info/normalize-block-info';
+import { parseBlockInfo } from '../lib/block-info/parse-block-info';
 import { FileSystemApi, Notebook, getDefaultNotebookConfig } from '../notebook';
 import enhanceWithCodeBlockStyling from '../render-enhancers/code-block-styling';
 import enhanceWithEmbeddedLocalImages from '../render-enhancers/embedded-local-images';
@@ -1230,14 +1230,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (options.embedLocalImages) {
         await enhanceWithEmbeddedLocalImages(
           $,
-          this.notebook.config,
+          this.notebook,
           this.resolveFilePath.bind(this),
         );
       }
       if (options.embedSVG) {
         await enhanceWithEmbeddedSvgs(
           $,
-          this.notebook.config,
+          this.notebook,
           this.resolveFilePath.bind(this),
         );
       }
@@ -1755,7 +1755,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
       await enhanceWithEmbeddedLocalImages(
         $,
-        this.notebook.config,
+        this.notebook,
         this.resolveFilePath.bind(this),
       );
     }
@@ -2057,12 +2057,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * @param data
    */
   private exportOnSave(data: JsonObject) {
+    const isWeb = utility.isVSCodeWebExtension();
     for (const exporter in data) {
       if (exporter === 'html') {
         this.htmlExport({});
-      } else if (exporter === 'prince') {
+      } else if (!isWeb && exporter === 'prince') {
         this.princeExport({ openFileAfterGeneration: false });
-      } else if (exporter === 'puppeteer' || exporter === 'chrome') {
+      } else if (
+        (!isWeb && exporter === 'puppeteer') ||
+        exporter === 'chrome'
+      ) {
         const fileTypes = data[exporter];
         let func = this.chromeExport;
         func = func.bind(this);
@@ -2076,9 +2080,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             func({ fileType, openFileAfterGeneration: false });
           });
         }
-      } else if (exporter === 'pandoc') {
+      } else if (!isWeb && exporter === 'pandoc') {
         this.pandocExport({ openFileAfterGeneration: false });
-      } else if (exporter === 'ebook') {
+      } else if (!isWeb && exporter === 'ebook') {
         const fileTypes = data[exporter];
         if (fileTypes === true) {
           this.eBookExport({ fileType: 'epub' });
@@ -2195,7 +2199,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   private processFrontMatter(
     frontMatterString: string,
     hideFrontMatter = false,
-  ) {
+  ): { content: string; table: string; data: JsonObject } {
     if (frontMatterString) {
       const data = utility.parseYAML(frontMatterString);
 
@@ -2222,6 +2226,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
         return { content: '', table, data };
       } else {
+        // code block
         // # if frontMatterRenderingOption[0] == 'c' # code block
         const content = frontMatterString
           .replace(/^---/, '```yaml')

@@ -14,7 +14,7 @@ export type FileSystemStats = {
 };
 
 export type FileSystemApi = {
-  readFile: (path: string, encoding?: string) => Promise<string>;
+  readFile: (path: string, encoding?: BufferEncoding) => Promise<string>;
   writeFile: (
     path: string,
     content: string,

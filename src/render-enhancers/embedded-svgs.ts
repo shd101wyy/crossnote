@@ -1,6 +1,5 @@
-import { readFile } from 'fs';
 import { extname } from 'path';
-import { NotebookConfig } from '../notebook';
+import { Notebook } from '../notebook';
 import { removeFileProtocol } from '../utility';
 
 /**
@@ -9,7 +8,7 @@ import { removeFileProtocol } from '../utility';
  */
 export default async function enhance(
   $: CheerioStatic,
-  options: NotebookConfig,
+  notebook: Notebook,
   resolveFilePath: (path: string, useRelativeFilePath: boolean) => string,
 ): Promise<void> {
   const asyncFunctions: Promise<string | null>[] = [];
@@ -27,17 +26,18 @@ export default async function enhance(
       }
       asyncFunctions.push(
         new Promise(resolve => {
-          readFile(decodeURI(src), (error, data) => {
-            if (error) {
+          notebook.fs
+            .readFile(decodeURI(src), 'base64')
+            .then(base64 => {
+              $img.attr(
+                'src',
+                `data:image/svg+xml;charset=utf-8;base64,${base64}`,
+              );
+              return resolve(base64);
+            })
+            .catch(() => {
               return resolve(null);
-            }
-            const base64 = new Buffer(data).toString('base64');
-            $img.attr(
-              'src',
-              `data:image/svg+xml;charset=utf-8;base64,${base64}`,
-            );
-            return resolve(base64);
-          });
+            });
         }),
       );
     }

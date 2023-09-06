@@ -2,7 +2,7 @@ import { BlockAttributes, parseBlockAttributes } from '../block-attributes';
 import { BlockInfo } from './types';
 
 export const parseBlockInfo = (raw = ''): BlockInfo => {
-  let language;
+  let language: string | undefined;
   let attributesAsString: string;
   let attributes: BlockAttributes;
   const trimmedParams = raw.trim();
@@ -31,5 +31,12 @@ export const parseBlockInfo = (raw = ''): BlockInfo => {
     attributes = {};
   }
 
+  const classNames = attributes.class ? attributes.class.split(/\s+/) : [];
+  if (!language) {
+    language = classNames[0] || 'text';
+  }
+  if (!classNames.includes(language)) {
+    attributes.class = [language, ...classNames].join(' ');
+  }
   return { language, attributes };
 };

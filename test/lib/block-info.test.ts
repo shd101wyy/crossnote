@@ -5,69 +5,150 @@ import {
 } from '../../src/lib/block-info';
 
 const testCasesForParseBlockInfo: {
-  info: object;
-  raw: string | string[];
+  expect: BlockInfo;
+  input: string;
 }[] = [
   {
-    info: { language: 'js', attributes: { cmd: true } },
-    raw: [
-      'js cmd=true',
-      'js {cmd=true}',
-      'js  {  cmd=true  }  ',
-      'js{cmd=True}',
-    ],
+    input: '',
+    expect: { language: 'text', attributes: { class: 'text' } },
   },
   {
-    info: { language: 'hello', attributes: {} },
-    raw: ['hello', ' hello ', 'hello {}', 'hello {   }'],
+    input: '{}',
+    expect: { language: 'text', attributes: { class: 'text' } },
   },
   {
-    info: { language: undefined, attributes: { just: 'attribute' } },
-    raw: [' {just=attribute}'],
+    input: '{#id}',
+    expect: { language: 'text', attributes: { id: 'id', class: 'text' } },
+  },
+  {
+    input: 'js cmd=true',
+    expect: { language: 'js', attributes: { class: 'js', cmd: true } },
+  },
+  {
+    input: 'js {cmd=true}',
+    expect: { language: 'js', attributes: { class: 'js', cmd: true } },
+  },
+  {
+    input: 'js  {  cmd=true  }  ',
+    expect: { language: 'js', attributes: { class: 'js', cmd: true } },
+  },
+  {
+    input: 'js{cmd=True}',
+    expect: { language: 'js', attributes: { class: 'js', cmd: true } },
+  },
+  {
+    input: '{.js}',
+    expect: { language: 'js', attributes: { class: 'js' } },
+  },
+  {
+    input: '{.js .text}',
+    expect: { language: 'js', attributes: { class: 'js text' } },
+  },
+  {
+    input: '{.js .text cmd=true}',
+    expect: { language: 'js', attributes: { class: 'js text', cmd: true } },
+  },
+  {
+    input: '{.js .text cmd=true hello=world}',
+    expect: {
+      language: 'js',
+      attributes: { class: 'js text', cmd: true, hello: 'world' },
+    },
+  },
+  {
+    input: 'hello',
+    expect: { language: 'hello', attributes: { class: 'hello' } },
+  },
+  {
+    input: ' hello ',
+    expect: { language: 'hello', attributes: { class: 'hello' } },
+  },
+  {
+    input: 'hello {}',
+    expect: { language: 'hello', attributes: { class: 'hello' } },
+  },
+  {
+    input: 'hello {.text}',
+    expect: { language: 'hello', attributes: { class: 'hello text' } },
+  },
+  {
+    input: 'hello {   }',
+    expect: { language: 'hello', attributes: { class: 'hello' } },
+  },
+  {
+    input: ' {just=attribute}',
+    expect: {
+      language: 'text',
+      attributes: { just: 'attribute', class: 'text' },
+    },
+  },
+  {
+    input: ' {just=attribute .python}',
+    expect: {
+      language: 'python',
+      attributes: { just: 'attribute', class: 'python' },
+    },
+  },
+  {
+    input: ' {just=attribute .python .js}',
+    expect: {
+      language: 'python',
+      attributes: { just: 'attribute', class: 'python js' },
+    },
+  },
+  {
+    input: 'html {just=attribute .python .js}',
+    expect: {
+      language: 'html',
+      attributes: { just: 'attribute', class: 'html python js' },
+    },
   },
 ];
 
 const testCasesForNormalizeCodeBlockInfo: {
-  infos: object[];
-  normalizedInfo: object;
+  input: object;
+  expect: BlockInfo;
 }[] = [
   {
-    infos: [{}],
-    normalizedInfo: { language: '', attributes: {} },
+    input: { language: '', attributes: {} },
+    expect: { language: '', attributes: {} },
   },
   {
-    infos: [
-      { language: 'js', attributes: { cmd: true } },
-      { language: 'js', attributes: { Cmd: true } },
-      { language: 'js', attributes: { CMD: true } },
-    ],
-    normalizedInfo: { language: 'js', attributes: { cmd: true } },
+    input: { language: 'js', attributes: { cmd: true } },
+    expect: { language: 'js', attributes: { cmd: true } },
   },
   {
-    infos: [{ language: 'vega' }, { language: 'VEGA', attributes: {} }],
-    normalizedInfo: { language: 'vega', attributes: {} },
+    input: { language: 'js', attributes: { Cmd: true } },
+    expect: { language: 'js', attributes: { cmd: true } },
+  },
+  {
+    input: { language: 'js', attributes: { CMD: true } },
+    expect: { language: 'js', attributes: { cmd: true } },
+  },
+  {
+    input: { language: 'vega' },
+    expect: { language: 'vega', attributes: {} },
+  },
+  {
+    input: { language: 'VEGA', attributes: {} },
+    expect: { language: 'vega', attributes: {} },
   },
 ];
 
 describe('lib/block-info', () => {
-  testCasesForParseBlockInfo.map(({ raw, info }) => {
-    const arrayOfTexts = typeof raw === 'string' ? [raw] : raw;
-    arrayOfTexts.map(text => {
-      it(`parseBlockInfo() correctly parses ${text}`, () => {
-        const result: object = parseBlockInfo(text);
-        expect(result).toEqual(info);
-      });
+  testCasesForParseBlockInfo.map(({ input, expect: expect_ }) => {
+    it(`parseBlockInfo() correctly parses ${input}`, () => {
+      const result: object = parseBlockInfo(input);
+      expect(result).toEqual(expect_);
     });
   });
 
-  testCasesForNormalizeCodeBlockInfo.map(({ infos, normalizedInfo }) => {
-    infos.map(info => {
-      it(`normalizeCodeBlockInfo() correctly normalizes ${JSON.stringify(
-        info,
-      )}`, () => {
-        const result: object = normalizeBlockInfo(info as BlockInfo);
-        expect(result).toEqual(normalizedInfo);
-      });
+  testCasesForNormalizeCodeBlockInfo.map(({ input, expect: expect_ }) => {
+    it(`normalizeCodeBlockInfo() correctly normalizes ${JSON.stringify(
+      input,
+    )}`, () => {
+      const result: object = normalizeBlockInfo(input as BlockInfo);
+      expect(result).toEqual(expect_);
     });
   });
 });
