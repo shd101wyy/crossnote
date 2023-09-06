@@ -1,3 +1,3 @@
-export * from './normalizeBlockInfo';
-export * from './parseBlockInfo';
+export * from './normalize-block-info';
+export * from './parse-block-info';
 export * from './types';

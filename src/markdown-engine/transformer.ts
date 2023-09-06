@@ -390,15 +390,15 @@ export async function transformMarkdown(
         let classes = '';
         let id = '';
         let ignore = false;
-        let opt;
+        let opt: BlockAttributes = {};
         if (optMatch) {
           heading = heading.replace(optMatch[0], '');
 
           try {
             opt = parseBlockAttributes(optMatch[0]);
 
-            (classes = opt['class']),
-              (id = opt['id']),
+            (classes = opt['class'] ?? ''),
+              (id = opt['id'] ?? ''),
               (ignore = opt['ignore']);
             delete opt['class'];
             delete opt['id'];

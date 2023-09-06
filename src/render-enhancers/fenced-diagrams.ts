@@ -14,6 +14,8 @@ import {
 } from '../lib/block-attributes/index.js';
 import { BlockInfo } from '../lib/block-info/index.js';
 
+// NOTE: We shouldn't need this function anymore
+// because we always put `language` as a class in the attributes.
 const ensureClassInAttributes = (
   attributes: BlockAttributes,
   className: string,
@@ -24,6 +26,8 @@ const ensureClassInAttributes = (
       ...attributes,
       ['class']: `${existingClassNames} ${className}`.trim(),
     };
+  } else {
+    return attributes;
   }
 };
 
@@ -79,7 +83,6 @@ export default async function enhance({
     ) {
       return;
     }
-
     $container.data('executor', 'fenced-diagrams');
 
     if (normalizedInfo.attributes['literate'] === false) {
