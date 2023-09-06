@@ -12,8 +12,9 @@ A clear and concise description of what the bug is.
 
 **Environment**
 - OS: Windows 11
-- VSCode: 1.81.0
 - Crossnote: 0.8.0
+- Node.js: 16.13.0
+- Browser: Chrome 95.0.4638.69
 
 **To Reproduce**
 Steps to reproduce the behavior:
