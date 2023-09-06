@@ -6,6 +6,7 @@
 !*.less
 !*.md
 !*.ts
+!*.tsx
 !*.yaml
 !*.yml
 

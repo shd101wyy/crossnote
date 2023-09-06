@@ -752,12 +752,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
       </head>
       <body class="preview-container ${
         isVSCodeWebExtension ? 'vscode-web-extension' : ''
-      }">
-        <div class="crossnote markdown-preview" for="preview" ${
-          isPresentationMode ? 'data-presentation-mode' : ''
-        }>
-          ${html}
-        </div>
+      }" data-html="${escape(html)}" ${
+      isPresentationMode ? 'data-presentation-mode' : ''
+    }>
         ${body}
       </body>
       ${this.generateScriptsForPreview(

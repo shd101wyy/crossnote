@@ -524,6 +524,8 @@ export class Notebook {
     return this.notes;
   }
 
+  /*
+  // NOTE: This function is hidden for now.  
   public async writeNote(
     filePath: string,
     markdown: string,
@@ -557,6 +559,7 @@ export class Notebook {
     }
     return note;
   }
+  */
 
   public async removeNoteRelations(filePath: string) {
     const note = await this.getNote(filePath);
@@ -579,6 +582,8 @@ export class Notebook {
     }
   }
 
+  /**
+   * // NOTE: This function is hidden for now.
   public async duplicateNote(filePath: string) {
     const oldNote = await this.getNote(filePath);
     if (!oldNote) return;
@@ -589,6 +594,7 @@ export class Notebook {
     await this.writeNote(newFilePath, oldNote.markdown, noteConfig);
     return await this.getNote(newFilePath, true);
   }
+  */
 
   private resolveNoteAbsolutePath(filePath: string) {
     if (path.isAbsolute(filePath)) {

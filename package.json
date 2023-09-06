@@ -1,6 +1,6 @@
 {
   "name": "crossnote",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
@@ -58,6 +58,7 @@
     "cross-fetch": "^4.0.0",
     "crypto-js": "^4.1.1",
     "html-escaper": "^3.0.3",
+    "html-react-parser": "^4.2.2",
     "imagemagick-cli": "^0.5.0",
     "katex": "^0.16.8",
     "less": "^4.2.0",
@@ -80,6 +81,8 @@
     "plantuml-encoder": "^1.4.0",
     "puppeteer-core": "^21.1.0",
     "qiniu": "^7.9.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "request": "^2.88.0",
     "slash": "^5.1.0",
     "snake-case": "^3.0.4",
@@ -87,6 +90,7 @@
     "temp": "^0.9.0",
     "twemoji": "^13.1.0",
     "type-fest": "^4.3.1",
+    "unstated-next": "^1.1.0",
     "uslug": "^1.0.4",
     "vega": "^5.25.0",
     "vega-lite": "^5.14.1",
@@ -107,6 +111,8 @@
     "@types/pako": "^2.0.0",
     "@types/papaparse": "^5.3.8",
     "@types/prismjs": "^1.26.0",
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
     "@types/temp": "^0.9.1",
     "@types/vfile": "^3.0.2",
     "@types/vscode": "1.80.0",

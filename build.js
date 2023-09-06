@@ -48,7 +48,7 @@ const esmConfig = {
  * @type {import('esbuild').BuildOptions}
  */
 const webviewConfig = {
-  entryPoints: ['./src/webview/webview.ts'],
+  entryPoints: ['./src/webview/index.tsx'],
   bundle: true,
   minify: true,
   platform: 'browser',

@@ -192,18 +192,6 @@ import CryptoJS from 'crypto-js';
       );
       this.sourceUri = this.config['sourceUri'];
 
-      /*
-    if (this.config.vscode) { // remove vscode default styles
-      const defaultStyles = document.getElementById('_defaultStyles')
-      if (defaultStyles) defaultStyles.remove()
-    }
-    */
-
-      // console.log("init webview: " + this.sourceUri);
-
-      // console.log(document.getElementsByTagName('html')[0].innerHTML)
-      // console.log(JSON.stringify(config))
-
       /** init preview properties */
       (this.previewElement = previewElement),
         (this.hiddenPreviewElement = hiddenPreviewElement),
