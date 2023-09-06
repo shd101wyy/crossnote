@@ -111,6 +111,11 @@ export type FrontMatterRenderingOption = 'none' | 'table' | 'code';
 
 export interface NotebookConfig {
   /**
+   * The files of extensions to be included in the notebook
+   * @default [".md", ".markdown", ".mdown", ".mkdn", ".mkd", ".rmd", ".qmd"]
+   */
+  markdownFileExtensions: string[];
+  /**
    * Global custom CSS styles.
    *
    * This will be inserted into HTML `<style>` tag.
@@ -482,6 +487,15 @@ export function getDefaultParserConfig(): ParserConfig {
 
 export function getDefaultNotebookConfig(): NotebookConfig {
   return {
+    markdownFileExtensions: [
+      '.md',
+      '.markdown',
+      '.mdown',
+      '.mkdn',
+      '.mkd',
+      '.rmd',
+      '.qmd',
+    ],
     globalCss: '',
     mermaidConfig: getDefaultMermaidConfig(),
     mathjaxConfig: getDefaultMathjaxConfig(),
