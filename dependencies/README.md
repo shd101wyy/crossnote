@@ -8,9 +8,7 @@ I managed some of the libraries by myself instead of through npm to reduce the o
 
   // ----------------------------------------------------------
   // Remove the following libraries after migrating the webview
-  "jquery-contextmenu": "2.6.3",
   "jquery-modal": "0.8.0",
-  "jquery": "v3.2.1",
   // ----------------------------------------------------------
 
   "katex": "v0.16.8", // Only keep the css and fonts files.

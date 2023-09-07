@@ -1,16 +1,27 @@
-import parse from 'html-react-parser';
 import React, { useEffect, useRef } from 'react';
 import WebviewContainer from '../containers/webview';
 
 export default function Webview() {
   const previewElementRef = useRef<HTMLDivElement>(null);
-  const { html, setHtml, id, className } = WebviewContainer.useContainer();
+  const {
+    setHtml,
+    htmlComponent,
+    id,
+    className,
+    setPreviewElement,
+  } = WebviewContainer.useContainer();
 
   useEffect(() => {
     console.log('Entered Webview WTF');
     const html = document.body.getAttribute('data-html') ?? '';
     setHtml(html);
   }, []);
+
+  useEffect(() => {
+    if (previewElementRef.current) {
+      setPreviewElement(previewElementRef.current);
+    }
+  }, [htmlComponent, setPreviewElement]);
 
   return (
     <div>
@@ -21,7 +32,7 @@ export default function Webview() {
         ref={previewElementRef}
         id={id}
       >
-        {parse(html)}
+        {htmlComponent}
       </div>
     </div>
   );

@@ -10,6 +10,10 @@ export interface WebviewConfig {
    */
   vscode?: boolean;
   zoomLevel?: number;
+
+  sourceUri?: string;
+  initialLine?: number;
+  cursorLine?: number;
 }
 
 export type WebviewMessageEvent = {

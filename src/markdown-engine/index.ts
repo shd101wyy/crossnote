@@ -192,31 +192,6 @@ export class MarkdownEngine {
     // prevent `id="exports"` element from linked to `window` object.
     scripts += `<script>var exports = undefined</script>`;
 
-    // jquery
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        './dependencies/jquery/jquery.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-
-    // jquery contextmenu
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        './dependencies/jquery-contextmenu/jquery.ui.position.min.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        './dependencies/jquery-contextmenu/jquery.contextMenu.min.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-
     // jquery modal
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
@@ -477,15 +452,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
       vscodePreviewPanel,
     )}">`;
 
-    // jquery-contextmenu
-    styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        `./dependencies/jquery-contextmenu/jquery.contextMenu.min.css`,
-      ),
-      vscodePreviewPanel,
-    )}">`;
-
     // jquery-modal
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
@@ -634,7 +600,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     scripts = '',
     styles = '',
     head = `<base href="${this.filePath}">`,
-    config = {},
+    config,
     vscodePreviewPanel = null,
     contentSecurityPolicy = '',
     isVSCodeWebExtension,
@@ -645,7 +611,12 @@ if (typeof(window['Reveal']) !== 'undefined') {
     scripts?: string;
     styles?: string;
     head?: string;
-    config: JsonObject;
+    config: {
+      sourceUri: string;
+      initialLine: number;
+      cursorLine?: number;
+      vscode?: boolean;
+    };
     vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
     contentSecurityPolicy?: string;
     isVSCodeWebExtension?: boolean;

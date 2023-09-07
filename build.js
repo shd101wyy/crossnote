@@ -53,6 +53,14 @@ const webviewConfig = {
   minify: true,
   platform: 'browser',
   outfile: './out/webview/index.js',
+  loader: {
+    '.png': 'dataurl',
+    '.woff': 'dataurl',
+    '.woff2': 'dataurl',
+    '.eot': 'dataurl',
+    '.ttf': 'dataurl',
+    '.svg': 'dataurl',
+  },
 };
 
 async function main() {
