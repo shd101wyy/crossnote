@@ -70,32 +70,6 @@
     .context-menu-item {
         list-style: none;
     }
-    #md-toolbar {
-        position: fixed;
-        top: 32px;
-        right: 24px;
-        opacity: 0;
-        display: block;
-        .back-to-top-btn,
-        .refresh-btn,
-        .sidebar-toc-btn {
-            float: right;
-            width: 38px;
-            margin-right: 4px;
-            opacity: 0.4;
-
-            &:hover {
-                opacity: 1.0;
-            }
-        }
-    }
-    &:hover {
-        .back-to-top-btn,
-        .refresh-btn,
-        .sidebar-toc-btn {
-            display: block;
-        }
-    }
     &.show-sidebar-toc {
         .md-sidebar-toc {
             font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif;
@@ -138,9 +112,6 @@
                 }
               }
             }
-        }
-        #md-toolbar {
-            right: 300px;
         }
         .crossnote {
             width: calc(~"100% - 268px");

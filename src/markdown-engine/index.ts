@@ -192,15 +192,6 @@ export class MarkdownEngine {
     // prevent `id="exports"` element from linked to `window` object.
     scripts += `<script>var exports = undefined</script>`;
 
-    // jquery modal
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        './dependencies/jquery-modal/jquery.modal.min.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-
     // mermaid
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
@@ -452,15 +443,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
       vscodePreviewPanel,
     )}">`;
 
-    // jquery-modal
-    styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        `./dependencies/jquery-modal/jquery.modal.min.css`,
-      ),
-      vscodePreviewPanel,
-    )}">`;
-
     // check math
     if (
       this.notebook.config.mathRenderingOption === 'KaTeX' &&
@@ -624,6 +606,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (!inputString) {
       inputString = await this.fs.readFile(this.filePath);
     }
+    let webviewCss = '';
     if (!webviewScript) {
       webviewScript = utility.addFileProtocol(
         path.resolve(
@@ -632,47 +615,17 @@ if (typeof(window['Reveal']) !== 'undefined') {
         ),
         vscodePreviewPanel,
       );
+      webviewCss = utility.addFileProtocol(
+        path.resolve(
+          utility.getCrossnoteBuildDirectory(),
+          './webview/index.css',
+        ),
+        vscodePreviewPanel,
+      );
     }
     if (!body) {
       // default body
-      body = `
-        <div class="refreshing-icon"></div>
-        <div id="md-toolbar">
-          <div class="back-to-top-btn btn"><span>⬆︎</span></div>
-          <div class="refresh-btn btn"><span>⟳︎</span></div>
-          <div class="sidebar-toc-btn btn"><span>§</span></div>
-        </div>
-        <div id="image-helper-view">
-          <h4>Image Helper</h4>
-          <div class="upload-div">
-            <label>Link</label>
-            <input type="text" class="url-editor" placeholder="enter image URL here, then press 'Enter' to insert.">
-            <div class="splitter"></div>
-            <label class="copy-label">Copy image to root /assets folder</label>
-            <div class="drop-area paster">
-              <p class="paster"> Click me to browse image file </p>
-              <input class="file-uploader paster" type="file" style="display:none;" multiple="multiple" >
-            </div>
-            <div class="splitter"></div>
-            <label>Upload</label>
-            <div class="drop-area uploader">
-              <p class="uploader">Click me to browse image file</p>
-              <input class="file-uploader uploader" type="file" style="display:none;" multiple="multiple" >
-            </div>
-            <div class="uploader-choice">
-              <span>use</span>
-              <select class="uploader-select">
-                <option>imgur</option>
-                <option>sm.ms</option>
-                <option>qiniu</option>
-              </select>
-              <span> to upload images</span>
-            </div>
-            <a href="#" id="show-uploaded-image-history">Show history</a>
-          </div>
-        </div>
-        <!-- <div class="markdown-spinner"> Loading Markdown\u2026 </div> -->
-    `;
+      body = ``;
     }
 
     const { yamlConfig, JSAndCssFiles, html } = await this.parseMD(
@@ -707,6 +660,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           yamlConfig,
           vscodePreviewPanel,
         )}
+        <link rel="stylesheet" href="${webviewCss}">
         ${styles}
         <link rel="stylesheet" href="${utility.addFileProtocol(
           path.resolve(
