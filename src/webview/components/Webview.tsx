@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import React from 'react';
 import WebviewContainer from '../containers/webview';
 import ContextMenu from './ContextMenu';
@@ -9,11 +10,12 @@ import { Topbar } from './Topbar';
 
 export default function Webview() {
   const {
-    previewElement,
     hiddenPreviewElement,
-    showContextMenu,
-    setIsMouseOverPreview,
+    isPresentationMode,
     isRefreshingPreview,
+    previewElement,
+    setIsMouseOverPreview,
+    showContextMenu,
   } = WebviewContainer.useContainer();
 
   return (
@@ -36,7 +38,10 @@ export default function Webview() {
       />
       {/** The real preview */}
       <div
-        className={'crossnote markdown-preview '}
+        className={classNames(
+          'crossnote markdown-preview ',
+          isPresentationMode ? '!p-0' : '',
+        )}
         data-for="preview"
         ref={previewElement}
         onContextMenu={event => {

@@ -251,6 +251,7 @@ export class MarkdownEngine {
     }
 
     // reveal.js
+    let presentationInitScript = '';
     if (isForPresentation) {
       scripts += `<script src='${utility.addFileProtocol(
         path.resolve(
@@ -277,13 +278,11 @@ export class MarkdownEngine {
       }
       presentationConfig['dependencies'] = dependencies;
 
-      scripts += `
-      <script>
-        Reveal.initialize(${JSON.stringify({
+      presentationInitScript += `
+        await Reveal.initialize(${JSON.stringify({
           margin: 0.1,
           ...presentationConfig,
         })})
-      </script>
       `;
     }
 
@@ -319,9 +318,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // wavedrom init script
     if (isForPresentation) {
-      scripts += `<script>
+      presentationInitScript += `
   WaveDrom.ProcessAll()
-      </script>`;
+    `;
     }
 
     // vega
@@ -336,7 +335,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     });
 
     if (isForPresentation) {
-      scripts += `<script>
+      presentationInitScript += `
       var vegaEls = document.querySelectorAll('.vega, .vega-lite');
       function reportVegaError(el, error) {
         el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
@@ -352,11 +351,16 @@ if (typeof(window['Reveal']) !== 'undefined') {
         } catch (error) {
           reportVegaError(vegaEl, error);
         }
-      }
-      </script>`;
+      }`;
     }
 
-    return scripts;
+    presentationInitScript = `<script>
+window["initRevealPresentation"] = async function() {
+  ${presentationInitScript}
+}    
+</script>`;
+
+    return scripts + presentationInitScript;
   }
 
   /**

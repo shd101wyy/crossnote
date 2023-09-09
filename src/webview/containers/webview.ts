@@ -50,7 +50,7 @@ const WebviewContainer = createContainer(() => {
   /**
    * Track the slide line number, and (h, v) indices
    */
-  const [slidesData, setSlidesData] = useState<SlideData[]>([]);
+  const slidesData = useRef<SlideData[]>([]);
   /**
    * Current slide offset
    */
@@ -588,23 +588,20 @@ const WebviewContainer = createContainer(() => {
     setupCodeChunks,
   ]);
 
-  const scrollSyncToSlide = useCallback(
-    (line: number) => {
-      for (let i = slidesData.length - 1; i >= 0; i--) {
-        if (line >= slidesData[i].line) {
-          const { h, v, offset } = slidesData[i];
-          if (offset === currentSlideOffset.current) {
-            return;
-          } else {
-            currentSlideOffset.current = offset;
-            window['Reveal'].slide(h, v);
-            break;
-          }
+  const scrollSyncToSlide = useCallback((line: number) => {
+    for (let i = slidesData.current.length - 1; i >= 0; i--) {
+      if (line >= slidesData.current[i].line) {
+        const { h, v, offset } = slidesData.current[i];
+        if (offset === currentSlideOffset.current) {
+          return;
+        } else {
+          currentSlideOffset.current = offset;
+          window['Reveal'].slide(h, v);
+          break;
         }
       }
-    },
-    [slidesData],
-  );
+    }
+  }, []);
 
   const scrollToPosition = useCallback((scrollTop: number) => {
     if (!previewElement.current) {
@@ -878,21 +875,19 @@ const WebviewContainer = createContainer(() => {
   const initSlidesData = useCallback(() => {
     const slideElements = document.getElementsByTagName('section');
     let offset = 0;
-    const slidesData: SlideData[] = [];
     for (let i = 0; i < slideElements.length; i++) {
       const slide = slideElements[i];
       if (slide.hasAttribute('data-line')) {
         const line = parseInt(slide.getAttribute('data-line') ?? '0', 10);
         const h = parseInt(slide.getAttribute('data-h') ?? '0', 10);
         const v = parseInt(slide.getAttribute('data-v') ?? '0', 10);
-        slidesData.push({ line, h, v, offset });
+        slidesData.current.push({ line, h, v, offset });
         offset += 1;
       }
     }
-    setSlidesData(slidesData);
   }, []);
 
-  const initPresentationEvent = useCallback(() => {
+  const initPresentationEvent = useCallback(async () => {
     let initialSlide: HTMLDivElement | null = null;
     const readyEvent = () => {
       if (initialSlide) {
@@ -911,7 +906,7 @@ const WebviewContainer = createContainer(() => {
         }
 
         const { indexh, indexv } = event;
-        for (const slideData of slidesData) {
+        for (const slideData of slidesData.current) {
           const { h, v, line } = slideData;
           if (h === indexh && v === indexv) {
             postMessage('revealLine', [sourceUri.current, line + 6]);
@@ -922,6 +917,11 @@ const WebviewContainer = createContainer(() => {
 
     // analyze slides
     initSlidesData();
+
+    if (window['initRevealPresentation']) {
+      // This is defined in `markdown-engine/index.ts`
+      await window['initRevealPresentation']();
+    }
 
     // slide to initial position
     window['Reveal'].configure({ transition: 'none' });
@@ -945,7 +945,6 @@ const WebviewContainer = createContainer(() => {
     postMessage,
     scrollToRevealSourceLine,
     setupCodeChunks,
-    slidesData,
   ]);
 
   useEffect(() => {
@@ -1168,14 +1167,15 @@ const WebviewContainer = createContainer(() => {
         },
       ]);
     } else {
-      // TODO: presentation preview to source sync
       config.scrollSync = true; // <= force to enable scrollSync for presentation
       initPresentationEvent();
     }
 
     // make it possible for interactive vega to load local data files
     const base = document.createElement('base');
-    base.href = sourceUri.current;
+    if (sourceUri.current) {
+      base.href = sourceUri.current;
+    }
     document.head.appendChild(base);
   }, [
     config,

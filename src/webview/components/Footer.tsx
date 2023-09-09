@@ -7,12 +7,14 @@ export default function Footer() {
     showContextMenu,
     isMobile,
     isMouseOverPreview,
+    isPresentationMode,
   } = WebviewContainer.useContainer();
   return (
     <div
       className={classNames(
         'fixed bottom-0 w-full z-50 pr-2',
         isMobile || isMouseOverPreview ? '' : 'hidden',
+        isPresentationMode ? 'hidden' : '',
       )}
     >
       <div className="flex flex-row justify-end items-center backdrop-blur-xl float-right rounded-md">
