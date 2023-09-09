@@ -3,6 +3,7 @@ import $ from 'jquery';
 import 'jquery-modal/jquery.modal.min.css';
 import 'jquery-modal/jquery.modal.min.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
 import { WebviewConfig } from '../lib/types';
 
@@ -97,6 +98,12 @@ const WebviewContainer = createContainer(() => {
   const isVSCode = useMemo(() => {
     return !!config.vscode;
   }, [config]);
+  const contextMenuId = useMemo(() => {
+    return 'crossnote-context-menu';
+  }, []);
+  const { show: showContextMenu } = useContextMenu({
+    id: contextMenuId,
+  });
 
   const postMessage = useCallback(
     (command: string, args: unknown[] = []) => {
@@ -1174,6 +1181,8 @@ const WebviewContainer = createContainer(() => {
     sourceUri,
     zoomLevel,
     config,
+    contextMenuId,
+    showContextMenu,
   };
 });
 

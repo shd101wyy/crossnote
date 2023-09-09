@@ -1,258 +1,299 @@
-import $ from 'jquery';
-import 'jquery-contextmenu/dist/jquery.contextMenu.min.css';
-import 'jquery-contextmenu/dist/jquery.contextMenu.min.js';
-import 'jquery-contextmenu/dist/jquery.ui.position.min.js';
-import React, { useEffect } from 'react';
+import {
+  mdiCancel,
+  mdiExport,
+  mdiExportVariant,
+  mdiImageOutline,
+  mdiMoonFull,
+  mdiMoonNew,
+  mdiOpenInNew,
+  mdiPaletteOutline,
+  mdiSync,
+} from '@mdi/js';
+import Icon from '@mdi/react';
+import React, { useCallback } from 'react';
+import { Item, ItemParams, Menu, Separator, Submenu } from 'react-contexify';
+import 'react-contexify/ReactContexify.css';
 import WebviewContainer from '../containers/webview';
 
 export default function ContextMenu() {
   const {
-    isVSCodeWebExtension,
     postMessage,
     sourceUri,
+    contextMenuId,
+    isVSCodeWebExtension,
     previewSyncSource,
   } = WebviewContainer.useContainer();
 
-  /**
-   * init contextmenu
-   * reference: http://jsfiddle.net/w33z4bo0/1/
-   */
-  useEffect(() => {
-    $['contextMenu']({
-      selector: '.preview-container',
-      items: {
-        ...(isVSCodeWebExtension
-          ? {}
-          : {
-              open_in_browser: {
-                name: 'Open in Browser',
-                callback: () => postMessage('openInBrowser', [sourceUri]),
-              },
-              sep1: '---------',
-            }),
-        html_export: {
-          name: 'HTML',
-          items: {
-            ...(isVSCodeWebExtension
-              ? {}
-              : {
-                  html_offline: {
-                    name: 'HTML (offline)',
-                    callback: () =>
-                      postMessage('htmlExport', [sourceUri, true]),
-                  },
-                }),
-            html_cdn: {
-              name: 'HTML (cdn hosted)',
-              callback: () => postMessage('htmlExport', [sourceUri, false]),
-            },
-          },
-        },
-        ...(isVSCodeWebExtension
-          ? {}
-          : {
-              chrome_export: {
-                name: 'Chrome (Puppeteer)',
-                items: {
-                  chrome_pdf: {
-                    name: 'PDF',
-                    callback: () =>
-                      postMessage('chromeExport', [sourceUri, 'pdf']),
-                  },
-                  chrome_png: {
-                    name: 'PNG',
-                    callback: () =>
-                      postMessage('chromeExport', [sourceUri, 'png']),
-                  },
-                  chrome_jpeg: {
-                    name: 'JPEG',
-                    callback: () =>
-                      postMessage('chromeExport', [sourceUri, 'jpeg']),
-                  },
-                },
-              },
-            }),
-        ...(isVSCodeWebExtension
-          ? {}
-          : {
-              prince_export: {
-                name: 'PDF (prince)',
-                callback: () => postMessage('princeExport', [sourceUri]),
-              },
-            }),
-        ...(isVSCodeWebExtension
-          ? {}
-          : {
-              ebook_export: {
-                name: 'eBook',
-                items: {
-                  ebook_epub: {
-                    name: 'ePub',
-                    callback: () =>
-                      postMessage('eBookExport', [sourceUri, 'epub']),
-                  },
-                  ebook_mobi: {
-                    name: 'mobi',
-                    callback: () =>
-                      postMessage('eBookExport', [sourceUri, 'mobi']),
-                  },
-                  ebook_pdf: {
-                    name: 'PDF',
-                    callback: () =>
-                      postMessage('eBookExport', [sourceUri, 'pdf']),
-                  },
-                  ebook_html: {
-                    name: 'HTML',
-                    callback: () =>
-                      postMessage('eBookExport', [sourceUri, 'html']),
-                  },
-                },
-              },
-            }),
-        ...(isVSCodeWebExtension
-          ? {}
-          : {
-              pandoc_export: {
-                name: 'Pandoc',
-                callback: () => postMessage('pandocExport', [sourceUri]),
-              },
-            }),
-        ...(isVSCodeWebExtension
-          ? {}
-          : {
-              save_as_markdown: {
-                name: 'Save as Markdown',
-                callback: () => postMessage('markdownExport', [sourceUri]),
-              },
-            }),
-        ...(isVSCodeWebExtension
-          ? {}
-          : {
-              sep2: '---------',
-              image_helper: {
-                name: 'Image Helper',
-                callback: () => window['$']('#image-helper-view').modal(),
-              },
-            }),
-        sep3: '---------',
-        sync_source: {
-          name: 'Sync Source',
-          callback: () => previewSyncSource(),
-        },
-        seq4: '---------',
-        preview_theme: {
-          name: 'Preview Theme',
-          items: {
-            atom_dark_css: {
-              name: 'atom-dark.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'atom-dark.css']);
-              },
-            },
-            atom_light_css: {
-              name: 'atom-light.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'atom-light.css']);
-              },
-            },
-            atom_material_css: {
-              name: 'atom-material.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [
-                  sourceUri,
-                  'atom-material.css',
-                ]);
-              },
-            },
-            github_dark_css: {
-              name: 'github-dark.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'github-dark.css']);
-              },
-            },
-            github_light_css: {
-              name: 'github-light.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'github-light.css']);
-              },
-            },
-            gothic_css: {
-              name: 'gothic.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'gothic.css']);
-              },
-            },
-            medium_css: {
-              name: 'medium.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'medium.css']);
-              },
-            },
-            monokai_css: {
-              name: 'monokai.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'monokai.css']);
-              },
-            },
-            newsprint_css: {
-              name: 'newsprint.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'newsprint.css']);
-              },
-            },
-            night_css: {
-              name: 'night.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'night.css']);
-              },
-            },
-            none_css: {
-              name: 'none.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'none.css']);
-              },
-            },
-            one_dark_css: {
-              name: 'one-dark.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'one-dark.css']);
-              },
-            },
-            one_light_css: {
-              name: 'one-light.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'one-light.css']);
-              },
-            },
-            solarized_dark_css: {
-              name: 'solarized-dark.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [
-                  sourceUri,
-                  'solarized-dark.css',
-                ]);
-              },
-            },
-            solarized_light_css: {
-              name: 'solarized-light.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [
-                  sourceUri,
-                  'solarized-light.css',
-                ]);
-              },
-            },
-            vue_css: {
-              name: 'vue.css',
-              callback: () => {
-                postMessage('setPreviewTheme', [sourceUri, 'vue.css']);
-              },
-            },
-          },
-        },
-      },
-    });
-  }, []);
+  const handleItemClick = useCallback(
+    ({ id }: ItemParams<unknown, unknown>) => {
+      switch (id) {
+        case 'open-in-browser': {
+          postMessage('openInBrowser', [sourceUri]);
+          break;
+        }
+        case 'export-html-offline': {
+          postMessage('htmlExport', [sourceUri, true]);
+          break;
+        }
+        case 'export-html-cdn': {
+          postMessage('htmlExport', [sourceUri, false]);
+          break;
+        }
+        case 'export-chrome-pdf': {
+          postMessage('chromeExport', [sourceUri, 'pdf']);
+          break;
+        }
+        case 'export-chrome-png': {
+          postMessage('chromeExport', [sourceUri, 'png']);
+          break;
+        }
+        case 'export-chrome-jpeg': {
+          postMessage('chromeExport', [sourceUri, 'jpeg']);
+          break;
+        }
+        case 'export-prince': {
+          postMessage('princeExport', [sourceUri]);
+          break;
+        }
+        case 'export-ebook-epub': {
+          postMessage('eBookExport', [sourceUri, 'epub']);
+          break;
+        }
+        case 'export-ebook-mobi': {
+          postMessage('eBookExport', [sourceUri, 'mobi']);
+          break;
+        }
+        case 'export-ebook-pdf': {
+          postMessage('eBookExport', [sourceUri, 'pdf']);
+          break;
+        }
+        case 'export-ebook-html': {
+          postMessage('eBookExport', [sourceUri, 'html']);
+          break;
+        }
+        case 'export-pandoc': {
+          postMessage('pandocExport', [sourceUri]);
+          break;
+        }
+        case 'export-markdown': {
+          postMessage('markdownExport', [sourceUri]);
+          break;
+        }
+        case 'open-image-helper': {
+          window['$']('#image-helper-view').modal();
+          break;
+        }
+        case 'sync-source': {
+          previewSyncSource();
+          break;
+        }
+        case 'select-preview-theme-atom-dark':
+        case 'select-preview-theme-atom-light':
+        case 'select-preview-theme-atom-material':
+        case 'select-preview-theme-github-dark':
+        case 'select-preview-theme-github-light':
+        case 'select-preview-theme-gothic':
+        case 'select-preview-theme-medium':
+        case 'select-preview-theme-monokai':
+        case 'select-preview-theme-newsprint':
+        case 'select-preview-theme-night':
+        case 'select-preview-theme-none':
+        case 'select-preview-theme-one-dark':
+        case 'select-preview-theme-one-light':
+        case 'select-preview-theme-solarized-dark':
+        case 'select-preview-theme-solarized-light':
+        case 'select-preview-theme-vue': {
+          postMessage('setPreviewTheme', [
+            sourceUri,
+            `${id.replace('select-preview-theme-', '')}.css`,
+          ]);
+          break;
+        }
 
-  return <div></div>;
+        default:
+          break;
+      }
+    },
+    [postMessage, previewSyncSource, sourceUri],
+  );
+
+  return (
+    <div>
+      <Menu id={contextMenuId}>
+        {!isVSCodeWebExtension && (
+          <>
+            <Item id="open-in-browser" onClick={handleItemClick}>
+              <Icon path={mdiOpenInNew} size={0.8} className="mr-2"></Icon> Open
+              in Browser
+            </Item>
+            <Separator></Separator>
+          </>
+        )}
+        {!isVSCodeWebExtension && (
+          <Submenu
+            label={
+              <span className="inline-flex flex-row items-center">
+                <Icon
+                  path={mdiExportVariant}
+                  size={0.8}
+                  className="mr-2"
+                ></Icon>
+                HTML
+              </span>
+            }
+          >
+            <Item id="export-html-offline">{'HTML (offline)'}</Item>
+            <Item id="export-html-cdn">{'HTML (cdn hosted)'}</Item>
+          </Submenu>
+        )}
+        {!isVSCodeWebExtension && (
+          <Submenu
+            label={
+              <span className="inline-flex flex-row items-center">
+                <Icon
+                  path={mdiExport}
+                  size={0.8}
+                  className="mr-2 invisible"
+                ></Icon>
+                Chrome (Puppeteer)
+              </span>
+            }
+          >
+            <Item id="export-chrome-pdf">PDF</Item>
+            <Item id="export-chrome-png">PNG</Item>
+            <Item id="export-chrome-jpeg">JPEG</Item>
+          </Submenu>
+        )}
+        {!isVSCodeWebExtension && (
+          <Item id="export-prince">
+            <span className="inline-flex flex-row items-center">
+              <Icon
+                path={mdiExportVariant}
+                size={0.8}
+                className="mr-2 invisible"
+              ></Icon>
+              PDF (Prince)
+            </span>
+          </Item>
+        )}
+        {!isVSCodeWebExtension && (
+          <Submenu
+            label={
+              <span className="inline-flex flex-row items-center">
+                <Icon
+                  path={mdiExport}
+                  size={0.8}
+                  className="mr-2 invisible"
+                ></Icon>
+                eBook
+              </span>
+            }
+          >
+            <Item id="export-ebook-epub">ePub</Item>
+            <Item id="export-ebook-mobi">mobi</Item>
+            <Item id="export-ebook-pdf">PDF</Item>
+            <Item id="export-ebook-html">HTML</Item>
+          </Submenu>
+        )}
+        {!isVSCodeWebExtension && (
+          <Item id="export-pandoc">
+            <span className="inline-flex flex-row items-center">
+              <Icon
+                path={mdiExportVariant}
+                size={0.8}
+                className="mr-2 invisible"
+              ></Icon>
+              Pandoc
+            </span>
+          </Item>
+        )}
+        {!isVSCodeWebExtension && (
+          <Item id="export-markdown">
+            <span className="inline-flex flex-row items-center">
+              <Icon
+                path={mdiExportVariant}
+                size={0.8}
+                className="mr-2 invisible"
+              ></Icon>
+              Save as Markdown
+            </span>
+          </Item>
+        )}
+        {!isVSCodeWebExtension && (
+          <>
+            <Separator></Separator>
+            <Item id="open-image-helper">
+              <span className="inline-flex flex-row items-center">
+                <Icon path={mdiImageOutline} size={0.8} className="mr-2"></Icon>
+                Image Helper
+              </span>
+            </Item>
+          </>
+        )}
+        <Separator></Separator>
+        <Item id="sync-source">
+          <span className="inline-flex flex-row items-center">
+            <Icon path={mdiSync} size={0.8} className="mr-2"></Icon>
+            Sync Source
+          </span>
+        </Item>
+        <Separator></Separator>
+        <Submenu
+          label={
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiPaletteOutline} size={0.8} className="mr-2"></Icon>
+              Preview Theme
+            </span>
+          }
+        >
+          <Submenu
+            label={
+              <span className="inline-flex flex-row items-center">
+                <Icon path={mdiMoonNew} size={0.8} className="mr-2"></Icon>
+                Light
+              </span>
+            }
+          >
+            <Item id="select-preview-theme-atom-light">atom-light.css</Item>
+            <Item id="select-preview-theme-github-light">github-light.css</Item>
+            <Item id="select-preview-theme-gothic">gothic.css</Item>
+            <Item id="select-preview-theme-medium">medium.css</Item>
+            <Item id="select-preview-theme-newsprint">newsprint.css</Item>
+            <Item id="select-preview-theme-one-light">one-light.css</Item>
+            <Item id="select-preview-theme-solarized-light">
+              solarized-light.css
+            </Item>
+            <Item id="select-preview-theme-vue">vue.css</Item>
+          </Submenu>
+          <Submenu
+            label={
+              <span className="inline-flex flex-row items-center">
+                <Icon path={mdiMoonFull} size={0.8} className="mr-2"></Icon>
+                Dark
+              </span>
+            }
+          >
+            <Item id="select-preview-theme-atom-dark">atom-dark.css</Item>
+            <Item id="select-preview-theme-atom-material">
+              atom-material.css
+            </Item>
+            <Item id="select-preview-theme-github-dark">github-dark.css</Item>
+            <Item id="select-preview-theme-monokai">monokai.css</Item>
+            <Item id="select-preview-theme-night">night.css</Item>
+            <Item id="select-preview-theme-one-dark">one-dark.css</Item>
+            <Item id="select-preview-theme-solarized-dark">
+              solarized-dark.css
+            </Item>
+          </Submenu>
+          <Item id="select-preview-theme-none">
+            {' '}
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiCancel} size={0.8} className="mr-2"></Icon>
+              None
+            </span>
+          </Item>
+        </Submenu>
+      </Menu>
+    </div>
+  );
 }

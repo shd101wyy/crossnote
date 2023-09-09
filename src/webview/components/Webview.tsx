@@ -10,6 +10,7 @@ export default function Webview() {
   const {
     setPreviewElement,
     setHiddenPreviewElement,
+    showContextMenu,
   } = WebviewContainer.useContainer();
   const previewElementRef = useRef<HTMLDivElement>(null);
   const hiddenPreviewElementRef = useRef<HTMLDivElement>(null);
@@ -42,6 +43,11 @@ export default function Webview() {
         className={'crossnote markdown-preview '}
         data-for="preview"
         ref={previewElementRef}
+        onContextMenu={event => {
+          showContextMenu({
+            event,
+          });
+        }}
       ></div>
       <Footer></Footer>
 
