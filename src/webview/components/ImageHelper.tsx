@@ -15,6 +15,7 @@ export default function ImageHelper() {
     config,
     showImageHelper,
     setShowImageHelper,
+    sourceUri,
   } = WebviewContainer.useContainer();
   const urlEditor = useRef<HTMLInputElement>(null);
   const imagePasterInput = useRef<HTMLInputElement>(null);
@@ -35,14 +36,14 @@ export default function ImageHelper() {
         }
         if (url.length) {
           setShowImageHelper(false);
-          postMessage('insertImageUrl', [this.sourceUri, url]);
+          postMessage('insertImageUrl', [sourceUri.current, url]);
         }
         return false;
       } else {
         return true;
       }
     },
-    [urlEditor, postMessage, setShowImageHelper],
+    [setShowImageHelper, postMessage, sourceUri],
   );
 
   const dropFilesToCopy = useCallback(
@@ -74,8 +75,6 @@ export default function ImageHelper() {
     },
     [setShowImageHelper],
   );
-
-  console.log(showImageHelper);
 
   return (
     <Transition.Root show={showImageHelper} as={Fragment}>

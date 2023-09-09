@@ -3,6 +3,7 @@ import {
   mdiExport,
   mdiExportVariant,
   mdiImageOutline,
+  mdiInformationOutline,
   mdiMoonFull,
   mdiMoonNew,
   mdiOpenInNew,
@@ -30,55 +31,55 @@ export default function ContextMenu() {
       console.log(id);
       switch (id) {
         case 'open-in-browser': {
-          postMessage('openInBrowser', [sourceUri]);
+          postMessage('openInBrowser', [sourceUri.current]);
           break;
         }
         case 'export-html-offline': {
-          postMessage('htmlExport', [sourceUri, true]);
+          postMessage('htmlExport', [sourceUri.current, true]);
           break;
         }
         case 'export-html-cdn': {
-          postMessage('htmlExport', [sourceUri, false]);
+          postMessage('htmlExport', [sourceUri.current, false]);
           break;
         }
         case 'export-chrome-pdf': {
-          postMessage('chromeExport', [sourceUri, 'pdf']);
+          postMessage('chromeExport', [sourceUri.current, 'pdf']);
           break;
         }
         case 'export-chrome-png': {
-          postMessage('chromeExport', [sourceUri, 'png']);
+          postMessage('chromeExport', [sourceUri.current, 'png']);
           break;
         }
         case 'export-chrome-jpeg': {
-          postMessage('chromeExport', [sourceUri, 'jpeg']);
+          postMessage('chromeExport', [sourceUri.current, 'jpeg']);
           break;
         }
         case 'export-prince': {
-          postMessage('princeExport', [sourceUri]);
+          postMessage('princeExport', [sourceUri.current]);
           break;
         }
         case 'export-ebook-epub': {
-          postMessage('eBookExport', [sourceUri, 'epub']);
+          postMessage('eBookExport', [sourceUri.current, 'epub']);
           break;
         }
         case 'export-ebook-mobi': {
-          postMessage('eBookExport', [sourceUri, 'mobi']);
+          postMessage('eBookExport', [sourceUri.current, 'mobi']);
           break;
         }
         case 'export-ebook-pdf': {
-          postMessage('eBookExport', [sourceUri, 'pdf']);
+          postMessage('eBookExport', [sourceUri.current, 'pdf']);
           break;
         }
         case 'export-ebook-html': {
-          postMessage('eBookExport', [sourceUri, 'html']);
+          postMessage('eBookExport', [sourceUri.current, 'html']);
           break;
         }
         case 'export-pandoc': {
-          postMessage('pandocExport', [sourceUri]);
+          postMessage('pandocExport', [sourceUri.current]);
           break;
         }
         case 'export-markdown': {
-          postMessage('markdownExport', [sourceUri]);
+          postMessage('markdownExport', [sourceUri.current]);
           break;
         }
         case 'open-image-helper': {
@@ -107,17 +108,28 @@ export default function ContextMenu() {
         case 'select-preview-theme-solarized-light':
         case 'select-preview-theme-vue': {
           postMessage('setPreviewTheme', [
-            sourceUri,
+            sourceUri.current,
             `${id.replace('select-preview-theme-', '')}.css`,
           ]);
           break;
         }
-
+        case 'open-changelog': {
+          postMessage('openChangelog');
+          break;
+        }
+        case 'open-issues': {
+          postMessage('openIssues');
+          break;
+        }
+        case 'open-sponsors': {
+          postMessage('openSponsors');
+          break;
+        }
         default:
           break;
       }
     },
-    [postMessage, previewSyncSource, sourceUri],
+    [postMessage, previewSyncSource, setShowImageHelper, sourceUri],
   );
 
   return (
@@ -249,9 +261,9 @@ export default function ContextMenu() {
                 Image Helper
               </span>
             </Item>
+            <Separator></Separator>
           </>
         )}
-        <Separator></Separator>
         <Item id="sync-source" onClick={handleItemClick}>
           <span className="inline-flex flex-row items-center">
             <Icon path={mdiSync} size={0.8} className="mr-2"></Icon>
@@ -352,6 +364,28 @@ export default function ContextMenu() {
               None
             </span>
           </Item>
+        </Submenu>
+        <Submenu
+          label={
+            <span className="inline-flex flex-row items-center">
+              <Icon
+                path={mdiInformationOutline}
+                size={0.8}
+                className="mr-2"
+              ></Icon>
+              About
+            </span>
+          }
+        >
+          <a
+            href="https://github.com/shd101wyy/vscode-markdown-preview-enhanced/releases"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Item id="open-changelog">Change Log</Item>
+          </a>
+          <Item id="open-issues">Feature Requests or Bug Reports</Item>
+          <Item id="open-sponsors">Sponsor This Project 😊</Item>
         </Submenu>
       </Menu>
     </div>

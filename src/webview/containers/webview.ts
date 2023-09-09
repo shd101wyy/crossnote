@@ -1,6 +1,6 @@
 import CryptoJS from 'crypto-js';
 import $ from 'jquery';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
 import { WebviewConfig } from '../lib/types';
@@ -19,53 +19,34 @@ const WebviewContainer = createContainer(() => {
   /**
    * Source URI of the current note
    */
-  const [sourceUri, setSourceUri] = useState<string | undefined>(undefined);
+  const sourceUri = useRef<string | undefined>(undefined);
   /**
    * Source scheme
    */
-  const [sourceScheme, setSourceScheme] = useState<string>('file');
-  /**
-   * Whether finished loading preview
-   */
-  const [doneLoadingPreview, setDoneLoadingPreview] = useState<boolean>(false);
+  const sourceScheme = useRef<string>('file');
   /**
    * TextEditor cursor current line position
    */
-  const [cursorLine, setCursorLine] = useState<number>(-1);
+  const cursorLine = useRef<number>(-1);
   /**
    * TextEditor initial line position
    */
-  const [initialLine, setInitialLine] = useState<number>(0);
+  const initialLine = useRef<number>(0);
+
   /**
    * TextEditor total buffer line count
    */
-  const [totalLineCount, setTotalLineCount] = useState<number>(0);
+  const totalLineCount = useRef<number>(0);
   /**
    * Used to delay preview scroll
    */
-  const [previewScrollDelay, setPreviewScrollDelay] = useState<number>(0);
-
-  const [previewElement, setPreviewElement] = useState<
-    HTMLDivElement | undefined
-  >(undefined);
-  const [hiddenPreviewElement, setHiddenPreviewElement] = useState<
-    HTMLDivElement | undefined
-  >(undefined);
-  const [sidebarTocElement, setSidebarTocElement] = useState<
-    HTMLDivElement | undefined
-  >(undefined);
-  const [showImageHelper, setShowImageHelper] = useState<boolean>(false);
-  const [showSidebarToc, setShowSidebarToc] = useState<boolean>(false);
-  const [sidebarTocHtml, setSidebarTocHtml] = useState<string>('');
-  const [scrollMap, setScrollMap] = useState<number[] | null>(null);
-  const [zoomLevel, setZoomLevel] = useState<number>(1);
-  const [wavedromCache, setWavedromCache] = useState<Record<string, string>>(
-    {},
-  );
-  const [isRefreshingPreview, setIsRefreshingPreview] = useState<boolean>(
-    false,
-  );
-  const [, setScrollTimeout] = useState<number | null>(null);
+  const previewScrollDelay = useRef<number>(0);
+  const scrollMap = useRef<number[] | null>(null);
+  const wavedromCache = useRef<Record<string, string>>({});
+  // eslint-disable-next-line no-undef
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  // eslint-disable-next-line no-undef
+  const isLoadingPreview = useRef<boolean>(true);
   /**
    * Track the slide line number, and (h, v) indices
    */
@@ -73,7 +54,23 @@ const WebviewContainer = createContainer(() => {
   /**
    * Current slide offset
    */
-  const [currentSlideOffset, setCurrentSlideOffset] = useState<number>(-1);
+  const currentSlideOffset = useRef<number>(-1);
+  const previewElement = useRef<HTMLDivElement>(null);
+  const hiddenPreviewElement = useRef<HTMLDivElement>(null);
+  const sidebarTocElement = useRef<HTMLDivElement>(null);
+  const [showImageHelper, setShowImageHelper] = useState<boolean>(false);
+  const [showSidebarToc, setShowSidebarToc] = useState<boolean>(false);
+  const [sidebarTocHtml, setSidebarTocHtml] = useState<string>('');
+  const [isRefreshingPreview, setIsRefreshingPreview] = useState<boolean>(
+    false,
+  );
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [isMouseOverPreview, setIsMouseOverPreview] = useState<boolean>(false);
+  const isMobile = useMemo(() => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent,
+    );
+  }, []);
 
   const isPresentationMode = useMemo(() => {
     return document.body.hasAttribute('data-presentation-mode');
@@ -128,7 +125,7 @@ const WebviewContainer = createContainer(() => {
       return window['Reveal'].toggleOverview();
     } else {
       setShowSidebarToc(x => !x);
-      setScrollMap(null);
+      scrollMap.current = null;
     }
   }, [isPresentationMode]);
 
@@ -148,20 +145,20 @@ const WebviewContainer = createContainer(() => {
         }
       }
     },
-    [isVSCode, isPresentationMode, clickSidebarTocButton, showImageHelper],
+    [clickSidebarTocButton, isPresentationMode, isVSCode, showImageHelper],
   );
 
   const buildScrollMap = useCallback(() => {
-    if (scrollMap) {
-      return scrollMap;
+    if (scrollMap.current) {
+      return scrollMap.current;
     }
-    if (!totalLineCount || !previewElement) {
+    if (!totalLineCount.current || !previewElement.current) {
       return null;
     }
     const newScrollMap: number[] = [];
     const nonEmptyList: number[] = [];
 
-    for (let i = 0; i < totalLineCount; i++) {
+    for (let i = 0; i < totalLineCount.current; i++) {
       newScrollMap.push(-1);
     }
 
@@ -169,7 +166,9 @@ const WebviewContainer = createContainer(() => {
     newScrollMap[0] = 0;
 
     // write down the offsetTop of element that has 'data-line' property to scrollMap
-    const lineElements = previewElement.getElementsByClassName('sync-line');
+    const lineElements = previewElement.current.getElementsByClassName(
+      'sync-line',
+    );
 
     for (let i = 0; i < lineElements.length; i++) {
       let el = lineElements[i] as HTMLElement;
@@ -190,7 +189,7 @@ const WebviewContainer = createContainer(() => {
         nonEmptyList.push(t);
 
         let offsetTop = 0;
-        while (el && el !== previewElement) {
+        while (el && el !== previewElement.current) {
           offsetTop += el.offsetTop;
           el = el.offsetParent as HTMLElement;
         }
@@ -199,11 +198,11 @@ const WebviewContainer = createContainer(() => {
       }
     }
 
-    nonEmptyList.push(totalLineCount);
-    newScrollMap.push(previewElement.scrollHeight);
+    nonEmptyList.push(totalLineCount.current);
+    newScrollMap.push(previewElement.current.scrollHeight);
 
     let pos = 0;
-    for (let i = 0; i < totalLineCount; i++) {
+    for (let i = 0; i < totalLineCount.current; i++) {
       if (newScrollMap[i] !== -1) {
         pos++;
         continue;
@@ -216,25 +215,27 @@ const WebviewContainer = createContainer(() => {
       );
     }
 
-    setScrollMap(newScrollMap);
+    scrollMap.current = newScrollMap;
     return newScrollMap; // scrollMap's length == screenLineCount (vscode can't get screenLineCount... sad)
-  }, [previewElement, totalLineCount, scrollMap]);
+  }, []);
 
   const previewSyncSource = useCallback(() => {
     let scrollToLine: number;
 
-    if (!previewElement) {
+    if (!previewElement.current) {
       return;
     }
 
-    if (previewElement.scrollTop === 0) {
+    if (previewElement.current.scrollTop === 0) {
       // editorScrollDelay = Date.now() + 100
       scrollToLine = 0;
 
-      return postMessage('revealLine', [sourceUri, scrollToLine]);
+      return postMessage('revealLine', [sourceUri.current, scrollToLine]);
     }
 
-    const top = previewElement.scrollTop + previewElement.offsetHeight / 2;
+    const top =
+      previewElement.current.scrollTop +
+      previewElement.current.offsetHeight / 2;
 
     // try to find corresponding screen buffer row
     const scrollMap = buildScrollMap();
@@ -272,13 +273,13 @@ const WebviewContainer = createContainer(() => {
 
     scrollToLine = screenRow;
 
-    postMessage('revealLine', [sourceUri, scrollToLine]);
+    postMessage('revealLine', [sourceUri.current, scrollToLine]);
 
     // @scrollToPosition(screenRow * @editor.getLineHeightInPixels() - @previewElement.offsetHeight / 2, @editor.getElement())
     // # @editor.getElement().setScrollTop
     // track currnet time to disable onDidChangeScrollTop
     // editorScrollDelay = Date.now() + 100
-  }, [buildScrollMap, postMessage, previewElement, sourceUri]);
+  }, [buildScrollMap, postMessage]);
 
   const scrollPreview = useCallback(() => {
     if (!config.scrollSync) {
@@ -287,16 +288,11 @@ const WebviewContainer = createContainer(() => {
 
     buildScrollMap();
 
-    if (Date.now() < previewScrollDelay) {
+    if (Date.now() < previewScrollDelay.current) {
       return;
     }
     previewSyncSource();
-  }, [
-    buildScrollMap,
-    config.scrollSync,
-    previewScrollDelay,
-    previewSyncSource,
-  ]);
+  }, [buildScrollMap, config.scrollSync, previewSyncSource]);
 
   const zoomIn = useCallback(() => {
     setZoomLevel(x => x + 0.1);
@@ -312,12 +308,12 @@ const WebviewContainer = createContainer(() => {
 
   const renderMathJax = useCallback(() => {
     return new Promise<void>(resolve => {
-      if (!hiddenPreviewElement) {
+      if (!hiddenPreviewElement.current) {
         return resolve();
       }
       if (config.mathRenderingOption === 'MathJax' || config.usePandocParser) {
         // .mathjax-exps, .math.inline, .math.display
-        const unprocessedElements = hiddenPreviewElement.querySelectorAll(
+        const unprocessedElements = hiddenPreviewElement.current.querySelectorAll(
           '.mathjax-exps, .math.inline, .math.display',
         );
         if (!unprocessedElements.length) {
@@ -331,24 +327,27 @@ const WebviewContainer = createContainer(() => {
           // sometimes the this callback will be called twice
           // and only the second time will the Math expressions be rendered.
           // therefore, I added the line below to check whether math is already rendered.
-          if (!hiddenPreviewElement.getElementsByClassName('MathJax').length) {
+          if (
+            !hiddenPreviewElement.current?.getElementsByClassName('MathJax')
+              .length
+          ) {
             return resolve();
           }
 
-          setScrollMap(null);
+          scrollMap.current = null;
           return resolve();
         });
       } else {
         return resolve();
       }
     });
-  }, [config, hiddenPreviewElement]);
+  }, [config]);
 
   const renderWavedrom = useCallback(() => {
-    if (!hiddenPreviewElement) {
+    if (!hiddenPreviewElement.current) {
       return;
     }
-    const els = hiddenPreviewElement.getElementsByClassName('wavedrom');
+    const els = hiddenPreviewElement.current.getElementsByClassName('wavedrom');
     if (els.length) {
       const newWavedromCache = {};
       for (let i = 0; i < els.length; i++) {
@@ -359,9 +358,9 @@ const WebviewContainer = createContainer(() => {
           continue;
         }
 
-        if (text in wavedromCache) {
+        if (text in wavedromCache.current) {
           // load cache
-          const svg = wavedromCache[text];
+          const svg = wavedromCache.current[text];
           el.innerHTML = svg;
           newWavedromCache[text] = svg;
           continue;
@@ -376,17 +375,19 @@ const WebviewContainer = createContainer(() => {
         }
       }
 
-      setWavedromCache(newWavedromCache);
+      wavedromCache.current = newWavedromCache;
     }
-  }, [hiddenPreviewElement, wavedromCache]);
+  }, []);
 
   const renderInteractiveVega = useCallback(() => {
     return new Promise<void>(resolve => {
-      if (!previewElement) {
+      if (!previewElement.current) {
         return resolve();
       }
 
-      const vegaElements = previewElement.querySelectorAll('.vega, .vega-lite');
+      const vegaElements = previewElement.current.querySelectorAll(
+        '.vega, .vega-lite',
+      );
       function reportVegaError(el, error) {
         el.innerHTML =
           '<pre class="language-text">' + error.toString() + '</pre>';
@@ -406,14 +407,16 @@ const WebviewContainer = createContainer(() => {
       }
       resolve();
     });
-  }, [previewElement]);
+  }, []);
 
   const renderMermaid = useCallback(async () => {
-    if (!previewElement) {
+    if (!previewElement.current) {
       return;
     }
     const mermaid = window['mermaid']; // window.mermaid doesn't work, has to be written as window['mermaid']
-    const mermaidGraphs = previewElement.getElementsByClassName('mermaid');
+    const mermaidGraphs = previewElement.current.getElementsByClassName(
+      'mermaid',
+    );
 
     const validMermaidGraphs: HTMLElement[] = [];
     for (let i = 0; i < mermaidGraphs.length; i++) {
@@ -445,7 +448,7 @@ const WebviewContainer = createContainer(() => {
       });
       return;
     }
-  }, [previewElement]);
+  }, []);
 
   const runCodeChunk = useCallback(
     (id: string | null) => {
@@ -475,36 +478,38 @@ const WebviewContainer = createContainer(() => {
             'crossnote',
           ).toString();
 
-          postMessage('cacheCodeChunkResult', [sourceUri, id, result]);
+          postMessage('cacheCodeChunkResult', [sourceUri.current, id, result]);
         } catch (e) {
           const outputDiv = codeChunk.getElementsByClassName('output-div')[0];
           outputDiv.innerHTML = `<pre>${e.toString()}</pre>`;
         }
       } else {
-        postMessage('runCodeChunk', [sourceUri, id]);
+        postMessage('runCodeChunk', [sourceUri.current, id]);
       }
     },
-    [config.enableScriptExecution, postMessage, sourceUri],
+    [config.enableScriptExecution, postMessage],
   );
 
   const runAllCodeChunks = useCallback(() => {
-    if (!config.enableScriptExecution || !previewElement) {
+    if (!config.enableScriptExecution || !previewElement.current) {
       return;
     }
 
-    const codeChunks = previewElement.getElementsByClassName('code-chunk');
+    const codeChunks = previewElement.current.getElementsByClassName(
+      'code-chunk',
+    );
     for (let i = 0; i < codeChunks.length; i++) {
       codeChunks[i].classList.add('running');
     }
 
-    postMessage('runAllCodeChunks', [sourceUri]);
-  }, [config.enableScriptExecution, postMessage, previewElement, sourceUri]);
+    postMessage('runAllCodeChunks', [sourceUri.current]);
+  }, [config.enableScriptExecution, postMessage]);
 
   const runNearestCodeChunk = useCallback(() => {
-    if (!previewElement) {
+    if (!previewElement.current) {
       return;
     }
-    const elements = previewElement.children;
+    const elements = previewElement.current.children;
     for (let i = elements.length - 1; i >= 0; i--) {
       if (
         elements[i].classList.contains('sync-line') &&
@@ -512,7 +517,7 @@ const WebviewContainer = createContainer(() => {
         elements[i + 1].classList.contains('code-chunk')
       ) {
         if (
-          cursorLine >=
+          cursorLine.current >=
           parseInt(elements[i].getAttribute('data-line') ?? '0', 10)
         ) {
           const codeChunkId = elements[i + 1].getAttribute('data-id');
@@ -522,13 +527,15 @@ const WebviewContainer = createContainer(() => {
         }
       }
     }
-  }, [cursorLine, previewElement, runCodeChunk]);
+  }, [runCodeChunk]);
 
   const setupCodeChunks = useCallback(() => {
-    if (!previewElement) {
+    if (!previewElement.current) {
       return;
     }
-    const codeChunks = previewElement.getElementsByClassName('code-chunk');
+    const codeChunks = previewElement.current.getElementsByClassName(
+      'code-chunk',
+    );
     if (!codeChunks.length) {
       return;
     }
@@ -551,18 +558,18 @@ const WebviewContainer = createContainer(() => {
         });
       }
     }
-  }, [previewElement, runAllCodeChunks, runCodeChunk]);
+  }, [runAllCodeChunks, runCodeChunk]);
 
   const initEvents = useCallback(async () => {
-    if (!previewElement || !hiddenPreviewElement) {
+    if (!previewElement.current || !hiddenPreviewElement.current) {
       return;
     }
     try {
       setIsRefreshingPreview(true);
       await Promise.all([renderMathJax(), renderWavedrom()]);
 
-      previewElement.innerHTML = hiddenPreviewElement.innerHTML;
-      hiddenPreviewElement.innerHTML = '';
+      previewElement.current.innerHTML = hiddenPreviewElement.current.innerHTML;
+      hiddenPreviewElement.current.innerHTML = '';
 
       await Promise.all([renderInteractiveVega(), renderMermaid()]);
 
@@ -574,12 +581,10 @@ const WebviewContainer = createContainer(() => {
       setIsRefreshingPreview(false);
     }
   }, [
-    previewElement,
-    hiddenPreviewElement,
-    renderMathJax,
-    renderWavedrom,
     renderInteractiveVega,
+    renderMathJax,
     renderMermaid,
+    renderWavedrom,
     setupCodeChunks,
   ]);
 
@@ -588,66 +593,64 @@ const WebviewContainer = createContainer(() => {
       for (let i = slidesData.length - 1; i >= 0; i--) {
         if (line >= slidesData[i].line) {
           const { h, v, offset } = slidesData[i];
-          if (offset === currentSlideOffset) {
+          if (offset === currentSlideOffset.current) {
             return;
           } else {
-            setCurrentSlideOffset(offset);
+            currentSlideOffset.current = offset;
             window['Reveal'].slide(h, v);
             break;
           }
         }
       }
     },
-    [currentSlideOffset, slidesData],
+    [slidesData],
   );
 
-  const scrollToPosition = useCallback(
-    (scrollTop: number) => {
-      if (!previewElement) {
-        return;
+  const scrollToPosition = useCallback((scrollTop: number) => {
+    if (!previewElement.current) {
+      return;
+    }
+
+    const delay = 10;
+    const helper = (duration = 0) => {
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
       }
 
-      const delay = 10;
-      const helper = (duration = 0) => {
-        setScrollTimeout(scrollTimeout => {
-          if (scrollTimeout !== null) {
-            clearTimeout(scrollTimeout);
-          }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const newScrollTimeout: number = (setTimeout as any)(() => {
-            if (duration <= 0) {
-              setPreviewScrollDelay(Date.now() + 500);
-              previewElement.scrollTop = scrollTop;
-              return;
-            }
+      scrollTimeout.current = setTimeout(() => {
+        if (!previewElement.current) {
+          return;
+        }
 
-            const difference = scrollTop - previewElement.scrollTop;
+        if (duration <= 0) {
+          previewScrollDelay.current = Date.now() + 500;
+          previewElement.current.scrollTop = scrollTop;
+          return;
+        }
 
-            const perTick = (difference / duration) * delay;
+        const difference = scrollTop - previewElement.current.scrollTop;
 
-            // disable preview onscroll
-            setPreviewScrollDelay(Date.now() + 500);
+        const perTick = (difference / duration) * delay;
 
-            previewElement.scrollTop += perTick;
-            if (previewElement.scrollTop === scrollTop) {
-              return;
-            }
+        // disable preview onscroll
+        previewScrollDelay.current = Date.now() + 500;
 
-            helper(duration - delay);
-          }, delay);
-          return newScrollTimeout;
-        });
-      };
+        previewElement.current.scrollTop += perTick;
+        if (previewElement.current.scrollTop === scrollTop) {
+          return;
+        }
 
-      const scrollDuration = 120;
-      helper(scrollDuration);
-    },
-    [previewElement],
-  );
+        helper(duration - delay);
+      }, delay);
+    };
+
+    const scrollDuration = 120;
+    helper(scrollDuration);
+  }, []);
 
   const scrollSyncToLine = useCallback(
     (line: number, topRatio: number = 0.372) => {
-      if (!previewElement) {
+      if (!previewElement.current) {
         return;
       }
       const scrollMap = buildScrollMap();
@@ -655,32 +658,35 @@ const WebviewContainer = createContainer(() => {
         return;
       }
 
-      if (line + 1 === totalLineCount) {
+      if (line + 1 === totalLineCount.current) {
         // last line
-        scrollToPosition(previewElement.scrollHeight);
+        scrollToPosition(previewElement.current.scrollHeight);
       } else {
         /**
          * Since I am not able to access the viewport of the editor
          * I used `golden section` (0.372) here for scrollTop.
          */
         scrollToPosition(
-          Math.max(scrollMap[line] - previewElement.offsetHeight * topRatio, 0),
+          Math.max(
+            scrollMap[line] - previewElement.current.offsetHeight * topRatio,
+            0,
+          ),
         );
       }
     },
-    [buildScrollMap, previewElement, scrollToPosition, totalLineCount],
+    [buildScrollMap, scrollToPosition],
   );
 
   const scrollToRevealSourceLine = useCallback(
     (line: number, topRatio = 0.372) => {
-      if (line === cursorLine) {
+      if (line === cursorLine.current) {
         return;
       } else {
-        setCursorLine(line);
+        cursorLine.current = line;
       }
 
       // disable preview onscroll
-      setPreviewScrollDelay(Date.now() + 500);
+      previewScrollDelay.current = Date.now() + 500;
 
       if (isPresentationMode) {
         scrollSyncToSlide(line);
@@ -688,14 +694,18 @@ const WebviewContainer = createContainer(() => {
         scrollSyncToLine(line, topRatio);
       }
     },
-    [cursorLine, isPresentationMode, scrollSyncToLine, scrollSyncToSlide],
+    [isPresentationMode, scrollSyncToLine, scrollSyncToSlide],
   );
 
   const bindAnchorElementsClickEvent = useCallback(() => {
-    if (!previewElement) {
+    if (!previewElement.current) {
       return;
     }
     const helper = (as: HTMLAnchorElement[]) => {
+      if (!previewElement.current) {
+        return;
+      }
+
       for (let i = 0; i < as.length; i++) {
         const a = as[i];
         const hrefAttr = a.getAttribute('href');
@@ -704,27 +714,30 @@ const WebviewContainer = createContainer(() => {
         }
         const href = decodeURIComponent(hrefAttr); // decodeURI here for Chinese like unicode heading
         if (href && href[0] === '#') {
-          const targetElement = previewElement.querySelector(
+          const targetElement = previewElement.current.querySelector(
             `[id="${encodeURIComponent(href.slice(1))}"]`,
           ) as HTMLElement; // fix number id bug
           if (targetElement) {
             a.onclick = event => {
+              if (!previewElement.current) {
+                return;
+              }
               event.preventDefault();
               event.stopPropagation();
 
               // jump to tag position
               let offsetTop = 0;
               let el = targetElement;
-              while (el && el !== previewElement) {
+              while (el && el !== previewElement.current) {
                 offsetTop += el.offsetTop;
                 el = el.offsetParent as HTMLElement;
               }
 
-              if (previewElement.scrollTop > offsetTop) {
-                previewElement.scrollTop =
+              if (previewElement.current.scrollTop > offsetTop) {
+                previewElement.current.scrollTop =
                   offsetTop - 32 - targetElement.offsetHeight;
               } else {
-                previewElement.scrollTop = offsetTop;
+                previewElement.current.scrollTop = offsetTop;
               }
             };
           } else {
@@ -747,34 +760,27 @@ const WebviewContainer = createContainer(() => {
             event.stopPropagation();
             postMessage('clickTagA', [
               {
-                uri: sourceUri,
+                uri: sourceUri.current,
                 href: encodeURIComponent(href.replace(/\\/g, '/')),
-                scheme: sourceScheme,
+                scheme: sourceScheme.current,
               },
             ]);
           };
         }
       }
     };
-    helper(Array.from(previewElement.getElementsByTagName('a')));
+    helper(Array.from(previewElement.current.getElementsByTagName('a')));
 
-    if (sidebarTocElement) {
-      helper(Array.from(sidebarTocElement.getElementsByTagName('a')));
+    if (sidebarTocElement.current) {
+      helper(Array.from(sidebarTocElement.current.getElementsByTagName('a')));
     }
-  }, [
-    isVSCodeWebExtension,
-    postMessage,
-    previewElement,
-    sidebarTocElement,
-    sourceScheme,
-    sourceUri,
-  ]);
+  }, [isVSCodeWebExtension, postMessage, sidebarTocElement]);
 
   const bindTaskListEvent = useCallback(() => {
-    if (!previewElement) {
+    if (!previewElement.current) {
       return;
     }
-    const taskListItemCheckboxes = previewElement.getElementsByClassName(
+    const taskListItemCheckboxes = previewElement.current.getElementsByClassName(
       'task-list-item-checkbox',
     );
     for (let i = 0; i < taskListItemCheckboxes.length; i++) {
@@ -802,16 +808,16 @@ const WebviewContainer = createContainer(() => {
             10,
           );
           if (!isNaN(dataLine)) {
-            postMessage('clickTaskListCheckbox', [sourceUri, dataLine]);
+            postMessage('clickTaskListCheckbox', [sourceUri.current, dataLine]);
           }
         };
       }
     }
-  }, [previewElement, postMessage, sourceUri]);
+  }, [postMessage]);
 
   const updateHtml = useCallback(
     (html: string, id: string, classes: string) => {
-      if (!previewElement || !hiddenPreviewElement) {
+      if (!previewElement.current || !hiddenPreviewElement.current) {
         return;
       }
       // If it's now isPresentationMode, then this function shouldn't be called.
@@ -819,38 +825,42 @@ const WebviewContainer = createContainer(() => {
       //   1. Using singlePreview
       //   2. Switch from a isPresentationMode file to not isPresentationMode file.
       if (isPresentationMode) {
-        return postMessage('refreshPreview', [sourceUri]);
+        return postMessage('refreshPreview', [sourceUri.current]);
       } else {
-        setPreviewScrollDelay(Date.now() + 500);
-        hiddenPreviewElement.innerHTML = html;
-        const scrollTop = previewElement.scrollTop;
+        previewScrollDelay.current = Date.now() + 500;
+        hiddenPreviewElement.current.innerHTML = html;
+        const scrollTop = previewElement.current.scrollTop;
         // init several events
         initEvents().then(() => {
-          setScrollMap(null);
+          if (!previewElement.current) {
+            return;
+          }
+
+          scrollMap.current = null;
 
           bindAnchorElementsClickEvent();
           bindTaskListEvent();
 
           // set id and classes
-          previewElement.id = id || '';
-          previewElement.setAttribute(
+          previewElement.current.id = id || '';
+          previewElement.current.setAttribute(
             'class',
             `crossnote markdown-preview ${classes}`,
           );
 
           // scroll to initial position
-          if (!doneLoadingPreview) {
-            setDoneLoadingPreview(true);
-            scrollToRevealSourceLine(initialLine);
+          if (isLoadingPreview.current) {
+            isLoadingPreview.current = false;
+            scrollToRevealSourceLine(initialLine.current);
 
             // clear @scrollMap after 2 seconds because sometimes
             // loading images will change scrollHeight.
             setTimeout(() => {
-              setScrollMap(null);
+              scrollMap.current = null;
             }, 2000);
           } else {
             // restore scrollTop
-            previewElement.scrollTop = scrollTop; // <= This line is necessary...
+            previewElement.current.scrollTop = scrollTop; // <= This line is necessary...
           }
         });
       }
@@ -858,15 +868,10 @@ const WebviewContainer = createContainer(() => {
     [
       bindAnchorElementsClickEvent,
       bindTaskListEvent,
-      doneLoadingPreview,
-      hiddenPreviewElement,
       initEvents,
-      initialLine,
       isPresentationMode,
       postMessage,
-      previewElement,
       scrollToRevealSourceLine,
-      sourceUri,
     ],
   );
 
@@ -901,7 +906,7 @@ const WebviewContainer = createContainer(() => {
 
       // scroll slides
       window['Reveal'].addEventListener('slidechanged', event => {
-        if (Date.now() < previewScrollDelay) {
+        if (Date.now() < previewScrollDelay.current) {
           return;
         }
 
@@ -909,7 +914,7 @@ const WebviewContainer = createContainer(() => {
         for (const slideData of slidesData) {
           const { h, v, line } = slideData;
           if (h === indexh && v === indexv) {
-            postMessage('revealLine', [sourceUri, line + 6]);
+            postMessage('revealLine', [sourceUri.current, line + 6]);
           }
         }
       });
@@ -920,7 +925,7 @@ const WebviewContainer = createContainer(() => {
 
     // slide to initial position
     window['Reveal'].configure({ transition: 'none' });
-    scrollToRevealSourceLine(initialLine);
+    scrollToRevealSourceLine(initialLine.current);
     window['Reveal'].configure({ transition: 'slide' });
 
     initialSlide = window['Reveal'].getCurrentSlide();
@@ -937,28 +942,44 @@ const WebviewContainer = createContainer(() => {
     bindAnchorElementsClickEvent,
     bindTaskListEvent,
     initSlidesData,
-    initialLine,
     postMessage,
-    previewScrollDelay,
     scrollToRevealSourceLine,
     setupCodeChunks,
     slidesData,
-    sourceUri,
   ]);
 
   useEffect(() => {
-    setSourceUri(config.sourceUri);
-    setCursorLine(config.cursorLine ?? -1);
-    setInitialLine(config.initialLine ?? 0);
+    sourceUri.current = config.sourceUri;
+    cursorLine.current = config.cursorLine ?? -1;
+    initialLine.current = config.initialLine ?? 0;
     setZoomLevel(config.zoomLevel ?? 1);
   }, [config]);
+
+  /**
+   * Sidebar ToC HTML
+   */
+  useEffect(() => {
+    if (showSidebarToc) {
+      document.body.classList.add('show-sidebar-toc');
+      if (sidebarTocElement.current) {
+        if (sidebarTocHtml.length > 0) {
+          sidebarTocElement.current.innerHTML = sidebarTocHtml;
+          bindAnchorElementsClickEvent();
+        } else {
+          sidebarTocElement.current.innerHTML = `<p style="text-align:center;font-style: italic;">Outline (empty)</p>`;
+        }
+      }
+    } else {
+      document.body.classList.remove('show-sidebar-toc');
+    }
+  }, [showSidebarToc, sidebarTocHtml, bindAnchorElementsClickEvent]);
 
   /**
    * Keyboard events
    */
   useEffect(() => {
     const keyboardEventHandler = (event: KeyboardEvent) => {
-      if (!previewElement) {
+      if (!previewElement.current) {
         return;
       }
 
@@ -984,7 +1005,7 @@ const WebviewContainer = createContainer(() => {
           if (isPresentationMode) {
             window['Reveal'].slide(0);
           } else {
-            previewElement.scrollTop = 0;
+            previewElement.current.scrollTop = 0;
           }
         }
       } else if (event.which === 27) {
@@ -1000,7 +1021,6 @@ const WebviewContainer = createContainer(() => {
     escPressed,
     isPresentationMode,
     isVSCode,
-    previewElement,
     previewSyncSource,
     resetZoom,
     zoomIn,
@@ -1012,7 +1032,7 @@ const WebviewContainer = createContainer(() => {
    */
   useEffect(() => {
     const resizeEventHandler = () => {
-      setScrollMap(null);
+      scrollMap.current = null;
     };
     window.addEventListener('resize', resizeEventHandler);
     return () => {
@@ -1026,16 +1046,21 @@ const WebviewContainer = createContainer(() => {
   useEffect(() => {
     const messageEventHandler = (event: MessageEvent) => {
       const data = event.data;
-      if (!data || !previewElement) {
+      if (!data || !previewElement.current) {
         return;
       }
 
       if (data.command === 'updateHTML') {
-        const { totalLineCount, tocHTML, sourceUri, sourceScheme } = data;
-        setTotalLineCount(totalLineCount);
+        const {
+          totalLineCount: total,
+          tocHTML,
+          sourceUri: uri,
+          sourceScheme: scheme,
+        } = data;
+        totalLineCount.current = total;
         setSidebarTocHtml(tocHTML);
-        setSourceUri(sourceUri);
-        setSourceScheme(sourceScheme);
+        sourceUri.current = uri;
+        sourceScheme.current = scheme;
         updateHtml(data.html, data.id, data.class);
       } else if (
         data.command === 'changeTextEditorSelection' &&
@@ -1052,22 +1077,19 @@ const WebviewContainer = createContainer(() => {
          * show refreshingIcon after 1 second
          * if preview hasn't finished rendering.
          */
-        // FIXME:
         /*
-        if (this.refreshingIconTimeout) {
-          clearTimeout(this.refreshingIconTimeout);
+        if (refreshingTimeout.current) {
+          clearTimeout(refreshingTimeout.current);
         }
 
-        this.refreshingIconTimeout = setTimeout(() => {
-          if (!this.isPresentationMode) {
-            this.refreshingIcon.style.display = 'block';
-          }
+        refreshingTimeout.current = setTimeout(() => {
+          setIsRefreshingPreview(true);
         }, 1000);
         */
       } else if (data.command === 'openImageHelper') {
         // TODO: Replace this with headless modal
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ($('#image-helper-view') as any).modal();
+        setShowImageHelper(true);
       } else if (data.command === 'runAllCodeChunks') {
         runAllCodeChunks();
       } else if (data.command === 'runCodeChunk') {
@@ -1088,7 +1110,7 @@ const WebviewContainer = createContainer(() => {
         if (isPresentationMode) {
           window['Reveal'].slide(0);
         } else {
-          previewElement.scrollTop = 0;
+          previewElement.current.scrollTop = 0;
         }
       }
     };
@@ -1099,7 +1121,6 @@ const WebviewContainer = createContainer(() => {
   }, [
     config.scrollSync,
     isPresentationMode,
-    previewElement,
     previewSyncSource,
     resetZoom,
     runAllCodeChunks,
@@ -1111,25 +1132,30 @@ const WebviewContainer = createContainer(() => {
   ]);
 
   useEffect(() => {
-    postMessage('setZoomLevel', [sourceUri, zoomLevel]);
-  }, [zoomLevel, sourceUri, postMessage]);
+    if (!isVSCode) {
+      postMessage('setZoomLevel', [sourceUri.current, zoomLevel]);
+    }
+  }, [isVSCode, postMessage, zoomLevel]);
 
   /**
    * On load
    */
   useEffect(() => {
-    if (!previewElement || !hiddenPreviewElement || !sourceUri) {
+    if (
+      !previewElement.current ||
+      !hiddenPreviewElement.current ||
+      !sourceUri.current
+    ) {
       return;
     }
-    setZoomLevel(config.zoomLevel ?? 1);
-
     if (document.body.hasAttribute('data-html')) {
-      previewElement.innerHTML = document.body.getAttribute('data-html') ?? '';
+      previewElement.current.innerHTML =
+        document.body.getAttribute('data-html') ?? '';
       document.body.removeAttribute('data-html');
     }
 
     if (!isPresentationMode) {
-      previewElement.onscroll = scrollPreview.bind(this);
+      previewElement.current.onscroll = scrollPreview; //.bind(this);
 
       const isDarkColorScheme = window.matchMedia(
         '(prefers-color-scheme: dark)',
@@ -1137,7 +1163,7 @@ const WebviewContainer = createContainer(() => {
 
       postMessage('webviewFinishLoading', [
         {
-          uri: sourceUri,
+          uri: sourceUri.current,
           systemColorScheme: isDarkColorScheme ? 'dark' : 'light',
         },
       ]);
@@ -1149,40 +1175,41 @@ const WebviewContainer = createContainer(() => {
 
     // make it possible for interactive vega to load local data files
     const base = document.createElement('base');
-    base.href = sourceUri;
+    base.href = sourceUri.current;
     document.head.appendChild(base);
   }, [
-    previewElement,
-    hiddenPreviewElement,
     config,
-    sourceUri,
+    initPresentationEvent,
     isPresentationMode,
     postMessage,
     scrollPreview,
-    initPresentationEvent,
   ]);
 
   return {
     clickSidebarTocButton,
+    config,
+    contextMenuId,
+    isLoadingPreview,
+    isMobile,
+    isMouseOverPreview,
     isPresentationMode,
     isRefreshingPreview,
     isVSCode,
     isVSCodeWebExtension,
     postMessage,
+    previewElement,
+    hiddenPreviewElement,
     previewSyncSource,
-    setHiddenPreviewElement,
-    setPreviewElement,
-    setSidebarTocElement,
+    setIsMouseOverPreview,
+    setShowImageHelper,
+    showContextMenu,
+    showImageHelper,
     showSidebarToc,
     sidebarTocHtml,
+    sidebarTocElement,
     sourceScheme,
     sourceUri,
     zoomLevel,
-    config,
-    contextMenuId,
-    showContextMenu,
-    showImageHelper,
-    setShowImageHelper,
   };
 });
 

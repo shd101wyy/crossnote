@@ -1,48 +1,44 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import WebviewContainer from '../containers/webview';
 import ContextMenu from './ContextMenu';
 import Footer from './Footer';
 import ImageHelper from './ImageHelper';
 import RefreshingIcon from './RefreshingIcon';
+import SidebarToc from './SidebarToc';
 import { Topbar } from './Topbar';
 
 export default function Webview() {
   const {
-    setPreviewElement,
-    setHiddenPreviewElement,
+    previewElement,
+    hiddenPreviewElement,
     showContextMenu,
+    setIsMouseOverPreview,
+    isRefreshingPreview,
   } = WebviewContainer.useContainer();
-  const previewElementRef = useRef<HTMLDivElement>(null);
-  const hiddenPreviewElementRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (previewElementRef.current && hiddenPreviewElementRef.current) {
-      setPreviewElement(previewElementRef.current);
-      setHiddenPreviewElement(hiddenPreviewElementRef.current);
-    }
-  }, [
-    previewElementRef,
-    hiddenPreviewElementRef,
-    setPreviewElement,
-    setHiddenPreviewElement,
-  ]);
 
   return (
-    <div>
+    <div
+      onMouseEnter={() => {
+        setIsMouseOverPreview(true);
+      }}
+      onMouseLeave={() => {
+        setIsMouseOverPreview(false);
+      }}
+    >
       {/** top bar */}
       <Topbar></Topbar>
       {/** The hidden preview */}
       <div
         className="crossnote markdown-preview hidden-preview"
         data-fore="preview"
-        ref={hiddenPreviewElementRef}
+        ref={hiddenPreviewElement}
         style={{ zIndex: 0 }}
       />
       {/** The real preview */}
       <div
         className={'crossnote markdown-preview '}
         data-for="preview"
-        ref={previewElementRef}
+        ref={previewElement}
         onContextMenu={event => {
           showContextMenu({
             event,
@@ -50,9 +46,10 @@ export default function Webview() {
         }}
       ></div>
       <Footer></Footer>
-
+      {/** Sidebar TOC */}
+      <SidebarToc></SidebarToc>
       {/** Some other components */}
-      <RefreshingIcon></RefreshingIcon>
+      {isRefreshingPreview && <RefreshingIcon></RefreshingIcon>}
       {/** Image helper */}
       <ImageHelper></ImageHelper>
       {/** Context menu */}

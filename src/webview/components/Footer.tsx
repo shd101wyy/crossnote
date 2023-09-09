@@ -1,11 +1,21 @@
 import { Bars3Icon } from '@heroicons/react/24/outline';
+import classNames from 'classnames';
 import React from 'react';
 import WebviewContainer from '../containers/webview';
 export default function Footer() {
-  const { showContextMenu } = WebviewContainer.useContainer();
+  const {
+    showContextMenu,
+    isMobile,
+    isMouseOverPreview,
+  } = WebviewContainer.useContainer();
   return (
-    <div className="fixed bottom-0 w-full z-50 pr-4">
-      <div className="flex flex-row justify-end">
+    <div
+      className={classNames(
+        'fixed bottom-0 w-full z-50 pr-2',
+        isMobile || isMouseOverPreview ? '' : 'hidden',
+      )}
+    >
+      <div className="flex flex-row justify-end items-center backdrop-blur-xl float-right rounded-md">
         <div
           className="p-2 cursor-pointer hover:scale-105"
           title={'Open menu'}
