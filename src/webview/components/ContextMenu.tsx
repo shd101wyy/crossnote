@@ -21,11 +21,13 @@ export default function ContextMenu() {
     sourceUri,
     contextMenuId,
     isVSCodeWebExtension,
+    setShowImageHelper,
     previewSyncSource,
   } = WebviewContainer.useContainer();
 
   const handleItemClick = useCallback(
     ({ id }: ItemParams<unknown, unknown>) => {
+      console.log(id);
       switch (id) {
         case 'open-in-browser': {
           postMessage('openInBrowser', [sourceUri]);
@@ -80,7 +82,8 @@ export default function ContextMenu() {
           break;
         }
         case 'open-image-helper': {
-          window['$']('#image-helper-view').modal();
+          console.log('open-image-helper');
+          setShowImageHelper(true);
           break;
         }
         case 'sync-source': {
@@ -142,8 +145,12 @@ export default function ContextMenu() {
               </span>
             }
           >
-            <Item id="export-html-offline">{'HTML (offline)'}</Item>
-            <Item id="export-html-cdn">{'HTML (cdn hosted)'}</Item>
+            <Item id="export-html-offline" onClick={handleItemClick}>
+              {'HTML (offline)'}
+            </Item>
+            <Item id="export-html-cdn" onClick={handleItemClick}>
+              {'HTML (cdn hosted)'}
+            </Item>
           </Submenu>
         )}
         {!isVSCodeWebExtension && (
@@ -159,13 +166,19 @@ export default function ContextMenu() {
               </span>
             }
           >
-            <Item id="export-chrome-pdf">PDF</Item>
-            <Item id="export-chrome-png">PNG</Item>
-            <Item id="export-chrome-jpeg">JPEG</Item>
+            <Item id="export-chrome-pdf" onClick={handleItemClick}>
+              PDF
+            </Item>
+            <Item id="export-chrome-png" onClick={handleItemClick}>
+              PNG
+            </Item>
+            <Item id="export-chrome-jpeg" onClick={handleItemClick}>
+              JPEG
+            </Item>
           </Submenu>
         )}
         {!isVSCodeWebExtension && (
-          <Item id="export-prince">
+          <Item id="export-prince" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon
                 path={mdiExportVariant}
@@ -189,14 +202,22 @@ export default function ContextMenu() {
               </span>
             }
           >
-            <Item id="export-ebook-epub">ePub</Item>
-            <Item id="export-ebook-mobi">mobi</Item>
-            <Item id="export-ebook-pdf">PDF</Item>
-            <Item id="export-ebook-html">HTML</Item>
+            <Item id="export-ebook-epub" onClick={handleItemClick}>
+              ePub
+            </Item>
+            <Item id="export-ebook-mobi" onClick={handleItemClick}>
+              Mobi
+            </Item>
+            <Item id="export-ebook-pdf" onClick={handleItemClick}>
+              PDF
+            </Item>
+            <Item id="export-ebook-html" onClick={handleItemClick}>
+              HTML
+            </Item>
           </Submenu>
         )}
         {!isVSCodeWebExtension && (
-          <Item id="export-pandoc">
+          <Item id="export-pandoc" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon
                 path={mdiExportVariant}
@@ -208,7 +229,7 @@ export default function ContextMenu() {
           </Item>
         )}
         {!isVSCodeWebExtension && (
-          <Item id="export-markdown">
+          <Item id="export-markdown" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon
                 path={mdiExportVariant}
@@ -222,7 +243,7 @@ export default function ContextMenu() {
         {!isVSCodeWebExtension && (
           <>
             <Separator></Separator>
-            <Item id="open-image-helper">
+            <Item id="open-image-helper" onClick={handleItemClick}>
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiImageOutline} size={0.8} className="mr-2"></Icon>
                 Image Helper
@@ -231,7 +252,7 @@ export default function ContextMenu() {
           </>
         )}
         <Separator></Separator>
-        <Item id="sync-source">
+        <Item id="sync-source" onClick={handleItemClick}>
           <span className="inline-flex flex-row items-center">
             <Icon path={mdiSync} size={0.8} className="mr-2"></Icon>
             Sync Source
@@ -254,13 +275,34 @@ export default function ContextMenu() {
               </span>
             }
           >
-            <Item id="select-preview-theme-atom-light">atom-light.css</Item>
-            <Item id="select-preview-theme-github-light">github-light.css</Item>
-            <Item id="select-preview-theme-gothic">gothic.css</Item>
-            <Item id="select-preview-theme-medium">medium.css</Item>
-            <Item id="select-preview-theme-newsprint">newsprint.css</Item>
-            <Item id="select-preview-theme-one-light">one-light.css</Item>
-            <Item id="select-preview-theme-solarized-light">
+            <Item
+              id="select-preview-theme-atom-light"
+              onClick={handleItemClick}
+            >
+              atom-light.css
+            </Item>
+            <Item
+              id="select-preview-theme-github-light"
+              onClick={handleItemClick}
+            >
+              github-light.css
+            </Item>
+            <Item id="select-preview-theme-gothic" onClick={handleItemClick}>
+              gothic.css
+            </Item>
+            <Item id="select-preview-theme-medium" onClick={handleItemClick}>
+              medium.css
+            </Item>
+            <Item id="select-preview-theme-newsprint" onClick={handleItemClick}>
+              newsprint.css
+            </Item>
+            <Item id="select-preview-theme-one-light" onClick={handleItemClick}>
+              one-light.css
+            </Item>
+            <Item
+              id="select-preview-theme-solarized-light"
+              onClick={handleItemClick}
+            >
               solarized-light.css
             </Item>
             <Item id="select-preview-theme-vue">vue.css</Item>
@@ -273,20 +315,38 @@ export default function ContextMenu() {
               </span>
             }
           >
-            <Item id="select-preview-theme-atom-dark">atom-dark.css</Item>
-            <Item id="select-preview-theme-atom-material">
+            <Item id="select-preview-theme-atom-dark" onClick={handleItemClick}>
+              atom-dark.css
+            </Item>
+            <Item
+              id="select-preview-theme-atom-material"
+              onClick={handleItemClick}
+            >
               atom-material.css
             </Item>
-            <Item id="select-preview-theme-github-dark">github-dark.css</Item>
-            <Item id="select-preview-theme-monokai">monokai.css</Item>
-            <Item id="select-preview-theme-night">night.css</Item>
-            <Item id="select-preview-theme-one-dark">one-dark.css</Item>
-            <Item id="select-preview-theme-solarized-dark">
+            <Item
+              id="select-preview-theme-github-dark"
+              onClick={handleItemClick}
+            >
+              github-dark.css
+            </Item>
+            <Item id="select-preview-theme-monokai" onClick={handleItemClick}>
+              monokai.css
+            </Item>
+            <Item id="select-preview-theme-night" onClick={handleItemClick}>
+              night.css
+            </Item>
+            <Item id="select-preview-theme-one-dark" onClick={handleItemClick}>
+              one-dark.css
+            </Item>
+            <Item
+              id="select-preview-theme-solarized-dark"
+              onClick={handleItemClick}
+            >
               solarized-dark.css
             </Item>
           </Submenu>
-          <Item id="select-preview-theme-none">
-            {' '}
+          <Item id="select-preview-theme-none" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiCancel} size={0.8} className="mr-2"></Icon>
               None

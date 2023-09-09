@@ -11,7 +11,7 @@ export function Topbar() {
 
   return (
     <div className="fixed top-0 w-full z-50 pr-4">
-      <div className=" flex flex-row justify-end ">
+      <div className=" flex flex-row justify-end items-center">
         <div className="p-2 cursor-pointer hover:scale-110" title="Back to top">
           <ChevronUpIcon className="w-6 h-6"></ChevronUpIcon>
         </div>
@@ -19,7 +19,7 @@ export function Topbar() {
           className="p-2 cursor-pointer hover:scale-105"
           title="Refresh the preview"
         >
-          <ArrowPathIcon className="w-6 h-6"></ArrowPathIcon>
+          <ArrowPathIcon className="w-5 h-5"></ArrowPathIcon>
         </div>
         <div
           className="p-2 cursor-pointer hover:scale-105"

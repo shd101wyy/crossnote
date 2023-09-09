@@ -1,7 +1,5 @@
 import CryptoJS from 'crypto-js';
 import $ from 'jquery';
-import 'jquery-modal/jquery.modal.min.css';
-import 'jquery-modal/jquery.modal.min.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
@@ -1183,6 +1181,8 @@ const WebviewContainer = createContainer(() => {
     config,
     contextMenuId,
     showContextMenu,
+    showImageHelper,
+    setShowImageHelper,
   };
 });
 
