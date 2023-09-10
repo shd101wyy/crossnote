@@ -5,7 +5,7 @@ import {
 } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import React, { useCallback } from 'react';
-import WebviewContainer from '../containers/webview';
+import PreviewContainer from '../containers/preview';
 
 export function Topbar() {
   const {
@@ -16,7 +16,7 @@ export function Topbar() {
     isPresentationMode,
     postMessage,
     sourceUri,
-  } = WebviewContainer.useContainer();
+  } = PreviewContainer.useContainer();
 
   const backToTop = useCallback(() => {
     if (isPresentationMode) {

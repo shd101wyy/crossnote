@@ -3,10 +3,23 @@ import $ from 'jquery';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
+import { Backlink } from '../../notebook';
 import { WebviewConfig } from '../lib/types';
 
 window['jQuery'] = $;
 window['$'] = $;
+
+function getWindowScrollTop() {
+  return document.documentElement.scrollTop || 0;
+}
+
+function setWindowScrollTop(scrollTop: number) {
+  document.documentElement.scrollTop = scrollTop;
+}
+
+function getWindowHeight() {
+  return window.innerHeight;
+}
 
 interface SlideData {
   line: number;
@@ -15,7 +28,7 @@ interface SlideData {
   offset: number;
 }
 
-const WebviewContainer = createContainer(() => {
+const PreviewContainer = createContainer(() => {
   /**
    * Source URI of the current note
    */
@@ -61,6 +74,7 @@ const WebviewContainer = createContainer(() => {
   const [showImageHelper, setShowImageHelper] = useState<boolean>(false);
   const [showSidebarToc, setShowSidebarToc] = useState<boolean>(false);
   const [sidebarTocHtml, setSidebarTocHtml] = useState<string>('');
+  const [showBacklinks, setShowBacklinks] = useState<boolean>(false);
   const [isRefreshingPreview, setIsRefreshingPreview] = useState<boolean>(
     false,
   );
@@ -71,6 +85,8 @@ const WebviewContainer = createContainer(() => {
       navigator.userAgent,
     );
   }, []);
+  const [backlinks, setBacklinks] = useState<Backlink[]>([]);
+  const [isLoadingBacklinks, setIsLoadingBacklinks] = useState<boolean>(false);
 
   const isPresentationMode = useMemo(() => {
     return document.body.hasAttribute('data-presentation-mode');
@@ -226,16 +242,14 @@ const WebviewContainer = createContainer(() => {
       return;
     }
 
-    if (previewElement.current.scrollTop === 0) {
+    if (getWindowScrollTop() === 0) {
       // editorScrollDelay = Date.now() + 100
       scrollToLine = 0;
 
       return postMessage('revealLine', [sourceUri.current, scrollToLine]);
     }
 
-    const top =
-      previewElement.current.scrollTop +
-      previewElement.current.offsetHeight / 2;
+    const top = getWindowScrollTop() + getWindowHeight() / 2;
 
     // try to find corresponding screen buffer row
     const scrollMap = buildScrollMap();
@@ -621,19 +635,19 @@ const WebviewContainer = createContainer(() => {
 
         if (duration <= 0) {
           previewScrollDelay.current = Date.now() + 500;
-          previewElement.current.scrollTop = scrollTop;
+          setWindowScrollTop(scrollTop);
           return;
         }
 
-        const difference = scrollTop - previewElement.current.scrollTop;
+        const difference = scrollTop - getWindowScrollTop();
 
         const perTick = (difference / duration) * delay;
 
         // disable preview onscroll
         previewScrollDelay.current = Date.now() + 500;
 
-        previewElement.current.scrollTop += perTick;
-        if (previewElement.current.scrollTop === scrollTop) {
+        setWindowScrollTop(getWindowScrollTop() + perTick);
+        if (getWindowScrollTop() === scrollTop) {
           return;
         }
 
@@ -664,10 +678,7 @@ const WebviewContainer = createContainer(() => {
          * I used `golden section` (0.372) here for scrollTop.
          */
         scrollToPosition(
-          Math.max(
-            scrollMap[line] - previewElement.current.offsetHeight * topRatio,
-            0,
-          ),
+          Math.max(scrollMap[line] - getWindowHeight() * topRatio, 0),
         );
       }
     },
@@ -730,11 +741,10 @@ const WebviewContainer = createContainer(() => {
                 el = el.offsetParent as HTMLElement;
               }
 
-              if (previewElement.current.scrollTop > offsetTop) {
-                previewElement.current.scrollTop =
-                  offsetTop - 32 - targetElement.offsetHeight;
+              if (getWindowScrollTop() > offsetTop) {
+                setWindowScrollTop(offsetTop - 32 - targetElement.offsetHeight);
               } else {
-                previewElement.current.scrollTop = offsetTop;
+                setWindowScrollTop(offsetTop);
               }
             };
           } else {
@@ -766,6 +776,7 @@ const WebviewContainer = createContainer(() => {
         }
       }
     };
+
     helper(Array.from(previewElement.current.getElementsByTagName('a')));
 
     if (sidebarTocElement.current) {
@@ -826,7 +837,7 @@ const WebviewContainer = createContainer(() => {
       } else {
         previewScrollDelay.current = Date.now() + 500;
         hiddenPreviewElement.current.innerHTML = html;
-        const scrollTop = previewElement.current.scrollTop;
+        const scrollTop = getWindowScrollTop();
         // init several events
         initEvents().then(() => {
           if (!previewElement.current) {
@@ -857,7 +868,7 @@ const WebviewContainer = createContainer(() => {
             }, 2000);
           } else {
             // restore scrollTop
-            previewElement.current.scrollTop = scrollTop; // <= This line is necessary...
+            setWindowScrollTop(scrollTop); // <= This line is necessary...
           }
         });
       }
@@ -973,6 +984,14 @@ const WebviewContainer = createContainer(() => {
     }
   }, [showSidebarToc, sidebarTocHtml, bindAnchorElementsClickEvent]);
 
+  useEffect(() => {
+    // TODO: Support pagination in the future
+    if (showBacklinks) {
+      postMessage('showBacklinks', [{ uri: sourceUri.current }]);
+      setIsLoadingBacklinks(true);
+    }
+  }, [postMessage, showBacklinks]);
+
   /**
    * Keyboard events
    */
@@ -1004,7 +1023,7 @@ const WebviewContainer = createContainer(() => {
           if (isPresentationMode) {
             window['Reveal'].slide(0);
           } else {
-            previewElement.current.scrollTop = 0;
+            setWindowScrollTop(0);
           }
         }
       } else if (event.which === 27) {
@@ -1056,6 +1075,7 @@ const WebviewContainer = createContainer(() => {
           sourceUri: uri,
           sourceScheme: scheme,
         } = data;
+        console.log('! updateHTML: ', uri);
         totalLineCount.current = total;
         setSidebarTocHtml(tocHTML);
         sourceUri.current = uri;
@@ -1109,7 +1129,15 @@ const WebviewContainer = createContainer(() => {
         if (isPresentationMode) {
           window['Reveal'].slide(0);
         } else {
-          previewElement.current.scrollTop = 0;
+          setWindowScrollTop(0);
+        }
+      } else if (data.command === 'backlinks') {
+        console.log('!backlinks: ', data);
+        console.log('!sourceUri: ', sourceUri.current);
+        if (sourceUri.current === data.sourceUri) {
+          console.log('!!setBacklinks');
+          setBacklinks(data.backlinks);
+          setIsLoadingBacklinks(false);
         }
       }
     };
@@ -1129,6 +1157,21 @@ const WebviewContainer = createContainer(() => {
     zoomIn,
     zoomOut,
   ]);
+
+  /**
+   * Scroll
+   */
+  useEffect(() => {
+    const element = previewElement.current;
+    if (!isPresentationMode && element) {
+      window.addEventListener('scroll', scrollPreview);
+    }
+    return () => {
+      if (!isPresentationMode && element) {
+        window.removeEventListener('scroll', scrollPreview);
+      }
+    };
+  }, [isPresentationMode, scrollPreview]);
 
   useEffect(() => {
     if (!isVSCode) {
@@ -1154,7 +1197,7 @@ const WebviewContainer = createContainer(() => {
     }
 
     if (!isPresentationMode) {
-      previewElement.current.onscroll = scrollPreview; //.bind(this);
+      // previewElement.current.onscroll = scrollPreview; //.bind(this);
 
       const isDarkColorScheme = window.matchMedia(
         '(prefers-color-scheme: dark)',
@@ -1210,7 +1253,11 @@ const WebviewContainer = createContainer(() => {
     sourceScheme,
     sourceUri,
     zoomLevel,
+    showBacklinks,
+    setShowBacklinks,
+    backlinks,
+    isLoadingBacklinks,
   };
 });
 
-export default WebviewContainer;
+export default PreviewContainer;

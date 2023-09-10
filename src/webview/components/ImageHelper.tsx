@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import WebviewContainer from '../containers/webview';
+import PreviewContainer from '../containers/preview';
 
 export default function ImageHelper() {
   const {
@@ -16,7 +16,7 @@ export default function ImageHelper() {
     showImageHelper,
     setShowImageHelper,
     sourceUri,
-  } = WebviewContainer.useContainer();
+  } = PreviewContainer.useContainer();
   const urlEditor = useRef<HTMLInputElement>(null);
   const imagePasterInput = useRef<HTMLInputElement>(null);
   const imageUploaderInput = useRef<HTMLInputElement>(null);

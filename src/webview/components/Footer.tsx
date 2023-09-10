@@ -1,14 +1,15 @@
-import { Bars3Icon } from '@heroicons/react/24/outline';
+import { Bars3Icon, LinkIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import React from 'react';
-import WebviewContainer from '../containers/webview';
+import PreviewContainer from '../containers/preview';
 export default function Footer() {
   const {
     showContextMenu,
     isMobile,
     isMouseOverPreview,
     isPresentationMode,
-  } = WebviewContainer.useContainer();
+    setShowBacklinks,
+  } = PreviewContainer.useContainer();
   return (
     <div
       className={classNames(
@@ -18,6 +19,15 @@ export default function Footer() {
       )}
     >
       <div className="flex flex-row justify-end items-center backdrop-blur-xl float-right rounded-md">
+        <div
+          className="p-2 cursor-pointer hover:scale-105"
+          title="Show backlinks"
+          onClick={() => {
+            setShowBacklinks(x => !x);
+          }}
+        >
+          <LinkIcon className="w-6 h-6"></LinkIcon>
+        </div>
         <div
           className="p-2 cursor-pointer hover:scale-105"
           title={'Open menu'}

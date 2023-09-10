@@ -615,14 +615,14 @@ window["initRevealPresentation"] = async function() {
       webviewScript = utility.addFileProtocol(
         path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          './webview/index.js',
+          './webview/preview.js',
         ),
         vscodePreviewPanel,
       );
       webviewCss = utility.addFileProtocol(
         path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          './webview/index.css',
+          './webview/preview.css',
         ),
         vscodePreviewPanel,
       );

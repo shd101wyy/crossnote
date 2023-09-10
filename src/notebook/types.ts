@@ -1,6 +1,8 @@
 import { KatexOptions } from 'katex';
 import { MermaidConfig } from 'mermaid';
 import { JsonObject } from 'type-fest';
+import { Note } from './note';
+import { Reference } from './reference';
 
 export const IS_NODE = typeof window === 'undefined';
 
@@ -545,4 +547,10 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     krokiServer: 'https://kroki.io',
     isVSCode: false,
   };
+}
+
+export interface Backlink {
+  note: Partial<Note>;
+  references: Partial<Reference>[];
+  referenceHtmls: string[];
 }

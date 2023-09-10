@@ -49,12 +49,12 @@ const esmConfig = {
  * @type {import('esbuild').BuildOptions}
  */
 const webviewConfig = {
-  entryPoints: ['./src/webview/index.tsx'],
+  entryPoints: ['./src/webview/preview.tsx', './src/webview/backlinks.tsx'],
   bundle: true,
   minify: true,
   platform: 'browser',
-  outfile: './out/webview/index.js',
-  // outdir: './out/webview',
+  // outfile: './out/webview/index.js',
+  outdir: './out/webview',
   loader: {
     '.png': 'dataurl',
     '.woff': 'dataurl',

@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React from 'react';
-import WebviewContainer from '../containers/webview';
+import PreviewContainer from '../containers/preview';
+import Backlinks from './Backlinks';
 import ContextMenu from './ContextMenu';
 import Footer from './Footer';
 import ImageHelper from './ImageHelper';
@@ -8,7 +9,7 @@ import RefreshingIcon from './RefreshingIcon';
 import SidebarToc from './SidebarToc';
 import { Topbar } from './Topbar';
 
-export default function Webview() {
+export default function Preview() {
   const {
     hiddenPreviewElement,
     isPresentationMode,
@@ -16,7 +17,8 @@ export default function Webview() {
     previewElement,
     setIsMouseOverPreview,
     showContextMenu,
-  } = WebviewContainer.useContainer();
+    showBacklinks,
+  } = PreviewContainer.useContainer();
 
   return (
     <div
@@ -50,6 +52,9 @@ export default function Webview() {
           });
         }}
       ></div>
+      {/** Backlinks */}
+      {showBacklinks && <Backlinks></Backlinks>}
+
       <Footer></Footer>
       {/** Sidebar TOC */}
       <SidebarToc></SidebarToc>

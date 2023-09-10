@@ -14,7 +14,7 @@ import Icon from '@mdi/react';
 import React, { useCallback } from 'react';
 import { Item, ItemParams, Menu, Separator, Submenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
-import WebviewContainer from '../containers/webview';
+import PreviewContainer from '../containers/preview';
 
 export default function ContextMenu() {
   const {
@@ -24,7 +24,7 @@ export default function ContextMenu() {
     isVSCodeWebExtension,
     setShowImageHelper,
     previewSyncSource,
-  } = WebviewContainer.useContainer();
+  } = PreviewContainer.useContainer();
 
   const handleItemClick = useCallback(
     ({ id }: ItemParams<unknown, unknown>) => {
@@ -377,15 +377,15 @@ export default function ContextMenu() {
             </span>
           }
         >
-          <a
-            href="https://github.com/shd101wyy/vscode-markdown-preview-enhanced/releases"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <Item id="open-changelog">Change Log</Item>
-          </a>
-          <Item id="open-issues">Feature Requests or Bug Reports</Item>
-          <Item id="open-sponsors">Sponsor This Project 😊</Item>
+          <Item id="open-changelog" onClick={handleItemClick}>
+            Change Log
+          </Item>
+          <Item id="open-issues" onClick={handleItemClick}>
+            Feature Requests or Bug Reports
+          </Item>
+          <Item id="open-sponsors" onClick={handleItemClick}>
+            Sponsor This Project 😊
+          </Item>
         </Submenu>
       </Menu>
     </div>

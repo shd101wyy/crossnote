@@ -22,6 +22,7 @@ import { FilePath, Mentions, Note, NoteConfig, Notes } from './note';
 import { Reference, ReferenceMap } from './reference';
 import Search from './search';
 import {
+  Backlink,
   FileSystemApi,
   FileSystemStats,
   IS_NODE,
@@ -49,12 +50,15 @@ interface NotebookConstructorArgs {
   fs?: FileSystemApi;
 }
 
-interface RefreshNotesArgs {
+interface RefreshNotesIfNotLoaded {
   /**
    * Relative path to the notebook
    */
   dir: string;
   includeSubdirectories?: boolean;
+}
+
+interface RefreshNotesArgs extends RefreshNotesIfNotLoaded {
   refreshRelations?: boolean;
 }
 
@@ -210,6 +214,35 @@ export class Notebook {
     }
   }
 
+  public async getNoteBacklinks(filePath: string): Promise<Backlink[]> {
+    const backlinkedNotes = await this.getBacklinkedNotes(filePath);
+    const backlinks: Backlink[] = [];
+    const noteFilePaths = Object.keys(backlinkedNotes);
+
+    for (const noteFilePath_ of noteFilePaths) {
+      const note = backlinkedNotes[noteFilePath_];
+      const references = await this.getReferences(filePath, noteFilePath_);
+      console.log(references);
+      backlinks.push({
+        note: {
+          notebookPath: note.notebookPath,
+          filePath: note.filePath,
+          title: note.title,
+          config: note.config,
+        },
+        references,
+        // FIXME: The link is not correct. Needs to resolve the path correctly.
+        referenceHtmls: references.map(reference => {
+          const tokens = [reference.parentToken ?? reference.token];
+          const html = this.md.renderer.render(tokens, this.md.options, {});
+          return html;
+        }),
+      });
+    }
+
+    return backlinks;
+  }
+
   public async getReferences(
     noteFilePath: string,
     backlinkedNoteFilePath: string,
@@ -265,15 +298,25 @@ export class Notebook {
             text = (arr.length > 1 ? arr[1] : arr[0]).trim();
             link = arr[0].trim();
           }
+
           if (link.match(/https?:\/\//)) {
             // TODO: Ignore more protocols
             continue;
           }
+
+          // Replace the token content
+          link = resolveLink(link);
+          if (this.config.useGitHubStylePipedLink) {
+            token.content = `${text} | ${link}`;
+          } else {
+            token.content = `${link} | ${text}`;
+          }
+
           // console.log("find link token: ", token, parentToken);
           results.push({
             elementId: token.attrGet('id') || '',
             text,
-            link: resolveLink(link),
+            link, // resolveLink(link),
             parentToken,
             token,
           });
@@ -294,7 +337,7 @@ export class Notebook {
           tokens[i + 1].type === 'text'
         ) {
           if (token.attrs?.length && token.attrs[0][0] === 'href') {
-            const link = decodeURI(token.attrs[0][1]);
+            let link = decodeURI(token.attrs[0][1]);
             const text = tokens[i + 1].content.trim();
             if (
               link.match(/https?:\/\//) ||
@@ -304,10 +347,15 @@ export class Notebook {
               // TODO: Ignore more protocols
               continue;
             }
+
+            // Replace the token href
+            link = resolveLink(link);
+            token.attrs[0][1] = link;
+
             results.push({
               elementId: token.attrGet('id') || '',
               text,
-              link: resolveLink(link),
+              link,
               parentToken,
               token,
             });
@@ -446,7 +494,7 @@ export class Notebook {
   public async refreshNotesIfNotLoaded({
     dir = './',
     includeSubdirectories = false,
-  }: RefreshNotesArgs): Promise<Notes> {
+  }: RefreshNotesIfNotLoaded): Promise<Notes> {
     await this.refreshNotesIfNotLoadedMutex.runExclusive(async () => {
       if (!this.hasLoadedNotes) {
         await this.refreshNotes({
