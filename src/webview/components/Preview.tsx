@@ -28,12 +28,21 @@ export default function Preview() {
       onMouseLeave={() => {
         setIsMouseOverPreview(false);
       }}
+      className={classNames(
+        'w-full min-h-screen',
+        isPresentationMode ? 'h-full' : 'h-auto',
+      )}
+      onContextMenu={event => {
+        showContextMenu({
+          event,
+        });
+      }}
     >
       {/** top bar */}
       <Topbar></Topbar>
       {/** The hidden preview */}
       <div
-        className="crossnote markdown-preview hidden-preview"
+        className="crossnote markdown-preview hidden-preview fixed invisible"
         data-fore="preview"
         ref={hiddenPreviewElement}
         style={{ zIndex: 0 }}
@@ -42,15 +51,10 @@ export default function Preview() {
       <div
         className={classNames(
           'crossnote markdown-preview ',
-          isPresentationMode ? '!p-0' : '',
+          isPresentationMode ? '!p-0 w-full h-full' : 'h-auto',
         )}
         data-for="preview"
         ref={previewElement}
-        onContextMenu={event => {
-          showContextMenu({
-            event,
-          });
-        }}
       ></div>
       {/** Backlinks */}
       {showBacklinks && <Backlinks></Backlinks>}

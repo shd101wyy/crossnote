@@ -10,6 +10,7 @@ import * as path from 'path';
 import request from 'request';
 import { JsonObject } from 'type-fest';
 import * as vscode from 'vscode';
+import { URI } from 'vscode-uri';
 import * as YAML from 'yaml';
 import { CodeChunkData } from '../code-chunk/code-chunk-data';
 import { ebookConvert } from '../converters/ebook-convert';
@@ -20,7 +21,12 @@ import { parseBlockAttributes } from '../lib/block-attributes/parseBlockAttribut
 import { stringifyBlockAttributes } from '../lib/block-attributes/stringifyBlockAttributes';
 import { normalizeBlockInfo } from '../lib/block-info/normalize-block-info';
 import { parseBlockInfo } from '../lib/block-info/parse-block-info';
-import { FileSystemApi, Notebook, getDefaultNotebookConfig } from '../notebook';
+import {
+  FileSystemApi,
+  Notebook,
+  WebviewConfig,
+  getDefaultNotebookConfig,
+} from '../notebook';
 import enhanceWithCodeBlockStyling from '../render-enhancers/code-block-styling';
 import enhanceWithEmbeddedLocalImages from '../render-enhancers/embedded-local-images';
 import enhanceWithEmbeddedSvgs from '../render-enhancers/embedded-svgs';
@@ -114,7 +120,7 @@ export class MarkdownEngine {
    */
   private readonly filePath: string;
   private readonly fileDirectoryPath: string;
-  private readonly projectDirectoryPath: string;
+  private readonly projectDirectoryPath: URI;
   private readonly notebook: Notebook;
   private readonly fs: FileSystemApi;
 
@@ -551,7 +557,7 @@ window["initRevealPresentation"] = async function() {
       let absoluteFilePath = sourcePath;
       if (sourcePath[0] === '/') {
         absoluteFilePath = utility.addFileProtocol(
-          path.resolve(this.projectDirectoryPath, '.' + sourcePath),
+          path.resolve(this.projectDirectoryPath.path, '.' + sourcePath),
           vscodePreviewPanel,
         );
       } else if (
@@ -597,12 +603,7 @@ window["initRevealPresentation"] = async function() {
     scripts?: string;
     styles?: string;
     head?: string;
-    config: {
-      sourceUri: string;
-      initialLine: number;
-      cursorLine?: number;
-      vscode?: boolean;
-    };
+    config: WebviewConfig;
     vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
     contentSecurityPolicy?: string;
     isVSCodeWebExtension?: boolean;
@@ -1861,7 +1862,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       inputString,
       {
         fileDirectoryPath: this.fileDirectoryPath,
-        projectDirectoryPath: this.projectDirectoryPath,
+        projectDirectoryPath: this.projectDirectoryPath.path,
         sourceFilePath: this.filePath,
         protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
         // deleteImages: true,
@@ -1957,7 +1958,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     return await markdownConvert(
       inputString,
       {
-        projectDirectoryPath: this.projectDirectoryPath,
+        projectDirectoryPath: this.projectDirectoryPath.path,
         fileDirectoryPath: this.fileDirectoryPath,
         protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
         filesCache: this.filesCache,
@@ -2043,11 +2044,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (relative) {
         return path.relative(
           fileDirectoryPath || this.fileDirectoryPath,
-          path.resolve(this.projectDirectoryPath, '.' + filePath),
+          path.resolve(this.projectDirectoryPath.path, '.' + filePath),
         );
       } else {
         return utility.addFileProtocol(
-          path.resolve(this.projectDirectoryPath, '.' + filePath),
+          path.resolve(this.projectDirectoryPath.path, '.' + filePath),
           this.vscodePreviewPanel,
         );
       }
@@ -2406,7 +2407,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       frontMatterString,
     } = await transformMarkdown(inputString, {
       fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
-      projectDirectoryPath: this.projectDirectoryPath,
+      projectDirectoryPath: this.projectDirectoryPath.path,
       forPreview: options.isForPreview,
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
       useRelativeFilePath: options.useRelativeFilePath,

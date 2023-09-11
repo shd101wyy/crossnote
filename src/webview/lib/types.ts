@@ -1,23 +1,5 @@
-export interface WebviewConfig {
-  usePandocParser?: boolean;
-  scrollSync?: boolean;
-  mathRenderingOption?: string;
-  imageFolderPath?: string;
-  imageUploader?: string;
-  enableScriptExecution?: boolean;
-  /**
-   * Whether this preview is for vscode or not.
-   */
-  vscode?: boolean;
-  zoomLevel?: number;
-
-  sourceUri?: string;
-  initialLine?: number;
-  cursorLine?: number;
-}
-
 export type WebviewMessageEvent = {
-  command: 'updateHTML';
+  command: 'updateHtml';
   totalLineCount: number;
   sidebarTOCHTML: string;
   sourceUri: string;

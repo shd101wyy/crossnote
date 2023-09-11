@@ -7,6 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { ImageUploader } from '../../notebook';
 import PreviewContainer from '../containers/preview';
 
 export default function ImageHelper() {
@@ -20,7 +21,7 @@ export default function ImageHelper() {
   const urlEditor = useRef<HTMLInputElement>(null);
   const imagePasterInput = useRef<HTMLInputElement>(null);
   const imageUploaderInput = useRef<HTMLInputElement>(null);
-  const [imageUploader, setImageUploader] = useState<string>(
+  const [imageUploader, setImageUploader] = useState<ImageUploader>(
     config.imageUploader ?? 'imgur',
   );
 
@@ -218,7 +219,9 @@ export default function ImageHelper() {
                           <select
                             value={imageUploader}
                             onChange={event => {
-                              setImageUploader(event.target.value);
+                              setImageUploader(
+                                event.target.value as ImageUploader,
+                              );
                               postMessage('setImageUploader', [
                                 event.target.value,
                               ]);

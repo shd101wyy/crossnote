@@ -7,6 +7,7 @@ module.exports = {
   ignorePatterns: [
     'build.js',
     'gulpfile.js',
+    'tailwind.config.js',
     '.eslintrc.js',
     'jest.config.js',
     'prettier.config.js',

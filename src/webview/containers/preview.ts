@@ -1,10 +1,11 @@
-import CryptoJS from 'crypto-js';
+import { useWhatChanged } from '@simbathesailor/use-what-changed';
+import CryptoJS, { SHA256 } from 'crypto-js';
 import $ from 'jquery';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
-import { Backlink } from '../../notebook';
-import { WebviewConfig } from '../lib/types';
+import { Backlink, WebviewConfig } from '../../notebook';
+import { isBackgroundColorLight } from '../lib/uilts';
 
 window['jQuery'] = $;
 window['$'] = $;
@@ -71,6 +72,8 @@ const PreviewContainer = createContainer(() => {
   const previewElement = useRef<HTMLDivElement>(null);
   const hiddenPreviewElement = useRef<HTMLDivElement>(null);
   const sidebarTocElement = useRef<HTMLDivElement>(null);
+  const backlinksElement = useRef<HTMLDivElement>(null);
+  const backlinksSha = useRef<string>(SHA256(JSON.stringify([])).toString());
   const [showImageHelper, setShowImageHelper] = useState<boolean>(false);
   const [showSidebarToc, setShowSidebarToc] = useState<boolean>(false);
   const [sidebarTocHtml, setSidebarTocHtml] = useState<string>('');
@@ -80,6 +83,7 @@ const PreviewContainer = createContainer(() => {
   );
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isMouseOverPreview, setIsMouseOverPreview] = useState<boolean>(false);
+  const [renderedHtml, setRenderedHtml] = useState<string>('');
   const isMobile = useMemo(() => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent,
@@ -107,7 +111,7 @@ const PreviewContainer = createContainer(() => {
     ) as WebviewConfig;
   }, []);
   const isVSCode = useMemo(() => {
-    return !!config.vscode;
+    return !!config.isVSCode;
   }, [config]);
   const contextMenuId = useMemo(() => {
     return 'crossnote-context-menu';
@@ -584,6 +588,7 @@ const PreviewContainer = createContainer(() => {
 
       previewElement.current.innerHTML = hiddenPreviewElement.current.innerHTML;
       hiddenPreviewElement.current.innerHTML = '';
+      setRenderedHtml(previewElement.current.innerHTML);
 
       await Promise.all([renderInteractiveVega(), renderMermaid()]);
 
@@ -754,14 +759,14 @@ const PreviewContainer = createContainer(() => {
               event.stopPropagation();
             };
           }
-        } else if (
+        } /*else if (
           // External links, like https://google.com
           isVSCodeWebExtension &&
           href.startsWith('https://') &&
           !href.startsWith('https://file+.vscode-resource.vscode-cdn.net')
         ) {
           continue;
-        } else {
+        } */ else {
           a.onclick = event => {
             event.preventDefault();
             event.stopPropagation();
@@ -782,7 +787,11 @@ const PreviewContainer = createContainer(() => {
     if (sidebarTocElement.current) {
       helper(Array.from(sidebarTocElement.current.getElementsByTagName('a')));
     }
-  }, [isVSCodeWebExtension, postMessage, sidebarTocElement]);
+
+    if (backlinksElement.current) {
+      helper(Array.from(backlinksElement.current.getElementsByTagName('a')));
+    }
+  }, [postMessage]);
 
   const bindTaskListEvent = useCallback(() => {
     if (!previewElement.current) {
@@ -881,6 +890,25 @@ const PreviewContainer = createContainer(() => {
       postMessage,
       scrollToRevealSourceLine,
     ],
+  );
+
+  const refreshBacklinks = useCallback(
+    (forceRefreshingNotes = false) => {
+      if (showBacklinks) {
+        postMessage('showBacklinks', [
+          {
+            uri: sourceUri.current,
+            forceRefreshingNotes,
+            backlinksSha: backlinksSha.current,
+          },
+        ]);
+        setIsLoadingBacklinks(true);
+        if (backlinksElement.current && !config.alwaysShowBacklinksInPreview) {
+          backlinksElement.current.scrollIntoView();
+        }
+      }
+    },
+    [config.alwaysShowBacklinksInPreview, postMessage, showBacklinks],
   );
 
   const initSlidesData = useCallback(() => {
@@ -986,11 +1014,16 @@ const PreviewContainer = createContainer(() => {
 
   useEffect(() => {
     // TODO: Support pagination in the future
-    if (showBacklinks) {
-      postMessage('showBacklinks', [{ uri: sourceUri.current }]);
-      setIsLoadingBacklinks(true);
-    }
-  }, [postMessage, showBacklinks]);
+    refreshBacklinks();
+  }, [refreshBacklinks]);
+
+  useEffect(() => {
+    backlinksSha.current = SHA256(JSON.stringify(backlinks)).toString();
+  }, [backlinks]);
+
+  useEffect(() => {
+    setShowBacklinks(!!config.alwaysShowBacklinksInPreview);
+  }, [config.alwaysShowBacklinksInPreview]);
 
   /**
    * Keyboard events
@@ -1067,15 +1100,15 @@ const PreviewContainer = createContainer(() => {
       if (!data || !previewElement.current) {
         return;
       }
+      console.log('! message: ', data);
 
-      if (data.command === 'updateHTML') {
+      if (data.command === 'updateHtml') {
         const {
           totalLineCount: total,
           tocHTML,
           sourceUri: uri,
           sourceScheme: scheme,
         } = data;
-        console.log('! updateHTML: ', uri);
         totalLineCount.current = total;
         setSidebarTocHtml(tocHTML);
         sourceUri.current = uri;
@@ -1132,13 +1165,17 @@ const PreviewContainer = createContainer(() => {
           setWindowScrollTop(0);
         }
       } else if (data.command === 'backlinks') {
-        console.log('!backlinks: ', data);
-        console.log('!sourceUri: ', sourceUri.current);
-        if (sourceUri.current === data.sourceUri) {
-          console.log('!!setBacklinks');
-          setBacklinks(data.backlinks);
-          setIsLoadingBacklinks(false);
+        const { backlinks, hasUpdate, sourceUri: uri } = data;
+        if (sourceUri.current === uri && hasUpdate) {
+          setBacklinks(backlinks);
         }
+        setIsLoadingBacklinks(false);
+      } else if (data.command === 'updatedNote') {
+        refreshBacklinks();
+      } else if (data.command === 'createdNote') {
+        refreshBacklinks();
+      } else if (data.command === 'deletedNote') {
+        refreshBacklinks();
       }
     };
     window.addEventListener('message', messageEventHandler);
@@ -1156,6 +1193,7 @@ const PreviewContainer = createContainer(() => {
     updateHtml,
     zoomIn,
     zoomOut,
+    refreshBacklinks,
   ]);
 
   /**
@@ -1194,11 +1232,10 @@ const PreviewContainer = createContainer(() => {
       previewElement.current.innerHTML =
         document.body.getAttribute('data-html') ?? '';
       document.body.removeAttribute('data-html');
+      setRenderedHtml(previewElement.current.innerHTML);
     }
 
     if (!isPresentationMode) {
-      // previewElement.current.onscroll = scrollPreview; //.bind(this);
-
       const isDarkColorScheme = window.matchMedia(
         '(prefers-color-scheme: dark)',
       ).matches;
@@ -1220,18 +1257,29 @@ const PreviewContainer = createContainer(() => {
       base.href = sourceUri.current;
     }
     document.head.appendChild(base);
-  }, [
-    config,
-    initPresentationEvent,
-    isPresentationMode,
-    postMessage,
-    scrollPreview,
-  ]);
+  }, [config, initPresentationEvent, isPresentationMode, postMessage]);
+
+  useWhatChanged(
+    [config, initPresentationEvent, isPresentationMode, postMessage],
+    'config, initPresentationEvent, isPresentationMode, postMessage',
+  );
+
+  useEffect(() => {
+    if (previewElement.current) {
+      const isLightTheme = isBackgroundColorLight(document.body);
+      document.body.setAttribute('data-theme', isLightTheme ? 'light' : 'dark');
+    }
+  }, [config.previewTheme, config.globalCss, renderedHtml]);
 
   return {
+    backlinks,
+    backlinksElement,
+    bindAnchorElementsClickEvent,
     clickSidebarTocButton,
     config,
     contextMenuId,
+    hiddenPreviewElement,
+    isLoadingBacklinks,
     isLoadingPreview,
     isMobile,
     isMouseOverPreview,
@@ -1241,22 +1289,20 @@ const PreviewContainer = createContainer(() => {
     isVSCodeWebExtension,
     postMessage,
     previewElement,
-    hiddenPreviewElement,
     previewSyncSource,
     setIsMouseOverPreview,
+    setShowBacklinks,
     setShowImageHelper,
+    showBacklinks,
     showContextMenu,
     showImageHelper,
     showSidebarToc,
-    sidebarTocHtml,
     sidebarTocElement,
+    sidebarTocHtml,
     sourceScheme,
     sourceUri,
     zoomLevel,
-    showBacklinks,
-    setShowBacklinks,
-    backlinks,
-    isLoadingBacklinks,
+    refreshBacklinks,
   };
 });
 

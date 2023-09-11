@@ -8,6 +8,7 @@ import MarkdownItSub from 'markdown-it-sub';
 import MarkdownItSup from 'markdown-it-sup';
 import Token from 'markdown-it/lib/token.js';
 import * as path from 'path';
+import { URI, Utils } from 'vscode-uri';
 import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
 import useMarkdownItCodeFences from '../custom-markdown-it-features/code-fences';
 import useMarkdownItCriticMarkup from '../custom-markdown-it-features/critic-markup';
@@ -44,6 +45,8 @@ const defaultMarkdownItConfig: Partial<MarkdownIt.Options> = {
 interface NotebookConstructorArgs {
   /**
    * Absolute path to the notebook directory
+   * The path can include the scheme like `file`
+   * If no scheme is passed, then `file` is used.
    */
   notebookPath: string;
   config: Partial<NotebookConfig>;
@@ -63,7 +66,7 @@ interface RefreshNotesArgs extends RefreshNotesIfNotLoaded {
 }
 
 export class Notebook {
-  public notebookPath: string;
+  public notebookPath: URI;
   public config: NotebookConfig;
   public fs: FileSystemApi;
 
@@ -88,11 +91,15 @@ export class Notebook {
     config = {},
     fs,
   }: NotebookConstructorArgs) {
+    const uri = URI.parse(notebookPath);
+
     // Check if workspaceFolder is absolute path
-    if (!path.isAbsolute(notebookPath)) {
-      throw new Error('`notebookDirectoryPath` must be an absolute path');
+    if (!path.isAbsolute(uri.path) || uri.path.startsWith('/./')) {
+      throw new Error(
+        `\`notebookPath\`: "${notebookPath}" must be an absolute path`,
+      );
     }
-    this.notebookPath = notebookPath;
+    this.notebookPath = uri;
     this.initFs(fs);
     await this.initConfig(config);
     this.initMarkdownIt();
@@ -107,7 +114,7 @@ export class Notebook {
 
   private async initConfig(config: Partial<NotebookConfig>) {
     const extraConfig = await loadConfigsInDirectory(
-      path.join(this.notebookPath, './.crossnote'),
+      path.join(this.notebookPath.path, './.crossnote'),
       this.fs,
     );
     this.config = {
@@ -222,7 +229,6 @@ export class Notebook {
     for (const noteFilePath_ of noteFilePaths) {
       const note = backlinkedNotes[noteFilePath_];
       const references = await this.getReferences(filePath, noteFilePath_);
-      console.log(references);
       backlinks.push({
         note: {
           notebookPath: note.notebookPath,
@@ -260,25 +266,36 @@ export class Notebook {
     }
     // Get mentions
     const tokens = this.md.parse(note.markdown, {});
+
+    /**
+     * Change the link to path relative to the notebook directory
+     * @param link
+     * @returns
+     */
     const resolveLink = (link: string) => {
       if (!link.endsWith('.md')) {
         link = link + '.md';
       }
       if (link.startsWith('/')) {
         return path.relative(
-          this.notebookPath,
-          path.join(this.notebookPath, '.' + link),
+          this.notebookPath.path,
+          path.join(this.notebookPath.path, '.' + link),
         );
       } else {
         return path.relative(
-          this.notebookPath,
+          this.notebookPath.path,
           path.join(
-            path.dirname(path.join(this.notebookPath, note.filePath)),
+            path.dirname(path.join(this.notebookPath.path, note.filePath)),
             link,
           ),
         );
       }
     };
+
+    const addFileProtocol = (link: string) => {
+      return Utils.joinPath(this.notebookPath, link).toString();
+    };
+
     const traverse = (
       tokens: Token[],
       parentToken: Token | null,
@@ -307,9 +324,9 @@ export class Notebook {
           // Replace the token content
           link = resolveLink(link);
           if (this.config.useGitHubStylePipedLink) {
-            token.content = `${text} | ${link}`;
+            token.content = `${text} | ${addFileProtocol(link)}`;
           } else {
-            token.content = `${link} | ${text}`;
+            token.content = `${addFileProtocol(link)} | ${text}`;
           }
 
           // console.log("find link token: ", token, parentToken);
@@ -350,7 +367,7 @@ export class Notebook {
 
             // Replace the token href
             link = resolveLink(link);
-            token.attrs[0][1] = link;
+            token.attrs[0][1] = addFileProtocol(link);
 
             results.push({
               elementId: token.attrGet('id') || '',
@@ -472,7 +489,7 @@ export class Notebook {
       // Create note
       const note: Note = {
         notebookPath: this.notebookPath,
-        filePath: path.relative(this.notebookPath, absFilePath),
+        filePath: path.relative(this.notebookPath.path, absFilePath),
         title: path.basename(absFilePath).replace(/\.md$/, ''),
         markdown,
         config: noteConfig,
@@ -520,7 +537,7 @@ export class Notebook {
     }
     let files: string[] = [];
     try {
-      files = await this.fs.readdir(path.resolve(this.notebookPath, dir));
+      files = await this.fs.readdir(path.resolve(this.notebookPath.path, dir));
     } catch (error) {
       console.error(error);
       files = [];
@@ -536,9 +553,9 @@ export class Notebook {
         continue;
       }
 
-      const absFilePath = path.resolve(this.notebookPath, dir, file);
+      const absFilePath = path.resolve(this.notebookPath.path, dir, file);
       const note = await this.getNote(
-        path.relative(this.notebookPath, absFilePath),
+        path.relative(this.notebookPath.path, absFilePath),
       );
       if (note) {
         this.notes[note.filePath] = note;
@@ -554,7 +571,7 @@ export class Notebook {
       if (stats && stats.isDirectory() && includeSubdirectories) {
         refreshNotesPromises.push(
           this.refreshNotes({
-            dir: path.relative(this.notebookPath, absFilePath),
+            dir: path.relative(this.notebookPath.path, absFilePath),
             includeSubdirectories,
             refreshRelations: false,
           }),
@@ -621,9 +638,9 @@ export class Notebook {
     delete this.notes[note.filePath];
   }
 
-  public async deleteNote(filePath: string) {
+  public async deleteNote(filePath: string, alreadyDeleted = false) {
     const absFilePath = this.resolveNoteAbsolutePath(filePath);
-    if (await this.fs.exists(absFilePath)) {
+    if (alreadyDeleted || (await this.fs.exists(absFilePath))) {
       await this.fs.unlink(absFilePath);
       await this.removeNoteRelations(filePath);
       this.search.remove(filePath);
@@ -648,13 +665,13 @@ export class Notebook {
     if (path.isAbsolute(filePath)) {
       return filePath;
     } else {
-      return path.resolve(this.notebookPath, filePath);
+      return path.resolve(this.notebookPath.path, filePath);
     }
   }
 
   private resolveNoteRelativePath(filePath: string) {
     if (path.isAbsolute(filePath)) {
-      return path.relative(this.notebookPath, filePath);
+      return path.relative(this.notebookPath.path, filePath);
     } else {
       return filePath;
     }

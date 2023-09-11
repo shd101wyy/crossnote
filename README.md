@@ -256,6 +256,9 @@ const config = {
 
   // Kroki server url.
   krokiServer: "https://kroki.io",
+
+  // Always show backlinks in the preview.
+  alwaysShowBacklinksInPreview: false,
 }
 ```
 
