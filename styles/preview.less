@@ -3,7 +3,7 @@
 
 html, body {
   width: 100%;
-  height: 100%;
+  // height: 100%;
 }
 
 .scrollbar-style {
@@ -90,26 +90,26 @@ html, body {
             font-size: 14px;
             box-shadow: -4px 0px 12px rgba(150, 150, 150, .33);
             box-sizing: border-box;
-            
+
             a {
                 // color: @fg;
                 text-decoration: none;
             }
-            
+
             .md-toc {
               padding: 0 16px;
-              
+
               .md-toc-link-wrapper {
                 .md-toc-link {
                   display: inline;
                   padding: 0.25rem 0;
-      
+
                   p,
                   div {
                     display: inline;
                   }
                 }
-      
+
                 &.highlighted {
                   .md-toc-link {
                     font-weight: 800;
@@ -131,10 +131,6 @@ html, body {
         overflow: auto;
         display: block;
         box-sizing: border-box;
-
-        &[data-presentation-mode] {
-            padding: 0;
-        }
 
         // code chunk
         .code-chunk {
@@ -206,3 +202,16 @@ html, body {
     }
 }
 
+body[data-presentation-mode] {
+  .crossnote[data-for="preview"] {
+    padding: 0 !important;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+body:not([data-presentation-mode]) {
+  .crossnote[data-for="preview"] {
+    height: auto;
+  }
+}

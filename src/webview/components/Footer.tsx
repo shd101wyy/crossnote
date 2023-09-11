@@ -21,7 +21,7 @@ export default function Footer() {
       <div className="flex flex-row justify-end items-center backdrop-blur-xl float-right rounded-md">
         <div
           className="p-2 cursor-pointer hover:scale-105"
-          title="Show backlinks"
+          title="Toggle backlinks"
           onClick={() => {
             setShowBacklinks(x => !x);
           }}

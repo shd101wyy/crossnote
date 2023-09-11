@@ -2,18 +2,27 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { mdiOpenInNew } from '@mdi/js';
 import Icon from '@mdi/react';
 import classNames from 'classnames';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { URI, Utils } from 'vscode-uri';
+import { Backlink } from '../../notebook';
 import PreviewContainer from '../containers/preview';
+import { BacklinksOrderDirection, BacklinksOrderRecord } from '../lib/types';
 
 export default function Backlinks() {
   const {
-    backlinks,
+    backlinks: originalBacklinks,
     isLoadingBacklinks,
     backlinksElement,
     refreshBacklinks,
     bindAnchorElementsClickEvent,
   } = PreviewContainer.useContainer();
+  const [backlinksOrderRecord] = useState<BacklinksOrderRecord>(
+    BacklinksOrderRecord.ModifiedAt,
+  );
+  const [backlinksOrderDirection] = useState<BacklinksOrderDirection>(
+    BacklinksOrderDirection.Desc,
+  );
+  const [backlinks, setBacklinks] = useState<Backlink[]>([]);
 
   const totalReferenceCount = useMemo(
     () =>
@@ -28,8 +37,43 @@ export default function Backlinks() {
     bindAnchorElementsClickEvent();
   }, [backlinks, bindAnchorElementsClickEvent]);
 
+  useEffect(() => {
+    const backlinks = [...originalBacklinks].sort((a, b) => {
+      const noteA = a.note;
+      const noteB = b.note;
+
+      if (backlinksOrderRecord === BacklinksOrderRecord.CreatedAt) {
+        if (backlinksOrderDirection === BacklinksOrderDirection.Asc) {
+          return (
+            new Date(noteA.config?.createdAt ?? 0).getTime() -
+            new Date(noteB.config?.createdAt ?? 0).getTime()
+          );
+        } else {
+          return (
+            new Date(noteB.config?.createdAt ?? 0).getTime() -
+            new Date(noteA.config?.createdAt ?? 0).getTime()
+          );
+        }
+      } else if (backlinksOrderRecord === BacklinksOrderRecord.ModifiedAt) {
+        if (backlinksOrderDirection === BacklinksOrderDirection.Asc) {
+          return (
+            new Date(noteA.config?.modifiedAt ?? 0).getTime() -
+            new Date(noteB.config?.modifiedAt ?? 0).getTime()
+          );
+        } else {
+          return (
+            new Date(noteB.config?.modifiedAt ?? 0).getTime() -
+            new Date(noteA.config?.modifiedAt ?? 0).getTime()
+          );
+        }
+      }
+      return 0;
+    });
+    setBacklinks(backlinks);
+  }, [originalBacklinks, backlinksOrderRecord, backlinksOrderDirection]);
+
   return (
-    <div className="markdown-preview p-[2em]" ref={backlinksElement}>
+    <div className="markdown-preview p-[2em] pb-48" ref={backlinksElement}>
       <hr></hr>
       <div className="flex flex-row items-center justify-between mb-4">
         {isLoadingBacklinks ? (

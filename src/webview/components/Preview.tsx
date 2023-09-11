@@ -49,10 +49,7 @@ export default function Preview() {
       />
       {/** The real preview */}
       <div
-        className={classNames(
-          'crossnote markdown-preview ',
-          isPresentationMode ? '!p-0 w-full h-full' : 'h-auto',
-        )}
+        className={classNames('crossnote markdown-preview ')}
         data-for="preview"
         ref={previewElement}
       ></div>

@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+
 export type WebviewMessageEvent = {
   command: 'updateHtml';
   totalLineCount: number;
@@ -10,3 +12,13 @@ export type WebviewMessageEvent = {
 };
 
 export type WebviewMessageType = WebviewMessageEvent['command'];
+
+export enum BacklinksOrderRecord {
+  CreatedAt = 'createdAt',
+  ModifiedAt = 'modifiedAt',
+}
+
+export enum BacklinksOrderDirection {
+  Asc = 'asc',
+  Desc = 'desc',
+}
