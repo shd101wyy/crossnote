@@ -1,4 +1,3 @@
-import { useWhatChanged } from '@simbathesailor/use-what-changed';
 import CryptoJS, { SHA256 } from 'crypto-js';
 import $ from 'jquery';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -83,7 +82,7 @@ const PreviewContainer = createContainer(() => {
   const [isRefreshingPreview, setIsRefreshingPreview] = useState<boolean>(
     false,
   );
-  const [isLoadingPreview, setIsLoadingPreview] = useState<boolean>(false);
+  const [isLoadingPreview, setIsLoadingPreview] = useState<boolean>(true);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isMouseOverPreview, setIsMouseOverPreview] = useState<boolean>(false);
   const [renderedHtml, setRenderedHtml] = useState<string>('');
@@ -616,11 +615,11 @@ const PreviewContainer = createContainer(() => {
         const { h, v, offset } = slidesData.current[i];
         if (offset === currentSlideOffset.current) {
           return;
-        } else {
-          currentSlideOffset.current = offset;
-          window['Reveal'].slide(h, v);
-          break;
         }
+
+        currentSlideOffset.current = offset;
+        window['Reveal'].slide(h, v);
+        break;
       }
     }
   }, []);
@@ -931,56 +930,46 @@ const PreviewContainer = createContainer(() => {
   }, []);
 
   const initPresentationEvent = useCallback(async () => {
-    let initialSlide: HTMLDivElement | null = null;
-    const readyEvent = () => {
-      if (initialSlide) {
-        initialSlide.style.visibility = 'visible';
-      }
-
-      // several events...
-      setupCodeChunks();
-      bindAnchorElementsClickEvent();
-      bindTaskListEvent();
-
-      // scroll slides
-      window['Reveal'].addEventListener('slidechanged', event => {
-        if (Date.now() < previewScrollDelay.current) {
-          return;
-        }
-
-        const { indexh, indexv } = event;
-        for (const slideData of slidesData.current) {
-          const { h, v, line } = slideData;
-          if (h === indexh && v === indexv) {
-            postMessage('revealLine', [sourceUri.current, line + 6]);
-          }
-        }
-      });
-    };
-
-    // analyze slides
-    initSlidesData();
-
     if (window['initRevealPresentation']) {
       // This is defined in `markdown-engine/index.ts`
       await window['initRevealPresentation']();
     }
+    const firstSlide = window['Reveal'].getCurrentSlide();
+    firstSlide.style.visibility = 'hidden';
+    // analyze slides
+    initSlidesData();
+
+    // scroll slides
+    window['Reveal'].addEventListener('slidetransitionend', event => {
+      window['Reveal'].layout();
+      if (Date.now() < previewScrollDelay.current) {
+        return;
+      }
+
+      const { indexh, indexv } = event;
+      for (const slideData of slidesData.current) {
+        const { h, v, line } = slideData;
+        if (h === indexh && v === indexv) {
+          postMessage('revealLine', [sourceUri.current, line + 6]);
+        }
+      }
+    });
 
     // slide to initial position
     window['Reveal'].configure({ transition: 'none' });
     scrollToRevealSourceLine(initialLine.current);
     window['Reveal'].configure({ transition: 'slide' });
+    window['Reveal'].layout();
 
-    initialSlide = window['Reveal'].getCurrentSlide();
-    if (initialSlide) {
-      initialSlide.style.visibility = 'hidden';
+    if (firstSlide) {
+      firstSlide.style.visibility = 'visible';
     }
+    setIsLoadingPreview(false);
 
-    if (window['Reveal'].isReady()) {
-      readyEvent();
-    } else {
-      window['Reveal'].addEventListener('ready', readyEvent);
-    }
+    // several events...
+    setupCodeChunks();
+    bindAnchorElementsClickEvent();
+    bindTaskListEvent();
   }, [
     bindAnchorElementsClickEvent,
     bindTaskListEvent,
@@ -1261,11 +1250,6 @@ const PreviewContainer = createContainer(() => {
     }
     document.head.appendChild(base);
   }, [config, initPresentationEvent, isPresentationMode, postMessage]);
-
-  useWhatChanged(
-    [config, initPresentationEvent, isPresentationMode, postMessage],
-    'config, initPresentationEvent, isPresentationMode, postMessage',
-  );
 
   useEffect(() => {
     if (previewElement.current) {

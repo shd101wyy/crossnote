@@ -61,10 +61,10 @@ export default function Preview() {
       <Footer></Footer>
       {/** Sidebar TOC */}
       <SidebarToc></SidebarToc>
+      {/** Loading Preview */}
+      {isLoadingPreview && <LoadingIcon></LoadingIcon>}
       {/** Refreshing Preview */}
       {isRefreshingPreview && <RefreshingIcon></RefreshingIcon>}
-      {/** Loading Preview */}
-      {isLoadingPreview && !isPresentationMode && <LoadingIcon></LoadingIcon>}
       {/** Image helper */}
       <ImageHelper></ImageHelper>
       {/** Context menu */}

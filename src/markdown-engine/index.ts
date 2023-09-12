@@ -247,8 +247,10 @@ export class MarkdownEngine {
       // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
       // Disable typesetting on startup
       mathJaxConfig['startup'] = mathJaxConfig['startup'] || {};
-      mathJaxConfig['startup']['typeset'] = false;
-      mathJaxConfig['startup']['elements'] = ['.hidden-preview']; // Only render on this element
+      if (!isForPresentation) {
+        mathJaxConfig['startup']['typeset'] = false;
+        mathJaxConfig['startup']['elements'] = ['.hidden-preview']; // Only render on this element
+      }
 
       scripts += `<script type="text/javascript"> window.MathJax = (${JSON.stringify(
         mathJaxConfig,
@@ -259,13 +261,6 @@ export class MarkdownEngine {
     // reveal.js
     let presentationInitScript = '';
     if (isForPresentation) {
-      scripts += `<script src='${utility.addFileProtocol(
-        path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/reveal/lib/js/head.min.js',
-        ),
-        vscodePreviewPanel,
-      )}'></script>`;
       scripts += `<script src='${utility.addFileProtocol(
         path.resolve(
           utility.getCrossnoteBuildDirectory(),
@@ -289,6 +284,9 @@ export class MarkdownEngine {
           margin: 0.1,
           ...presentationConfig,
         })})
+        // NOTE: We have to add the promise below otherwise
+        // initPresentationEvents in preview.ts will have problem slide to the correct slide.
+        await new Promise((resolve)=> setTimeout(resolve, 100))
       `;
     }
 
@@ -314,7 +312,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       }
     }
   }
-  Reveal.addEventListener('slidechanged', mermaidRevealHelper)
+  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
   Reveal.addEventListener('ready', mermaidRevealHelper)
 } else {
   // The line below will cause mermaid bug in preview.
@@ -780,18 +778,18 @@ window["initRevealPresentation"] = async function() {
           './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script type="module">
-  import mermaid from 'https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@10.4.0/dist/mermaid.esm.min.mjs';
-</script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">
 // TODO: If ZenUML gets integrated into mermaid in the future,
 //      we can remove the following lines.
-import zenuml from 'https://${
-        this.notebook.config.jsdelivrCdnHost
-      }/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
-await mermaid.registerExternalDiagrams([zenuml])
+${
+  html.match(/zenuml/i)
+    ? `import zenuml from 'https://${this.notebook.config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
+await mermaid.registerExternalDiagrams([zenuml])`
+    : ``
+}
 
 var MERMAID_CONFIG = (${JSON.stringify(this.notebook.config.mermaidConfig)});
 if (typeof MERMAID_CONFIG !== 'undefined') {
@@ -799,6 +797,7 @@ if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.cloneCssStyles = false
   MERMAID_CONFIG.theme = "${this.notebook.config.mermaidTheme}"
 }
+
 mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
@@ -813,8 +812,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
       }
     }
   }
-  Reveal.addEventListener('slidechanged', mermaidRevealHelper)
+  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
   Reveal.addEventListener('ready', mermaidRevealHelper)
+  await mermaid.run({
+    nodes: document.querySelectorAll('.mermaid')
+  })
 } else {
   await mermaid.run({
     nodes: document.querySelectorAll('.mermaid')
@@ -889,15 +891,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
         presentationScript = `
         <script src='file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          './dependencies/reveal/lib/js/head.min.js',
-        )}'></script>
-        <script src='file:///${path.resolve(
-          utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/js/reveal.js',
         )}'></script>`;
       } else {
         presentationScript = `
-        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/reveal.js'></script>`;
+        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/reveal.js'></script>`;
       }
 
       const presentationConfig = yamlConfig['presentation'] || {};
@@ -997,7 +995,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
             `./dependencies/reveal/css/theme/${theme}`,
           )}">`;
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/theme/${theme}">`;
+          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/theme/${theme}">`;
         }
       } else {
         // preview theme

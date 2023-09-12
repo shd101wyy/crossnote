@@ -3,7 +3,7 @@ import React from 'react';
 export default function LoadingIcon() {
   return (
     <div
-      className="markdown-preview fixed top-0 left-0 w-full h-full"
+      className="markdown-preview fixed top-0 left-0 w-full h-full z-50"
       style={{
         backgroundColor: getComputedStyle(document.body).backgroundColor,
       }}
