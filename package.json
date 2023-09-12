@@ -40,7 +40,8 @@
     "fix": "npm run fix:lint && npm run fix:prettier",
     "fix:lint": "eslint --fix .",
     "fix:prettier": "prettier --write \"**/*.*\"",
-    "prepare": "husky install && npm run build",
+    "prepare": "husky install",
+    "prepublish": "npm run build",
     "test": "jest --no-coverage",
     "test:coverage": "jest"
   },

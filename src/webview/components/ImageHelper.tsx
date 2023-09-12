@@ -54,12 +54,14 @@ export default function ImageHelper() {
       // paste
       const files = event.dataTransfer.files;
       for (let i = 0; i < files.length; i++) {
-        // TODO:
-        console.log(files[i]);
+        const file = files[i] as { path?: string };
+        if (file && file.path) {
+          postMessage('pasteImageFile', [sourceUri.current, file.path]);
+        }
       }
       setShowImageHelper(false);
     },
-    [setShowImageHelper],
+    [setShowImageHelper, postMessage, sourceUri],
   );
 
   const dropFilesToUpload = useCallback(
@@ -69,12 +71,18 @@ export default function ImageHelper() {
       // upload
       const files = event.dataTransfer.files;
       for (let i = 0; i < files.length; i++) {
-        // TODO:
-        console.log(files[i]);
+        const file = files[i] as { path?: string };
+        if (file && file.path) {
+          postMessage('uploadImageFile', [
+            sourceUri.current,
+            file.path,
+            imageUploader,
+          ]);
+        }
       }
       setShowImageHelper(false);
     },
-    [setShowImageHelper],
+    [setShowImageHelper, postMessage, imageUploader, sourceUri],
   );
 
   return (
@@ -172,7 +180,13 @@ export default function ImageHelper() {
                             onChange={event => {
                               const files = event.target.files ?? [];
                               for (let i = 0; i < files.length; i++) {
-                                // TODO:
+                                const file = files[i] as { path?: string };
+                                if (file && file.path) {
+                                  postMessage('pasteImageFile', [
+                                    sourceUri.current,
+                                    file.path,
+                                  ]);
+                                }
                               }
                               event.target.value = '';
                             }}
@@ -208,7 +222,14 @@ export default function ImageHelper() {
                             onChange={event => {
                               const files = event.target.files ?? [];
                               for (let i = 0; i < files.length; i++) {
-                                // TODO:
+                                const file = files[i] as { path?: string };
+                                if (file && file.path) {
+                                  postMessage('uploadImageFile', [
+                                    sourceUri.current,
+                                    file.path,
+                                    imageUploader,
+                                  ]);
+                                }
                               }
                               event.target.value = '';
                             }}

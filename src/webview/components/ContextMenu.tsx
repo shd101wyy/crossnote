@@ -28,7 +28,6 @@ export default function ContextMenu() {
 
   const handleItemClick = useCallback(
     ({ id }: ItemParams<unknown, unknown>) => {
-      console.log(id);
       switch (id) {
         case 'open-in-browser': {
           postMessage('openInBrowser', [sourceUri.current]);
@@ -83,7 +82,6 @@ export default function ContextMenu() {
           break;
         }
         case 'open-image-helper': {
-          console.log('open-image-helper');
           setShowImageHelper(true);
           break;
         }
@@ -181,7 +179,7 @@ export default function ContextMenu() {
 
   return (
     <div>
-      <Menu id={contextMenuId} className="text-sm">
+      <Menu id={contextMenuId} className="">
         {!isVSCodeWebExtension && (
           <>
             <Item id="open-in-browser" onClick={handleItemClick}>

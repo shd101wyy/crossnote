@@ -60,7 +60,9 @@ const PreviewContainer = createContainer(() => {
   // eslint-disable-next-line no-undef
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
   // eslint-disable-next-line no-undef
-  const isLoadingPreview = useRef<boolean>(true);
+  // const refreshingTimeout = useRef<NodeJS.Timeout | null>(null);
+  // eslint-disable-next-line no-undef
+  const isLoadingPreviewRef = useRef<boolean>(true);
   /**
    * Track the slide line number, and (h, v) indices
    */
@@ -81,6 +83,7 @@ const PreviewContainer = createContainer(() => {
   const [isRefreshingPreview, setIsRefreshingPreview] = useState<boolean>(
     false,
   );
+  const [isLoadingPreview, setIsLoadingPreview] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isMouseOverPreview, setIsMouseOverPreview] = useState<boolean>(false);
   const [renderedHtml, setRenderedHtml] = useState<string>('');
@@ -866,8 +869,9 @@ const PreviewContainer = createContainer(() => {
           );
 
           // scroll to initial position
-          if (isLoadingPreview.current) {
-            isLoadingPreview.current = false;
+          if (isLoadingPreviewRef.current) {
+            isLoadingPreviewRef.current = false;
+            setIsLoadingPreview(false);
             scrollToRevealSourceLine(initialLine.current);
 
             // clear @scrollMap after 2 seconds because sometimes
@@ -1100,7 +1104,6 @@ const PreviewContainer = createContainer(() => {
       if (!data || !previewElement.current) {
         return;
       }
-      console.log('! message: ', data);
 
       if (data.command === 'updateHtml') {
         const {

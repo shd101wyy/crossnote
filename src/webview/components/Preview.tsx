@@ -5,6 +5,7 @@ import Backlinks from './Backlinks';
 import ContextMenu from './ContextMenu';
 import Footer from './Footer';
 import ImageHelper from './ImageHelper';
+import LoadingIcon from './LoadingIcon';
 import RefreshingIcon from './RefreshingIcon';
 import SidebarToc from './SidebarToc';
 import { Topbar } from './Topbar';
@@ -13,6 +14,7 @@ export default function Preview() {
   const {
     hiddenPreviewElement,
     isPresentationMode,
+    isLoadingPreview,
     isRefreshingPreview,
     previewElement,
     setIsMouseOverPreview,
@@ -59,8 +61,10 @@ export default function Preview() {
       <Footer></Footer>
       {/** Sidebar TOC */}
       <SidebarToc></SidebarToc>
-      {/** Some other components */}
+      {/** Refreshing Preview */}
       {isRefreshingPreview && <RefreshingIcon></RefreshingIcon>}
+      {/** Loading Preview */}
+      {isLoadingPreview && !isPresentationMode && <LoadingIcon></LoadingIcon>}
       {/** Image helper */}
       <ImageHelper></ImageHelper>
       {/** Context menu */}

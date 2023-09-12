@@ -444,15 +444,6 @@ window["initRevealPresentation"] = async function() {
   ) {
     let styles = '';
 
-    // loading.css
-    styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        './styles/loading.css',
-      ),
-      vscodePreviewPanel,
-    )}">`;
-
     // check math
     if (
       this.notebook.config.mathRenderingOption === 'KaTeX' &&
