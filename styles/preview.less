@@ -1,6 +1,11 @@
 @bg: #fff;
 @fg: #333;
 
+html, body {
+  width: 100%;
+  // height: 100%;
+}
+
 .scrollbar-style {
     &::-webkit-scrollbar {
         width: 8px;
@@ -52,49 +57,8 @@
         user-select: none;
         box-sizing: border-box;
     }
-    .refreshing-icon {
-        display: none;
-        position: fixed;
-        bottom: 32px;
-        left: 48px;
-        width: 48px;
-        height: 48px;
-        background-image: url(octocat-spinner-128.gif);
-        background-repeat: no-repeat;
-        background-position: top center;
-        background-size: cover;
-        font-size: 24px;
-        z-index: 999;
-        color: black;
-    }
     .context-menu-item {
         list-style: none;
-    }
-    #md-toolbar {
-        position: fixed;
-        top: 32px;
-        right: 24px;
-        opacity: 0;
-        display: block;
-        .back-to-top-btn,
-        .refresh-btn,
-        .sidebar-toc-btn {
-            float: right;
-            width: 38px;
-            margin-right: 4px;
-            opacity: 0.4;
-
-            &:hover {
-                opacity: 1.0;
-            }
-        }
-    }
-    &:hover {
-        .back-to-top-btn,
-        .refresh-btn,
-        .sidebar-toc-btn {
-            display: block;
-        }
     }
     &.show-sidebar-toc {
         .md-sidebar-toc {
@@ -106,31 +70,31 @@
             height: 100%;
             padding: 32px 0 12px 0;
             overflow: auto;
-            // background-color: @bg;
+            background-color: @bg;
             // color: @fg;
             font-size: 14px;
             box-shadow: -4px 0px 12px rgba(150, 150, 150, .33);
             box-sizing: border-box;
-            
+
             a {
                 // color: @fg;
                 text-decoration: none;
             }
-            
+
             .md-toc {
               padding: 0 16px;
-              
+
               .md-toc-link-wrapper {
                 .md-toc-link {
                   display: inline;
                   padding: 0.25rem 0;
-      
+
                   p,
                   div {
                     display: inline;
                   }
                 }
-      
+
                 &.highlighted {
                   .md-toc-link {
                     font-weight: 800;
@@ -139,33 +103,19 @@
               }
             }
         }
-        #md-toolbar {
-            right: 300px;
-        }
         .crossnote {
             width: calc(~"100% - 268px");
         }
     }
 
-    .crossnote[for="preview"] {
-        position: fixed;
+    .crossnote[data-for="preview"] {
         left: 0;
         top: 0;
-        width: 100%;
-        height: 100%;
         margin: 0; // z-index: 999;
         padding: 2em;
         overflow: auto;
         display: block;
         box-sizing: border-box;
-
-        &[data-presentation-mode] {
-            padding: 0;
-        }
-
-        &.hidden-preview {
-            visibility: hidden;
-        }
 
         // code chunk
         .code-chunk {
@@ -237,77 +187,16 @@
     }
 }
 
-// image helper 
-#image-helper-view {
-    @bg: #fff;
-    @fg: #333;
+body[data-presentation-mode] {
+  .crossnote[data-for="preview"] {
+    padding: 0 !important;
+    width: 100%;
+    height: 100%;
+  }
+}
 
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
-    color: @fg;
-    padding: 16px;
-    box-sizing: border-box;
-
-    h1, h2, h3, h4, h5, h6 {
-        color: @fg;
-    }
-
-    .splitter {
-        width: 100%;
-        height: 1px;
-        margin-bottom: 16px; // border-bottom-style: dotted;
-        background-color: contrast(@bg, lighten(@bg, 4%), darken(@bg, 4%));
-    }
-    .url-editor {
-        display: block;
-        margin: 12px 0;
-        padding: 8px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-    .drop-area {
-        margin-top: 12px;
-        text-align: center;
-        height: 64px;
-        border-style: dashed;
-        border-color: #999;
-        cursor: pointer;
-        margin-bottom: 32px;
-        background-color: darken(@bg, 2%);
-        &:hover {
-            background-color: contrast(@bg, lighten(@bg, 4%), darken(@bg, 4%));
-        }
-        p {
-            margin: 0;
-            position: relative;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        &.uploader {
-            margin-bottom: 12px;
-        }
-    }
-    .uploader-choice {
-        margin-bottom: 24px;
-        select {
-            background-color: darken(@bg, 4%);
-            border-color: lighten(@bg, 10%);
-            margin: 0 6px;
-        }
-    }
-    #show-uploaded-image-history {
-        font-size: 0.8em;
-        cursor: pointer;
-    }
-    .close-btn,
-    .add-btn {
-        margin-right: 16px;
-        width: 64px;
-        text-align: center;
-        padding: 0;
-    }
+body:not([data-presentation-mode]) {
+  .crossnote[data-for="preview"] {
+    height: auto;
+  }
 }

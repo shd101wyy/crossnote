@@ -132,6 +132,7 @@ const config = {
   //  "dark.css",
   //  "funky.css",
   //  "github.css",
+  //  "github-dark.css"
   //  "hopscotch.css",
   //  "monokai.css",
   //  "okaidia.css",
@@ -256,6 +257,9 @@ const config = {
 
   // Kroki server url.
   krokiServer: "https://kroki.io",
+
+  // Always show backlinks in the preview.
+  alwaysShowBacklinksInPreview: false,
 }
 ```
 

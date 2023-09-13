@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "jsx": "react",
     "module": "CommonJS",
     "target": "ES2020",
     "sourceMap": true,
@@ -21,5 +22,11 @@
     //     "strict": true
   },
   "include": ["src/**/*", "test/**/*"],
-  "exclude": ["node_modules", "out", "build.js", "gulpfile.js"]
+  "exclude": [
+    "node_modules",
+    "out",
+    "build.js",
+    "gulpfile.js",
+    "tailwind.config.js"
+  ]
 }

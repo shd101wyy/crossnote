@@ -10,6 +10,7 @@ import * as path from 'path';
 import request from 'request';
 import { JsonObject } from 'type-fest';
 import * as vscode from 'vscode';
+import { URI } from 'vscode-uri';
 import * as YAML from 'yaml';
 import { CodeChunkData } from '../code-chunk/code-chunk-data';
 import { ebookConvert } from '../converters/ebook-convert';
@@ -20,7 +21,12 @@ import { parseBlockAttributes } from '../lib/block-attributes/parseBlockAttribut
 import { stringifyBlockAttributes } from '../lib/block-attributes/stringifyBlockAttributes';
 import { normalizeBlockInfo } from '../lib/block-info/normalize-block-info';
 import { parseBlockInfo } from '../lib/block-info/parse-block-info';
-import { FileSystemApi, Notebook, getDefaultNotebookConfig } from '../notebook';
+import {
+  FileSystemApi,
+  Notebook,
+  WebviewConfig,
+  getDefaultNotebookConfig,
+} from '../notebook';
 import enhanceWithCodeBlockStyling from '../render-enhancers/code-block-styling';
 import enhanceWithEmbeddedLocalImages from '../render-enhancers/embedded-local-images';
 import enhanceWithEmbeddedSvgs from '../render-enhancers/embedded-svgs';
@@ -114,7 +120,7 @@ export class MarkdownEngine {
    */
   private readonly filePath: string;
   private readonly fileDirectoryPath: string;
-  private readonly projectDirectoryPath: string;
+  private readonly projectDirectoryPath: URI;
   private readonly notebook: Notebook;
   private readonly fs: FileSystemApi;
 
@@ -192,40 +198,6 @@ export class MarkdownEngine {
     // prevent `id="exports"` element from linked to `window` object.
     scripts += `<script>var exports = undefined</script>`;
 
-    // jquery
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        './dependencies/jquery/jquery.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-
-    // jquery contextmenu
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        './dependencies/jquery-contextmenu/jquery.ui.position.min.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        './dependencies/jquery-contextmenu/jquery.contextMenu.min.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-
-    // jquery modal
-    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        './dependencies/jquery-modal/jquery.modal.min.js',
-      ),
-      vscodePreviewPanel,
-    )}" charset="UTF-8"></script>`;
-
     // mermaid
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
@@ -275,8 +247,10 @@ export class MarkdownEngine {
       // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
       // Disable typesetting on startup
       mathJaxConfig['startup'] = mathJaxConfig['startup'] || {};
-      mathJaxConfig['startup']['typeset'] = false;
-      mathJaxConfig['startup']['elements'] = ['.hidden-preview']; // Only render on this element
+      if (!isForPresentation) {
+        mathJaxConfig['startup']['typeset'] = false;
+        mathJaxConfig['startup']['elements'] = ['.hidden-preview']; // Only render on this element
+      }
 
       scripts += `<script type="text/javascript"> window.MathJax = (${JSON.stringify(
         mathJaxConfig,
@@ -285,14 +259,8 @@ export class MarkdownEngine {
     }
 
     // reveal.js
+    let presentationInitScript = '';
     if (isForPresentation) {
-      scripts += `<script src='${utility.addFileProtocol(
-        path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/reveal/lib/js/head.min.js',
-        ),
-        vscodePreviewPanel,
-      )}'></script>`;
       scripts += `<script src='${utility.addFileProtocol(
         path.resolve(
           utility.getCrossnoteBuildDirectory(),
@@ -311,13 +279,14 @@ export class MarkdownEngine {
       }
       presentationConfig['dependencies'] = dependencies;
 
-      scripts += `
-      <script>
-        Reveal.initialize(${JSON.stringify({
+      presentationInitScript += `
+        await Reveal.initialize(${JSON.stringify({
           margin: 0.1,
           ...presentationConfig,
         })})
-      </script>
+        // NOTE: We have to add the promise below otherwise
+        // initPresentationEvents in preview.ts will have problem slide to the correct slide.
+        await new Promise((resolve)=> setTimeout(resolve, 200))
       `;
     }
 
@@ -343,7 +312,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       }
     }
   }
-  Reveal.addEventListener('slidechanged', mermaidRevealHelper)
+  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
   Reveal.addEventListener('ready', mermaidRevealHelper)
 } else {
   // The line below will cause mermaid bug in preview.
@@ -353,9 +322,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // wavedrom init script
     if (isForPresentation) {
-      scripts += `<script>
+      presentationInitScript += `
   WaveDrom.ProcessAll()
-      </script>`;
+    `;
     }
 
     // vega
@@ -370,7 +339,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     });
 
     if (isForPresentation) {
-      scripts += `<script>
+      presentationInitScript += `
       var vegaEls = document.querySelectorAll('.vega, .vega-lite');
       function reportVegaError(el, error) {
         el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
@@ -386,11 +355,16 @@ if (typeof(window['Reveal']) !== 'undefined') {
         } catch (error) {
           reportVegaError(vegaEl, error);
         }
-      }
-      </script>`;
+      }`;
     }
 
-    return scripts;
+    presentationInitScript = `<script>
+window["initRevealPresentation"] = async function() {
+  ${presentationInitScript}
+}    
+</script>`;
+
+    return scripts + presentationInitScript;
   }
 
   /**
@@ -400,7 +374,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     'atom-dark.css': 'atom-dark.css',
     'atom-light.css': 'atom-light.css',
     'atom-material.css': 'atom-material.css',
-    'github-dark.css': 'atom-dark.css',
+    'github-dark.css': 'github-dark.css',
     'github-light.css': 'github.css',
     'gothic.css': 'github.css',
     'medium.css': 'github.css',
@@ -467,33 +441,6 @@ if (typeof(window['Reveal']) !== 'undefined') {
     vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
     let styles = '';
-
-    // loading.css
-    styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        './styles/loading.css',
-      ),
-      vscodePreviewPanel,
-    )}">`;
-
-    // jquery-contextmenu
-    styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        `./dependencies/jquery-contextmenu/jquery.contextMenu.min.css`,
-      ),
-      vscodePreviewPanel,
-    )}">`;
-
-    // jquery-modal
-    styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
-      path.resolve(
-        utility.getCrossnoteBuildDirectory(),
-        `./dependencies/jquery-modal/jquery.modal.min.css`,
-      ),
-      vscodePreviewPanel,
-    )}">`;
 
     // check math
     if (
@@ -599,7 +546,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       let absoluteFilePath = sourcePath;
       if (sourcePath[0] === '/') {
         absoluteFilePath = utility.addFileProtocol(
-          path.resolve(this.projectDirectoryPath, '.' + sourcePath),
+          path.resolve(this.projectDirectoryPath.path, '.' + sourcePath),
           vscodePreviewPanel,
         );
       } else if (
@@ -634,7 +581,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     scripts = '',
     styles = '',
     head = `<base href="${this.filePath}">`,
-    config = {},
+    config,
     vscodePreviewPanel = null,
     contentSecurityPolicy = '',
     isVSCodeWebExtension,
@@ -645,7 +592,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     scripts?: string;
     styles?: string;
     head?: string;
-    config: JsonObject;
+    config: WebviewConfig;
     vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
     contentSecurityPolicy?: string;
     isVSCodeWebExtension?: boolean;
@@ -653,55 +600,26 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (!inputString) {
       inputString = await this.fs.readFile(this.filePath);
     }
+    let webviewCss = '';
     if (!webviewScript) {
       webviewScript = utility.addFileProtocol(
         path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          './webview/index.js',
+          './webview/preview.js',
+        ),
+        vscodePreviewPanel,
+      );
+      webviewCss = utility.addFileProtocol(
+        path.resolve(
+          utility.getCrossnoteBuildDirectory(),
+          './webview/preview.css',
         ),
         vscodePreviewPanel,
       );
     }
     if (!body) {
       // default body
-      body = `
-        <div class="refreshing-icon"></div>
-        <div id="md-toolbar">
-          <div class="back-to-top-btn btn"><span>⬆︎</span></div>
-          <div class="refresh-btn btn"><span>⟳︎</span></div>
-          <div class="sidebar-toc-btn btn"><span>§</span></div>
-        </div>
-        <div id="image-helper-view">
-          <h4>Image Helper</h4>
-          <div class="upload-div">
-            <label>Link</label>
-            <input type="text" class="url-editor" placeholder="enter image URL here, then press 'Enter' to insert.">
-            <div class="splitter"></div>
-            <label class="copy-label">Copy image to root /assets folder</label>
-            <div class="drop-area paster">
-              <p class="paster"> Click me to browse image file </p>
-              <input class="file-uploader paster" type="file" style="display:none;" multiple="multiple" >
-            </div>
-            <div class="splitter"></div>
-            <label>Upload</label>
-            <div class="drop-area uploader">
-              <p class="uploader">Click me to browse image file</p>
-              <input class="file-uploader uploader" type="file" style="display:none;" multiple="multiple" >
-            </div>
-            <div class="uploader-choice">
-              <span>use</span>
-              <select class="uploader-select">
-                <option>imgur</option>
-                <option>sm.ms</option>
-                <option>qiniu</option>
-              </select>
-              <span> to upload images</span>
-            </div>
-            <a href="#" id="show-uploaded-image-history">Show history</a>
-          </div>
-        </div>
-        <!-- <div class="markdown-spinner"> Loading Markdown\u2026 </div> -->
-    `;
+      body = ``;
     }
 
     const { yamlConfig, JSAndCssFiles, html } = await this.parseMD(
@@ -736,6 +654,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           yamlConfig,
           vscodePreviewPanel,
         )}
+        <link rel="stylesheet" href="${webviewCss}">
         ${styles}
         <link rel="stylesheet" href="${utility.addFileProtocol(
           path.resolve(
@@ -752,12 +671,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
       </head>
       <body class="preview-container ${
         isVSCodeWebExtension ? 'vscode-web-extension' : ''
-      }">
-        <div class="crossnote markdown-preview" for="preview" ${
-          isPresentationMode ? 'data-presentation-mode' : ''
-        }>
-          ${html}
-        </div>
+      }" data-html="${escape(html)}" ${
+      isPresentationMode ? 'data-presentation-mode' : ''
+    }>
         ${body}
       </body>
       ${this.generateScriptsForPreview(
@@ -862,18 +778,18 @@ if (typeof(window['Reveal']) !== 'undefined') {
           './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script type="module">
-  import mermaid from 'https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@10.4.0/dist/mermaid.esm.min.mjs';
-</script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">
 // TODO: If ZenUML gets integrated into mermaid in the future,
 //      we can remove the following lines.
-import zenuml from 'https://${
-        this.notebook.config.jsdelivrCdnHost
-      }/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
-await mermaid.registerExternalDiagrams([zenuml])
+${
+  html.match(/zenuml/i)
+    ? `import zenuml from 'https://${this.notebook.config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
+await mermaid.registerExternalDiagrams([zenuml])`
+    : ``
+}
 
 var MERMAID_CONFIG = (${JSON.stringify(this.notebook.config.mermaidConfig)});
 if (typeof MERMAID_CONFIG !== 'undefined') {
@@ -881,6 +797,7 @@ if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.cloneCssStyles = false
   MERMAID_CONFIG.theme = "${this.notebook.config.mermaidTheme}"
 }
+
 mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
@@ -895,8 +812,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
       }
     }
   }
-  Reveal.addEventListener('slidechanged', mermaidRevealHelper)
+  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
   Reveal.addEventListener('ready', mermaidRevealHelper)
+  await mermaid.run({
+    nodes: document.querySelectorAll('.mermaid')
+  })
 } else {
   await mermaid.run({
     nodes: document.querySelectorAll('.mermaid')
@@ -971,15 +891,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
         presentationScript = `
         <script src='file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          './dependencies/reveal/lib/js/head.min.js',
-        )}'></script>
-        <script src='file:///${path.resolve(
-          utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/js/reveal.js',
         )}'></script>`;
       } else {
         presentationScript = `
-        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/reveal.js'></script>`;
+        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/reveal.js'></script>`;
       }
 
       const presentationConfig = yamlConfig['presentation'] || {};
@@ -1079,7 +995,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
             `./dependencies/reveal/css/theme/${theme}`,
           )}">`;
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.1.0/dist/theme/${theme}">`;
+          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/theme/${theme}">`;
         }
       } else {
         // preview theme
@@ -1935,7 +1851,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       inputString,
       {
         fileDirectoryPath: this.fileDirectoryPath,
-        projectDirectoryPath: this.projectDirectoryPath,
+        projectDirectoryPath: this.projectDirectoryPath.path,
         sourceFilePath: this.filePath,
         protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
         // deleteImages: true,
@@ -2031,7 +1947,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     return await markdownConvert(
       inputString,
       {
-        projectDirectoryPath: this.projectDirectoryPath,
+        projectDirectoryPath: this.projectDirectoryPath.path,
         fileDirectoryPath: this.fileDirectoryPath,
         protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
         filesCache: this.filesCache,
@@ -2117,11 +2033,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (relative) {
         return path.relative(
           fileDirectoryPath || this.fileDirectoryPath,
-          path.resolve(this.projectDirectoryPath, '.' + filePath),
+          path.resolve(this.projectDirectoryPath.path, '.' + filePath),
         );
       } else {
         return utility.addFileProtocol(
-          path.resolve(this.projectDirectoryPath, '.' + filePath),
+          path.resolve(this.projectDirectoryPath.path, '.' + filePath),
           this.vscodePreviewPanel,
         );
       }
@@ -2480,7 +2396,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       frontMatterString,
     } = await transformMarkdown(inputString, {
       fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
-      projectDirectoryPath: this.projectDirectoryPath,
+      projectDirectoryPath: this.projectDirectoryPath.path,
       forPreview: options.isForPreview,
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
       useRelativeFilePath: options.useRelativeFilePath,

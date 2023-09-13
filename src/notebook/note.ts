@@ -1,3 +1,5 @@
+import { URI } from 'vscode-uri';
+
 export type FilePath = string;
 
 export interface NoteConfigEncryption {
@@ -20,7 +22,7 @@ export interface Note {
   /**
    * Absolute path to the notebook.
    */
-  notebookPath: string;
+  notebookPath: URI;
   /**
    * Relative path to the note file from the notebook.
    */

@@ -1,6 +1,8 @@
 import { KatexOptions } from 'katex';
 import { MermaidConfig } from 'mermaid';
 import { JsonObject } from 'type-fest';
+import { Note } from './note';
+import { Reference } from './reference';
 
 export const IS_NODE = typeof window === 'undefined';
 
@@ -77,6 +79,7 @@ export type CodeBlockTheme =
   | 'dark.css'
   | 'funky.css'
   | 'github.css'
+  | 'github-dark.css'
   | 'hopscotch.css'
   | 'monokai.css'
   | 'okaidia.css'
@@ -440,6 +443,11 @@ export interface NotebookConfig {
    * @default false
    */
   isVSCode: boolean;
+
+  /**
+   * Whether to always show backlinks in preview.
+   */
+  alwaysShowBacklinksInPreview: boolean;
 }
 
 export function getDefaultMermaidConfig(): MermaidConfig {
@@ -544,5 +552,26 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     jsdelivrCdnHost: 'cdn.jsdelivr.net',
     krokiServer: 'https://kroki.io',
     isVSCode: false,
+    alwaysShowBacklinksInPreview: false,
   };
 }
+
+export interface Backlink {
+  note: Partial<Note>;
+  references: Partial<Reference>[];
+  referenceHtmls: string[];
+}
+
+export interface WebviewConfig extends Partial<NotebookConfig> {
+  scrollSync?: boolean;
+  /**
+   * Whether this preview is for vscode or not.
+   */
+  zoomLevel?: number;
+  sourceUri?: string;
+  initialLine?: number;
+  cursorLine?: number;
+  imageUploader?: ImageUploader;
+}
+
+export type ImageUploader = 'imgur' | 'sm.ms' | 'qiniu';

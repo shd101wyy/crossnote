@@ -1,0 +1,13 @@
+build.js
+gulpfile.js
+tailwind.config.js
+.eslintrc.js
+jest.config.js
+prettier.config.js
+test.js
+node_modules/**
+out/**
+styles/**
+dependencies/**
+src/prism/prism.js
+postcss.config.js

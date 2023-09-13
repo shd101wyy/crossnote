@@ -1,5 +1,6 @@
 const { context, build } = require('esbuild');
 const { dependencies, devDependencies } = require('./package.json');
+const { tailwindPlugin } = require('esbuild-plugin-tailwindcss');
 
 /**
  * @type {import('esbuild').BuildOptions}
@@ -48,11 +49,21 @@ const esmConfig = {
  * @type {import('esbuild').BuildOptions}
  */
 const webviewConfig = {
-  entryPoints: ['./src/webview/webview.ts'],
+  entryPoints: ['./src/webview/preview.tsx', './src/webview/backlinks.tsx'],
   bundle: true,
   minify: true,
   platform: 'browser',
-  outfile: './out/webview/index.js',
+  // outfile: './out/webview/index.js',
+  outdir: './out/webview',
+  loader: {
+    '.png': 'dataurl',
+    '.woff': 'dataurl',
+    '.woff2': 'dataurl',
+    '.eot': 'dataurl',
+    '.ttf': 'dataurl',
+    '.svg': 'dataurl',
+  },
+  plugins: [tailwindPlugin({})],
 };
 
 async function main() {
