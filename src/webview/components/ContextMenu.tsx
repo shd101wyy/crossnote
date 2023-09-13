@@ -161,6 +161,10 @@ export default function ContextMenu() {
           ]);
           break;
         }
+        case 'open-documentation': {
+          postMessage('openDocumentation');
+          break;
+        }
         case 'open-changelog': {
           postMessage('openChangelog');
           break;
@@ -1074,6 +1078,9 @@ export default function ContextMenu() {
             </span>
           }
         >
+          <Item id="open-documentation" onClick={handleItemClick}>
+            Documentation
+          </Item>
           <Item id="open-changelog" onClick={handleItemClick}>
             Change Log
           </Item>

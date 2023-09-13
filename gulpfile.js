@@ -2,6 +2,15 @@ const gulp = require('gulp');
 const less = require('gulp-less');
 const cleanCss = require('gulp-clean-css');
 const path = require('path');
+const fs = require('fs');
+
+gulp.task('clean-out', function(cb) {
+  // Delete ./out folder
+  if (fs.existsSync('./out')) {
+    fs.rmdirSync('./out', { recursive: true });
+  }
+  cb();
+});
 
 gulp.task('compile-less', function(cb) {
   // 1. Compile all *.less files in ./styles
