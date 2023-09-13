@@ -145,7 +145,31 @@ html body[for="html-export"]:not([data-presentation-mode]) {
     }
   }
 
+  @media print {
+    #sidebar-toc-btn {
+      display: none;
+    }
+  }
+
+  #sidebar-toc-btn {
+    // please note that this is different from the one in preview.less
+    position: fixed;
+    bottom: 8px;
+    left: 8px;
+    font-size: 28px;
+    cursor: pointer;
+    color: inherit;
+    z-index: 99;
+    width: 32px;
+    text-align: center;
+    opacity: 0.4;
+  }
+
   &[html-show-sidebar-toc] {
+    #sidebar-toc-btn {
+      opacity: 1.0
+    }
+
     .md-sidebar-toc {
       .scrollbar-style();
 
