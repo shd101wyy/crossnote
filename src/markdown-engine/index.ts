@@ -546,7 +546,7 @@ window["initRevealPresentation"] = async function() {
       let absoluteFilePath = sourcePath;
       if (sourcePath[0] === '/') {
         absoluteFilePath = utility.addFileProtocol(
-          path.resolve(this.projectDirectoryPath.path, '.' + sourcePath),
+          path.resolve(this.projectDirectoryPath.fsPath, '.' + sourcePath),
           vscodePreviewPanel,
         );
       } else if (
@@ -1851,7 +1851,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       inputString,
       {
         fileDirectoryPath: this.fileDirectoryPath,
-        projectDirectoryPath: this.projectDirectoryPath.path,
+        projectDirectoryPath: this.projectDirectoryPath.fsPath,
         sourceFilePath: this.filePath,
         protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
         // deleteImages: true,
@@ -1947,7 +1947,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     return await markdownConvert(
       inputString,
       {
-        projectDirectoryPath: this.projectDirectoryPath.path,
+        projectDirectoryPath: this.projectDirectoryPath.fsPath,
         fileDirectoryPath: this.fileDirectoryPath,
         protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
         filesCache: this.filesCache,
@@ -2033,11 +2033,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (relative) {
         return path.relative(
           fileDirectoryPath || this.fileDirectoryPath,
-          path.resolve(this.projectDirectoryPath.path, '.' + filePath),
+          path.resolve(this.projectDirectoryPath.fsPath, '.' + filePath),
         );
       } else {
         return utility.addFileProtocol(
-          path.resolve(this.projectDirectoryPath.path, '.' + filePath),
+          path.resolve(this.projectDirectoryPath.fsPath, '.' + filePath),
           this.vscodePreviewPanel,
         );
       }
@@ -2396,7 +2396,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       frontMatterString,
     } = await transformMarkdown(inputString, {
       fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
-      projectDirectoryPath: this.projectDirectoryPath.path,
+      projectDirectoryPath: this.projectDirectoryPath.fsPath,
       forPreview: options.isForPreview,
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
       useRelativeFilePath: options.useRelativeFilePath,

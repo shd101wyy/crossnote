@@ -94,7 +94,7 @@ export class Notebook {
     const uri = URI.parse(notebookPath);
 
     // Check if workspaceFolder is absolute path
-    if (!path.isAbsolute(uri.path) || uri.path.startsWith('/./')) {
+    if (!path.isAbsolute(uri.fsPath) || uri.path.startsWith('/./')) {
       throw new Error(
         `\`notebookPath\`: "${notebookPath}" must be an absolute path`,
       );
@@ -114,7 +114,7 @@ export class Notebook {
 
   private async initConfig(config: Partial<NotebookConfig>) {
     const extraConfig = await loadConfigsInDirectory(
-      path.join(this.notebookPath.path, './.crossnote'),
+      path.join(this.notebookPath.fsPath, './.crossnote'),
       this.fs,
     );
     this.config = {
@@ -278,14 +278,14 @@ export class Notebook {
       }
       if (link.startsWith('/')) {
         return path.relative(
-          this.notebookPath.path,
-          path.join(this.notebookPath.path, '.' + link),
+          this.notebookPath.fsPath,
+          path.join(this.notebookPath.fsPath, '.' + link),
         );
       } else {
         return path.relative(
-          this.notebookPath.path,
+          this.notebookPath.fsPath,
           path.join(
-            path.dirname(path.join(this.notebookPath.path, note.filePath)),
+            path.dirname(path.join(this.notebookPath.fsPath, note.filePath)),
             link,
           ),
         );
@@ -489,7 +489,7 @@ export class Notebook {
       // Create note
       const note: Note = {
         notebookPath: this.notebookPath,
-        filePath: path.relative(this.notebookPath.path, absFilePath),
+        filePath: path.relative(this.notebookPath.fsPath, absFilePath),
         title: path.basename(absFilePath).replace(/\.md$/, ''),
         markdown,
         config: noteConfig,
@@ -537,7 +537,9 @@ export class Notebook {
     }
     let files: string[] = [];
     try {
-      files = await this.fs.readdir(path.resolve(this.notebookPath.path, dir));
+      files = await this.fs.readdir(
+        path.resolve(this.notebookPath.fsPath, dir),
+      );
     } catch (error) {
       console.error(error);
       files = [];
@@ -553,9 +555,9 @@ export class Notebook {
         continue;
       }
 
-      const absFilePath = path.resolve(this.notebookPath.path, dir, file);
+      const absFilePath = path.resolve(this.notebookPath.fsPath, dir, file);
       const note = await this.getNote(
-        path.relative(this.notebookPath.path, absFilePath),
+        path.relative(this.notebookPath.fsPath, absFilePath),
       );
       if (note) {
         this.notes[note.filePath] = note;
@@ -571,7 +573,7 @@ export class Notebook {
       if (stats && stats.isDirectory() && includeSubdirectories) {
         refreshNotesPromises.push(
           this.refreshNotes({
-            dir: path.relative(this.notebookPath.path, absFilePath),
+            dir: path.relative(this.notebookPath.fsPath, absFilePath),
             includeSubdirectories,
             refreshRelations: false,
           }),
@@ -665,13 +667,13 @@ export class Notebook {
     if (path.isAbsolute(filePath)) {
       return filePath;
     } else {
-      return path.resolve(this.notebookPath.path, filePath);
+      return path.resolve(this.notebookPath.fsPath, filePath);
     }
   }
 
   private resolveNoteRelativePath(filePath: string) {
     if (path.isAbsolute(filePath)) {
-      return path.relative(this.notebookPath.path, filePath);
+      return path.relative(this.notebookPath.fsPath, filePath);
     } else {
       return filePath;
     }

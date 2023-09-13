@@ -125,6 +125,7 @@ const PreviewContainer = createContainer(() => {
 
   const postMessage = useCallback(
     (command: string, args: unknown[] = []) => {
+      // console.log('! postMessage, ', command, args, !!vscodeApi);
       if (vscodeApi) {
         vscodeApi.postMessage({
           command,
@@ -989,6 +990,157 @@ const PreviewContainer = createContainer(() => {
     setupCodeChunks,
   ]);
 
+  const onMessageEventHandler = useCallback(
+    (event: MessageEvent) => {
+      // console.log('! receiveMessage: ', event.data);
+      const data = event.data;
+      if (!data || !previewElement.current) {
+        // console.log('! failed! ', !!data, !!previewElement.current);
+        return;
+      }
+
+      if (data.command === 'updateHtml') {
+        const {
+          totalLineCount: total,
+          tocHTML,
+          sourceUri: uri,
+          sourceScheme: scheme,
+        } = data;
+        totalLineCount.current = total;
+        setSidebarTocHtml(tocHTML);
+        sourceUri.current = uri;
+        sourceScheme.current = scheme;
+        updateHtml(data.html, data.id, data.class);
+      } else if (
+        data.command === 'changeTextEditorSelection' &&
+        (config.scrollSync || data.forced)
+      ) {
+        const line = parseInt(data.line, 10);
+        let topRatio = parseFloat(data.topRatio);
+        if (isNaN(topRatio)) {
+          topRatio = 0.372;
+        }
+        scrollToRevealSourceLine(line, topRatio);
+      } else if (data.command === 'startParsingMarkdown') {
+        /**
+         * show refreshingIcon after 1 second
+         * if preview hasn't finished rendering.
+         */
+        /*
+      if (refreshingTimeout.current) {
+        clearTimeout(refreshingTimeout.current);
+      }
+
+      refreshingTimeout.current = setTimeout(() => {
+        setIsRefreshingPreview(true);
+      }, 1000);
+      */
+      } else if (data.command === 'openImageHelper') {
+        // TODO: Replace this with headless modal
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setShowImageHelper(true);
+      } else if (data.command === 'runAllCodeChunks') {
+        runAllCodeChunks();
+      } else if (data.command === 'runCodeChunk') {
+        runNearestCodeChunk();
+      } else if (data.command === 'escPressed') {
+        // this.escPressed();
+      } else if (data.command === 'previewSyncSource') {
+        previewSyncSource();
+      } else if (data.command === 'copy') {
+        document.execCommand('copy');
+      } else if (data.command === 'zommIn') {
+        zoomIn();
+      } else if (data.command === 'zoomOut') {
+        zoomOut();
+      } else if (data.command === 'resetZoom') {
+        resetZoom();
+      } else if (data.command === 'scrollPreviewToTop') {
+        if (isPresentationMode) {
+          window['Reveal'].slide(0);
+        } else {
+          setWindowScrollTop(0);
+        }
+      } else if (data.command === 'backlinks') {
+        const { backlinks, hasUpdate, sourceUri: uri } = data;
+        if (sourceUri.current === uri && hasUpdate) {
+          setBacklinks(backlinks);
+        }
+        setIsLoadingBacklinks(false);
+      } else if (data.command === 'updatedNote') {
+        refreshBacklinks();
+      } else if (data.command === 'createdNote') {
+        refreshBacklinks();
+      } else if (data.command === 'deletedNote') {
+        refreshBacklinks();
+      }
+    },
+    [
+      config.scrollSync,
+      isPresentationMode,
+      previewSyncSource,
+      refreshBacklinks,
+      resetZoom,
+      runAllCodeChunks,
+      runNearestCodeChunk,
+      scrollToRevealSourceLine,
+      updateHtml,
+      zoomIn,
+      zoomOut,
+    ],
+  );
+
+  const onKeydownEventHandler = useCallback(
+    (event: KeyboardEvent) => {
+      if (!previewElement.current) {
+        return;
+      }
+
+      if (event.shiftKey && event.ctrlKey && event.which === 83) {
+        // ctrl+shift+s preview sync source
+        return previewSyncSource();
+      } else if (event.metaKey || event.ctrlKey) {
+        // ctrl+c copy
+        if (event.which === 67) {
+          // [c] copy
+          document.execCommand('copy');
+        } else if (event.which === 187 && !isVSCode) {
+          // [+] zoom in
+          zoomIn();
+        } else if (event.which === 189 && !isVSCode) {
+          // [-] zoom out
+          zoomOut();
+        } else if (event.which === 48 && !isVSCode) {
+          // [0] reset zoom
+          resetZoom();
+        } else if (event.which === 38) {
+          // [ArrowUp] scroll to the most top
+          if (isPresentationMode) {
+            window['Reveal'].slide(0);
+          } else {
+            setWindowScrollTop(0);
+          }
+        }
+      } else if (event.which === 27) {
+        // [esc] toggle sidebar toc
+        escPressed(event);
+      }
+    },
+    [
+      escPressed,
+      isPresentationMode,
+      isVSCode,
+      previewSyncSource,
+      resetZoom,
+      zoomIn,
+      zoomOut,
+    ],
+  );
+
+  const onResizeEventHandler = useCallback(() => {
+    scrollMap.current = null;
+  }, []);
+
   useEffect(() => {
     sourceUri.current = config.sourceUri;
     cursorLine.current = config.cursorLine ?? -1;
@@ -1032,171 +1184,31 @@ const PreviewContainer = createContainer(() => {
    * Keyboard events
    */
   useEffect(() => {
-    const keyboardEventHandler = (event: KeyboardEvent) => {
-      if (!previewElement.current) {
-        return;
-      }
-
-      if (event.shiftKey && event.ctrlKey && event.which === 83) {
-        // ctrl+shift+s preview sync source
-        return previewSyncSource();
-      } else if (event.metaKey || event.ctrlKey) {
-        // ctrl+c copy
-        if (event.which === 67) {
-          // [c] copy
-          document.execCommand('copy');
-        } else if (event.which === 187 && !isVSCode) {
-          // [+] zoom in
-          zoomIn();
-        } else if (event.which === 189 && !isVSCode) {
-          // [-] zoom out
-          zoomOut();
-        } else if (event.which === 48 && !isVSCode) {
-          // [0] reset zoom
-          resetZoom();
-        } else if (event.which === 38) {
-          // [ArrowUp] scroll to the most top
-          if (isPresentationMode) {
-            window['Reveal'].slide(0);
-          } else {
-            setWindowScrollTop(0);
-          }
-        }
-      } else if (event.which === 27) {
-        // [esc] toggle sidebar toc
-        escPressed(event);
-      }
-    };
-    document.addEventListener('keydown', keyboardEventHandler);
+    document.addEventListener('keydown', onKeydownEventHandler);
     return () => {
-      document.removeEventListener('keydown', keyboardEventHandler);
+      document.removeEventListener('keydown', onKeydownEventHandler);
     };
-  }, [
-    escPressed,
-    isPresentationMode,
-    isVSCode,
-    previewSyncSource,
-    resetZoom,
-    zoomIn,
-    zoomOut,
-  ]);
+  }, [onKeydownEventHandler]);
 
   /**
    * Window resize event
    */
   useEffect(() => {
-    const resizeEventHandler = () => {
-      scrollMap.current = null;
-    };
-    window.addEventListener('resize', resizeEventHandler);
+    window.addEventListener('resize', onResizeEventHandler);
     return () => {
-      window.removeEventListener('resize', resizeEventHandler);
+      window.removeEventListener('resize', onResizeEventHandler);
     };
-  }, []);
+  }, [onResizeEventHandler]);
 
   /**
    * Message
    */
   useEffect(() => {
-    const messageEventHandler = (event: MessageEvent) => {
-      const data = event.data;
-      if (!data || !previewElement.current) {
-        return;
-      }
-
-      if (data.command === 'updateHtml') {
-        const {
-          totalLineCount: total,
-          tocHTML,
-          sourceUri: uri,
-          sourceScheme: scheme,
-        } = data;
-        totalLineCount.current = total;
-        setSidebarTocHtml(tocHTML);
-        sourceUri.current = uri;
-        sourceScheme.current = scheme;
-        updateHtml(data.html, data.id, data.class);
-      } else if (
-        data.command === 'changeTextEditorSelection' &&
-        (config.scrollSync || data.forced)
-      ) {
-        const line = parseInt(data.line, 10);
-        let topRatio = parseFloat(data.topRatio);
-        if (isNaN(topRatio)) {
-          topRatio = 0.372;
-        }
-        scrollToRevealSourceLine(line, topRatio);
-      } else if (data.command === 'startParsingMarkdown') {
-        /**
-         * show refreshingIcon after 1 second
-         * if preview hasn't finished rendering.
-         */
-        /*
-        if (refreshingTimeout.current) {
-          clearTimeout(refreshingTimeout.current);
-        }
-
-        refreshingTimeout.current = setTimeout(() => {
-          setIsRefreshingPreview(true);
-        }, 1000);
-        */
-      } else if (data.command === 'openImageHelper') {
-        // TODO: Replace this with headless modal
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setShowImageHelper(true);
-      } else if (data.command === 'runAllCodeChunks') {
-        runAllCodeChunks();
-      } else if (data.command === 'runCodeChunk') {
-        runNearestCodeChunk();
-      } else if (data.command === 'escPressed') {
-        // this.escPressed();
-      } else if (data.command === 'previewSyncSource') {
-        previewSyncSource();
-      } else if (data.command === 'copy') {
-        document.execCommand('copy');
-      } else if (data.command === 'zommIn') {
-        zoomIn();
-      } else if (data.command === 'zoomOut') {
-        zoomOut();
-      } else if (data.command === 'resetZoom') {
-        resetZoom();
-      } else if (data.command === 'scrollPreviewToTop') {
-        if (isPresentationMode) {
-          window['Reveal'].slide(0);
-        } else {
-          setWindowScrollTop(0);
-        }
-      } else if (data.command === 'backlinks') {
-        const { backlinks, hasUpdate, sourceUri: uri } = data;
-        if (sourceUri.current === uri && hasUpdate) {
-          setBacklinks(backlinks);
-        }
-        setIsLoadingBacklinks(false);
-      } else if (data.command === 'updatedNote') {
-        refreshBacklinks();
-      } else if (data.command === 'createdNote') {
-        refreshBacklinks();
-      } else if (data.command === 'deletedNote') {
-        refreshBacklinks();
-      }
-    };
-    window.addEventListener('message', messageEventHandler);
+    window.addEventListener('message', onMessageEventHandler);
     return () => {
-      window.removeEventListener('message', messageEventHandler);
+      window.removeEventListener('message', onMessageEventHandler);
     };
-  }, [
-    config.scrollSync,
-    isPresentationMode,
-    previewSyncSource,
-    resetZoom,
-    runAllCodeChunks,
-    runNearestCodeChunk,
-    scrollToRevealSourceLine,
-    updateHtml,
-    zoomIn,
-    zoomOut,
-    refreshBacklinks,
-  ]);
+  }, [onMessageEventHandler]);
 
   /**
    * Scroll
