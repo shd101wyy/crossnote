@@ -15,6 +15,7 @@ export default function Backlinks() {
     backlinksElement,
     refreshBacklinks,
     bindAnchorElementsClickEvent,
+    theme,
   } = PreviewContainer.useContainer();
   const [backlinksOrderRecord] = useState<BacklinksOrderRecord>(
     BacklinksOrderRecord.ModifiedAt,
@@ -86,10 +87,11 @@ export default function Backlinks() {
             </strong>
             <div
               className={classNames(
-                'flex flex-row items-center',
+                'flex flex-row items-center bg-transparent',
                 // isMobile || isMouseOverPreview ? '' : 'hidden',
                 // isPresentationMode ? 'hidden' : '',
               )}
+              data-theme={theme}
             >
               {/*
               <div className="p-2 cursor-pointer hover:scale-105">

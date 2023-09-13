@@ -16,6 +16,8 @@ export function Topbar() {
     isPresentationMode,
     postMessage,
     sourceUri,
+    showSidebarToc,
+    theme,
   } = PreviewContainer.useContainer();
 
   const backToTop = useCallback(() => {
@@ -33,10 +35,11 @@ export function Topbar() {
   return (
     <div
       className={classNames(
-        'fixed top-0 w-full z-50 pr-2',
+        'fixed top-0 w-full z-50 pr-2 bg-transparent',
         isMobile || isMouseOverPreview ? '' : 'hidden',
-        isPresentationMode ? 'hidden' : '',
+        // isPresentationMode ? 'hidden' : '',
       )}
+      data-theme={theme}
     >
       <div className="flex flex-row justify-end items-center backdrop-blur-xl float-right rounded-md">
         <div
@@ -54,7 +57,10 @@ export function Topbar() {
           <ArrowPathIcon className="w-5 h-5"></ArrowPathIcon>
         </div>
         <div
-          className="p-2 cursor-pointer hover:scale-105"
+          className={classNames(
+            'p-2 cursor-pointer hover:scale-105',
+            showSidebarToc ? 'text-primary font-bold' : '',
+          )}
           onClick={clickSidebarTocButton}
           title={'Toggle table of contents'}
         >

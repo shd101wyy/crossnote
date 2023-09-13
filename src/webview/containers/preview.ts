@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
 import { Backlink, WebviewConfig } from '../../notebook';
-import { isBackgroundColorLight } from '../lib/uilts';
+import { isBackgroundColorLight } from '../lib/utility';
 
 window['jQuery'] = $;
 window['$'] = $;
@@ -86,6 +86,7 @@ const PreviewContainer = createContainer(() => {
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isMouseOverPreview, setIsMouseOverPreview] = useState<boolean>(false);
   const [renderedHtml, setRenderedHtml] = useState<string>('');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const isMobile = useMemo(() => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent,
@@ -618,6 +619,7 @@ const PreviewContainer = createContainer(() => {
         }
 
         currentSlideOffset.current = offset;
+        previewScrollDelay.current = Date.now() + 200;
         window['Reveal'].slide(h, v);
         break;
       }
@@ -897,7 +899,7 @@ const PreviewContainer = createContainer(() => {
 
   const refreshBacklinks = useCallback(
     (forceRefreshingNotes = false) => {
-      if (showBacklinks) {
+      if (showBacklinks && !isPresentationMode) {
         postMessage('showBacklinks', [
           {
             uri: sourceUri.current,
@@ -911,7 +913,12 @@ const PreviewContainer = createContainer(() => {
         }
       }
     },
-    [config.alwaysShowBacklinksInPreview, postMessage, showBacklinks],
+    [
+      config.alwaysShowBacklinksInPreview,
+      isPresentationMode,
+      postMessage,
+      showBacklinks,
+    ],
   );
 
   const initSlidesData = useCallback(() => {
@@ -940,8 +947,11 @@ const PreviewContainer = createContainer(() => {
     initSlidesData();
 
     // scroll slides
-    window['Reveal'].addEventListener('slidetransitionend', event => {
+    window['Reveal'].addEventListener('slidetransitionend', () => {
       window['Reveal'].layout();
+    });
+
+    window['Reveal'].addEventListener('slidechanged', event => {
       if (Date.now() < previewScrollDelay.current) {
         return;
       }
@@ -1254,9 +1264,15 @@ const PreviewContainer = createContainer(() => {
   useEffect(() => {
     if (previewElement.current) {
       const isLightTheme = isBackgroundColorLight(document.body);
-      document.body.setAttribute('data-theme', isLightTheme ? 'light' : 'dark');
+      setTheme(isLightTheme ? 'light' : 'dark');
     }
-  }, [config.previewTheme, config.globalCss, renderedHtml]);
+  }, [
+    config.previewTheme,
+    config.revealjsTheme,
+    config.codeBlockTheme,
+    config.globalCss,
+    renderedHtml,
+  ]);
 
   return {
     backlinks,
@@ -1277,6 +1293,7 @@ const PreviewContainer = createContainer(() => {
     postMessage,
     previewElement,
     previewSyncSource,
+    refreshBacklinks,
     setIsMouseOverPreview,
     setShowBacklinks,
     setShowImageHelper,
@@ -1288,8 +1305,8 @@ const PreviewContainer = createContainer(() => {
     sidebarTocHtml,
     sourceScheme,
     sourceUri,
+    theme,
     zoomLevel,
-    refreshBacklinks,
   };
 });
 

@@ -24,6 +24,8 @@ export default function ContextMenu() {
     isVSCodeWebExtension,
     setShowImageHelper,
     previewSyncSource,
+    config,
+    theme,
   } = PreviewContainer.useContainer();
 
   const handleItemClick = useCallback(
@@ -121,6 +123,7 @@ export default function ContextMenu() {
         case 'select-code-block-theme-dark':
         case 'select-code-block-theme-funky':
         case 'select-code-block-theme-github':
+        case 'select-code-block-theme-github-dark':
         case 'select-code-block-theme-hopscotch':
         case 'select-code-block-theme-monokai':
         case 'select-code-block-theme-okaidia':
@@ -178,8 +181,8 @@ export default function ContextMenu() {
   );
 
   return (
-    <div>
-      <Menu id={contextMenuId} className="">
+    <div data-theme={theme}>
+      <Menu id={contextMenuId} theme={theme === 'dark' ? 'dark' : undefined}>
         {!isVSCodeWebExtension && (
           <>
             <Item id="open-in-browser" onClick={handleItemClick}>
@@ -336,33 +339,99 @@ export default function ContextMenu() {
               id="select-preview-theme-atom-light"
               onClick={handleItemClick}
             >
-              atom-light.css
+              <span
+                className={
+                  config.previewTheme === 'atom-light.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                atom-light.css
+              </span>
             </Item>
             <Item
               id="select-preview-theme-github-light"
               onClick={handleItemClick}
             >
-              github-light.css
+              <span
+                className={
+                  config.previewTheme === 'github-light.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                github-light.css
+              </span>
             </Item>
             <Item id="select-preview-theme-gothic" onClick={handleItemClick}>
-              gothic.css
+              <span
+                className={
+                  config.previewTheme === 'gothic.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                gothic.css
+              </span>
             </Item>
             <Item id="select-preview-theme-medium" onClick={handleItemClick}>
-              medium.css
+              <span
+                className={
+                  config.previewTheme === 'medium.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                medium.css
+              </span>
             </Item>
             <Item id="select-preview-theme-newsprint" onClick={handleItemClick}>
-              newsprint.css
+              <span
+                className={
+                  config.previewTheme === 'newsprint.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                newsprint.css
+              </span>
             </Item>
             <Item id="select-preview-theme-one-light" onClick={handleItemClick}>
-              one-light.css
+              <span
+                className={
+                  config.previewTheme === 'one-light.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                one-light.css
+              </span>
             </Item>
             <Item
               id="select-preview-theme-solarized-light"
               onClick={handleItemClick}
             >
-              solarized-light.css
+              <span
+                className={
+                  config.previewTheme === 'solarized-light.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                solarized-light.css
+              </span>
             </Item>
-            <Item id="select-preview-theme-vue">vue.css</Item>
+            <Item id="select-preview-theme-vue">
+              <span
+                className={
+                  config.previewTheme === 'vue.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                vue.css
+              </span>
+            </Item>
           </Submenu>
           <Submenu
             label={
@@ -373,40 +442,104 @@ export default function ContextMenu() {
             }
           >
             <Item id="select-preview-theme-atom-dark" onClick={handleItemClick}>
-              atom-dark.css
+              <span
+                className={
+                  config.previewTheme === 'atom-dark.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                atom-dark.css
+              </span>
             </Item>
             <Item
               id="select-preview-theme-atom-material"
               onClick={handleItemClick}
             >
-              atom-material.css
+              <span
+                className={
+                  config.previewTheme === 'atom-material.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                atom-material.css
+              </span>
             </Item>
             <Item
               id="select-preview-theme-github-dark"
               onClick={handleItemClick}
             >
-              github-dark.css
+              <span
+                className={
+                  config.previewTheme === 'github-dark.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                github-dark.css
+              </span>
             </Item>
             <Item id="select-preview-theme-monokai" onClick={handleItemClick}>
-              monokai.css
+              <span
+                className={
+                  config.previewTheme === 'monokai.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                monokai.css
+              </span>
             </Item>
             <Item id="select-preview-theme-night" onClick={handleItemClick}>
-              night.css
+              <span
+                className={
+                  config.previewTheme === 'night.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                night.css
+              </span>
             </Item>
             <Item id="select-preview-theme-one-dark" onClick={handleItemClick}>
-              one-dark.css
+              <span
+                className={
+                  config.previewTheme === 'one-dark.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                one-dark.css
+              </span>
             </Item>
             <Item
               id="select-preview-theme-solarized-dark"
               onClick={handleItemClick}
             >
-              solarized-dark.css
+              <span
+                className={
+                  config.previewTheme === 'solarized-dark.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                solarized-dark.css
+              </span>
             </Item>
           </Submenu>
           <Item id="select-preview-theme-none" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiCancel} size={0.8} className="mr-2"></Icon>
-              None
+              <span
+                className={
+                  config.previewTheme === 'none.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                None
+              </span>
             </span>
           </Item>
         </Submenu>
@@ -434,46 +567,126 @@ export default function ContextMenu() {
               id="select-code-block-theme-default"
               onClick={handleItemClick}
             >
-              default.css
+              <span
+                className={
+                  config.codeBlockTheme === 'default.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                default.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-atom-light"
               onClick={handleItemClick}
             >
-              atom-light.css
+              <span
+                className={
+                  config.codeBlockTheme === 'atom-light.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                atom-light.css
+              </span>
             </Item>
             <Item id="select-code-block-theme-coy" onClick={handleItemClick}>
-              coy.css
+              <span
+                className={
+                  config.codeBlockTheme === 'coy.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                coy.css
+              </span>
             </Item>
             <Item id="select-code-block-theme-funky" onClick={handleItemClick}>
-              funky.css
+              <span
+                className={
+                  config.codeBlockTheme === 'funky.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                funky.css
+              </span>
             </Item>
             <Item id="select-code-block-theme-github" onClick={handleItemClick}>
-              github.css
+              <span
+                className={
+                  config.codeBlockTheme === 'github.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                github.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-one-light"
               onClick={handleItemClick}
             >
-              one-light.css
+              <span
+                className={
+                  config.codeBlockTheme === 'one-light.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                one-light.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-pen-paper-coffee"
               onClick={handleItemClick}
             >
-              pen-paper-coffee.css
+              <span
+                className={
+                  config.codeBlockTheme === 'pen-paper-coffee.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                pen-paper-coffee.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-solarized-light"
               onClick={handleItemClick}
             >
-              solarized-light.css
+              <span
+                className={
+                  config.codeBlockTheme === 'solarized-light.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                solarized-light.css
+              </span>
             </Item>
             <Item id="select-code-block-theme-vue" onClick={handleItemClick}>
-              vue.css
+              <span
+                className={
+                  config.codeBlockTheme === 'vue.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                vue.css
+              </span>
             </Item>
             <Item id="select-code-block-theme-vs" onClick={handleItemClick}>
-              vs.css
+              <span
+                className={
+                  config.codeBlockTheme === 'vs.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                vs.css
+              </span>
             </Item>
           </Submenu>
           <Submenu
@@ -488,76 +701,194 @@ export default function ContextMenu() {
               id="select-code-block-theme-atom-dark"
               onClick={handleItemClick}
             >
-              atom-dark.css
+              <span
+                className={
+                  config.codeBlockTheme === 'atom-dark.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                atom-dark.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-atom-material"
               onClick={handleItemClick}
             >
-              atom-material.css
+              <span
+                className={
+                  config.codeBlockTheme === 'atom-material.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                atom-material.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-darcula"
               onClick={handleItemClick}
             >
-              darcula.css
+              <span
+                className={
+                  config.codeBlockTheme === 'darcula.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                default.css
+              </span>
             </Item>
             <Item id="select-code-block-theme-dark" onClick={handleItemClick}>
-              dark.css
+              <span
+                className={
+                  config.codeBlockTheme === 'dark.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                dark.css
+              </span>
+            </Item>
+            <Item
+              id="select-code-block-theme-github-dark"
+              onClick={handleItemClick}
+            >
+              <span
+                className={
+                  config.codeBlockTheme === 'github-dark.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                github-dark.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-hopscotch"
               onClick={handleItemClick}
             >
-              hopscotch.css
+              <span
+                className={
+                  config.codeBlockTheme === 'hopscotch.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                hopscotch.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-monokai"
               onClick={handleItemClick}
             >
-              monokai.css
+              <span
+                className={
+                  config.codeBlockTheme === 'monokai.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                monokai.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-okaidia"
               onClick={handleItemClick}
             >
-              okaidia.css
+              <span
+                className={
+                  config.codeBlockTheme === 'okaidia.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                okaidia.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-one-dark"
               onClick={handleItemClick}
             >
-              one-dark.css
+              <span
+                className={
+                  config.codeBlockTheme === 'one-dark.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                one-dark.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-pojoaque"
               onClick={handleItemClick}
             >
-              pojoaque.css
+              <span
+                className={
+                  config.codeBlockTheme === 'pojoaque.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                pojoaque.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-solarized-dark"
               onClick={handleItemClick}
             >
-              solarized-dark.css
+              <span
+                className={
+                  config.codeBlockTheme === 'solarized-dark.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                solarized-dark.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-twilight"
               onClick={handleItemClick}
             >
-              twilight.css
+              <span
+                className={
+                  config.codeBlockTheme === 'twilight.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                twilight.css
+              </span>
             </Item>
             <Item
               id="select-code-block-theme-xonokai"
               onClick={handleItemClick}
             >
-              xonokai.css
+              <span
+                className={
+                  config.codeBlockTheme === 'xonokai.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                xonokai.css
+              </span>
             </Item>
           </Submenu>
           <Item id="select-code-block-theme-auto" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiCancel} size={0.8} className="mr-2"></Icon>
-              Auto
+              <span
+                className={
+                  config.codeBlockTheme === 'auto.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                Auto
+              </span>
             </span>
           </Item>
         </Submenu>
@@ -582,25 +913,73 @@ export default function ContextMenu() {
             }
           >
             <Item id="select-revealjs-theme-beige" onClick={handleItemClick}>
-              beige.css
+              <span
+                className={
+                  config.revealjsTheme === 'beige.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                beige.css
+              </span>
             </Item>
             <Item id="select-revealjs-theme-serif" onClick={handleItemClick}>
-              serif.css
+              <span
+                className={
+                  config.revealjsTheme === 'serif.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                serif.css
+              </span>
             </Item>
             <Item id="select-revealjs-theme-simple" onClick={handleItemClick}>
-              simple.css
+              <span
+                className={
+                  config.revealjsTheme === 'simple.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                simple.css
+              </span>
             </Item>
             <Item id="select-revealjs-theme-sky" onClick={handleItemClick}>
-              sky.css
+              <span
+                className={
+                  config.revealjsTheme === 'sky.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                sky.css
+              </span>
             </Item>
             <Item
               id="select-revealjs-theme-solarized"
               onClick={handleItemClick}
             >
-              solarized.css
+              <span
+                className={
+                  config.revealjsTheme === 'solarized.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                solarized.css
+              </span>{' '}
             </Item>
             <Item id="select-revealjs-theme-white" onClick={handleItemClick}>
-              white.css
+              <span
+                className={
+                  config.revealjsTheme === 'white.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                white.css
+              </span>
             </Item>
           </Submenu>
           <Submenu
@@ -612,25 +991,73 @@ export default function ContextMenu() {
             }
           >
             <Item id="select-revealjs-theme-black" onClick={handleItemClick}>
-              black.css
+              <span
+                className={
+                  config.revealjsTheme === 'black.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                black.css
+              </span>
             </Item>
             <Item id="select-revealjs-theme-blood" onClick={handleItemClick}>
-              blood.css
+              <span
+                className={
+                  config.revealjsTheme === 'blood.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                blood.css
+              </span>
             </Item>
             <Item id="select-revealjs-theme-league" onClick={handleItemClick}>
-              league.css
+              <span
+                className={
+                  config.revealjsTheme === 'league.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                league.css
+              </span>
             </Item>
             <Item id="select-revealjs-theme-moon" onClick={handleItemClick}>
-              moon.css
+              <span
+                className={
+                  config.revealjsTheme === 'moon.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                moon.css
+              </span>
             </Item>
             <Item id="select-revealjs-theme-night" onClick={handleItemClick}>
-              night.css
+              <span
+                className={
+                  config.revealjsTheme === 'night.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                night.css
+              </span>
             </Item>
           </Submenu>
           <Item id="select-revealjs-theme-none" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiCancel} size={0.8} className="mr-2"></Icon>
-              None
+              <span
+                className={
+                  config.revealjsTheme === 'none.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                None
+              </span>
             </span>
           </Item>
         </Submenu>

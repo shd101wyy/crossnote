@@ -132,6 +132,7 @@ const config = {
   //  "dark.css",
   //  "funky.css",
   //  "github.css",
+  //  "github-dark.css"
   //  "hopscotch.css",
   //  "monokai.css",
   //  "okaidia.css",

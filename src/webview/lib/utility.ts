@@ -1,7 +1,12 @@
-export function isBackgroundColorLight(element) {
-  // Get the computed background color
+export function getElementBackgroundColor(element: HTMLElement) {
   const computedStyle = window.getComputedStyle(element);
   const bgColor = computedStyle.backgroundColor;
+  return bgColor;
+}
+
+export function isBackgroundColorLight(element) {
+  // Get the computed background color
+  const bgColor = getElementBackgroundColor(element);
 
   // Function to calculate luminance from a color string
   function calculateLuminance(color) {

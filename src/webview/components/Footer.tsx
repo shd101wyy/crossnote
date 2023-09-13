@@ -9,18 +9,24 @@ export default function Footer() {
     isMouseOverPreview,
     isPresentationMode,
     setShowBacklinks,
+    showBacklinks,
+    theme,
   } = PreviewContainer.useContainer();
   return (
     <div
       className={classNames(
-        'fixed bottom-0 w-full z-50 pr-2',
+        'fixed bottom-0 w-full z-50 pr-2 bg-transparent',
         isMobile || isMouseOverPreview ? '' : 'hidden',
         isPresentationMode ? 'hidden' : '',
       )}
+      data-theme={theme}
     >
       <div className="flex flex-row justify-end items-center backdrop-blur-xl float-right rounded-md">
         <div
-          className="p-2 cursor-pointer hover:scale-105"
+          className={classNames(
+            'p-2 cursor-pointer hover:scale-105',
+            showBacklinks ? 'text-primary font-bold' : '',
+          )}
           title="Toggle backlinks"
           onClick={() => {
             setShowBacklinks(x => !x);

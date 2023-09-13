@@ -286,7 +286,7 @@ export class MarkdownEngine {
         })})
         // NOTE: We have to add the promise below otherwise
         // initPresentationEvents in preview.ts will have problem slide to the correct slide.
-        await new Promise((resolve)=> setTimeout(resolve, 100))
+        await new Promise((resolve)=> setTimeout(resolve, 200))
       `;
     }
 
@@ -374,7 +374,7 @@ window["initRevealPresentation"] = async function() {
     'atom-dark.css': 'atom-dark.css',
     'atom-light.css': 'atom-light.css',
     'atom-material.css': 'atom-material.css',
-    'github-dark.css': 'atom-dark.css',
+    'github-dark.css': 'github-dark.css',
     'github-light.css': 'github.css',
     'gothic.css': 'github.css',
     'medium.css': 'github.css',

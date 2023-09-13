@@ -40,7 +40,7 @@ export default function Preview() {
         });
       }}
     >
-      {/** top bar */}
+      {/** Top bar */}
       <Topbar></Topbar>
       {/** The hidden preview */}
       <div
@@ -56,8 +56,8 @@ export default function Preview() {
         ref={previewElement}
       ></div>
       {/** Backlinks */}
-      {showBacklinks && <Backlinks></Backlinks>}
-
+      {showBacklinks && !isPresentationMode && <Backlinks></Backlinks>}
+      {/** Footer */}
       <Footer></Footer>
       {/** Sidebar TOC */}
       <SidebarToc></SidebarToc>
