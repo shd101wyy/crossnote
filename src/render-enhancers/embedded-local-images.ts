@@ -36,7 +36,8 @@ export default async function enhance(
               );
               return resolve(base64);
             })
-            .catch(() => {
+            .catch(error => {
+              console.error(error);
               return resolve(null);
             });
         }),

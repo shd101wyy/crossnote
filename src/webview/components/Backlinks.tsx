@@ -1,5 +1,5 @@
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
-import { mdiOpenInNew } from '@mdi/js';
+import { mdiOpenInNew, mdiPin, mdiPinOutline } from '@mdi/js';
 import Icon from '@mdi/react';
 import classNames from 'classnames';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -16,6 +16,9 @@ export default function Backlinks() {
     refreshBacklinks,
     bindAnchorElementsClickEvent,
     theme,
+    config,
+    postMessage,
+    sourceUri,
   } = PreviewContainer.useContainer();
   const [backlinksOrderRecord] = useState<BacklinksOrderRecord>(
     BacklinksOrderRecord.ModifiedAt,
@@ -93,11 +96,23 @@ export default function Backlinks() {
               )}
               data-theme={theme}
             >
-              {/*
-              <div className="p-2 cursor-pointer hover:scale-105">
-                <FunnelIcon className="w-5 h-5"></FunnelIcon>
+              <div
+                className="p-2 cursor-pointer hover:scale-105"
+                title='Toggle "Always show backlinks in preview"'
+                onClick={() => {
+                  postMessage('toggleAlwaysShowBacklinksInPreview', [
+                    sourceUri.current,
+                    !config.alwaysShowBacklinksInPreview,
+                  ]);
+                }}
+              >
+                {config.alwaysShowBacklinksInPreview ? (
+                  <Icon className="text-primary" path={mdiPin} size={1}></Icon>
+                ) : (
+                  <Icon path={mdiPinOutline} size={1}></Icon>
+                )}
               </div>
-              */}
+
               <div
                 className="p-2 cursor-pointer hover:scale-105"
                 onClick={() => refreshBacklinks(true)}

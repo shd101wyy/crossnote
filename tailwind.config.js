@@ -6,7 +6,22 @@ module.exports = {
   },
   plugins: [require('daisyui')],
   daisyui: {
-    themes: ['light', 'dark'],
+    themes: [
+      {
+        light: {
+          ...require('daisyui/src/theming/themes')['[data-theme=light]'],
+          primary: '#95c258',
+          'primary-focus': '#88bb43',
+        },
+      },
+      {
+        dark: {
+          ...require('daisyui/src/theming/themes')['[data-theme=dark]'],
+          primary: '#6fa129',
+          'primary-focus': '#628f25',
+        },
+      },
+    ],
   },
   darkMode: ['class', '[data-theme="dark"]'],
 };
