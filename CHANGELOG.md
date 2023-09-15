@@ -6,9 +6,25 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [0.8.14] - 2023-09-15
 
+### New features
+
+- (Beta) Added the [bitfield](https://github.com/wavedrom/bitfield) diagram support. Supported both `bitfield` and `bit-field` code fences. https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1749
+  ````
+  ```bitfield {vspace=100}
+  [
+    {name: 'IPO',   bits: 8},
+    {               bits: 7},
+    {name: 'BRK',   bits: 5, type: 4},
+    {name: 'CPK',   bits: 1},
+    {name: 'Clear', bits: 3, type: 5},
+    {               bits: 8}
+  ]
+  ```
+  ````
+
 ### Bug fixes
 
-- Fixed the `vue.css` style bug that caused the missing scroll bar.
+- Fixed the `vue.css` theme bug that caused the missing scroll bar in the preview. Also fixed a context menu bug for selecting the `vue.css` theme.
 
 ## [0.8.13] - 2023-09-15
 

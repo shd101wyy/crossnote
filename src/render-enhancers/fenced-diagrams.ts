@@ -13,6 +13,7 @@ import {
   stringifyBlockAttributes,
 } from '../lib/block-attributes/index.js';
 import { BlockInfo } from '../lib/block-info/index.js';
+import { renderBitfield } from '../renderers/bitfield';
 
 // NOTE: We shouldn't need this function anymore
 // because we always put `language` as a class in the attributes.
@@ -37,6 +38,8 @@ const supportedLanguages = [
   'puml',
   'plantuml',
   'wavedrom',
+  'bitfield',
+  'bit-field',
   'graphviz',
   'viz',
   'dot',
@@ -219,6 +222,18 @@ async function renderDiagram({
               serverURL: plantumlServer,
               plantumlJarPath,
             });
+            graphsCache[checksum] = svg; // store to new cache
+          }
+          $output = `<p ${stringifyBlockAttributes(
+            normalizedInfo.attributes,
+          )}>${svg}</p>`;
+          break;
+        }
+        case 'bitfield':
+        case 'bit-field': {
+          let svg = diagramInCache;
+          if (!svg) {
+            svg = await renderBitfield(code, normalizedInfo.attributes);
             graphsCache[checksum] = svg; // store to new cache
           }
           $output = `<p ${stringifyBlockAttributes(
