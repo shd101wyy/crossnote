@@ -3,6 +3,7 @@
 
 import { JsonObject } from 'type-fest';
 import * as YAML from 'yaml';
+import { parseYAML } from '../utility';
 
 export const TagStopRegExp = /[@#,.!$%^&*()[\]-_+=~`<>?\\，。]/g;
 export function getTags(markdown: string): string[] {
@@ -45,11 +46,7 @@ export function matter(markdown: string): MatterOutput {
     (endFrontMatterOffset = markdown.indexOf('\n---')) > 0
   ) {
     const frontMatterString = markdown.slice(3, endFrontMatterOffset);
-    try {
-      frontMatter = YAML.parse(frontMatterString);
-    } catch {
-      frontMatter = {};
-    }
+    frontMatter = parseYAML(frontMatterString);
     markdown = markdown
       .slice(endFrontMatterOffset + 4)
       .replace(/^[ \t]*\n/, '');
