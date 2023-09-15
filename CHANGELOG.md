@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.8.14] - 2023-09-15
+
+### Bug fixes
+
+- Fixed the `vue.css` style bug that caused the missing scroll bar.
+
 ## [0.8.13] - 2023-09-15
 
 ### Bug fixes
