@@ -425,7 +425,7 @@ export default function ContextMenu() {
                 solarized-light.css
               </span>
             </Item>
-            <Item id="select-preview-theme-vue">
+            <Item id="select-preview-theme-vue" onClick={handleItemClick}>
               <span
                 className={
                   config.previewTheme === 'vue.css'

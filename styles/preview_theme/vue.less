@@ -12,16 +12,6 @@
   box-sizing: border-box
 }
 
-body:not(.ready) {
-  overflow: hidden
-}
-
-body:not(.ready) .app-nav,
-body:not(.ready)>nav,
-body:not(.ready) [data-cloak] {
-  display: none
-}
-
 div#app {
   font-size: 30px;
   font-weight: lighter;
@@ -784,6 +774,10 @@ body {
   content: "-";
   padding-right: 4px;
   float: left
+}
+
+.markdown-preview {
+  background-color: @bg;
 }
 
 .markdown-preview h1,

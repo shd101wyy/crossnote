@@ -12,4 +12,4 @@ yarn-error.log
 mume
 .crossnote
 crossnote
-styles/*.css
+styles/**/*.css
