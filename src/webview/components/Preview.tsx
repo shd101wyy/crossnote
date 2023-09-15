@@ -40,6 +40,8 @@ export default function Preview() {
         });
       }}
     >
+      {/** Background */}
+      <div className="crossnote markdown-preview w-full h-full fixed top-0 left-0"></div>
       {/** Top bar */}
       <Topbar></Topbar>
       {/** The hidden preview */}
@@ -49,9 +51,11 @@ export default function Preview() {
         ref={hiddenPreviewElement}
         style={{ zIndex: 0 }}
       />
-      {/** The real preview */}
+      {/** The real preview
+       * NOTE: the className only accepts `crossnote markdown-preview`
+       */}
       <div
-        className={classNames('crossnote markdown-preview ')}
+        className={'crossnote markdown-preview'}
         data-for="preview"
         ref={previewElement}
       ></div>
