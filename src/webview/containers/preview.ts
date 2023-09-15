@@ -345,7 +345,7 @@ const PreviewContainer = createContainer(() => {
         window['MathJax'].typesetClear(); // Don't pass element here!!!
         window['MathJax'].startup.document.state(0);
         window['MathJax'].texReset();
-        window['MathJax'].typesetPromise([hiddenPreviewElement]).then(() => {
+        window['MathJax'].typesetPromise([hiddenPreviewElement.current]).then(() => {
           // sometimes the this callback will be called twice
           // and only the second time will the Math expressions be rendered.
           // therefore, I added the line below to check whether math is already rendered.
