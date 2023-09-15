@@ -2085,7 +2085,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       for (const key in arg) {
         // eslint-disable-next-line no-prototype-builtins
         if (arg.hasOwnProperty(key)) {
-          thead += `<th>${key}</th>`;
+          thead += `<th>${escape(key)}</th>`;
           tbody += `<td>${this.frontMatterToTable(arg[key])}</td>`;
         }
       }
@@ -2094,7 +2094,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
       return `<table>${thead}${tbody}</table>`;
     } else {
-      return arg;
+      return escape(arg);
     }
   }
 

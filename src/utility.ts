@@ -57,14 +57,6 @@ export function sleep(ms: number) {
 }
 
 export function parseYAML(yaml: string = ''): JsonObject {
-  // YAML doesn't work well with front-matter
-  /*
-  try {
-    return YAML.parse(yaml)
-  } catch(error) {
-    return {}
-  }
-  */
   if (yaml.startsWith('---')) {
     yaml = yaml
       .trim()
@@ -74,7 +66,9 @@ export function parseYAML(yaml: string = ''): JsonObject {
   try {
     return YAML.parse(yaml);
   } catch (error) {
-    return {};
+    return {
+      error: error.toString(),
+    };
   }
 }
 
