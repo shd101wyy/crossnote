@@ -4,6 +4,18 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.8.15] - 2023-09-17
+
+### New features
+
+- Added the `includeInHeader` option, which allows you to include custom HTML in the `<head>` of the preview.
+  This could be useful for adding custom CSS or JavaScript to the preview.
+
+### Bug fixes
+
+- Fixed the bug of missing the backlinks on the `vue.css` theme.
+- Fixed the back to top button. https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1769
+
 ## [0.8.14] - 2023-09-15
 
 ### New features

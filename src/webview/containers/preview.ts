@@ -717,23 +717,19 @@ const PreviewContainer = createContainer(() => {
     [isPresentationMode, scrollSyncToLine, scrollSyncToSlide],
   );
 
-  const bindAnchorElementsClickEvent = useCallback(() => {
-    if (!previewElement.current) {
-      return;
-    }
-    const helper = (as: HTMLAnchorElement[]) => {
-      if (!previewElement.current) {
-        return;
-      }
-
-      for (let i = 0; i < as.length; i++) {
-        const a = as[i];
+  const bindAnchorElementsClickEvent = useCallback(
+    (anchorElements: Array<HTMLAnchorElement>) => {
+      for (let i = 0; i < anchorElements.length; i++) {
+        const a = anchorElements[i];
         const hrefAttr = a.getAttribute('href');
         if (!hrefAttr) {
           continue;
         }
         const href = decodeURIComponent(hrefAttr); // decodeURI here for Chinese like unicode heading
         if (href && href[0] === '#') {
+          if (!previewElement.current) {
+            continue;
+          }
           const targetElement = previewElement.current.querySelector(
             `[id="${encodeURIComponent(href.slice(1))}"]`,
           ) as HTMLElement; // fix number id bug
@@ -787,18 +783,9 @@ const PreviewContainer = createContainer(() => {
           };
         }
       }
-    };
-
-    helper(Array.from(previewElement.current.getElementsByTagName('a')));
-
-    if (sidebarTocElement.current) {
-      helper(Array.from(sidebarTocElement.current.getElementsByTagName('a')));
-    }
-
-    if (backlinksElement.current) {
-      helper(Array.from(backlinksElement.current.getElementsByTagName('a')));
-    }
-  }, [postMessage]);
+    },
+    [postMessage],
+  );
 
   const bindTaskListEvent = useCallback(() => {
     if (!previewElement.current) {
@@ -862,7 +849,9 @@ const PreviewContainer = createContainer(() => {
 
           scrollMap.current = null;
 
-          bindAnchorElementsClickEvent();
+          bindAnchorElementsClickEvent(
+            Array.from(previewElement.current.getElementsByTagName('a')),
+          );
           bindTaskListEvent();
 
           // set id and classes
@@ -940,6 +929,9 @@ const PreviewContainer = createContainer(() => {
   }, []);
 
   const initPresentationEvent = useCallback(async () => {
+    if (!previewElement.current) {
+      return;
+    }
     if (window['initRevealPresentation']) {
       // This is defined in `markdown-engine/index.ts`
       await window['initRevealPresentation']();
@@ -981,7 +973,9 @@ const PreviewContainer = createContainer(() => {
 
     // several events...
     setupCodeChunks();
-    bindAnchorElementsClickEvent();
+    bindAnchorElementsClickEvent(
+      Array.from(previewElement.current.getElementsByTagName('a')),
+    );
     bindTaskListEvent();
   }, [
     bindAnchorElementsClickEvent,
@@ -1159,7 +1153,9 @@ const PreviewContainer = createContainer(() => {
       if (sidebarTocElement.current) {
         if (sidebarTocHtml.length > 0) {
           sidebarTocElement.current.innerHTML = sidebarTocHtml;
-          bindAnchorElementsClickEvent();
+          bindAnchorElementsClickEvent(
+            Array.from(sidebarTocElement.current.getElementsByTagName('a')),
+          );
         } else {
           sidebarTocElement.current.innerHTML = `<p style="text-align:center;font-style: italic;">Outline (empty)</p>`;
         }
