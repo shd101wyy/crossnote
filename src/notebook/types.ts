@@ -128,6 +128,12 @@ export interface NotebookConfig {
   globalCss: string;
 
   /**
+   * The content to be included in HTML `<head>` tag.
+   * This is useful for adding custom styles or scripts.
+   */
+  includeInHeader: string;
+
+  /**
    * Mermaid configuration.
    *
    * @default Defined in `${notebookPath}/.crossnote/configs.js` or `{ startOnLoad: false }`
@@ -505,6 +511,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
       '.qmd',
     ],
     globalCss: '',
+    includeInHeader: '',
     mermaidConfig: getDefaultMermaidConfig(),
     mathjaxConfig: getDefaultMathjaxConfig(),
     katexConfig: getDefaultKatexConfig(),

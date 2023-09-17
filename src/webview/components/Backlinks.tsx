@@ -38,8 +38,18 @@ export default function Backlinks() {
   );
 
   useEffect(() => {
-    bindAnchorElementsClickEvent();
-  }, [backlinks, bindAnchorElementsClickEvent]);
+    if (!backlinksElement.current || isLoadingBacklinks) {
+      return;
+    }
+    bindAnchorElementsClickEvent(
+      Array.from(backlinksElement.current.getElementsByTagName('a')),
+    );
+  }, [
+    backlinks,
+    bindAnchorElementsClickEvent,
+    backlinksElement,
+    isLoadingBacklinks,
+  ]);
 
   useEffect(() => {
     const backlinks = [...originalBacklinks].sort((a, b) => {
@@ -77,7 +87,10 @@ export default function Backlinks() {
   }, [originalBacklinks, backlinksOrderRecord, backlinksOrderDirection]);
 
   return (
-    <div className="markdown-preview p-[2em] pb-48" ref={backlinksElement}>
+    <div
+      className="markdown-preview p-[2em] pb-48 backlinks relative"
+      ref={backlinksElement}
+    >
       <hr></hr>
       <div className="flex flex-row items-center justify-between mb-4">
         {isLoadingBacklinks ? (
