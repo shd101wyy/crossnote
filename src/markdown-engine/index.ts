@@ -2364,6 +2364,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     this.vscodePreviewPanel = options.vscodePreviewPanel;
 
+    // TODO: Remove the `onWillParseMarkdown` and `onWillTransformMarkdown`
+    // as it is bad for adding source mapping support.
     if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
       inputString = await this.notebook.config.parserConfig[
         'onWillParseMarkdown'

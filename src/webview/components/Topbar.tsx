@@ -12,7 +12,6 @@ export function Topbar() {
     clickSidebarTocButton,
     isMobile,
     isMouseOverPreview,
-    previewElement,
     isPresentationMode,
     postMessage,
     sourceUri,
@@ -23,10 +22,10 @@ export function Topbar() {
   const backToTop = useCallback(() => {
     if (isPresentationMode) {
       return window['Reveal'].slide(0);
-    } else if (previewElement.current) {
-      previewElement.current.scrollTop = 0;
+    } else {
+      document.documentElement.scrollTop = 0;
     }
-  }, [isPresentationMode, previewElement]);
+  }, [isPresentationMode]);
 
   const refreshPreview = useCallback(() => {
     postMessage('refreshPreview', [sourceUri.current]);
