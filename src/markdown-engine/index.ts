@@ -667,6 +667,7 @@ window["initRevealPresentation"] = async function() {
           JSAndCssFiles,
           vscodePreviewPanel,
         )}
+        ${this.notebook.config.includeInHeader}
         ${head}
       </head>
       <body class="preview-container ${
@@ -1121,6 +1122,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       <style>
       ${styles}
       </style>
+      ${this.notebook.config.includeInHeader}
     </head>
     <body ${options.isForPrint ? '' : 'for="html-export"'} ${
       yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
@@ -1770,6 +1772,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${globalStyles}
     </style>
     ${mathStyle}
+    ${this.notebook.config.includeInHeader}
   </head>
   <body ${path.extname(dest) === '.html' ? 'for="html-export"' : ''}>
     <div class="crossnote markdown-preview">

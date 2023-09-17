@@ -78,6 +78,10 @@ const config = {
   // File of extensions to be included in the notebook
   markdownFileExtensions: [".md", ".markdown", ".mdown", ".mkdn", ".mkd", ".rmd", ".qmd"],
 
+  // The content to be included in HTML `<head>` tag.
+  // This is useful for adding custom styles or scripts.
+  includeInHeader: "",
+
   // Enable this option will render markdown by pandoc instead of markdown-it.
   usePandocParser: false,
 
