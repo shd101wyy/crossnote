@@ -23,8 +23,9 @@ export async function loadConfigsInDirectory(
   createDirectoryIfNotExists: boolean = false,
 ): Promise<Partial<NotebookConfig>> {
   const defaultConfig = getDefaultNotebookConfig();
-  let loadedConfig = {
+  let loadedConfig: Partial<NotebookConfig> = {
     globalCss: defaultConfig.globalCss,
+    includeInHeader: defaultConfig.includeInHeader,
     mermaidConfig: defaultConfig.mermaidConfig,
     mathjaxConfig: defaultConfig.mathjaxConfig,
     katexConfig: defaultConfig.katexConfig,
@@ -38,6 +39,10 @@ export async function loadConfigsInDirectory(
   if (await fileSystem.exists(directoryPath)) {
     loadedConfig.globalCss = await getGlobalStyles(directoryPath, fileSystem);
     loadedConfig.parserConfig = await getParserConfig(
+      directoryPath,
+      fileSystem,
+    );
+    loadedConfig.includeInHeader = await getHeaderIncludes(
       directoryPath,
       fileSystem,
     );
@@ -90,6 +95,24 @@ async function getGlobalStyles(configPath: string, fs: FileSystemApi) {
       },
     );
   });
+}
+
+async function getHeaderIncludes(configPath: string, fs: FileSystemApi) {
+  const headerIncludesPath = path.join(configPath, './head.html');
+  let fileContent: string;
+  try {
+    fileContent = await fs.readFile(headerIncludesPath);
+  } catch (e) {
+    // create head.html file
+    fileContent = `<!-- The content below will be included at the end of the <head> element. -->
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script>`;
+    await fs.writeFile(headerIncludesPath, fileContent);
+  }
+  return fileContent;
 }
 
 async function getConfigs(
