@@ -28,8 +28,10 @@ export default (md: MarkdownIt) => {
       info,
     )}" data-parsed-info="${escape(
       JSON.stringify(parsedInfo),
-    )}" data-normalized-info="${escape(
-      JSON.stringify(normalizedInfo),
-    )}">${content}</pre>${finalBreak}`;
+    )}" data-normalized-info="${escape(JSON.stringify(normalizedInfo))}" ${
+      'data-line' in parsedInfo.attributes
+        ? `data-line="${parsedInfo.attributes['data-line']}"`
+        : ''
+    }>${content}</pre>${finalBreak}`;
   };
 };

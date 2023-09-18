@@ -113,7 +113,7 @@ function twoDArrayToMarkdownTable(twoDArr) {
 }
 
 function createAnchor(lineNo) {
-  return `\n\n<p data-line="${lineNo}" class="sync-line" style="margin:0;"></p>\n\n`;
+  return `\n<p data-line="${lineNo}" class="sync-line" style="margin:0;"></p>\n`;
 }
 
 let DOWNLOADS_TEMP_FOLDER: string | null = null;
@@ -230,11 +230,7 @@ async function loadFile(
 }
 
 /**
- *
- * @param inputString
- * @param fileDirectoryPath
- * @param projectDirectoryPath
- * @param param3
+ * Transform markdown string before rendering it to HTML.
  */
 export async function transformMarkdown(
   inputString: string,
@@ -275,7 +271,6 @@ export async function transformMarkdown(
 
     while (i < inputString.length) {
       if (inputString[i] === '\n') {
-        // return helper(i+1, lineNo+1, outputString+'\n')
         i = i + 1;
         lineNo = lineNo + 1;
         outputString = outputString + '\n';
@@ -292,8 +287,19 @@ export async function transformMarkdown(
 
       const currentCodeBlockFence = (line.match(/^[`]{3,}/) || [])[0];
       if (currentCodeBlockFence) {
+        // Start of code block
         if (!inCodeBlock && forPreview) {
-          outputString += createAnchor(lineNo);
+          const optStart = line.indexOf('{');
+          const optEnd = line.lastIndexOf('}');
+          if (optStart > 0 && optEnd > 0) {
+            // Found options
+            const optString = line.substring(optStart + 1, optEnd);
+            line =
+              line.substring(0, optStart) +
+              ` {${optString} .sync-line data-line="${lineNo}"}`;
+          } else {
+            line = line + ` {.sync-line data-line="${lineNo}"}`;
+          }
         }
 
         const containsCmd = !!line.match(/"?cmd"?\s*[:=\s}]/);
@@ -311,7 +317,6 @@ export async function transformMarkdown(
           lastOpeningCodeBlockFence = null;
         }
 
-        // return helper(end+1, lineNo+1, outputString+line+'\n')
         i = end + 1;
         lineNo = lineNo + 1;
         outputString = outputString + line + '\n';
@@ -319,7 +324,6 @@ export async function transformMarkdown(
       }
 
       if (inCodeBlock) {
-        // return helper(end+1, lineNo+1, outputString+line+'\n')
         i = end + 1;
         lineNo = lineNo + 1;
         outputString = outputString + line + '\n';
@@ -349,44 +353,13 @@ export async function transformMarkdown(
         }
         /* tslint:disable-next-line:no-conditional-assignment */
       } else if ((headingMatch = line.match(/^(#{1,7}).*/))) {
-        /* ((headingMatch = line.match(/^(\#{1,7})(.+)$/)) ||
-                  // the ==== and --- headers don't work well. For example, table and list will affect it, therefore I decide not to support it.
-                  (inputString[end + 1] === '=' && inputString[end + 2] === '=') ||
-                  (inputString[end + 1] === '-' && inputString[end + 2] === '-')) */ // headings
-
-        if (forPreview) {
-          outputString += createAnchor(lineNo);
-        }
-        let heading;
-        // if (headingMatch) {
-        heading = line.replace(headingMatch[1], '');
+        let heading = line.replace(headingMatch[1], '');
         const tag = headingMatch[1];
         const level = tag.length;
-        /*} else {
-            if (inputString[end + 1] === '=') {
-              heading = line.trim()
-              tag = '#'
-              level = 1
-            } else {
-              heading = line.trim()
-              tag = '##'
-              level = 2
-            }
-
-            end = inputString.indexOf('\n', end + 1)
-            if (end < 0) end = inputString.length
-          }*/
-
-        /*if (!heading.length) {
-          // return helper(end+1, lineNo+1, outputString + '\n')
-          i = end + 1;
-          lineNo = lineNo + 1;
-          outputString = outputString + "\n";
-          continue;
-        }*/
 
         // check {class:string, id:string, ignore:boolean}
-        const optMatch = heading.match(/(\s+\{|^\{)(.+?)\}(\s*)$/);
+        // FIXME: "{" in string might cause problem
+        const optMatch = heading.match(/{[^{]+\}\s*$/);
         let classes = '';
         let id = '';
         let ignore = false;
@@ -423,8 +396,8 @@ export async function transformMarkdown(
           headings.push({ content: heading, level, id });
         }
 
-        if (notebook.config.usePandocParser) {
-          // pandoc
+        if (!forMarkdownExport) {
+          // Add attributes
           let optionsStr = '{';
           if (id) {
             optionsStr += `#${id} `;
@@ -441,23 +414,20 @@ export async function transformMarkdown(
               }
             }
           }
+
+          if (forPreview) {
+            // Add source mappping
+            optionsStr += ` .sync-line data-line="${lineNo}"`;
+          }
+
           optionsStr += '}';
 
-          // return helper(end+1, lineNo+1, outputString + `${tag} ${heading} ${optionsStr}` + '\n')
           i = end + 1;
           lineNo = lineNo + 1;
           outputString =
             outputString + `${tag} ${heading} ${optionsStr}` + '\n';
           continue;
         } else {
-          // markdown-it
-          if (!forMarkdownExport) {
-            // convert to <h? ... ></h?>
-            line = `${tag} ${heading}\n<p class="crossnote-header ${classes}" id="${id}"></p>`;
-          } else {
-            line = `${tag} ${heading}`;
-          }
-
           // return helper(end+1, lineNo+1, outputString + line + '\n\n')
           i = end + 1;
           lineNo = lineNo + 1;
@@ -555,7 +525,6 @@ export async function transformMarkdown(
           outputString += createAnchor(lineNo); // insert anchor for scroll sync
         }
         tocBracketEnabled = true;
-        // return helper(end+1, lineNo+1, outputString + `\n[CROSSNOTETOC]\n\n`)
         i = end + 1;
         lineNo = lineNo + 1;
         outputString = outputString + `\n[CROSSNOTETOC]\n\n`;

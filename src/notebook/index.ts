@@ -12,6 +12,7 @@ import { URI, Utils } from 'vscode-uri';
 import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
 import useMarkdownItCodeFences from '../custom-markdown-it-features/code-fences';
 import useMarkdownItCriticMarkup from '../custom-markdown-it-features/critic-markup';
+import useMarkdownItCurlyBracketAttributes from '../custom-markdown-it-features/curly-bracket-attributes';
 import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
 import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed';
 import useMarkdownItMath from '../custom-markdown-it-features/math';
@@ -136,6 +137,7 @@ export class Notebook {
     this.md.use(MarkdownItMark);
 
     useMarkdownItCodeFences(this.md);
+    useMarkdownItCurlyBracketAttributes(this.md);
     useMarkdownItCriticMarkup(this.md, this);
     useMarkdownItEmoji(this.md, this);
     useMarkdownItHTML5Embed(this.md, this);
