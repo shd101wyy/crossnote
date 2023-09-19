@@ -41,12 +41,12 @@ export default function Preview() {
       }}
     >
       {/** Background */}
-      <div className="crossnote markdown-preview w-full h-full fixed top-0 left-0"></div>
+      <div className="crossnote markdown-preview w-full h-full fixed top-0 left-0 select-none"></div>
       {/** Top bar */}
       <Topbar></Topbar>
       {/** The hidden preview */}
       <div
-        className="crossnote markdown-preview hidden-preview fixed invisible"
+        className="crossnote markdown-preview hidden-preview fixed invisible select-none"
         data-fore="preview"
         ref={hiddenPreviewElement}
         style={{ zIndex: 0 }}

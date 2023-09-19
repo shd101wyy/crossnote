@@ -88,7 +88,7 @@ export default function Backlinks() {
 
   return (
     <div
-      className="markdown-preview p-[2em] pb-48 backlinks relative"
+      className="markdown-preview p-[2em] pb-48 backlinks relative select-none"
       ref={backlinksElement}
     >
       <hr></hr>

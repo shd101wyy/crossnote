@@ -15,7 +15,7 @@ export default function LoadingIcon() {
 
   return (
     <div
-      className="markdown-preview fixed top-0 left-0 w-full h-full z-50"
+      className="markdown-preview fixed top-0 left-0 w-full h-full z-50 select-none"
       style={{
         backgroundColor: getComputedStyle(document.body).backgroundColor,
       }}
