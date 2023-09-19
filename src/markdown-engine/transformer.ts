@@ -112,8 +112,11 @@ function twoDArrayToMarkdownTable(twoDArr) {
   return output;
 }
 
-function createAnchor(lineNo) {
-  return `\n<p data-line="${lineNo}" class="sync-line" style="margin:0;"></p>\n`;
+function createAnchor(
+  lineNo: number,
+  { extraClass = '', tag = 'p' }: { extraClass?: string; tag?: string } = {},
+) {
+  return `\n<${tag} data-line="${lineNo}" class="sync-line ${extraClass}" style="margin:0;"></${tag}>\n`;
 }
 
 let DOWNLOADS_TEMP_FOLDER: string | null = null;
@@ -273,7 +276,10 @@ export async function transformMarkdown(
       if (inputString[i] === '\n') {
         i = i + 1;
         lineNo = lineNo + 1;
-        outputString = outputString + '\n';
+        outputString =
+          outputString +
+          createAnchor(lineNo - 1, { extraClass: 'empty-line' }) +
+          '\n';
         continue;
       }
 
@@ -283,6 +289,7 @@ export async function transformMarkdown(
       }
       let line = inputString.substring(i, end);
 
+      // ========== Start: Code Block ==========
       const inCodeBlock = !!lastOpeningCodeBlockFence;
 
       const currentCodeBlockFence = (line.match(/^[`]{3,}/) || [])[0];
@@ -329,20 +336,49 @@ export async function transformMarkdown(
         outputString = outputString + line + '\n';
         continue;
       }
+      // ========== End: Code Block ==========
 
-      let headingMatch;
-      let taskListItemMatch;
-      let htmlTagMatch;
+      // ========== Start: Indentation code block ==========
+      const indentationCodeBlockMatch = line.match(/^\s{4,}\S/);
+      if (indentationCodeBlockMatch) {
+        // Find the new line that has less indentation
+        const newMatch = inputString.substring(end + 1).match(/^\s{0,3}\S/);
+        if (!newMatch || typeof newMatch.index !== 'number') {
+          // All the rest lines are in the code block
+          const codeBlock = inputString.substring(i, inputString.length);
+          const newLines = codeBlock.split(/\n/).length;
+
+          i = inputString.length;
+          lineNo = lineNo + newLines;
+          outputString = outputString + codeBlock + '\n';
+          continue;
+        } else {
+          const newEnd = end + 1 + newMatch.index;
+          const codeBlock = inputString.substring(i, newEnd);
+          const newLines = codeBlock.split(/\n/).length;
+
+          i = newEnd;
+          lineNo = lineNo + newLines;
+          outputString = outputString + codeBlock + '\n';
+          continue;
+        }
+      }
+      // ========== End: Indentation code block ==========
+
+      let headingMatch: RegExpMatchArray | null;
+      let taskListItemMatch: RegExpMatchArray | null;
+      let htmlTagMatch: RegExpMatchArray | null;
 
       /*
-        // I changed this because for case like:
-
+        NOTE: I changed this because for case like:
+        
         * haha
         ![](image.png)
 
         The image will not be displayed correctly in preview as there will be `anchor` inserted
         between...
         */
+      // ========== Start: @import or Image ==========
       if (
         line.match(/^(!\[|@import)/) &&
         inputString[i - 1] === '\n' &&
@@ -352,7 +388,10 @@ export async function transformMarkdown(
           outputString += createAnchor(lineNo); // insert anchor for scroll sync
         }
         /* tslint:disable-next-line:no-conditional-assignment */
-      } else if ((headingMatch = line.match(/^(#{1,7}).*/))) {
+      }
+      // ========== End: @import or Image ==========
+      // ========== Start: Heading ==========
+      else if ((headingMatch = line.match(/^(#{1,7}).*/))) {
         let heading = line.replace(headingMatch[1], '');
         const tag = headingMatch[1];
         const level = tag.length;
@@ -428,7 +467,6 @@ export async function transformMarkdown(
             outputString + `${tag} ${heading} ${optionsStr}` + '\n';
           continue;
         } else {
-          // return helper(end+1, lineNo+1, outputString + line + '\n\n')
           i = end + 1;
           lineNo = lineNo + 1;
           outputString = outputString + line + '\n\n';
@@ -436,7 +474,10 @@ export async function transformMarkdown(
           // I added one extra `\n` here because remarkable renders content below
           // heading differently with `\n` and without `\n`.
         }
-      } else if (line.match(/^<!--/)) {
+      }
+      // ========== End: Heading ==========
+      // ========== Start: Custom Comment ==========
+      else if (line.match(/^<!--/)) {
         // custom comment
         if (forPreview) {
           outputString += createAnchor(lineNo);
@@ -445,7 +486,6 @@ export async function transformMarkdown(
 
         if (commentEnd < 0) {
           // didn't find -->
-          // return helper(inputString.length, lineNo+1, outputString+'\n')
           i = inputString.length;
           lineNo = lineNo + 1;
           outputString = outputString + '\n';
@@ -460,7 +500,6 @@ export async function transformMarkdown(
           const newlinesMatch = content.match(/\n/g);
           const newlines = newlinesMatch ? newlinesMatch.length : 0;
 
-          // return helper(commentEnd, lineNo + newlines, outputString + '\n')
           i = commentEnd;
           lineNo = lineNo + newlines;
           outputString = outputString + '\n';
@@ -486,7 +525,6 @@ export async function transformMarkdown(
 
             if (subject === 'pagebreak' || subject === 'newpage') {
               // pagebreak
-              // return helper(commentEnd, lineNo + newlines, outputString + '<div class="pagebreak"> </div>\n')
               i = commentEnd;
               lineNo = lineNo + newlines;
               outputString = outputString + '<div class="pagebreak"> </div>\n';
@@ -495,13 +533,11 @@ export async function transformMarkdown(
               // slide
               slideConfigs.push(options);
               if (forMarkdownExport) {
-                // return helper(commentEnd, lineNo + newlines, outputString + `<!-- ${content} -->` + '\n')
                 i = commentEnd;
                 lineNo = lineNo + newlines;
                 outputString = outputString + `<!-- ${content} -->` + '\n';
                 continue;
               } else {
-                // return helper(commentEnd, lineNo + newlines, outputString + '\n[CROSSNOTESLIDE]\n\n')
                 i = commentEnd;
                 lineNo = lineNo + newlines;
                 outputString = outputString + '\n[CROSSNOTESLIDE]\n\n';
@@ -512,14 +548,16 @@ export async function transformMarkdown(
             const content = inputString.slice(i + 4, commentEnd - 3).trim();
             const newlinesMatch = content.match(/\n/g);
             const newlines = newlinesMatch ? newlinesMatch.length : 0;
-            // return helper(commentEnd, lineNo + newlines, outputString + '\n')
             i = commentEnd;
             lineNo = lineNo + newlines;
             outputString = outputString + '\n';
             continue;
           }
         }
-      } else if (line.match(/^\s*\[toc\]\s*$/i)) {
+      }
+      // ========== End: Custom Comment ==========
+      // ========== Start: ToC ==========
+      else if (line.match(/^\s*\[toc\]\s*$/i)) {
         // [TOC]
         if (forPreview) {
           outputString += createAnchor(lineNo); // insert anchor for scroll sync
@@ -529,7 +567,10 @@ export async function transformMarkdown(
         lineNo = lineNo + 1;
         outputString = outputString + `\n[CROSSNOTETOC]\n\n`;
         continue;
-      } else if (
+      }
+      // ========== End: ToC ==========
+      // ========== Start: Task List Checkbox ==========
+      else if (
         /* tslint:disable-next-line:no-conditional-assignment */
         (taskListItemMatch = line.match(
           /^\s*(?:[*\-+]|\d+\.)\s+(\[[xX\s]\])\s/,
@@ -547,12 +588,14 @@ export async function transformMarkdown(
             }>`,
           );
         }
-        // return helper(end+1, lineNo+1, outputString+line+`\n`)
         i = end + 1;
         lineNo = lineNo + 1;
         outputString = outputString + line + `\n`;
         continue;
-      } else if (
+      }
+      // ========== End: Task List Checkbox ==========
+      // ========== Start: HTML Tag ==========
+      else if (
         /* tslint:disable-next-line:no-conditional-assignment */
         (htmlTagMatch = line.match(
           /^\s*<(?:([a-zA-Z]+)|([a-zA-Z]+)\s+(?:.+?))>/,
@@ -572,18 +615,11 @@ export async function transformMarkdown(
             //     $$ x
             //     <y>
             //     $$
-            /*
-              i = inputString.length
-              lineNo = lineNo + 1
-              outputString = outputString + `\n\`\`\`\nHTML error. Tag <${tagName}> not closed. ${closeTagName} is required.\n\`\`\`\n\n`
-              continue
-              */
           } else {
             const htmlString = inputString.slice(i, end2 + closeTagName.length);
             const newlinesMatch = htmlString.match(/\n/g);
             const newlines = newlinesMatch ? newlinesMatch.length : 0;
 
-            // return helper(commentEnd, lineNo + newlines, outputString + '\n')
             i = end2 + closeTagName.length;
             lineNo = lineNo + newlines;
             outputString = outputString + htmlString;
@@ -591,8 +627,28 @@ export async function transformMarkdown(
           }
         }
       }
+      // ========== End: HTML Tag ==========
+      // ========== Start: Normal List Item ==========
+      else if (
+        /* tslint:disable-next-line:no-conditional-assignment */
+        line.match(/^\s*(?:[*\-+]|\d+\.)\s+/)
+      ) {
+        // normal list item
+        i = end + 1;
+        lineNo = lineNo + 1;
+        outputString =
+          outputString +
+          line +
+          ' ' +
+          createAnchor(lineNo - 1, {
+            tag: 'span',
+            extraClass: 'list-item-line',
+          }).trim() +
+          '\n';
+        continue;
+      }
 
-      // file import
+      // =========== Start: File import ============
       const importMatch = line.match(/^(\s*)@import(\s+)"([^"]+)";?/);
       if (importMatch) {
         outputString += importMatch[1];
@@ -688,7 +744,6 @@ export async function transformMarkdown(
           } else {
             output = `![](${imageSrc})  `;
           }
-          // return helper(end+1, lineNo+1, outputString+output+'\n')
           i = end + 1;
           lineNo = lineNo + 1;
           outputString = outputString + output + '\n';
@@ -715,7 +770,6 @@ export async function transformMarkdown(
           const output2 = `\`\`\`text ${stringifyBlockAttributes(
             config,
           )}  \n\`\`\`  `;
-          // return helper(end+1, lineNo+1, outputString+output+'\n')
           i = end + 1;
           lineNo = lineNo + 1;
           outputString = outputString + output2 + '\n';
@@ -803,7 +857,6 @@ export async function transformMarkdown(
               output2 = '\n' + output2 + '  ';
               headings = headings.concat(headings2);
 
-              // return helper(end+1, lineNo+1, outputString+output+'\n')
               i = end + 1;
               lineNo = lineNo + 1;
               outputString = outputString + output2 + '\n';
@@ -931,30 +984,38 @@ export async function transformMarkdown(
               }
             }
 
-            // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
             lineNo = lineNo + 1;
             outputString = outputString + output + '\n';
             continue;
           } catch (error) {
             output = `<pre>${error.toString()}</pre>  `;
-            // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
             lineNo = lineNo + 1;
             outputString = outputString + output + '\n';
             continue;
           }
         }
-      } else {
-        // return helper(end+1, lineNo+1, outputString+line+'\n')
+      }
+      // =========== End: File import ============
+      // =========== Start: Normal line ============
+      else {
         i = end + 1;
         lineNo = lineNo + 1;
         outputString = outputString + line + '\n';
         continue;
       }
+      // =========== End: Normal line ============
     }
 
-    // done
+    // Final line, which might not exist
+    if (forPreview) {
+      outputString += `${createAnchor(lineNo, {
+        extraClass: 'empty-line final-line',
+      })}`;
+    }
+
+    // Done
     return {
       outputString,
       slideConfigs,
