@@ -116,7 +116,7 @@ function createAnchor(
   lineNo: number,
   { extraClass = '', tag = 'p' }: { extraClass?: string; tag?: string } = {},
 ) {
-  return `\n<${tag} data-line="${lineNo}" class="sync-line ${extraClass}" style="margin:0;"></${tag}>\n`;
+  return `\n\n<${tag} data-line="${lineNo}" class="sync-line ${extraClass}" style="margin:0;"></${tag}>\n\n`;
 }
 
 let DOWNLOADS_TEMP_FOLDER: string | null = null;
@@ -273,16 +273,6 @@ export async function transformMarkdown(
     let outputString = '';
 
     while (i < inputString.length) {
-      if (inputString[i] === '\n') {
-        i = i + 1;
-        lineNo = lineNo + 1;
-        outputString =
-          outputString +
-          createAnchor(lineNo - 1, { extraClass: 'empty-line' }) +
-          '\n';
-        continue;
-      }
-
       let end = inputString.indexOf('\n', i);
       if (end < 0) {
         end = inputString.length;
@@ -291,7 +281,6 @@ export async function transformMarkdown(
 
       // ========== Start: Code Block ==========
       const inCodeBlock = !!lastOpeningCodeBlockFence;
-
       const currentCodeBlockFence = (line.match(/^[`]{3,}/) || [])[0];
       if (currentCodeBlockFence) {
         // Start of code block
@@ -364,6 +353,18 @@ export async function transformMarkdown(
         }
       }
       // ========== End: Indentation code block ==========
+
+      // ========== Start: Check empty line
+      if (inputString[i] === '\n' && inputString[i + 1] !== ' ') {
+        i = i + 1;
+        lineNo = lineNo + 1;
+        outputString =
+          outputString +
+          createAnchor(lineNo - 1, { extraClass: 'empty-line' }) +
+          '\n';
+        continue;
+      }
+      // ========== End: Check empty line
 
       let headingMatch: RegExpMatchArray | null;
       let taskListItemMatch: RegExpMatchArray | null;

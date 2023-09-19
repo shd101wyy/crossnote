@@ -42,29 +42,6 @@ html, body {
       list-style: decimal;
     }
 
-    .btn {
-        display: inline-block;
-        color: #99aeb8;
-        text-shadow: none;
-        border: 1px solid #171e22;
-        background-color: #32424a;
-        background-image: linear-gradient(#364850, #32424a);
-        height: auto;
-        padding: 0 0.8em;
-        font-size: 1em;
-        line-height: 2em;
-        margin-bottom: 0;
-        font-weight: normal;
-        text-align: center;
-        vertical-align: middle;
-        border: none;
-        border-radius: 3px;
-        white-space: nowrap;
-        cursor: pointer;
-        z-index: 0;
-        user-select: none;
-        box-sizing: border-box;
-    }
     &.show-sidebar-toc {
         .md-sidebar-toc {
             font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif;
@@ -190,6 +167,13 @@ html, body {
                 }
             }
         }
+
+        // highlight
+        .highlight-line {
+          background-color: #eee;
+          border-radius: 6px;
+          position: relative;
+        }
     }
 }
 
@@ -204,5 +188,16 @@ body[data-presentation-mode] {
 body:not([data-presentation-mode]) {
   .crossnote[data-for="preview"] {
     height: auto;
+  }
+
+  .sync-line.final-line {
+    margin-top: 64px !important;
+    font-style: italic;
+    padding: 8px;
+    color: #bbb;
+
+    &::before {
+      content: "End of document";
+    }
   }
 }

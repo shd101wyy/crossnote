@@ -47,7 +47,7 @@ export default (md: MarkdownIt) => {
     }
     for (let j = 0; j < children.length; j++) {
       const child = children[j];
-      if (child.type === 'image' && children[j + 1].type === 'text') {
+      if (child.type === 'image' && children[j + 1]?.type === 'text') {
         const match = children[j + 1].content.match(/^{([^}]+)}/);
         if (match) {
           const attributes = parseBlockAttributes(match[1]);

@@ -3,6 +3,7 @@ import React from 'react';
 import PreviewContainer from '../containers/preview';
 import Backlinks from './Backlinks';
 import ContextMenu from './ContextMenu';
+import FloatingActions from './FloatingActions';
 import Footer from './Footer';
 import ImageHelper from './ImageHelper';
 import LoadingIcon from './LoadingIcon';
@@ -73,7 +74,8 @@ export default function Preview() {
       <ImageHelper></ImageHelper>
       {/** Context menu */}
       <ContextMenu></ContextMenu>
-      {/* <div className="markdown-spinner"> Loading Markdown\u2026 </div> */}
+      {/** Floating Actions */}
+      <FloatingActions></FloatingActions>
     </div>
   );
 }

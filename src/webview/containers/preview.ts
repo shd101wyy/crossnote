@@ -94,6 +94,9 @@ const PreviewContainer = createContainer(() => {
   }, []);
   const [backlinks, setBacklinks] = useState<Backlink[]>([]);
   const [isLoadingBacklinks, setIsLoadingBacklinks] = useState<boolean>(false);
+  const [highlightElement, setHighlightElement] = useState<HTMLElement | null>(
+    null,
+  );
 
   const isPresentationMode = useMemo(() => {
     return document.body.hasAttribute('data-presentation-mode');
@@ -826,6 +829,104 @@ const PreviewContainer = createContainer(() => {
     }
   }, [postMessage]);
 
+  const bindHighlightEvent = useCallback((previewElement: HTMLDivElement) => {
+    // const finalLineElement = previewElement.querySelector(
+    //   '.final-line',
+    // ) as HTMLElement;
+    setHighlightElement(null);
+    const syncLineElements = previewElement.querySelectorAll('.sync-line');
+    const highlightElementsThatAddedEventSet = new Set<Element | HTMLElement>();
+    for (let i = syncLineElements.length - 1; i >= 0; i--) {
+      const syncLineElement = syncLineElements[i];
+      const nextSyncLineElement = syncLineElements[i + 1];
+      if (
+        // syncLineElement.classList.contains('empty-line') &&
+        // nextSyncLineElement?.classList.contains('empty-line')
+        syncLineElement.tagName === 'P' &&
+        nextSyncLineElement?.tagName === 'P'
+      ) {
+        const highlightElements: (Element | HTMLElement)[] = [];
+        let siblingElement = syncLineElement.nextElementSibling;
+        while (siblingElement && siblingElement !== nextSyncLineElement) {
+          highlightElements.push(siblingElement);
+          siblingElement = siblingElement.nextElementSibling;
+        }
+
+        highlightElements.forEach(highlightElement => {
+          if (highlightElementsThatAddedEventSet.has(highlightElement)) {
+            return;
+          } else {
+            highlightElementsThatAddedEventSet.add(highlightElement);
+          }
+          highlightElement.addEventListener(
+            /*'mouseenter'*/ 'mouseover',
+            event => {
+              event.stopPropagation();
+              console.log('mouseover');
+              highlightElements.forEach(highlightElement => {
+                highlightElement.classList.add('highlight-line');
+              });
+              setHighlightElement(highlightElements[0] as HTMLElement);
+            },
+          );
+          highlightElement.addEventListener(
+            /*'mouseleave'*/ 'mouseout',
+            event => {
+              event.stopPropagation();
+              console.log('mouseout');
+              highlightElements.forEach(highlightElement => {
+                highlightElement.classList.remove('highlight-line');
+              });
+              // setHighlightElement(finalLineElement);
+            },
+          );
+        });
+      } else {
+        let highlightElement: Element | HTMLElement | null = syncLineElement;
+        // NOTE: Right now <span data-line="xxx"> is only used in list items.
+        if (
+          (syncLineElement.tagName === 'SPAN' &&
+            syncLineElement.classList.contains('list-item-line')) ||
+          (syncLineElement.tagName === 'INPUT' &&
+            syncLineElement.classList.contains('task-list-item-checkbox'))
+        ) {
+          // Iterate above until we find the parent LI element
+          highlightElement = syncLineElement.parentElement;
+          while (highlightElement && highlightElement.tagName !== 'LI') {
+            highlightElement = highlightElement.parentElement;
+          }
+        }
+        if (!highlightElement) {
+          continue;
+        }
+
+        if (highlightElementsThatAddedEventSet.has(highlightElement)) {
+          continue;
+        } else {
+          highlightElementsThatAddedEventSet.add(highlightElement);
+        }
+        highlightElement.addEventListener(
+          /*'mouseenter'*/ 'mouseover',
+          event => {
+            event.stopPropagation();
+            console.log('mouseover');
+            highlightElement?.classList.add('highlight-line');
+            setHighlightElement(highlightElement as HTMLElement);
+          },
+        );
+        highlightElement.addEventListener(
+          /*'mouseleave'*/ 'mouseout',
+          event => {
+            event.stopPropagation();
+            console.log('mouseout');
+            highlightElement?.classList.remove('highlight-line');
+            // setHighlightElement(finalLineElement);
+          },
+        );
+      }
+    }
+  }, []);
+
   const updateHtml = useCallback(
     (html: string, id: string, classes: string) => {
       if (!previewElement.current || !hiddenPreviewElement.current) {
@@ -853,6 +954,7 @@ const PreviewContainer = createContainer(() => {
             Array.from(previewElement.current.getElementsByTagName('a')),
           );
           bindTaskListEvent();
+          bindHighlightEvent(previewElement.current);
 
           // set id and classes
           previewElement.current.id = id || '';
@@ -882,6 +984,7 @@ const PreviewContainer = createContainer(() => {
     [
       bindAnchorElementsClickEvent,
       bindTaskListEvent,
+      bindHighlightEvent,
       initEvents,
       isPresentationMode,
       postMessage,
@@ -1292,6 +1395,7 @@ const PreviewContainer = createContainer(() => {
     config,
     contextMenuId,
     hiddenPreviewElement,
+    highlightElement,
     isLoadingBacklinks,
     isLoadingPreview,
     isMobile,
