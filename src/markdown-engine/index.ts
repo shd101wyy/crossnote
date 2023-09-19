@@ -654,7 +654,14 @@ window["initRevealPresentation"] = async function() {
           yamlConfig,
           vscodePreviewPanel,
         )}
-        <link rel="stylesheet" href="${webviewCss}">
+        ${
+          (!isPresentationMode &&
+            this.notebook.config.previewTheme === 'none.css') ||
+          (isPresentationMode &&
+            this.notebook.config.revealjsTheme === 'none.css')
+            ? ''
+            : `<link rel="stylesheet" href="${webviewCss}">`
+        }
         ${styles}
         <link rel="stylesheet" href="${utility.addFileProtocol(
           path.resolve(
