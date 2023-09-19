@@ -185,7 +185,7 @@ export default function ContextMenu() {
   );
 
   return (
-    <div data-theme={theme}>
+    <div data-theme={theme} className="select-none">
       <Menu id={contextMenuId} theme={theme === 'dark' ? 'dark' : undefined}>
         {!isVSCodeWebExtension && (
           <>
