@@ -60,17 +60,4 @@ export default async function enhance(
       ),
     );
   });
-
-  if (!usePandocParser) {
-    // check .crossnote-header in order to add id and class to headers.
-    $('.crossnote-header').each((i, e) => {
-      const classes = e.attribs.class;
-      const id = e.attribs.id;
-      const $e = $(e);
-      const $h = $e.prev();
-      $h.addClass(classes);
-      $h.attr('id', encodeURIComponent(id)); // encodeURIComponent to fix utf-8 header.
-      $e.remove();
-    });
-  }
 }
