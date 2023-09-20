@@ -192,14 +192,14 @@ const PreviewContainer = createContainer(() => {
     nonEmptyList.push(0);
     newScrollMap[0] = 0;
 
-    // write down the offsetTop of element that has 'data-line' property to scrollMap
+    // write down the offsetTop of element that has 'data-source-line' property to scrollMap
     const lineElements = previewElement.current.getElementsByClassName(
-      'sync-line',
+      'source-line',
     );
 
     for (let i = 0; i < lineElements.length; i++) {
       let el = lineElements[i] as HTMLElement;
-      const dataLine = el.getAttribute('data-line');
+      const dataLine = el.getAttribute('data-source-line');
       if (!dataLine) {
         continue;
       }
@@ -211,7 +211,7 @@ const PreviewContainer = createContainer(() => {
 
       // this is for ignoring footnote scroll match
       if (t < nonEmptyList[nonEmptyList.length - 1]) {
-        el.removeAttribute('data-line');
+        el.removeAttribute('data-source-line');
       } else {
         nonEmptyList.push(t);
 
@@ -539,13 +539,13 @@ const PreviewContainer = createContainer(() => {
     const elements = previewElement.current.children;
     for (let i = elements.length - 1; i >= 0; i--) {
       if (
-        elements[i].classList.contains('sync-line') &&
+        elements[i].classList.contains('source-line') &&
         elements[i + 1] &&
         elements[i + 1].classList.contains('code-chunk')
       ) {
         if (
           cursorLine.current >=
-          parseInt(elements[i].getAttribute('data-line') ?? '0', 10)
+          parseInt(elements[i].getAttribute('data-source-line') ?? '0', 10)
         ) {
           const codeChunkId = elements[i + 1].getAttribute('data-id');
           if (codeChunkId) {
@@ -818,7 +818,7 @@ const PreviewContainer = createContainer(() => {
           }
 
           const dataLine = parseInt(
-            checkbox.getAttribute('data-line') ?? '0',
+            checkbox.getAttribute('data-source-line') ?? '0',
             10,
           );
           if (!isNaN(dataLine)) {
@@ -833,75 +833,17 @@ const PreviewContainer = createContainer(() => {
     // const finalLineElement = previewElement.querySelector(
     //   '.final-line',
     // ) as HTMLElement;
+
     setHighlightElement(null);
-    const syncLineElements = previewElement.querySelectorAll('.sync-line');
+    const sourceLineElements = previewElement.querySelectorAll('.source-line');
     const highlightElementsThatAddedEventSet = new Set<Element | HTMLElement>();
-    for (let i = syncLineElements.length - 1; i >= 0; i--) {
-      const syncLineElement = syncLineElements[i];
-      const nextSyncLineElement = syncLineElements[i + 1];
-      if (
-        // syncLineElement.classList.contains('empty-line') &&
-        // nextSyncLineElement?.classList.contains('empty-line')
-        syncLineElement.tagName === 'P' &&
-        nextSyncLineElement?.tagName === 'P'
-      ) {
-        const highlightElements: (Element | HTMLElement)[] = [];
-        let siblingElement = syncLineElement.nextElementSibling;
-        while (siblingElement && siblingElement !== nextSyncLineElement) {
-          highlightElements.push(siblingElement);
-          siblingElement = siblingElement.nextElementSibling;
-        }
 
-        highlightElements.forEach(highlightElement => {
-          if (highlightElementsThatAddedEventSet.has(highlightElement)) {
-            return;
-          } else {
-            highlightElementsThatAddedEventSet.add(highlightElement);
-          }
-          highlightElement.addEventListener(
-            /*'mouseenter'*/ 'mouseover',
-            event => {
-              event.stopPropagation();
-              console.log('mouseover');
-              highlightElements.forEach(highlightElement => {
-                highlightElement.classList.add('highlight-line');
-              });
-              setHighlightElement(highlightElements[0] as HTMLElement);
-            },
-          );
-          highlightElement.addEventListener(
-            /*'mouseleave'*/ 'mouseout',
-            event => {
-              event.stopPropagation();
-              console.log('mouseout');
-              highlightElements.forEach(highlightElement => {
-                highlightElement.classList.remove('highlight-line');
-              });
-              // setHighlightElement(finalLineElement);
-            },
-          );
-        });
-      } else {
-        let highlightElement: Element | HTMLElement | null = syncLineElement;
-        // NOTE: Right now <span data-line="xxx"> is only used in list items.
-        if (
-          (syncLineElement.tagName === 'SPAN' &&
-            syncLineElement.classList.contains('list-item-line')) ||
-          (syncLineElement.tagName === 'INPUT' &&
-            syncLineElement.classList.contains('task-list-item-checkbox'))
-        ) {
-          // Iterate above until we find the parent LI element
-          highlightElement = syncLineElement.parentElement;
-          while (highlightElement && highlightElement.tagName !== 'LI') {
-            highlightElement = highlightElement.parentElement;
-          }
-        }
-        if (!highlightElement) {
-          continue;
-        }
-
+    const bindHighlightElementsEvent = (
+      highlightElements: (HTMLElement | Element)[],
+    ) => {
+      highlightElements.forEach(highlightElement => {
         if (highlightElementsThatAddedEventSet.has(highlightElement)) {
-          continue;
+          return;
         } else {
           highlightElementsThatAddedEventSet.add(highlightElement);
         }
@@ -909,20 +851,101 @@ const PreviewContainer = createContainer(() => {
           /*'mouseenter'*/ 'mouseover',
           event => {
             event.stopPropagation();
-            console.log('mouseover');
-            highlightElement?.classList.add('highlight-line');
-            setHighlightElement(highlightElement as HTMLElement);
+            // console.log('mouseover');
+            highlightElements.forEach(highlightElement => {
+              highlightElement.classList.add('highlight-line');
+            });
+            setHighlightElement(highlightElements[0] as HTMLElement);
           },
         );
         highlightElement.addEventListener(
           /*'mouseleave'*/ 'mouseout',
           event => {
             event.stopPropagation();
-            console.log('mouseout');
-            highlightElement?.classList.remove('highlight-line');
-            // setHighlightElement(finalLineElement);
+            // console.log('mouseout');
+            highlightElements.forEach(highlightElement => {
+              highlightElement.classList.remove('highlight-line');
+              highlightElement.classList.remove('highlight-active');
+            });
+            setHighlightElement(null);
           },
         );
+      });
+    };
+
+    for (let i = sourceLineElements.length - 1; i >= 0; i--) {
+      const sourceLineElement = sourceLineElements[i];
+
+      // First .source-line element
+      // Bind all elements above it
+      if (i == 0) {
+        const highlightElements: (Element | HTMLElement)[] = [];
+        let siblingElement = sourceLineElement.previousElementSibling;
+        while (siblingElement) {
+          highlightElements.push(siblingElement);
+          siblingElement = siblingElement.previousElementSibling;
+        }
+        bindHighlightElementsEvent(highlightElements);
+      }
+
+      // Ignore the link
+      if (sourceLineElement.tagName === 'A') {
+        continue;
+      }
+
+      // List item
+      if (
+        (sourceLineElement.tagName === 'SPAN' &&
+          sourceLineElement.classList.contains('list-item-line')) ||
+        (sourceLineElement.tagName === 'INPUT' &&
+          sourceLineElement.classList.contains('task-list-item-checkbox'))
+      ) {
+        // Iterate above until we find the parent LI element
+        let highlightElement = sourceLineElement.parentElement;
+        while (highlightElement && highlightElement.tagName !== 'LI') {
+          highlightElement = highlightElement.parentElement;
+        }
+        if (highlightElement) {
+          bindHighlightElementsEvent([highlightElement]);
+        }
+      }
+      // Code chunk
+      else if (
+        sourceLineElement.tagName === 'PRE' &&
+        sourceLineElement.parentElement?.classList.contains('input-div') &&
+        sourceLineElement.parentElement.parentElement?.classList.contains(
+          'code-chunk',
+        )
+      ) {
+        const highlightElement = sourceLineElement.parentElement.parentElement;
+        if (highlightElement) {
+          bindHighlightElementsEvent([highlightElement]);
+        }
+      }
+      // Other elements
+      else {
+        bindHighlightElementsEvent([sourceLineElement]);
+      }
+
+      // Check in between
+      if (i < sourceLineElements.length - 1) {
+        let nextSyncLineElement: Element | null = null;
+        for (let j = i + 1; j < sourceLineElements.length; j++) {
+          const el = sourceLineElements[j];
+          if (el.parentElement === sourceLineElement.parentElement) {
+            nextSyncLineElement = el;
+            break;
+          }
+        }
+
+        const highlightElements: (Element | HTMLElement)[] = [];
+        let siblingElement = sourceLineElement.nextElementSibling;
+        while (siblingElement && siblingElement !== nextSyncLineElement) {
+          highlightElements.push(siblingElement);
+          siblingElement = siblingElement.nextElementSibling;
+        }
+
+        bindHighlightElementsEvent(highlightElements);
       }
     }
   }, []);
@@ -1021,8 +1044,11 @@ const PreviewContainer = createContainer(() => {
     let offset = 0;
     for (let i = 0; i < slideElements.length; i++) {
       const slide = slideElements[i];
-      if (slide.hasAttribute('data-line')) {
-        const line = parseInt(slide.getAttribute('data-line') ?? '0', 10);
+      if (slide.hasAttribute('data-source-line')) {
+        const line = parseInt(
+          slide.getAttribute('data-source-line') ?? '0',
+          10,
+        );
         const h = parseInt(slide.getAttribute('data-h') ?? '0', 10);
         const v = parseInt(slide.getAttribute('data-v') ?? '0', 10);
         slidesData.current.push({ line, h, v, offset });
@@ -1378,6 +1404,9 @@ const PreviewContainer = createContainer(() => {
     if (previewElement.current) {
       const isLightTheme = isBackgroundColorLight(document.body);
       setTheme(isLightTheme ? 'light' : 'dark');
+
+      // NOTE: Don't set `data-theme` attribute below because it will override all the styles
+      // document.body.setAttribute('data-theme', isLightTheme ? 'light' : 'dark');
     }
   }, [
     config.previewTheme,

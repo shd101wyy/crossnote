@@ -2250,7 +2250,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         v += 1;
       }
 
-      output += `<section ${attrString} ${idString}  class="slide ${classString}" data-line="${slideConfig['lineNo']}" data-h="${h}" data-v="${v}">${slide}</section>`;
+      output += `<section ${attrString} ${idString}  class="slide ${classString}" data-source-line="${slideConfig['lineNo']}" data-h="${h}" data-v="${v}">${slide}</section>`;
       i += 1;
     }
     if (i > 0 && slideConfigs[i - 1]['vertical']) {
@@ -2441,6 +2441,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       filesCache: this.filesCache,
       notebook: this.notebook,
     }));
+    console.log(`outputString: |${outputString}|`);
 
     if (this.notebook.config.parserConfig['onDidTransformMarkdown']) {
       outputString = await this.notebook.config.parserConfig[
@@ -2496,6 +2497,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       // markdown-it
       html = this.notebook.md.render(outputString);
     }
+
+    console.log(`html: |${html}|`);
 
     /**
      * render tocHTML for [TOC] and sidebar TOC
@@ -2556,7 +2559,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       $,
       options,
       this.resolveFilePath.bind(this),
-      this.notebook.config.usePandocParser,
     );
 
     if (this.notebook.config.enableExtendedTableSyntax) {

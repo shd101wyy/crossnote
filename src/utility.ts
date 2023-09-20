@@ -304,3 +304,54 @@ export function interpretJS(code: string) {
     return context['result'];
   }
 }
+
+export function findClosingTagIndex(
+  inputString: string,
+  tagName: string,
+  startIndex = 0,
+) {
+  const openTag = `<${tagName}`;
+  const closeTag = `</${tagName}>`;
+  const stack: number[] = [];
+  let inComment = false;
+
+  // Start searching from the specified startIndex
+  for (let i = startIndex; i < inputString.length; i++) {
+    // Check for the start of a comment
+    if (inputString.substring(i, i + 4) === '<!--') {
+      inComment = true;
+      i += 3; // Skip the comment start
+    }
+
+    // Check for the end of a comment
+    if (inComment && inputString.substring(i, i + 3) === '-->') {
+      inComment = false;
+      i += 2; // Skip the comment end
+    }
+
+    // Skip characters inside comments
+    if (inComment) continue;
+
+    // Check for the opening tag
+    if (inputString.substring(i, i + openTag.length) === openTag) {
+      stack.push(i);
+    }
+
+    // Check for the closing tag
+    if (inputString.substring(i, i + closeTag.length) === closeTag) {
+      if (stack.length === 0) {
+        // No matching opening tag found, return -1
+        return -1;
+      } else {
+        stack.pop(); // Remove the corresponding opening tag
+        if (stack.length === 0) {
+          // If the stack is empty, the closing tag is found
+          return i;
+        }
+      }
+    }
+  }
+
+  // If we reach here, no closing tag was found, return -1
+  return -1;
+}

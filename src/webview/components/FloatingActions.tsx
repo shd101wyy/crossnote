@@ -1,42 +1,51 @@
-import { mdiPencil } from '@mdi/js';
+import { mdiDotsHorizontal } from '@mdi/js';
 import Icon from '@mdi/react';
+import classNames from 'classnames';
 import React, { useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import PreviewContainer from '../containers/preview';
 
 export default function FloatingActions() {
   const { highlightElement } = PreviewContainer.useContainer();
 
   const onMouseOver = useCallback(() => {
-    if (highlightElement) {
-      highlightElement.classList.add('highlight-line');
-    }
-  }, [highlightElement]);
+    const highlightLineElements = document.querySelectorAll('.highlight-line');
+    highlightLineElements.forEach(element => {
+      element.classList.add('highlight-active');
+    });
+  }, []);
 
   const onMouseOut = useCallback(() => {
-    if (highlightElement) {
-      highlightElement.classList.remove('highlight-line');
-    }
-  }, [highlightElement]);
+    const highlightLineElements = document.querySelectorAll('.highlight-line');
+    highlightLineElements.forEach(element => {
+      element.classList.remove('highlight-active');
+    });
+  }, []);
 
   if (!highlightElement) {
     return null;
   } else {
     // Put text "hello, world" on top right of the highlightElement
-    return (
+    return createPortal(
       <div
-        className="absolute top-0 right-0"
-        style={{
-          transform: `translate(-32px, ${highlightElement.offsetTop}px)`,
-        }}
+        className={classNames('absolute top-0 right-0 select-none')}
+        /*
+          style={{
+            transform: `translate(${highlightElement.offsetLeft +
+              highlightElement.offsetWidth -
+              24}px, ${highlightElement.offsetTop}px)`,
+          }}
+          */
       >
         <button
           className="btn btn-primary btn-circle btn-xs"
           onMouseOver={onMouseOver}
           onMouseOut={onMouseOut}
         >
-          <Icon path={mdiPencil} size={0.6}></Icon>
+          <Icon path={mdiDotsHorizontal} size={0.6}></Icon>
         </button>
-      </div>
+      </div>,
+      highlightElement,
     );
   }
 }

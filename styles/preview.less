@@ -118,31 +118,25 @@ html, body {
                 cursor: text;
             }
 
-            .btn-group {
+            .code-chunk-btn-group {
                 position: absolute;
-                right: 0;
+                right: 28px;
                 top: 0;
                 display: none;
 
                 .run-btn, .run-all-btn {
                     float: right;
                     margin-left: 4px;
-                    border-radius: 3px;
-                    font-size: 0.8em;
-                    color: #eee;
-                    background-color: #528bff;
-                    background-image: none;
-                    border: none;
+                    min-width: 38px;
 
                     &:hover {
-                        background-color: #4b7fe8;
                         cursor: pointer;
                     }
                 }
             }
 
             &:hover {
-                .btn-group {
+                .code-chunk-btn-group {
                 display: block;
                 }
             }
@@ -159,7 +153,7 @@ html, body {
             }
 
             &.running {
-                .btn-group {
+                .code-chunk-btn-group {
                     display: none;
                 }
                 .status {
@@ -170,10 +164,20 @@ html, body {
 
         // highlight
         .highlight-line {
-          background-color: #eee;
-          border-radius: 6px;
           position: relative;
+
+          &.highlight-active {
+            box-shadow: 0 0px 2px 1px #95c258;
+            border-radius: 6px;
+          }
         }
+
+        /*
+        // NOTE: This will cause margin error on elements like `<pre>`
+        .source-line {
+          margin: 0;
+        }
+        */
     }
 }
 
@@ -190,14 +194,22 @@ body:not([data-presentation-mode]) {
     height: auto;
   }
 
-  .sync-line.final-line {
+  .source-line.final-line {
     margin-top: 64px !important;
     font-style: italic;
     padding: 8px;
     color: #bbb;
+    cursor: pointer;
 
     &::before {
       content: "End of document";
     }
   }
+
+  &[data-theme="dark"] {
+    .source-line.final-line {
+      color: #555;
+    }
+  }
 }
+

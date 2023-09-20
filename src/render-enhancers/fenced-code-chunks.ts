@@ -122,7 +122,7 @@ export async function renderCodeBlock(
   }
   const statusDiv = `<div class="status">running...</div>`;
   const buttonGroup =
-    '<div class="btn-group"><div class="run-btn btn"><span>▶︎</span></div><div class="run-all-btn btn">all</div></div>';
+    '<div class="code-chunk-btn-group"><div class="run-btn btn btn-xs btn-primary"><span>▶︎</span></div><div class="run-all-btn btn btn-xs btn-primary">all</div></div>';
   let outputDiv = `<div class="output-div">${result}</div>`;
 
   // check javascript code chunk
