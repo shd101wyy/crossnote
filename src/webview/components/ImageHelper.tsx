@@ -96,7 +96,7 @@ export default function ImageHelper() {
 
   return (
     <dialog
-      className={'modal'}
+      className={'modal select-none'}
       onClose={() => {
         setShowImageHelper(false);
       }}

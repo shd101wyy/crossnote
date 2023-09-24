@@ -4,6 +4,10 @@ module.exports = {
   theme: {
     extend: {},
   },
+  corePlugins: {
+    // Disable this because it will pollute the none.css.
+    preflight: false,
+  },
   plugins: [require('daisyui')],
   daisyui: {
     themes: [

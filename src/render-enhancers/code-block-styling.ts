@@ -55,7 +55,7 @@ export default async function enhance($: CheerioStatic): Promise<void> {
     // try use Prism syntax highlighter
     try {
       const html = Prism.highlight(code, Prism.languages[language], language);
-      $container.html(html);
+      $container.empty().append($(`<code></code>`).html(html));
     } catch (error) {
       // ...or regarded as plain text on failure
       $container.empty().append($(`<code></code>`).text(code));

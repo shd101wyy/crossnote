@@ -34,7 +34,7 @@ export function Topbar() {
   return (
     <div
       className={classNames(
-        'fixed top-0 w-full z-50 pr-2 bg-transparent',
+        'fixed top-0 w-full z-50 pr-2 bg-transparent select-none',
         isMobile || isMouseOverPreview ? '' : 'hidden',
         // isPresentationMode ? 'hidden' : '',
       )}

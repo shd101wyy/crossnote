@@ -268,10 +268,14 @@ export async function runCodeChunk(
       result = '';
     } else {
       // text
-      result = `<pre class="language-text">${escape(result)}</pre>`;
+      result = `<pre class="language-text"><code>${escape(
+        result,
+      )}</code></pre>`;
     }
   } catch (error) {
-    result = `<pre class="language-text">${error}</pre>`;
+    result = `<pre class="language-text"><code>${escape(
+      error.toString(),
+    )}</code></pre>`;
   }
 
   codeChunkData.result = result; // save result.

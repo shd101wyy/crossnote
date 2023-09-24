@@ -1,4 +1,5 @@
 import * as fs from 'fs/promises';
+import { escape } from 'html-escaper';
 import * as less from 'less';
 import * as Papa from 'papaparse';
 import * as path from 'path';
@@ -846,7 +847,9 @@ export async function transformMarkdown(
               // csv file
               const parseResult = Papa.parse(fileContent.trim());
               if (parseResult.errors.length) {
-                output = `<pre>${parseResult.errors[0]}</pre>  `;
+                output = `<pre class="language-text"><code>${escape(
+                  parseResult.errors[0].toString(),
+                )}</code></pre>  `;
               } else {
                 // format csv to markdown table
                 output = twoDArrayToMarkdownTable(parseResult.data);
@@ -968,7 +971,9 @@ export async function transformMarkdown(
             outputString = outputString + output + '\n';
             continue;
           } catch (error) {
-            output = `<pre>${error.toString()}</pre>  `;
+            output = `<pre class="language-text"><code>${escape(
+              error.toString(),
+            )}</code></pre>  `;
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
             lineNo = lineNo + 1;

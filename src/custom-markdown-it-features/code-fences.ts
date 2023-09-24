@@ -24,12 +24,13 @@ export default (md: MarkdownIt) => {
     const finalBreak =
       idx < tokens.length && tokens[idx].type === 'list_item_close' ? '\n' : '';
 
+    // NOTE: The actual <code> tag is added in the code-block-styling.ts.
     return `<pre data-role="codeBlock" data-info="${escape(
       info,
     )}" data-parsed-info="${escape(
       JSON.stringify(parsedInfo),
     )}" data-normalized-info="${escape(
       JSON.stringify(normalizedInfo),
-    )}"><code>${content}</code></pre>${finalBreak}`;
+    )}">${content}</pre>${finalBreak}`;
   };
 };
