@@ -30,6 +30,6 @@ export default (md: MarkdownIt) => {
       JSON.stringify(parsedInfo),
     )}" data-normalized-info="${escape(
       JSON.stringify(normalizedInfo),
-    )}">${content}</pre>${finalBreak}`;
+    )}"><code>${content}</code></pre>${finalBreak}`;
   };
 };
