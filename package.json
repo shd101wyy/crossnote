@@ -115,6 +115,7 @@
     "@simbathesailor/use-what-changed": "^2.0.0",
     "@types/cheerio": "0.22.11",
     "@types/crypto-js": "^4.1.1",
+    "@types/html-escaper": "^3.0.0",
     "@types/jest": "^27.0.2",
     "@types/jquery": "^3.3.29",
     "@types/katex": "^0.16.2",

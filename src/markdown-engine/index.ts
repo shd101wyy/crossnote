@@ -342,7 +342,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       presentationInitScript += `
       var vegaEls = document.querySelectorAll('.vega, .vega-lite');
       function reportVegaError(el, error) {
-        el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        el.innerHTML = '<pre class="language-text"><code>' + error.toString() + '</code></pre>'
       }
       for (var i = 0; i < vegaEls.length; i++) {
         const vegaEl = vegaEls[i]
@@ -879,7 +879,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       vegaInitScript += `<script>
       var vegaEls = document.querySelectorAll('.vega, .vega-lite');
       function reportVegaError(el, error) {
-        el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        el.innerHTML = '<pre class="language-text"><code>' + error.toString() + '</code></pre>'
       }
       for (var i = 0; i < vegaEls.length; i++) {
         const vegaEl = vegaEls[i]
@@ -2153,7 +2153,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         if (typeof data === 'object') {
           table = this.frontMatterToTable(data);
         } else {
-          table = '<pre>Failed to parse YAML.</pre>';
+          table =
+            '<pre class="language-text"><code>Failed to parse YAML.</code></pre>';
         }
 
         return { content: '', table, data };
@@ -2353,7 +2354,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             if (error) {
               return reject(error);
             } else if (stderr) {
-              return resolve('<pre>' + stderr + '</pre>' + stdout);
+              return resolve(
+                '<pre class="language-text"><code>' +
+                  escape(stderr) +
+                  '</code></pre>' +
+                  stdout,
+              );
             } else {
               return resolve(stdout);
             }
@@ -2470,7 +2476,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
         html = await this.pandocRender(outputString, args);
       } catch (error) {
-        html = `<pre>${error}</pre>`;
+        html = `<pre class="language-text"><code>${escape(
+          error.toString(),
+        )}</code></pre>`;
       }
     } else {
       // markdown-it
