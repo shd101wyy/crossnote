@@ -4,6 +4,19 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.8.16] - 2023-09-24
+
+### New features
+
+- Added `head.html` config file to allow you to include custom HTML in the `<head>` of the preview.
+  This could be useful for adding custom CSS or JavaScript to the preview.
+
+### Bug fixes
+
+- Fixed the `none.css` preview theme bug https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1778.
+- Fixed the bug of copying texts in preview https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1775.
+- Added `<code>` in `<pre>` while rendering code blocks in preview.
+
 ## [0.8.15] - 2023-09-17
 
 ### New features
