@@ -665,6 +665,11 @@ window["initRevealPresentation"] = async function() {
     background-color: var(--vscode-editor-background);
     color: var(--vscode-editor-foreground);
   }
+
+  pre code {
+    color: var(--vscode-editor-foreground);
+    tab-size: 4;
+  }  
   </style>
 `
             : ''
