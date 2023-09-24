@@ -418,12 +418,12 @@ window["initRevealPresentation"] = async function() {
             ? yamlConfig['presentation']['theme']
             : this.notebook.config.revealjsTheme;
         return (
-          MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] ||
+          MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] ??
           'default.css'
         );
       } else {
         return (
-          MarkdownEngine.AutoPrismThemeMap[this.notebook.config.previewTheme] ||
+          MarkdownEngine.AutoPrismThemeMap[this.notebook.config.previewTheme] ??
           'default.css'
         );
       }
@@ -654,15 +654,21 @@ window["initRevealPresentation"] = async function() {
           yamlConfig,
           vscodePreviewPanel,
         )}
-        ${
-          (!isPresentationMode &&
-            this.notebook.config.previewTheme === 'none.css') ||
-          (isPresentationMode &&
-            this.notebook.config.revealjsTheme === 'none.css')
-            ? ''
-            : `<link rel="stylesheet" href="${webviewCss}">`
-        }
+        <link rel="stylesheet" href="${webviewCss}">
         ${styles}
+        ${
+          // NOTE: This is none.css and we are in vscode preview.
+          // We need to set the background color and foreground color.
+          this.notebook.config.previewTheme === 'none.css' && vscodePreviewPanel
+            ? `<style>
+  html, body {
+    background-color: var(--vscode-editor-background);
+    color: var(--vscode-editor-foreground);
+  }
+  </style>
+`
+            : ''
+        }
         <link rel="stylesheet" href="${utility.addFileProtocol(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),

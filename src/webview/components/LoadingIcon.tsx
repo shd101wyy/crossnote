@@ -25,8 +25,9 @@ export default function LoadingIcon() {
         <div className="flex flex-col items-center">
           <span className="loading loading-bars loading-md"></span>
           {countdown === 0 && (
-            <span className="mt-2">
-              Something is wrong. Please close and open the preview again.
+            <span className="mt-2 text-center">
+              Something is wrong.
+              <br /> Please close and open the preview again.
             </span>
           )}
         </div>
