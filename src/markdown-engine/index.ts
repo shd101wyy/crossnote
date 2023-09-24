@@ -685,7 +685,7 @@ window["initRevealPresentation"] = async function() {
           JSAndCssFiles,
           vscodePreviewPanel,
         )}
-        ${this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
+        ${await this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
         ${head}
       </head>
       <body class="preview-container ${
@@ -1140,7 +1140,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       <style>
       ${styles}
       </style>
-      ${this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
+      ${await this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
     </head>
     <body ${options.isForPrint ? '' : 'for="html-export"'} ${
       yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
@@ -1790,7 +1790,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${globalStyles}
     </style>
     ${mathStyle}
-    ${this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
+    ${await this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
   </head>
   <body ${path.extname(dest) === '.html' ? 'for="html-export"' : ''}>
     <div class="crossnote markdown-preview">
@@ -2074,29 +2074,28 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
   }
 
-  private resolvePathsInHeader(header: string) {
+  // FIXME: This function actually doesn't help in the web version.
+  private async resolvePathsInHeader(header: string) {
     const $ = cheerio.load(header);
 
     // script
     const scripts = $('script');
-    scripts.each((offset, script) => {
-      const $script = $(script);
+    for (let i = 0; i < scripts.length; i++) {
+      const $script = $(scripts[i]);
       const src = $script.attr('src');
       if (src && !src.match(/^https?:\/\//)) {
-        $script.attr('src', this.resolveFilePath(src, true));
+        // Load the script from the local file system
+        // and set as inline script
+        const scriptPath = this.notebook.resolveNoteAbsolutePath(src);
+        try {
+          const scriptContent = await this.fs.readFile(scriptPath);
+          $script.html(scriptContent);
+          $script.removeAttr('src');
+        } catch (error) {
+          console.error(error);
+        }
       }
-    });
-
-    // style
-    const styles = $('link[rel="stylesheet"]');
-    styles.each((offset, style) => {
-      const $style = $(style);
-      const href = $style.attr('href');
-      if (href && !href.match(/^https?:\/\//)) {
-        $style.attr('href', this.resolveFilePath(href, true));
-      }
-    });
-
+    }
     return $.html();
   }
 
