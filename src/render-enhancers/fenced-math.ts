@@ -1,3 +1,4 @@
+import { escape } from 'html-escaper';
 import { KatexOptions } from 'katex';
 import { stringifyBlockAttributes } from '../lib/block-attributes';
 import { BlockInfo } from '../lib/block-info';
@@ -83,7 +84,9 @@ const renderMath = (
       normalizedInfo.attributes,
     )}>${mathHtml}</p>`;
   } catch (error) {
-    $output = `<pre class="language-text">${error.toString()}</pre>`;
+    $output = `<pre class="language-text"><code>${escape(
+      error.toString(),
+    )}</code></pre>`;
   }
   return $output;
 };

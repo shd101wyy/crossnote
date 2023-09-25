@@ -342,7 +342,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       presentationInitScript += `
       var vegaEls = document.querySelectorAll('.vega, .vega-lite');
       function reportVegaError(el, error) {
-        el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        el.innerHTML = '<pre class="language-text"><code>' + error.toString() + '</code></pre>'
       }
       for (var i = 0; i < vegaEls.length; i++) {
         const vegaEl = vegaEls[i]
@@ -418,12 +418,12 @@ window["initRevealPresentation"] = async function() {
             ? yamlConfig['presentation']['theme']
             : this.notebook.config.revealjsTheme;
         return (
-          MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] ||
+          MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] ??
           'default.css'
         );
       } else {
         return (
-          MarkdownEngine.AutoPrismThemeMap[this.notebook.config.previewTheme] ||
+          MarkdownEngine.AutoPrismThemeMap[this.notebook.config.previewTheme] ??
           'default.css'
         );
       }
@@ -663,6 +663,24 @@ window["initRevealPresentation"] = async function() {
             : `<link rel="stylesheet" href="${webviewCss}">`
         }
         ${styles}
+        ${
+          // NOTE: This is none.css and we are in vscode preview.
+          // We need to set the background color and foreground color.
+          this.notebook.config.previewTheme === 'none.css' && vscodePreviewPanel
+            ? `<style>
+  html, body {
+    background-color: var(--vscode-editor-background);
+    color: var(--vscode-editor-foreground);
+  }
+
+  pre code {
+    color: var(--vscode-editor-foreground);
+    tab-size: 4;
+  }  
+  </style>
+`
+            : ''
+        }
         <link rel="stylesheet" href="${utility.addFileProtocol(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
@@ -674,7 +692,7 @@ window["initRevealPresentation"] = async function() {
           JSAndCssFiles,
           vscodePreviewPanel,
         )}
-        ${this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
+        ${await this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
         ${head}
       </head>
       <body class="preview-container ${
@@ -873,7 +891,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       vegaInitScript += `<script>
       var vegaEls = document.querySelectorAll('.vega, .vega-lite');
       function reportVegaError(el, error) {
-        el.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        el.innerHTML = '<pre class="language-text"><code>' + error.toString() + '</code></pre>'
       }
       for (var i = 0; i < vegaEls.length; i++) {
         const vegaEl = vegaEls[i]
@@ -1129,7 +1147,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       <style>
       ${styles}
       </style>
-      ${this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
+      ${await this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
     </head>
     <body ${options.isForPrint ? '' : 'for="html-export"'} ${
       yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
@@ -1779,7 +1797,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     ${globalStyles}
     </style>
     ${mathStyle}
-    ${this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
+    ${await this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
   </head>
   <body ${path.extname(dest) === '.html' ? 'for="html-export"' : ''}>
     <div class="crossnote markdown-preview">
@@ -2063,29 +2081,28 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
   }
 
-  private resolvePathsInHeader(header: string) {
+  // FIXME: This function actually doesn't help in the web version.
+  private async resolvePathsInHeader(header: string) {
     const $ = cheerio.load(header);
 
     // script
     const scripts = $('script');
-    scripts.each((offset, script) => {
-      const $script = $(script);
+    for (let i = 0; i < scripts.length; i++) {
+      const $script = $(scripts[i]);
       const src = $script.attr('src');
       if (src && !src.match(/^https?:\/\//)) {
-        $script.attr('src', this.resolveFilePath(src, true));
+        // Load the script from the local file system
+        // and set as inline script
+        const scriptPath = this.notebook.resolveNoteAbsolutePath(src);
+        try {
+          const scriptContent = await this.fs.readFile(scriptPath);
+          $script.html(scriptContent);
+          $script.removeAttr('src');
+        } catch (error) {
+          console.error(error);
+        }
       }
-    });
-
-    // style
-    const styles = $('link[rel="stylesheet"]');
-    styles.each((offset, style) => {
-      const $style = $(style);
-      const href = $style.attr('href');
-      if (href && !href.match(/^https?:\/\//)) {
-        $style.attr('href', this.resolveFilePath(href, true));
-      }
-    });
-
+    }
     return $.html();
   }
 
@@ -2173,7 +2190,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         if (typeof data === 'object') {
           table = this.frontMatterToTable(data);
         } else {
-          table = '<pre>Failed to parse YAML.</pre>';
+          table =
+            '<pre class="language-text"><code>Failed to parse YAML.</code></pre>';
         }
 
         return { content: '', table, data };
@@ -2373,7 +2391,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             if (error) {
               return reject(error);
             } else if (stderr) {
-              return resolve('<pre>' + stderr + '</pre>' + stdout);
+              return resolve(
+                '<pre class="language-text"><code>' +
+                  escape(stderr) +
+                  '</code></pre>' +
+                  stdout,
+              );
             } else {
               return resolve(stdout);
             }
@@ -2491,7 +2514,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
         html = await this.pandocRender(outputString, args);
       } catch (error) {
-        html = `<pre>${error}</pre>`;
+        html = `<pre class="language-text"><code>${escape(
+          error.toString(),
+        )}</code></pre>`;
       }
     } else {
       // markdown-it

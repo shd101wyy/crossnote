@@ -665,7 +665,12 @@ export class Notebook {
   }
   */
 
-  private resolveNoteAbsolutePath(filePath: string) {
+  /**
+   * Get the absolute path of the note
+   * @param filePath
+   * @returns
+   */
+  public resolveNoteAbsolutePath(filePath: string) {
     if (path.isAbsolute(filePath)) {
       return filePath;
     } else {
@@ -673,7 +678,12 @@ export class Notebook {
     }
   }
 
-  private resolveNoteRelativePath(filePath: string) {
+  /**
+   * Get the relative path of the note to the notebook directory
+   * @param filePath
+   * @returns
+   */
+  public resolveNoteRelativePath(filePath: string) {
     if (path.isAbsolute(filePath)) {
       return path.relative(this.notebookPath.fsPath, filePath);
     } else {

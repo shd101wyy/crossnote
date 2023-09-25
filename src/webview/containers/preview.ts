@@ -1,4 +1,5 @@
 import CryptoJS, { SHA256 } from 'crypto-js';
+import { escape } from 'html-escaper';
 import $ from 'jquery';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContextMenu } from 'react-contexify';
@@ -417,7 +418,9 @@ const PreviewContainer = createContainer(() => {
       );
       function reportVegaError(el, error) {
         el.innerHTML =
-          '<pre class="language-text">' + error.toString() + '</pre>';
+          '<pre class="language-text"><code>' +
+          escape(error.toString()) +
+          '</code></pre>';
       }
       for (let i = 0; i < vegaElements.length; i++) {
         const vegaElement = vegaElements[i];
@@ -452,7 +455,9 @@ const PreviewContainer = createContainer(() => {
         await mermaid.parse((mermaidGraph.textContent ?? '').trim());
         validMermaidGraphs.push(mermaidGraph);
       } catch (error) {
-        mermaidGraph.innerHTML = `<pre class="language-text">${error.toString()}</pre>`;
+        mermaidGraph.innerHTML = `<pre class="language-text"><code>${escape(
+          error.toString(),
+        )}</code></pre>`;
       }
     }
 
@@ -470,7 +475,9 @@ const PreviewContainer = createContainer(() => {
           if (noiseElement) {
             noiseElement.style.display = 'none';
           }
-          mermaidGraph.innerHTML = `<pre class="language-text">${error.toString()}</pre>`;
+          mermaidGraph.innerHTML = `<pre class="language-text"><code>${escape(
+            error.toString(),
+          )}</code></pre>`;
         }
       });
       return;
@@ -506,9 +513,11 @@ const PreviewContainer = createContainer(() => {
           ).toString();
 
           postMessage('cacheCodeChunkResult', [sourceUri.current, id, result]);
-        } catch (e) {
+        } catch (error) {
           const outputDiv = codeChunk.getElementsByClassName('output-div')[0];
-          outputDiv.innerHTML = `<pre>${e.toString()}</pre>`;
+          outputDiv.innerHTML = `<pre class="language-text"><code>${escape(
+            error.toString(),
+          )}</code></pre>`;
         }
       } else {
         postMessage('runCodeChunk', [sourceUri.current, id]);
