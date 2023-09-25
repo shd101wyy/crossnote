@@ -85,7 +85,7 @@ export function toc(headings: HeadingData[], opt: TocOption) {
     tab = '    ';
   }
 
-  headings = headings.filter(heading => {
+  headings = headings.filter((heading) => {
     return heading.level >= depthFrom && heading.level <= depthTo;
   });
 
@@ -150,7 +150,7 @@ export function generateSidebarToCHTML(
   const depthFrom = opt.depthFrom || 1;
   const depthTo = opt.depthTo || 6;
 
-  headings = headings.filter(heading => {
+  headings = headings.filter((heading) => {
     return heading.level >= depthFrom && heading.level <= depthTo;
   });
   headings = headings.map((heading, index) => {

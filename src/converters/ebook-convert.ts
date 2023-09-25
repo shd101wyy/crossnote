@@ -191,7 +191,7 @@ export function ebookConvert(src, dest, config = {}) {
 
     // arguments
     const ebookArgs = config['args'] || [];
-    ebookArgs.forEach(arg => {
+    ebookArgs.forEach((arg) => {
       args.push(arg);
     });
 
@@ -199,7 +199,7 @@ export function ebookConvert(src, dest, config = {}) {
     // therefore I will create directory first.
     mkdirp(path.dirname(dest))
       .then(() => {
-        execFile('ebook-convert', args, error2 => {
+        execFile('ebook-convert', args, (error2) => {
           if (error2) {
             return reject(error2.toString());
           } else {
@@ -207,7 +207,7 @@ export function ebookConvert(src, dest, config = {}) {
           }
         });
       })
-      .catch(error => {
+      .catch((error) => {
         if (error) {
           return reject(error);
         }

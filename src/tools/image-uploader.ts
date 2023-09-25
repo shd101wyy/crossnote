@@ -103,9 +103,9 @@ function imgurUploadImage(filePath: string): Promise<string> {
 function smmsUploadImage(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const headers = {
-      authority: 'sm.ms',
+      'authority': 'sm.ms',
       'user-agent': 'crossnote',
-      referer: '',
+      'referer': '',
     };
     request.post(
       {
@@ -163,7 +163,7 @@ function qiniuUploadImage(
     }
 
     import('qiniu')
-      .then(qiniu => {
+      .then((qiniu) => {
         const mac = new qiniu.auth.digest.Mac(AccessKey, SecretKey);
         const putPolicy = new qiniu.rs.PutPolicy({ scope: Bucket });
         const uploadToken = putPolicy.uploadToken(mac);
@@ -194,7 +194,7 @@ function qiniuUploadImage(
           },
         );
       })
-      .catch(error => reject(error));
+      .catch((error) => reject(error));
   });
 }
 

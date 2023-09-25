@@ -35,7 +35,7 @@ export default function Preview() {
         'w-full min-h-screen',
         isPresentationMode ? 'h-full' : 'h-auto',
       )}
-      onContextMenu={event => {
+      onContextMenu={(event) => {
         showContextMenu({
           event,
         });

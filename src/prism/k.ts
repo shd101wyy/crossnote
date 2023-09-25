@@ -1,6 +1,6 @@
 export default function(Prism) {
   Prism.languages.k = {
-    comment: [
+    'comment': [
       {
         pattern: /(^|[^\\])\/\*[\s\S]*?(?:\*\/|$)/,
         lookbehind: true,
@@ -11,27 +11,27 @@ export default function(Prism) {
         greedy: true,
       },
     ],
-    string: {
+    'string': {
       pattern: /(["'])(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/,
       greedy: true,
     },
     'class-name': /\b(?:strict|avoid|prefer|bracket|non-assoc|seqstrict|left|right|macro-rec|macro|token|notInRules|autoReject|structural|latex|binder|klabel|symbol|format)\b/,
-    keyword: {
+    'keyword': {
       pattern: /\b(?:syntax\s+(?:priority|priorities|left|right|non-assoc|lexical)|syntax|rule|Id|Int|Bool|String|Token|Lexer|Float|configuration|import|imports|require|requires|Kresult|context\s+alias|context|module|endmodule|claim)\b/,
       greedy: true,
     },
-    boolean: /\b(?:true|false)\b/,
-    number: /\b0x[\da-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:e[+-]?\d+)?/i,
-    operator: {
+    'boolean': /\b(?:true|false)\b/,
+    'number': /\b0x[\da-f]+\b|(?:\b\d+\.?\d*|\B\.\d+)(?:e[+-]?\d+)?/i,
+    'operator': {
       pattern: /[<>]=|=>|~>|[!=]=?=?|--?|\+\+?|&&?|\|\|?|[?*/~^%]/,
     },
-    punctuation: /[{}[\];(),.:]/,
+    'punctuation': /[{}[\];(),.:]/,
     // copied from prism-markup.js
-    tag: {
+    'tag': {
       pattern: /<\/?(?!\d)[^\s>/=$<%]+(?:\s(?:\s*[^\s>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
       greedy: true,
       inside: {
-        tag: {
+        'tag': {
           pattern: /^<\/?[^\s>/]+/,
           inside: {
             punctuation: /^<\/?/,
@@ -50,7 +50,7 @@ export default function(Prism) {
             ],
           },
         },
-        punctuation: /\/?>/,
+        'punctuation': /\/?>/,
         'attr-name': {
           pattern: /[^\s>/]+/,
           inside: {

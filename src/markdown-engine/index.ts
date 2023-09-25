@@ -171,7 +171,7 @@ export class MarkdownEngine {
       ''
     )
       .split(',')
-      .map(x => x.trim());
+      .map((x) => x.trim());
     return new RegExp('^(' + protocolsWhiteList.join('|') + ')'); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
   }
 
@@ -542,7 +542,7 @@ window["initRevealPresentation"] = async function() {
     vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
     let output = '';
-    JSAndCssFiles.forEach(sourcePath => {
+    JSAndCssFiles.forEach((sourcePath) => {
       let absoluteFilePath = sourcePath;
       if (sourcePath[0] === '/') {
         absoluteFilePath = utility.addFileProtocol(
@@ -654,14 +654,7 @@ window["initRevealPresentation"] = async function() {
           yamlConfig,
           vscodePreviewPanel,
         )}
-        ${
-          (!isPresentationMode &&
-            this.notebook.config.previewTheme === 'none.css') ||
-          (isPresentationMode &&
-            this.notebook.config.revealjsTheme === 'none.css')
-            ? ''
-            : `<link rel="stylesheet" href="${webviewCss}">`
-        }
+        <link rel="stylesheet" href="${webviewCss}">
         ${styles}
         ${
           // NOTE: This is none.css and we are in vscode preview.
@@ -1124,7 +1117,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // move @import ''; to the very start.
     let styles = styleCSS + '\n' + globalStyles;
     let imports = '';
-    styles = styles.replace(/@import\s+url\(([^)]+)\)\s*;/g, whole => {
+    styles = styles.replace(/@import\s+url\(([^)]+)\)\s*;/g, (whole) => {
       imports += whole + '\n';
       return '';
     });
@@ -1471,8 +1464,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
     }
 
-    const asyncFunctions = imagesToDownload.map($img => {
-      return new Promise<string>(resolve => {
+    const asyncFunctions = imagesToDownload.map(($img) => {
+      return new Promise<string>((resolve) => {
         const httpSrc = $img.attr('src');
         let savePath =
           Math.random()
@@ -1665,7 +1658,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         const $a = $$(a);
         const href = $a.attr('href');
         if (href.startsWith('file://')) {
-          results.forEach(result => {
+          results.forEach((result) => {
             if (result.filePath === utility.removeFileProtocol(href)) {
               $a.attr('href', '#' + result.id);
             }
@@ -1815,7 +1808,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // this function will be called later
     function deleteDownloadedImages() {
-      downloadedImagePaths.forEach(imagePath => {
+      downloadedImagePaths.forEach((imagePath) => {
         fs.unlink(imagePath, () => {
           return;
         });
@@ -2128,7 +2121,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (arg instanceof Array) {
       let tbody = '<tbody><tr>';
       arg.forEach(
-        item => (tbody += `<td>${this.frontMatterToTable(item)}</td>`),
+        (item) => (tbody += `<td>${this.frontMatterToTable(item)}</td>`),
       );
       tbody += '</tr></tbody>';
       return `<table>${tbody}</table>`;
@@ -2327,7 +2320,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       mathRenderer,
     ]
       .concat(args)
-      .filter(arg => arg.length);
+      .filter((arg) => arg.length);
 
     /*
       convert pandoc code block to markdown-it code block

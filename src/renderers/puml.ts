@@ -36,7 +36,7 @@ class PlantUMLTask {
   }
 
   public generateSVG(content: string): Promise<string> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.callbacks.push(resolve);
       this.task?.stdin.write(content + '\n');
     });
@@ -59,7 +59,7 @@ class PlantUMLTask {
       'UTF-8',
     ]);
 
-    this.task.stdout.on('data', chunk => {
+    this.task.stdout.on('data', (chunk) => {
       let data = chunk.toString();
       this.chunks += data;
       if (
@@ -70,7 +70,7 @@ class PlantUMLTask {
         data = this.chunks;
         this.chunks = ''; // clear CHUNKS
         const diagrams = data.split('<?xml ');
-        diagrams.forEach(diagram => {
+        diagrams.forEach((diagram) => {
           if (diagram.length) {
             const callback = this.callbacks.shift();
             if (callback) {
@@ -81,9 +81,9 @@ class PlantUMLTask {
       }
     });
 
-    this.task.on('error', err => {
+    this.task.on('error', (err) => {
       // Return error object to rendered doc
-      this.callbacks.forEach(cb => cb(JSON.stringify(err)));
+      this.callbacks.forEach((cb) => cb(JSON.stringify(err)));
       this.closeSelf();
     });
     this.task.on('exit', () => this.closeSelf());

@@ -32,7 +32,7 @@ export default class Search {
           return document[fieldName];
         }
       },
-      tokenize: string => {
+      tokenize: (string) => {
         // eslint-disable-next-line no-control-regex
         return slugify(string, ' ').match(/([^\x00-\x7F]|\w+)/g) ?? [];
       },
@@ -87,7 +87,7 @@ export default class Search {
     this.add(
       filePath,
       searchDoc.title,
-      searchDoc.aliases.filter(a => a !== alias),
+      searchDoc.aliases.filter((a) => a !== alias),
     );
   }
 }

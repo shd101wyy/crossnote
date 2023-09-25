@@ -5,7 +5,7 @@ import defineIeleLanguage from '../prism/iele';
 import defineKLanguage from '../prism/k';
 import Prism from '../prism/prism';
 
-Prism.hooks.add('wrap', env => {
+Prism.hooks.add('wrap', (env) => {
   if (env.type !== 'keyword') {
     return;
   }
@@ -138,10 +138,10 @@ function highlightLines(
   const match = code.match(/\n(?!$)/g);
   const lineCount = match ? match.length + 1 : 1;
   const highlightElements: string[] = [];
-  highlight.forEach(h => {
+  highlight.forEach((h) => {
     h = h.toString();
     if (h.indexOf('-') > 0) {
-      let [start, end] = h.split('-').map(x => parseInt(x, 10));
+      let [start, end] = h.split('-').map((x) => parseInt(x, 10));
       if (isNaN(start) || isNaN(end) || start < 0 || end < 0) {
         return;
       }

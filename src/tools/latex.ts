@@ -15,7 +15,7 @@ function cleanUpFiles(texFilePath: string) {
       return;
     }
 
-    items.forEach(fileName => {
+    items.forEach((fileName) => {
       if (fileName.startsWith(filePrefix) && !fileName.match(/\.(la)?tex/)) {
         fs.unlink(path.resolve(directoryPath, fileName), () => {
           return;
@@ -50,16 +50,16 @@ export function toSVGMarkdown(
     });
 
     const chunks: Buffer[] = [];
-    task.stdout.on('data', chunk => {
+    task.stdout.on('data', (chunk) => {
       chunks.push(chunk);
     });
 
     const errorChunks: Buffer[] = [];
-    task.stderr.on('data', chunk => {
+    task.stderr.on('data', (chunk) => {
       errorChunks.push(chunk);
     });
 
-    task.on('error', error => {
+    task.on('error', (error) => {
       errorChunks.push(Buffer.from(error.toString(), 'utf-8'));
     });
 
@@ -84,11 +84,11 @@ export function toSVGMarkdown(
           svgWidth,
           svgHeight,
         })
-          .then(svgMarkdown => {
+          .then((svgMarkdown) => {
             cleanUpFiles(texFilePath);
             return resolve(svgMarkdown);
           })
-          .catch(error => {
+          .catch((error) => {
             cleanUpFiles(texFilePath);
             return reject(error);
           });

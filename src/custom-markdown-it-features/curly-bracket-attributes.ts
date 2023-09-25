@@ -8,7 +8,7 @@ export default (md: MarkdownIt) => {
   // - headings:          # This is heading {...}
   // - links and images:  [This is link](link){...}
   // For fenced code block, use the ./code-fences.ts
-  md.core.ruler.push('curly_bracket_attributes', state => {
+  md.core.ruler.push('curly_bracket_attributes', (state) => {
     const tokens = state.tokens;
     for (let i = 0; i < tokens.length; i++) {
       if (tokens[i].type === 'heading_open') {

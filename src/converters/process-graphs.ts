@@ -433,6 +433,6 @@ export async function processGraphs(
 
   await Promise.all(asyncFunctions);
 
-  const outputString = lines.filter(line => line).join('\n');
+  const outputString = lines.filter((line) => line).join('\n');
   return { outputString, imagePaths };
 }

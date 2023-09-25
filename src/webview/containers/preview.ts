@@ -152,7 +152,7 @@ const PreviewContainer = createContainer(() => {
     if (isPresentationMode) {
       return window['Reveal'].toggleOverview();
     } else {
-      setShowSidebarToc(x => !x);
+      setShowSidebarToc((x) => !x);
       scrollMap.current = null;
     }
   }, [isPresentationMode]);
@@ -321,11 +321,11 @@ const PreviewContainer = createContainer(() => {
   }, [buildScrollMap, config.scrollSync, previewSyncSource]);
 
   const zoomIn = useCallback(() => {
-    setZoomLevel(x => x + 0.1);
+    setZoomLevel((x) => x + 0.1);
   }, []);
 
   const zoomOut = useCallback(() => {
-    setZoomLevel(x => x - 0.1);
+    setZoomLevel((x) => x - 0.1);
   }, []);
 
   const resetZoom = useCallback(() => {
@@ -333,7 +333,7 @@ const PreviewContainer = createContainer(() => {
   }, []);
 
   const renderMathJax = useCallback(() => {
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve) => {
       if (!hiddenPreviewElement.current) {
         return resolve();
       }
@@ -408,7 +408,7 @@ const PreviewContainer = createContainer(() => {
   }, []);
 
   const renderInteractiveVega = useCallback(() => {
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve) => {
       if (!previewElement.current) {
         return resolve();
       }
@@ -427,7 +427,7 @@ const PreviewContainer = createContainer(() => {
         try {
           const spec = JSON.parse((vegaElement.textContent ?? '').trim());
           window['vegaEmbed'](vegaElement, spec, { actions: false }).catch(
-            error => {
+            (error) => {
               reportVegaError(vegaElement, error);
             },
           );
@@ -746,7 +746,7 @@ const PreviewContainer = createContainer(() => {
             `[id="${encodeURIComponent(href.slice(1))}"]`,
           ) as HTMLElement; // fix number id bug
           if (targetElement) {
-            a.onclick = event => {
+            a.onclick = (event) => {
               if (!previewElement.current) {
                 return;
               }
@@ -769,7 +769,7 @@ const PreviewContainer = createContainer(() => {
             };
           } else {
             // without the `else` here, mpe package on Atom will fail to render preview (issue #824 and #827).
-            a.onclick = event => {
+            a.onclick = (event) => {
               event.preventDefault();
               event.stopPropagation();
             };
@@ -782,7 +782,7 @@ const PreviewContainer = createContainer(() => {
         ) {
           continue;
         } */ else {
-          a.onclick = event => {
+          a.onclick = (event) => {
             event.preventDefault();
             event.stopPropagation();
             postMessage('clickTagA', [
@@ -816,7 +816,7 @@ const PreviewContainer = createContainer(() => {
         li.classList.add('task-list-item');
 
         // bind checkbox click event
-        checkbox.onclick = event => {
+        checkbox.onclick = (event) => {
           event.preventDefault();
 
           const checked = checkbox.checked;
@@ -850,7 +850,7 @@ const PreviewContainer = createContainer(() => {
     const bindHighlightElementsEvent = (
       highlightElements: (HTMLElement | Element)[],
     ) => {
-      highlightElements.forEach(highlightElement => {
+      highlightElements.forEach((highlightElement) => {
         if (highlightElementsThatAddedEventSet.has(highlightElement)) {
           return;
         } else {
@@ -858,10 +858,10 @@ const PreviewContainer = createContainer(() => {
         }
         highlightElement.addEventListener(
           /*'mouseenter'*/ 'mouseover',
-          event => {
+          (event) => {
             event.stopPropagation();
             // console.log('mouseover');
-            highlightElements.forEach(highlightElement => {
+            highlightElements.forEach((highlightElement) => {
               highlightElement.classList.add('highlight-line');
             });
             setHighlightElement(highlightElements[0] as HTMLElement);
@@ -869,10 +869,10 @@ const PreviewContainer = createContainer(() => {
         );
         highlightElement.addEventListener(
           /*'mouseleave'*/ 'mouseout',
-          event => {
+          (event) => {
             event.stopPropagation();
             // console.log('mouseout');
-            highlightElements.forEach(highlightElement => {
+            highlightElements.forEach((highlightElement) => {
               highlightElement.classList.remove('highlight-line');
               highlightElement.classList.remove('highlight-active');
             });
@@ -1084,7 +1084,7 @@ const PreviewContainer = createContainer(() => {
       window['Reveal'].layout();
     });
 
-    window['Reveal'].addEventListener('slidechanged', event => {
+    window['Reveal'].addEventListener('slidechanged', (event) => {
       if (Date.now() < previewScrollDelay.current) {
         return;
       }

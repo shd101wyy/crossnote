@@ -25,10 +25,10 @@ export default async function enhance(
         return;
       }
       asyncFunctions.push(
-        new Promise(resolve => {
+        new Promise((resolve) => {
           notebook.fs
             .readFile(decodeURI(src), 'base64')
-            .then(base64 => {
+            .then((base64) => {
               $img.attr(
                 'src',
                 `data:image/svg+xml;charset=utf-8;base64,${base64}`,

@@ -10,14 +10,14 @@ export default function FloatingActions() {
 
   const onMouseOver = useCallback(() => {
     const highlightLineElements = document.querySelectorAll('.highlight-line');
-    highlightLineElements.forEach(element => {
+    highlightLineElements.forEach((element) => {
       element.classList.add('highlight-active');
     });
   }, []);
 
   const onMouseOut = useCallback(() => {
     const highlightLineElements = document.querySelectorAll('.highlight-line');
-    highlightLineElements.forEach(element => {
+    highlightLineElements.forEach((element) => {
       element.classList.remove('highlight-active');
     });
   }, []);

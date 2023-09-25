@@ -239,7 +239,7 @@ describe('lib/attributes', () => {
       return;
     }
     const arrayOfTexts = typeof raw === 'string' ? [raw] : raw;
-    arrayOfTexts.map(text => {
+    arrayOfTexts.map((text) => {
       test(`parseAttributes() correctly parses ${text}`, () => {
         const result = parseBlockAttributes(text);
         expect(result).toEqual(attributes);
@@ -276,7 +276,7 @@ describe('lib/attributes', () => {
       } else if (attributes) {
         attributesToTest.push(attributes);
       }
-      attributesToTest.map(attrs => {
+      attributesToTest.map((attrs) => {
         test(`stringifyAttributes() correctly stringifies ${JSON.stringify(
           attrs,
         )}`, () => {

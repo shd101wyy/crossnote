@@ -110,7 +110,7 @@ function processOutputConfig(
       if (typeof data === 'string') {
         args.push(prefix + data);
       } else if (data.constructor === Array) {
-        data.forEach(d => args.push(prefix + d));
+        data.forEach((d) => args.push(prefix + d));
       } else {
         args.push(prefix + data);
       }
@@ -135,7 +135,7 @@ function processOutputConfig(
   // All other arguments give here can override the
   // defaults from above
   if (config['pandoc_args']) {
-    config['pandoc_args'].forEach(arg => args.push(arg));
+    config['pandoc_args'].forEach((arg) => args.push(arg));
   }
 }
 
@@ -228,7 +228,7 @@ function processPaths(text, fileDirectoryPath, projectDirectoryPath) {
 
   let inBlock = false;
   let lines = text.split('\n');
-  lines = lines.map(line => {
+  lines = lines.map((line) => {
     if (line.match(/^\s*```/)) {
       inBlock = !inBlock;
       return line;
@@ -423,7 +423,7 @@ export async function pandocConvert(
 
   // citation
   const noDefaultsOrCiteProc =
-    args.find(el => {
+    args.find((el) => {
       return el.includes('pandoc-citeproc') || el.includes('--defaults');
     }) === undefined;
 
@@ -466,7 +466,7 @@ export async function pandocConvert(
       notebook.config.pandocPath,
       args,
       { cwd: fileDirectoryPath },
-      error => {
+      (error) => {
         /*if (deleteImages) {
         imagePaths.forEach((p)=> fs.unlink(p, (error)=>{}))
       }*/

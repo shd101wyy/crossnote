@@ -2,18 +2,17 @@
 import fetch from 'cross-fetch';
 import { escape } from 'html-escaper';
 import * as YAML from 'yaml';
+import {
+  BlockAttributes,
+  stringifyBlockAttributes,
+} from '../lib/block-attributes';
+import { BlockInfo } from '../lib/block-info';
 import computeChecksum from '../lib/compute-checksum';
+import { renderBitfield } from '../renderers/bitfield';
 import { render as renderPlantuml } from '../renderers/puml';
 import { toSVG as vegaToSvg } from '../renderers/vega';
 import { toSVG as vegaLiteToSvg } from '../renderers/vega-lite';
 import { Viz } from '../renderers/viz';
-
-import {
-  BlockAttributes,
-  stringifyBlockAttributes,
-} from '../lib/block-attributes/index.js';
-import { BlockInfo } from '../lib/block-info/index.js';
-import { renderBitfield } from '../renderers/bitfield';
 
 // NOTE: We shouldn't need this function anymore
 // because we always put `language` as a class in the attributes.

@@ -14,14 +14,14 @@ module.exports = {
       {
         light: {
           ...require('daisyui/src/theming/themes')['[data-theme=light]'],
-          primary: '#95c258',
+          'primary': '#95c258',
           'primary-focus': '#88bb43',
         },
       },
       {
         dark: {
           ...require('daisyui/src/theming/themes')['[data-theme=dark]'],
-          primary: '#6fa129',
+          'primary': '#6fa129',
           'primary-focus': '#628f25',
         },
       },

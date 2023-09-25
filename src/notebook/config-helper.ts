@@ -74,8 +74,8 @@ async function getGlobalStyles(configPath: string, fs: FileSystemApi) {
     await fs.writeFile(globalLessPath, fileContent);
   }
 
-  return await new Promise<string>(resolve => {
-    const generateErrorMessage = error => {
+  return await new Promise<string>((resolve) => {
+    const generateErrorMessage = (error) => {
       return `html body:before {
         content: "Failed to compile \`style.less\`. ${error}" !important;
         padding: 2em !important;

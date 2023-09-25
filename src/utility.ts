@@ -49,7 +49,7 @@ export function openFile(filePath: string) {
  * @param ms
  */
 export function sleep(ms: number) {
-  return new Promise<void>(resolve => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => {
       return resolve();
     }, ms);
@@ -170,7 +170,7 @@ export function removeFileProtocol(filePath: string): string {
   });
 }
 
-export { uploadImage } from './tools/image-uploader.js';
+export { uploadImage } from './tools/image-uploader';
 
 /**
  * Allow unsafed `eval` function
@@ -181,7 +181,7 @@ export { uploadImage } from './tools/image-uploader.js';
 export function allowUnsafeEval(fn) {
   const previousEval = globalThis.eval;
   try {
-    globalThis.eval = source => vm.runInThisContext(source);
+    globalThis.eval = (source) => vm.runInThisContext(source);
 
     return fn();
   } finally {
@@ -193,7 +193,7 @@ export function allowUnsafeEval(fn) {
 export async function allowUnsafeEvalAync(fn: () => Promise<any>) {
   const previousEval = globalThis.eval;
   try {
-    globalThis.eval = source => vm.runInThisContext(source);
+    globalThis.eval = (source) => vm.runInThisContext(source);
 
     return await fn();
   } finally {
@@ -230,7 +230,7 @@ export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
   const previousEval = globalThis.eval;
   try {
     globalThis.Function = Function as FunctionConstructor;
-    globalThis.eval = source => vm.runInThisContext(source);
+    globalThis.eval = (source) => vm.runInThisContext(source);
     return await fn();
   } finally {
     globalThis.eval = previousEval;

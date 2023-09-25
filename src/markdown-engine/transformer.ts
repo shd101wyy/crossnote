@@ -342,11 +342,13 @@ export async function transformMarkdown(
             line = line.replace('{', `{code_chunk_offset=${codeChunkOffset}, `);
             codeChunkOffset++;
           }
+
           if (!inCodeBlock) {
             lastOpeningCodeBlockFence = currentCodeBlockFence;
           } else if (
             lastOpeningCodeBlockFence !== null &&
-            currentCodeBlockFence.length <= lastOpeningCodeBlockFence.length
+            currentCodeBlockFence.trim().length ===
+              lastOpeningCodeBlockFence.trim().length
           ) {
             lastOpeningCodeBlockFence = null;
           }

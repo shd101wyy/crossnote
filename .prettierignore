@@ -10,7 +10,6 @@
 !*.yaml
 !*.yml
 
-
 ## same as in .gitignore
 .DS_Store
 coverage
@@ -24,3 +23,4 @@ styles
 
 test.js
 test.mjs
+test/markdown/test-files/**

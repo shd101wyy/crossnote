@@ -12,7 +12,7 @@ export function getTags(markdown: string): string[] {
     ) || [],
   );
   return Array.from(tags).map(
-    tag => tag.replace(TagStopRegExp, '').trim(), // Don't remove \s here
+    (tag) => tag.replace(TagStopRegExp, '').trim(), // Don't remove \s here
   );
 }
 
@@ -22,8 +22,8 @@ export function sanitizeTag(tagName: string): string {
     .replace(/\s+/g, ' ')
     .replace(TagStopRegExp, '')
     .split('/')
-    .map(t => t.trim())
-    .filter(x => x.length > 0)
+    .map((t) => t.trim())
+    .filter((x) => x.length > 0)
     .join('/');
 }
 

@@ -128,7 +128,7 @@ except Exception:
 
   // check macros
   let findInputFileMacro = false;
-  args = args.map(arg => {
+  args = args.map((arg) => {
     if (arg === '$input_file') {
       findInputFileMacro = true;
       return savePath;
@@ -141,7 +141,7 @@ except Exception:
     args.push(savePath);
   }
 
-  return await new Promise<string>(resolve => {
+  return await new Promise<string>((resolve) => {
     const task = spawn(cmd, args, { cwd: fileDirectoryPath });
     if (normalizedAttributes['stdin']) {
       task.stdin.write(content); // pass content as stdin
@@ -149,15 +149,15 @@ except Exception:
     task.stdin.end();
 
     const chunks: Buffer[] = [];
-    task.stdout.on('data', chunk => {
+    task.stdout.on('data', (chunk) => {
       chunks.push(chunk);
     });
 
-    task.stderr.on('data', chunk => {
+    task.stderr.on('data', (chunk) => {
       chunks.push(chunk);
     });
 
-    task.on('error', error => {
+    task.on('error', (error) => {
       chunks.push(Buffer.from(error.toString(), 'utf-8'));
     });
 
@@ -170,11 +170,11 @@ except Exception:
 }
 
 const fileExtensionMap = {
-  go: '.go',
-  javascript: '.js',
-  python: '.py',
-  typescript: '.ts',
-  node: '.js',
+  'go': '.go',
+  'javascript': '.js',
+  'python': '.py',
+  'typescript': '.ts',
+  'node': '.js',
   'ts-node': '.ts',
 };
 

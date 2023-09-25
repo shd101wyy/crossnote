@@ -29,7 +29,7 @@ export default function Footer() {
           )}
           title="Toggle backlinks"
           onClick={() => {
-            setShowBacklinks(x => !x);
+            setShowBacklinks((x) => !x);
           }}
         >
           <LinkIcon className="w-6 h-6"></LinkIcon>
@@ -37,7 +37,7 @@ export default function Footer() {
         <div
           className="p-2 cursor-pointer hover:scale-105"
           title={'Open menu'}
-          onClick={event => {
+          onClick={(event) => {
             showContextMenu({
               event,
             });

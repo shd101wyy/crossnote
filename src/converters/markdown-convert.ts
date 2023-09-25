@@ -29,7 +29,7 @@ function processMath(
   const inlineBegin =
     '(?:' +
     inline
-      .map(x => x[0])
+      .map((x) => x[0])
       .join('|')
       .replace(/\\/g, '\\\\')
       .replace(/([()[\]$])/g, '\\$1') +
@@ -37,7 +37,7 @@ function processMath(
   const inlineEnd =
     '(?:' +
     inline
-      .map(x => x[1])
+      .map((x) => x[1])
       .join('|')
       .replace(/\\/g, '\\\\')
       .replace(/([()[\]$])/g, '\\$1') +
@@ -45,7 +45,7 @@ function processMath(
   const blockBegin =
     '(?:' +
     block
-      .map(x => x[0])
+      .map((x) => x[0])
       .join('|')
       .replace(/\\/g, '\\\\')
       .replace(/([()[\]$])/g, '\\$1') +
@@ -53,7 +53,7 @@ function processMath(
   const blockEnd =
     '(?:' +
     block
-      .map(x => x[1])
+      .map((x) => x[1])
       .join('|')
       .replace(/\\/g, '\\\\')
       .replace(/([()[\]$])/g, '\\$1') +
@@ -142,7 +142,7 @@ function processPaths(
 
   let inBlock = false;
   let lines = text.split('\n');
-  lines = lines.map(line => {
+  lines = lines.map((line) => {
     if (line.match(/^\s*```/)) {
       inBlock = !inBlock;
       return line;
@@ -307,7 +307,7 @@ export async function markdownConvert(
             outputFilePath,
             outputString,
             { encoding: 'utf-8' },
-            error2 => {
+            (error2) => {
               if (error2) {
                 return reject(error2.toString());
               }
@@ -316,7 +316,7 @@ export async function markdownConvert(
           );
         });
       })
-      .catch(error => {
+      .catch((error) => {
         if (error) {
           return reject(error.toString());
         }
