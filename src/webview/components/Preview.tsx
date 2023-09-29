@@ -7,6 +7,7 @@ import FloatingActions from './FloatingActions';
 import Footer from './Footer';
 import ImageHelper from './ImageHelper';
 import LoadingIcon from './LoadingIcon';
+import MarkdownEditor from './MarkdownEditor';
 import RefreshingIcon from './RefreshingIcon';
 import SidebarToc from './SidebarToc';
 import { Topbar } from './Topbar';
@@ -21,6 +22,7 @@ export default function Preview() {
     setIsMouseOverPreview,
     showContextMenu,
     showBacklinks,
+    highlightElementBeingEdited,
   } = PreviewContainer.useContainer();
 
   return (
@@ -76,6 +78,8 @@ export default function Preview() {
       <ContextMenu></ContextMenu>
       {/** Floating Actions */}
       <FloatingActions></FloatingActions>
+      {/** Markdown Editor */}
+      {highlightElementBeingEdited && <MarkdownEditor></MarkdownEditor>}
     </div>
   );
 }

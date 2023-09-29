@@ -2457,7 +2457,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       filesCache: this.filesCache,
       notebook: this.notebook,
     }));
-    console.log(`outputString: |${outputString}|`);
 
     if (this.notebook.config.parserConfig['onDidTransformMarkdown']) {
       outputString = await this.notebook.config.parserConfig[
@@ -2515,8 +2514,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       // markdown-it
       html = this.notebook.md.render(outputString);
     }
-
-    console.log(`html: |${html}|`);
 
     /**
      * render tocHTML for [TOC] and sidebar TOC

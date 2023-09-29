@@ -1135,10 +1135,14 @@ export async function transformMarkdown(
     (endFrontMatterOffset = inputString.indexOf('\n---')) > 0
   ) {
     frontMatterString = inputString.slice(0, endFrontMatterOffset + 4);
-    return await helper(
-      frontMatterString.length,
-      (frontMatterString.match(/\n/g) ?? []).length,
-    );
+    let startIndex = frontMatterString.length;
+    let lineNo = (frontMatterString.match(/\n/g) ?? []).length;
+    const nextNewLineIndex = inputString.indexOf('\n', startIndex);
+    if (nextNewLineIndex > 0) {
+      startIndex = nextNewLineIndex + 1;
+      lineNo++;
+    }
+    return await helper(startIndex, lineNo);
   } else {
     return await helper(0, 0);
   }

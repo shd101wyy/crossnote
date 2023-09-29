@@ -67,6 +67,10 @@ const PreviewContainer = createContainer(() => {
    * Track the slide line number, and (h, v) indices
    */
   const slidesData = useRef<SlideData[]>([]);
+  const highlightElementLines = useRef<number[]>([]);
+  const highlightElementToLinesMap = useRef<
+    Map<HTMLElement | Element, number[]>
+  >(new Map());
   /**
    * Current slide offset
    */
@@ -98,6 +102,11 @@ const PreviewContainer = createContainer(() => {
   const [highlightElement, setHighlightElement] = useState<HTMLElement | null>(
     null,
   );
+  const [markdown, setMarkdown] = useState<string>('');
+  const [
+    highlightElementBeingEdited,
+    setHighlightElementBeingEdited,
+  ] = useState<HTMLElement | null>(null);
 
   const isPresentationMode = useMemo(() => {
     return document.body.hasAttribute('data-presentation-mode');
@@ -847,11 +856,51 @@ const PreviewContainer = createContainer(() => {
     const sourceLineElements = previewElement.querySelectorAll('.source-line');
     const highlightElementsThatAddedEventSet = new Set<Element | HTMLElement>();
 
+    highlightElementToLinesMap.current = new Map<
+      HTMLElement | Element,
+      number[]
+    >();
+    highlightElementLines.current = [];
+    const startLinesSet = new Set<number>();
+
     const bindHighlightElementsEvent = (
       highlightElements: (HTMLElement | Element)[],
+      startLine: number,
     ) => {
+      startLinesSet.add(startLine);
+
+      if (highlightElements.length === 0) {
+        return;
+      }
+      const firstHighlightElement = highlightElements[0] as HTMLElement;
+      const linesSet = new Set<number>([startLine]);
+
+      // Iterate over highlightElementToLinesMap
+      // If firstHighlightElement contains the highlightElement in the map
+      // Add its lines to the current linesSet
+      for (const [
+        highlightElement,
+        lines,
+      ] of highlightElementToLinesMap.current) {
+        if (firstHighlightElement.contains(highlightElement)) {
+          lines.forEach((line) => {
+            linesSet.add(line);
+          });
+        }
+      }
+
+      // Add event listeners
       highlightElements.forEach((highlightElement) => {
         if (highlightElementsThatAddedEventSet.has(highlightElement)) {
+          const lines = highlightElementToLinesMap.current.get(
+            highlightElement,
+          );
+          // console.log('* lines: ', lines);
+          if (lines) {
+            lines.forEach((line) => {
+              linesSet.add(line);
+            });
+          }
           return;
         } else {
           highlightElementsThatAddedEventSet.add(highlightElement);
@@ -864,7 +913,7 @@ const PreviewContainer = createContainer(() => {
             highlightElements.forEach((highlightElement) => {
               highlightElement.classList.add('highlight-line');
             });
-            setHighlightElement(highlightElements[0] as HTMLElement);
+            setHighlightElement(firstHighlightElement);
           },
         );
         highlightElement.addEventListener(
@@ -880,6 +929,10 @@ const PreviewContainer = createContainer(() => {
           },
         );
       });
+      highlightElementToLinesMap.current.set(
+        firstHighlightElement,
+        Array.from(linesSet).sort((a, b) => a - b),
+      );
     };
 
     for (let i = sourceLineElements.length - 1; i >= 0; i--) {
@@ -894,7 +947,7 @@ const PreviewContainer = createContainer(() => {
           highlightElements.push(siblingElement);
           siblingElement = siblingElement.previousElementSibling;
         }
-        bindHighlightElementsEvent(highlightElements);
+        bindHighlightElementsEvent(highlightElements, 0);
       }
 
       // Ignore the link
@@ -915,7 +968,13 @@ const PreviewContainer = createContainer(() => {
           highlightElement = highlightElement.parentElement;
         }
         if (highlightElement) {
-          bindHighlightElementsEvent([highlightElement]);
+          bindHighlightElementsEvent(
+            [highlightElement],
+            parseInt(
+              sourceLineElement.getAttribute('data-source-line') ?? '0',
+              10,
+            ),
+          );
         }
       }
       // Code chunk
@@ -928,12 +987,24 @@ const PreviewContainer = createContainer(() => {
       ) {
         const highlightElement = sourceLineElement.parentElement.parentElement;
         if (highlightElement) {
-          bindHighlightElementsEvent([highlightElement]);
+          bindHighlightElementsEvent(
+            [highlightElement],
+            parseInt(
+              sourceLineElement.getAttribute('data-source-line') ?? '0',
+              10,
+            ),
+          );
         }
       }
       // Other elements
       else {
-        bindHighlightElementsEvent([sourceLineElement]);
+        bindHighlightElementsEvent(
+          [sourceLineElement],
+          parseInt(
+            sourceLineElement.getAttribute('data-source-line') ?? '0',
+            10,
+          ),
+        );
       }
 
       // Check in between
@@ -954,9 +1025,19 @@ const PreviewContainer = createContainer(() => {
           siblingElement = siblingElement.nextElementSibling;
         }
 
-        bindHighlightElementsEvent(highlightElements);
+        bindHighlightElementsEvent(
+          highlightElements,
+          parseInt(
+            sourceLineElement.getAttribute('data-source-line') ?? '0',
+            10,
+          ),
+        );
       }
     }
+
+    highlightElementLines.current = Array.from(startLinesSet).sort(
+      (a, b) => a - b,
+    );
   }, []);
 
   const updateHtml = useCallback(
@@ -1139,9 +1220,11 @@ const PreviewContainer = createContainer(() => {
           tocHTML,
           sourceUri: uri,
           sourceScheme: scheme,
+          markdown,
         } = data;
         totalLineCount.current = total;
         setSidebarTocHtml(tocHTML);
+        setMarkdown(markdown);
         sourceUri.current = uri;
         sourceScheme.current = scheme;
         updateHtml(data.html, data.id, data.class);
@@ -1275,6 +1358,25 @@ const PreviewContainer = createContainer(() => {
     scrollMap.current = null;
   }, []);
 
+  const getHighlightElementLineRange = useCallback(
+    (highlightElement: HTMLElement) => {
+      const lines = highlightElementToLinesMap.current.get(highlightElement);
+      if (!lines) {
+        return null;
+      }
+
+      const startLine = lines[0];
+      const index = highlightElementLines.current.indexOf(
+        lines.at(-1) ?? startLine,
+      );
+      const endLine =
+        highlightElementLines.current[index + 1] ?? totalLineCount.current;
+
+      return [startLine, endLine];
+    },
+    [],
+  );
+
   useEffect(() => {
     sourceUri.current = config.sourceUri;
     cursorLine.current = config.cursorLine ?? -1;
@@ -1384,6 +1486,10 @@ const PreviewContainer = createContainer(() => {
       document.body.removeAttribute('data-html');
       setRenderedHtml(previewElement.current.innerHTML);
     }
+    if (document.body.hasAttribute('data-markdown')) {
+      const markdown = document.body.getAttribute('data-markdown') ?? '';
+      setMarkdown(markdown);
+    }
 
     if (!isPresentationMode) {
       const isDarkColorScheme = window.matchMedia(
@@ -1425,6 +1531,13 @@ const PreviewContainer = createContainer(() => {
     renderedHtml,
   ]);
 
+  useEffect(() => {
+    window['setHighlightElement'] = function(element: HTMLElement) {
+      element.classList.add('highlight-line');
+      setHighlightElement(element);
+    };
+  }, []);
+
   return {
     backlinks,
     backlinksElement,
@@ -1432,6 +1545,7 @@ const PreviewContainer = createContainer(() => {
     clickSidebarTocButton,
     config,
     contextMenuId,
+    getHighlightElementLineRange,
     hiddenPreviewElement,
     highlightElement,
     isLoadingBacklinks,
@@ -1442,6 +1556,7 @@ const PreviewContainer = createContainer(() => {
     isRefreshingPreview,
     isVSCode,
     isVSCodeWebExtension,
+    markdown,
     postMessage,
     previewElement,
     previewSyncSource,
@@ -1459,6 +1574,8 @@ const PreviewContainer = createContainer(() => {
     sourceUri,
     theme,
     zoomLevel,
+    highlightElementBeingEdited,
+    setHighlightElementBeingEdited,
   };
 });
 
