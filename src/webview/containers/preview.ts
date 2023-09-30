@@ -1007,31 +1007,47 @@ const PreviewContainer = createContainer(() => {
         );
       }
 
-      // Check in between
+      const getParentElement = (element: HTMLElement | Element) => {
+        if (
+          sourceLineElement.tagName === 'PRE' &&
+          sourceLineElement.parentElement?.classList.contains('input-div') &&
+          sourceLineElement.parentElement.parentElement?.classList.contains(
+            'code-chunk',
+          )
+        ) {
+          return sourceLineElement.parentElement.parentElement;
+        } else {
+          return element.parentElement;
+        }
+      };
+
+      // Check elements between this and the next .source-line element who has the same parent
       if (i < sourceLineElements.length - 1) {
         let nextSyncLineElement: Element | null = null;
         for (let j = i + 1; j < sourceLineElements.length; j++) {
           const el = sourceLineElements[j];
-          if (el.parentElement === sourceLineElement.parentElement) {
+          if (getParentElement(el) === getParentElement(sourceLineElement)) {
             nextSyncLineElement = el;
             break;
           }
         }
 
-        const highlightElements: (Element | HTMLElement)[] = [];
-        let siblingElement = sourceLineElement.nextElementSibling;
-        while (siblingElement && siblingElement !== nextSyncLineElement) {
-          highlightElements.push(siblingElement);
-          siblingElement = siblingElement.nextElementSibling;
-        }
+        if (nextSyncLineElement) {
+          const highlightElements: (Element | HTMLElement)[] = [];
+          let siblingElement = sourceLineElement.nextElementSibling;
+          while (siblingElement && siblingElement !== nextSyncLineElement) {
+            highlightElements.push(siblingElement);
+            siblingElement = siblingElement.nextElementSibling;
+          }
 
-        bindHighlightElementsEvent(
-          highlightElements,
-          parseInt(
-            sourceLineElement.getAttribute('data-source-line') ?? '0',
-            10,
-          ),
-        );
+          bindHighlightElementsEvent(
+            highlightElements,
+            parseInt(
+              sourceLineElement.getAttribute('data-source-line') ?? '0',
+              10,
+            ),
+          );
+        }
       }
     }
 

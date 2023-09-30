@@ -52,7 +52,10 @@ export default function FloatingActions() {
     const copiedLines = lines.slice(start, end);
 
     const textArea = document.createElement('textarea');
-    textArea.value = copiedLines.join('\n');
+    textArea.value = copiedLines
+      .join('\n')
+      .replace(/\n$/, '')
+      .replace(/^\n/, '');
     document.body.appendChild(textArea);
     textArea.select();
     document.execCommand('copy');
@@ -77,44 +80,50 @@ export default function FloatingActions() {
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >
-        <button
-          className="btn btn-primary btn-circle btn-xs"
-          onClick={() => setShowMoreActions(!showMoreActions)}
-        >
-          {showMoreActions ? (
-            <Icon path={mdiClose} size={0.6}></Icon>
-          ) : (
-            <Icon path={mdiDotsHorizontal} size={0.6}></Icon>
+        <div className="flex flex-row items-center">
+          {showMoreActions && (
+            <>
+              <div
+                className={classNames(
+                  'ml-1 flex',
+                  showCopiedTooltip ? 'tooltip tooltip-open' : '',
+                )}
+                data-tip={showCopiedTooltip}
+              >
+                <button
+                  className="btn btn-primary btn-circle btn-xs"
+                  title={'Copy the part of markdown'}
+                  onClick={copyToClipboard}
+                >
+                  <Icon path={mdiContentCopy} size={0.6}></Icon>
+                </button>
+              </div>
+              <div className="ml-1 flex">
+                <button
+                  className="btn btn-primary btn-circle btn-xs"
+                  title={'Edit the part of markdown'}
+                  onClick={() =>
+                    setHighlightElementBeingEdited(highlightElement)
+                  }
+                >
+                  <Icon path={mdiPencil} size={0.6}></Icon>
+                </button>
+              </div>
+            </>
           )}
-        </button>
-        {showMoreActions && (
-          <div className="flex flex-row items-center mt-1">
-            <div
-              className={classNames(
-                'ml-1 flex',
-                showCopiedTooltip ? 'tooltip tooltip-open' : '',
-              )}
-              data-tip={showCopiedTooltip}
+          <div className="ml-1 flex">
+            <button
+              className="btn btn-primary btn-circle btn-xs"
+              onClick={() => setShowMoreActions(!showMoreActions)}
             >
-              <button
-                className="btn btn-primary btn-circle btn-xs"
-                title={'Copy the part of markdown'}
-                onClick={copyToClipboard}
-              >
-                <Icon path={mdiContentCopy} size={0.6}></Icon>
-              </button>
-            </div>
-            <div className="ml-1 flex">
-              <button
-                className="btn btn-primary btn-circle btn-xs"
-                title={'Edit the part of markdown'}
-                onClick={() => setHighlightElementBeingEdited(highlightElement)}
-              >
-                <Icon path={mdiPencil} size={0.6}></Icon>
-              </button>
-            </div>
+              {showMoreActions ? (
+                <Icon path={mdiClose} size={0.6}></Icon>
+              ) : (
+                <Icon path={mdiDotsHorizontal} size={0.6}></Icon>
+              )}
+            </button>
           </div>
-        )}
+        </div>
       </div>,
       highlightElement,
     );
