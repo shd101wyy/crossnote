@@ -10,6 +10,8 @@ This library powers:
 
 - [markdown preview enhanced for vscode](https://github.com/shd101wyy/vscode-markdown-preview-enhanced)
 
+API Documentation: https://shd101wyy.github.io/crossnote/
+
 ## Installation
 
 ```sh
@@ -72,6 +74,8 @@ main();
 ```
 
 ## Notebook Configuration
+
+[Visit here to see the documentation.](https://shd101wyy.github.io/crossnote/interfaces/NotebookConfig.html)
 
 ```js
 const config = {
