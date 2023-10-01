@@ -43,7 +43,8 @@
     "prepare": "husky install",
     "prepublish": "npm run build",
     "test": "jest --no-coverage",
-    "test:coverage": "jest"
+    "test:coverage": "jest",
+    "typedoc": "typedoc src/index.ts"
   },
   "lint-staged": {
     "**/*.*": [
@@ -152,6 +153,7 @@
     "prettier-plugin-packagejson": "^2.2.5",
     "tailwindcss": "^3.3.3",
     "ts-jest": "^27.0.5",
+    "typedoc": "^0.25.1",
     "typescript": "^5.2.2"
   }
 }
