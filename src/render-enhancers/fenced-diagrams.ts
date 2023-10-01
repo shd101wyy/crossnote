@@ -165,9 +165,9 @@ async function renderDiagram({
       */
       try {
         const req = await fetch(
-          `${krokiURL}/${krokiDiagramType}/${normalizedInfo.attributes[
-            'output'
-          ] ?? 'svg'}`,
+          `${krokiURL}/${krokiDiagramType}/${
+            normalizedInfo.attributes['output'] ?? 'svg'
+          }`,
           {
             method: 'POST',
             body: code,

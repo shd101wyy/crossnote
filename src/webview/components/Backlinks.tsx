@@ -110,7 +110,7 @@ export default function Backlinks() {
               data-theme={theme}
             >
               <div
-                className="p-2 cursor-pointer hover:scale-105"
+                className="p-2 cursor-pointer hover:text-primary"
                 title='Toggle "Always show backlinks in preview"'
                 onClick={() => {
                   postMessage('toggleAlwaysShowBacklinksInPreview', [
@@ -127,7 +127,7 @@ export default function Backlinks() {
               </div>
 
               <div
-                className="p-2 cursor-pointer hover:scale-105"
+                className="p-2 cursor-pointer hover:text-primary"
                 onClick={() => refreshBacklinks(true)}
                 title="Refresh backlinks"
               >
@@ -181,7 +181,7 @@ export default function Backlinks() {
                                   ? `L${line}`
                                   : noteUri.fragment,
                             }).toString()}
-                            className="mr-2 mt-1 text-inherit hover:scale-110"
+                            className="mr-2 mt-1 text-inherit hover:text-primary"
                           >
                             <Icon path={mdiOpenInNew} size={0.8}></Icon>
                           </a>

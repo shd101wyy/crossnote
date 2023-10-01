@@ -1,4 +1,4 @@
-// Modified according to: 
+// Modified according to:
 //   https://github.com/atom/atom-light-syntax/
 
 // This defines all syntax variables that syntax themes must implement when they
@@ -12,9 +12,9 @@
 @syntax-background-color: white;
 
 // Guide colors
-@syntax-wrap-guide-color: rgba(85, 85, 85, .2);
-@syntax-indent-guide-color: rgba(85, 85, 85, .2);
-@syntax-invisible-character-color: rgba(85, 85, 85, .2);
+@syntax-wrap-guide-color: rgba(85, 85, 85, 0.2);
+@syntax-indent-guide-color: rgba(85, 85, 85, 0.2);
+@syntax-invisible-character-color: rgba(85, 85, 85, 0.2);
 
 // For find and replace markers
 @syntax-result-marker-color: #999;
@@ -27,10 +27,10 @@
 @syntax-gutter-background-color-selected: rgba(255, 255, 134, 0.34);
 
 // For git diff info. i.e. in the gutter
-@syntax-color-renamed: #96CBFE;
-@syntax-color-added: #718C00;
+@syntax-color-renamed: #96cbfe;
+@syntax-color-added: #718c00;
 @syntax-color-modified: #ff982d;
-@syntax-color-removed: #D14;
+@syntax-color-removed: #d14;
 
 // For language entity colors
 @syntax-color-variable: #008080;
@@ -49,68 +49,77 @@
 pre {
   font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
   direction: ltr;
-	text-align: left;
-	white-space: pre;
-	word-spacing: normal;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
   word-break: normal;
-  
+
   padding: 1em;
-  margin: .5em 0;
-  
+  margin: 0.5em 0;
+
   overflow: auto;
   line-height: 1.5;
   tab-size: 4;
   hyphens: none;
   color: @syntax-text-color;
-  background-color: contrast(@syntax-background-color, lighten(@syntax-background-color, 4%), darken(@syntax-background-color, 6%)) !important;
-  border: contrast(@syntax-background-color, lighten(@syntax-background-color, 16%), darken(@syntax-background-color, 16%));
+  background-color: contrast(
+    @syntax-background-color,
+    lighten(@syntax-background-color, 4%),
+    darken(@syntax-background-color, 6%)
+  ) !important;
+  border: contrast(
+    @syntax-background-color,
+    lighten(@syntax-background-color, 16%),
+    darken(@syntax-background-color, 16%)
+  );
   border-radius: 3px;
 }
 
-pre[class*="language-"] { // presentation mode padding
-  padding: 1em; 
+pre[class*='language-'] {
+  // presentation mode padding
+  padding: 1em;
 }
 
-code[class*="language-"],
-pre[class*="language-"] {
-.token.comment,
-.token.prolog,
-.token.doctype,
-.token.cdata {
-  color: #999988;
-  font-style: italic;
-}
+code[class*='language-'],
+pre[class*='language-'] {
+  .token.comment,
+  .token.prolog,
+  .token.doctype,
+  .token.cdata {
+    color: #999988;
+    font-style: italic;
+  }
 
-.token.punctuation {
-  color: #920B2D;
-}
+  .token.punctuation {
+    color: #920b2d;
+  }
 
-.namespace {
-	opacity: .7;
-}
+  .namespace {
+    opacity: 0.7;
+  }
 
-/*
+  /*
 .token.constant {
   color: #99CC99;
 }
 */
 
-.token.property {
-  font-weight: bold;
-  color: #333;
-}
+  .token.property {
+    font-weight: bold;
+    color: #333;
+  }
 
-.token.boolean,
-.token.number,
-.token.function-name {
-  color: #D14;
-}
+  .token.boolean,
+  .token.number,
+  .token.function-name {
+    color: #d14;
+  }
 
-.token.tag {
-  color: #D14;
-}
+  .token.tag {
+    color: #d14;
+  }
 
-/*
+  /*
 .token.deleted {
 }
 
@@ -118,89 +127,91 @@ pre[class*="language-"] {
 }
 */
 
-.token.symbol {
-  color: #990073;
-}
+  .token.symbol {
+    color: #990073;
+  }
 
-.token.selector {
-  color: #008080;
-}
+  .token.selector {
+    color: #008080;
+  }
 
-.token.attr-name { // .attribute
-  color: #458;
-  font-weight: bold;
-}
+  .token.attr-name {
+    // .attribute
+    color: #458;
+    font-weight: bold;
+  }
 
-.token.string {
-  color: #D14;
-}
+  .token.string {
+    color: #d14;
+  }
 
-.token.char {
-  color: #606aa1;
-}
+  .token.char {
+    color: #606aa1;
+  }
 
-/*
+  /*
 .token.builtin {
   color: @green;
 }
 */
 
-/*
+  /*
 .token.entity {
   color: #FFD2A7;
 }
 */
 
-.token.url { // link
-  color: #888;
-}
+  .token.url {
+    // link
+    color: #888;
+  }
 
-/*
+  /*
 .token.operator {
   color: #EDEDED;
 }
 */
 
-.token.atrule,
-.token.attr-value,
-.token.keyword {
-  color: #222;
-  font-weight: bold;
-}
+  .token.atrule,
+  .token.attr-value,
+  .token.keyword {
+    color: #222;
+    font-weight: bold;
+  }
 
-.token.function {
-  color: #900;
-}
+  .token.function {
+    color: #900;
+  }
 
-.token.class-name {
-  text-decoration: underline;
-  color: #606aa1;
-}
+  .token.class-name {
+    text-decoration: underline;
+    color: #606aa1;
+  }
 
-.token.variable {
-  color: #008080;
-}
+  .token.variable {
+    color: #008080;
+  }
 
-/*
+  /*
 .token.regex,
 .token.important {
   color: #E9C062;
 }
 */
 
-.token.important,
-.token.bold {
-	font-weight: bold;
-}
-.token.italic {
-	font-style: italic;
-}
+  .token.important,
+  .token.bold {
+    font-weight: bold;
+  }
+  .token.italic {
+    font-style: italic;
+  }
 
-.token.entity {
-	cursor: help;
-}
+  .token.entity {
+    cursor: help;
+  }
 
-/*
+  /*
 &.line-numbers {
   .line-numbers-rows>span:before {
   }
@@ -228,26 +239,30 @@ pre[data-line] .line-highlight {
   right: 0;
   padding: inherit 0;
   margin-top: 1em;
-  background: hsla(24, 20%, 50%,.08);
-  background: linear-gradient(to right, hsla(24, 20%, 50%,.1) 70%, hsla(24, 20%, 50%,0));
+  background: hsla(24, 20%, 50%, 0.08);
+  background: linear-gradient(
+    to right,
+    hsla(24, 20%, 50%, 0.1) 70%,
+    hsla(24, 20%, 50%, 0)
+  );
   pointer-events: none;
   line-height: inherit;
   white-space: pre;
 }
 
-pre[data-line] .line-highlight:before, 
+pre[data-line] .line-highlight:before,
 pre[data-line] .line-highlight[data-end]:after {
   content: attr(data-start);
   position: absolute;
-  top: .4em;
-  left: .6em;
+  top: 0.4em;
+  left: 0.6em;
   min-width: 1em;
-  padding: 0 .5em;
-  background-color: hsla(24, 20%, 50%,.4);
+  padding: 0 0.5em;
+  background-color: hsla(24, 20%, 50%, 0.4);
   color: hsl(24, 20%, 95%);
   font: bold 65%/1.5 sans-serif;
   text-align: center;
-  vertical-align: .3em;
+  vertical-align: 0.3em;
   border-radius: 999px;
   text-shadow: none;
   box-shadow: 0 1px white;
@@ -256,5 +271,5 @@ pre[data-line] .line-highlight[data-end]:after {
 pre[data-line] .line-highlight[data-end]:after {
   content: attr(data-end);
   top: auto;
-  bottom: .4em;
+  bottom: 0.4em;
 }

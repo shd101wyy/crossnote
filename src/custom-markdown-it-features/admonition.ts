@@ -86,10 +86,7 @@ export default (md: MarkdownIt) => {
     const markup: string = state.src.slice(mem, pos);
     let type = '';
     let title = '';
-    const paramsr: string[] = state.src
-      .slice(pos, max)
-      .trim()
-      .split(' ');
+    const paramsr: string[] = state.src.slice(pos, max).trim().split(' ');
     type = (paramsr.shift() ?? '').toLowerCase();
     title = paramsr.join(' ');
     if (_types.indexOf(type) < 0) type = 'note';

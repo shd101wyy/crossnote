@@ -1,4 +1,4 @@
-export default function(Prism) {
+export default function (Prism) {
   Prism.languages.k = {
     'comment': [
       {
@@ -15,9 +15,11 @@ export default function(Prism) {
       pattern: /(["'])(?:\\(?:\r\n|[\s\S])|(?!\1)[^\\\r\n])*\1/,
       greedy: true,
     },
-    'class-name': /\b(?:strict|avoid|prefer|bracket|non-assoc|seqstrict|left|right|macro-rec|macro|token|notInRules|autoReject|structural|latex|binder|klabel|symbol|format)\b/,
+    'class-name':
+      /\b(?:strict|avoid|prefer|bracket|non-assoc|seqstrict|left|right|macro-rec|macro|token|notInRules|autoReject|structural|latex|binder|klabel|symbol|format)\b/,
     'keyword': {
-      pattern: /\b(?:syntax\s+(?:priority|priorities|left|right|non-assoc|lexical)|syntax|rule|Id|Int|Bool|String|Token|Lexer|Float|configuration|import|imports|require|requires|Kresult|context\s+alias|context|module|endmodule|claim)\b/,
+      pattern:
+        /\b(?:syntax\s+(?:priority|priorities|left|right|non-assoc|lexical)|syntax|rule|Id|Int|Bool|String|Token|Lexer|Float|configuration|import|imports|require|requires|Kresult|context\s+alias|context|module|endmodule|claim)\b/,
       greedy: true,
     },
     'boolean': /\b(?:true|false)\b/,
@@ -28,7 +30,8 @@ export default function(Prism) {
     'punctuation': /[{}[\];(),.:]/,
     // copied from prism-markup.js
     'tag': {
-      pattern: /<\/?(?!\d)[^\s>/=$<%]+(?:\s(?:\s*[^\s>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
+      pattern:
+        /<\/?(?!\d)[^\s>/=$<%]+(?:\s(?:\s*[^\s>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/,
       greedy: true,
       inside: {
         'tag': {

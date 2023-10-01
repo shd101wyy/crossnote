@@ -12,8 +12,9 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PreviewContainer from '../containers/preview';
 
-const EDITOR_MIN_HEIGHT = 19 * 3; // 3 lines
-const EDITOR_FINAL_LINE_HEIGHT = 19 * 20; // 20 lines
+const EDITOR_LINE_HEIGHT = 19;
+const EDITOR_MIN_HEIGHT = EDITOR_LINE_HEIGHT * 3; // 3 lines
+const EDITOR_FINAL_LINE_HEIGHT = EDITOR_LINE_HEIGHT * 20; // 20 lines
 
 export default function MarkdownEditor() {
   const {
@@ -31,6 +32,7 @@ export default function MarkdownEditor() {
   const [count, setCount] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [showConfirmCloseAlert, setShowConfirmCloseAlert] = useState(false);
+  const [editorMinHeight, setEditorMinHeight] = useState(EDITOR_MIN_HEIGHT);
 
   const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
@@ -70,21 +72,29 @@ export default function MarkdownEditor() {
       return;
     }
     const [start, end] = range;
+    // console.log('range', range);
+    // window['editor'] = editor;
     if (!highlightElementBeingEdited.classList.contains('final-line')) {
       // NOTE: We remove the decoration for top empty line
-      window['editorRef'] = editorRef.current;
 
-      let emptyLinesCount = 0;
+      let emptyLinesCountAtStart = 0;
       for (let i = start + 1; i < end; i++) {
         if (editor.getModel()?.getLineContent(i) === '') {
-          emptyLinesCount++;
+          emptyLinesCountAtStart++;
+        } else {
+          break;
         }
       }
 
       // Create line decorations
       editor.createDecorationsCollection([
         {
-          range: new monaco.Range(start + 1 + emptyLinesCount, 1, end, 1),
+          range: new monaco.Range(
+            start + 1 + emptyLinesCountAtStart,
+            1,
+            end,
+            1,
+          ),
           options: {
             isWholeLine: true,
             linesDecorationsClassName: 'monaco-line-decoration',
@@ -92,9 +102,17 @@ export default function MarkdownEditor() {
         },
       ]);
 
+      setEditorMinHeight(
+        Math.max(
+          (end - start - emptyLinesCountAtStart) * EDITOR_LINE_HEIGHT,
+          EDITOR_MIN_HEIGHT,
+        ),
+      );
+
       // Navigate to the line
-      editor.revealLineNearTop(
-        start + 1 + emptyLinesCount,
+      editor.revealLines(
+        start + 1 + emptyLinesCountAtStart,
+        end === start + 1 + emptyLinesCountAtStart ? end + 1 : end,
         monacoEditor.ScrollType.Immediate,
       );
     } else {
@@ -142,18 +160,10 @@ export default function MarkdownEditor() {
     if (!highlightElementBeingEdited) {
       return;
     }
-    const style = window.getComputedStyle(highlightElementBeingEdited);
-    const position = style.position;
-    const width = style.width;
-    const height = style.height;
-    const minHeight = style.minHeight;
-    const padding = style.padding;
-    const overflow = style.overflow;
-    // const scale = style.scale;
+    const cssText = highlightElementBeingEdited.style.cssText;
 
-    if (position !== 'absolute' && position !== 'fixed') {
-      highlightElementBeingEdited.style.position = 'relative';
-    }
+    // Set the position to `relative`
+    highlightElementBeingEdited.style.position = 'relative';
 
     // Set the width to 100vw
     highlightElementBeingEdited.style.width = '100vw';
@@ -163,9 +173,6 @@ export default function MarkdownEditor() {
     if (highlightElementBeingEdited.classList.contains('final-line')) {
       highlightElementBeingEdited.style.height = `${EDITOR_FINAL_LINE_HEIGHT}px`;
     }
-
-    // Set editor min height
-    highlightElementBeingEdited.style.minHeight = `${EDITOR_MIN_HEIGHT}px`;
 
     // Set editor scale
     // FIXME: Setting this will cause `expanded` state not working.
@@ -177,20 +184,29 @@ export default function MarkdownEditor() {
     // Set editor overflow to `unset`
     highlightElementBeingEdited.style.overflow = 'unset';
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (highlightElementBeingEdited.style as any).zoom = '1';
+
     return () => {
-      if (!highlightElementBeingEdited) {
-        return;
-      }
       // Restore the styles
-      highlightElementBeingEdited.style.position = position;
-      highlightElementBeingEdited.style.width = width;
-      highlightElementBeingEdited.style.height = height;
-      highlightElementBeingEdited.style.minHeight = minHeight;
-      // highlightElementBeingEdited.style.scale = scale;
-      highlightElementBeingEdited.style.padding = padding;
-      highlightElementBeingEdited.style.overflow = overflow;
+      highlightElementBeingEdited.style.cssText = cssText;
     };
   }, [highlightElementBeingEdited]);
+
+  // Set highlightElementBeingEdited min height according to the editorMinHeight
+  useEffect(() => {
+    if (!highlightElementBeingEdited) {
+      return;
+    }
+    const style = window.getComputedStyle(highlightElementBeingEdited);
+    const minHeight = style.minHeight;
+
+    highlightElementBeingEdited.style.minHeight = `${editorMinHeight}px`;
+
+    return () => {
+      highlightElementBeingEdited.style.minHeight = minHeight;
+    };
+  }, [highlightElementBeingEdited, editorMinHeight]);
 
   useEffect(() => {
     if (!highlightElementBeingEdited) {
@@ -218,7 +234,7 @@ export default function MarkdownEditor() {
     <div
       className={
         expanded
-          ? 'fixed top-0 left-0 w-[98vw] h-[100vh] z-[60]'
+          ? 'fixed top-0 left-0 w-[98vw] h-[100vh] z-[70]'
           : 'absolute top-0 w-[98vw] h-[100%]'
       }
       style={
@@ -255,7 +271,11 @@ export default function MarkdownEditor() {
           </button>
           <button
             className="btn btn-primary btn-circle btn-xs"
-            onClick={closeEditor}
+            onClick={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
+              closeEditor();
+            }}
           >
             <Icon path={mdiClose} size={0.6}></Icon>
           </button>
@@ -264,7 +284,7 @@ export default function MarkdownEditor() {
       {/* Confirm Close Alert */}
       {showConfirmCloseAlert && (
         <div
-          className="alert fixed top-0 left-0 w-full z-[60]"
+          className="alert fixed top-0 left-0 w-full z-[70]"
           data-theme={theme}
         >
           <div className="flex flex-row items-center text-base font-normal not-italic text-left">
@@ -313,6 +333,7 @@ export default function MarkdownEditor() {
         defaultLanguage="markdown"
         onMount={handleEditorDidMount}
         defaultValue={markdown}
+        defaultPath={sourceUri.current}
         // A list of Monaco Editor options can be found here:
         // https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IStandaloneEditorConstructionOptions.html
         options={{
@@ -337,7 +358,7 @@ export default function MarkdownEditor() {
           </div>
         }
         keepCurrentModel={false}
-        className={`min-h-[${EDITOR_MIN_HEIGHT}px]`}
+        className={`min-h-[${editorMinHeight}px]`}
       ></Editor>
     </div>,
     highlightElementBeingEdited,

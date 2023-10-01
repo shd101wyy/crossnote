@@ -8,13 +8,13 @@
     page-break-before: always;
   }
 
-  // code block line numbers 
+  // code block line numbers
   pre.line-numbers {
     position: relative;
     padding-left: 3.8em;
     counter-reset: linenumber;
 
-    &>code {
+    & > code {
       position: relative;
     }
 
@@ -34,13 +34,13 @@
       -ms-user-select: none;
       user-select: none;
 
-      &>span {
+      & > span {
         pointer-events: none;
         display: block;
         counter-increment: linenumber;
       }
 
-      &>span:before {
+      & > span:before {
         content: counter(linenumber);
         color: #999;
         display: block;
@@ -55,7 +55,7 @@
     text-align: center !important;
   }
 
-  &:not([data-for="preview"]) {
+  &:not([data-for='preview']) {
     .code-chunk {
       .code-chunk-btn-group {
         display: none;
@@ -74,7 +74,7 @@
   // TOC
   .md-toc {
     padding: 0;
-    
+
     .md-toc-link-wrapper {
       .md-toc-link {
         display: inline;
@@ -108,13 +108,13 @@
 
   &::-webkit-scrollbar-thumb {
     border-radius: 5px; // -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
-    background-color: rgba(150, 150, 150, .66);
-    border: 4px solid rgba(150, 150, 150, .66);
+    background-color: rgba(150, 150, 150, 0.66);
+    border: 4px solid rgba(150, 150, 150, 0.66);
     background-clip: content-box;
   }
 }
 
-html body[for="html-export"]:not([data-presentation-mode]) {
+html body[for='html-export']:not([data-presentation-mode]) {
   @sidebar-toc-width: 300px;
 
   position: relative;
@@ -123,7 +123,7 @@ html body[for="html-export"]:not([data-presentation-mode]) {
   top: 0;
   left: 0;
   margin: 0;
-  padding: 0; // <= this has to be zero; otherwise prince export will have issue.  
+  padding: 0; // <= this has to be zero; otherwise prince export will have issue.
   overflow: auto;
 
   .markdown-preview {
@@ -132,7 +132,7 @@ html body[for="html-export"]:not([data-presentation-mode]) {
     min-height: 100vh;
 
     @media screen and (min-width: 914px) {
-      padding: 2em calc(~"50% - 457px + 2em");
+      padding: 2em calc(~'50% - 457px + 2em');
     }
 
     @media screen and (max-width: 914px) {
@@ -141,7 +141,7 @@ html body[for="html-export"]:not([data-presentation-mode]) {
 
     // mobile
     @media screen and (max-width: 450px) {
-      font-size: 14px !important; // <= this line is necessary. otherwise #sidebar-toc-btn position will be wrong.  
+      font-size: 14px !important; // <= this line is necessary. otherwise #sidebar-toc-btn position will be wrong.
       padding: 1em;
     }
   }
@@ -168,7 +168,7 @@ html body[for="html-export"]:not([data-presentation-mode]) {
 
   &[html-show-sidebar-toc] {
     #sidebar-toc-btn {
-      opacity: 1.0
+      opacity: 1;
     }
 
     .md-sidebar-toc {
@@ -192,7 +192,7 @@ html body[for="html-export"]:not([data-presentation-mode]) {
 
       .md-toc {
         padding: 0 16px;
-        
+
         .md-toc-link-wrapper {
           .md-toc-link {
             display: inline;
@@ -215,8 +215,8 @@ html body[for="html-export"]:not([data-presentation-mode]) {
 
     .markdown-preview {
       left: @sidebar-toc-width;
-      width: calc(~"100% - "@sidebar-toc-width);
-      padding: 2em calc(~"50% - 457px - "(@sidebar-toc-width/2));
+      width: calc(~'100% - ' @sidebar-toc-width);
+      padding: 2em calc(~'50% - 457px - ' (@sidebar-toc-width / 2));
       margin: 0;
       box-sizing: border-box;
 

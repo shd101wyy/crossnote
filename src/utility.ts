@@ -153,7 +153,8 @@ export function removeFileProtocol(filePath: string): string {
   // See https://regex101.com/r/YlpEur/8/
   // - "file://///a///b//c/d"                   ---> "a///b//c/d"
   // - "vscode-resource://///file///a///b//c/d" ---> "file///a///b//c/d"
-  const regex = /^(?:(?:file|(vscode)-(?:webview-)?resource|vscode--resource):\/+)(.*)/m;
+  const regex =
+    /^(?:(?:file|(vscode)-(?:webview-)?resource|vscode--resource):\/+)(.*)/m;
 
   return filePath.replace(regex, (m, isVSCode, rest) => {
     if (isVSCode) {
@@ -241,11 +242,13 @@ export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
 export const loadDependency = (dependencyPath: string) =>
   allowUnsafeEval(() =>
     allowUnsafeNewFunction(() =>
-      require(path.resolve(
-        getCrossnoteBuildDirectory(),
-        'dependencies',
-        dependencyPath,
-      )),
+      require(
+        path.resolve(
+          getCrossnoteBuildDirectory(),
+          'dependencies',
+          dependencyPath,
+        ),
+      ),
     ),
   );
 

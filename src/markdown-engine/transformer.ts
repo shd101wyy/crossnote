@@ -307,7 +307,7 @@ export async function transformMarkdown(
       // eslint-disable-next-line prefer-const
       let { line, blockquotePrefix, end } = getLine(i);
       outputString += blockquotePrefix;
-      // console.log(`process: |${line}|`);
+      // console.log(`process: ${lineNo} |${line}|`);
 
       // ========== Start: Code Block ==========
       const inCodeBlock = !!lastOpeningCodeBlockFence;
@@ -369,12 +369,16 @@ export async function transformMarkdown(
       // ========== End: Code Block ==========
 
       // ========== Start: Indentation code block ==========
+      // TODO: Check indentation under list items
       const indentationCodeBlockMatch = line.match(/^\s{4,}\S/);
       // NOTE: We check `prefix` here to skip the blockquote
       if (indentationCodeBlockMatch) {
         // console.log('== Indentation code block ==');
         // Find the new line that has less indentation
-        const regex = new RegExp(`^(${blockquotePrefix})?\\s{0,3}\\S`, 'm');
+        const regex = new RegExp(
+          `^(${blockquotePrefix})\\s{0,3}\\S|^(?!${blockquotePrefix})`,
+          'm',
+        );
         const newMatch = inputString.substring(end + 1).match(regex);
         if (!newMatch || typeof newMatch.index !== 'number') {
           // All the rest lines are in the code block
@@ -396,7 +400,7 @@ export async function transformMarkdown(
           );
           const newLines = codeBlock.split(/\n/).length;
           i = newEnd;
-          lineNo = lineNo + newLines;
+          lineNo = lineNo + newLines - 1;
           outputString = outputString + codeBlock;
           continue;
         }
@@ -404,9 +408,10 @@ export async function transformMarkdown(
       // ========== End: Indentation code block ==========
 
       // ========== Start: Check empty line
+      // console.log(`check empty line ${lineNo} |${line}|`);
       if (
-        // inputString[i] === '\n' && inputString[i + 1] !== ' '
-        line.trim() === ''
+        line.trim() === '' &&
+        end + 1 < inputString.length // test18.md
       ) {
         // Check if next line contains " " space
         // If yes then we don't insert anchor.
@@ -859,9 +864,11 @@ export async function transformMarkdown(
 
             if (config && config['code_block']) {
               const fileExtension = extname.slice(1, extname.length);
-              output = `\`\`\`${config['as'] ||
+              output = `\`\`\`${
+                config['as'] ||
                 fileExtensionToLanguageMap[fileExtension] ||
-                fileExtension} ${stringifyBlockAttributes(
+                fileExtension
+              } ${stringifyBlockAttributes(
                 config,
               )}  \n${fileContent}\n\`\`\`  `;
             } else if (config && config['cmd']) {
@@ -875,16 +882,19 @@ export async function transformMarkdown(
                 codeChunkOffset++;
               }
               const fileExtension = extname.slice(1, extname.length);
-              output = `\`\`\`${config['as'] ||
+              output = `\`\`\`${
+                config['as'] ||
                 fileExtensionToLanguageMap[fileExtension] ||
-                fileExtension} ${stringifyBlockAttributes(
+                fileExtension
+              } ${stringifyBlockAttributes(
                 config,
               )}  \n${fileContent}\n\`\`\`  `;
             } else if (['.md', '.markdown', '.mmark'].indexOf(extname) >= 0) {
               if (notebook.config.parserConfig.onWillTransformMarkdown) {
-                fileContent = await notebook.config.parserConfig.onWillTransformMarkdown(
-                  fileContent,
-                );
+                fileContent =
+                  await notebook.config.parserConfig.onWillTransformMarkdown(
+                    fileContent,
+                  );
               }
               // markdown files
               // this return here is necessary
@@ -909,9 +919,10 @@ export async function transformMarkdown(
               }));
 
               if (notebook.config.parserConfig) {
-                output2 = await notebook.config.parserConfig.onDidTransformMarkdown(
-                  output2,
-                );
+                output2 =
+                  await notebook.config.parserConfig.onDidTransformMarkdown(
+                    output2,
+                  );
               }
 
               output2 = '\n' + output2 + '  ';
@@ -1038,9 +1049,11 @@ export async function transformMarkdown(
                 output = fileContent;
               } else {
                 const fileExtension = extname.slice(1, extname.length);
-                output = `\`\`\`${aS ||
+                output = `\`\`\`${
+                  aS ||
                   fileExtensionToLanguageMap[fileExtension] ||
-                  fileExtension} ${
+                  fileExtension
+                } ${
                   config ? stringifyBlockAttributes(config) : ''
                 }  \n${fileContent}\n\`\`\`  `;
               }

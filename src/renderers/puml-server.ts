@@ -13,9 +13,9 @@ export default class PlantUMLServerTask {
       // NOTE: The official plantuml server doesn't support POST method,
       // so we fallback to encode the content and send it as a GET request.
       const encoded = plantumlEncoder.encode(content);
-      return fetch(
-        `http://www.plantuml.com/plantuml/svg/${encoded}`,
-      ).then((res) => res.text());
+      return fetch(`http://www.plantuml.com/plantuml/svg/${encoded}`).then(
+        (res) => res.text(),
+      );
     } else {
       // const contentStream = new Readable();
       // contentStream.setEncoding('utf-8');

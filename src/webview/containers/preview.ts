@@ -847,7 +847,7 @@ const PreviewContainer = createContainer(() => {
     setHighlightElement(null);
     const sourceLineElements = previewElement.querySelectorAll('.source-line');
     const highlightElementsThatAddedEventSet = new Set<Element | HTMLElement>();
-    const sourceLineElementToHighlightElementMap = new Map<
+    const sourceLineElementToContainerElementMap = new Map<
       Element | HTMLElement,
       Element | HTMLElement
     >();
@@ -868,6 +868,7 @@ const PreviewContainer = createContainer(() => {
       if (highlightElements.length === 0) {
         return;
       }
+      // console.log('* highlightElements: ', highlightElements);
       const firstHighlightElement = highlightElements[0] as HTMLElement;
       const linesSet = new Set<number>([startLine]);
 
@@ -957,10 +958,12 @@ const PreviewContainer = createContainer(() => {
         if (highlightElement) {
           bindHighlightElementsEvent([highlightElement], dataSourceLine);
 
-          sourceLineElementToHighlightElementMap.set(
-            sourceLineElement,
-            highlightElement,
-          );
+          if (highlightElement.parentElement) {
+            sourceLineElementToContainerElementMap.set(
+              sourceLineElement,
+              highlightElement.parentElement, // Get <ul> or <ol> element
+            );
+          }
         }
       }
       // Code chunk
@@ -975,7 +978,7 @@ const PreviewContainer = createContainer(() => {
         if (highlightElement) {
           bindHighlightElementsEvent([highlightElement], dataSourceLine);
 
-          sourceLineElementToHighlightElementMap.set(
+          sourceLineElementToContainerElementMap.set(
             sourceLineElement,
             highlightElement,
           );
@@ -985,7 +988,7 @@ const PreviewContainer = createContainer(() => {
       else {
         bindHighlightElementsEvent([sourceLineElement], dataSourceLine);
 
-        sourceLineElementToHighlightElementMap.set(
+        sourceLineElementToContainerElementMap.set(
           sourceLineElement,
           sourceLineElement,
         );
@@ -996,10 +999,14 @@ const PreviewContainer = createContainer(() => {
       if (i == 0) {
         const highlightElements: (Element | HTMLElement)[] = [];
         let siblingElement =
-          sourceLineElementToHighlightElementMap.get(sourceLineElement)
+          sourceLineElementToContainerElementMap.get(sourceLineElement)
             ?.previousElementSibling;
         while (siblingElement) {
-          highlightElements.push(siblingElement);
+          if (
+            !(siblingElement.tagName === 'P' && siblingElement.innerHTML === '')
+          ) {
+            highlightElements.push(siblingElement);
+          }
           siblingElement = siblingElement.previousElementSibling;
         }
         bindHighlightElementsEvent(highlightElements, 0);
@@ -1011,9 +1018,9 @@ const PreviewContainer = createContainer(() => {
         for (let j = i + 1; j < sourceLineElements.length; j++) {
           const el = sourceLineElements[j];
           const parent1 =
-            sourceLineElementToHighlightElementMap.get(el)?.parentElement;
+            sourceLineElementToContainerElementMap.get(el)?.parentElement;
           const parent2 =
-            sourceLineElementToHighlightElementMap.get(sourceLineElement)
+            sourceLineElementToContainerElementMap.get(sourceLineElement)
               ?.parentElement;
           if (!!parent1 && !!parent2 && parent1 === parent2) {
             nextSyncLineElement = el;
@@ -1024,12 +1031,19 @@ const PreviewContainer = createContainer(() => {
         if (nextSyncLineElement) {
           const highlightElements: (Element | HTMLElement)[] = [];
           let siblingElement =
-            sourceLineElementToHighlightElementMap.get(sourceLineElement)
+            sourceLineElementToContainerElementMap.get(sourceLineElement)
               ?.nextElementSibling;
           const target =
-            sourceLineElementToHighlightElementMap.get(nextSyncLineElement);
+            sourceLineElementToContainerElementMap.get(nextSyncLineElement);
           while (siblingElement && siblingElement !== target) {
-            highlightElements.push(siblingElement);
+            if (
+              !(
+                siblingElement.tagName === 'P' &&
+                siblingElement.innerHTML === ''
+              )
+            ) {
+              highlightElements.push(siblingElement);
+            }
             siblingElement = siblingElement.nextElementSibling;
           }
 
@@ -1524,7 +1538,10 @@ const PreviewContainer = createContainer(() => {
       setTheme(isLightTheme ? 'light' : 'dark');
 
       // NOTE: Don't set `data-theme` attribute below because it will override all the styles
-      // document.body.setAttribute('data-theme', isLightTheme ? 'light' : 'dark');
+      document.body.setAttribute(
+        'data-preview-theme',
+        isLightTheme ? 'light' : 'dark',
+      );
     }
   }, [
     config.previewTheme,

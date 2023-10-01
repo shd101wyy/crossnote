@@ -19,9 +19,7 @@ export async function compileLaTeX(
 
   const texFilePath = path.resolve(
     fileDirectoryPath,
-    Math.random()
-      .toString(36)
-      .substr(2, 9) + '_code_chunk.tex',
+    Math.random().toString(36).substr(2, 9) + '_code_chunk.tex',
   );
 
   await fs.writeFile(texFilePath, content);
@@ -72,11 +70,7 @@ export async function run(
   const fileExtension = getFileExtension(cmd);
   const savePath = path.resolve(
     fileDirectoryPath,
-    Math.random()
-      .toString(36)
-      .substr(2, 9) +
-      '_code_chunk' +
-      fileExtension,
+    Math.random().toString(36).substr(2, 9) + '_code_chunk' + fileExtension,
   );
   content = content.replace(/\u00A0/g, ' ');
 

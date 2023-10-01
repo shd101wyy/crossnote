@@ -237,12 +237,10 @@ export class MarkdownEngine {
       // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
       const mathJaxConfig = copy({ ...this.notebook.config.mathjaxConfig });
       mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
-      mathJaxConfig['tex'][
-        'inlineMath'
-      ] = this.notebook.config.mathInlineDelimiters;
-      mathJaxConfig['tex'][
-        'displayMath'
-      ] = this.notebook.config.mathBlockDelimiters;
+      mathJaxConfig['tex']['inlineMath'] =
+        this.notebook.config.mathInlineDelimiters;
+      mathJaxConfig['tex']['displayMath'] =
+        this.notebook.config.mathBlockDelimiters;
 
       // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
       // Disable typesetting on startup
@@ -691,8 +689,8 @@ window["initRevealPresentation"] = async function() {
       <body class="preview-container ${
         isVSCodeWebExtension ? 'vscode-web-extension' : ''
       }" data-html="${escape(html)}" ${
-      isPresentationMode ? 'data-presentation-mode' : ''
-    }>
+        isPresentationMode ? 'data-presentation-mode' : ''
+      }>
         ${body}
       </body>
       ${this.generateScriptsForPreview(
@@ -735,12 +733,10 @@ window["initRevealPresentation"] = async function() {
       // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
       const mathJaxConfig = copy({ ...this.notebook.config.mathjaxConfig });
       mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
-      mathJaxConfig['tex'][
-        'inlineMath'
-      ] = this.notebook.config.mathInlineDelimiters;
-      mathJaxConfig['tex'][
-        'displayMath'
-      ] = this.notebook.config.mathBlockDelimiters;
+      mathJaxConfig['tex']['inlineMath'] =
+        this.notebook.config.mathInlineDelimiters;
+      mathJaxConfig['tex']['displayMath'] =
+        this.notebook.config.mathBlockDelimiters;
 
       if (options.offline) {
         mathStyle = `
@@ -1146,8 +1142,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
     }>
       <div class="crossnote markdown-preview ${princeClass} ${elementClass}" ${
-      yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
-    } ${elementId ? `id="${elementId}"` : ''}>
+        yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
+      } ${elementId ? `id="${elementId}"` : ''}>
       ${html}
       </div>
       ${sidebarTOC}
@@ -1468,9 +1464,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       return new Promise<string>((resolve) => {
         const httpSrc = $img.attr('src');
         let savePath =
-          Math.random()
-            .toString(36)
-            .substr(2, 9) +
+          Math.random().toString(36).substr(2, 9) +
           '_' +
           path.basename(httpSrc);
         savePath = path.resolve(this.fileDirectoryPath, savePath);
@@ -1666,8 +1660,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         }
       });
 
-      outputHTML += `<div id="${id}" ebook-toc-level-${level +
-        1} heading="${heading}">${$$.html()}</div>`; // append new content
+      outputHTML += `<div id="${id}" ebook-toc-level-${
+        level + 1
+      } heading="${heading}">${$$.html()}</div>`; // append new content
     });
 
     $ = cheerio.load(outputHTML);
@@ -1750,8 +1745,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         await this.fs.readFile(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
-            `./styles/preview_theme/${ebookConfig['theme'] ||
-              this.notebook.config.previewTheme}`,
+            `./styles/preview_theme/${
+              ebookConfig['theme'] || this.notebook.config.previewTheme
+            }`,
           ),
         ),
         // markdown-it-admonition
@@ -1840,9 +1836,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let inputString = await this.fs.readFile(this.filePath);
 
     if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
-      inputString = await this.notebook.config.parserConfig[
-        'onWillParseMarkdown'
-      ](inputString);
+      inputString =
+        await this.notebook.config.parserConfig['onWillParseMarkdown'](
+          inputString,
+        );
     }
 
     if (runAllCodeChunks) {
@@ -2419,15 +2416,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // TODO: Remove the `onWillParseMarkdown` and `onWillTransformMarkdown`
     // as it is bad for adding source mapping support.
     if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
-      inputString = await this.notebook.config.parserConfig[
-        'onWillParseMarkdown'
-      ](inputString);
+      inputString =
+        await this.notebook.config.parserConfig['onWillParseMarkdown'](
+          inputString,
+        );
     }
 
     if (this.notebook.config.parserConfig['onWillTransformMarkdown']) {
-      inputString = await this.notebook.config.parserConfig[
-        'onWillTransformMarkdown'
-      ](inputString);
+      inputString =
+        await this.notebook.config.parserConfig['onWillTransformMarkdown'](
+          inputString,
+        );
     }
 
     // import external files and insert anchors if necessary
@@ -2459,9 +2458,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }));
 
     if (this.notebook.config.parserConfig['onDidTransformMarkdown']) {
-      outputString = await this.notebook.config.parserConfig[
-        'onDidTransformMarkdown'
-      ](outputString);
+      outputString =
+        await this.notebook.config.parserConfig['onDidTransformMarkdown'](
+          outputString,
+        );
     }
 
     // process front-matter
@@ -2600,9 +2600,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     if (this.notebook.config.parserConfig['onDidParseMarkdown']) {
-      html = await this.notebook.config.parserConfig['onDidParseMarkdown'](
-        html,
-      );
+      html =
+        await this.notebook.config.parserConfig['onDidParseMarkdown'](html);
     }
 
     if (options.runAllCodeChunks) {

@@ -78,6 +78,24 @@ export default function FloatingActions() {
     }
   }, [showMoreActions, highlightElement]);
 
+  // Clicking the `.final-line` element will open the editor.
+  /*
+  // FIXME: close button in MarkdownEditor will not work.
+  //        even though I have set event.stopPropagation() in the button.
+  useEffect(() => {
+    if (highlightElement?.classList.contains('final-line')) {
+      const onClick = () => {
+        setHighlightElementBeingEdited(highlightElement);
+      };
+      highlightElement.addEventListener('click', onClick);
+
+      return () => {
+        highlightElement.removeEventListener('click', onClick);
+      };
+    }
+  }, [setHighlightElementBeingEdited, highlightElement]);
+  */
+
   if (!highlightElement || !!highlightElementBeingEdited) {
     return null;
   } else {
@@ -85,7 +103,7 @@ export default function FloatingActions() {
     return createPortal(
       <div
         className={classNames(
-          'absolute top-0 right-0 select-none floating-action flex flex-col items-end',
+          'absolute top-0 right-0 select-none floating-action flex flex-col items-end z-[60]',
         )}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}

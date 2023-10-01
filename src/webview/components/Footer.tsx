@@ -24,7 +24,7 @@ export default function Footer() {
       <div className="flex flex-row justify-end items-center backdrop-blur-xl float-right rounded-md">
         <div
           className={classNames(
-            'p-2 cursor-pointer hover:scale-105',
+            'p-2 cursor-pointer hover:text-primary w-5 h-5',
             showBacklinks ? 'text-primary font-bold' : '',
           )}
           title="Toggle backlinks"
@@ -35,7 +35,7 @@ export default function Footer() {
           <LinkIcon className="w-5 h-5"></LinkIcon>
         </div>
         <div
-          className="p-2 cursor-pointer hover:scale-105"
+          className="p-2 cursor-pointer hover:text-primary w-5 h-5"
           title={'Open menu'}
           onClick={(event) => {
             showContextMenu({
