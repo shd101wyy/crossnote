@@ -43,7 +43,8 @@
     "prepare": "husky install",
     "prepublish": "npm run build",
     "test": "jest --no-coverage",
-    "test:coverage": "jest"
+    "test:coverage": "jest",
+    "typedoc": "typedoc src/index.ts"
   },
   "lint-staged": {
     "**/*.*": [

@@ -1,0 +1,34 @@
+name: Deploy typedoc to GitHub Pages
+on:
+  push:
+    branches:
+      - master
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-and-deploy:
+    name: "Deploy typedoc to GitHub Pages"
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: 'Install nodejs 20'
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+      - name: 'Build and test'
+        run: |
+          corepack enable
+          yarn install
+          yarn typedoc
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs # The folder the action should deploy.
+          clean: true
+          single-commit: true
+        
