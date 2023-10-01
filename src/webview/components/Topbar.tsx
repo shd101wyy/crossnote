@@ -46,7 +46,7 @@ export function Topbar() {
           title="Back to top"
           onClick={backToTop}
         >
-          <ChevronUpIcon className="w-6 h-6"></ChevronUpIcon>
+          <ChevronUpIcon className="w-5 h-5"></ChevronUpIcon>
         </div>
         <div
           className="p-2 cursor-pointer hover:scale-105"
@@ -63,7 +63,7 @@ export function Topbar() {
           onClick={clickSidebarTocButton}
           title={'Toggle table of contents'}
         >
-          <ListBulletIcon className="w-6 h-6"></ListBulletIcon>
+          <ListBulletIcon className="w-5 h-5"></ListBulletIcon>
         </div>
       </div>
     </div>

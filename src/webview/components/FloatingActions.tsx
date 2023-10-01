@@ -6,7 +6,7 @@ import {
 } from '@mdi/js';
 import Icon from '@mdi/react';
 import classNames from 'classnames';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PreviewContainer from '../containers/preview';
 
@@ -67,6 +67,16 @@ export default function FloatingActions() {
       setShowCopiedTooltip(undefined);
     }, 1000);
   }, [highlightElement, getHighlightElementLineRange, markdown]);
+
+  useEffect(() => {
+    if (highlightElement && showMoreActions) {
+      document.body.classList.add('floating-action-open');
+
+      return () => {
+        document.body.classList.remove('floating-action-open');
+      };
+    }
+  }, [showMoreActions, highlightElement]);
 
   if (!highlightElement || !!highlightElementBeingEdited) {
     return null;

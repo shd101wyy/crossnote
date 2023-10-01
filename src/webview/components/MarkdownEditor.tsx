@@ -5,7 +5,9 @@ import {
   mdiUnfoldMoreHorizontal,
 } from '@mdi/js';
 import Icon from '@mdi/react';
-import Editor, { Monaco, OnMount } from '@monaco-editor/react';
+import Editor, { OnMount } from '@monaco-editor/react';
+import * as Monaco from 'monaco-editor';
+import { editor as monacoEditor } from 'monaco-editor';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PreviewContainer from '../containers/preview';
@@ -24,19 +26,18 @@ export default function MarkdownEditor() {
     sourceUri,
   } = PreviewContainer.useContainer();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const editorRef = useRef<any>(null);
-  const monacoRef = useRef<Monaco>(null);
+  const editorRef = useRef<monacoEditor.IStandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<typeof Monaco | null>(null);
   const [count, setCount] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [showConfirmCloseAlert, setShowConfirmCloseAlert] = useState(false);
 
-  const handleEditorDidMount: OnMount = (editor, monaco) => {
-    console.log('Mount editor', !!editor, !!monaco);
+  const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
     // HACK: For re-rendering the editor
     setCount(Date.now());
-  };
+  }, []);
 
   const closeEditor = useCallback(() => {
     // Check if there is change between markdown and editor value
@@ -58,11 +59,9 @@ export default function MarkdownEditor() {
 
   // Jump to the line of the highlightElementBeingEdited
   useEffect(() => {
-    if (
-      !highlightElementBeingEdited ||
-      !editorRef.current ||
-      !monacoRef.current
-    ) {
+    const monaco = monacoRef.current;
+    const editor = editorRef.current;
+    if (!highlightElementBeingEdited || !editor || !monaco) {
       return;
     }
 
@@ -77,21 +76,15 @@ export default function MarkdownEditor() {
 
       let emptyLinesCount = 0;
       for (let i = start + 1; i < end; i++) {
-        if (editorRef.current.getModel().getLineContent(i) === '') {
+        if (editor.getModel()?.getLineContent(i) === '') {
           emptyLinesCount++;
         }
       }
-      console.log('emptyLinesCount', emptyLinesCount);
 
       // Create line decorations
-      editorRef.current.createDecorationsCollection([
+      editor.createDecorationsCollection([
         {
-          range: new monacoRef.current.Range(
-            start + 1 + emptyLinesCount,
-            1,
-            end,
-            1,
-          ),
+          range: new monaco.Range(start + 1 + emptyLinesCount, 1, end, 1),
           options: {
             isWholeLine: true,
             linesDecorationsClassName: 'monaco-line-decoration',
@@ -100,10 +93,13 @@ export default function MarkdownEditor() {
       ]);
 
       // Navigate to the line
-      editorRef.current.revealLineNearTop(start + 1 + emptyLinesCount);
+      editor.revealLineNearTop(
+        start + 1 + emptyLinesCount,
+        monacoEditor.ScrollType.Immediate,
+      );
     } else {
       // Navigate to the line
-      editorRef.current.revealLineInCenter(start + 1);
+      editor.revealLineInCenter(start + 1, monacoEditor.ScrollType.Immediate);
     }
   }, [
     getHighlightElementLineRange,
@@ -114,34 +110,32 @@ export default function MarkdownEditor() {
     count,
   ]);
 
-  // Bind ctrl+s or cmd+s to save the editor value
+  // Bind
+  // - ctrl+s or cmd+s to save the editor value
+  // - esc to close the editor
   useEffect(() => {
-    console.log('Bind ctrl+s or cmd+s to save the editor value');
-    if (!editorRef.current) {
+    const editor = editorRef.current;
+    const monaco = monacoRef.current;
+    if (!editor || !monaco) {
       return;
     }
 
     // Bind commands
-    const saveCommandId: string = editorRef.current.addCommand(
-      monacoRef.current.KeyMod.CtrlCmd | monacoRef.current.KeyCode.KEY_S,
-      function() {
-        console.log('Pressed ctrl+s or cmd+s');
-        saveEditor();
-      },
-    );
-    console.log('saveCommandId', saveCommandId);
-    /*
-    const saveCommand = editorRef.current.registerCommand('save', function() {
-      console.log('Pressed ctrl+s or cmd+s');
+    /// Save command
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () {
       saveEditor();
     });
-    */
+
+    /// Close command
+    editor.addCommand(monaco.KeyCode.Escape, function () {
+      closeEditor();
+    });
 
     return () => {
       // Unbind commands
       // saveCommand.dispose();
     };
-  }, [saveEditor, count]);
+  }, [saveEditor, closeEditor, count]);
 
   useEffect(() => {
     // Add `position` style to the highlightElementBeingEdited
@@ -150,13 +144,19 @@ export default function MarkdownEditor() {
     }
     const style = window.getComputedStyle(highlightElementBeingEdited);
     const position = style.position;
+    const width = style.width;
     const height = style.height;
     const minHeight = style.minHeight;
     const padding = style.padding;
+    const overflow = style.overflow;
     // const scale = style.scale;
+
     if (position !== 'absolute' && position !== 'fixed') {
       highlightElementBeingEdited.style.position = 'relative';
     }
+
+    // Set the width to 100vw
+    highlightElementBeingEdited.style.width = '100vw';
 
     // If the highlightElementBeingEdited has class `final-line`, we need to
     // increase the height of it to make it higher.
@@ -174,15 +174,21 @@ export default function MarkdownEditor() {
     // Set editor padding
     highlightElementBeingEdited.style.padding = '0';
 
+    // Set editor overflow to `unset`
+    highlightElementBeingEdited.style.overflow = 'unset';
+
     return () => {
       if (!highlightElementBeingEdited) {
         return;
       }
+      // Restore the styles
       highlightElementBeingEdited.style.position = position;
+      highlightElementBeingEdited.style.width = width;
       highlightElementBeingEdited.style.height = height;
       highlightElementBeingEdited.style.minHeight = minHeight;
       // highlightElementBeingEdited.style.scale = scale;
       highlightElementBeingEdited.style.padding = padding;
+      highlightElementBeingEdited.style.overflow = overflow;
     };
   }, [highlightElementBeingEdited]);
 
@@ -199,7 +205,6 @@ export default function MarkdownEditor() {
 
   useEffect(() => {
     return () => {
-      console.log('Unmount editor');
       editorRef.current = null;
       monacoRef.current = null;
     };
@@ -226,7 +231,7 @@ export default function MarkdownEditor() {
     >
       {/* Action buttons */}
       {!showConfirmCloseAlert && (
-        <div className="absolute top-0 right-0 flex flex-row items-center z-20">
+        <div className="absolute top-0 right-4 flex flex-row items-center z-20">
           {expanded ? (
             <button
               className="btn btn-primary btn-circle btn-xs mr-1"
@@ -322,11 +327,16 @@ export default function MarkdownEditor() {
             data-theme={theme}
           >
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-              <div className="loading loading-dots loading-md"></div>
+              <div className="flex flex-col items-center">
+                <div className="loading loading-dots loading-md"></div>
+                <div className="text-base font-normal not-italic">
+                  Loading editor...
+                </div>
+              </div>
             </div>
           </div>
         }
-        keepCurrentModel={true}
+        keepCurrentModel={false}
         className={`min-h-[${EDITOR_MIN_HEIGHT}px]`}
       ></Editor>
     </div>,

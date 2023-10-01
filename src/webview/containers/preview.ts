@@ -84,9 +84,8 @@ const PreviewContainer = createContainer(() => {
   const [showSidebarToc, setShowSidebarToc] = useState<boolean>(false);
   const [sidebarTocHtml, setSidebarTocHtml] = useState<string>('');
   const [showBacklinks, setShowBacklinks] = useState<boolean>(false);
-  const [isRefreshingPreview, setIsRefreshingPreview] = useState<boolean>(
-    false,
-  );
+  const [isRefreshingPreview, setIsRefreshingPreview] =
+    useState<boolean>(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState<boolean>(true);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isMouseOverPreview, setIsMouseOverPreview] = useState<boolean>(false);
@@ -103,10 +102,8 @@ const PreviewContainer = createContainer(() => {
     null,
   );
   const [markdown, setMarkdown] = useState<string>('');
-  const [
-    highlightElementBeingEdited,
-    setHighlightElementBeingEdited,
-  ] = useState<HTMLElement | null>(null);
+  const [highlightElementBeingEdited, setHighlightElementBeingEdited] =
+    useState<HTMLElement | null>(null);
 
   const isPresentationMode = useMemo(() => {
     return document.body.hasAttribute('data-presentation-mode');
@@ -203,9 +200,8 @@ const PreviewContainer = createContainer(() => {
     newScrollMap[0] = 0;
 
     // write down the offsetTop of element that has 'data-source-line' property to scrollMap
-    const lineElements = previewElement.current.getElementsByClassName(
-      'source-line',
-    );
+    const lineElements =
+      previewElement.current.getElementsByClassName('source-line');
 
     for (let i = 0; i < lineElements.length; i++) {
       let el = lineElements[i] as HTMLElement;
@@ -348,9 +344,10 @@ const PreviewContainer = createContainer(() => {
       }
       if (config.mathRenderingOption === 'MathJax' || config.usePandocParser) {
         // .mathjax-exps, .math.inline, .math.display
-        const unprocessedElements = hiddenPreviewElement.current.querySelectorAll(
-          '.mathjax-exps, .math.inline, .math.display',
-        );
+        const unprocessedElements =
+          hiddenPreviewElement.current.querySelectorAll(
+            '.mathjax-exps, .math.inline, .math.display',
+          );
         if (!unprocessedElements.length) {
           return resolve();
         }
@@ -422,9 +419,8 @@ const PreviewContainer = createContainer(() => {
         return resolve();
       }
 
-      const vegaElements = previewElement.current.querySelectorAll(
-        '.vega, .vega-lite',
-      );
+      const vegaElements =
+        previewElement.current.querySelectorAll('.vega, .vega-lite');
       function reportVegaError(el, error) {
         el.innerHTML =
           '<pre class="language-text"><code>' +
@@ -453,9 +449,8 @@ const PreviewContainer = createContainer(() => {
       return;
     }
     const mermaid = window['mermaid']; // window.mermaid doesn't work, has to be written as window['mermaid']
-    const mermaidGraphs = previewElement.current.getElementsByClassName(
-      'mermaid',
-    );
+    const mermaidGraphs =
+      previewElement.current.getElementsByClassName('mermaid');
 
     const validMermaidGraphs: HTMLElement[] = [];
     for (let i = 0; i < mermaidGraphs.length; i++) {
@@ -540,9 +535,8 @@ const PreviewContainer = createContainer(() => {
       return;
     }
 
-    const codeChunks = previewElement.current.getElementsByClassName(
-      'code-chunk',
-    );
+    const codeChunks =
+      previewElement.current.getElementsByClassName('code-chunk');
     for (let i = 0; i < codeChunks.length; i++) {
       codeChunks[i].classList.add('running');
     }
@@ -578,9 +572,8 @@ const PreviewContainer = createContainer(() => {
     if (!previewElement.current) {
       return;
     }
-    const codeChunks = previewElement.current.getElementsByClassName(
-      'code-chunk',
-    );
+    const codeChunks =
+      previewElement.current.getElementsByClassName('code-chunk');
     if (!codeChunks.length) {
       return;
     }
@@ -812,9 +805,8 @@ const PreviewContainer = createContainer(() => {
     if (!previewElement.current) {
       return;
     }
-    const taskListItemCheckboxes = previewElement.current.getElementsByClassName(
-      'task-list-item-checkbox',
-    );
+    const taskListItemCheckboxes =
+      previewElement.current.getElementsByClassName('task-list-item-checkbox');
     for (let i = 0; i < taskListItemCheckboxes.length; i++) {
       const checkbox = taskListItemCheckboxes[i] as HTMLInputElement;
       let li = checkbox.parentElement;
@@ -855,6 +847,10 @@ const PreviewContainer = createContainer(() => {
     setHighlightElement(null);
     const sourceLineElements = previewElement.querySelectorAll('.source-line');
     const highlightElementsThatAddedEventSet = new Set<Element | HTMLElement>();
+    const sourceLineElementToHighlightElementMap = new Map<
+      Element | HTMLElement,
+      Element | HTMLElement
+    >();
 
     highlightElementToLinesMap.current = new Map<
       HTMLElement | Element,
@@ -892,9 +888,8 @@ const PreviewContainer = createContainer(() => {
       // Add event listeners
       highlightElements.forEach((highlightElement) => {
         if (highlightElementsThatAddedEventSet.has(highlightElement)) {
-          const lines = highlightElementToLinesMap.current.get(
-            highlightElement,
-          );
+          const lines =
+            highlightElementToLinesMap.current.get(highlightElement);
           // console.log('* lines: ', lines);
           if (lines) {
             lines.forEach((line) => {
@@ -937,18 +932,10 @@ const PreviewContainer = createContainer(() => {
 
     for (let i = sourceLineElements.length - 1; i >= 0; i--) {
       const sourceLineElement = sourceLineElements[i];
-
-      // First .source-line element
-      // Bind all elements above it
-      if (i == 0) {
-        const highlightElements: (Element | HTMLElement)[] = [];
-        let siblingElement = sourceLineElement.previousElementSibling;
-        while (siblingElement) {
-          highlightElements.push(siblingElement);
-          siblingElement = siblingElement.previousElementSibling;
-        }
-        bindHighlightElementsEvent(highlightElements, 0);
-      }
+      const dataSourceLine = parseInt(
+        sourceLineElement.getAttribute('data-source-line') ?? '0',
+        10,
+      );
 
       // Ignore the link
       if (sourceLineElement.tagName === 'A') {
@@ -968,12 +955,11 @@ const PreviewContainer = createContainer(() => {
           highlightElement = highlightElement.parentElement;
         }
         if (highlightElement) {
-          bindHighlightElementsEvent(
-            [highlightElement],
-            parseInt(
-              sourceLineElement.getAttribute('data-source-line') ?? '0',
-              10,
-            ),
+          bindHighlightElementsEvent([highlightElement], dataSourceLine);
+
+          sourceLineElementToHighlightElementMap.set(
+            sourceLineElement,
+            highlightElement,
           );
         }
       }
@@ -987,46 +973,49 @@ const PreviewContainer = createContainer(() => {
       ) {
         const highlightElement = sourceLineElement.parentElement.parentElement;
         if (highlightElement) {
-          bindHighlightElementsEvent(
-            [highlightElement],
-            parseInt(
-              sourceLineElement.getAttribute('data-source-line') ?? '0',
-              10,
-            ),
+          bindHighlightElementsEvent([highlightElement], dataSourceLine);
+
+          sourceLineElementToHighlightElementMap.set(
+            sourceLineElement,
+            highlightElement,
           );
         }
       }
       // Other elements
       else {
-        bindHighlightElementsEvent(
-          [sourceLineElement],
-          parseInt(
-            sourceLineElement.getAttribute('data-source-line') ?? '0',
-            10,
-          ),
+        bindHighlightElementsEvent([sourceLineElement], dataSourceLine);
+
+        sourceLineElementToHighlightElementMap.set(
+          sourceLineElement,
+          sourceLineElement,
         );
       }
 
-      const getParentElement = (element: HTMLElement | Element) => {
-        if (
-          sourceLineElement.tagName === 'PRE' &&
-          sourceLineElement.parentElement?.classList.contains('input-div') &&
-          sourceLineElement.parentElement.parentElement?.classList.contains(
-            'code-chunk',
-          )
-        ) {
-          return sourceLineElement.parentElement.parentElement;
-        } else {
-          return element.parentElement;
+      // First .source-line element
+      // Bind all elements above it
+      if (i == 0) {
+        const highlightElements: (Element | HTMLElement)[] = [];
+        let siblingElement =
+          sourceLineElementToHighlightElementMap.get(sourceLineElement)
+            ?.previousElementSibling;
+        while (siblingElement) {
+          highlightElements.push(siblingElement);
+          siblingElement = siblingElement.previousElementSibling;
         }
-      };
+        bindHighlightElementsEvent(highlightElements, 0);
+      }
 
       // Check elements between this and the next .source-line element who has the same parent
       if (i < sourceLineElements.length - 1) {
         let nextSyncLineElement: Element | null = null;
         for (let j = i + 1; j < sourceLineElements.length; j++) {
           const el = sourceLineElements[j];
-          if (getParentElement(el) === getParentElement(sourceLineElement)) {
+          const parent1 =
+            sourceLineElementToHighlightElementMap.get(el)?.parentElement;
+          const parent2 =
+            sourceLineElementToHighlightElementMap.get(sourceLineElement)
+              ?.parentElement;
+          if (!!parent1 && !!parent2 && parent1 === parent2) {
             nextSyncLineElement = el;
             break;
           }
@@ -1034,19 +1023,17 @@ const PreviewContainer = createContainer(() => {
 
         if (nextSyncLineElement) {
           const highlightElements: (Element | HTMLElement)[] = [];
-          let siblingElement = sourceLineElement.nextElementSibling;
-          while (siblingElement && siblingElement !== nextSyncLineElement) {
+          let siblingElement =
+            sourceLineElementToHighlightElementMap.get(sourceLineElement)
+              ?.nextElementSibling;
+          const target =
+            sourceLineElementToHighlightElementMap.get(nextSyncLineElement);
+          while (siblingElement && siblingElement !== target) {
             highlightElements.push(siblingElement);
             siblingElement = siblingElement.nextElementSibling;
           }
 
-          bindHighlightElementsEvent(
-            highlightElements,
-            parseInt(
-              sourceLineElement.getAttribute('data-source-line') ?? '0',
-              10,
-            ),
-          );
+          bindHighlightElementsEvent(highlightElements, dataSourceLine);
         }
       }
     }
@@ -1548,7 +1535,7 @@ const PreviewContainer = createContainer(() => {
   ]);
 
   useEffect(() => {
-    window['setHighlightElement'] = function(element: HTMLElement) {
+    window['setHighlightElement'] = function (element: HTMLElement) {
       element.classList.add('highlight-line');
       setHighlightElement(element);
     };

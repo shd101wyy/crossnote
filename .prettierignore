@@ -19,7 +19,7 @@ out
 ## special cases
 dependencies/**
 !dependencies/README.md
-styles
+styles/*.css
 
 test.js
 test.mjs

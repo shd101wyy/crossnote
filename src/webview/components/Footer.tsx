@@ -32,7 +32,7 @@ export default function Footer() {
             setShowBacklinks((x) => !x);
           }}
         >
-          <LinkIcon className="w-6 h-6"></LinkIcon>
+          <LinkIcon className="w-5 h-5"></LinkIcon>
         </div>
         <div
           className="p-2 cursor-pointer hover:scale-105"
@@ -43,7 +43,7 @@ export default function Footer() {
             });
           }}
         >
-          <Bars3Icon className="w-6 h-6"></Bars3Icon>
+          <Bars3Icon className="w-5 h-5"></Bars3Icon>
         </div>
       </div>
     </div>
