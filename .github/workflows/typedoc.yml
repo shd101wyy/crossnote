@@ -2,7 +2,7 @@ name: Deploy typedoc to GitHub Pages
 on:
   push:
     branches:
-      - develop
+      - master
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
