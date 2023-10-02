@@ -905,6 +905,17 @@ const PreviewContainer = createContainer(() => {
           /*'mouseenter'*/ 'mouseover',
           (event) => {
             event.stopPropagation();
+            setIsMouseOverPreview(true);
+
+            // Remove "highlight-line" class name from all highlight elements.
+            const currentHighlightElements = Array.from(
+              document.getElementsByClassName('highlight-line'),
+            );
+            currentHighlightElements.forEach((currentHighlightElement) => {
+              currentHighlightElement.classList.remove('highlight-line');
+            });
+
+            // Add "highlight-line" class name.
             // console.log('mouseover');
             highlightElements.forEach((highlightElement) => {
               highlightElement.classList.add('highlight-line');
@@ -984,13 +995,30 @@ const PreviewContainer = createContainer(() => {
           );
         }
       }
+      // Image and link
+      else if (
+        sourceLineElement.tagName === 'IMG' ||
+        sourceLineElement.tagName === 'A'
+      ) {
+        const highlightElement = sourceLineElement.parentElement;
+        if (highlightElement) {
+          bindHighlightElementsEvent([highlightElement], dataSourceLine);
+
+          sourceLineElementToContainerElementMap.set(
+            sourceLineElement,
+            highlightElement,
+          );
+        }
+      }
       // Other elements
       else {
         bindHighlightElementsEvent([sourceLineElement], dataSourceLine);
 
         sourceLineElementToContainerElementMap.set(
           sourceLineElement,
-          sourceLineElement,
+          sourceLineElement.parentElement?.tagName === 'P'
+            ? sourceLineElement.parentElement
+            : sourceLineElement,
         );
       }
 

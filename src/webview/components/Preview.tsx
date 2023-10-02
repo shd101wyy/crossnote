@@ -27,10 +27,10 @@ export default function Preview() {
 
   return (
     <div
-      onMouseEnter={() => {
+      onMouseOver={() => {
         setIsMouseOverPreview(true);
       }}
-      onMouseLeave={() => {
+      onMouseOut={() => {
         setIsMouseOverPreview(false);
       }}
       className={classNames(
