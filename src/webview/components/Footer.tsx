@@ -1,7 +1,7 @@
 import { Bars3Icon, LinkIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
-import { readingTime } from 'reading-time-estimator';
+import readingTime from 'reading-time/lib/reading-time';
 import PreviewContainer from '../containers/preview';
 
 export default function Footer() {
@@ -26,6 +26,7 @@ export default function Footer() {
 
   useEffect(() => {
     const readingTimeEstimation = readingTime(markdown);
+    console.log(readingTimeEstimation);
     setReadingTimeEstimation(readingTimeEstimation);
   }, [markdown]);
 
