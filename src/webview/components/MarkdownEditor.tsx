@@ -93,7 +93,7 @@ export default function MarkdownEditor() {
             start + 1 + emptyLinesCountAtStart,
             1,
             end,
-            1,
+            (editor.getModel()?.getLineLength(end) ?? 0) + 1,
           ),
           options: {
             isWholeLine: true,
@@ -101,6 +101,19 @@ export default function MarkdownEditor() {
           },
         },
       ]);
+
+      // Focus on the editor
+      editor.focus();
+
+      // Select the lines
+      editor.setSelection(
+        new monaco.Range(
+          start + 1 + emptyLinesCountAtStart,
+          1,
+          end,
+          (editor.getModel()?.getLineLength(end) ?? 0) + 1,
+        ),
+      );
 
       setEditorMinHeight(
         Math.max(
@@ -116,6 +129,9 @@ export default function MarkdownEditor() {
         monacoEditor.ScrollType.Immediate,
       );
     } else {
+      // Focus on the editor
+      editor.focus();
+
       // Navigate to the line
       editor.revealLineInCenter(start + 1, monacoEditor.ScrollType.Immediate);
     }

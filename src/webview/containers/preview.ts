@@ -1014,40 +1014,39 @@ const PreviewContainer = createContainer(() => {
 
       // Check elements between this and the next .source-line element who has the same parent
       if (i < sourceLineElements.length - 1) {
-        let nextSyncLineElement: Element | null = null;
         for (let j = i + 1; j < sourceLineElements.length; j++) {
-          const el = sourceLineElements[j];
-          const parent1 =
-            sourceLineElementToContainerElementMap.get(el)?.parentElement;
-          const parent2 =
-            sourceLineElementToContainerElementMap.get(sourceLineElement)
-              ?.parentElement;
-          if (!!parent1 && !!parent2 && parent1 === parent2) {
-            nextSyncLineElement = el;
+          const nextSourceLineElement = sourceLineElements[j];
+          const sourceLineElementContainer =
+            sourceLineElementToContainerElementMap.get(sourceLineElement);
+          const nextSourceLineElementContainer =
+            sourceLineElementToContainerElementMap.get(nextSourceLineElement);
+          if (
+            sourceLineElementContainer &&
+            nextSourceLineElementContainer &&
+            sourceLineElementContainer !== nextSourceLineElementContainer &&
+            sourceLineElementContainer.parentElement ===
+              nextSourceLineElementContainer.parentElement
+          ) {
+            const highlightElements: (Element | HTMLElement)[] = [];
+            let siblingElement = sourceLineElementContainer.nextElementSibling;
+            while (
+              siblingElement &&
+              siblingElement !== nextSourceLineElementContainer
+            ) {
+              if (
+                !(
+                  siblingElement.tagName === 'P' &&
+                  siblingElement.innerHTML === ''
+                )
+              ) {
+                highlightElements.push(siblingElement);
+              }
+              siblingElement = siblingElement.nextElementSibling;
+            }
+
+            bindHighlightElementsEvent(highlightElements, dataSourceLine);
             break;
           }
-        }
-
-        if (nextSyncLineElement) {
-          const highlightElements: (Element | HTMLElement)[] = [];
-          let siblingElement =
-            sourceLineElementToContainerElementMap.get(sourceLineElement)
-              ?.nextElementSibling;
-          const target =
-            sourceLineElementToContainerElementMap.get(nextSyncLineElement);
-          while (siblingElement && siblingElement !== target) {
-            if (
-              !(
-                siblingElement.tagName === 'P' &&
-                siblingElement.innerHTML === ''
-              )
-            ) {
-              highlightElements.push(siblingElement);
-            }
-            siblingElement = siblingElement.nextElementSibling;
-          }
-
-          bindHighlightElementsEvent(highlightElements, dataSourceLine);
         }
       }
     }
