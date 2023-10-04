@@ -743,19 +743,18 @@ const PreviewContainer = createContainer(() => {
         }
         const href = decodeURIComponent(hrefAttr); // decodeURI here for Chinese like unicode heading
         if (href && href[0] === '#') {
-          if (!previewElement.current) {
-            continue;
-          }
           a.onclick = (event) => {
-            if (!previewElement.current) {
-              return;
-            }
             event.preventDefault();
             event.stopPropagation();
 
+            if (!previewElement.current) {
+              return;
+            }
+
+            // NOTE: CSS.escape is needed here to escape special characters like '[' and number ID.
             const targetElement = previewElement.current.querySelector(
-              `[id="${encodeURIComponent(href.slice(1))}"]`,
-            ) as HTMLElement; // fix number id bug
+              `#${CSS.escape(href.slice(1))}`,
+            ) as HTMLElement;
             if (!targetElement) {
               return;
             }
