@@ -122,7 +122,8 @@ function createAnchor(
     prefix = '',
   }: { extraClass?: string; tag?: string; prefix?: string } = {},
 ) {
-  return `\n${prefix}\n${prefix}<${tag} data-source-line="${lineNo}" class="source-line ${extraClass}" style="margin:0;"></${tag}>\n${prefix}\n${prefix}`;
+  const prefixTrimmedEnd = prefix.trimEnd();
+  return `\n${prefixTrimmedEnd}\n${prefix}<${tag} data-source-line="${lineNo}" class="source-line ${extraClass}" style="margin:0;"></${tag}>\n${prefixTrimmedEnd}\n${prefixTrimmedEnd}`;
 }
 
 let DOWNLOADS_TEMP_FOLDER: string | null = null;
@@ -267,6 +268,7 @@ export async function transformMarkdown(
   let headings: HeadingData[] = [];
   let tocBracketEnabled = false;
   let frontMatterString = '';
+  let listItemSpacesAhead: number | null = null;
   const canCreateAnchor = forPreview && !notSourceFile;
 
   /**
@@ -309,6 +311,18 @@ export async function transformMarkdown(
       let { line, blockquotePrefix, end } = getLine(i);
       outputString += blockquotePrefix;
       // console.log(`process: ${lineNo} |${line}|`);
+
+      // Check if ends of list item
+      if (listItemSpacesAhead !== null) {
+        const spacesAheadMatch = line.match(/^\s*/);
+        if (spacesAheadMatch && spacesAheadMatch[0].length !== line.length) {
+          const spaces = spacesAheadMatch[0].length;
+          if (spaces <= 1) {
+            // End of list item
+            listItemSpacesAhead = null;
+          }
+        }
+      }
 
       // ========== Start: Code Block ==========
       const inCodeBlock = !!lastOpeningCodeBlockFence;
@@ -373,7 +387,7 @@ export async function transformMarkdown(
       // TODO: Check indentation under list items
       const indentationCodeBlockMatch = line.match(/^\s{4,}\S/);
       // NOTE: We check `prefix` here to skip the blockquote
-      if (indentationCodeBlockMatch) {
+      if (listItemSpacesAhead === null && indentationCodeBlockMatch) {
         // console.log('== Indentation code block ==');
         // Find the new line that has less indentation
         const regex = new RegExp(
@@ -412,7 +426,7 @@ export async function transformMarkdown(
       // console.log(`check empty line ${lineNo} |${line}|`);
       if (
         line.trim() === '' &&
-        end + 1 < inputString.length // test18.md
+        end + 1 < inputString.length // NOTE: Check test18.md
       ) {
         // Check if next line contains " " space
         // If yes then we don't insert anchor.
@@ -425,7 +439,11 @@ export async function transformMarkdown(
             (canCreateAnchor
               ? createAnchor(lineNo - 1, {
                   extraClass: 'empty-line',
-                  prefix: blockquotePrefix,
+                  prefix:
+                    blockquotePrefix +
+                    (listItemSpacesAhead !== null
+                      ? ' '.repeat(listItemSpacesAhead + 2)
+                      : ''),
                 })
               : '') +
             '\n';
@@ -437,6 +455,7 @@ export async function transformMarkdown(
       let headingMatch: RegExpMatchArray | null;
       let taskListItemMatch: RegExpMatchArray | null;
       let htmlTagMatch: RegExpMatchArray | null;
+      let listItemMatch: RegExpMatchArray | null;
 
       /*
         NOTE: I changed this because for case like:
@@ -698,9 +717,10 @@ export async function transformMarkdown(
       // ========== Start: Normal List Item ==========
       else if (
         /* tslint:disable-next-line:no-conditional-assignment */
-        line.match(/^\s*(?:[*\-+]|\d+\.)\s+/)
+        (listItemMatch = line.match(/^(\s*)(?:[*\-+]|\d+\.)\s+/))
       ) {
         // normal list item
+        listItemSpacesAhead = listItemMatch[1].length;
         i = end + 1;
         lineNo = lineNo + 1;
         outputString =

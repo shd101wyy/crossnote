@@ -3,6 +3,34 @@
   height: 100%;
   box-sizing: border-box;
 
+  ul {
+    list-style: disc;
+  }
+
+  ul ul {
+    list-style: circle;
+  }
+
+  ul ul ul {
+    list-style: square;
+  }
+
+  ol {
+    list-style: decimal;
+  }
+
+  ol ol,
+  ul ol {
+    list-style-type: lower-roman;
+  }
+
+  ul ul ol,
+  ul ol ol,
+  ol ul ol,
+  ol ol ol {
+    list-style-type: lower-alpha;
+  }
+
   .pagebreak,
   .newpage {
     page-break-before: always;

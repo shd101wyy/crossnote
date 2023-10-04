@@ -15,7 +15,7 @@
   Paragraph 123
 
 
-<p data-source-line="11" class="source-line empty-line" style="margin:0;"></p>
+  <p data-source-line="11" class="source-line empty-line" style="margin:0;"></p>
 
 
 ## Heading 1.2 {#heading-12  .source-line data-source-line="12"}
