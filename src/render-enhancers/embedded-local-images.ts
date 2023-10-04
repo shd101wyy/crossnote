@@ -25,10 +25,10 @@ export default async function enhance(
         return;
       }
       asyncFunctions.push(
-        new Promise(resolve => {
+        new Promise((resolve) => {
           notebook.fs
             .readFile(decodeURI(src), 'base64')
-            .then(base64 => {
+            .then((base64) => {
               // const base64 = new Buffer(data).toString('base64');
               $img.attr(
                 'src',
@@ -36,7 +36,7 @@ export default async function enhance(
               );
               return resolve(base64);
             })
-            .catch(error => {
+            .catch((error) => {
               console.error(error);
               return resolve(null);
             });

@@ -4,7 +4,7 @@ const cleanCss = require('gulp-clean-css');
 const path = require('path');
 const fs = require('fs');
 
-gulp.task('clean-out', function(cb) {
+gulp.task('clean-out', function (cb) {
   // Delete ./out folder
   if (fs.existsSync('./out')) {
     fs.rmdirSync('./out', { recursive: true });
@@ -12,7 +12,7 @@ gulp.task('clean-out', function(cb) {
   cb();
 });
 
-gulp.task('compile-less', function(cb) {
+gulp.task('compile-less', function (cb) {
   // 1. Compile all *.less files in ./styles
   gulp
     .src('./styles/**/*.less')
@@ -38,13 +38,13 @@ gulp.task('compile-less', function(cb) {
 });
 
 // Whenever there is a change in ./styles, run 'compile-less' task
-gulp.task('watch-less', function(cb) {
+gulp.task('watch-less', function (cb) {
   gulp.watch('./styles/**/*', gulp.series('compile-less'));
 
   cb();
 });
 
-gulp.task('copy-files', function(cb) {
+gulp.task('copy-files', function (cb) {
   // Copy ./dependencies to ./out
   gulp.src('./dependencies/**/*').pipe(gulp.dest('./out/dependencies'));
 

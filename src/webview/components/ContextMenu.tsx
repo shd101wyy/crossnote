@@ -8,6 +8,7 @@ import {
   mdiMoonNew,
   mdiOpenInNew,
   mdiPaletteOutline,
+  mdiPencil,
   mdiSync,
 } from '@mdi/js';
 import Icon from '@mdi/react';
@@ -18,13 +19,17 @@ import PreviewContainer from '../containers/preview';
 
 export default function ContextMenu() {
   const {
-    postMessage,
-    sourceUri,
-    contextMenuId,
-    isVSCodeWebExtension,
-    setShowImageHelper,
-    previewSyncSource,
     config,
+    contextMenuId,
+    isVSCode,
+    isVSCodeWebExtension,
+    highlightElementBeingEdited,
+    postMessage,
+    previewSyncSource,
+    setHighlightElementBeingEdited,
+    setMarkdownEditorExpanded,
+    setShowImageHelper,
+    sourceUri,
     theme,
   } = PreviewContainer.useContainer();
 
@@ -159,6 +164,10 @@ export default function ContextMenu() {
             sourceUri.current,
             `${id.replace('select-revealjs-theme-', '')}.css`,
           ]);
+          break;
+        }
+        case 'open-external-editor': {
+          postMessage('openExternalEditor', [sourceUri.current]);
           break;
         }
         case 'open-documentation': {
@@ -304,6 +313,46 @@ export default function ContextMenu() {
             </span>
           </Item>
         )}
+        <Separator></Separator>
+        <Submenu
+          label={
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiPencil} size={0.8} className="mr-2"></Icon>
+              Edit Markdown
+            </span>
+          }
+        >
+          <Item id="open-external-editor" onClick={handleItemClick}>
+            <span>
+              {isVSCode ? 'Open VS Code Editor' : 'Open External Editor'}
+            </span>
+          </Item>
+          <Item
+            id="open-in-preview-editor"
+            onClick={() => {
+              const finalLineElement = document.querySelector('.final-line');
+              if (finalLineElement) {
+                if (
+                  highlightElementBeingEdited &&
+                  highlightElementBeingEdited !== finalLineElement
+                ) {
+                  highlightElementBeingEdited.scrollIntoView({
+                    behavior: 'smooth',
+                    inline: 'start', // horizontal
+                    block: 'center', // vertical
+                  });
+                } else {
+                  setMarkdownEditorExpanded(true);
+                  setHighlightElementBeingEdited(
+                    finalLineElement as HTMLElement,
+                  );
+                }
+              }
+            }}
+          >
+            <span>Open In-preview Editor </span>
+          </Item>
+        </Submenu>
         {!isVSCodeWebExtension && (
           <>
             <Separator></Separator>

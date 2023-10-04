@@ -110,7 +110,7 @@ export default function Backlinks() {
               data-theme={theme}
             >
               <div
-                className="p-2 cursor-pointer hover:scale-105"
+                className="p-2 cursor-pointer hover:text-primary"
                 title='Toggle "Always show backlinks in preview"'
                 onClick={() => {
                   postMessage('toggleAlwaysShowBacklinksInPreview', [
@@ -127,7 +127,7 @@ export default function Backlinks() {
               </div>
 
               <div
-                className="p-2 cursor-pointer hover:scale-105"
+                className="p-2 cursor-pointer hover:text-primary"
                 onClick={() => refreshBacklinks(true)}
                 title="Refresh backlinks"
               >
@@ -167,6 +167,13 @@ export default function Backlinks() {
                     if (!note.notebookPath || !note.filePath) {
                       return;
                     }
+                    const href = URI.from({
+                      ...noteUri,
+                      fragment:
+                        typeof line === 'number'
+                          ? `L${line}`
+                          : noteUri.fragment,
+                    }).toString();
                     return (
                       <li
                         className="list-none"
@@ -174,14 +181,9 @@ export default function Backlinks() {
                       >
                         <div className="inline-flex">
                           <a
-                            href={URI.from({
-                              ...noteUri,
-                              fragment:
-                                typeof line === 'number'
-                                  ? `L${line}`
-                                  : noteUri.fragment,
-                            }).toString()}
-                            className="mr-2 mt-1 text-inherit hover:scale-110"
+                            href={href}
+                            className="mr-2 mt-1 text-inherit hover:text-primary"
+                            title={href}
                           >
                             <Icon path={mdiOpenInNew} size={0.8}></Icon>
                           </a>

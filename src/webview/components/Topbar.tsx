@@ -42,14 +42,14 @@ export function Topbar() {
     >
       <div className="flex flex-row justify-end items-center backdrop-blur-xl float-right rounded-md">
         <div
-          className="p-2 cursor-pointer hover:scale-110"
+          className="p-2 cursor-pointer hover:text-primary w-5 h-5"
           title="Back to top"
           onClick={backToTop}
         >
-          <ChevronUpIcon className="w-6 h-6"></ChevronUpIcon>
+          <ChevronUpIcon className="w-5 h-5"></ChevronUpIcon>
         </div>
         <div
-          className="p-2 cursor-pointer hover:scale-105"
+          className="p-2 cursor-pointer hover:text-primary w-5 h-5"
           title="Refresh the preview"
           onClick={refreshPreview}
         >
@@ -57,13 +57,13 @@ export function Topbar() {
         </div>
         <div
           className={classNames(
-            'p-2 cursor-pointer hover:scale-105',
+            'p-2 cursor-pointer hover:text-primary w-5 h-5',
             showSidebarToc ? 'text-primary font-bold' : '',
           )}
           onClick={clickSidebarTocButton}
           title={'Toggle table of contents'}
         >
-          <ListBulletIcon className="w-6 h-6"></ListBulletIcon>
+          <ListBulletIcon className="w-5 h-5"></ListBulletIcon>
         </div>
       </div>
     </div>

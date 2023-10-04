@@ -6,19 +6,20 @@ import MarkdownItFootnote from 'markdown-it-footnote';
 import MarkdownItMark from 'markdown-it-mark';
 import MarkdownItSub from 'markdown-it-sub';
 import MarkdownItSup from 'markdown-it-sup';
-import Token from 'markdown-it/lib/token.js';
+import Token from 'markdown-it/lib/token';
 import * as path from 'path';
 import { URI, Utils } from 'vscode-uri';
 import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
 import useMarkdownItCodeFences from '../custom-markdown-it-features/code-fences';
 import useMarkdownItCriticMarkup from '../custom-markdown-it-features/critic-markup';
+import useMarkdownItCurlyBracketAttributes from '../custom-markdown-it-features/curly-bracket-attributes';
 import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
 import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed';
 import useMarkdownItMath from '../custom-markdown-it-features/math';
 import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
 import { MarkdownEngine } from '../markdown-engine';
 import { loadConfigsInDirectory, wrapNodeFSAsApi } from './config-helper';
-import { matter, matterStringify } from './markdown.js';
+import { matter, matterStringify } from './markdown';
 import { FilePath, Mentions, Note, NoteConfig, Notes } from './note';
 import { Reference, ReferenceMap } from './reference';
 import Search from './search';
@@ -49,7 +50,14 @@ interface NotebookConstructorArgs {
    * If no scheme is passed, then `file` is used.
    */
   notebookPath: string;
+  /**
+   * Please note that config from `.crossnote` has higher priority than this `config`.
+   */
   config: Partial<NotebookConfig>;
+  /**
+   * File system API.
+   * You can check `wrapNodeFSAsApi` in `config-helper.ts` as a reference.
+   */
   fs?: FileSystemApi;
 }
 
@@ -119,8 +127,8 @@ export class Notebook {
     );
     this.config = {
       ...getDefaultNotebookConfig(),
-      ...extraConfig,
       ...config,
+      ...extraConfig, // NOTE: extraConfig has higher priority
     };
   }
 
@@ -136,6 +144,7 @@ export class Notebook {
     this.md.use(MarkdownItMark);
 
     useMarkdownItCodeFences(this.md);
+    useMarkdownItCurlyBracketAttributes(this.md);
     useMarkdownItCriticMarkup(this.md, this);
     useMarkdownItEmoji(this.md, this);
     useMarkdownItHTML5Embed(this.md, this);
@@ -238,7 +247,7 @@ export class Notebook {
         },
         references,
         // FIXME: The link is not correct. Needs to resolve the path correctly.
-        referenceHtmls: references.map(reference => {
+        referenceHtmls: references.map((reference) => {
           const tokens = [reference.parentToken ?? reference.token];
           const html = this.md.renderer.render(tokens, this.md.options, {});
           return html;
@@ -464,7 +473,7 @@ export class Notebook {
         if (data.data['aliases']) {
           const aliases = (data.data['aliases'] || []) as string[] | string;
           if (typeof aliases === 'string') {
-            noteConfig.aliases = aliases.split(',').map(x => x.trim());
+            noteConfig.aliases = aliases.split(',').map((x) => x.trim());
           } else {
             noteConfig.aliases = aliases;
           }

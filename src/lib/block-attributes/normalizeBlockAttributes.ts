@@ -1,8 +1,9 @@
-import { snakeCase } from 'snake-case';
+import { snakeCase } from 'case-anything';
 import { BlockAttributes } from './types';
 
 /**
- * Walks through attribute keys and makes them snakeCase if needed
+ * Walks through attribute keys and makes them kebabCase if needed
+ * https://www.npmjs.com/package/case-anything
  * @param attributes
  */
 export const normalizeBlockAttributes = (
@@ -16,6 +17,11 @@ export const normalizeBlockAttributes = (
 
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
+      // NOTE: Don't normalize the key that starts with `data-` or `aria-`
+      if (key.startsWith('data-') || key.startsWith('aria-')) {
+        continue;
+      }
+
       const normalizedKey = snakeCase(key);
       if (normalizedKey !== key) {
         result[normalizedKey] = result[key];

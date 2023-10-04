@@ -38,16 +38,15 @@ export interface ProcessWikiLinkArgs {
 
 export interface ParserConfig {
   onWillParseMarkdown: (markdown: string) => Promise<string>;
-  onDidParseMarkdown: (
-    html: string,
-  ) => // NOTE: We disabled this for now
+  onDidParseMarkdown: (html: string) => // NOTE: We disabled this for now
   // opts: { cheerio: CheerioAPI },
   Promise<string>;
   onWillTransformMarkdown: (markdown: string) => Promise<string>;
   onDidTransformMarkdown: (markdown: string) => Promise<string>;
-  processWikiLink: (
-    args: ProcessWikiLinkArgs,
-  ) => { text: string; link: string };
+  processWikiLink: (args: ProcessWikiLinkArgs) => {
+    text: string;
+    link: string;
+  };
 }
 
 export type PreviewTheme =
@@ -478,19 +477,19 @@ export function getDefaultKatexConfig(): KatexOptions {
 
 export function getDefaultParserConfig(): ParserConfig {
   return {
-    onWillParseMarkdown: async function(markdown) {
+    onWillParseMarkdown: async function (markdown) {
       return markdown;
     },
-    onDidParseMarkdown: async function(html) {
+    onDidParseMarkdown: async function (html) {
       return html;
     },
-    onWillTransformMarkdown: async function(markdown) {
+    onWillTransformMarkdown: async function (markdown) {
       return markdown;
     },
-    onDidTransformMarkdown: async function(markdown) {
+    onDidTransformMarkdown: async function (markdown) {
       return markdown;
     },
-    processWikiLink: function({ text, link }) {
+    processWikiLink: function ({ text, link }) {
       return {
         text,
         link: link ? link : text.endsWith('.md') ? text : `${text}.md`,
@@ -571,14 +570,28 @@ export interface Backlink {
 
 export interface WebviewConfig extends Partial<NotebookConfig> {
   scrollSync?: boolean;
-  /**
-   * Whether this preview is for vscode or not.
-   */
   zoomLevel?: number;
   sourceUri?: string;
   initialLine?: number;
   cursorLine?: number;
   imageUploader?: ImageUploader;
+}
+
+export enum PreviewMode {
+  /**
+   * Only one preview will be shown for all editors.
+   */
+  SinglePreview = 'Single Preview',
+
+  /**
+   * Multiple previews will be shown. Each editor has its own preview.
+   */
+  MultiplePreviews = 'Multiple Previews',
+
+  /**
+   * No editor will be shown. Only previews will be shown. You can use the in-preview editor to edit the markdown.
+   */
+  PreviewsOnly = 'Previews Only',
 }
 
 export type ImageUploader = 'imgur' | 'sm.ms' | 'qiniu';

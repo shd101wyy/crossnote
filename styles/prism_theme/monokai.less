@@ -1,24 +1,24 @@
-// Modified according to: 
+// Modified according to:
 //   https://github.com/kevinsawicki/monokai
 
 // These colors are specific to the theme. Do not use in a package!
 
-@ghost-white: #F8F8F0;
-@light-ghost-white: #F8F8F2;
-@light-gray: #CCC;
+@ghost-white: #f8f8f0;
+@light-ghost-white: #f8f8f2;
+@light-gray: #ccc;
 @gray: #888;
-@brown-gray: #49483E;
+@brown-gray: #49483e;
 @dark-gray: #282828;
 
-@yellow: #E6DB74;
-@blue: #66D9EF;
-@pink: #F92672;
-@purple: #AE81FF;
-@brown: #75715E;
-@orange: #FD971F;
-@light-orange: #FFD569;
-@green: #A6E22E;
-@sea-green: #529B2F;
+@yellow: #e6db74;
+@blue: #66d9ef;
+@pink: #f92672;
+@purple: #ae81ff;
+@brown: #75715e;
+@orange: #fd971f;
+@light-orange: #ffd569;
+@green: #a6e22e;
+@sea-green: #529b2f;
 
 // General colors
 @syntax-text-color: @light-ghost-white;
@@ -27,9 +27,9 @@
 @syntax-background-color: @dark-gray;
 
 // Guide colors
-@syntax-wrap-guide-color: rgba(255, 255, 255, .1);
-@syntax-indent-guide-color: rgba(255, 255, 255, .15);
-@syntax-invisible-character-color: rgba(197, 200, 198, .2);
+@syntax-wrap-guide-color: rgba(255, 255, 255, 0.1);
+@syntax-indent-guide-color: rgba(255, 255, 255, 0.15);
+@syntax-invisible-character-color: rgba(197, 200, 198, 0.2);
 
 // For find and replace markers
 @syntax-result-marker-color: @gray;
@@ -50,115 +50,124 @@
 pre {
   font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
   direction: ltr;
-	text-align: left;
-	white-space: pre;
+  text-align: left;
+  white-space: pre;
   word-spacing: normal;
   word-break: normal;
   word-wrap: normal;
 
   // padding: 16px;
   padding: 1em;
-  margin: .5em 0;
-  
+  margin: 0.5em 0;
+
   overflow: auto;
   line-height: 1.5;
   tab-size: 4;
   hyphens: none;
   color: @syntax-text-color;
-  background-color: contrast(@syntax-background-color, lighten(@syntax-background-color, 4%), darken(@syntax-background-color, 6%)) !important;
-  border: contrast(@syntax-background-color, lighten(@syntax-background-color, 16%), darken(@syntax-background-color, 16%));
+  background-color: contrast(
+    @syntax-background-color,
+    lighten(@syntax-background-color, 4%),
+    darken(@syntax-background-color, 6%)
+  ) !important;
+  border: contrast(
+    @syntax-background-color,
+    lighten(@syntax-background-color, 16%),
+    darken(@syntax-background-color, 16%)
+  );
   border-radius: 3px;
 }
 
-pre[class*="language-"] { // presentation mode padding
-  padding: 1em; 
+pre[class*='language-'] {
+  // presentation mode padding
+  padding: 1em;
 }
 
-code[class*="language-"],
-pre[class*="language-"] {
-.token.comment,
-.token.prolog,
-.token.doctype,
-.token.cdata {
-  color: @brown;
-}
+code[class*='language-'],
+pre[class*='language-'] {
+  .token.comment,
+  .token.prolog,
+  .token.doctype,
+  .token.cdata {
+    color: @brown;
+  }
 
-.token.punctuation {
-  // color: #999;
-  color: inherit;
-}
+  .token.punctuation {
+    // color: #999;
+    color: inherit;
+  }
 
-.namespace {
-	opacity: .7;
-}
+  .namespace {
+    opacity: 0.7;
+  }
 
-.token.property,
-.token.tag,
-.token.boolean,
-.token.number,
-.token.function-name,
-.token.constant,
-.token.symbol,
-.token.deleted {
-  color: @purple;
-}
+  .token.property,
+  .token.tag,
+  .token.boolean,
+  .token.number,
+  .token.function-name,
+  .token.constant,
+  .token.symbol,
+  .token.deleted {
+    color: @purple;
+  }
 
-.token.selector,
-.token.attr-name,
-.token.string,
-.token.char,
-.token.builtin,
-.token.inserted {
-  color: @yellow;
-}
+  .token.selector,
+  .token.attr-name,
+  .token.string,
+  .token.char,
+  .token.builtin,
+  .token.inserted {
+    color: @yellow;
+  }
 
-.token.entity {
-  color: @purple;
-}
+  .token.entity {
+    color: @purple;
+  }
 
-.token.url {
-  color: @light-gray;
-}
+  .token.url {
+    color: @light-gray;
+  }
 
-.token.operator {
-  color: @pink;
-}
+  .token.operator {
+    color: @pink;
+  }
 
-.token.atrule,
-.token.attr-value,
-.token.keyword {
-  // color: @pink !important;
-  color: @blue;
-}
+  .token.atrule,
+  .token.attr-value,
+  .token.keyword {
+    // color: @pink !important;
+    color: @blue;
+  }
 
-.token.function {
-  color: @green;
-}
+  .token.function {
+    color: @green;
+  }
 
-.token.class-name {
-  color: @green;
-}
+  .token.class-name {
+    color: @green;
+  }
 
-.token.regex {
-  color: @purple;
-}
+  .token.regex {
+    color: @purple;
+  }
 
-.token.important,
-.token.variable {
-  color: @green;
-}
+  .token.important,
+  .token.variable {
+    color: @green;
+  }
 
-.token.important,
-.token.bold {
-	font-weight: bold;
-}
-.token.italic {
-	font-style: italic;
-}
+  .token.important,
+  .token.bold {
+    font-weight: bold;
+  }
+  .token.italic {
+    font-style: italic;
+  }
 
-.token.entity {
-	cursor: help;
-}
+  .token.entity {
+    cursor: help;
+  }
 }
 
 /* highlight */
@@ -181,26 +190,30 @@ pre[data-line] .line-highlight {
   right: 0;
   padding: inherit 0;
   margin-top: 1em;
-  background: hsla(24, 20%, 50%,.08);
-  background: linear-gradient(to right, hsla(24, 20%, 50%,.1) 70%, hsla(24, 20%, 50%,0));
+  background: hsla(24, 20%, 50%, 0.08);
+  background: linear-gradient(
+    to right,
+    hsla(24, 20%, 50%, 0.1) 70%,
+    hsla(24, 20%, 50%, 0)
+  );
   pointer-events: none;
   line-height: inherit;
   white-space: pre;
 }
 
-pre[data-line] .line-highlight:before, 
+pre[data-line] .line-highlight:before,
 pre[data-line] .line-highlight[data-end]:after {
   content: attr(data-start);
   position: absolute;
-  top: .4em;
-  left: .6em;
+  top: 0.4em;
+  left: 0.6em;
   min-width: 1em;
-  padding: 0 .5em;
-  background-color: hsla(24, 20%, 50%,.4);
+  padding: 0 0.5em;
+  background-color: hsla(24, 20%, 50%, 0.4);
   color: hsl(24, 20%, 95%);
   font: bold 65%/1.5 sans-serif;
   text-align: center;
-  vertical-align: .3em;
+  vertical-align: 0.3em;
   border-radius: 999px;
   text-shadow: none;
   box-shadow: 0 1px white;
@@ -209,5 +222,5 @@ pre[data-line] .line-highlight[data-end]:after {
 pre[data-line] .line-highlight[data-end]:after {
   content: attr(data-end);
   top: auto;
-  bottom: .4em;
+  bottom: 0.4em;
 }

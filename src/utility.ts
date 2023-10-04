@@ -49,7 +49,7 @@ export function openFile(filePath: string) {
  * @param ms
  */
 export function sleep(ms: number) {
-  return new Promise<void>(resolve => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => {
       return resolve();
     }, ms);
@@ -153,7 +153,8 @@ export function removeFileProtocol(filePath: string): string {
   // See https://regex101.com/r/YlpEur/8/
   // - "file://///a///b//c/d"                   ---> "a///b//c/d"
   // - "vscode-resource://///file///a///b//c/d" ---> "file///a///b//c/d"
-  const regex = /^(?:(?:file|(vscode)-(?:webview-)?resource|vscode--resource):\/+)(.*)/m;
+  const regex =
+    /^(?:(?:file|(vscode)-(?:webview-)?resource|vscode--resource):\/+)(.*)/m;
 
   return filePath.replace(regex, (m, isVSCode, rest) => {
     if (isVSCode) {
@@ -170,7 +171,7 @@ export function removeFileProtocol(filePath: string): string {
   });
 }
 
-export { uploadImage } from './tools/image-uploader.js';
+export { uploadImage } from './tools/image-uploader';
 
 /**
  * Allow unsafed `eval` function
@@ -181,7 +182,7 @@ export { uploadImage } from './tools/image-uploader.js';
 export function allowUnsafeEval(fn) {
   const previousEval = globalThis.eval;
   try {
-    globalThis.eval = source => vm.runInThisContext(source);
+    globalThis.eval = (source) => vm.runInThisContext(source);
 
     return fn();
   } finally {
@@ -193,7 +194,7 @@ export function allowUnsafeEval(fn) {
 export async function allowUnsafeEvalAync(fn: () => Promise<any>) {
   const previousEval = globalThis.eval;
   try {
-    globalThis.eval = source => vm.runInThisContext(source);
+    globalThis.eval = (source) => vm.runInThisContext(source);
 
     return await fn();
   } finally {
@@ -230,7 +231,7 @@ export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
   const previousEval = globalThis.eval;
   try {
     globalThis.Function = Function as FunctionConstructor;
-    globalThis.eval = source => vm.runInThisContext(source);
+    globalThis.eval = (source) => vm.runInThisContext(source);
     return await fn();
   } finally {
     globalThis.eval = previousEval;
@@ -241,11 +242,13 @@ export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
 export const loadDependency = (dependencyPath: string) =>
   allowUnsafeEval(() =>
     allowUnsafeNewFunction(() =>
-      require(path.resolve(
-        getCrossnoteBuildDirectory(),
-        'dependencies',
-        dependencyPath,
-      )),
+      require(
+        path.resolve(
+          getCrossnoteBuildDirectory(),
+          'dependencies',
+          dependencyPath,
+        ),
+      ),
     ),
   );
 
@@ -303,4 +306,55 @@ export function interpretJS(code: string) {
     vm.runInNewContext(`result = (${code})`, context);
     return context['result'];
   }
+}
+
+export function findClosingTagIndex(
+  inputString: string,
+  tagName: string,
+  startIndex = 0,
+) {
+  const openTag = `<${tagName}`;
+  const closeTag = `</${tagName}>`;
+  const stack: number[] = [];
+  let inComment = false;
+
+  // Start searching from the specified startIndex
+  for (let i = startIndex; i < inputString.length; i++) {
+    // Check for the start of a comment
+    if (inputString.substring(i, i + 4) === '<!--') {
+      inComment = true;
+      i += 3; // Skip the comment start
+    }
+
+    // Check for the end of a comment
+    if (inComment && inputString.substring(i, i + 3) === '-->') {
+      inComment = false;
+      i += 2; // Skip the comment end
+    }
+
+    // Skip characters inside comments
+    if (inComment) continue;
+
+    // Check for the opening tag
+    if (inputString.substring(i, i + openTag.length) === openTag) {
+      stack.push(i);
+    }
+
+    // Check for the closing tag
+    if (inputString.substring(i, i + closeTag.length) === closeTag) {
+      if (stack.length === 0) {
+        // No matching opening tag found, return -1
+        return -1;
+      } else {
+        stack.pop(); // Remove the corresponding opening tag
+        if (stack.length === 0) {
+          // If the stack is empty, the closing tag is found
+          return i;
+        }
+      }
+    }
+  }
+
+  // If we reach here, no closing tag was found, return -1
+  return -1;
 }

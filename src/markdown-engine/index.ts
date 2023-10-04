@@ -171,7 +171,7 @@ export class MarkdownEngine {
       ''
     )
       .split(',')
-      .map(x => x.trim());
+      .map((x) => x.trim());
     return new RegExp('^(' + protocolsWhiteList.join('|') + ')'); // eg /^(http:\/\/|https:\/\/|atom:\/\/|file:\/\/|mailto:|tel:)/
   }
 
@@ -237,12 +237,10 @@ export class MarkdownEngine {
       // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
       const mathJaxConfig = copy({ ...this.notebook.config.mathjaxConfig });
       mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
-      mathJaxConfig['tex'][
-        'inlineMath'
-      ] = this.notebook.config.mathInlineDelimiters;
-      mathJaxConfig['tex'][
-        'displayMath'
-      ] = this.notebook.config.mathBlockDelimiters;
+      mathJaxConfig['tex']['inlineMath'] =
+        this.notebook.config.mathInlineDelimiters;
+      mathJaxConfig['tex']['displayMath'] =
+        this.notebook.config.mathBlockDelimiters;
 
       // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
       // Disable typesetting on startup
@@ -542,7 +540,7 @@ window["initRevealPresentation"] = async function() {
     vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
     let output = '';
-    JSAndCssFiles.forEach(sourcePath => {
+    JSAndCssFiles.forEach((sourcePath) => {
       let absoluteFilePath = sourcePath;
       if (sourcePath[0] === '/') {
         absoluteFilePath = utility.addFileProtocol(
@@ -691,8 +689,8 @@ window["initRevealPresentation"] = async function() {
       <body class="preview-container ${
         isVSCodeWebExtension ? 'vscode-web-extension' : ''
       }" data-html="${escape(html)}" ${
-      isPresentationMode ? 'data-presentation-mode' : ''
-    }>
+        isPresentationMode ? 'data-presentation-mode' : ''
+      }>
         ${body}
       </body>
       ${this.generateScriptsForPreview(
@@ -735,12 +733,10 @@ window["initRevealPresentation"] = async function() {
       // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
       const mathJaxConfig = copy({ ...this.notebook.config.mathjaxConfig });
       mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
-      mathJaxConfig['tex'][
-        'inlineMath'
-      ] = this.notebook.config.mathInlineDelimiters;
-      mathJaxConfig['tex'][
-        'displayMath'
-      ] = this.notebook.config.mathBlockDelimiters;
+      mathJaxConfig['tex']['inlineMath'] =
+        this.notebook.config.mathInlineDelimiters;
+      mathJaxConfig['tex']['displayMath'] =
+        this.notebook.config.mathBlockDelimiters;
 
       if (options.offline) {
         mathStyle = `
@@ -797,7 +793,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@10.5.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">
@@ -1117,7 +1113,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // move @import ''; to the very start.
     let styles = styleCSS + '\n' + globalStyles;
     let imports = '';
-    styles = styles.replace(/@import\s+url\(([^)]+)\)\s*;/g, whole => {
+    styles = styles.replace(/@import\s+url\(([^)]+)\)\s*;/g, (whole) => {
       imports += whole + '\n';
       return '';
     });
@@ -1146,8 +1142,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
     }>
       <div class="crossnote markdown-preview ${princeClass} ${elementClass}" ${
-      yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
-    } ${elementId ? `id="${elementId}"` : ''}>
+        yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
+      } ${elementId ? `id="${elementId}"` : ''}>
       ${html}
       </div>
       ${sidebarTOC}
@@ -1464,13 +1460,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
     }
 
-    const asyncFunctions = imagesToDownload.map($img => {
-      return new Promise<string>(resolve => {
+    const asyncFunctions = imagesToDownload.map(($img) => {
+      return new Promise<string>((resolve) => {
         const httpSrc = $img.attr('src');
         let savePath =
-          Math.random()
-            .toString(36)
-            .substr(2, 9) +
+          Math.random().toString(36).substr(2, 9) +
           '_' +
           path.basename(httpSrc);
         savePath = path.resolve(this.fileDirectoryPath, savePath);
@@ -1658,7 +1652,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         const $a = $$(a);
         const href = $a.attr('href');
         if (href.startsWith('file://')) {
-          results.forEach(result => {
+          results.forEach((result) => {
             if (result.filePath === utility.removeFileProtocol(href)) {
               $a.attr('href', '#' + result.id);
             }
@@ -1666,8 +1660,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         }
       });
 
-      outputHTML += `<div id="${id}" ebook-toc-level-${level +
-        1} heading="${heading}">${$$.html()}</div>`; // append new content
+      outputHTML += `<div id="${id}" ebook-toc-level-${
+        level + 1
+      } heading="${heading}">${$$.html()}</div>`; // append new content
     });
 
     $ = cheerio.load(outputHTML);
@@ -1750,8 +1745,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         await this.fs.readFile(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
-            `./styles/preview_theme/${ebookConfig['theme'] ||
-              this.notebook.config.previewTheme}`,
+            `./styles/preview_theme/${
+              ebookConfig['theme'] || this.notebook.config.previewTheme
+            }`,
           ),
         ),
         // markdown-it-admonition
@@ -1808,7 +1804,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // this function will be called later
     function deleteDownloadedImages() {
-      downloadedImagePaths.forEach(imagePath => {
+      downloadedImagePaths.forEach((imagePath) => {
         fs.unlink(imagePath, () => {
           return;
         });
@@ -1840,9 +1836,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let inputString = await this.fs.readFile(this.filePath);
 
     if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
-      inputString = await this.notebook.config.parserConfig[
-        'onWillParseMarkdown'
-      ](inputString);
+      inputString =
+        await this.notebook.config.parserConfig['onWillParseMarkdown'](
+          inputString,
+        );
     }
 
     if (runAllCodeChunks) {
@@ -2083,10 +2080,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     for (let i = 0; i < scripts.length; i++) {
       const $script = $(scripts[i]);
       const src = $script.attr('src');
-      if (src && !src.match(/^https?:\/\//)) {
+      // NOTE: We only support src that is relative to the project directory.
+      if (src && !src.match(/^https?:\/\//) && src.startsWith('/')) {
         // Load the script from the local file system
         // and set as inline script
-        const scriptPath = this.notebook.resolveNoteAbsolutePath(src);
+        const scriptPath = path.join(
+          this.notebook.notebookPath.fsPath,
+          '.' + src,
+        );
         try {
           const scriptContent = await this.fs.readFile(scriptPath);
           $script.html(scriptContent);
@@ -2121,7 +2122,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (arg instanceof Array) {
       let tbody = '<tbody><tr>';
       arg.forEach(
-        item => (tbody += `<td>${this.frontMatterToTable(item)}</td>`),
+        (item) => (tbody += `<td>${this.frontMatterToTable(item)}</td>`),
       );
       tbody += '</tr></tbody>';
       return `<table>${tbody}</table>`;
@@ -2261,7 +2262,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         v += 1;
       }
 
-      output += `<section ${attrString} ${idString}  class="slide ${classString}" data-line="${slideConfig['lineNo']}" data-h="${h}" data-v="${v}">${slide}</section>`;
+      output += `<section ${attrString} ${idString}  class="slide ${classString}" data-source-line="${slideConfig['lineNo']}" data-h="${h}" data-v="${v}">${slide}</section>`;
       i += 1;
     }
     if (i > 0 && slideConfigs[i - 1]['vertical']) {
@@ -2320,7 +2321,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       mathRenderer,
     ]
       .concat(args)
-      .filter(arg => arg.length);
+      .filter((arg) => arg.length);
 
     /*
       convert pandoc code block to markdown-it code block
@@ -2419,15 +2420,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // TODO: Remove the `onWillParseMarkdown` and `onWillTransformMarkdown`
     // as it is bad for adding source mapping support.
     if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
-      inputString = await this.notebook.config.parserConfig[
-        'onWillParseMarkdown'
-      ](inputString);
+      inputString =
+        await this.notebook.config.parserConfig['onWillParseMarkdown'](
+          inputString,
+        );
     }
 
     if (this.notebook.config.parserConfig['onWillTransformMarkdown']) {
-      inputString = await this.notebook.config.parserConfig[
-        'onWillTransformMarkdown'
-      ](inputString);
+      inputString =
+        await this.notebook.config.parserConfig['onWillTransformMarkdown'](
+          inputString,
+        );
     }
 
     // import external files and insert anchors if necessary
@@ -2459,9 +2462,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }));
 
     if (this.notebook.config.parserConfig['onDidTransformMarkdown']) {
-      outputString = await this.notebook.config.parserConfig[
-        'onDidTransformMarkdown'
-      ](outputString);
+      outputString =
+        await this.notebook.config.parserConfig['onDidTransformMarkdown'](
+          outputString,
+        );
     }
 
     // process front-matter
@@ -2574,7 +2578,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       $,
       options,
       this.resolveFilePath.bind(this),
-      this.notebook.config.usePandocParser,
     );
 
     if (this.notebook.config.enableExtendedTableSyntax) {
@@ -2601,9 +2604,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     if (this.notebook.config.parserConfig['onDidParseMarkdown']) {
-      html = await this.notebook.config.parserConfig['onDidParseMarkdown'](
-        html,
-      );
+      html =
+        await this.notebook.config.parserConfig['onDidParseMarkdown'](html);
     }
 
     if (options.runAllCodeChunks) {

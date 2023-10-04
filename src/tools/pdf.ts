@@ -49,16 +49,16 @@ export function toSVGMarkdown(
       { shell: true },
     );
     const chunks: string[] = [];
-    task.stdout.on('data', chunk => {
+    task.stdout.on('data', (chunk) => {
       chunks.push(chunk);
     });
 
     const errorChunks: Buffer[] = [];
-    task.stderr.on('data', chunk => {
+    task.stderr.on('data', (chunk) => {
       errorChunks.push(chunk);
     });
 
-    task.on('error', error => {
+    task.on('error', (error) => {
       errorChunks.push(Buffer.from(error.toString(), 'utf-8'));
     });
 
@@ -80,7 +80,7 @@ export function toSVGMarkdown(
           let svgMarkdown = '';
           const r = Math.random();
 
-          items.forEach(fileName => {
+          items.forEach((fileName) => {
             const match = fileName.match(
               new RegExp(`^${svgFilePrefix}(\\d+).svg`),
             );

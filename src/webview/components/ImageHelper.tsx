@@ -150,7 +150,7 @@ export default function ImageHelper() {
                     className="hidden"
                     multiple={true}
                     ref={imagePasterInput}
-                    onChange={event => {
+                    onChange={(event) => {
                       const files = event.target.files ?? [];
                       for (let i = 0; i < files.length; i++) {
                         const file = files[i] as { path?: string };
@@ -185,7 +185,7 @@ export default function ImageHelper() {
                     multiple={true}
                     ref={imageUploaderInput}
                     className="hidden"
-                    onChange={event => {
+                    onChange={(event) => {
                       const files = event.target.files ?? [];
                       for (let i = 0; i < files.length; i++) {
                         const file = files[i] as { path?: string };
@@ -205,7 +205,7 @@ export default function ImageHelper() {
                   <span>use</span>
                   <select
                     value={imageUploader}
-                    onChange={event => {
+                    onChange={(event) => {
                       setImageUploader(event.target.value as ImageUploader);
                       postMessage('setImageUploader', [event.target.value]);
                     }}

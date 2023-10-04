@@ -1,6 +1,6 @@
 body {
   @bg: #fff;
-  @fg: rgba(0, 0, 0, .8);
+  @fg: rgba(0, 0, 0, 0.8);
 
   background: @bg;
   line-height: 1.555;
@@ -10,14 +10,16 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -moz-font-feature-settings: "liga"on;
-  font-family: "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
+  -moz-font-feature-settings: 'liga' on;
+  font-family: 'San Francisco', 'Roboto', 'Segoe UI', 'Helvetica Neue',
+    'Lucida Grande', sans-serif;
   line-height: 1.58;
   letter-spacing: -0.003em;
   color: @fg;
 
   p {
-    font-family: "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
+    font-family: 'San Francisco', 'Roboto', 'Segoe UI', 'Helvetica Neue',
+      'Lucida Grande', sans-serif;
     line-height: 1.58;
     letter-spacing: -0.003em;
     color: @fg;
@@ -33,7 +35,8 @@ body {
   li,
   .mathjax-exps,
   .math {
-    font-family: "San Francisco", "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", sans-serif;
+    font-family: 'San Francisco', 'Roboto', 'Segoe UI', 'Helvetica Neue',
+      'Lucida Grande', sans-serif;
     color: @fg;
   }
 
@@ -43,8 +46,14 @@ body {
   a:active {
     color: #404247;
     text-decoration: none;
-    text-shadow: 1px 1px 0 #fff, -1px 1px 0 #fff, 2px 0 0 #fff, -2px 0 0 #fff;
-    box-shadow: inset 0 -1px 0 0 #fff, inset 0 -2px 0 0 #404247;
+    text-shadow:
+      1px 1px 0 #fff,
+      -1px 1px 0 #fff,
+      2px 0 0 #fff,
+      -2px 0 0 #fff;
+    box-shadow:
+      inset 0 -1px 0 0 #fff,
+      inset 0 -2px 0 0 #404247;
   }
 
   h1,
@@ -143,7 +152,7 @@ body {
     font-style: normal;
   }
 
-  ul>li:before {
+  ul > li:before {
     padding-top: 4px;
     padding-right: 15px;
     // content: "•";
@@ -155,7 +164,7 @@ body {
     text-align: right;
   }
 
-  li>p {
+  li > p {
     margin-top: 0;
     margin-bottom: 0;
   }
@@ -184,8 +193,8 @@ body {
 
   code,
   pre {
-    font-family: "Consolas", "Menlo", "Monaco", monospace, serif;
-    font-size: .9em;
+    font-family: 'Consolas', 'Menlo', 'Monaco', monospace, serif;
+    font-size: 0.9em;
     color: inherit;
   }
 
@@ -243,16 +252,16 @@ body {
     vertical-align: bottom;
   }
 
-  table caption+thead tr:first-child th,
-  table caption+thead tr:first-child td,
-  table colgroup+thead tr:first-child th,
-  table colgroup+thead tr:first-child td,
+  table caption + thead tr:first-child th,
+  table caption + thead tr:first-child td,
+  table colgroup + thead tr:first-child th,
+  table colgroup + thead tr:first-child td,
   table thead:first-child tr:first-child th,
   table thead:first-child tr:first-child td {
     border-top: 0;
   }
 
-  table tbody+tbody {
+  table tbody + tbody {
     border-top: 2px solid #ddd;
   }
 

@@ -795,7 +795,7 @@ const fontawesome4 = [
 ];
 
 const fontawesome4Object = {};
-fontawesome4.forEach(name => {
+fontawesome4.forEach((name) => {
   fontawesome4Object[name] = '';
 });
 

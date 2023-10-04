@@ -106,10 +106,7 @@ export async function processGraphs(
   }
 
   if (!imageFilePrefix) {
-    imageFilePrefix =
-      Math.random()
-        .toString(36)
-        .substr(2, 9) + '_';
+    imageFilePrefix = Math.random().toString(36).substr(2, 9) + '_';
   }
 
   imageFilePrefix = imageFilePrefix.replace(/[/&]/g, '_ss_');
@@ -194,10 +191,7 @@ export async function processGraphs(
 
   for (const codeData of codes) {
     const { start, end, content, options, optionsStr } = codeData;
-    const def = lines[start]
-      .trim()
-      .slice(3)
-      .trim();
+    const def = lines[start].trim().slice(3).trim();
 
     if (options['code_block']) {
       // Do Nothing
@@ -433,6 +427,6 @@ export async function processGraphs(
 
   await Promise.all(asyncFunctions);
 
-  const outputString = lines.filter(line => line).join('\n');
+  const outputString = lines.filter((line) => line).join('\n');
   return { outputString, imagePaths };
 }

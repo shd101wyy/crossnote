@@ -3,9 +3,11 @@ import React from 'react';
 import PreviewContainer from '../containers/preview';
 import Backlinks from './Backlinks';
 import ContextMenu from './ContextMenu';
+import FloatingActions from './FloatingActions';
 import Footer from './Footer';
 import ImageHelper from './ImageHelper';
 import LoadingIcon from './LoadingIcon';
+import MarkdownEditor from './MarkdownEditor';
 import RefreshingIcon from './RefreshingIcon';
 import SidebarToc from './SidebarToc';
 import { Topbar } from './Topbar';
@@ -20,21 +22,22 @@ export default function Preview() {
     setIsMouseOverPreview,
     showContextMenu,
     showBacklinks,
+    highlightElementBeingEdited,
   } = PreviewContainer.useContainer();
 
   return (
     <div
-      onMouseEnter={() => {
+      onMouseOver={() => {
         setIsMouseOverPreview(true);
       }}
-      onMouseLeave={() => {
+      onMouseOut={() => {
         setIsMouseOverPreview(false);
       }}
       className={classNames(
         'w-full min-h-screen',
         isPresentationMode ? 'h-full' : 'h-auto',
       )}
-      onContextMenu={event => {
+      onContextMenu={(event) => {
         showContextMenu({
           event,
         });
@@ -73,7 +76,10 @@ export default function Preview() {
       <ImageHelper></ImageHelper>
       {/** Context menu */}
       <ContextMenu></ContextMenu>
-      {/* <div className="markdown-spinner"> Loading Markdown\u2026 </div> */}
+      {/** Floating Actions */}
+      <FloatingActions></FloatingActions>
+      {/** Markdown Editor */}
+      {highlightElementBeingEdited && <MarkdownEditor></MarkdownEditor>}
     </div>
   );
 }
