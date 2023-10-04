@@ -25,19 +25,20 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
   ![](path/to/image.png){width=100 height=100}
   ```
 
-- Improved the markdown transformer to better insert anchors for scroll sync and highlight lines and elements.
+- Improved the markdown transformer to better insert anchors for scroll sync and highlight lines and elements.  
+  Added more tests for the markdown transformer to make sure it works as expected.
 - Added the reading time estimation in the preview footer ⏲️.
 - Added `Edit Markdown` menu item to the context menu of the preview, which offers two options:
   - **Open VS Code Editor**
     Open the markdown file in VS Code editor.
-  - **Open In-preview Editor** 🆕
+  - **Open In-preview Editor**
     Open the markdown file in the in-preview editor.
 - Updated the mermaid version to the latest `10.5.0`
 - Added the API website: https://shd101wyy.github.io/crossnote/
 
 ### Bug fixes
 
-- Fixed the font size of the `github-dark.css` preview theme.
+- Fixed the font size of the `github-dark.css` code block theme.
 - Fixed the anchor jump bugs: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1790
 - Fixed list item style bug: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1789
 - Fixed a data race bug that caused the preview to hang.
