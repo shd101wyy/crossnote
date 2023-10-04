@@ -6,6 +6,7 @@ import {
 } from '@mdi/js';
 import Icon from '@mdi/react';
 import Editor, { OnMount } from '@monaco-editor/react';
+import classNames from 'classnames';
 import * as Monaco from 'monaco-editor';
 import { editor as monacoEditor } from 'monaco-editor';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -25,6 +26,8 @@ export default function MarkdownEditor() {
     theme,
     postMessage,
     sourceUri,
+    markdownEditorExpanded,
+    setMarkdownEditorExpanded,
   } = PreviewContainer.useContainer();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const editorRef = useRef<monacoEditor.IStandaloneCodeEditor | null>(null);
@@ -32,7 +35,6 @@ export default function MarkdownEditor() {
   const isSuggestionWidgetOpened = useRef(false);
   const hasRegisteredMarkdownCompletionItemsProvider = useRef(false);
   const [isEditorInitialized, setIsEditorInitialized] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const [showConfirmCloseAlert, setShowConfirmCloseAlert] = useState(false);
   const [editorMinHeight, setEditorMinHeight] = useState(EDITOR_MIN_HEIGHT);
 
@@ -375,8 +377,12 @@ export default function MarkdownEditor() {
     // Set the position to `relative`
     highlightElementBeingEdited.style.position = 'relative';
 
-    // Set the width to 100vw
-    highlightElementBeingEdited.style.width = '100vw';
+    // Set the position left so it will be at the left of the screen
+    highlightElementBeingEdited.style.left =
+      -highlightElementBeingEdited.offsetLeft + 'px';
+
+    // Set the width
+    highlightElementBeingEdited.style.maxWidth = '100vw';
 
     // If the highlightElementBeingEdited has class `final-line`, we need to
     // increase the height of it to make it higher.
@@ -435,8 +441,9 @@ export default function MarkdownEditor() {
       monacoRef.current = null;
       isSuggestionWidgetOpened.current = false;
       setIsEditorInitialized(false);
+      setMarkdownEditorExpanded(false);
     };
-  }, []);
+  }, [setMarkdownEditorExpanded]);
 
   if (!highlightElementBeingEdited) {
     return;
@@ -444,26 +451,20 @@ export default function MarkdownEditor() {
 
   return createPortal(
     <div
-      className={
-        expanded
+      className={classNames(
+        'markdown-editor',
+        markdownEditorExpanded
           ? 'fixed top-0 left-0 w-[98vw] h-[100vh] z-[70]'
-          : 'absolute top-0 w-[98vw] h-[100%]'
-      }
-      style={
-        expanded
-          ? {}
-          : {
-              left: -highlightElementBeingEdited.offsetLeft,
-            }
-      }
+          : 'absolute top-0 w-[98vw] h-[100%]',
+      )}
     >
       {/* Action buttons */}
       {!showConfirmCloseAlert && (
         <div className="absolute top-0 right-4 flex flex-row items-center z-20">
-          {expanded ? (
+          {markdownEditorExpanded ? (
             <button
               className="btn btn-primary btn-circle btn-xs mr-1"
-              onClick={() => setExpanded(false)}
+              onClick={() => setMarkdownEditorExpanded(false)}
               title="Collapse"
             >
               <Icon path={mdiUnfoldLessHorizontal} size={0.6}></Icon>
@@ -471,7 +472,7 @@ export default function MarkdownEditor() {
           ) : (
             <button
               className="btn btn-primary btn-circle btn-xs mr-1"
-              onClick={() => setExpanded(true)}
+              onClick={() => setMarkdownEditorExpanded(true)}
               title="Expand"
             >
               <Icon path={mdiUnfoldMoreHorizontal} size={0.6}></Icon>

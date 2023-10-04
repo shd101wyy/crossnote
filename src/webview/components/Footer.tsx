@@ -26,7 +26,6 @@ export default function Footer() {
 
   useEffect(() => {
     const readingTimeEstimation = readingTime(markdown);
-    console.log(readingTimeEstimation);
     setReadingTimeEstimation(readingTimeEstimation);
   }, [markdown]);
 

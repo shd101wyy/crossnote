@@ -104,6 +104,8 @@ const PreviewContainer = createContainer(() => {
   const [markdown, setMarkdown] = useState<string>('');
   const [highlightElementBeingEdited, setHighlightElementBeingEdited] =
     useState<HTMLElement | null>(null);
+  const [markdownEditorExpanded, setMarkdownEditorExpanded] =
+    useState<boolean>(false);
 
   const isPresentationMode = useMemo(() => {
     return document.body.hasAttribute('data-presentation-mode');
@@ -1578,12 +1580,27 @@ const PreviewContainer = createContainer(() => {
     renderedHtml,
   ]);
 
+  // NOTE: This is for debugging
   useEffect(() => {
     window['setHighlightElement'] = function (element: HTMLElement) {
       element.classList.add('highlight-line');
       setHighlightElement(element);
     };
   }, []);
+
+  useEffect(() => {
+    if (highlightElementBeingEdited) {
+      highlightElementBeingEdited.classList.add(
+        'highlight-element-being-edited',
+      );
+
+      return () => {
+        highlightElementBeingEdited.classList.remove(
+          'highlight-element-being-edited',
+        );
+      };
+    }
+  }, [highlightElementBeingEdited]);
 
   return {
     backlinks,
@@ -1595,6 +1612,7 @@ const PreviewContainer = createContainer(() => {
     getHighlightElementLineRange,
     hiddenPreviewElement,
     highlightElement,
+    highlightElementBeingEdited,
     isLoadingBacklinks,
     isLoadingPreview,
     isMobile,
@@ -1604,11 +1622,14 @@ const PreviewContainer = createContainer(() => {
     isVSCode,
     isVSCodeWebExtension,
     markdown,
+    markdownEditorExpanded,
     postMessage,
     previewElement,
     previewSyncSource,
     refreshBacklinks,
+    setHighlightElementBeingEdited,
     setIsMouseOverPreview,
+    setMarkdownEditorExpanded,
     setShowBacklinks,
     setShowImageHelper,
     showBacklinks,
@@ -1621,8 +1642,6 @@ const PreviewContainer = createContainer(() => {
     sourceUri,
     theme,
     zoomLevel,
-    highlightElementBeingEdited,
-    setHighlightElementBeingEdited,
   };
 });
 

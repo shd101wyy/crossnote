@@ -570,14 +570,28 @@ export interface Backlink {
 
 export interface WebviewConfig extends Partial<NotebookConfig> {
   scrollSync?: boolean;
-  /**
-   * Whether this preview is for vscode or not.
-   */
   zoomLevel?: number;
   sourceUri?: string;
   initialLine?: number;
   cursorLine?: number;
   imageUploader?: ImageUploader;
+}
+
+export enum PreviewMode {
+  /**
+   * Only one preview will be shown for all editors.
+   */
+  SinglePreview = 'Single Preview',
+
+  /**
+   * Multiple previews will be shown. Each editor has its own preview.
+   */
+  MultiplePreviews = 'Multiple Previews',
+
+  /**
+   * No editor will be shown. Only previews will be shown. You can use the in-preview editor to edit the markdown.
+   */
+  PreviewsOnly = 'Previews Only',
 }
 
 export type ImageUploader = 'imgur' | 'sm.ms' | 'qiniu';

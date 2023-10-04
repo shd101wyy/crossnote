@@ -199,6 +199,7 @@ body:not([data-presentation-mode]) {
 
   .source-line.final-line {
     margin-top: 64px !important;
+    margin-bottom: 64px !important;
     padding: 8px;
     color: #bbb;
     cursor: pointer;
@@ -216,7 +217,7 @@ body:not([data-presentation-mode]) {
 }
 
 .monaco-line-decoration {
-  background: lightblue;
+  background: rgb(112, 162, 42);
   width: 5px !important;
   margin-left: 3px;
 }
@@ -227,5 +228,13 @@ body.floating-action-open.preview-container {
     .status {
       display: none !important;
     }
+  }
+}
+
+.highlight-element-being-edited {
+  // Hide all children elements except the one has class name `.markdown-editor`
+  & > *:not(.markdown-editor) {
+    visibility: hidden;
+    max-width: 100%;
   }
 }
