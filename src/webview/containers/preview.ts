@@ -918,7 +918,6 @@ const PreviewContainer = createContainer(() => {
             });
 
             // Add "highlight-line" class name.
-            // console.log('mouseover');
             highlightElements.forEach((highlightElement) => {
               highlightElement.classList.add('highlight-line');
             });
@@ -929,7 +928,6 @@ const PreviewContainer = createContainer(() => {
           /*'mouseleave'*/ 'mouseout',
           (event) => {
             event.stopPropagation();
-            // console.log('mouseout');
             highlightElements.forEach((highlightElement) => {
               highlightElement.classList.remove('highlight-line');
               highlightElement.classList.remove('highlight-active');

@@ -167,6 +167,13 @@ export default function Backlinks() {
                     if (!note.notebookPath || !note.filePath) {
                       return;
                     }
+                    const href = URI.from({
+                      ...noteUri,
+                      fragment:
+                        typeof line === 'number'
+                          ? `L${line}`
+                          : noteUri.fragment,
+                    }).toString();
                     return (
                       <li
                         className="list-none"
@@ -174,14 +181,9 @@ export default function Backlinks() {
                       >
                         <div className="inline-flex">
                           <a
-                            href={URI.from({
-                              ...noteUri,
-                              fragment:
-                                typeof line === 'number'
-                                  ? `L${line}`
-                                  : noteUri.fragment,
-                            }).toString()}
+                            href={href}
                             className="mr-2 mt-1 text-inherit hover:text-primary"
+                            title={href}
                           >
                             <Icon path={mdiOpenInNew} size={0.8}></Icon>
                           </a>
