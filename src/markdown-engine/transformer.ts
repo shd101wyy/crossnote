@@ -267,6 +267,7 @@ export async function transformMarkdown(
   let headings: HeadingData[] = [];
   let tocBracketEnabled = false;
   let frontMatterString = '';
+  const canCreateAnchor = forPreview && !notSourceFile;
 
   /**
    * As the recursive version of this function will cause the error:
@@ -421,10 +422,12 @@ export async function transformMarkdown(
           lineNo = lineNo + 1;
           outputString =
             outputString +
-            createAnchor(lineNo - 1, {
-              extraClass: 'empty-line',
-              prefix: blockquotePrefix,
-            }) +
+            (canCreateAnchor
+              ? createAnchor(lineNo - 1, {
+                  extraClass: 'empty-line',
+                  prefix: blockquotePrefix,
+                })
+              : '') +
             '\n';
           continue;
         }
@@ -446,7 +449,7 @@ export async function transformMarkdown(
         */
       // ========== Start: @import ==========
       if (line.match(/^@import/)) {
-        if (forPreview) {
+        if (canCreateAnchor) {
           outputString += createAnchor(lineNo, { prefix: blockquotePrefix }); // insert anchor for scroll sync
         }
         /* tslint:disable-next-line:no-conditional-assignment */
@@ -542,7 +545,7 @@ export async function transformMarkdown(
       // ========== Start: Custom Comment ==========
       else if (line.match(/^<!--/)) {
         // custom comment
-        if (forPreview) {
+        if (canCreateAnchor) {
           outputString += createAnchor(lineNo, { prefix: blockquotePrefix });
         }
         let commentEnd = inputString.indexOf('-->', i + 4);
@@ -622,7 +625,7 @@ export async function transformMarkdown(
       // ========== Start: ToC ==========
       else if (line.match(/^\s*\[toc\]\s*$/i)) {
         // [TOC]
-        if (forPreview) {
+        if (canCreateAnchor) {
           outputString += createAnchor(lineNo, { prefix: blockquotePrefix }); // insert anchor for scroll sync
         }
         tocBracketEnabled = true;
@@ -704,11 +707,13 @@ export async function transformMarkdown(
           outputString +
           line +
           ' ' +
-          createAnchor(lineNo - 1, {
-            tag: 'span',
-            extraClass: 'list-item-line',
-            prefix: '',
-          }).trim() +
+          (canCreateAnchor
+            ? createAnchor(lineNo - 1, {
+                tag: 'span',
+                extraClass: 'list-item-line',
+                prefix: '',
+              }).trim()
+            : '') +
           '\n';
         continue;
       }
@@ -889,7 +894,9 @@ export async function transformMarkdown(
               } ${stringifyBlockAttributes(
                 config,
               )}  \n${fileContent}\n\`\`\`  `;
-            } else if (['.md', '.markdown', '.mmark'].indexOf(extname) >= 0) {
+            } else if (
+              notebook.config.markdownFileExtensions.indexOf(extname) >= 0
+            ) {
               if (notebook.config.parserConfig.onWillTransformMarkdown) {
                 fileContent =
                   await notebook.config.parserConfig.onWillTransformMarkdown(
@@ -1123,7 +1130,7 @@ export async function transformMarkdown(
     }
 
     // Final line, which might not exist
-    if (forPreview) {
+    if (canCreateAnchor) {
       outputString += `${createAnchor(lineNo, {
         extraClass: 'empty-line final-line',
         prefix: '',
