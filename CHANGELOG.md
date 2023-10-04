@@ -4,6 +4,44 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.8.17] - 2023-10-04
+
+### New features
+
+- 📝 Supported in-preview editor that allows you to edit the markdown file directly in the preview 🎉.  
+  This feature is currently in beta.  
+  When the editor is open, you can press `ctrl+s` or `cmd+s` to save the markdown file. You can also press `esc` to close the editor.
+- Deprecated the VS Code setting `markdown-preview-enhanced.singlePreview`.  
+  Now replaced by `markdown-preview-enhanced.previewMode`:
+  - **Single Preview** (_default_)  
+    Only one preview will be shown for all editors.
+  - **Multiple Previews**  
+    Multiple previews will be shown. Each editor has its own preview.
+  - **Previews Only** 🆕  
+    No editor will be shown. Only previews will be shown. You can use the in-preview editor to edit the markdown.
+- Supported to set attribute to image and link, e.g.:
+
+  ```markdown
+  ![](path/to/image.png){width=100 height=100}
+  ```
+
+- Improved the markdown transformer to better insert anchors for scroll sync and highlight lines and elements.
+- Added the reading time estimation in the preview footer ⏲️.
+- Added `Edit Markdown` menu item to the context menu of the preview, which offers two options:
+  - **Open VS Code Editor**
+    Open the markdown file in VS Code editor.
+  - **Open In-preview Editor** 🆕
+    Open the markdown file in the in-preview editor.
+- Updated the mermaid version to the latest `10.5.0`
+- Added the API website: https://shd101wyy.github.io/crossnote/
+
+### Bug fixes
+
+- Fixed the font size of the `github-dark.css` preview theme.
+- Fixed the anchor jump bugs: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1790
+- Fixed list item style bug: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1789
+- Fixed a data race bug that caused the preview to hang.
+
 ## [0.8.16] - 2023-09-24
 
 ### New features
