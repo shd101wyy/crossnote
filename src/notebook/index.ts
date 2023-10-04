@@ -50,7 +50,14 @@ interface NotebookConstructorArgs {
    * If no scheme is passed, then `file` is used.
    */
   notebookPath: string;
+  /**
+   * Please note that config from `.crossnote` has higher priority than this `config`.
+   */
   config: Partial<NotebookConfig>;
+  /**
+   * File system API.
+   * You can check `wrapNodeFSAsApi` in `config-helper.ts` as a reference.
+   */
   fs?: FileSystemApi;
 }
 
@@ -120,8 +127,8 @@ export class Notebook {
     );
     this.config = {
       ...getDefaultNotebookConfig(),
-      ...extraConfig,
       ...config,
+      ...extraConfig, // NOTE: extraConfig has higher priority
     };
   }
 

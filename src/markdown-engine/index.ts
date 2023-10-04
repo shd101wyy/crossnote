@@ -2080,10 +2080,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     for (let i = 0; i < scripts.length; i++) {
       const $script = $(scripts[i]);
       const src = $script.attr('src');
-      if (src && !src.match(/^https?:\/\//)) {
+      // NOTE: We only support src that is relative to the project directory.
+      if (src && !src.match(/^https?:\/\//) && src.startsWith('/')) {
         // Load the script from the local file system
         // and set as inline script
-        const scriptPath = this.notebook.resolveNoteAbsolutePath(src);
+        const scriptPath = path.join(
+          this.notebook.notebookPath.fsPath,
+          '.' + src,
+        );
         try {
           const scriptContent = await this.fs.readFile(scriptPath);
           $script.html(scriptContent);
