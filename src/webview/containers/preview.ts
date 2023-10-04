@@ -746,46 +746,35 @@ const PreviewContainer = createContainer(() => {
           if (!previewElement.current) {
             continue;
           }
-          const targetElement = previewElement.current.querySelector(
-            `[id="${encodeURIComponent(href.slice(1))}"]`,
-          ) as HTMLElement; // fix number id bug
-          if (targetElement) {
-            a.onclick = (event) => {
-              if (!previewElement.current) {
-                return;
-              }
-              event.preventDefault();
-              event.stopPropagation();
+          a.onclick = (event) => {
+            if (!previewElement.current) {
+              return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
 
-              // jump to tag position
-              let offsetTop = 0;
-              let el = targetElement;
-              while (el && el !== previewElement.current) {
-                offsetTop += el.offsetTop;
-                el = el.offsetParent as HTMLElement;
-              }
+            const targetElement = previewElement.current.querySelector(
+              `[id="${encodeURIComponent(href.slice(1))}"]`,
+            ) as HTMLElement; // fix number id bug
+            if (!targetElement) {
+              return;
+            }
 
-              if (getWindowScrollTop() > offsetTop) {
-                setWindowScrollTop(offsetTop - 32 - targetElement.offsetHeight);
-              } else {
-                setWindowScrollTop(offsetTop);
-              }
-            };
-          } else {
-            // without the `else` here, mpe package on Atom will fail to render preview (issue #824 and #827).
-            a.onclick = (event) => {
-              event.preventDefault();
-              event.stopPropagation();
-            };
-          }
-        } /*else if (
-          // External links, like https://google.com
-          isVSCodeWebExtension &&
-          href.startsWith('https://') &&
-          !href.startsWith('https://file+.vscode-resource.vscode-cdn.net')
-        ) {
-          continue;
-        } */ else {
+            // jump to tag position
+            let offsetTop = 0;
+            let el = targetElement;
+            while (el && el !== previewElement.current) {
+              offsetTop += el.offsetTop;
+              el = el.offsetParent as HTMLElement;
+            }
+
+            if (getWindowScrollTop() > offsetTop) {
+              setWindowScrollTop(offsetTop - 32 - targetElement.offsetHeight);
+            } else {
+              setWindowScrollTop(offsetTop);
+            }
+          };
+        } else {
           a.onclick = (event) => {
             event.preventDefault();
             event.stopPropagation();
