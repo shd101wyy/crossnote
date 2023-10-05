@@ -1152,7 +1152,7 @@ export async function transformMarkdown(
     // Final line, which might not exist
     if (canCreateAnchor) {
       outputString += `${createAnchor(lineNo, {
-        extraClass: 'empty-line final-line',
+        extraClass: 'empty-line final-line end-of-document',
         prefix: '',
       })}`;
     }

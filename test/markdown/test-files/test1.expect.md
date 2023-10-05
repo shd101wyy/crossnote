@@ -27,5 +27,5 @@
 - List 2 <span data-source-line="14" class="source-line list-item-line" style="margin:0;"></span>
 
 
-<p data-source-line="15" class="source-line empty-line final-line" style="margin:0;"></p>
+<p data-source-line="15" class="source-line empty-line final-line end-of-document" style="margin:0;"></p>
 

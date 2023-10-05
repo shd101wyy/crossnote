@@ -19,5 +19,5 @@ Link [link](https://www.google.com){.source-line data-source-line="4"}
 Image and Link [link](https://www.google.com){.source-line data-source-line="6"} ![](image.png){.source-line data-source-line="6"} End
 
 
-<p data-source-line="7" class="source-line empty-line final-line" style="margin:0;"></p>
+<p data-source-line="7" class="source-line empty-line final-line end-of-document" style="margin:0;"></p>
 

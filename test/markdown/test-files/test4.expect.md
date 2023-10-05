@@ -17,5 +17,5 @@
 # c {#c  .source-line data-source-line="8"}
 
 
-<p data-source-line="9" class="source-line empty-line final-line" style="margin:0;"></p>
+<p data-source-line="9" class="source-line empty-line final-line end-of-document" style="margin:0;"></p>
 
