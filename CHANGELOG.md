@@ -4,6 +4,17 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.8.18] - 2023-10-05
+
+### New features
+
+- Updated the `katex` version to `0.16.9`.
+
+### Improvements
+
+- Added `end-of-document` class name to the element of the last line of the preview.
+- Exported the `KatexOptions` and `MermaidConfig` interfaces.
+
 ## [0.8.17] - 2023-10-04
 
 ### New features

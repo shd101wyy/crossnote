@@ -5,7 +5,7 @@ I managed some of the libraries by myself instead of through npm to reduce the o
 ```json
 {
   "font-awesome": "4.7",
-  "katex": "v0.16.8", // Only keep the css and fonts files.
+  "katex": "v0.16.9", // Only keep the css and fonts files.
   "mermaid": "10.5.0", // https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js
   "reveal": "4.6.0",
   "vega-embed": "6.22.2", // https://cdn.jsdelivr.net/npm/vega-embed@6.22.2/build/vega-embed.min.js

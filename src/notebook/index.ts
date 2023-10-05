@@ -51,7 +51,8 @@ interface NotebookConstructorArgs {
    */
   notebookPath: string;
   /**
-   * Please note that config from `.crossnote` has higher priority than this `config`.
+   * This has the highest priority.
+   * Then the configs from ".crossnote/*" will be merged.
    */
   config: Partial<NotebookConfig>;
   /**
@@ -127,8 +128,8 @@ export class Notebook {
     );
     this.config = {
       ...getDefaultNotebookConfig(),
+      ...extraConfig,
       ...config,
-      ...extraConfig, // NOTE: extraConfig has higher priority
     };
   }
 

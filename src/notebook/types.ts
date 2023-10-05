@@ -4,6 +4,8 @@ import { JsonObject } from 'type-fest';
 import { Note } from './note';
 import { Reference } from './reference';
 
+export type { KatexOptions } from 'katex';
+export type { MermaidConfig } from 'mermaid';
 export const IS_NODE = typeof window === 'undefined';
 
 export type FileSystemStats = {

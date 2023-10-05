@@ -5,5 +5,5 @@ This is code block
 ````
 
 
-<p data-source-line="5" class="source-line empty-line final-line" style="margin:0;"></p>
+<p data-source-line="5" class="source-line empty-line final-line end-of-document" style="margin:0;"></p>
 
