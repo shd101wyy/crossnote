@@ -1,3 +1,4 @@
+import escapeStringRegexp from 'escape-string-regexp';
 import * as fs from 'fs/promises';
 import { escape } from 'html-escaper';
 import * as less from 'less';
@@ -269,7 +270,13 @@ export async function transformMarkdown(
   let tocBracketEnabled = false;
   let frontMatterString = '';
   let listItemSpacesAhead: number | null = null;
-  const canCreateAnchor = forPreview && !notSourceFile;
+  let endMathBlockDelimiter: string | null = null;
+  let startMathBlockLineNo: number | null = null;
+  const startMathBlockDelimiterRegExp = new RegExp(
+    `(${notebook.config.mathBlockDelimiters
+      .map((x) => escapeStringRegexp(x[0]))
+      .join('|')})`,
+  );
 
   /**
    * As the recursive version of this function will cause the error:
@@ -306,11 +313,15 @@ export async function transformMarkdown(
       };
     }
 
+    const canCreateAnchor = () =>
+      (startMathBlockLineNo === null || lineNo === startMathBlockLineNo) && // not in math block
+      forPreview &&
+      !notSourceFile;
+
     while (i < inputString.length) {
       // eslint-disable-next-line prefer-const
       let { line, blockquotePrefix, end } = getLine(i);
       outputString += blockquotePrefix;
-      // console.log(`process: ${lineNo} |${line}|`);
 
       // Check if ends of list item
       if (listItemSpacesAhead !== null) {
@@ -336,7 +347,7 @@ export async function transformMarkdown(
           // ```javascript```
         } else {
           // Start of code block
-          if (!inCodeBlock && forPreview) {
+          if (!inCodeBlock && canCreateAnchor()) {
             const optStart = line.indexOf('{');
             const optEnd = line.lastIndexOf('}');
             if (optStart > 0 && optEnd > 0) {
@@ -421,7 +432,48 @@ export async function transformMarkdown(
         }
       }
       // ========== End: Indentation code block ==========
-
+      // ========== Start: Check Math Block ==========
+      let lineCopy = line;
+      while (lineCopy.length > 0) {
+        // not in math block
+        if (!endMathBlockDelimiter) {
+          const startMathBlockMatch = lineCopy.match(
+            startMathBlockDelimiterRegExp,
+          );
+          if (startMathBlockMatch && startMathBlockMatch.index !== undefined) {
+            lineCopy = lineCopy.substring(
+              startMathBlockMatch.index + startMathBlockMatch[1].length,
+            );
+            endMathBlockDelimiter =
+              (notebook.config.mathBlockDelimiters.find(
+                (x) => x[0] === startMathBlockMatch[1],
+              ) ?? [])[1] ?? startMathBlockMatch[1];
+            startMathBlockLineNo = lineNo;
+            continue;
+          } else {
+            endMathBlockDelimiter = null;
+            startMathBlockLineNo = null;
+            break;
+          }
+        } // in math block
+        else {
+          const endMathBlockDelimiterRegExp = new RegExp(
+            `(${escapeStringRegexp(endMathBlockDelimiter)})`,
+          );
+          const endMathBlockMatch = lineCopy.match(endMathBlockDelimiterRegExp);
+          if (endMathBlockMatch && endMathBlockMatch.index !== undefined) {
+            lineCopy = lineCopy.substring(
+              endMathBlockMatch.index + endMathBlockMatch[1].length,
+            );
+            endMathBlockDelimiter = null;
+            startMathBlockLineNo = null;
+            continue;
+          } else {
+            break;
+          }
+        }
+      }
+      // ========== End: Check Math Block ==========
       // ========== Start: Check empty line
       // console.log(`check empty line ${lineNo} |${line}|`);
       if (
@@ -433,11 +485,10 @@ export async function transformMarkdown(
         const { line: nextLine } = getLine(end + 1);
         if (nextLine[0] !== ' ') {
           i = end + 1;
-          lineNo = lineNo + 1;
           outputString =
             outputString +
-            (canCreateAnchor
-              ? createAnchor(lineNo - 1, {
+            (canCreateAnchor()
+              ? createAnchor(lineNo, {
                   extraClass: 'empty-line',
                   prefix:
                     blockquotePrefix +
@@ -447,6 +498,7 @@ export async function transformMarkdown(
                 })
               : '') +
             '\n';
+          lineNo = lineNo + 1;
           continue;
         }
       }
@@ -468,7 +520,7 @@ export async function transformMarkdown(
         */
       // ========== Start: @import ==========
       if (line.match(/^@import/)) {
-        if (canCreateAnchor) {
+        if (canCreateAnchor()) {
           outputString += createAnchor(lineNo, { prefix: blockquotePrefix }); // insert anchor for scroll sync
         }
         /* tslint:disable-next-line:no-conditional-assignment */
@@ -539,7 +591,7 @@ export async function transformMarkdown(
             }
           }
 
-          if (forPreview) {
+          if (canCreateAnchor()) {
             // Add source mappping
             optionsStr += ` .source-line data-source-line="${lineNo}"`;
           }
@@ -564,7 +616,7 @@ export async function transformMarkdown(
       // ========== Start: Custom Comment ==========
       else if (line.match(/^<!--/)) {
         // custom comment
-        if (canCreateAnchor) {
+        if (canCreateAnchor()) {
           outputString += createAnchor(lineNo, { prefix: blockquotePrefix });
         }
         let commentEnd = inputString.indexOf('-->', i + 4);
@@ -644,7 +696,7 @@ export async function transformMarkdown(
       // ========== Start: ToC ==========
       else if (line.match(/^\s*\[toc\]\s*$/i)) {
         // [TOC]
-        if (canCreateAnchor) {
+        if (canCreateAnchor()) {
           outputString += createAnchor(lineNo, { prefix: blockquotePrefix }); // insert anchor for scroll sync
         }
         tocBracketEnabled = true;
@@ -667,8 +719,8 @@ export async function transformMarkdown(
           line = line.replace(
             taskListItemMatch[1],
             `<input type="checkbox" class="task-list-item-checkbox${
-              forPreview ? ' source-line' : ''
-            }" ${forPreview ? `data-source-line="${lineNo}"` : ''}${
+              canCreateAnchor() ? ' source-line' : ''
+            }" ${canCreateAnchor() ? `data-source-line="${lineNo}"` : ''}${
               checked ? ' checked' : ''
             }>`,
           );
@@ -717,24 +769,27 @@ export async function transformMarkdown(
       // ========== Start: Normal List Item ==========
       else if (
         /* tslint:disable-next-line:no-conditional-assignment */
-        (listItemMatch = line.match(/^(\s*)(?:[*\-+]|\d+\.)\s+/))
+        (listItemMatch = line.match(/^(\s*)([*\-+]|\d+\.)(\s+)/))
       ) {
         // normal list item
         listItemSpacesAhead = listItemMatch[1].length;
         i = end + 1;
-        lineNo = lineNo + 1;
         outputString =
           outputString +
-          line +
-          ' ' +
-          (canCreateAnchor
-            ? createAnchor(lineNo - 1, {
-                tag: 'span',
-                extraClass: 'list-item-line',
-                prefix: '',
-              }).trim()
-            : '') +
+          (canCreateAnchor()
+            ? line.replace(
+                listItemMatch[0],
+                `${listItemMatch[1] + listItemMatch[2]} ${
+                  createAnchor(lineNo, {
+                    tag: 'span',
+                    extraClass: 'list-item-line',
+                    prefix: '',
+                  }).trim() + listItemMatch[3]
+                }`,
+              )
+            : line) +
           '\n';
+        lineNo = lineNo + 1;
         continue;
       }
 
@@ -1106,7 +1161,7 @@ export async function transformMarkdown(
       // =========== Start: Normal line ============
       else {
         // =========== Start: Add attributes to links and images ========
-        if (forPreview) {
+        if (canCreateAnchor()) {
           let newLine = '';
           let restLine = line;
           const regexp = /!?\[([^\]]*)\]\(([^)]*)\)/;
@@ -1150,7 +1205,7 @@ export async function transformMarkdown(
     }
 
     // Final line, which might not exist
-    if (canCreateAnchor) {
+    if (canCreateAnchor()) {
       outputString += `${createAnchor(lineNo, {
         extraClass: 'empty-line final-line end-of-document',
         prefix: '',

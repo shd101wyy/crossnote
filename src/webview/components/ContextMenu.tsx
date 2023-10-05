@@ -313,7 +313,7 @@ export default function ContextMenu() {
             </span>
           </Item>
         )}
-        <Separator></Separator>
+        {!isVSCodeWebExtension && <Separator></Separator>}
         <Submenu
           label={
             <span className="inline-flex flex-row items-center">

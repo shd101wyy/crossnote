@@ -4,7 +4,7 @@
 <p data-source-line="1" class="source-line empty-line" style="margin:0;"></p>
 
 
-- List 1 <span data-source-line="2" class="source-line list-item-line" style="margin:0;"></span>
+- <span data-source-line="2" class="source-line list-item-line" style="margin:0;"></span> List 1
 
   ```` {.source-line data-source-line="4"}
   ```
@@ -24,7 +24,7 @@
 <p data-source-line="13" class="source-line empty-line" style="margin:0;"></p>
 
 
-- List 2 <span data-source-line="14" class="source-line list-item-line" style="margin:0;"></span>
+- <span data-source-line="14" class="source-line list-item-line" style="margin:0;"></span> List 2
 
 
 <p data-source-line="15" class="source-line empty-line final-line end-of-document" style="margin:0;"></p>

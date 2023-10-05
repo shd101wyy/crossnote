@@ -1,10 +1,10 @@
-- 1 <span data-source-line="0" class="source-line list-item-line" style="margin:0;"></span>
+- <span data-source-line="0" class="source-line list-item-line" style="margin:0;"></span> 1
     text
-  - 2 <span data-source-line="2" class="source-line list-item-line" style="margin:0;"></span>
+  - <span data-source-line="2" class="source-line list-item-line" style="margin:0;"></span> 2
       text
-    - 3 <span data-source-line="4" class="source-line list-item-line" style="margin:0;"></span>
+    - <span data-source-line="4" class="source-line list-item-line" style="margin:0;"></span> 3
         text
-      - 4 <span data-source-line="6" class="source-line list-item-line" style="margin:0;"></span>
+      - <span data-source-line="6" class="source-line list-item-line" style="margin:0;"></span> 4
           text
 
     Still text

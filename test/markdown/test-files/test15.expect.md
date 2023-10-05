@@ -11,10 +11,10 @@
 <p data-source-line="4" class="source-line empty-line" style="margin:0;"></p>
 
 
-- list 1 <span data-source-line="5" class="source-line list-item-line" style="margin:0;"></span>
-  - list 2 <span data-source-line="6" class="source-line list-item-line" style="margin:0;"></span>
+- <span data-source-line="5" class="source-line list-item-line" style="margin:0;"></span> list 1
+  - <span data-source-line="6" class="source-line list-item-line" style="margin:0;"></span> list 2
     list 2 content
-  - list 3 <span data-source-line="8" class="source-line list-item-line" style="margin:0;"></span>
+  - <span data-source-line="8" class="source-line list-item-line" style="margin:0;"></span> list 3
     list 3 content
 
 

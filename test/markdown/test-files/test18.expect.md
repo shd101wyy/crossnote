@@ -1,7 +1,7 @@
->  * Parent list <span data-source-line="0" class="source-line list-item-line" style="margin:0;"></span>
+>  * <span data-source-line="0" class="source-line list-item-line" style="margin:0;"></span> Parent list
 > 
->     1. item 1 <span data-source-line="2" class="source-line list-item-line" style="margin:0;"></span>
->     2. item 2 <span data-source-line="3" class="source-line list-item-line" style="margin:0;"></span>
+>     1. <span data-source-line="2" class="source-line list-item-line" style="margin:0;"></span> item 1
+>     2. <span data-source-line="3" class="source-line list-item-line" style="margin:0;"></span> item 2
 >
 >           Some other texts
 >           

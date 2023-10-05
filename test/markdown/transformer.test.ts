@@ -45,6 +45,18 @@ describe('test markdown transformer', () => {
         'utf-8',
       );
       const { outputString } = await transform(markdown);
+
+      /**
+       * NOTE: the following code is used to update the expected output
+       * when the transformer is updated and we want to update the expected output.
+       */
+      /*
+      writeFileSync(
+        path.join(__dirname, './test-files', expectFileName),
+        outputString,
+      );
+      */
+
       expect(outputString.trim()).toEqual(expected.trim());
     });
   });

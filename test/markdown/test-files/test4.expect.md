@@ -4,7 +4,7 @@
 <p data-source-line="1" class="source-line empty-line" style="margin:0;"></p>
 
 
-* b <span data-source-line="2" class="source-line list-item-line" style="margin:0;"></span>
+* <span data-source-line="2" class="source-line list-item-line" style="margin:0;"></span> b
 
    ```csharp {.source-line data-source-line="4"}
   Libro l = new Libro();

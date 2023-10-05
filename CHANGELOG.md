@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.8.19] - 2023-10-05
+
+### Bug fixes
+
+- Better handling of math blocks: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1795
+
 ## [0.8.18] - 2023-10-05
 
 ### New features
