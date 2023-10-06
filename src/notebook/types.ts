@@ -33,22 +33,13 @@ export type FileSystemApi = {
 
 export type MathRenderingOption = 'None' | 'KaTeX' | 'MathJax';
 
-export interface ProcessWikiLinkArgs {
-  text: string;
-  link?: string;
-}
-
 export interface ParserConfig {
   onWillParseMarkdown: (markdown: string) => Promise<string>;
-  onDidParseMarkdown: (html: string) => // NOTE: We disabled this for now
-  // opts: { cheerio: CheerioAPI },
-  Promise<string>;
+  // NOTE: We disabled this for now
+  // opts: { cheerio: CheerioAPI }
+  onDidParseMarkdown: (html: string) => Promise<string>;
   onWillTransformMarkdown: (markdown: string) => Promise<string>;
   onDidTransformMarkdown: (markdown: string) => Promise<string>;
-  processWikiLink: (args: ProcessWikiLinkArgs) => {
-    text: string;
-    link: string;
-  };
 }
 
 export type PreviewTheme =
@@ -112,6 +103,23 @@ export type RevealJsTheme =
 export type MermaidTheme = 'default' | 'forest' | 'dark' | 'neutral' | 'null';
 
 export type FrontMatterRenderingOption = 'none' | 'table' | 'code';
+
+export type WikiLinkTargetFileNameChangeCase =
+  | 'none'
+  | 'camelCase'
+  | 'pascalCase'
+  | 'kebabCase'
+  | 'snakeCase'
+  | 'constantCase'
+  | 'trainCase'
+  | 'adaCase'
+  | 'cobolCase'
+  | 'dotNotation'
+  | 'pathCase'
+  | 'spaceCase'
+  | 'capitalCase'
+  | 'lowerCase'
+  | 'upperCase';
 
 export interface NotebookConfig {
   /**
@@ -199,6 +207,21 @@ export interface NotebookConfig {
    * @default true
    */
   enableWikiLinkSyntax: boolean;
+
+  /**
+   * The file extension for the link in wikilink if the link does not have an extension.
+   *
+   * @default '.md'
+   */
+  wikiLinkTargetFileExtension: string;
+
+  /**
+   * The case for the file name in wikilink.
+   * If the value is `none`, then the file name will not be changed.
+   * Otherwise, the file name will be transformed to the specified case.
+   * You can read https://www.npmjs.com/package/case-anything for more details.
+   */
+  wikiLinkTargetFileNameChangeCase: WikiLinkTargetFileNameChangeCase;
   /**
    * Whether to enable linkify.
    *
@@ -491,12 +514,6 @@ export function getDefaultParserConfig(): ParserConfig {
     onDidTransformMarkdown: async function (markdown) {
       return markdown;
     },
-    processWikiLink: function ({ text, link }) {
-      return {
-        text,
-        link: link ? link : text.endsWith('.md') ? text : `${text}.md`,
-      };
-    },
   };
 }
 
@@ -521,6 +538,8 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     breakOnSingleNewLine: true,
     enableTypographer: false,
     enableWikiLinkSyntax: true,
+    wikiLinkTargetFileExtension: '.md',
+    wikiLinkTargetFileNameChangeCase: 'none',
     enableLinkify: true,
     enableEmojiSyntax: true,
     enableExtendedTableSyntax: false,

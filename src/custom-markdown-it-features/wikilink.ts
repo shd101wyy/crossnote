@@ -3,7 +3,9 @@
  * [[...]]
  */
 
+import * as caseAnything from 'case-anything';
 import MarkdownIt from 'markdown-it';
+import path from 'path';
 import { Notebook } from '../notebook';
 
 export default (md: MarkdownIt, notebook: Notebook) => {
@@ -59,30 +61,52 @@ export default (md: MarkdownIt, notebook: Notebook) => {
     let text: string;
     if (splits.length === 1) {
       text = splits[0].trim();
-
-      const result = notebook.config.parserConfig.processWikiLink({
-        text: text,
-        link: undefined,
-      });
-      text = result.text;
-      link = result.link;
+      link = text;
     } else {
       if (notebook.config.useGitHubStylePipedLink) {
-        const result = notebook.config.parserConfig.processWikiLink({
-          text: splits[0].trim(),
-          link: splits[1].trim(),
-        });
-
-        text = result.text;
-        link = result.link;
+        text = splits[0].trim();
+        link = splits[1].trim();
       } else {
-        const result = notebook.config.parserConfig.processWikiLink({
-          text: splits[1].trim(),
-          link: splits[0].trim(),
-        });
-        text = result.text;
-        link = result.link;
+        text = splits[1].trim();
+        link = splits[0].trim();
       }
+    }
+
+    // parse hash from link
+    const hashIndex = link.lastIndexOf('#');
+    let hash = '';
+    if (hashIndex >= 0) {
+      hash = link.slice(hashIndex);
+      link = link.slice(0, hashIndex);
+    }
+
+    // transform file name if needed
+    const parsed = path.parse(link);
+    let fileName = parsed.name;
+    let fileExtension = parsed.ext;
+
+    // NOTE: The approach below might not work well for
+    // link like `0.7.4` as `.4` is detected as the file extension.
+    if (fileExtension.match(/^\.\d+$/)) {
+      fileName += fileExtension;
+      fileExtension = '';
+    }
+
+    if (
+      notebook.config.wikiLinkTargetFileNameChangeCase !== 'none' &&
+      notebook.config.wikiLinkTargetFileNameChangeCase in caseAnything
+    ) {
+      fileName =
+        caseAnything[notebook.config.wikiLinkTargetFileNameChangeCase](
+          fileName,
+        );
+    }
+    if (!fileExtension) {
+      fileExtension = notebook.config.wikiLinkTargetFileExtension;
+    }
+    link = path.join(parsed.dir, fileName + fileExtension);
+    if (hash) {
+      link += hash;
     }
 
     return `<a href="${link}">${text}</a>`;

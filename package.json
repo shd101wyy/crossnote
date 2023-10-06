@@ -1,6 +1,6 @@
 {
   "name": "crossnote",
-  "version": "0.8.18",
+  "version": "0.8.19",
   "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
@@ -70,6 +70,7 @@
     "crypto-js": "^4.1.1",
     "daisyui": "^3.7.3",
     "esbuild-plugin-tailwindcss": "^1.1.1",
+    "escape-string-regexp": "^5.0.0",
     "html-escaper": "^3.0.3",
     "html-react-parser": "^4.2.2",
     "imagemagick-cli": "^0.5.0",

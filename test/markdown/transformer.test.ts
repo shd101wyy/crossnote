@@ -33,6 +33,7 @@ describe('test markdown transformer', () => {
           filesCache: {},
           useRelativeFilePath: false,
           protocolsWhiteListRegExp: null,
+          forJest: true,
         });
       };
 

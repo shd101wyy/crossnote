@@ -177,7 +177,7 @@ body {
 
     /*
         // NOTE: This will cause margin error on elements like `<pre>`
-        .source-line {
+        [data-source-line] {
           margin: 0;
         }
         */
@@ -190,6 +190,12 @@ body[data-presentation-mode] {
     width: 100%;
     height: 100%;
   }
+
+  // As in-preview editor doesn't work well for the
+  // presentation mode, we hide it for now.
+  .final-line.end-of-document {
+    display: none;
+  }
 }
 
 body:not([data-presentation-mode]) {
@@ -197,7 +203,7 @@ body:not([data-presentation-mode]) {
     height: auto;
   }
 
-  .source-line.final-line {
+  .final-line.end-of-document {
     margin-top: 64px !important;
     margin-bottom: 64px !important;
     padding: 8px;
@@ -210,7 +216,7 @@ body:not([data-presentation-mode]) {
   }
 
   &[data-preview-theme='dark'] {
-    .source-line.final-line {
+    .final-line.end-of-document {
       color: #555;
     }
   }
