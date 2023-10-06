@@ -19,7 +19,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### Bug fixes
 
-- Reverted the markdown transformer and deleted the logic of inserting anchor elements as it's causing a lot of problems.
+- Reverted the markdown transformer and deleted the logic of inserting anchor elements as it's causing a lot of problems.  
+  The in-preview editor is not working as expected. So we now hide its highlight lines and elements feature if the markdown file failed to generate the correct source map.
 
 ## [0.8.19] - 2023-10-05
 

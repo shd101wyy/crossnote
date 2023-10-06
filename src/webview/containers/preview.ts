@@ -840,13 +840,10 @@ const PreviewContainer = createContainer(() => {
   }, [postMessage]);
 
   const bindHighlightEvent = useCallback((previewElement: HTMLDivElement) => {
-    // const finalLineElement = previewElement.querySelector(
-    //   '.final-line',
-    // ) as HTMLElement;
-
     setHighlightElement(null);
     const sourceLineElements =
       previewElement.querySelectorAll('[data-source-line]');
+
     const highlightElementsThatAddedEventSet = new Set<Element | HTMLElement>();
     const sourceLineElementToContainerElementMap = new Map<
       Element | HTMLElement,
@@ -943,6 +940,11 @@ const PreviewContainer = createContainer(() => {
     for (let i = sourceLineElements.length - 1; i >= 0; i--) {
       const sourceLineElement = sourceLineElements[i];
       const dataSourceLine = getDataSourceLine(sourceLineElement) ?? 0;
+
+      if (dataSourceLine > totalLineCount.current) {
+        // FIXME: This means we didn't get the source map correctly.
+        return;
+      }
 
       // Ignore the link
       if (sourceLineElement.tagName === 'A') {

@@ -86,15 +86,26 @@ export default function MarkdownEditor() {
     // console.log('range', range);
     // window['editor'] = editor;
     if (!highlightElementBeingEdited.classList.contains('final-line')) {
-      // NOTE: We remove the decoration for top empty line
-
+      // NOTE: We add try catch here because sometimes it will throw error
       let emptyLinesCountAtStart = 0;
-      for (let i = start + 1; i < end; i++) {
-        if (editor.getModel()?.getLineContent(i) === '') {
-          emptyLinesCountAtStart++;
-        } else {
-          break;
+      try {
+        for (let i = start + 1; i < end; i++) {
+          if (editor.getModel()?.getLineContent(i) === '') {
+            emptyLinesCountAtStart++;
+          } else {
+            break;
+          }
         }
+      } catch (error) {
+        console.error(error);
+      }
+
+      // NOTE: We add try catch here because sometimes it will throw error
+      let endLineLength = 0;
+      try {
+        endLineLength = editor.getModel()?.getLineLength(end) ?? 0;
+      } catch (error) {
+        console.error(error);
       }
 
       // Create line decorations
@@ -104,7 +115,7 @@ export default function MarkdownEditor() {
             start + 1 + emptyLinesCountAtStart,
             1,
             end,
-            (editor.getModel()?.getLineLength(end) ?? 0) + 1,
+            endLineLength + 1,
           ),
           options: {
             isWholeLine: true,
@@ -122,7 +133,7 @@ export default function MarkdownEditor() {
           start + 1 + emptyLinesCountAtStart,
           1,
           end,
-          (editor.getModel()?.getLineLength(end) ?? 0) + 1,
+          endLineLength + 1,
         ),
       );
 
