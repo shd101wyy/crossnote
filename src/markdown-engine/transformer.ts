@@ -13,7 +13,6 @@ import {
 import computeChecksum from '../lib/compute-checksum';
 import { Notebook } from '../notebook';
 import * as PDF from '../tools/pdf';
-import { findClosingTagIndex } from '../utility';
 import { CustomSubjects } from './custom-subjects';
 import HeadingIdGenerator from './heading-id-generator';
 import { HeadingData } from './toc';
@@ -23,7 +22,7 @@ export interface TransformMarkdownOutput {
   /**
    * An array of slide configs.
    */
-  slideConfigs: object[];
+  slideConfigs: BlockAttributes[];
   /**
    * whehter we found [TOC] in markdown file or not.
    */
@@ -56,6 +55,7 @@ export interface TransformMarkdownOptions {
   imageDirectoryPath?: string;
   headingIdGenerator?: HeadingIdGenerator;
   notebook: Notebook;
+  forJest?: boolean;
 }
 
 const fileExtensionToLanguageMap = {
@@ -64,25 +64,6 @@ const fileExtensionToLanguageMap = {
   dot: 'dot',
   gv: 'dot',
   viz: 'dot',
-};
-
-const selfClosingTag = {
-  area: 1,
-  base: 1,
-  br: 1,
-  col: 1,
-  command: 1,
-  embed: 1,
-  hr: 1,
-  img: 1,
-  input: 1,
-  keygen: 1,
-  link: 1,
-  meta: 1,
-  param: 1,
-  source: 1,
-  track: 1,
-  wbr: 1,
 };
 
 /**
@@ -259,6 +240,7 @@ export async function transformMarkdown(
     imageDirectoryPath = '',
     headingIdGenerator = new HeadingIdGenerator(),
     notebook,
+    forJest = false,
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
   // Replace CRLF with LF
@@ -373,7 +355,6 @@ export async function transformMarkdown(
       // ========== End: Code Block ==========
       let headingMatch: RegExpMatchArray | null;
       let taskListItemMatch: RegExpMatchArray | null;
-      let htmlTagMatch: RegExpMatchArray | null;
 
       /*
         NOTE: I changed this because for case like:
@@ -401,13 +382,13 @@ export async function transformMarkdown(
 
         const subjectMatch = line.match(/^<!--\s+([^\s]+)/);
         if (!subjectMatch) {
-          const content = inputString.slice(i + 4, commentEnd - 3).trim();
+          const content = inputString.slice(i + 4, commentEnd - 3);
           const newlinesMatch = content.match(/\n/g);
           const newlines = newlinesMatch ? newlinesMatch.length : 0;
 
           i = commentEnd;
           lineNo = lineNo + newlines;
-          outputString = outputString + '\n';
+          outputString = outputString + '\n'.repeat(newlines);
           continue;
         } else {
           const subject = subjectMatch[1];
@@ -417,22 +398,24 @@ export async function transformMarkdown(
               line = line.slice(4, commentEnd2).trim();
             }
           } else if (subject in CustomSubjects) {
-            const content = inputString.slice(i + 4, commentEnd - 3).trim();
+            const content = inputString.slice(i + 4, commentEnd - 3);
             const newlinesMatch = content.match(/\n/g);
             const newlines = newlinesMatch ? newlinesMatch.length : 0;
             const optionsMatch = content.match(/^([^\s]+?)\s([\s\S]+)$/);
-
             let options = {};
             if (optionsMatch && optionsMatch[2]) {
               options = parseBlockAttributes(optionsMatch[2]);
             }
-            options['lineNo'] = lineNo;
+            options['lineNo'] = lineNo + 1;
 
             if (subject === 'pagebreak' || subject === 'newpage') {
               // pagebreak
               i = commentEnd;
               lineNo = lineNo + newlines;
-              outputString = outputString + '<div class="pagebreak"> </div>\n';
+              outputString =
+                outputString +
+                '<div class="pagebreak"> </div>' +
+                '\n'.repeat(newlines);
               continue;
             } else if (subject.match(/^\.?slide:?$/)) {
               // slide
@@ -445,17 +428,18 @@ export async function transformMarkdown(
               } else {
                 i = commentEnd;
                 lineNo = lineNo + newlines;
-                outputString = outputString + '[CROSSNOTESLIDE]\n';
+                outputString =
+                  outputString + '[CROSSNOTESLIDE]' + '\n'.repeat(newlines);
                 continue;
               }
             }
           } else {
-            const content = inputString.slice(i + 4, commentEnd - 3).trim();
+            const content = inputString.slice(i + 4, commentEnd - 3);
             const newlinesMatch = content.match(/\n/g);
             const newlines = newlinesMatch ? newlinesMatch.length : 0;
             i = commentEnd;
             lineNo = lineNo + newlines;
-            outputString = outputString + '\n';
+            outputString = outputString + '\n'.repeat(newlines);
             continue;
           }
         }
@@ -582,41 +566,6 @@ export async function transformMarkdown(
         continue;
       }
       // ========== End: Task List Checkbox ==========
-      // ========== Start: HTML Tag that starts at new line ==========
-      else if (
-        /* tslint:disable-next-line:no-conditional-assignment */
-        (htmlTagMatch = line.match(
-          /^\s*<(?:([a-zA-Z]+)|([a-zA-Z]+)\s+(?:.+?))>/,
-        ))
-      ) {
-        // escape html tag like <pre>
-        const tagName = htmlTagMatch[1] || htmlTagMatch[2];
-        if (!(tagName in selfClosingTag)) {
-          const closeTagName = `</${tagName}>`;
-          const end2 = findClosingTagIndex(
-            inputString,
-            tagName,
-            i + htmlTagMatch[0].length,
-          );
-          if (end2 < 0) {
-            // HTML error. Tag not closed
-            // Do Nothing here. Reason:
-            //     $$ x
-            //     <y>
-            //     $$
-          } else {
-            const htmlString = inputString.slice(i, end2 + closeTagName.length);
-            const newlinesMatch = htmlString.match(/\n/g);
-            const newlines = newlinesMatch ? newlinesMatch.length : 0;
-
-            i = end2 + closeTagName.length;
-            lineNo = lineNo + newlines;
-            outputString = outputString + htmlString;
-            continue;
-          }
-        }
-      }
-      // ========== End: HTML Tag ==========
       // =========== Start: File import ============
       const importMatch = line.match(/^(\s*)@import(\s+)"([^"]+)";?/);
       if (importMatch) {
@@ -1031,11 +980,17 @@ export async function transformMarkdown(
     }
 
     // Final line, which might not exist
-    if (canCreateAnchor()) {
+    if (canCreateAnchor() && !forJest) {
       outputString += `${createAnchor(lineNo, {
         extraClass: 'empty-line final-line end-of-document',
         prefix: '',
       })}`;
+    }
+
+    // Prepend number of lines of front matter as empty lines
+    if (frontMatterString) {
+      const newLines = (frontMatterString.match(/\n/g) ?? []).length;
+      outputString = '\n'.repeat(newLines + 1) + outputString;
     }
 
     // Done
