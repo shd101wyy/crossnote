@@ -270,11 +270,37 @@ export async function transformMarkdown(
   let tocBracketEnabled = false;
   let frontMatterString = '';
   let listItemSpacesAhead: number | null = null;
-  let endMathBlockDelimiter: string | null = null;
-  let startMathBlockLineNo: number | null = null;
-  const startMathBlockDelimiterRegExp = new RegExp(
-    `(${notebook.config.mathBlockDelimiters
-      .map((x) => escapeStringRegexp(x[0]))
+
+  let endMarkdownDelimiter: RegExp | null = null;
+  let startMarkdownDelimiterLineNo: number | null = null;
+  const markdownDelimiters: RegExp[][] = [
+    ...notebook.config.mathBlockDelimiters.map(([start, end]) => {
+      return [
+        new RegExp(escapeStringRegexp(start)),
+        new RegExp(escapeStringRegexp(end)),
+      ];
+    }),
+    ...notebook.config.mathInlineDelimiters.map(([start, end]) => {
+      return [
+        new RegExp(escapeStringRegexp(start)),
+        new RegExp(escapeStringRegexp(end)),
+      ];
+    }),
+    [/`/, /`/], // inline code
+    [/<!--/, /-->/], // html comment
+    [/\*\*\S/, /\S\*\*/], // bold
+    [/\*\S/, /\S\*/], // italic
+    [/__\S/, /\S__/], // bold
+    [/_\S/, /\S_/], // italic
+    [/~~\S/, /\S~~/], // strikethrough
+    [/\^\S/, /\S\^/], // superscript
+    [/~\S/, /\S~/], // subscript
+    [/<\s*[a-zA-z]+\s*>/, /<\/\s*[a-zA-z]+\s*>/], // html tag // TODO: Handle more complex cases
+  ];
+
+  const startMarkdownDelimiterRegExp = new RegExp(
+    `(?!${escapeStringRegexp('\\')})(${markdownDelimiters
+      .map((x) => `(${x[0].source})`)
       .join('|')})`,
   );
 
@@ -314,7 +340,8 @@ export async function transformMarkdown(
     }
 
     const canCreateAnchor = () =>
-      (startMathBlockLineNo === null || lineNo === startMathBlockLineNo) && // not in math block
+      (startMarkdownDelimiterLineNo === null ||
+        lineNo === startMarkdownDelimiterLineNo) && // not in math block
       forPreview &&
       !notSourceFile;
 
@@ -393,7 +420,6 @@ export async function transformMarkdown(
         continue;
       }
       // ========== End: Code Block ==========
-
       // ========== Start: Indentation code block ==========
       // TODO: Check indentation under list items
       const indentationCodeBlockMatch = line.match(/^\s{4,}\S/);
@@ -432,41 +458,47 @@ export async function transformMarkdown(
         }
       }
       // ========== End: Indentation code block ==========
-      // ========== Start: Check Math Block ==========
+      // ========== Start: Check Math Block, Code ==========
       let lineCopy = line;
       while (lineCopy.length > 0) {
         // not in math block
-        if (!endMathBlockDelimiter) {
-          const startMathBlockMatch = lineCopy.match(
-            startMathBlockDelimiterRegExp,
+        if (!endMarkdownDelimiter) {
+          const startMarkdownDelimiterMatch = lineCopy.match(
+            startMarkdownDelimiterRegExp,
           );
-          if (startMathBlockMatch && startMathBlockMatch.index !== undefined) {
+          if (
+            startMarkdownDelimiterMatch &&
+            startMarkdownDelimiterMatch.index !== undefined
+          ) {
             lineCopy = lineCopy.substring(
-              startMathBlockMatch.index + startMathBlockMatch[1].length,
+              startMarkdownDelimiterMatch.index +
+                startMarkdownDelimiterMatch[1].length,
             );
-            endMathBlockDelimiter =
-              (notebook.config.mathBlockDelimiters.find(
-                (x) => x[0] === startMathBlockMatch[1],
-              ) ?? [])[1] ?? startMathBlockMatch[1];
-            startMathBlockLineNo = lineNo;
-            continue;
+            // NOTE: 2 here means group 2 in `startMarkdownDelimiterRegExp`
+            for (let i = 2; i < startMarkdownDelimiterMatch.length; i++) {
+              if (startMarkdownDelimiterMatch[i] !== undefined) {
+                endMarkdownDelimiter = markdownDelimiters[i - 2][1];
+                startMarkdownDelimiterLineNo = lineNo;
+                break;
+              }
+            }
           } else {
-            endMathBlockDelimiter = null;
-            startMathBlockLineNo = null;
+            endMarkdownDelimiter = null;
+            startMarkdownDelimiterLineNo = null;
             break;
           }
         } // in math block
         else {
-          const endMathBlockDelimiterRegExp = new RegExp(
-            `(${escapeStringRegexp(endMathBlockDelimiter)})`,
+          const endMarkdownDelimiterRegExp = new RegExp(
+            `(?!${escapeStringRegexp('\\')})(${endMarkdownDelimiter.source})`,
           );
-          const endMathBlockMatch = lineCopy.match(endMathBlockDelimiterRegExp);
+          const endMathBlockMatch = lineCopy.match(endMarkdownDelimiterRegExp);
           if (endMathBlockMatch && endMathBlockMatch.index !== undefined) {
             lineCopy = lineCopy.substring(
               endMathBlockMatch.index + endMathBlockMatch[1].length,
             );
-            endMathBlockDelimiter = null;
-            startMathBlockLineNo = null;
+            endMarkdownDelimiter = null;
+            startMarkdownDelimiterLineNo = null;
             continue;
           } else {
             break;
@@ -518,8 +550,96 @@ export async function transformMarkdown(
         The image will not be displayed correctly in preview as there will be `anchor` inserted
         between...
         */
+      // ========== Start: Custom Comment ==========
+      if (line.match(/^<!--/)) {
+        // NOTE: We force to clean up the following variables
+        endMarkdownDelimiter = null;
+        startMarkdownDelimiterLineNo = null;
+
+        // custom comment
+        if (canCreateAnchor()) {
+          outputString += createAnchor(lineNo, { prefix: blockquotePrefix });
+        }
+        let commentEnd = inputString.indexOf('-->', i + 4);
+
+        if (commentEnd < 0) {
+          // didn't find -->
+          i = inputString.length;
+          lineNo = lineNo + 1;
+          outputString = outputString + '\n';
+          continue;
+        } else {
+          commentEnd += 3;
+        }
+
+        const subjectMatch = line.match(/^<!--\s+([^\s]+)/);
+        if (!subjectMatch) {
+          const content = inputString.slice(i + 4, commentEnd - 3).trim();
+          const newlinesMatch = content.match(/\n/g);
+          const newlines = newlinesMatch ? newlinesMatch.length : 0;
+
+          i = commentEnd;
+          lineNo = lineNo + newlines;
+          outputString = outputString + '\n';
+          continue;
+        } else {
+          const subject = subjectMatch[1];
+          if (subject === '@import') {
+            const commentEnd2 = line.lastIndexOf('-->');
+            if (commentEnd2 > 0) {
+              line = line.slice(4, commentEnd2).trim();
+            }
+          } else if (subject in CustomSubjects) {
+            const content = inputString.slice(i + 4, commentEnd - 3).trim();
+            const newlinesMatch = content.match(/\n/g);
+            const newlines = newlinesMatch ? newlinesMatch.length : 0;
+            const optionsMatch = content.match(/^([^\s]+?)\s([\s\S]+)$/);
+
+            let options = {};
+            if (optionsMatch && optionsMatch[2]) {
+              options = parseBlockAttributes(optionsMatch[2]);
+            }
+            options['lineNo'] = lineNo;
+
+            if (subject === 'pagebreak' || subject === 'newpage') {
+              // pagebreak
+              i = commentEnd;
+              lineNo = lineNo + newlines;
+              outputString = outputString + '<div class="pagebreak"> </div>\n';
+              continue;
+            } else if (subject.match(/^\.?slide:?$/)) {
+              // slide
+              slideConfigs.push(options);
+              if (forMarkdownExport) {
+                i = commentEnd;
+                lineNo = lineNo + newlines;
+                outputString = outputString + `<!-- ${content} -->` + '\n';
+                continue;
+              } else {
+                i = commentEnd;
+                lineNo = lineNo + newlines;
+                outputString = outputString + '\n[CROSSNOTESLIDE]\n\n';
+                continue;
+              }
+            }
+          } else {
+            const content = inputString.slice(i + 4, commentEnd - 3).trim();
+            const newlinesMatch = content.match(/\n/g);
+            const newlines = newlinesMatch ? newlinesMatch.length : 0;
+            i = commentEnd;
+            lineNo = lineNo + newlines;
+            outputString = outputString + '\n';
+            continue;
+          }
+        }
+      }
+      // ========== End: Custom Comment ==========
       // ========== Start: @import ==========
-      if (line.match(/^@import/)) {
+      else if (line.match(/^@import/)) {
+        // NOTE: We force to clean up the following variables
+        endMarkdownDelimiter = null;
+        startMarkdownDelimiterLineNo = null;
+
         if (canCreateAnchor()) {
           outputString += createAnchor(lineNo, { prefix: blockquotePrefix }); // insert anchor for scroll sync
         }
@@ -528,6 +648,10 @@ export async function transformMarkdown(
       // ========== End: @import or Image ==========
       // ========== Start: Heading ==========
       else if ((headingMatch = line.match(/^(#{1,7}).*/))) {
+        // NOTE: We force to clean up the following variables
+        endMarkdownDelimiter = null;
+        startMarkdownDelimiterLineNo = null;
+
         let heading = line.replace(headingMatch[1], '').trim();
         const tag = headingMatch[1];
         const level = tag.length;
@@ -613,86 +737,6 @@ export async function transformMarkdown(
         }
       }
       // ========== End: Heading ==========
-      // ========== Start: Custom Comment ==========
-      else if (line.match(/^<!--/)) {
-        // custom comment
-        if (canCreateAnchor()) {
-          outputString += createAnchor(lineNo, { prefix: blockquotePrefix });
-        }
-        let commentEnd = inputString.indexOf('-->', i + 4);
-
-        if (commentEnd < 0) {
-          // didn't find -->
-          i = inputString.length;
-          lineNo = lineNo + 1;
-          outputString = outputString + '\n';
-          continue;
-        } else {
-          commentEnd += 3;
-        }
-
-        const subjectMatch = line.match(/^<!--\s+([^\s]+)/);
-        if (!subjectMatch) {
-          const content = inputString.slice(i + 4, commentEnd - 3).trim();
-          const newlinesMatch = content.match(/\n/g);
-          const newlines = newlinesMatch ? newlinesMatch.length : 0;
-
-          i = commentEnd;
-          lineNo = lineNo + newlines;
-          outputString = outputString + '\n';
-          continue;
-        } else {
-          const subject = subjectMatch[1];
-          if (subject === '@import') {
-            const commentEnd2 = line.lastIndexOf('-->');
-            if (commentEnd2 > 0) {
-              line = line.slice(4, commentEnd2).trim();
-            }
-          } else if (subject in CustomSubjects) {
-            const content = inputString.slice(i + 4, commentEnd - 3).trim();
-            const newlinesMatch = content.match(/\n/g);
-            const newlines = newlinesMatch ? newlinesMatch.length : 0;
-            const optionsMatch = content.match(/^([^\s]+?)\s([\s\S]+)$/);
-
-            let options = {};
-            if (optionsMatch && optionsMatch[2]) {
-              options = parseBlockAttributes(optionsMatch[2]);
-            }
-            options['lineNo'] = lineNo;
-
-            if (subject === 'pagebreak' || subject === 'newpage') {
-              // pagebreak
-              i = commentEnd;
-              lineNo = lineNo + newlines;
-              outputString = outputString + '<div class="pagebreak"> </div>\n';
-              continue;
-            } else if (subject.match(/^\.?slide:?$/)) {
-              // slide
-              slideConfigs.push(options);
-              if (forMarkdownExport) {
-                i = commentEnd;
-                lineNo = lineNo + newlines;
-                outputString = outputString + `<!-- ${content} -->` + '\n';
-                continue;
-              } else {
-                i = commentEnd;
-                lineNo = lineNo + newlines;
-                outputString = outputString + '\n[CROSSNOTESLIDE]\n\n';
-                continue;
-              }
-            }
-          } else {
-            const content = inputString.slice(i + 4, commentEnd - 3).trim();
-            const newlinesMatch = content.match(/\n/g);
-            const newlines = newlinesMatch ? newlinesMatch.length : 0;
-            i = commentEnd;
-            lineNo = lineNo + newlines;
-            outputString = outputString + '\n';
-            continue;
-          }
-        }
-      }
-      // ========== End: Custom Comment ==========
       // ========== Start: ToC ==========
       else if (line.match(/^\s*\[toc\]\s*$/i)) {
         // [TOC]
@@ -731,7 +775,7 @@ export async function transformMarkdown(
         continue;
       }
       // ========== End: Task List Checkbox ==========
-      // ========== Start: HTML Tag ==========
+      // ========== Start: HTML Tag that starts at new line ==========
       else if (
         /* tslint:disable-next-line:no-conditional-assignment */
         (htmlTagMatch = line.match(
