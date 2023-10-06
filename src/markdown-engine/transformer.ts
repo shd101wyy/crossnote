@@ -690,7 +690,7 @@ export async function transformMarkdown(
           )}  \n\`\`\`  `;
           i = end + 1;
           lineNo = lineNo + 1;
-          outputString = outputString + output2 + '\n';
+          outputString = outputString + output2;
           continue;
         } else {
           try {
