@@ -203,6 +203,9 @@ async function getParserConfig(
     await fs.writeFile(
       parserConfigPath,
       `({
+  // Please visit the URL below for more information:
+  // https://shd101wyy.github.io/markdown-preview-enhanced/#/extend-parser
+
   onWillParseMarkdown: async function(markdown) {
     return markdown;
   },
@@ -218,13 +221,6 @@ async function getParserConfig(
   onDidTransformMarkdown: async function(markdown) {
     return markdown;
   },
-
-  processWikiLink: function({text, link}) {
-    return { 
-      text,  
-      link: link ? link : text.endsWith('.md') ? text : \`\${text}.md\`,
-    };
-  }
 })`,
     );
     return defaultParserConfig;
