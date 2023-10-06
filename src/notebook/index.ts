@@ -16,6 +16,7 @@ import useMarkdownItCurlyBracketAttributes from '../custom-markdown-it-features/
 import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
 import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed';
 import useMarkdownItMath from '../custom-markdown-it-features/math';
+import useMarkdownItSourceMap from '../custom-markdown-it-features/sourcemap';
 import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
 import { MarkdownEngine } from '../markdown-engine';
 import { loadConfigsInDirectory, wrapNodeFSAsApi } from './config-helper';
@@ -152,6 +153,7 @@ export class Notebook {
     useMarkdownItMath(this.md, this);
     useMarkdownItWikilink(this.md, this);
     useMarkdownAdmonition(this.md);
+    useMarkdownItSourceMap(this.md);
   }
 
   initFs(_fs?: FileSystemApi) {

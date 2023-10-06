@@ -1,4 +1,3 @@
-import escapeStringRegexp from 'escape-string-regexp';
 import * as fs from 'fs/promises';
 import { escape } from 'html-escaper';
 import * as less from 'less';
@@ -124,7 +123,9 @@ function createAnchor(
   }: { extraClass?: string; tag?: string; prefix?: string } = {},
 ) {
   const prefixTrimmedEnd = prefix.trimEnd();
-  return `\n${prefixTrimmedEnd}\n${prefix}<${tag} data-source-line="${lineNo}" class="source-line ${extraClass}" style="margin:0;"></${tag}>\n${prefixTrimmedEnd}\n${prefixTrimmedEnd}`;
+  return `\n${prefixTrimmedEnd}\n${prefix}<${tag} data-source-line="${
+    lineNo + 1
+  }" class="${extraClass}" style="margin:0;"></${tag}>\n${prefixTrimmedEnd}\n${prefixTrimmedEnd}`;
 }
 
 let DOWNLOADS_TEMP_FOLDER: string | null = null;
@@ -242,6 +243,7 @@ async function loadFile(
 
 /**
  * Transform markdown string before rendering it to HTML.
+ * NOTE: The outputString should have the same number of lines as the inputString for source mapping.
  */
 export async function transformMarkdown(
   inputString: string,
@@ -269,40 +271,6 @@ export async function transformMarkdown(
   let headings: HeadingData[] = [];
   let tocBracketEnabled = false;
   let frontMatterString = '';
-  let listItemSpacesAhead: number | null = null;
-
-  let endMarkdownDelimiter: RegExp | null = null;
-  let startMarkdownDelimiterLineNo: number | null = null;
-  const markdownDelimiters: RegExp[][] = [
-    [/<\s*[a-zA-z]+\s*>/, /<\/\s*[a-zA-z]+\s*>/], // html tag // TODO: Handle more complex cases
-    [/`/, /`/], // inline code
-    [/<!--/, /-->/], // html comment
-    [/\*\*\S/, /\S\*\*/], // bold
-    [/\*\S/, /\S\*/], // italic
-    [/__\S/, /\S__/], // bold
-    [/_\S/, /\S_/], // italic
-    [/~~\S/, /\S~~/], // strikethrough
-    [/\^\S/, /\S\^/], // superscript
-    [/~\S/, /\S~/], // subscript
-    ...notebook.config.mathBlockDelimiters.map(([start, end]) => {
-      return [
-        new RegExp(escapeStringRegexp(start)),
-        new RegExp(escapeStringRegexp(end)),
-      ];
-    }),
-    ...notebook.config.mathInlineDelimiters.map(([start, end]) => {
-      return [
-        new RegExp(escapeStringRegexp(start)),
-        new RegExp(escapeStringRegexp(end)),
-      ];
-    }),
-  ];
-
-  const startMarkdownDelimiterRegExp = new RegExp(
-    `(?!${escapeStringRegexp('\\')})(${markdownDelimiters
-      .map((x) => `(${x[0].source})`)
-      .join('|')})`,
-  );
 
   /**
    * As the recursive version of this function will cause the error:
@@ -339,37 +307,17 @@ export async function transformMarkdown(
       };
     }
 
-    const canCreateAnchor = () =>
-      (startMarkdownDelimiterLineNo === null ||
-        lineNo === startMarkdownDelimiterLineNo) && // not in math block
-      forPreview &&
-      !notSourceFile;
+    const canCreateAnchor = () => forPreview && !notSourceFile;
 
     while (i < inputString.length) {
       // eslint-disable-next-line prefer-const
       let { line, blockquotePrefix, end } = getLine(i);
       outputString += blockquotePrefix;
 
-      // Check if ends of list item
-      if (listItemSpacesAhead !== null) {
-        const spacesAheadMatch = line.match(/^\s*/);
-        if (spacesAheadMatch && spacesAheadMatch[0].length !== line.length) {
-          const spaces = spacesAheadMatch[0].length;
-          if (spaces <= 1) {
-            // End of list item
-            listItemSpacesAhead = null;
-          }
-        }
-      }
-
       // ========== Start: Code Block ==========
       const inCodeBlock = !!lastOpeningCodeBlockFence;
       const currentCodeBlockFence = (line.match(/\s*[`]{3,}/) || [])[0];
       if (currentCodeBlockFence) {
-        // NOTE: We force to clean up the following variables
-        endMarkdownDelimiter = null;
-        startMarkdownDelimiterLineNo = null;
-
         const rest = line.substring(currentCodeBlockFence.length);
         if (rest.trim().match(/`+$/)) {
           // This is not a valid code block
@@ -386,10 +334,9 @@ export async function transformMarkdown(
               const optString = line.substring(optStart + 1, optEnd);
               line =
                 line.substring(0, optStart) +
-                ` {${optString} .source-line data-source-line="${lineNo}"}`;
+                ` {${optString} data-source-line="${lineNo + 1}"}`;
             } else {
-              line =
-                line.trimEnd() + ` {.source-line data-source-line="${lineNo}"}`;
+              line = line.trimEnd() + ` {data-source-line="${lineNo + 1}"}`;
             }
           }
 
@@ -424,142 +371,9 @@ export async function transformMarkdown(
         continue;
       }
       // ========== End: Code Block ==========
-      // ========== Start: Indentation code block ==========
-      // TODO: Check indentation under list items
-      const indentationCodeBlockMatch = line.match(/^\s{4,}\S/);
-      // NOTE: We check `prefix` here to skip the blockquote
-      if (listItemSpacesAhead === null && indentationCodeBlockMatch) {
-        // console.log('== Indentation code block ==');
-        // Find the new line that has less indentation
-        const regex = new RegExp(
-          `^(${blockquotePrefix})\\s{0,3}\\S|^(?!${blockquotePrefix})`,
-          'm',
-        );
-        const newMatch = inputString.substring(end + 1).match(regex);
-        if (!newMatch || typeof newMatch.index !== 'number') {
-          // All the rest lines are in the code block
-          const codeBlock = inputString.substring(
-            i + blockquotePrefix.length,
-            inputString.length,
-          );
-          const newLines = codeBlock.split(/\n/).length;
-
-          i = inputString.length;
-          lineNo = lineNo + newLines;
-          outputString = outputString + codeBlock + '\n';
-          continue;
-        } else {
-          const newEnd = end + 1 + newMatch.index;
-          const codeBlock = inputString.substring(
-            i + blockquotePrefix.length,
-            newEnd,
-          );
-          const newLines = codeBlock.split(/\n/).length;
-          i = newEnd;
-          lineNo = lineNo + newLines - 1;
-          outputString = outputString + codeBlock;
-          continue;
-        }
-      }
-      // ========== End: Indentation code block ==========
-      // ========== Start: Check Math Block, Code ==========
-      let lineCopy = line;
-      while (lineCopy.length > 0) {
-        // not in math block
-        if (!endMarkdownDelimiter) {
-          const startMarkdownDelimiterMatch = lineCopy.match(
-            startMarkdownDelimiterRegExp,
-          );
-          if (
-            startMarkdownDelimiterMatch &&
-            startMarkdownDelimiterMatch.index !== undefined
-          ) {
-            lineCopy = lineCopy.substring(
-              startMarkdownDelimiterMatch.index +
-                startMarkdownDelimiterMatch[1].length,
-            );
-
-            if (startMarkdownDelimiterMatch[2] !== undefined) {
-              // This is html tag at group 2
-              // we need to check if it's self-closing tag
-              const htmlTag = startMarkdownDelimiterMatch[2];
-              const tagNameMatch = htmlTag.match(/<\s*([a-zA-Z]+)/);
-              if (tagNameMatch && tagNameMatch[1] in selfClosingTag) {
-                // self-closing tag
-                endMarkdownDelimiter = null;
-                startMarkdownDelimiterLineNo = null;
-                continue;
-              }
-            }
-
-            // NOTE: `i = 2` here means group 2 in `startMarkdownDelimiterRegExp`
-            for (let i = 2; i < startMarkdownDelimiterMatch.length; i++) {
-              if (startMarkdownDelimiterMatch[i] !== undefined) {
-                endMarkdownDelimiter = markdownDelimiters[i - 2][1];
-                startMarkdownDelimiterLineNo = lineNo;
-                break;
-              }
-            }
-          } else {
-            endMarkdownDelimiter = null;
-            startMarkdownDelimiterLineNo = null;
-            break;
-          }
-        } // in math block
-        else {
-          const endMarkdownDelimiterRegExp = new RegExp(
-            `(?!${escapeStringRegexp('\\')})(${endMarkdownDelimiter.source})`,
-          );
-          const endMathBlockMatch = lineCopy.match(endMarkdownDelimiterRegExp);
-          if (endMathBlockMatch && endMathBlockMatch.index !== undefined) {
-            lineCopy = lineCopy.substring(
-              endMathBlockMatch.index + endMathBlockMatch[1].length,
-            );
-            endMarkdownDelimiter = null;
-            startMarkdownDelimiterLineNo = null;
-            continue;
-          } else {
-            break;
-          }
-        }
-      }
-      // ========== End: Check Math Block ==========
-      // ========== Start: Check empty line
-      // console.log(`check empty line ${lineNo} |${line}|`);
-      // NOTE: This is causing problem for some cases, so we disabled it.
-      /*
-      if (
-        line.trim() === '' &&
-        end + 1 < inputString.length // NOTE: Check test18.md
-      ) {
-        // Check if next line contains " " space
-        // If yes then we don't insert anchor.
-        const { line: nextLine } = getLine(end + 1);
-        if (nextLine[0] !== ' ') {
-          i = end + 1;
-          outputString =
-            outputString +
-            (canCreateAnchor()
-              ? createAnchor(lineNo, {
-                  extraClass: 'empty-line',
-                  prefix:
-                    blockquotePrefix +
-                    (listItemSpacesAhead !== null
-                      ? ' '.repeat(listItemSpacesAhead + 2)
-                      : ''),
-                })
-              : '') +
-            '\n';
-          lineNo = lineNo + 1;
-          continue;
-        }
-      }
-      */
-      // ========== End: Check empty line
       let headingMatch: RegExpMatchArray | null;
       let taskListItemMatch: RegExpMatchArray | null;
       let htmlTagMatch: RegExpMatchArray | null;
-      let listItemMatch: RegExpMatchArray | null;
 
       /*
         NOTE: I changed this because for case like:
@@ -572,14 +386,7 @@ export async function transformMarkdown(
         */
       // ========== Start: Custom Comment ==========
       if (line.match(/^<!--/)) {
-        // NOTE: We force to clean up the following variables
-        endMarkdownDelimiter = null;
-        startMarkdownDelimiterLineNo = null;
-
         // custom comment
-        if (canCreateAnchor()) {
-          outputString += createAnchor(lineNo, { prefix: blockquotePrefix });
-        }
         let commentEnd = inputString.indexOf('-->', i + 4);
 
         if (commentEnd < 0) {
@@ -654,24 +461,8 @@ export async function transformMarkdown(
         }
       }
       // ========== End: Custom Comment ==========
-      // ========== Start: @import ==========
-      else if (line.match(/^@import/)) {
-        // NOTE: We force to clean up the following variables
-        endMarkdownDelimiter = null;
-        startMarkdownDelimiterLineNo = null;
-
-        if (canCreateAnchor()) {
-          outputString += createAnchor(lineNo, { prefix: blockquotePrefix }); // insert anchor for scroll sync
-        }
-        /* tslint:disable-next-line:no-conditional-assignment */
-      }
-      // ========== End: @import or Image ==========
       // ========== Start: Heading ==========
       else if ((headingMatch = line.match(/^(#{1,7}).*/))) {
-        // NOTE: We force to clean up the following variables
-        endMarkdownDelimiter = null;
-        startMarkdownDelimiterLineNo = null;
-
         let heading = line.replace(headingMatch[1], '').trim();
         const tag = headingMatch[1];
         const level = tag.length;
@@ -737,7 +528,7 @@ export async function transformMarkdown(
 
           if (canCreateAnchor()) {
             // Add source mappping
-            optionsStr += ` .source-line data-source-line="${lineNo}"`;
+            optionsStr += ` data-source-line="${lineNo + 1}"`;
           }
 
           optionsStr += '}';
@@ -760,9 +551,6 @@ export async function transformMarkdown(
       // ========== Start: ToC ==========
       else if (line.match(/^\s*\[toc\]\s*$/i)) {
         // [TOC]
-        if (canCreateAnchor()) {
-          outputString += createAnchor(lineNo, { prefix: blockquotePrefix }); // insert anchor for scroll sync
-        }
         tocBracketEnabled = true;
         i = end + 1;
         lineNo = lineNo + 1;
@@ -782,11 +570,9 @@ export async function transformMarkdown(
         if (!forMarkdownExport) {
           line = line.replace(
             taskListItemMatch[1],
-            `<input type="checkbox" class="task-list-item-checkbox${
-              canCreateAnchor() ? ' source-line' : ''
-            }" ${canCreateAnchor() ? `data-source-line="${lineNo}"` : ''}${
-              checked ? ' checked' : ''
-            }>`,
+            `<input type="checkbox" class="task-list-item-checkbox" ${
+              canCreateAnchor() ? `data-source-line="${lineNo + 1}"` : ''
+            }${checked ? ' checked' : ''}>`,
           );
         }
         i = end + 1;
@@ -805,10 +591,6 @@ export async function transformMarkdown(
         // escape html tag like <pre>
         const tagName = htmlTagMatch[1] || htmlTagMatch[2];
         if (!(tagName in selfClosingTag)) {
-          // NOTE: We force to clean up the following variables
-          endMarkdownDelimiter = null;
-          startMarkdownDelimiterLineNo = null;
-
           const closeTagName = `</${tagName}>`;
           const end2 = findClosingTagIndex(
             inputString,
@@ -834,33 +616,6 @@ export async function transformMarkdown(
         }
       }
       // ========== End: HTML Tag ==========
-      // ========== Start: Normal List Item ==========
-      else if (
-        /* tslint:disable-next-line:no-conditional-assignment */
-        (listItemMatch = line.match(/^(\s*)([*\-+]|\d+\.)(\s+)/))
-      ) {
-        // normal list item
-        listItemSpacesAhead = listItemMatch[1].length;
-        i = end + 1;
-        outputString =
-          outputString +
-          (canCreateAnchor()
-            ? line.replace(
-                listItemMatch[0],
-                `${listItemMatch[1] + listItemMatch[2]} ${
-                  createAnchor(lineNo, {
-                    tag: 'span',
-                    extraClass: 'list-item-line',
-                    prefix: '',
-                  }).trim() + listItemMatch[3]
-                }`,
-              )
-            : line) +
-          '\n';
-        lineNo = lineNo + 1;
-        continue;
-      }
-
       // =========== Start: File import ============
       const importMatch = line.match(/^(\s*)@import(\s+)"([^"]+)";?/);
       if (importMatch) {
@@ -1233,7 +988,7 @@ export async function transformMarkdown(
           let newLine = '';
           let restLine = line;
           const regexp = /!?\[([^\]]*)\]\(([^)]*)\)/;
-          // Add .source-line and data-source-line to links and images {...} attributes
+          // Add and data-source-line to links and images {...} attributes
           // eslint-disable-next-line no-constant-condition
           while (true) {
             const match = restLine.match(regexp);
@@ -1251,11 +1006,13 @@ export async function transformMarkdown(
                 const end = restLine.indexOf('}');
                 if (end > 0) {
                   const attributeString = restLine.substring(1, end);
-                  newLine += `{.source-line data-source-line="${lineNo}" ${attributeString}}`;
+                  newLine += `{data-source-line="${
+                    lineNo + 1
+                  }" ${attributeString}}`;
                   restLine = restLine.substring(end + 1);
                 }
               } else {
-                newLine += `{.source-line data-source-line="${lineNo}"}`;
+                newLine += `{data-source-line="${lineNo + 1}"}`;
               }
             }
           }

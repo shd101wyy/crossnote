@@ -203,7 +203,7 @@ const PreviewContainer = createContainer(() => {
 
     // write down the offsetTop of element that has 'data-source-line' property to scrollMap
     const lineElements =
-      previewElement.current.getElementsByClassName('source-line');
+      previewElement.current.querySelectorAll('[data-source-line]');
 
     for (let i = 0; i < lineElements.length; i++) {
       let el = lineElements[i] as HTMLElement;
@@ -553,7 +553,7 @@ const PreviewContainer = createContainer(() => {
     const elements = previewElement.current.children;
     for (let i = elements.length - 1; i >= 0; i--) {
       if (
-        elements[i].classList.contains('source-line') &&
+        elements[i].hasAttribute('data-source-line') &&
         elements[i + 1] &&
         elements[i + 1].classList.contains('code-chunk')
       ) {
@@ -835,7 +835,8 @@ const PreviewContainer = createContainer(() => {
     // ) as HTMLElement;
 
     setHighlightElement(null);
-    const sourceLineElements = previewElement.querySelectorAll('.source-line');
+    const sourceLineElements =
+      previewElement.querySelectorAll('[data-source-line]');
     const highlightElementsThatAddedEventSet = new Set<Element | HTMLElement>();
     const sourceLineElementToContainerElementMap = new Map<
       Element | HTMLElement,
@@ -1010,7 +1011,7 @@ const PreviewContainer = createContainer(() => {
         );
       }
 
-      // First .source-line element
+      // First [data-source-line] element
       // Bind all elements above it
       if (i == 0) {
         const highlightElements: (Element | HTMLElement)[] = [];
@@ -1028,7 +1029,7 @@ const PreviewContainer = createContainer(() => {
         bindHighlightElementsEvent(highlightElements, 0);
       }
 
-      // Check elements between this and the next .source-line element who has the same parent
+      // Check elements between this and the next [data-source-line] element who has the same parent
       if (i < sourceLineElements.length - 1) {
         for (let j = i + 1; j < sourceLineElements.length; j++) {
           const nextSourceLineElement = sourceLineElements[j];
@@ -1405,8 +1406,7 @@ const PreviewContainer = createContainer(() => {
       );
       const endLine =
         highlightElementLines.current[index + 1] ?? totalLineCount.current;
-
-      return [startLine, endLine];
+      return [startLine, endLine - 1];
     },
     [],
   );

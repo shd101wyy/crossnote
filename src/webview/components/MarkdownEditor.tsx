@@ -89,9 +89,18 @@ export default function MarkdownEditor() {
       // NOTE: We remove the decoration for top empty line
 
       let emptyLinesCountAtStart = 0;
-      for (let i = start + 1; i < end; i++) {
+      for (let i = start; i < end; i++) {
         if (editor.getModel()?.getLineContent(i) === '') {
           emptyLinesCountAtStart++;
+        } else {
+          break;
+        }
+      }
+
+      let emptyLinesCountAtEnd = 0;
+      for (let i = end; i > start; i--) {
+        if (editor.getModel()?.getLineContent(i) === '') {
+          emptyLinesCountAtEnd++;
         } else {
           break;
         }
@@ -101,10 +110,11 @@ export default function MarkdownEditor() {
       editor.createDecorationsCollection([
         {
           range: new monaco.Range(
-            start + 1 + emptyLinesCountAtStart,
+            start + emptyLinesCountAtStart,
             1,
-            end,
-            (editor.getModel()?.getLineLength(end) ?? 0) + 1,
+            end - emptyLinesCountAtEnd,
+            (editor.getModel()?.getLineLength(end - emptyLinesCountAtEnd) ??
+              0) + 1,
           ),
           options: {
             isWholeLine: true,
@@ -119,24 +129,26 @@ export default function MarkdownEditor() {
       // Select the lines
       editor.setSelection(
         new monaco.Range(
-          start + 1 + emptyLinesCountAtStart,
+          start + emptyLinesCountAtStart,
           1,
-          end,
-          (editor.getModel()?.getLineLength(end) ?? 0) + 1,
+          end - emptyLinesCountAtEnd,
+          (editor.getModel()?.getLineLength(end - emptyLinesCountAtEnd) ?? 0) +
+            1,
         ),
       );
 
       setEditorMinHeight(
         Math.max(
-          (end - start - emptyLinesCountAtStart) * EDITOR_LINE_HEIGHT,
+          (end - start - emptyLinesCountAtStart - emptyLinesCountAtEnd) *
+            EDITOR_LINE_HEIGHT,
           EDITOR_MIN_HEIGHT,
         ),
       );
 
       // Navigate to the line
       editor.revealLines(
-        start + 1 + emptyLinesCountAtStart,
-        end === start + 1 + emptyLinesCountAtStart ? end + 1 : end,
+        start + emptyLinesCountAtStart,
+        end === start + emptyLinesCountAtStart ? end + 1 : end,
         monacoEditor.ScrollType.Immediate,
       );
     } else {
@@ -144,7 +156,7 @@ export default function MarkdownEditor() {
       editor.focus();
 
       // Navigate to the line
-      editor.revealLineInCenter(start + 1, monacoEditor.ScrollType.Immediate);
+      editor.revealLineInCenter(start, monacoEditor.ScrollType.Immediate);
     }
   }, [
     getHighlightElementLineRange,

@@ -1,2 +1,0 @@
-- <strong>$$</strong> not math block
-- this line should has `source-line` class.  
