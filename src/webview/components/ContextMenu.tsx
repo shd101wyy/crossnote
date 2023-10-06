@@ -31,6 +31,7 @@ export default function ContextMenu() {
     setShowImageHelper,
     sourceUri,
     theme,
+    isPresentationMode,
   } = PreviewContainer.useContainer();
 
   const handleItemClick = useCallback(
@@ -327,31 +328,33 @@ export default function ContextMenu() {
               {isVSCode ? 'Open VS Code Editor' : 'Open External Editor'}
             </span>
           </Item>
-          <Item
-            id="open-in-preview-editor"
-            onClick={() => {
-              const finalLineElement = document.querySelector('.final-line');
-              if (finalLineElement) {
-                if (
-                  highlightElementBeingEdited &&
-                  highlightElementBeingEdited !== finalLineElement
-                ) {
-                  highlightElementBeingEdited.scrollIntoView({
-                    behavior: 'smooth',
-                    inline: 'start', // horizontal
-                    block: 'center', // vertical
-                  });
-                } else {
-                  setMarkdownEditorExpanded(true);
-                  setHighlightElementBeingEdited(
-                    finalLineElement as HTMLElement,
-                  );
+          {!isPresentationMode && (
+            <Item
+              id="open-in-preview-editor"
+              onClick={() => {
+                const finalLineElement = document.querySelector('.final-line');
+                if (finalLineElement) {
+                  if (
+                    highlightElementBeingEdited &&
+                    highlightElementBeingEdited !== finalLineElement
+                  ) {
+                    highlightElementBeingEdited.scrollIntoView({
+                      behavior: 'smooth',
+                      inline: 'start', // horizontal
+                      block: 'center', // vertical
+                    });
+                  } else {
+                    setMarkdownEditorExpanded(true);
+                    setHighlightElementBeingEdited(
+                      finalLineElement as HTMLElement,
+                    );
+                  }
                 }
-              }
-            }}
-          >
-            <span>Open In-preview Editor </span>
-          </Item>
+              }}
+            >
+              <span>Open In-preview Editor </span>
+            </Item>
+          )}
         </Submenu>
         {!isVSCodeWebExtension && (
           <>

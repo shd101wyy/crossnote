@@ -274,6 +274,16 @@ export async function transformMarkdown(
   let endMarkdownDelimiter: RegExp | null = null;
   let startMarkdownDelimiterLineNo: number | null = null;
   const markdownDelimiters: RegExp[][] = [
+    [/<\s*[a-zA-z]+\s*>/, /<\/\s*[a-zA-z]+\s*>/], // html tag // TODO: Handle more complex cases
+    [/`/, /`/], // inline code
+    [/<!--/, /-->/], // html comment
+    [/\*\*\S/, /\S\*\*/], // bold
+    [/\*\S/, /\S\*/], // italic
+    [/__\S/, /\S__/], // bold
+    [/_\S/, /\S_/], // italic
+    [/~~\S/, /\S~~/], // strikethrough
+    [/\^\S/, /\S\^/], // superscript
+    [/~\S/, /\S~/], // subscript
     ...notebook.config.mathBlockDelimiters.map(([start, end]) => {
       return [
         new RegExp(escapeStringRegexp(start)),
@@ -286,16 +296,6 @@ export async function transformMarkdown(
         new RegExp(escapeStringRegexp(end)),
       ];
     }),
-    [/`/, /`/], // inline code
-    [/<!--/, /-->/], // html comment
-    [/\*\*\S/, /\S\*\*/], // bold
-    [/\*\S/, /\S\*/], // italic
-    [/__\S/, /\S__/], // bold
-    [/_\S/, /\S_/], // italic
-    [/~~\S/, /\S~~/], // strikethrough
-    [/\^\S/, /\S\^/], // superscript
-    [/~\S/, /\S~/], // subscript
-    [/<\s*[a-zA-z]+\s*>/, /<\/\s*[a-zA-z]+\s*>/], // html tag // TODO: Handle more complex cases
   ];
 
   const startMarkdownDelimiterRegExp = new RegExp(
@@ -366,6 +366,10 @@ export async function transformMarkdown(
       const inCodeBlock = !!lastOpeningCodeBlockFence;
       const currentCodeBlockFence = (line.match(/\s*[`]{3,}/) || [])[0];
       if (currentCodeBlockFence) {
+        // NOTE: We force to clean up the following variables
+        endMarkdownDelimiter = null;
+        startMarkdownDelimiterLineNo = null;
+
         const rest = line.substring(currentCodeBlockFence.length);
         if (rest.trim().match(/`+$/)) {
           // This is not a valid code block
@@ -474,7 +478,21 @@ export async function transformMarkdown(
               startMarkdownDelimiterMatch.index +
                 startMarkdownDelimiterMatch[1].length,
             );
-            // NOTE: 2 here means group 2 in `startMarkdownDelimiterRegExp`
+
+            if (startMarkdownDelimiterMatch[2] !== undefined) {
+              // This is html tag at group 2
+              // we need to check if it's self-closing tag
+              const htmlTag = startMarkdownDelimiterMatch[2];
+              const tagNameMatch = htmlTag.match(/<\s*([a-zA-Z]+)/);
+              if (tagNameMatch && tagNameMatch[1] in selfClosingTag) {
+                // self-closing tag
+                endMarkdownDelimiter = null;
+                startMarkdownDelimiterLineNo = null;
+                continue;
+              }
+            }
+
+            // NOTE: `i = 2` here means group 2 in `startMarkdownDelimiterRegExp`
             for (let i = 2; i < startMarkdownDelimiterMatch.length; i++) {
               if (startMarkdownDelimiterMatch[i] !== undefined) {
                 endMarkdownDelimiter = markdownDelimiters[i - 2][1];
@@ -508,6 +526,8 @@ export async function transformMarkdown(
       // ========== End: Check Math Block ==========
       // ========== Start: Check empty line
       // console.log(`check empty line ${lineNo} |${line}|`);
+      // NOTE: This is causing problem for some cases, so we disabled it.
+      /*
       if (
         line.trim() === '' &&
         end + 1 < inputString.length // NOTE: Check test18.md
@@ -534,8 +554,8 @@ export async function transformMarkdown(
           continue;
         }
       }
+      */
       // ========== End: Check empty line
-
       let headingMatch: RegExpMatchArray | null;
       let taskListItemMatch: RegExpMatchArray | null;
       let htmlTagMatch: RegExpMatchArray | null;
@@ -785,6 +805,10 @@ export async function transformMarkdown(
         // escape html tag like <pre>
         const tagName = htmlTagMatch[1] || htmlTagMatch[2];
         if (!(tagName in selfClosingTag)) {
+          // NOTE: We force to clean up the following variables
+          endMarkdownDelimiter = null;
+          startMarkdownDelimiterLineNo = null;
+
           const closeTagName = `</${tagName}>`;
           const end2 = findClosingTagIndex(
             inputString,

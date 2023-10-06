@@ -190,6 +190,12 @@ body[data-presentation-mode] {
     width: 100%;
     height: 100%;
   }
+
+  // As in-preview editor doesn't work well for the
+  // presentation mode, we hide it for now.
+  .source-line.final-line {
+    display: none;
+  }
 }
 
 body:not([data-presentation-mode]) {

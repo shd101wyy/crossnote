@@ -1228,7 +1228,8 @@ const PreviewContainer = createContainer(() => {
       Array.from(previewElement.current.getElementsByTagName('a')),
     );
     bindTaskListEvent();
-    bindHighlightEvent(previewElement.current);
+    // FIXME: This is not working well.
+    // bindHighlightEvent(previewElement.current);
   }, [
     bindAnchorElementsClickEvent,
     bindTaskListEvent,
@@ -1236,7 +1237,6 @@ const PreviewContainer = createContainer(() => {
     postMessage,
     scrollToRevealSourceLine,
     setupCodeChunks,
-    bindHighlightEvent,
   ]);
 
   const onMessageEventHandler = useCallback(
