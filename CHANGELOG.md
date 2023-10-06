@@ -13,7 +13,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
   - `wikiLinkTargetFileExtension`: The file extension of the target file. Default is `md`. For example:
     - `[[test]]` will be transformed to `[test](test.md)`
     - `[[test.md]]` will be transformed to `[test](test.md)`
-    - `[[test.pdf]]` will be transformed to `[test](test.pdf)`
+    - `[[test.pdf]]` will be transformed to `[test](test.pdf)` because it has a file extension.
   - `wikiLinkTargetFileNameChangeCase`: How we transform the file name. Default is `none` so we won't change the file name.  
     A list of available options can be found at: https://shd101wyy.github.io/crossnote/interfaces/NotebookConfig.html#wikiLinkTargetFileNameChangeCase
 

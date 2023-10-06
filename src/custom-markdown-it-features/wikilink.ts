@@ -84,6 +84,14 @@ export default (md: MarkdownIt, notebook: Notebook) => {
     const parsed = path.parse(link);
     let fileName = parsed.name;
     let fileExtension = parsed.ext;
+
+    // NOTE: The approach below might not work well for
+    // link like `0.7.4` as `.4` is detected as the file extension.
+    if (fileExtension.match(/^\.\d+$/)) {
+      fileName += fileExtension;
+      fileExtension = '';
+    }
+
     if (
       notebook.config.wikiLinkTargetFileNameChangeCase !== 'none' &&
       notebook.config.wikiLinkTargetFileNameChangeCase in caseAnything
@@ -93,13 +101,14 @@ export default (md: MarkdownIt, notebook: Notebook) => {
           fileName,
         );
     }
-    if (!parsed.ext) {
+    if (!fileExtension) {
       fileExtension = notebook.config.wikiLinkTargetFileExtension;
     }
     link = path.join(parsed.dir, fileName + fileExtension);
     if (hash) {
       link += hash;
     }
+
     return `<a href="${link}">${text}</a>`;
   };
 };

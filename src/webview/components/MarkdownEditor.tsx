@@ -155,7 +155,10 @@ export default function MarkdownEditor() {
       editor.focus();
 
       // Navigate to the line
-      editor.revealLineInCenter(start + 1, monacoEditor.ScrollType.Immediate);
+      // NOTE: Timeout is needed here; otherwise it might not scroll for some unknown reason.
+      setTimeout(() => {
+        editor.revealLineInCenter(start, monacoEditor.ScrollType.Immediate);
+      }, 100);
     }
   }, [
     getHighlightElementLineRange,

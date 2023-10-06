@@ -104,6 +104,23 @@ export type MermaidTheme = 'default' | 'forest' | 'dark' | 'neutral' | 'null';
 
 export type FrontMatterRenderingOption = 'none' | 'table' | 'code';
 
+export type WikiLinkTargetFileNameChangeCase =
+  | 'none'
+  | 'camelCase'
+  | 'pascalCase'
+  | 'kebabCase'
+  | 'snakeCase'
+  | 'constantCase'
+  | 'trainCase'
+  | 'adaCase'
+  | 'cobolCase'
+  | 'dotNotation'
+  | 'pathCase'
+  | 'spaceCase'
+  | 'capitalCase'
+  | 'lowerCase'
+  | 'upperCase';
+
 export interface NotebookConfig {
   /**
    * The files of extensions to be included in the notebook
@@ -204,22 +221,7 @@ export interface NotebookConfig {
    * Otherwise, the file name will be transformed to the specified case.
    * You can read https://www.npmjs.com/package/case-anything for more details.
    */
-  wikiLinkTargetFileNameChangeCase:
-    | 'none'
-    | 'camelCase'
-    | 'pascalCase'
-    | 'kebabCase'
-    | 'snakeCase'
-    | 'constantCase'
-    | 'trainCase'
-    | 'adaCase'
-    | 'cobolCase'
-    | 'dotNotation'
-    | 'pathCase'
-    | 'spaceCase'
-    | 'capitalCase'
-    | 'lowerCase'
-    | 'upperCase';
+  wikiLinkTargetFileNameChangeCase: WikiLinkTargetFileNameChangeCase;
   /**
    * Whether to enable linkify.
    *
