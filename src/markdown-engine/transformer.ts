@@ -445,7 +445,7 @@ export async function transformMarkdown(
               } else {
                 i = commentEnd;
                 lineNo = lineNo + newlines;
-                outputString = outputString + '\n[CROSSNOTESLIDE]\n\n';
+                outputString = outputString + '[CROSSNOTESLIDE]\n';
                 continue;
               }
             }
@@ -541,7 +541,7 @@ export async function transformMarkdown(
         } else {
           i = end + 1;
           lineNo = lineNo + 1;
-          outputString = outputString + line + '\n\n';
+          outputString = outputString + line + '\n';
           continue;
           // I added one extra `\n` here because remarkable renders content below
           // heading differently with `\n` and without `\n`.
@@ -554,7 +554,7 @@ export async function transformMarkdown(
         tocBracketEnabled = true;
         i = end + 1;
         lineNo = lineNo + 1;
-        outputString = outputString + `\n[CROSSNOTETOC]\n\n`;
+        outputString = outputString + `[CROSSNOTETOC]\n`;
         continue;
       }
       // ========== End: ToC ==========

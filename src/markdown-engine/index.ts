@@ -2210,7 +2210,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     slideConfigs: JsonObject[],
     useRelativeFilePath: boolean,
   ) {
-    let slides = html.split('<p>[CROSSNOTESLIDE]</p>');
+    let slides = html.split(/^\s*<p[^>]+>\[CROSSNOTESLIDE\]<\/p>\s*/gm);
     const before = slides[0];
     slides = slides.slice(1);
 
@@ -2484,7 +2484,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     /**
      * render markdown to html
      */
-    let html;
+    let html: string;
     if (this.notebook.config.usePandocParser) {
       // pandoc
       try {
@@ -2543,7 +2543,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (tocBracketEnabled) {
       // [TOC]
-      html = html.replace(/^\s*<p>\[CROSSNOTETOC\]<\/p>\s*/gm, this.tocHTML);
+      html = html.replace(/^\s*<p[^>]+>\[CROSSNOTETOC\]<\/p>\s*/gm, ($0) => {
+        // Check if $0 has `data-source-line` attribute
+        const match = $0.match(/data-source-line="(\d+)"/);
+        const lineNo = match ? match[1] : '';
+        if (lineNo) {
+          return `<div data-source-line="${lineNo}">${this.tocHTML}</div>`;
+        } else {
+          return this.tocHTML;
+        }
+      });
     }
 
     /**
