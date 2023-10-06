@@ -22,6 +22,28 @@ function getWindowHeight() {
   return window.innerHeight;
 }
 
+const BlockElements = {
+  P: 1,
+  H1: 1,
+  H2: 1,
+  H3: 1,
+  H4: 1,
+  H5: 1,
+  H6: 1,
+  OL: 1,
+  UL: 1,
+  PRE: 1,
+  BLOCKQUOTE: 1,
+  HR: 1,
+  TABLE: 1,
+  FIGURE: 1,
+  DIV: 1,
+};
+
+function isBlockElement(tagName: string) {
+  return tagName in BlockElements;
+}
+
 /**
  * Zero-based line number
  * @param element
@@ -209,12 +231,11 @@ const PreviewContainer = createContainer(() => {
     if (!totalLineCount.current || !previewElement.current) {
       return null;
     }
-    const newScrollMap: number[] = [];
+    const newScrollMap: number[] = Array(
+      Math.max(totalLineCount.current, 0),
+    ).fill(-1);
     const nonEmptyList: number[] = [];
-
-    for (let i = 0; i < totalLineCount.current; i++) {
-      newScrollMap.push(-1);
-    }
+    const addedLines = new Set<number>();
 
     nonEmptyList.push(0);
     newScrollMap[0] = 0;
@@ -225,11 +246,15 @@ const PreviewContainer = createContainer(() => {
 
     for (let i = 0; i < lineElements.length; i++) {
       let el = lineElements[i] as HTMLElement;
-
-      const t = getDataSourceLine(el);
-      if (!t) {
+      if (!isBlockElement(el.tagName)) {
         continue;
       }
+
+      const t = getDataSourceLine(el);
+      if (!t || addedLines.has(t)) {
+        continue;
+      }
+      addedLines.add(t);
 
       // this is for ignoring footnote scroll match
       if (t < nonEmptyList[nonEmptyList.length - 1]) {
