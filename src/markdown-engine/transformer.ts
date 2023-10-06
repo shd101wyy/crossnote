@@ -571,6 +571,7 @@ export async function transformMarkdown(
           line = line.replace(
             taskListItemMatch[1],
             `<input type="checkbox" class="task-list-item-checkbox" ${
+              // Add `data-source-line` here is necessary to make clicking in preview work
               canCreateAnchor() ? `data-source-line="${lineNo + 1}"` : ''
             }${checked ? ' checked' : ''}>`,
           );

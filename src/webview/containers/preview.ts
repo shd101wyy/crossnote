@@ -22,6 +22,24 @@ function getWindowHeight() {
   return window.innerHeight;
 }
 
+/**
+ * Zero-based line number
+ * @param element
+ * @returns
+ */
+function getDataSourceLine(element: HTMLElement | Element) {
+  const dataLine = element.getAttribute('data-source-line');
+  if (!dataLine) {
+    return null;
+  }
+  const parsed = parseInt(dataLine, 10);
+  if (isNaN(parsed)) {
+    return null;
+  } else {
+    return parsed - 1;
+  }
+}
+
 interface SlideData {
   line: number;
   h: number;
@@ -207,12 +225,8 @@ const PreviewContainer = createContainer(() => {
 
     for (let i = 0; i < lineElements.length; i++) {
       let el = lineElements[i] as HTMLElement;
-      const dataLine = el.getAttribute('data-source-line');
-      if (!dataLine) {
-        continue;
-      }
 
-      const t = parseInt(dataLine, 10);
+      const t = getDataSourceLine(el);
       if (!t) {
         continue;
       }
@@ -550,18 +564,17 @@ const PreviewContainer = createContainer(() => {
     if (!previewElement.current) {
       return;
     }
-    const elements = previewElement.current.children;
+    const elements =
+      previewElement.current.getElementsByClassName('code-chunk');
     for (let i = elements.length - 1; i >= 0; i--) {
-      if (
-        elements[i].hasAttribute('data-source-line') &&
-        elements[i + 1] &&
-        elements[i + 1].classList.contains('code-chunk')
-      ) {
+      const codeChunkElement = elements[i];
+      const dataSourceLineElement =
+        codeChunkElement.querySelector('[data-source-line]');
+      if (dataSourceLineElement) {
         if (
-          cursorLine.current >=
-          parseInt(elements[i].getAttribute('data-source-line') ?? '0', 10)
+          cursorLine.current >= (getDataSourceLine(dataSourceLineElement) ?? 0)
         ) {
-          const codeChunkId = elements[i + 1].getAttribute('data-id');
+          const codeChunkId = codeChunkElement.getAttribute('data-id');
           if (codeChunkId) {
             return runCodeChunk(codeChunkId);
           }
@@ -817,11 +830,8 @@ const PreviewContainer = createContainer(() => {
             checkbox.removeAttribute('checked');
           }
 
-          const dataLine = parseInt(
-            checkbox.getAttribute('data-source-line') ?? '0',
-            10,
-          );
-          if (!isNaN(dataLine)) {
+          const dataLine = getDataSourceLine(checkbox);
+          if (typeof dataLine === 'number') {
             postMessage('clickTaskListCheckbox', [sourceUri.current, dataLine]);
           }
         };
@@ -882,7 +892,6 @@ const PreviewContainer = createContainer(() => {
         if (highlightElementsThatAddedEventSet.has(highlightElement)) {
           const lines =
             highlightElementToLinesMap.current.get(highlightElement);
-          // console.log('* lines: ', lines);
           if (lines) {
             lines.forEach((line) => {
               linesSet.add(line);
@@ -933,22 +942,18 @@ const PreviewContainer = createContainer(() => {
 
     for (let i = sourceLineElements.length - 1; i >= 0; i--) {
       const sourceLineElement = sourceLineElements[i];
-      const dataSourceLine = parseInt(
-        sourceLineElement.getAttribute('data-source-line') ?? '0',
-        10,
-      );
+      const dataSourceLine = getDataSourceLine(sourceLineElement) ?? 0;
 
       // Ignore the link
       if (sourceLineElement.tagName === 'A') {
         continue;
       }
 
-      // List item
+      // Input List item
+      /*
       if (
-        (sourceLineElement.tagName === 'SPAN' &&
-          sourceLineElement.classList.contains('list-item-line')) ||
-        (sourceLineElement.tagName === 'INPUT' &&
-          sourceLineElement.classList.contains('task-list-item-checkbox'))
+        sourceLineElement.tagName === 'INPUT' &&
+        sourceLineElement.classList.contains('task-list-item-checkbox')
       ) {
         // Iterate above until we find the parent LI element
         let highlightElement = sourceLineElement.parentElement;
@@ -966,8 +971,9 @@ const PreviewContainer = createContainer(() => {
           }
         }
       }
+      */
       // Code chunk
-      else if (
+      if (
         sourceLineElement.tagName === 'PRE' &&
         sourceLineElement.parentElement?.classList.contains('input-div') &&
         sourceLineElement.parentElement.parentElement?.classList.contains(
@@ -1168,10 +1174,7 @@ const PreviewContainer = createContainer(() => {
     for (let i = 0; i < slideElements.length; i++) {
       const slide = slideElements[i];
       if (slide.hasAttribute('data-source-line')) {
-        const line = parseInt(
-          slide.getAttribute('data-source-line') ?? '0',
-          10,
-        );
+        const line = getDataSourceLine(slide) ?? 0;
         const h = parseInt(slide.getAttribute('data-h') ?? '0', 10);
         const v = parseInt(slide.getAttribute('data-v') ?? '0', 10);
         slidesData.current.push({ line, h, v, offset });
@@ -1393,6 +1396,9 @@ const PreviewContainer = createContainer(() => {
     scrollMap.current = null;
   }, []);
 
+  /**
+   * Please note the range is zero-based [startLine, endLine)
+   */
   const getHighlightElementLineRange = useCallback(
     (highlightElement: HTMLElement) => {
       const lines = highlightElementToLinesMap.current.get(highlightElement);
@@ -1406,7 +1412,7 @@ const PreviewContainer = createContainer(() => {
       );
       const endLine =
         highlightElementLines.current[index + 1] ?? totalLineCount.current;
-      return [startLine, endLine - 1];
+      return [startLine, endLine];
     },
     [],
   );
