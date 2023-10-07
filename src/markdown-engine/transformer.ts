@@ -298,7 +298,7 @@ export async function transformMarkdown(
 
       // ========== Start: Code Block ==========
       const inCodeBlock = !!lastOpeningCodeBlockFence;
-      const currentCodeBlockFence = (line.match(/\s*[`]{3,}/) || [])[0];
+      const currentCodeBlockFence = (line.match(/^\s*[`]{3,}/) || [])[0];
       if (currentCodeBlockFence) {
         const rest = line.substring(currentCodeBlockFence.length);
         if (rest.trim().match(/`+$/)) {
@@ -780,13 +780,8 @@ export async function transformMarkdown(
                   );
               }
 
-              output2 = '\n' + output2 + '  ';
+              output = '\n' + output2 + '  ';
               headings = headings.concat(headings2);
-
-              i = end + 1;
-              lineNo = lineNo + 1;
-              outputString = outputString + output2 + '\n';
-              continue;
             } else if (extname === '.html') {
               // html file
               output = '<div>' + fileContent + '</div>  ';
