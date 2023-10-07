@@ -77,7 +77,9 @@ export default async function enhance({
 
     const normalizedInfo: BlockInfo = $container.data('normalizedInfo');
     // Check if Kroki is enabled
-    const isKroki = !!normalizedInfo.attributes['kroki'];
+    const isKroki =
+      !!normalizedInfo.attributes['kroki'] ||
+      normalizedInfo.language.startsWith('kroki-');
     if (
       normalizedInfo.attributes['literate'] === false ||
       normalizedInfo.attributes['cmd'] === false ||
@@ -148,7 +150,7 @@ async function renderDiagram({
       const krokiDiagramType =
         typeof normalizedInfo.attributes['kroki'] === 'string'
           ? normalizedInfo.attributes['kroki']
-          : normalizedInfo.language;
+          : normalizedInfo.language.replace(/^kroki-/, '');
 
       // NOTE: Code below are using GET request, but it's not working for large diagrams
       // So we use POST request instead
