@@ -83,11 +83,6 @@ const PreviewContainer = createContainer(() => {
    */
   const cursorLine = useRef<number>(-1);
   /**
-   * TextEditor initial line position
-   */
-  const initialLine = useRef<number>(0);
-
-  /**
    * TextEditor total buffer line count
    */
   const totalLineCount = useRef<number>(0);
@@ -753,11 +748,11 @@ const PreviewContainer = createContainer(() => {
 
   const scrollToRevealSourceLine = useCallback(
     (line: number, topRatio = 0.372) => {
-      if (line === cursorLine.current) {
-        return;
-      } else {
-        cursorLine.current = line;
-      }
+      cursorLine.current = line;
+      sessionStorage.setItem(
+        `crossnote.cursorLine`,
+        cursorLine.current.toString(),
+      );
 
       // disable preview onscroll
       previewScrollDelay.current = Date.now() + 500;
@@ -1146,7 +1141,7 @@ const PreviewContainer = createContainer(() => {
           if (isLoadingPreviewRef.current) {
             isLoadingPreviewRef.current = false;
             setIsLoadingPreview(false);
-            scrollToRevealSourceLine(initialLine.current);
+            scrollToRevealSourceLine(cursorLine.current);
 
             // clear @scrollMap after 2 seconds because sometimes
             // loading images will change scrollHeight.
@@ -1244,7 +1239,7 @@ const PreviewContainer = createContainer(() => {
 
     // slide to initial position
     window['Reveal'].configure({ transition: 'none' });
-    scrollToRevealSourceLine(initialLine.current);
+    scrollToRevealSourceLine(cursorLine.current);
     window['Reveal'].configure({ transition: 'slide' });
     window['Reveal'].layout();
 
@@ -1302,7 +1297,9 @@ const PreviewContainer = createContainer(() => {
         if (isNaN(topRatio)) {
           topRatio = 0.372;
         }
-        scrollToRevealSourceLine(line, topRatio);
+        if (cursorLine.current !== line) {
+          scrollToRevealSourceLine(line, topRatio);
+        }
       } else if (data.command === 'startParsingMarkdown') {
         /**
          * show refreshingIcon after 1 second
@@ -1446,9 +1443,16 @@ const PreviewContainer = createContainer(() => {
 
   useEffect(() => {
     sourceUri.current = config.sourceUri;
-    cursorLine.current = config.cursorLine ?? -1;
-    initialLine.current = config.initialLine ?? 0;
+    cursorLine.current =
+      config.cursorLine ??
+      Number.parseInt(sessionStorage.getItem(`crossnote.cursorLine`) ?? '0') ??
+      0;
     setZoomLevel(config.zoomLevel ?? 1);
+
+    sessionStorage.setItem(
+      `crossnote.cursorLine`,
+      cursorLine.current.toString(),
+    );
   }, [config]);
 
   /**

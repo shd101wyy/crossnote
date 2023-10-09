@@ -601,7 +601,6 @@ export interface WebviewConfig extends Partial<NotebookConfig> {
   scrollSync?: boolean;
   zoomLevel?: number;
   sourceUri?: string;
-  initialLine?: number;
   cursorLine?: number;
   imageUploader?: ImageUploader;
 }

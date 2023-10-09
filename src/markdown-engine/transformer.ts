@@ -403,7 +403,7 @@ export async function transformMarkdown(
             const content = inputString.slice(i + 4, commentEnd - 3);
             const newlinesMatch = content.match(/\n/g);
             const newlines = newlinesMatch ? newlinesMatch.length : 0;
-            const optionsMatch = content.match(/^([^\s]+?)\s([\s\S]+)$/);
+            const optionsMatch = content.trim().match(/^([^\s]+?)\s([\s\S]+)$/);
             let options = {};
             if (optionsMatch && optionsMatch[2]) {
               options = parseBlockAttributes(optionsMatch[2]);
@@ -431,7 +431,9 @@ export async function transformMarkdown(
                 i = commentEnd;
                 lineNo = lineNo + newlines;
                 outputString =
-                  outputString + '[CROSSNOTESLIDE]' + '\n'.repeat(newlines);
+                  outputString +
+                  `<p data-source-line="${lineNo + 1}">[CROSSNOTESLIDE]</p>` +
+                  '\n'.repeat(newlines);
                 continue;
               }
             }
