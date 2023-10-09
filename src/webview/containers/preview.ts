@@ -750,7 +750,7 @@ const PreviewContainer = createContainer(() => {
     (line: number, topRatio = 0.372) => {
       cursorLine.current = line;
       sessionStorage.setItem(
-        `crossnote.cursorLine`,
+        `crossnote.cursorLine.${sourceUri.current}`,
         cursorLine.current.toString(),
       );
 
@@ -1445,12 +1445,15 @@ const PreviewContainer = createContainer(() => {
     sourceUri.current = config.sourceUri;
     cursorLine.current =
       config.cursorLine ??
-      Number.parseInt(sessionStorage.getItem(`crossnote.cursorLine`) ?? '0') ??
+      Number.parseInt(
+        sessionStorage.getItem(`crossnote.cursorLine.${sourceUri.current}`) ??
+          '0',
+      ) ??
       0;
     setZoomLevel(config.zoomLevel ?? 1);
 
     sessionStorage.setItem(
-      `crossnote.cursorLine`,
+      `crossnote.cursorLine.${sourceUri.current}`,
       cursorLine.current.toString(),
     );
   }, [config]);
