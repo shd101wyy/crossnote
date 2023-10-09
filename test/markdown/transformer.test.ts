@@ -28,8 +28,8 @@ describe('test markdown transformer', () => {
         return await transformMarkdown(markdown, {
           notebook,
           forPreview: true,
-          fileDirectoryPath: '',
-          projectDirectoryPath: '',
+          fileDirectoryPath: path.join(__dirname, './test-files'),
+          projectDirectoryPath: path.join(__dirname, './test-files'),
           filesCache: {},
           useRelativeFilePath: false,
           protocolsWhiteListRegExp: null,
