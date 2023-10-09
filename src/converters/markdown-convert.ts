@@ -238,6 +238,7 @@ export async function markdownConvert(
     useRelativeFilePath,
     filesCache,
     forPreview: false,
+    embeddingFilesInMarkdownDirectly: true,
     forMarkdownExport: true,
     protocolsWhiteListRegExp,
     imageDirectoryPath,

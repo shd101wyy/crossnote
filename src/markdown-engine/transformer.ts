@@ -49,6 +49,7 @@ export interface TransformMarkdownOptions {
   filesCache: { [key: string]: string };
   useRelativeFilePath: boolean;
   forPreview: boolean;
+  embeddingFilesInMarkdownDirectly?: boolean;
   forMarkdownExport?: boolean;
   protocolsWhiteListRegExp: RegExp | null;
   notSourceFile?: boolean;
@@ -235,6 +236,7 @@ export async function transformMarkdown(
     useRelativeFilePath = false,
     forPreview = false,
     forMarkdownExport = false,
+    embeddingFilesInMarkdownDirectly = false,
     protocolsWhiteListRegExp = null,
     notSourceFile = false,
     imageDirectoryPath = '',
@@ -765,6 +767,7 @@ export async function transformMarkdown(
                 filesCache,
                 useRelativeFilePath: false,
                 forPreview: false,
+                embeddingFilesInMarkdownDirectly,
                 forMarkdownExport,
                 protocolsWhiteListRegExp,
                 notSourceFile: true, // <= this is not the sourcefile
@@ -911,7 +914,17 @@ export async function transformMarkdown(
 
             i = end + 1;
             lineNo = lineNo + 1;
-            outputString = outputString + output + '\n';
+            if (embeddingFilesInMarkdownDirectly) {
+              outputString = outputString + output + '\n';
+            } else {
+              outputString =
+                outputString +
+                `![@embedding](${filePath}){${stringifyBlockAttributes({
+                  ...config,
+                  embedding: btoa(output),
+                })}}` +
+                '\n';
+            }
             continue;
           } catch (error) {
             output = `<pre class="language-text"><code>${escape(
@@ -920,7 +933,17 @@ export async function transformMarkdown(
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
             lineNo = lineNo + 1;
-            outputString = outputString + output + '\n';
+            if (embeddingFilesInMarkdownDirectly) {
+              outputString = outputString + output + '\n';
+            } else {
+              outputString =
+                outputString +
+                `![@embedding](${filePath}){${stringifyBlockAttributes({
+                  ...config,
+                  error: btoa(output),
+                })}}` +
+                '\n';
+            }
             continue;
           }
         }

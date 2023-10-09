@@ -1,4 +1,5 @@
 import { KatexOptions } from 'katex';
+import MarkdownIt from 'markdown-it';
 import { MermaidConfig } from 'mermaid';
 import { JsonObject } from 'type-fest';
 import { Note } from './note';
@@ -30,6 +31,13 @@ export type FileSystemApi = {
   readdir: (path: string) => Promise<string[]>;
   unlink: (path: string) => Promise<void>;
 };
+
+export type ExtendedMarkdownItOptions = {
+  /**
+   * Whether to enable the sourceMap
+   */
+  sourceMap?: boolean;
+} & MarkdownIt.Options;
 
 export type MathRenderingOption = 'None' | 'KaTeX' | 'MathJax';
 
