@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.8.21] - 2023-10-09
+
+### Bug fixes
+
+- Fixed a bug of rendering front-matter that caused the failure of rendering slides: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1814
+
 ## [0.8.20] - 2023-10-09
 
 ### New features
