@@ -2607,7 +2607,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     //   enhanceWithEmojiToSvg($);
     // }
 
-    html = frontMatterTable + $('head').html() + $('body').html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
+    html =
+      frontMatterTable +
+      // NOTE: '\n' is necessary here. Otherwise, it might generate html like '</table><p data-source-line="12">[CROSSNOTESLIDE]</p>'
+      // and we will fail to parse for slides, which splits by `^<p...>[CROSSNOTESLIDE]</p>`.
+      '\n' +
+      $('head').html() +
+      $('body').html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
 
     /**
      * check slides
