@@ -49,6 +49,7 @@ export interface TransformMarkdownOptions {
   filesCache: { [key: string]: string };
   useRelativeFilePath: boolean;
   forPreview: boolean;
+  embeddingFilesInMarkdownDirectly?: boolean;
   forMarkdownExport?: boolean;
   protocolsWhiteListRegExp: RegExp | null;
   notSourceFile?: boolean;
@@ -235,6 +236,7 @@ export async function transformMarkdown(
     useRelativeFilePath = false,
     forPreview = false,
     forMarkdownExport = false,
+    embeddingFilesInMarkdownDirectly = false,
     protocolsWhiteListRegExp = null,
     notSourceFile = false,
     imageDirectoryPath = '',
@@ -298,7 +300,7 @@ export async function transformMarkdown(
 
       // ========== Start: Code Block ==========
       const inCodeBlock = !!lastOpeningCodeBlockFence;
-      const currentCodeBlockFence = (line.match(/\s*[`]{3,}/) || [])[0];
+      const currentCodeBlockFence = (line.match(/^\s*[`]{3,}/) || [])[0];
       if (currentCodeBlockFence) {
         const rest = line.substring(currentCodeBlockFence.length);
         if (rest.trim().match(/`+$/)) {
@@ -401,7 +403,7 @@ export async function transformMarkdown(
             const content = inputString.slice(i + 4, commentEnd - 3);
             const newlinesMatch = content.match(/\n/g);
             const newlines = newlinesMatch ? newlinesMatch.length : 0;
-            const optionsMatch = content.match(/^([^\s]+?)\s([\s\S]+)$/);
+            const optionsMatch = content.trim().match(/^([^\s]+?)\s([\s\S]+)$/);
             let options = {};
             if (optionsMatch && optionsMatch[2]) {
               options = parseBlockAttributes(optionsMatch[2]);
@@ -429,7 +431,9 @@ export async function transformMarkdown(
                 i = commentEnd;
                 lineNo = lineNo + newlines;
                 outputString =
-                  outputString + '[CROSSNOTESLIDE]' + '\n'.repeat(newlines);
+                  outputString +
+                  `<p data-source-line="${lineNo + 1}">[CROSSNOTESLIDE]</p>` +
+                  '\n'.repeat(newlines);
                 continue;
               }
             }
@@ -765,6 +769,7 @@ export async function transformMarkdown(
                 filesCache,
                 useRelativeFilePath: false,
                 forPreview: false,
+                embeddingFilesInMarkdownDirectly,
                 forMarkdownExport,
                 protocolsWhiteListRegExp,
                 notSourceFile: true, // <= this is not the sourcefile
@@ -780,13 +785,8 @@ export async function transformMarkdown(
                   );
               }
 
-              output2 = '\n' + output2 + '  ';
+              output = '\n' + output2 + '  ';
               headings = headings.concat(headings2);
-
-              i = end + 1;
-              lineNo = lineNo + 1;
-              outputString = outputString + output2 + '\n';
-              continue;
             } else if (extname === '.html') {
               // html file
               output = '<div>' + fileContent + '</div>  ';
@@ -916,7 +916,17 @@ export async function transformMarkdown(
 
             i = end + 1;
             lineNo = lineNo + 1;
-            outputString = outputString + output + '\n';
+            if (embeddingFilesInMarkdownDirectly) {
+              outputString = outputString + output + '\n';
+            } else {
+              outputString =
+                outputString +
+                `![@embedding](${filePath}){${stringifyBlockAttributes({
+                  ...config,
+                  embedding: btoa(output),
+                })}}` +
+                '\n';
+            }
             continue;
           } catch (error) {
             output = `<pre class="language-text"><code>${escape(
@@ -925,7 +935,17 @@ export async function transformMarkdown(
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
             lineNo = lineNo + 1;
-            outputString = outputString + output + '\n';
+            if (embeddingFilesInMarkdownDirectly) {
+              outputString = outputString + output + '\n';
+            } else {
+              outputString =
+                outputString +
+                `![@embedding](${filePath}){${stringifyBlockAttributes({
+                  ...config,
+                  error: btoa(output),
+                })}}` +
+                '\n';
+            }
             continue;
           }
         }

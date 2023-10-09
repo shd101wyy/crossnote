@@ -390,6 +390,7 @@ export async function pandocConvert(
     filesCache,
     protocolsWhiteListRegExp,
     forPreview: false,
+    embeddingFilesInMarkdownDirectly: true,
     notebook,
   });
   text = data.outputString;

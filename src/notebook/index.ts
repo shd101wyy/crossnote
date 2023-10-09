@@ -17,6 +17,7 @@ import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
 import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed';
 import useMarkdownItMath from '../custom-markdown-it-features/math';
 import useMarkdownItSourceMap from '../custom-markdown-it-features/sourcemap';
+import useMarkdownItWidget from '../custom-markdown-it-features/widget';
 import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
 import { MarkdownEngine } from '../markdown-engine';
 import { loadConfigsInDirectory, wrapNodeFSAsApi } from './config-helper';
@@ -26,6 +27,7 @@ import { Reference, ReferenceMap } from './reference';
 import Search from './search';
 import {
   Backlink,
+  ExtendedMarkdownItOptions,
   FileSystemApi,
   FileSystemStats,
   IS_NODE,
@@ -35,13 +37,14 @@ import {
 
 export * from './types';
 
-const defaultMarkdownItConfig: Partial<MarkdownIt.Options> = {
+const defaultMarkdownItConfig: Partial<ExtendedMarkdownItOptions> = {
   html: true, // Enable HTML tags in source
   xhtmlOut: false, // Use '/' to close single tags (<br />)
   breaks: true, // Convert '\n' in paragraphs into <br>
   langPrefix: 'language-', // CSS language prefix for fenced blocks
   linkify: true, // autoconvert URL-like texts to links
   typographer: true, // Enable smartypants and other sweet transforms
+  sourceMap: true, // Enable source map
 };
 
 interface NotebookConstructorArgs {
@@ -112,7 +115,7 @@ export class Notebook {
     this.notebookPath = uri;
     this.initFs(fs);
     await this.initConfig(config);
-    this.initMarkdownIt();
+    this.md = this.initMarkdownIt();
     this.updateConfig({});
   }
 
@@ -134,26 +137,28 @@ export class Notebook {
     };
   }
 
-  private initMarkdownIt() {
-    this.md = new MarkdownIt(defaultMarkdownItConfig);
+  public initMarkdownIt(options?: ExtendedMarkdownItOptions) {
+    const md = new MarkdownIt(options ?? defaultMarkdownItConfig);
 
     // markdown-it extensions
-    this.md.use(MarkdownItFootnote);
-    this.md.use(MarkdownItSub);
-    this.md.use(MarkdownItSup);
-    this.md.use(MarkdownItDeflist);
-    this.md.use(MarkdownItAbbr);
-    this.md.use(MarkdownItMark);
+    md.use(MarkdownItFootnote);
+    md.use(MarkdownItSub);
+    md.use(MarkdownItSup);
+    md.use(MarkdownItDeflist);
+    md.use(MarkdownItAbbr);
+    md.use(MarkdownItMark);
 
-    useMarkdownItCodeFences(this.md);
-    useMarkdownItCurlyBracketAttributes(this.md);
-    useMarkdownItCriticMarkup(this.md, this);
-    useMarkdownItEmoji(this.md, this);
-    useMarkdownItHTML5Embed(this.md, this);
-    useMarkdownItMath(this.md, this);
-    useMarkdownItWikilink(this.md, this);
-    useMarkdownAdmonition(this.md);
-    useMarkdownItSourceMap(this.md);
+    useMarkdownItCodeFences(md);
+    useMarkdownItCurlyBracketAttributes(md);
+    useMarkdownItCriticMarkup(md, this);
+    useMarkdownItEmoji(md, this);
+    useMarkdownItHTML5Embed(md, this);
+    useMarkdownItMath(md, this);
+    useMarkdownItWikilink(md, this);
+    useMarkdownAdmonition(md);
+    useMarkdownItSourceMap(md);
+    useMarkdownItWidget(md, this);
+    return md;
   }
 
   initFs(_fs?: FileSystemApi) {

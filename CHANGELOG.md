@@ -4,6 +4,36 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.8.20] - 2023-10-09
+
+### New features
+
+- Supported prefix in front of Kroki diagram types https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1785.  
+  So now all diagrams below will get rendered using Kroki:
+
+  ````markdown
+  ```kroki-plantuml
+  @startuml
+  A -> B
+  @enduml
+  ```
+
+  ```plantuml {kroki=true}
+  @startuml
+  A -> B
+  @enduml
+  ```
+  ````
+
+- Improved the source map handling for `@import "..."` syntax.
+
+### Bug fixes
+
+- Now exporting files won't include the source map.
+- Fixed some Reveal.js presentation related bugs:
+  - https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1815
+  - https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1814
+
 ## [0.8.19] - 2023-10-06
 
 ### Changes

@@ -1,0 +1,3 @@
+# This is test3.md {#this-is-test3md  data-source-line="1"}
+
+![@embedding](test2.md){x=1 y=2 embedding="CmBgYHRleHQgY21kPSJ0b2MiIGRlcHRoRnJvbT0xIGRlcHRoVG89NiBvcmRlcmVkTGlzdD1mYWxzZSBoaWRlPXRydWUgcnVuX29uX3NhdmU9dHJ1ZSBtb2RpZnlfc291cmNlPXRydWUgIApgYGAgIAoKCi0gW0hlYWRpbmcgMV0oI2hlYWRpbmctMSkKICAtIFtIZWFkaW5nIDJdKCNoZWFkaW5nLTIpCgoKCiMgSGVhZGluZyAxIHsjaGVhZGluZy0xIH0KCnBhcmFncmFwaAoKIyMgSGVhZGluZyAyIHsjaGVhZGluZy0yIH0KCnBhcmFncmFwaAogIA=="}

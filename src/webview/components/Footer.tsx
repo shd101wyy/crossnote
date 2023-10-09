@@ -32,7 +32,7 @@ export default function Footer() {
   return (
     <div
       className={classNames(
-        'fixed bottom-0 w-full z-50 pr-2 bg-transparent select-none',
+        'footer fixed bottom-0 w-full z-50 pr-2 bg-transparent select-none',
         isMobile || isMouseOverPreview ? '' : 'hidden',
         isPresentationMode ? 'hidden' : '',
       )}

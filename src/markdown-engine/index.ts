@@ -2455,6 +2455,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
       projectDirectoryPath: this.projectDirectoryPath.fsPath,
       forPreview: options.isForPreview,
+      embeddingFilesInMarkdownDirectly: this.notebook.config.usePandocParser,
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
@@ -2516,7 +2517,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
     } else {
       // markdown-it
-      html = this.notebook.md.render(outputString);
+      if (options.isForPreview) {
+        html = this.notebook.md.render(outputString);
+      } else {
+        // NOTE: We disable the source map here.
+        const md = this.notebook.initMarkdownIt({
+          ...this.notebook.md.options,
+          sourceMap: false,
+        });
+        html = md.render(outputString);
+      }
     }
 
     /**
@@ -2527,9 +2537,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const depthFrom = tocConfig['depth_from'] || 1;
     const depthTo = tocConfig['depth_to'] || 6;
     const ordered = tocConfig['ordered'];
-
-    // const tocObject = toc(headings, { ordered, depthFrom, depthTo, tab: "  " });
-    // this.tocHTML = this.notebook.md.render(tocObject.content);
 
     // Collaposible ToC
     this.tocHTML = generateSidebarToCHTML(
