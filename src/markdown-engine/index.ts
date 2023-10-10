@@ -2211,7 +2211,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     useRelativeFilePath: boolean,
   ) {
     let slides = html.split(
-      /^\s*<p[^>]+><span>\[CROSSNOTESLIDE\]<\/span><\/p>\s*/gm,
+      /^\s*<p[^>]*><span>\[CROSSNOTESLIDE\]<\/span><\/p>\s*/gm,
     );
 
     const before = slides[0];

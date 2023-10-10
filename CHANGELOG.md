@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.8.23] - 2023-10-10
+
+### Bug fixes
+
+- Fixed exporting reveal.js presentation.
+
 ## [0.8.22] - 2023-10-10
 
 ### Bug fixes
