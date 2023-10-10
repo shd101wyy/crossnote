@@ -358,3 +358,16 @@ export function findClosingTagIndex(
   // If we reach here, no closing tag was found, return -1
   return -1;
 }
+
+export function replaceVariablesInString(
+  inputString: string,
+  replacements: { [key: string]: string } = {},
+) {
+  return inputString.replace(/\${([^}]+)}/g, (match, token) => {
+    if (token.startsWith('env:')) {
+      return process.env[token.replace(/^env:/, '').trim()] ?? '';
+    } else {
+      return replacements[token] ?? match;
+    }
+  });
+}

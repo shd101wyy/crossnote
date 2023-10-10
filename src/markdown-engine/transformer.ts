@@ -553,8 +553,14 @@ export async function transformMarkdown(
           (usePandocParser
             ? `<p${
                 canCreateAnchor() ? ` data-source-line="${lineNo}"` : ''
-              }><span>[CROSSNOTETOC]</span></p> \n`
-            : `<span>[CROSSNOTETOC]</span>  \n`);
+              }><span>[CROSSNOTETOC]</span></p>  \n`
+            : // NOTE: We need to differentiate between `usePandocParser` here because
+              // markdown-it will not render the next line below
+              // <p><span>[TOC]</span></p>
+              // so only set it as
+              // <span>[TOC]</span>
+              // for now
+              `<span>[CROSSNOTETOC]</span>  \n`);
         continue;
       }
       // ========== End: ToC ==========
