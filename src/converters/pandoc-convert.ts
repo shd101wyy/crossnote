@@ -390,7 +390,7 @@ export async function pandocConvert(
     filesCache,
     protocolsWhiteListRegExp,
     forPreview: false,
-    embeddingFilesInMarkdownDirectly: true,
+    usePandocParser: true,
     notebook,
   });
   text = data.outputString;
@@ -414,7 +414,7 @@ export async function pandocConvert(
       tab: '  ',
     });
     text = text.replace(
-      /^\s*\[CROSSNOTETOC\]\s*/gm,
+      /^\s*(?:<p[^>]*>)?<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
       '\n\n' + tocMarkdown + '\n\n',
     );
   }

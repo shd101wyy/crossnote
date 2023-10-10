@@ -12,6 +12,9 @@
     "kachkaev",
     "gabyx"
   ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "exports": {
     ".": {
       "import": "./out/esm/index.mjs",

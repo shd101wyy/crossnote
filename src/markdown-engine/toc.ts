@@ -1,3 +1,4 @@
+import MarkdownIt from 'markdown-it';
 import HeadingIdGenerator from './heading-id-generator';
 
 function nPrefix(str, n) {
@@ -141,7 +142,7 @@ export function toc(headings: HeadingData[], opt: TocOption) {
 
 export function generateSidebarToCHTML(
   headings: HeadingData[],
-  mdRender: (md: string) => string,
+  md: MarkdownIt,
   opt: TocOption,
 ): string {
   if (!headings.length) {
@@ -217,7 +218,7 @@ export function generateSidebarToCHTML(
       }px;`;
       const paddingStyle = `padding:0;`;
 
-      const headingHtml = mdRender(heading.content);
+      const headingHtml = md.render(heading.content);
       const headingId =
         heading.id || headingIdGenerator.generateId(heading.content);
       if (subHeadings.length) {
