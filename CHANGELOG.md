@@ -4,6 +4,13 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.8.22] - 2023-10-10
+
+### Bug fixes
+
+- Fixed a bug of loading image https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1819
+- Fixed a bug of parsing slides https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1818
+
 ## [0.8.21] - 2023-10-09
 
 ### Bug fixes

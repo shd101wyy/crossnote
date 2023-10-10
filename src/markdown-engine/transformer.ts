@@ -432,7 +432,7 @@ export async function transformMarkdown(
                 lineNo = lineNo + newlines;
                 outputString =
                   outputString +
-                  `<p data-source-line="${lineNo + 1}">[CROSSNOTESLIDE]</p>` +
+                  `<span>[CROSSNOTESLIDE]</span>  ` +
                   '\n'.repeat(newlines);
                 continue;
               }
