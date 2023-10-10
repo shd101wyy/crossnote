@@ -286,10 +286,9 @@ If your notebook has `.crossnote` directory, then when you run `await Notebook.i
 ## Development
 
 1.  Clone this project.
-2.  Make sure you have `nodejs 16` and `yarn` installed.
-3.  Run `yarn install` from shell.
-4.  Run `yarn build:watch` to start the watch mode.
-5.  Run `yarn build` to build the project.
+2.  Run `yarn install` from shell.
+3.  Run `yarn build:watch` to start the watch mode.
+4.  Run `yarn build` to build the project.
 
 Or
 
