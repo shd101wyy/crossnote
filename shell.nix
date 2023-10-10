@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> { } }:
 with pkgs;
 mkShell {
-  buildInputs = [ nodejs_20 yarn ];
+  buildInputs = [ nodejs-16_x yarn ];
   shellHook = ''
     # ...
   '';
