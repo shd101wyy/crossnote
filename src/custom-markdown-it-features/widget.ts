@@ -39,10 +39,10 @@ export default (md: MarkdownIt, notebook: Notebook) => {
     if (token.children && token.children[0]?.content === '@embedding') {
       const error = token.attrGet('error') ?? '';
       if (error) {
-        return atob(error);
+        return decodeURIComponent(atob(error));
       } else {
         const embedding = token.attrGet('embedding') ?? '';
-        const decoded = atob(embedding);
+        const decoded = decodeURIComponent(atob(embedding));
 
         if (
           src &&

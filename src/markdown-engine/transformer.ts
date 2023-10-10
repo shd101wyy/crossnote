@@ -941,7 +941,7 @@ export async function transformMarkdown(
                 outputString +
                 `![@embedding](${filePath}){${stringifyBlockAttributes({
                   ...config,
-                  embedding: btoa(output),
+                  embedding: btoa(encodeURIComponent(output)),
                 })}}` +
                 '\n';
             }
@@ -960,7 +960,7 @@ export async function transformMarkdown(
                 outputString +
                 `![@embedding](${filePath}){${stringifyBlockAttributes({
                   ...config,
-                  error: btoa(output),
+                  error: btoa(encodeURIComponent(output)),
                 })}}` +
                 '\n';
             }
