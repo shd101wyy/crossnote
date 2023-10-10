@@ -39,7 +39,7 @@ export default function Footer() {
       data-theme={theme}
     >
       <div
-        className="w-full flex flex-row justify-between items-center backdrop-blur-xl rounded-md"
+        className="w-full flex flex-row justify-between items-center backdrop-blur-xl"
         style={{
           backgroundColor: getElementBackgroundColor(document.body),
         }}
