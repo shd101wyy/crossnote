@@ -6,7 +6,10 @@ module.exports = {
   transform: {
     '^.+\\.m?[tj]sx?$': 'ts-jest',
   },
-  transformIgnorePatterns: ['/node_modules/(?!escape-string-regexp)'],
+  transformIgnorePatterns: [
+    // '/node_modules/(?!\@sindresorhus/slugify)',
+    // '/node_modules/(?!escape-string-regexp)',
+  ],
   roots: ['test'],
   testMatch: ['**/?(*.)(spec|test).(j|t)s?(x)'],
   testEnvironment: 'node',

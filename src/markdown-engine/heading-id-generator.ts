@@ -1,4 +1,4 @@
-import slugify from '@sindresorhus/slugify';
+import uslug from 'uslug';
 
 export default class HeadingIdGenerator {
   private table: { [key: string]: number };
@@ -21,8 +21,10 @@ export default class HeadingIdGenerator {
       .trim()
       .replace(/~|。/g, '') // sanitize
       .replace(/``(.+?)``\s?/g, replacement)
-      .replace(/`(.*?)`\s?/g, replacement);
-    let slug = slugify(heading.replace(/\s/g, '~')).replace(/~/g, '-');
+      .replace(/`(.*?)`\s?/g, replacement)
+      .replace(/__(.+?)__\s?/g, replacement)
+      .replace(/_(.+?)_\s?/g, replacement);
+    let slug = uslug(heading.replace(/\s/g, '~')).replace(/~/g, '-');
     if (this.table[slug] >= 0) {
       this.table[slug] = this.table[slug] + 1;
       slug += '-' + this.table[slug];

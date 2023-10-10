@@ -68,13 +68,21 @@ const testCasesForHeaderIdGenerator: {
     input: 'foo11!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~bar',
     expected: 'foo11-_bar',
   },
+  {
+    input: 'The _Real_ Deal',
+    expected: 'the-real-deal',
+  },
+  {
+    input: 'The __Real__ Deal',
+    expected: 'the-real-deal-1',
+  },
 ];
 
 describe('header-id-generator', () => {
   const headerIdGenerator = new HeadingIdGenerator();
 
   testCasesForHeaderIdGenerator.map(({ input, expected }) => {
-    it(`generates header ID for ${input} correctly`, () => {
+    it(`generates header ID for |${input}| correctly`, () => {
       const actual: string = headerIdGenerator.generateId(input);
       expect(actual).toEqual(expected);
     });
