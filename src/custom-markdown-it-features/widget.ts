@@ -36,7 +36,7 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       }
     }
     */
-    if (token.children && token.children[0].content === '@embedding') {
+    if (token.children && token.children[0]?.content === '@embedding') {
       const error = token.attrGet('error') ?? '';
       if (error) {
         return atob(error);
