@@ -49,7 +49,7 @@ export interface TransformMarkdownOptions {
   filesCache: { [key: string]: string };
   useRelativeFilePath: boolean;
   forPreview: boolean;
-  embeddingFilesInMarkdownDirectly?: boolean;
+  usePandocParser?: boolean;
   forMarkdownExport?: boolean;
   protocolsWhiteListRegExp: RegExp | null;
   notSourceFile?: boolean;
@@ -236,7 +236,7 @@ export async function transformMarkdown(
     useRelativeFilePath = false,
     forPreview = false,
     forMarkdownExport = false,
-    embeddingFilesInMarkdownDirectly = false,
+    usePandocParser = false,
     protocolsWhiteListRegExp = null,
     notSourceFile = false,
     imageDirectoryPath = '',
@@ -432,7 +432,13 @@ export async function transformMarkdown(
                 lineNo = lineNo + newlines;
                 outputString =
                   outputString +
-                  `<span>[CROSSNOTESLIDE]</span>  ` +
+                  (usePandocParser
+                    ? `<p${
+                        canCreateAnchor()
+                          ? ` data-source-line="${lineNo - newlines + 1}"`
+                          : ''
+                      }><span>[CROSSNOTESLIDE]</span></p>  `
+                    : `<span>[CROSSNOTESLIDE]</span>  `) +
                   '\n'.repeat(newlines);
                 continue;
               }
@@ -542,7 +548,19 @@ export async function transformMarkdown(
         tocBracketEnabled = true;
         i = end + 1;
         lineNo = lineNo + 1;
-        outputString = outputString + `[CROSSNOTETOC]\n`;
+        outputString =
+          outputString +
+          (usePandocParser
+            ? `<p${
+                canCreateAnchor() ? ` data-source-line="${lineNo}"` : ''
+              }><span>[CROSSNOTETOC]</span></p>  \n`
+            : // NOTE: We need to differentiate between `usePandocParser` here because
+              // markdown-it will not render the next line below
+              // <p><span>[TOC]</span></p>
+              // so only set it as
+              // <span>[TOC]</span>
+              // for now
+              `<span>[CROSSNOTETOC]</span>  \n`);
         continue;
       }
       // ========== End: ToC ==========
@@ -769,7 +787,7 @@ export async function transformMarkdown(
                 filesCache,
                 useRelativeFilePath: false,
                 forPreview: false,
-                embeddingFilesInMarkdownDirectly,
+                usePandocParser,
                 forMarkdownExport,
                 protocolsWhiteListRegExp,
                 notSourceFile: true, // <= this is not the sourcefile
@@ -916,14 +934,14 @@ export async function transformMarkdown(
 
             i = end + 1;
             lineNo = lineNo + 1;
-            if (embeddingFilesInMarkdownDirectly) {
+            if (usePandocParser) {
               outputString = outputString + output + '\n';
             } else {
               outputString =
                 outputString +
                 `![@embedding](${filePath}){${stringifyBlockAttributes({
                   ...config,
-                  embedding: btoa(output),
+                  embedding: btoa(encodeURIComponent(output)),
                 })}}` +
                 '\n';
             }
@@ -935,14 +953,14 @@ export async function transformMarkdown(
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
             lineNo = lineNo + 1;
-            if (embeddingFilesInMarkdownDirectly) {
+            if (usePandocParser) {
               outputString = outputString + output + '\n';
             } else {
               outputString =
                 outputString +
                 `![@embedding](${filePath}){${stringifyBlockAttributes({
                   ...config,
-                  error: btoa(output),
+                  error: btoa(encodeURIComponent(output)),
                 })}}` +
                 '\n';
             }

@@ -2211,7 +2211,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     useRelativeFilePath: boolean,
   ) {
     let slides = html.split(
-      /^\s*<p[^>]*><span>\[CROSSNOTESLIDE\]<\/span><\/p>\s*/gm,
+      /^\s*(?:<p[^>]*>)?<span>\[CROSSNOTESLIDE\]<\/span>(?:<\/p>)?\s*/gm,
     );
 
     const before = slides[0];
@@ -2302,7 +2302,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     `;
   }
 
-  public async pandocRender(
+  private async pandocRender(
     text: string = '',
     args: string[],
   ): Promise<string> {
@@ -2335,7 +2335,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let inCodeBlock = false;
     let codeBlockSpacesAhead = 0;
     while (i < lines.length) {
-      let line = lines[i];
+      const line = lines[i];
       const match = line.match(/(^\s*)```/);
       if (match) {
         inCodeBlock = !inCodeBlock;
@@ -2367,10 +2367,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
         i += 1;
         continue;
-      }
-
-      if (line.match(/^\[toc\]/i) && !inCodeBlock) {
-        line = '[CROSSNOTETOC]';
       }
 
       outputString += line + '\n';
@@ -2437,13 +2433,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     // import external files and insert anchors if necessary
-    let outputString;
-    let slideConfigs;
-    let tocBracketEnabled;
-    let JSAndCssFiles;
-    let headings;
-    let frontMatterString;
-    ({
+
+    let {
       outputString,
       // eslint-disable-next-line prefer-const
       slideConfigs,
@@ -2458,12 +2449,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
       projectDirectoryPath: this.projectDirectoryPath.fsPath,
       forPreview: options.isForPreview,
-      embeddingFilesInMarkdownDirectly: this.notebook.config.usePandocParser,
+      usePandocParser: this.notebook.config.usePandocParser,
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
       notebook: this.notebook,
-    }));
+    });
 
     if (this.notebook.config.parserConfig['onDidTransformMarkdown']) {
       outputString =
@@ -2511,7 +2502,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         }
 
         args = this.notebook.config.pandocArguments.concat(args);
-
         html = await this.pandocRender(outputString, args);
       } catch (error) {
         html = `<pre class="language-text"><code>${escape(
@@ -2542,27 +2532,36 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const ordered = tocConfig['ordered'];
 
     // Collaposible ToC
-    this.tocHTML = generateSidebarToCHTML(
-      headings,
-      this.notebook.md.render.bind(this.notebook.md),
-      { ordered, depthFrom, depthTo, tab: '  ' },
-    );
+    // NOTE: We disable the source map here.
+    const sidebarTocMd = this.notebook.initMarkdownIt({
+      ...this.notebook.md.options,
+      sourceMap: false,
+    });
+    this.tocHTML = generateSidebarToCHTML(headings, sidebarTocMd, {
+      ordered,
+      depthFrom,
+      depthTo,
+      tab: '  ',
+    });
 
     // }
     this.headings = headings; // reset headings information
 
     if (tocBracketEnabled) {
       // [TOC]
-      html = html.replace(/^\s*<p[^>]+>\[CROSSNOTETOC\]<\/p>\s*/gm, ($0) => {
-        // Check if $0 has `data-source-line` attribute
-        const match = $0.match(/data-source-line="(\d+)"/);
-        const lineNo = match ? match[1] : '';
-        if (lineNo) {
-          return `<div data-source-line="${lineNo}">${this.tocHTML}</div>`;
-        } else {
-          return this.tocHTML;
-        }
-      });
+      html = html.replace(
+        /^\s*(?:<p[^>]*>)?<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
+        ($0) => {
+          // Check if $0 has `data-source-line` attribute
+          const match = $0.match(/data-source-line="(\d+)"/);
+          const lineNo = match ? match[1] : '';
+          if (lineNo) {
+            return `<div data-source-line="${lineNo}">${this.tocHTML}</div>`;
+          } else {
+            return this.tocHTML;
+          }
+        },
+      );
     }
 
     /**

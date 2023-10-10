@@ -1,6 +1,6 @@
 {
   "name": "crossnote",
-  "version": "0.8.23",
+  "version": "0.8.24",
   "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
@@ -12,6 +12,9 @@
     "kachkaev",
     "gabyx"
   ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "exports": {
     ".": {
       "import": "./out/esm/index.mjs",
@@ -136,6 +139,7 @@
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "@types/temp": "^0.9.1",
+    "@types/uslug": "^1.0.2",
     "@types/vfile": "^3.0.2",
     "@types/vscode": "1.80.0",
     "@types/vscode-webview": "^1.57.2",

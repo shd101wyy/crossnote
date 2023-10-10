@@ -3,14 +3,15 @@ import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
 import readingTime from 'reading-time/lib/reading-time';
 import PreviewContainer from '../containers/preview';
+import { getElementBackgroundColor } from '../lib/utility';
 
 export default function Footer() {
   const {
     showContextMenu,
-    isMobile,
-    isMouseOverPreview,
-    isPresentationMode,
     setShowBacklinks,
+    isPresentationMode,
+    isMouseOverPreview,
+    isMobile,
     showBacklinks,
     theme,
     markdown,
@@ -32,20 +33,31 @@ export default function Footer() {
   return (
     <div
       className={classNames(
-        'footer fixed bottom-0 w-full z-50 pr-2 bg-transparent select-none',
-        isMobile || isMouseOverPreview ? '' : 'hidden',
+        'footer fixed bottom-0 w-full z-50 pr-2 bg-transparent select-none h-7',
         isPresentationMode ? 'hidden' : '',
       )}
       data-theme={theme}
     >
-      <div className="w-full flex flex-row justify-between items-center backdrop-blur-xl rounded-md">
+      <div
+        className="w-full flex flex-row justify-between items-center backdrop-blur-xl"
+        style={{
+          backgroundColor: getElementBackgroundColor(document.body),
+        }}
+      >
         {readingTimeEstimation && (
-          <div className="p-2 ml-2 text-xs">{readingTimeEstimation.text}</div>
+          <div className={classNames('p-1 ml-2 text-xs')}>
+            {readingTimeEstimation.text}
+          </div>
         )}
-        <div className="flex flex-row justify-end items-center">
+        <div
+          className={classNames(
+            'flex flex-row justify-end items-center',
+            isMobile || isMouseOverPreview ? '' : 'invisible',
+          )}
+        >
           <div
             className={classNames(
-              'p-2 cursor-pointer hover:text-primary w-5 h-5',
+              'p-1 cursor-pointer hover:text-primary w-5 h-5',
               showBacklinks ? 'text-primary font-bold' : '',
             )}
             title="Toggle backlinks"
@@ -56,7 +68,7 @@ export default function Footer() {
             <LinkIcon className="w-5 h-5"></LinkIcon>
           </div>
           <div
-            className="p-2 cursor-pointer hover:text-primary w-5 h-5"
+            className="p-1 cursor-pointer hover:text-primary w-5 h-5"
             title={'Open menu'}
             onClick={(event) => {
               showContextMenu({

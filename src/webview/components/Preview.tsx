@@ -61,6 +61,9 @@ export default function Preview() {
         className={'crossnote markdown-preview'}
         data-for="preview"
         ref={previewElement}
+        style={{
+          marginBottom: isPresentationMode ? undefined : '28px', // 28px is the height of footer
+        }}
       ></div>
       {/** Backlinks */}
       {showBacklinks && !isPresentationMode && <Backlinks></Backlinks>}

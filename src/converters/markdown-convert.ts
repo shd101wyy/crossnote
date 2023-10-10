@@ -238,7 +238,7 @@ export async function markdownConvert(
     useRelativeFilePath,
     filesCache,
     forPreview: false,
-    embeddingFilesInMarkdownDirectly: true,
+    usePandocParser: true, // NOTE: We need to set this to true here even though we don't use pandoc to parse the markdown.
     forMarkdownExport: true,
     protocolsWhiteListRegExp,
     imageDirectoryPath,
@@ -263,7 +263,7 @@ export async function markdownConvert(
       tab: '  ',
     });
     text = text.replace(
-      /^\s*\[CROSSNOTETOC\]\s*/gm,
+      /^\s*(?:<p[^>]*>)?<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
       '\n\n' + tocMarkdown + '\n\n',
     );
   }

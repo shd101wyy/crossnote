@@ -1193,6 +1193,11 @@
   resolved "https://registry.yarnpkg.com/@types/unist/-/unist-2.0.8.tgz#bb197b9639aa1a04cf464a617fe800cccd92ad5c"
   integrity sha512-d0XxK3YTObnWVp6rZuev3c49+j4Lo8g4L1ZRm9z5L0xpoZycUPshHgczK5gsUMaZOstjVYYi09p5gYvUtfChYw==
 
+"@types/uslug@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@types/uslug/-/uslug-1.0.2.tgz#916558d9e4d686e2615e493f2908257b39a0c2c3"
+  integrity sha512-Ms3afsCUtzcD6oK75mMQxEtNdRi8sHnBfwEgomBO7J9CDjNePK+on8irtGY/K1YwyCAds6qSCTLvZQYw9SvhQg==
+
 "@types/vfile-message@*":
   version "2.0.0"
   resolved "https://registry.npm.taobao.org/@types/vfile-message/download/@types/vfile-message-2.0.0.tgz#690e46af0fdfc1f9faae00cd049cc888957927d5"
@@ -9388,8 +9393,8 @@ universalify@^2.0.0:
 
 "unorm@>= 1.0.0":
   version "1.6.0"
-  resolved "https://registry.npm.taobao.org/unorm/download/unorm-1.6.0.tgz#029b289661fba714f1a9af439eb51d9b16c205af"
-  integrity sha1-ApsolmH7pxTxqa9DnrUdmxbCBa8=
+  resolved "https://registry.yarnpkg.com/unorm/-/unorm-1.6.0.tgz#029b289661fba714f1a9af439eb51d9b16c205af"
+  integrity sha512-b2/KCUlYZUeA7JFUuRJZPUtr4gZvBh7tavtv4fvk4+KV9pfGiR6CQAQAWl49ZpR3ts2dk4FYkP7EIgDJoiOLDA==
 
 unpipe@1.0.0:
   version "1.0.0"

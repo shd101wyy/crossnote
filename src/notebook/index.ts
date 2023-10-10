@@ -20,6 +20,7 @@ import useMarkdownItSourceMap from '../custom-markdown-it-features/sourcemap';
 import useMarkdownItWidget from '../custom-markdown-it-features/widget';
 import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
 import { MarkdownEngine } from '../markdown-engine';
+import { replaceVariablesInString } from '../utility';
 import { loadConfigsInDirectory, wrapNodeFSAsApi } from './config-helper';
 import { matter, matterStringify } from './markdown';
 import { FilePath, Mentions, Note, NoteConfig, Notes } from './note';
@@ -191,29 +192,31 @@ export class Notebook {
   }
 
   private interpolateConfig() {
-    const pattern = /\${\s*(\w+?)\s*}/g; // Replace ${property}
-
     const replacements = {
-      projectDir: this.notebookPath,
-      workspaceFolder: this.notebookPath, // vscode abreviation
+      projectDir: this.notebookPath.fsPath,
+      workspaceFolder: this.notebookPath.fsPath, // vscode abreviation
     };
 
     // Replace certains paths
-    this.config.imageFolderPath = this.config.imageFolderPath?.replace(
-      pattern,
-      (match, token) => replacements[token] || match,
+    this.config.imageFolderPath = replaceVariablesInString(
+      this.config.imageFolderPath,
+      replacements,
     );
-    this.config.imageMagickPath = this.config.imageMagickPath?.replace(
-      pattern,
-      (match, token) => replacements[token] || match,
+    this.config.imageMagickPath = replaceVariablesInString(
+      this.config.imageMagickPath,
+      replacements,
     );
-    this.config.chromePath = this.config.chromePath?.replace(
-      pattern,
-      (match, token) => replacements[token] || match,
+    this.config.chromePath = replaceVariablesInString(
+      this.config.chromePath,
+      replacements,
     );
-    this.config.plantumlJarPath = this.config.plantumlJarPath?.replace(
-      pattern,
-      (match, token) => replacements[token] || match,
+    this.config.pandocPath = replaceVariablesInString(
+      this.config.pandocPath,
+      replacements,
+    );
+    this.config.plantumlJarPath = replaceVariablesInString(
+      this.config.plantumlJarPath,
+      replacements,
     );
   }
 
