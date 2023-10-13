@@ -83,7 +83,9 @@ export default async function enhance({
     if (
       normalizedInfo.attributes['literate'] === false ||
       normalizedInfo.attributes['cmd'] === false ||
-      (supportedLanguages.indexOf(normalizedInfo.language) === -1 && !isKroki)
+      (supportedLanguages.indexOf(normalizedInfo.language) === -1 &&
+        !isKroki) ||
+      normalizedInfo.attributes['code_block'] === true
     ) {
       return;
     }
@@ -271,7 +273,7 @@ async function renderDiagram({
               spec = JSON.parse(rawSpec);
             }
             $output = hiddenCode(
-              JSON.stringify(spec).replace('<', '&lt;'),
+              escape(JSON.stringify(spec)),
               normalizedInfo.attributes,
               normalizedInfo.language,
             );
@@ -283,7 +285,7 @@ async function renderDiagram({
               svg = await vegaFunctionToCall(code, fileDirectoryPath);
               graphsCache[checksum] = svg; // store to new cache
             }
-            $output = `<p ${stringifyBlockAttributes(
+            $output = `<p data-processed ${stringifyBlockAttributes(
               normalizedInfo.attributes,
             )}>${svg}</p>`;
           }

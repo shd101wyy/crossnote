@@ -1,3 +1,4 @@
+import structuredClone from '@ungap/structured-clone';
 import * as child_process from 'child_process';
 import * as path from 'path';
 import Sval from 'sval';
@@ -7,6 +8,11 @@ import * as vm from 'vm';
 import * as vscode from 'vscode';
 import * as YAML from 'yaml';
 import { BlockInfo } from './lib/block-info';
+
+// Polyfill structuredClone if it's not supported
+if (!('structuredClone' in globalThis)) {
+  globalThis.structuredClone = structuredClone;
+}
 
 temp.track();
 

@@ -29,6 +29,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - Fixed the bug of not rendering the `@import` file:
   - https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1832
   - https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1834
+- Fixed rendering the vega and vega-lite diagrams.
 
 ## [0.8.24] - 2023-10-10
 

@@ -1,8 +1,8 @@
 /**
  * Convert vega-lite to vega first, then render to svg.
  */
-import * as vl from 'vega-lite';
 import * as YAML from 'yaml';
+import * as vl from '../../dependencies/vega-lite/vega-lite.min.js';
 import * as utility from '../utility';
 import * as vega from './vega';
 
@@ -18,7 +18,8 @@ export async function toSVG(spec: string = '', baseURL: string = '') {
 
   return utility.allowUnsafeEval(() => {
     return utility.allowUnsafeNewFunction(() => {
-      return vega.toSVG(JSON.stringify(vl.compile(d).spec), baseURL);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return vega.toSVG(JSON.stringify((vl as any).compile(d).spec), baseURL);
     });
   });
 }

@@ -6,6 +6,7 @@ import {
   uploadImage,
   useExternalAddFileProtocolFunction,
 } from './utility';
+
 export const utility = {
   addFileProtocol,
   getCrossnoteBuildDirectory,
