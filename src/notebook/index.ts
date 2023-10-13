@@ -1,4 +1,5 @@
 import { Mutex } from 'async-mutex';
+import * as caseAnything from 'case-anything';
 import MarkdownIt from 'markdown-it';
 import MarkdownItAbbr from 'markdown-it-abbr';
 import MarkdownItDeflist from 'markdown-it-deflist';
@@ -326,15 +327,9 @@ export class Notebook {
         const token = tokens[i];
         if (token.type === 'wikilink') {
           // TODO: Support normal links
-          const arr = token.content.split('|');
-          let text, link: string;
-          if (this.config.useGitHubStylePipedLink) {
-            text = arr[0].trim();
-            link = (arr.length > 1 ? arr[1] : arr[0]).trim();
-          } else {
-            text = (arr.length > 1 ? arr[1] : arr[0]).trim();
-            link = arr[0].trim();
-          }
+          const r = this.processWikilink(token.content);
+          const { text } = r;
+          let { link } = r;
 
           if (link.match(/https?:\/\//)) {
             // TODO: Ignore more protocols
@@ -731,5 +726,65 @@ export class Notebook {
     for (const filePath in this.markdownEngines) {
       this.markdownEngines[filePath].clearCaches();
     }
+  }
+
+  /**
+   * Process wiki link
+   * @param content content is string like "Test", "test.md | Test"
+   * @returns
+   */
+  public processWikilink(content: string): { text: string; link: string } {
+    const splits = content.split('|');
+    let link: string;
+    let text: string;
+    if (splits.length === 1) {
+      text = splits[0].trim();
+      link = text;
+    } else {
+      if (this.config.useGitHubStylePipedLink) {
+        text = splits[0].trim();
+        link = splits[1].trim();
+      } else {
+        text = splits[1].trim();
+        link = splits[0].trim();
+      }
+    }
+
+    // parse hash from link
+    const hashIndex = link.lastIndexOf('#');
+    let hash = '';
+    if (hashIndex >= 0) {
+      hash = link.slice(hashIndex);
+      link = link.slice(0, hashIndex);
+    }
+
+    // transform file name if needed
+    const parsed = path.parse(link);
+    let fileName = parsed.name;
+    let fileExtension = parsed.ext;
+
+    // NOTE: The approach below might not work well for
+    // link like `0.7.4` as `.4` is detected as the file extension.
+    if (fileExtension.match(/^\.\d+$/)) {
+      fileName += fileExtension;
+      fileExtension = '';
+    }
+
+    if (
+      this.config.wikiLinkTargetFileNameChangeCase !== 'none' &&
+      this.config.wikiLinkTargetFileNameChangeCase in caseAnything
+    ) {
+      fileName =
+        caseAnything[this.config.wikiLinkTargetFileNameChangeCase](fileName);
+    }
+    if (!fileExtension) {
+      fileExtension = this.config.wikiLinkTargetFileExtension;
+    }
+    link = path.join(parsed.dir, fileName + fileExtension);
+    if (hash) {
+      link += hash;
+    }
+
+    return { link, text };
   }
 }

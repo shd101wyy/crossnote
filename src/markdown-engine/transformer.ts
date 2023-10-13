@@ -591,17 +591,23 @@ export async function transformMarkdown(
       // =========== Start: File import ============
       const importMatch = line.match(/^(\s*)@import(\s+)"([^"]+)";?/);
       const imageImportMatch = line.match(
-        /^(\s*)!\[([^\]]*)\]\(([^)]*)\)(?:{([^}]*)})?\s*$/,
+        /^(\s*)!\[([^\]]*)\]\(([^)]+)\)(?:{([^}]*)})?\s*$/,
       );
-      if (importMatch || imageImportMatch) {
+      const wikilinkImportMatch = line.match(
+        /^(\s*)!\[\[(.+?)\]\](?:{([^}]*)})?\s*$/,
+      );
+      if (importMatch || imageImportMatch || wikilinkImportMatch) {
         let filePath = '';
         if (importMatch) {
           outputString += importMatch[1];
           filePath = importMatch[3].trim();
-        }
-        if (imageImportMatch) {
+        } else if (imageImportMatch) {
           outputString += imageImportMatch[1];
           filePath = imageImportMatch[3].trim().replace(/\s"[^"]*"\s*$/, '');
+        } else if (wikilinkImportMatch) {
+          outputString += wikilinkImportMatch[1];
+          const { link } = notebook.processWikilink(wikilinkImportMatch[2]);
+          filePath = link;
         }
 
         let config: BlockAttributes = {};
@@ -638,7 +644,7 @@ export async function transformMarkdown(
             extname,
           ) >= 0
         ) {
-          if (importMatch) {
+          if (importMatch || wikilinkImportMatch) {
             // image
             let imageSrc: string = filesCache[filePath];
 
