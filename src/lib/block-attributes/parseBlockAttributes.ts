@@ -43,9 +43,10 @@ const extractStringWithBrackets = (text, start): Node | void => {
 
 const extractStringInQuotes = (text, start): Node | void => {
   const quote = text[start];
-  if (!'\'"`'.includes(quote)) {
+  if (!'\'"“`'.includes(quote)) {
     return;
   }
+  const endQuote = quote === '“' ? '”' : quote;
   let end = start + 1;
   const chars: string[] = [];
   while (end < text.length) {
@@ -56,7 +57,7 @@ const extractStringInQuotes = (text, start): Node | void => {
       end += 2;
       continue;
     }
-    if (text[end] === quote) {
+    if (text[end] === endQuote) {
       end += 1;
       break;
     }
