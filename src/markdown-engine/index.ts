@@ -107,7 +107,11 @@ export interface HTMLTemplateOption {
 const dependentLibraryMaterials = [
   {
     key: 'vega-embed',
-    version: '6.22.2',
+    version: '6.23.0',
+  },
+  {
+    key: 'vega-lite',
+    version: '5.16.1',
   },
 ];
 
@@ -884,6 +888,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
       }
       for (var i = 0; i < vegaEls.length; i++) {
         const vegaEl = vegaEls[i]
+        if (vegaEl.hasAttribute("data-processed")) {
+          continue;
+        }
         try {
           var spec = JSON.parse(vegaEl.textContent);
           vegaEmbed(vegaEl, spec, { actions: false, renderer: 'svg' })

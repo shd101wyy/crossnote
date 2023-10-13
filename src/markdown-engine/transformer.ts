@@ -590,13 +590,29 @@ export async function transformMarkdown(
       // ========== End: Task List Checkbox ==========
       // =========== Start: File import ============
       const importMatch = line.match(/^(\s*)@import(\s+)"([^"]+)";?/);
-      if (importMatch) {
-        outputString += importMatch[1];
-        const filePath = importMatch[3].trim();
+      const imageImportMatch = line.match(
+        /^(\s*)!\[([^\]]*)\]\(([^)]+)\)(?:{([^}]*)})?\s*$/,
+      );
+      const wikilinkImportMatch = line.match(
+        /^(\s*)!\[\[(.+?)\]\](?:{([^}]*)})?\s*$/,
+      );
+      if (importMatch || imageImportMatch || wikilinkImportMatch) {
+        let filePath = '';
+        if (importMatch) {
+          outputString += importMatch[1];
+          filePath = importMatch[3].trim();
+        } else if (imageImportMatch) {
+          outputString += imageImportMatch[1];
+          filePath = imageImportMatch[3].trim().replace(/\s"[^"]*"\s*$/, '');
+        } else if (wikilinkImportMatch) {
+          outputString += wikilinkImportMatch[1];
+          const { link } = notebook.processWikilink(wikilinkImportMatch[2]);
+          filePath = link;
+        }
 
-        const leftParen = line.indexOf('{');
         let config: BlockAttributes = {};
         let configStr = '';
+        const leftParen = line.indexOf('{');
         if (leftParen > 0) {
           const rightParen = line.lastIndexOf('}');
           if (rightParen > 0) {
@@ -628,61 +644,65 @@ export async function transformMarkdown(
             extname,
           ) >= 0
         ) {
-          // image
-          let imageSrc: string = filesCache[filePath];
+          if (importMatch || wikilinkImportMatch) {
+            // image
+            let imageSrc: string = filesCache[filePath];
 
-          if (!imageSrc) {
-            if (
-              protocolsWhiteListRegExp &&
-              filePath.match(protocolsWhiteListRegExp)
-            ) {
-              imageSrc = filePath;
-            } else if (useRelativeFilePath) {
-              imageSrc =
-                path.relative(fileDirectoryPath, absoluteFilePath) +
-                '?' +
-                Math.random();
-            } else {
-              imageSrc =
-                '/' +
-                path.relative(projectDirectoryPath, absoluteFilePath) +
-                '?' +
-                Math.random();
+            if (!imageSrc) {
+              if (
+                protocolsWhiteListRegExp &&
+                filePath.match(protocolsWhiteListRegExp)
+              ) {
+                imageSrc = filePath;
+              } else if (useRelativeFilePath) {
+                imageSrc =
+                  path.relative(fileDirectoryPath, absoluteFilePath) +
+                  '?' +
+                  Math.random();
+              } else {
+                imageSrc =
+                  '/' +
+                  path.relative(projectDirectoryPath, absoluteFilePath) +
+                  '?' +
+                  Math.random();
+              }
+              // enchodeURI(imageSrc) is wrong. It will cause issue on Windows
+              // #414: https://github.com/shd101wyy/markdown-preview-enhanced/issues/414
+              imageSrc = imageSrc.replace(/ /g, '%20').replace(/\\/g, '/');
+              filesCache[filePath] = imageSrc;
             }
-            // enchodeURI(imageSrc) is wrong. It will cause issue on Windows
-            // #414: https://github.com/shd101wyy/markdown-preview-enhanced/issues/414
-            imageSrc = imageSrc.replace(/ /g, '%20').replace(/\\/g, '/');
-            filesCache[filePath] = imageSrc;
-          }
 
-          if (config) {
-            if (
-              config['width'] ||
-              config['height'] ||
-              config['class'] ||
-              config['id']
-            ) {
-              output = `<img src="${imageSrc}" `;
-              for (const key in config) {
-                // eslint-disable-next-line no-prototype-builtins
-                if (config.hasOwnProperty(key)) {
-                  output += ` ${key}="${config[key]}" `;
+            if (config) {
+              if (
+                config['width'] ||
+                config['height'] ||
+                config['class'] ||
+                config['id']
+              ) {
+                output = `<img src="${imageSrc}" `;
+                for (const key in config) {
+                  // eslint-disable-next-line no-prototype-builtins
+                  if (config.hasOwnProperty(key)) {
+                    output += ` ${key}="${config[key]}" `;
+                  }
                 }
+                output += '>';
+              } else {
+                output = '![';
+                if (config['alt']) {
+                  output += config['alt'];
+                }
+                output += `](${imageSrc}`;
+                if (config['title']) {
+                  output += ` "${config['title']}"`;
+                }
+                output += ')  ';
               }
-              output += '>';
             } else {
-              output = '![';
-              if (config['alt']) {
-                output += config['alt'];
-              }
-              output += `](${imageSrc}`;
-              if (config['title']) {
-                output += ` "${config['title']}"`;
-              }
-              output += ')  ';
+              output = `![](${imageSrc})  `;
             }
-          } else {
-            output = `![](${imageSrc})  `;
+          } else if (imageImportMatch) {
+            output = imageImportMatch[0]; // NOTE: Don't change anything here
           }
           i = end + 1;
           lineNo = lineNo + 1;

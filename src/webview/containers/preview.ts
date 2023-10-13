@@ -465,6 +465,9 @@ const PreviewContainer = createContainer(() => {
       }
       for (let i = 0; i < vegaElements.length; i++) {
         const vegaElement = vegaElements[i];
+        if (vegaElement.hasAttribute('data-processed')) {
+          continue;
+        }
         try {
           const spec = JSON.parse((vegaElement.textContent ?? '').trim());
           window['vegaEmbed'](vegaElement, spec, { actions: false }).catch(

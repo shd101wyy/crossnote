@@ -4,6 +4,33 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.0] - 2023-10-13
+
+### New features
+
+- Added two more syntaxes to import files in addition to the `@import` syntax. Please note that these syntaxes only work on new lines. For example, they won't work within list items.
+  - Use the image syntax but with other file extensions:
+    ```markdown
+    ![](path/to/file.md)
+    ![](path/to/test.py){.line-numbers}
+    ![](path/to/test.js){code_block=true}
+    ```
+  - Use the wikilink syntax but with other file extensions:
+    ```markdown
+    ![[file]]
+    ![[path/to/test.py]]{.line-numbers}
+    ![[path/to/test.js]]{code_block=true}
+    ```
+
+### Bug fixes
+
+- Fixed a header id generation bug https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1833
+- Fixed parsing block attributes from curly bracket when `enableTypographer` is enabled https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1823
+- Fixed the bug of not rendering the `@import` file:
+  - https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1832
+  - https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1834
+- Fixed rendering the vega and vega-lite diagrams.
+
 ## [0.8.24] - 2023-10-10
 
 ### Bug fixes
