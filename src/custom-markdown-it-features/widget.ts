@@ -1,6 +1,5 @@
 import MarkdownIt from 'markdown-it';
 import Renderer from 'markdown-it/lib/renderer';
-import path from 'path';
 import { Notebook } from '../notebook';
 
 /**
@@ -24,7 +23,7 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       return acc;
     }, {});
     */
-    const src = token.attrGet('src');
+    // const src = token.attrGet('src');
     /*
     if (src && alt && alt.startsWith("@")) {
       const widgetName = alt.slice(1);
@@ -44,22 +43,13 @@ export default (md: MarkdownIt, notebook: Notebook) => {
         const embedding = token.attrGet('embedding') ?? '';
         const decoded = decodeURIComponent(atob(embedding));
 
-        if (
-          src &&
-          notebook.config.markdownFileExtensions.includes(
-            path.extname(src ?? ''),
-          )
-        ) {
-          // NOTE: We disable the source map here.
-          const newMd = notebook.initMarkdownIt({
-            ...md.options,
-            sourceMap: false,
-          });
-          const rendered = newMd.render(decoded);
-          return rendered;
-        } else {
-          return decoded;
-        }
+        // NOTE: We disable the source map here.
+        const newMd = notebook.initMarkdownIt({
+          ...md.options,
+          sourceMap: false,
+        });
+        const rendered = newMd.render(decoded);
+        return rendered;
       }
     }
 
