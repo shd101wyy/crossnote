@@ -76,6 +76,22 @@ const testCasesForHeaderIdGenerator: {
     input: 'The __Real__ Deal',
     expected: 'the-real-deal-1',
   },
+  {
+    input: 'test_test_test',
+    expected: 'test_test_test',
+  },
+  {
+    input: 'test _test_ test',
+    expected: 'test-test-test',
+  },
+  {
+    input: 'test__test__test',
+    expected: 'test__test__test',
+  },
+  {
+    input: 'test __test__ test',
+    expected: 'test-test-test-1',
+  },
 ];
 
 describe('header-id-generator', () => {
