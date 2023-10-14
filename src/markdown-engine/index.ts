@@ -104,14 +104,19 @@ export interface HTMLTemplateOption {
   embedSVG?: boolean;
 }
 
+// NOTE: The order of the following matters.
 const dependentLibraryMaterials = [
   {
-    key: 'vega-embed',
-    version: '6.23.0',
+    key: 'vega',
+    version: '5.25.0',
   },
   {
     key: 'vega-lite',
     version: '5.16.1',
+  },
+  {
+    key: 'vega-embed',
+    version: '6.23.0',
   },
 ];
 

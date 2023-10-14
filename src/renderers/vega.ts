@@ -1,7 +1,9 @@
-import * as vega from 'vega';
 import { loader } from 'vega-loader';
 import * as YAML from 'yaml';
 import * as utility from '../utility';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const vega = require('../../dependencies/vega/vega.min.js');
 
 async function renderVega(spec: object, baseURL): Promise<string> {
   const svgHeader =
