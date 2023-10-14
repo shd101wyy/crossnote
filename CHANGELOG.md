@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.1] - 2023-10-14
+
+### Buf fixes
+
+- Fixed rendering vega and vega-lite. Also fixed `interactive=true` attribute for vega.
+
 ## [0.9.0] - 2023-10-13
 
 ### New features
