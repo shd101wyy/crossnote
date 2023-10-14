@@ -86,10 +86,7 @@ export async function run(
     return runInVm(content, normalizedAttributes);
   }
 
-  if (
-    cmd.match(/python/) &&
-    (normalizedAttributes['matplotlib'] || normalizedAttributes['mpl'])
-  ) {
+  if (normalizedAttributes['matplotlib'] || normalizedAttributes['mpl']) {
     content =
       `
 # -*- coding: utf-8 -*-
