@@ -637,13 +637,10 @@ export async function transformMarkdown(
           absoluteFilePath = path.resolve(fileDirectoryPath, filePath);
         }
 
-        const extname = path.extname(filePath).toLocaleLowerCase();
+        const extname = path.extname(filePath);
         let output = '';
-        if (
-          ['.jpeg', '.jpg', '.gif', '.png', '.apng', '.svg', '.bmp'].indexOf(
-            extname,
-          ) >= 0
-        ) {
+        // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types#common_image_file_types
+        if (extname.match(/^\.(apng|avif|gif|jpeg|jpg|png|svg|bmp|webp)/i)) {
           if (importMatch || wikilinkImportMatch) {
             // image
             let imageSrc: string = filesCache[filePath];
