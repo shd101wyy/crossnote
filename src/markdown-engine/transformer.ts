@@ -58,6 +58,7 @@ export interface TransformMarkdownOptions {
   headingIdGenerator?: HeadingIdGenerator;
   notebook: Notebook;
   forJest?: boolean;
+  timestamp?: number;
 }
 
 const fileExtensionToLanguageMap = {
@@ -245,6 +246,7 @@ export async function transformMarkdown(
     notebook,
     forJest = false,
     fileHash,
+    timestamp,
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
   // Replace CRLF with LF
@@ -593,7 +595,7 @@ export async function transformMarkdown(
       // =========== Start: File import ============
       const importMatch = line.match(/^(\s*)@import(\s+)"([^"]+)";?/);
       const imageImportMatch = line.match(
-        /^(\s*)!\[([^\]]*)\]\(([^)]+)\)(?:{([^}]*)})?\s*$/,
+        /^(\s*)!\[([^\]]*)\]\(([^)]+)\)(?:{([^}]*)})?(\s*)$/,
       );
       const wikilinkImportMatch = line.match(
         /^(\s*)!\[\[(.+?)\]\](?:{([^}]*)})?\s*$/,
@@ -626,6 +628,9 @@ export async function transformMarkdown(
             }
           }
         }
+        if (canCreateAnchor()) {
+          config['data-source-line'] = lineNo + 1;
+        }
 
         let absoluteFilePath: string;
         if (
@@ -648,14 +653,12 @@ export async function transformMarkdown(
         const extname = path.extname(absoluteFilePath).toLocaleLowerCase();
         let output = '';
         if (filePath === '[TOC]') {
-          if (!config) {
-            config = {
-              // same case as in normalized attributes
-              ['depth_from']: 1,
-              ['depth_to']: 6,
-              ['ordered_list']: true,
-            };
-          }
+          /*
+          // NOTE: No need to set this
+          config['depth_from'] = config['depth_from'] ?? 1;
+          config['depth_to'] = config['depth_to'] ?? 6;
+          config['ordered_list'] = config['ordered_list'] ?? true;
+          */
           config['cmd'] = 'toc';
           config['hide'] = true;
           config['run_on_save'] = true;
@@ -693,13 +696,13 @@ export async function transformMarkdown(
                 imageSrc =
                   path.relative(fileDirectoryPath, absoluteFilePath) +
                   '?' +
-                  Math.random();
+                  (timestamp ?? Math.random());
               } else {
                 imageSrc =
                   '/' +
                   path.relative(projectDirectoryPath, absoluteFilePath) +
                   '?' +
-                  Math.random();
+                  (timestamp ?? Math.random());
               }
               // enchodeURI(imageSrc) is wrong. It will cause issue on Windows
               // #414: https://github.com/shd101wyy/markdown-preview-enhanced/issues/414
@@ -707,37 +710,28 @@ export async function transformMarkdown(
               filesCache[filePath] = imageSrc;
             }
 
-            if (config) {
-              if (
-                config['width'] ||
-                config['height'] ||
-                config['class'] ||
-                config['id']
-              ) {
-                output = `<img src="${imageSrc}" `;
-                for (const key in config) {
-                  // eslint-disable-next-line no-prototype-builtins
-                  if (config.hasOwnProperty(key)) {
-                    output += ` ${key}="${config[key]}" `;
-                  }
-                }
-                output += '>';
-              } else {
-                output = '![';
-                if (config['alt']) {
-                  output += config['alt'];
-                }
-                output += `](${imageSrc}`;
-                if (config['title']) {
-                  output += ` "${config['title']}"`;
-                }
-                output += ')  ';
-              }
+            output = '![';
+            if (config['alt']) {
+              output += config['alt'];
+              delete config['alt'];
+            }
+            output += `](${imageSrc}`;
+            if (config['title']) {
+              output += ` "${config['title']}"`;
+              delete config['title'];
+            }
+            output += ')';
+            const configStr = stringifyBlockAttributes(config);
+            if (configStr) {
+              output += `{${configStr}}  `;
             } else {
-              output = `![](${imageSrc})  `;
+              output += '  ';
             }
           } else if (imageImportMatch) {
-            output = imageImportMatch[0]; // NOTE: Don't change anything here
+            const configStr = stringifyBlockAttributes(config);
+            output = `![${imageImportMatch[2] ?? ''}](${
+              imageImportMatch[3] ?? ''
+            })${configStr ? `{${configStr}}` : ''}${imageImportMatch[5]}`;
           }
           i = end + 1;
           lineNo = lineNo + 1;
@@ -756,7 +750,7 @@ export async function transformMarkdown(
             );
             filesCache[absoluteFilePath] = fileContent;
 
-            if (config && (config['line_begin'] || config['line_end'])) {
+            if (config['line_begin'] || config['line_end']) {
               const lines = fileContent.split(/\n/);
               fileContent = lines
                 .slice(
@@ -766,7 +760,7 @@ export async function transformMarkdown(
                 .join('\n');
             }
 
-            if (config && config['code_block']) {
+            if (config['code_block']) {
               const fileExtension = extname.slice(1, extname.length);
               output = `\`\`\`${
                 config['as'] ||
@@ -775,7 +769,7 @@ export async function transformMarkdown(
               } ${stringifyBlockAttributes(
                 config,
               )}  \n${fileContent}\n\`\`\`  `;
-            } else if (config && config['cmd']) {
+            } else if (config['cmd']) {
               if (!config['id']) {
                 // create `id` for code chunk
                 config['id'] = computeChecksum(absoluteFilePath);
@@ -880,7 +874,7 @@ export async function transformMarkdown(
               // css or less file
               output = `<style>${fileContent}</style>`;
             } else if (extname === '.pdf') {
-              if (config && config['page_no']) {
+              if (config['page_no']) {
                 // only disply the nth page. 1-indexed
                 const pages = fileContent.split('\n');
                 let pageNo = parseInt(config['page_no'], 10) - 1;
@@ -943,11 +937,8 @@ export async function transformMarkdown(
                     output = "<script>${fileContent}</script>"
               */
               // # codeblock
-              let aS = null;
-              if (config) {
-                aS = config['as'];
-              }
-              if (config && config['code_block'] === false) {
+              const aS = config['as'] ?? null;
+              if (config['code_block'] === false) {
                 // https://github.com/shd101wyy/markdown-preview-enhanced/issues/916
                 output = fileContent;
               } else {
@@ -1001,44 +992,6 @@ export async function transformMarkdown(
       // =========== End: File import ============
       // =========== Start: Normal line ============
       else {
-        // =========== Start: Add attributes to links and images ========
-        if (canCreateAnchor()) {
-          let newLine = '';
-          let restLine = line;
-          const regexp = /!?\[([^\]]*)\]\(([^)]*)\)/;
-          // Add and data-source-line to links and images {...} attributes
-          // eslint-disable-next-line no-constant-condition
-          while (true) {
-            const match = restLine.match(regexp);
-            if (!match || typeof match.index !== 'number') {
-              newLine = newLine + restLine;
-              break;
-            } else {
-              newLine =
-                newLine + restLine.substring(0, match.index + match[0].length);
-              restLine = restLine.substring(match.index + match[0].length);
-
-              if (restLine[0] === '{') {
-                // Might find attribute
-                // TODO: Write a generic parser for this
-                const end = restLine.indexOf('}');
-                if (end > 0) {
-                  const attributeString = restLine.substring(1, end);
-                  newLine += `{data-source-line="${
-                    lineNo + 1
-                  }" ${attributeString}}`;
-                  restLine = restLine.substring(end + 1);
-                }
-              } else {
-                newLine += `{data-source-line="${lineNo + 1}"}`;
-              }
-            }
-          }
-          line = newLine;
-        }
-
-        // =========== End: Add attributes to links and images ========
-
         i = end + 1;
         lineNo = lineNo + 1;
         outputString = outputString + line + '\n';
