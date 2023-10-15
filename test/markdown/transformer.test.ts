@@ -32,8 +32,9 @@ describe('test markdown transformer', () => {
           projectDirectoryPath: path.join(__dirname, './test-files'),
           filesCache: {},
           useRelativeFilePath: false,
-          protocolsWhiteListRegExp: null,
+          protocolsWhiteListRegExp: /^(https?)/,
           forJest: true,
+          timestamp: 12345,
         });
       };
 

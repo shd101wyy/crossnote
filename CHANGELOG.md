@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.3] - 2023-10-15
+
+### Bug fixes
+
+- Better handling of source map for importing files.
+
 ## [0.9.2] - 2023-10-15
 
 ### New features
