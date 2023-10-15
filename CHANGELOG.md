@@ -4,6 +4,13 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.2] - 2023-10-15
+
+### Bug fixes
+
+- URL fragments on image links do not load: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1837
+- Supported matplotlib-type preview for other Python tools like `pipenv`: https://github.com/shd101wyy/crossnote/issues/332
+
 ## [0.9.1] - 2023-10-14
 
 ### Buf fixes

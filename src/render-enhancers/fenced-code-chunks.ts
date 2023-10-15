@@ -240,7 +240,10 @@ export async function runCodeChunk(
     // set output format for a few special cases
     if (cmd.match(/(la)?tex/) || cmd === 'pdflatex') {
       outputFormat = 'markdown';
-    } else if (normalizedAttributes['matplotlib'] || normalizedAttributes['mpl']) {
+    } else if (
+      normalizedAttributes['matplotlib'] ||
+      normalizedAttributes['mpl']
+    ) {
       outputFormat = 'markdown';
     } else if (codeChunkData.normalizedInfo.attributes['output']) {
       outputFormat = codeChunkData.normalizedInfo.attributes['output'];
