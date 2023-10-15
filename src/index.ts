@@ -1,3 +1,4 @@
+import HeadingIdGenerator from './markdown-engine/heading-id-generator';
 import {
   addFileProtocol,
   getCrossnoteBuildDirectory,
@@ -23,3 +24,4 @@ export {
   loadConfigsInDirectory,
   wrapNodeFSAsApi,
 } from './notebook/config-helper';
+export { HeadingIdGenerator };
