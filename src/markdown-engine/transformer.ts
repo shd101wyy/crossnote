@@ -647,8 +647,35 @@ export async function transformMarkdown(
 
         const extname = path.extname(absoluteFilePath).toLocaleLowerCase();
         let output = '';
+        if (filePath === '[TOC]') {
+          if (!config) {
+            config = {
+              // same case as in normalized attributes
+              ['depth_from']: 1,
+              ['depth_to']: 6,
+              ['ordered_list']: true,
+            };
+          }
+          config['cmd'] = 'toc';
+          config['hide'] = true;
+          config['run_on_save'] = true;
+          config['modify_source'] = true;
+          if (!notSourceFile) {
+            // mark code_chunk_offset
+            config['code_chunk_offset'] = codeChunkOffset;
+            codeChunkOffset++;
+          }
+
+          const output2 = `\`\`\`text ${stringifyBlockAttributes(
+            config,
+          )}  \n\`\`\`  `;
+          i = end + 1;
+          lineNo = lineNo + 1;
+          outputString = outputString + output2;
+          continue;
+        }
         // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types#common_image_file_types
-        if (
+        else if (
           extname.match(/^\.(apng|avif|gif|jpeg|jpg|png|svg|bmp|webp)/) ||
           extname === '' // NOTE: For example, for github image like: ![Screenshot from 2023-10-15 15-34-27](https://github.com/shd101wyy/crossnote/assets/1908863/ede91390-3cca-4b83-8e30-33027bf0a363)
         ) {
@@ -715,32 +742,6 @@ export async function transformMarkdown(
           i = end + 1;
           lineNo = lineNo + 1;
           outputString = outputString + output + '\n';
-          continue;
-        } else if (filePath === '[TOC]') {
-          if (!config) {
-            config = {
-              // same case as in normalized attributes
-              ['depth_from']: 1,
-              ['depth_to']: 6,
-              ['ordered_list']: true,
-            };
-          }
-          config['cmd'] = 'toc';
-          config['hide'] = true;
-          config['run_on_save'] = true;
-          config['modify_source'] = true;
-          if (!notSourceFile) {
-            // mark code_chunk_offset
-            config['code_chunk_offset'] = codeChunkOffset;
-            codeChunkOffset++;
-          }
-
-          const output2 = `\`\`\`text ${stringifyBlockAttributes(
-            config,
-          )}  \n\`\`\`  `;
-          i = end + 1;
-          lineNo = lineNo + 1;
-          outputString = outputString + output2;
           continue;
         } else {
           try {
