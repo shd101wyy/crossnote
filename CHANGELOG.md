@@ -8,9 +8,23 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### New features
 
-- Added `ID` button to copy the id to clipboard:
+- Added `ID` button to copy the element id to clipboard:
 
   ![Screenshot from 2023-10-15 15-34-27](https://github.com/shd101wyy/crossnote/assets/1908863/ede91390-3cca-4b83-8e30-33027bf0a363)
+
+- Supported to import section of markdown by header id:
+
+  ```markdown
+  @import "test.md#header-id"
+
+  or
+
+  ![](test.md#header-id)
+
+  or
+
+  ![[test#header-id]]
+  ```
 
 ### Bug fixes
 

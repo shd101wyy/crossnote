@@ -53,6 +53,7 @@ export interface TransformMarkdownOptions {
   forMarkdownExport?: boolean;
   protocolsWhiteListRegExp: RegExp | null;
   notSourceFile?: boolean;
+  fileHash?: string;
   imageDirectoryPath?: string;
   headingIdGenerator?: HeadingIdGenerator;
   notebook: Notebook;
@@ -243,6 +244,7 @@ export async function transformMarkdown(
     headingIdGenerator = new HeadingIdGenerator(),
     notebook,
     forJest = false,
+    fileHash,
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
   // Replace CRLF with LF
@@ -497,7 +499,7 @@ export async function transformMarkdown(
         }
 
         if (!ignore) {
-          headings.push({ content: heading, level, id });
+          headings.push({ content: heading, level, id, lineNo: lineNo + 1 });
         }
         // console.log(`heading: |${heading}|`);
 
@@ -625,7 +627,7 @@ export async function transformMarkdown(
           }
         }
 
-        let absoluteFilePath;
+        let absoluteFilePath: string;
         if (
           protocolsWhiteListRegExp &&
           filePath.match(protocolsWhiteListRegExp)
@@ -636,13 +638,19 @@ export async function transformMarkdown(
         } else {
           absoluteFilePath = path.resolve(fileDirectoryPath, filePath);
         }
+        let fileHash = '';
+        const hashIndex = absoluteFilePath.lastIndexOf('#');
+        if (hashIndex > 0) {
+          fileHash = absoluteFilePath.substring(hashIndex);
+          absoluteFilePath = absoluteFilePath.substring(0, hashIndex);
+        }
 
-        const extname = path.extname(filePath).toLocaleLowerCase();
+        const extname = path.extname(absoluteFilePath).toLocaleLowerCase();
         let output = '';
         // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types#common_image_file_types
         if (
           extname.match(/^\.(apng|avif|gif|jpeg|jpg|png|svg|bmp|webp)/) ||
-          extname === ''
+          extname === '' // NOTE: For example, for github image like: ![Screenshot from 2023-10-15 15-34-27](https://github.com/shd101wyy/crossnote/assets/1908863/ede91390-3cca-4b83-8e30-33027bf0a363)
         ) {
           if (importMatch || wikilinkImportMatch) {
             // image
@@ -785,7 +793,7 @@ export async function transformMarkdown(
                 config,
               )}  \n${fileContent}\n\`\`\`  `;
             } else if (
-              notebook.config.markdownFileExtensions.indexOf(extname) >= 0
+              notebook.config.markdownFileExtensions.includes(extname)
             ) {
               if (notebook.config.parserConfig.onWillTransformMarkdown) {
                 fileContent =
@@ -814,6 +822,7 @@ export async function transformMarkdown(
                 imageDirectoryPath,
                 notebook,
                 headingIdGenerator,
+                fileHash,
               }));
 
               if (notebook.config.parserConfig) {
@@ -1049,6 +1058,48 @@ export async function transformMarkdown(
     if (frontMatterString) {
       const newLines = (frontMatterString.match(/\n/g) ?? []).length;
       outputString = '\n'.repeat(newLines + 1) + outputString;
+    }
+
+    if (fileHash) {
+      const targetId = fileHash.slice(1);
+      if (targetId) {
+        const targetHeadingIndex = headings.findIndex(
+          (heading) => heading.id === targetId,
+        );
+        if (targetHeadingIndex >= 0) {
+          const startHeading = headings[targetHeadingIndex];
+          const startHeadingIndex = targetHeadingIndex;
+          const { level } = startHeading;
+
+          // Find the endHeading which has the same or lower level as startHeading
+          let endHeadingIndex = startHeadingIndex + 1;
+          let endHeading: HeadingData | null = null;
+          while (endHeadingIndex < headings.length) {
+            const heading = headings[endHeadingIndex];
+            if (heading.level <= level) {
+              endHeading = heading;
+              break;
+            }
+            endHeadingIndex++;
+          }
+
+          const startLineNo = startHeading.lineNo as number;
+          if (endHeading) {
+            headings = headings.slice(startHeadingIndex, endHeadingIndex);
+            const endLineNo = endHeading.lineNo as number;
+            outputString = outputString
+              .split('\n')
+              .slice(startLineNo - 1, endLineNo - 1)
+              .join('\n');
+          } else {
+            headings = headings.slice(startHeadingIndex);
+            outputString = outputString
+              .split('\n')
+              .slice(startLineNo - 1)
+              .join('\n');
+          }
+        }
+      }
     }
 
     // Done
