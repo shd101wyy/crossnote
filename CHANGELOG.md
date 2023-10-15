@@ -4,6 +4,33 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.2] - 2023-10-15
+
+### New features
+
+- Added `ID` button to copy the element id to clipboard:
+
+  ![Screenshot from 2023-10-15 15-34-27](https://github.com/shd101wyy/crossnote/assets/1908863/ede91390-3cca-4b83-8e30-33027bf0a363)
+
+- Supported to import section of markdown by header id:
+
+  ```markdown
+  @import "test.md#header-id"
+
+  or
+
+  ![](test.md#header-id)
+
+  or
+
+  ![[test#header-id]]
+  ```
+
+### Bug fixes
+
+- URL fragments on image links do not load: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1837
+- Supported matplotlib-type preview for other Python tools like `pipenv`: https://github.com/shd101wyy/crossnote/issues/332
+
 ## [0.9.1] - 2023-10-14
 
 ### Buf fixes

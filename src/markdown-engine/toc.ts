@@ -69,6 +69,10 @@ export interface HeadingData {
   level: number;
   offset?: number;
   id?: string;
+  /**
+   * 1-based line number
+   */
+  lineNo?: number;
 }
 
 export function toc(headings: HeadingData[], opt: TocOption) {

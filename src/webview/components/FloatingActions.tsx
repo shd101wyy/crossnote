@@ -2,6 +2,7 @@ import {
   mdiClose,
   mdiContentCopy,
   mdiDotsHorizontal,
+  mdiIdentifier,
   mdiPencil,
 } from '@mdi/js';
 import Icon from '@mdi/react';
@@ -19,7 +20,10 @@ export default function FloatingActions() {
     setHighlightElementBeingEdited,
   } = PreviewContainer.useContainer();
   const [showMoreActions, setShowMoreActions] = useState(false);
-  const [showCopiedTooltip, setShowCopiedTooltip] = useState<
+  const [showCopiedMarkdownTooltip, setShowCopiedMarkdownTooltip] = useState<
+    string | undefined
+  >(undefined);
+  const [showCopiedIdTooltip, setShowCopiedIdTooltip] = useState<
     string | undefined
   >(undefined);
 
@@ -35,10 +39,11 @@ export default function FloatingActions() {
     highlightLineElements.forEach((element) => {
       element.classList.remove('highlight-active');
     });
-    setShowCopiedTooltip(undefined);
+    setShowCopiedMarkdownTooltip(undefined);
+    setShowCopiedIdTooltip(undefined);
   }, []);
 
-  const copyToClipboard = useCallback(() => {
+  const copyMarkdownToClipboard = useCallback(() => {
     if (!highlightElement) {
       return;
     }
@@ -61,12 +66,31 @@ export default function FloatingActions() {
     document.execCommand('copy');
     document.body.removeChild(textArea);
 
-    setShowCopiedTooltip(`Markdown copied!`);
+    setShowCopiedMarkdownTooltip(`Markdown copied!`);
 
     setTimeout(() => {
-      setShowCopiedTooltip(undefined);
+      setShowCopiedMarkdownTooltip(undefined);
     }, 1000);
   }, [highlightElement, getHighlightElementLineRange, markdown]);
+
+  const copyIdToClipboard = useCallback(() => {
+    if (!highlightElement || !highlightElement.id) {
+      return;
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = highlightElement.id;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+
+    setShowCopiedIdTooltip(`"${highlightElement.id}" copied!`);
+
+    setTimeout(() => {
+      setShowCopiedIdTooltip(undefined);
+    }, 1000);
+  }, [highlightElement]);
 
   useEffect(() => {
     if (highlightElement && showMoreActions) {
@@ -111,17 +135,34 @@ export default function FloatingActions() {
         <div className="flex flex-row items-center">
           {showMoreActions && (
             <>
+              {highlightElement.id && (
+                <div
+                  className={classNames(
+                    'ml-1 flex',
+                    showCopiedIdTooltip ? 'tooltip tooltip-open' : '',
+                  )}
+                  data-tip={showCopiedIdTooltip}
+                >
+                  <button
+                    className="btn btn-primary btn-circle btn-xs"
+                    title={highlightElement.id}
+                    onClick={copyIdToClipboard}
+                  >
+                    <Icon path={mdiIdentifier} size={0.8}></Icon>
+                  </button>
+                </div>
+              )}
               <div
                 className={classNames(
                   'ml-1 flex',
-                  showCopiedTooltip ? 'tooltip tooltip-open' : '',
+                  showCopiedMarkdownTooltip ? 'tooltip tooltip-open' : '',
                 )}
-                data-tip={showCopiedTooltip}
+                data-tip={showCopiedMarkdownTooltip}
               >
                 <button
                   className="btn btn-primary btn-circle btn-xs"
                   title={'Copy the part of markdown'}
-                  onClick={copyToClipboard}
+                  onClick={copyMarkdownToClipboard}
                 >
                   <Icon path={mdiContentCopy} size={0.6}></Icon>
                 </button>
