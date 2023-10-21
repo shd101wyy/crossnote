@@ -620,18 +620,27 @@ export async function transformMarkdown(
 
         let config: BlockAttributes = {};
         let configStr = '';
-        const leftParen = line.indexOf('{');
-        if (leftParen > 0) {
-          const rightParen = line.lastIndexOf('}');
-          if (rightParen > 0) {
-            configStr = line.substring(leftParen + 1, rightParen);
-            try {
-              config = parseBlockAttributes(configStr);
-            } catch (error) {
-              // null
+        if (imageImportMatch && imageImportMatch[4]) {
+          configStr = imageImportMatch[4];
+        } else if (wikilinkImportMatch && wikilinkImportMatch[3]) {
+          configStr = wikilinkImportMatch[3];
+        } else if (importMatch) {
+          const leftParen = line.indexOf('{');
+          if (leftParen > 0) {
+            const rightParen = line.lastIndexOf('}');
+            if (rightParen > 0) {
+              configStr = line.substring(leftParen + 1, rightParen);
             }
           }
         }
+        if (configStr.length > 0) {
+          try {
+            config = parseBlockAttributes(configStr);
+          } catch (error) {
+            // null
+          }
+        }
+
         if (canCreateAnchor()) {
           config['data-source-line'] = lineNo + 1;
         }
