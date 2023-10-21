@@ -4,7 +4,8 @@ I managed some of the libraries by myself instead of through npm to reduce the o
 
 ```json
 {
-  "font-awesome": "4.7",
+  "font-awesome": "6.4.2", // Download from here: https://fontawesome.com/download
+  // Fontawesome cheatsheet is available here: https://kapeli.com/cheat_sheets/Font_Awesome.docset/Contents/Resources/Documents/index
   "katex": "v0.16.9", // Only keep the css and fonts files.
   "mermaid": "10.5.0", // https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js
   "reveal": "4.6.0",

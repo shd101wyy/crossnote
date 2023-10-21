@@ -6,6 +6,11 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [0.9.4] - 2023-10-21
 
+### New features
+
+- Updated [fontawesome](https://fontawesome.com/) from version 4.7 to version 6.4.2 (Free).  
+  A list of available icons can be found at: https://kapeli.com/cheat_sheets/Font_Awesome.docset/Contents/Resources/Documents/index
+
 ### Changes
 
 - Changed the markdown parser process to be like below. We removed the `onWillTransformMarkdown` and `onDidTransformMarkdown` hooks as these two caused the confusion.

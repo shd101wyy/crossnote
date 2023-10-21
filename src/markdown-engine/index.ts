@@ -467,7 +467,7 @@ window["initRevealPresentation"] = async function() {
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
         utility.getCrossnoteBuildDirectory(),
-        `./dependencies/font-awesome/css/font-awesome.min.css`,
+        `./dependencies/font-awesome/css/all.min.css`,
       ),
       vscodePreviewPanel,
     )}">`;
@@ -781,14 +781,14 @@ window["initRevealPresentation"] = async function() {
 
     // font-awesome
     let fontAwesomeStyle = '';
-    if (html.indexOf('<i class="fa ') >= 0) {
+    if (html.indexOf('<i class="fa') >= 0) {
       if (options.offline) {
         fontAwesomeStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          `./dependencies/font-awesome/css/font-awesome.min.css`,
+          `./dependencies/font-awesome/css/all.min.css`,
         )}">`;
       } else {
-        fontAwesomeStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">`;
+        fontAwesomeStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">`;
       }
     }
 
