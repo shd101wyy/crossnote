@@ -61,9 +61,6 @@ export function copyBlobToClipboard(blob: Blob) {
         [blob.type]: blob,
       }),
     ])
-    .then(() => {
-      console.log('Copied');
-    })
     .catch((error) => {
       console.error(error);
     });
