@@ -1,0 +1,1 @@
+![$N_d$ vs $f_l$. The pulsar's DM is assumed to be 750 pc cm$^{-3}$ with a Nyquist complex-sampling bandwidth of 16 MHz.](assets/Multi-Segment%20Coherent%20Dedispersion%20Method%20Based%20on%20Overlap-Save/2.png){id="fig:dispersion-smearing-time" width="75%" data-source-line=1}

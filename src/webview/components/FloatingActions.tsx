@@ -3,13 +3,17 @@ import {
   mdiContentCopy,
   mdiDotsHorizontal,
   mdiIdentifier,
+  mdiImage,
   mdiPencil,
 } from '@mdi/js';
 import Icon from '@mdi/react';
 import classNames from 'classnames';
+import * as FileSaver from 'file-saver';
+import { toBlob } from 'html-to-image';
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PreviewContainer from '../containers/preview';
+import { copyBlobToClipboard, copyTextToClipboard } from '../lib/utility';
 
 export default function FloatingActions() {
   const {
@@ -18,6 +22,7 @@ export default function FloatingActions() {
     markdown,
     highlightElementBeingEdited,
     setHighlightElementBeingEdited,
+    isVSCodeWebExtension,
   } = PreviewContainer.useContainer();
   const [showMoreActions, setShowMoreActions] = useState(false);
   const [showCopiedMarkdownTooltip, setShowCopiedMarkdownTooltip] = useState<
@@ -26,6 +31,7 @@ export default function FloatingActions() {
   const [showCopiedIdTooltip, setShowCopiedIdTooltip] = useState<
     string | undefined
   >(undefined);
+  const [isExportingImage, setIsExportingImage] = useState(false);
 
   const onMouseOver = useCallback(() => {
     const highlightLineElements = document.querySelectorAll('.highlight-line');
@@ -56,16 +62,9 @@ export default function FloatingActions() {
     const lines = markdown.split('\n');
     const copiedLines = lines.slice(start, end);
 
-    const textArea = document.createElement('textarea');
-    textArea.value = copiedLines
-      .join('\n')
-      .replace(/\n$/, '')
-      .replace(/^\n/, '');
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-
+    copyTextToClipboard(
+      copiedLines.join('\n').replace(/\n$/, '').replace(/^\n/, ''),
+    );
     setShowCopiedMarkdownTooltip(`Markdown copied!`);
 
     setTimeout(() => {
@@ -78,18 +77,32 @@ export default function FloatingActions() {
       return;
     }
 
-    const textArea = document.createElement('textarea');
-    textArea.value = highlightElement.id;
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-
+    copyTextToClipboard(highlightElement.id);
     setShowCopiedIdTooltip(`"${highlightElement.id}" copied!`);
 
     setTimeout(() => {
       setShowCopiedIdTooltip(undefined);
     }, 1000);
+  }, [highlightElement]);
+
+  const exportAsPng = useCallback(() => {
+    if (!highlightElement) {
+      return;
+    }
+    setIsExportingImage(true);
+    highlightElement.classList.remove('highlight-active');
+    toBlob(highlightElement).then((blob) => {
+      setIsExportingImage(false);
+      highlightElement.classList.add('highlight-active');
+
+      if (!blob) {
+        return;
+      }
+      // save the blob to file
+      FileSaver.saveAs(blob, 'highlight.png');
+      // copy the blob to clipboard
+      copyBlobToClipboard(blob);
+    });
   }, [highlightElement]);
 
   useEffect(() => {
@@ -128,6 +141,7 @@ export default function FloatingActions() {
       <div
         className={classNames(
           'absolute top-0 right-0 select-none floating-action flex flex-col items-end z-[60]',
+          isExportingImage ? 'hidden' : '',
         )}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
@@ -149,6 +163,17 @@ export default function FloatingActions() {
                     onClick={copyIdToClipboard}
                   >
                     <Icon path={mdiIdentifier} size={0.8}></Icon>
+                  </button>
+                </div>
+              )}
+              {!isVSCodeWebExtension && (
+                <div className={classNames('ml-1 flex')}>
+                  <button
+                    className="btn btn-primary btn-circle btn-xs"
+                    title={'Export as png and copy to clipboard'}
+                    onClick={exportAsPng}
+                  >
+                    <Icon path={mdiImage} size={0.6}></Icon>
                   </button>
                 </div>
               )}

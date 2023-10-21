@@ -307,7 +307,8 @@ export async function transformMarkdown(
       const currentCodeBlockFence = (line.match(/^\s*[`]{3,}/) || [])[0];
       if (currentCodeBlockFence) {
         const rest = line.substring(currentCodeBlockFence.length);
-        if (rest.trim().match(/`+$/)) {
+        if (rest.trim().match(/[`]{3,}/)) {
+          // Issue: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1848
           // This is not a valid code block
           // For example:
           //
@@ -531,6 +532,10 @@ export async function transformMarkdown(
 
           optionsStr += '}';
 
+          if (optionsStr === '{}') {
+            optionsStr = '';
+          }
+
           i = end + 1;
           lineNo = lineNo + 1;
           outputString =
@@ -616,18 +621,27 @@ export async function transformMarkdown(
 
         let config: BlockAttributes = {};
         let configStr = '';
-        const leftParen = line.indexOf('{');
-        if (leftParen > 0) {
-          const rightParen = line.lastIndexOf('}');
-          if (rightParen > 0) {
-            configStr = line.substring(leftParen + 1, rightParen);
-            try {
-              config = parseBlockAttributes(configStr);
-            } catch (error) {
-              // null
+        if (imageImportMatch && imageImportMatch[4]) {
+          configStr = imageImportMatch[4];
+        } else if (wikilinkImportMatch && wikilinkImportMatch[3]) {
+          configStr = wikilinkImportMatch[3];
+        } else if (importMatch) {
+          const leftParen = line.indexOf('{');
+          if (leftParen > 0) {
+            const rightParen = line.lastIndexOf('}');
+            if (rightParen > 0) {
+              configStr = line.substring(leftParen + 1, rightParen);
             }
           }
         }
+        if (configStr.length > 0) {
+          try {
+            config = parseBlockAttributes(configStr);
+          } catch (error) {
+            // null
+          }
+        }
+
         if (canCreateAnchor()) {
           config['data-source-line'] = lineNo + 1;
         }
@@ -790,17 +804,15 @@ export async function transformMarkdown(
             } else if (
               notebook.config.markdownFileExtensions.includes(extname)
             ) {
-              if (notebook.config.parserConfig.onWillTransformMarkdown) {
+              if (notebook.config.parserConfig.onWillParseMarkdown) {
                 fileContent =
-                  await notebook.config.parserConfig.onWillTransformMarkdown(
+                  await notebook.config.parserConfig.onWillParseMarkdown(
                     fileContent,
                   );
               }
               // markdown files
               // this return here is necessary
-              let output2;
-              let headings2;
-              ({
+              const {
                 outputString: output2,
                 // eslint-disable-next-line prefer-const
                 headings: headings2,
@@ -818,14 +830,7 @@ export async function transformMarkdown(
                 notebook,
                 headingIdGenerator,
                 fileHash,
-              }));
-
-              if (notebook.config.parserConfig) {
-                output2 =
-                  await notebook.config.parserConfig.onDidTransformMarkdown(
-                    output2,
-                  );
-              }
+              });
 
               output = '\n' + output2 + '  ';
               headings = headings.concat(headings2);

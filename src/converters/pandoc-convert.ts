@@ -378,8 +378,8 @@ export async function pandocConvert(
   // process output config
   processOutputConfig(outputConfig || {}, args, notebook.config.latexEngine);
 
-  if (notebook.config.parserConfig.onWillTransformMarkdown) {
-    text = await notebook.config.parserConfig.onWillTransformMarkdown(text);
+  if (notebook.config.parserConfig.onWillParseMarkdown) {
+    text = await notebook.config.parserConfig.onWillParseMarkdown(text);
   }
 
   // import external files
@@ -394,10 +394,6 @@ export async function pandocConvert(
     notebook,
   });
   text = data.outputString;
-
-  if (notebook.config.parserConfig.onDidTransformMarkdown) {
-    text = await notebook.config.parserConfig.onDidTransformMarkdown(text);
-  }
 
   // add front-matter(yaml) back to text
   text = '---\n' + YAML.stringify(config) + '---\n' + text;

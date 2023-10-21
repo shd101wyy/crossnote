@@ -226,7 +226,14 @@ export class MarkdownEngine {
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
         utility.getCrossnoteBuildDirectory(),
-        './dependencies/wavedrom/default.js',
+        './dependencies/wavedrom/skins/default.js',
+      ),
+      vscodePreviewPanel,
+    )}" charset="UTF-8"></script>`;
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
+      path.resolve(
+        utility.getCrossnoteBuildDirectory(),
+        './dependencies/wavedrom/skins/narrow.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
@@ -467,7 +474,7 @@ window["initRevealPresentation"] = async function() {
     styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
       path.resolve(
         utility.getCrossnoteBuildDirectory(),
-        `./dependencies/font-awesome/css/font-awesome.min.css`,
+        `./dependencies/font-awesome/css/all.min.css`,
       ),
       vscodePreviewPanel,
     )}">`;
@@ -781,14 +788,14 @@ window["initRevealPresentation"] = async function() {
 
     // font-awesome
     let fontAwesomeStyle = '';
-    if (html.indexOf('<i class="fa ') >= 0) {
+    if (html.indexOf('<i class="fa') >= 0) {
       if (options.offline) {
         fontAwesomeStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          `./dependencies/font-awesome/css/font-awesome.min.css`,
+          `./dependencies/font-awesome/css/all.min.css`,
         )}">`;
       } else {
-        fontAwesomeStyle = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">`;
+        fontAwesomeStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">`;
       }
     }
 
@@ -856,15 +863,20 @@ if (typeof(window['Reveal']) !== 'undefined') {
       if (options.offline) {
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          './dependencies/wavedrom/default.js',
+          './dependencies/wavedrom/skins/default.js',
+        )}" charset="UTF-8"></script>`;
+        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.getCrossnoteBuildDirectory(),
+          './dependencies/wavedrom/skins/narrow.js',
         )}" charset="UTF-8"></script>`;
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),
           './dependencies/wavedrom/wavedrom.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.9.1/skins/default.js"></script>`;
-        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.9.1/wavedrom.min.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/default.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/narrow.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/wavedrom.min.js"></script>`;
       }
       wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`;
     }
@@ -1847,9 +1859,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }): Promise<string> {
     let inputString = await this.fs.readFile(this.filePath);
 
-    if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
+    if (this.notebook.config.parserConfig.onWillParseMarkdown) {
       inputString =
-        await this.notebook.config.parserConfig['onWillParseMarkdown'](
+        await this.notebook.config.parserConfig.onWillParseMarkdown(
           inputString,
         );
     }
@@ -2430,16 +2442,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // TODO: Remove the `onWillParseMarkdown` and `onWillTransformMarkdown`
     // as it is bad for adding source mapping support.
-    if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
+    if (this.notebook.config.parserConfig.onWillParseMarkdown) {
       inputString =
-        await this.notebook.config.parserConfig['onWillParseMarkdown'](
-          inputString,
-        );
-    }
-
-    if (this.notebook.config.parserConfig['onWillTransformMarkdown']) {
-      inputString =
-        await this.notebook.config.parserConfig['onWillTransformMarkdown'](
+        await this.notebook.config.parserConfig.onWillParseMarkdown(
           inputString,
         );
     }
@@ -2467,13 +2472,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       filesCache: this.filesCache,
       notebook: this.notebook,
     });
-
-    if (this.notebook.config.parserConfig['onDidTransformMarkdown']) {
-      outputString =
-        await this.notebook.config.parserConfig['onDidTransformMarkdown'](
-          outputString,
-        );
-    }
 
     // process front-matter
     const fm = this.processFrontMatter(
@@ -2639,9 +2637,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
     }
 
-    if (this.notebook.config.parserConfig['onDidParseMarkdown']) {
-      html =
-        await this.notebook.config.parserConfig['onDidParseMarkdown'](html);
+    if (this.notebook.config.parserConfig.onDidParseMarkdown) {
+      html = await this.notebook.config.parserConfig.onDidParseMarkdown(html);
     }
 
     if (options.runAllCodeChunks) {
