@@ -12,7 +12,6 @@ import * as FileSaver from 'file-saver';
 import { toBlob } from 'html-to-image';
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { isVSCodeWebExtension } from '../../utility';
 import PreviewContainer from '../containers/preview';
 import { copyBlobToClipboard, copyTextToClipboard } from '../lib/utility';
 
@@ -23,6 +22,7 @@ export default function FloatingActions() {
     markdown,
     highlightElementBeingEdited,
     setHighlightElementBeingEdited,
+    isVSCodeWebExtension,
   } = PreviewContainer.useContainer();
   const [showMoreActions, setShowMoreActions] = useState(false);
   const [showCopiedMarkdownTooltip, setShowCopiedMarkdownTooltip] = useState<
@@ -166,7 +166,7 @@ export default function FloatingActions() {
                   </button>
                 </div>
               )}
-              {!isVSCodeWebExtension() && (
+              {!isVSCodeWebExtension && (
                 <div className={classNames('ml-1 flex')}>
                   <button
                     className="btn btn-primary btn-circle btn-xs"
