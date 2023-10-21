@@ -17,7 +17,7 @@ I managed some of the libraries by myself instead of through npm to reduce the o
   "vega-lite": "5.16.1", // https://cdn.jsdelivr.net/npm/vega-lite@5.16.1/build/vega-lite.min.js
   "vega": "5.25.0", // https://cdn.jsdelivr.net/npm/vega@5.25.0/build/vega.min.js
 
-  "wavedrom": "2.9.1"
+  "wavedrom": "3.3.0" // - https://cdn.jsdelivr.net/npm/wavedrom@3.3.0/wavedrom.min.js
 }
 ```
 

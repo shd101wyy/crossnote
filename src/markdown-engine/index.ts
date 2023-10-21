@@ -226,7 +226,14 @@ export class MarkdownEngine {
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
         utility.getCrossnoteBuildDirectory(),
-        './dependencies/wavedrom/default.js',
+        './dependencies/wavedrom/skins/default.js',
+      ),
+      vscodePreviewPanel,
+    )}" charset="UTF-8"></script>`;
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
+      path.resolve(
+        utility.getCrossnoteBuildDirectory(),
+        './dependencies/wavedrom/skins/narrow.js',
       ),
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
@@ -856,15 +863,20 @@ if (typeof(window['Reveal']) !== 'undefined') {
       if (options.offline) {
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          './dependencies/wavedrom/default.js',
+          './dependencies/wavedrom/skins/default.js',
+        )}" charset="UTF-8"></script>`;
+        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
+          utility.getCrossnoteBuildDirectory(),
+          './dependencies/wavedrom/skins/narrow.js',
         )}" charset="UTF-8"></script>`;
         wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),
           './dependencies/wavedrom/wavedrom.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.9.1/skins/default.js"></script>`;
-        wavedromScript += `<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/2.9.1/wavedrom.min.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/default.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/narrow.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/wavedrom.min.js"></script>`;
       }
       wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`;
     }

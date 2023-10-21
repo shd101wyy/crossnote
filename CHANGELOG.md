@@ -10,6 +10,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 - Updated [fontawesome](https://fontawesome.com/) from version 4.7 to version 6.4.2 (Free).  
   A list of available icons can be found at: https://kapeli.com/cheat_sheets/Font_Awesome.docset/Contents/Resources/Documents/index
+- Updated WaveDrom to the latest version 3.3.0.
 
 ### Changes
 
