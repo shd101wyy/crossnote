@@ -1847,9 +1847,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }): Promise<string> {
     let inputString = await this.fs.readFile(this.filePath);
 
-    if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
+    if (this.notebook.config.parserConfig.onWillParseMarkdown) {
       inputString =
-        await this.notebook.config.parserConfig['onWillParseMarkdown'](
+        await this.notebook.config.parserConfig.onWillParseMarkdown(
           inputString,
         );
     }
@@ -2430,16 +2430,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // TODO: Remove the `onWillParseMarkdown` and `onWillTransformMarkdown`
     // as it is bad for adding source mapping support.
-    if (this.notebook.config.parserConfig['onWillParseMarkdown']) {
+    if (this.notebook.config.parserConfig.onWillParseMarkdown) {
       inputString =
-        await this.notebook.config.parserConfig['onWillParseMarkdown'](
-          inputString,
-        );
-    }
-
-    if (this.notebook.config.parserConfig['onWillTransformMarkdown']) {
-      inputString =
-        await this.notebook.config.parserConfig['onWillTransformMarkdown'](
+        await this.notebook.config.parserConfig.onWillParseMarkdown(
           inputString,
         );
     }
@@ -2467,13 +2460,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       filesCache: this.filesCache,
       notebook: this.notebook,
     });
-
-    if (this.notebook.config.parserConfig['onDidTransformMarkdown']) {
-      outputString =
-        await this.notebook.config.parserConfig['onDidTransformMarkdown'](
-          outputString,
-        );
-    }
 
     // process front-matter
     const fm = this.processFrontMatter(
@@ -2639,9 +2625,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
     }
 
-    if (this.notebook.config.parserConfig['onDidParseMarkdown']) {
-      html =
-        await this.notebook.config.parserConfig['onDidParseMarkdown'](html);
+    if (this.notebook.config.parserConfig.onDidParseMarkdown) {
+      html = await this.notebook.config.parserConfig.onDidParseMarkdown(html);
     }
 
     if (options.runAllCodeChunks) {

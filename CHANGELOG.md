@@ -6,6 +6,30 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [0.9.4] - 2023-10-21
 
+### Changes
+
+- Changed the markdown parser process to be like below. We removed the `onWillTransformMarkdown` and `onDidTransformMarkdown` hooks as these two caused the confusion.
+
+  ```markdown
+  markdown
+  ↓
+  `onWillParseMarkdown(markdown)`
+  ↓
+  markdown
+  ↓
+  **crossnote markdown transformer**
+  ↓
+  markdown
+  ↓
+  **markdown-it or pandoc renderer**
+  ↓
+  html
+  ↓
+  `onDidParseMarkdown(html)`
+  ↓
+  html, and then rendered in the preview
+  ```
+
 ### Bug fixes
 
 - Fixed a bug of importing files that contains empty heading: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1840

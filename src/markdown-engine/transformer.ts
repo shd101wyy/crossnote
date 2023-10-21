@@ -794,17 +794,15 @@ export async function transformMarkdown(
             } else if (
               notebook.config.markdownFileExtensions.includes(extname)
             ) {
-              if (notebook.config.parserConfig.onWillTransformMarkdown) {
+              if (notebook.config.parserConfig.onWillParseMarkdown) {
                 fileContent =
-                  await notebook.config.parserConfig.onWillTransformMarkdown(
+                  await notebook.config.parserConfig.onWillParseMarkdown(
                     fileContent,
                   );
               }
               // markdown files
               // this return here is necessary
-              let output2;
-              let headings2;
-              ({
+              const {
                 outputString: output2,
                 // eslint-disable-next-line prefer-const
                 headings: headings2,
@@ -822,14 +820,7 @@ export async function transformMarkdown(
                 notebook,
                 headingIdGenerator,
                 fileHash,
-              }));
-
-              if (notebook.config.parserConfig) {
-                output2 =
-                  await notebook.config.parserConfig.onDidTransformMarkdown(
-                    output2,
-                  );
-              }
+              });
 
               output = '\n' + output2 + '  ';
               headings = headings.concat(headings2);

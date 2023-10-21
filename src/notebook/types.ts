@@ -46,8 +46,6 @@ export interface ParserConfig {
   // NOTE: We disabled this for now
   // opts: { cheerio: CheerioAPI }
   onDidParseMarkdown: (html: string) => Promise<string>;
-  onWillTransformMarkdown: (markdown: string) => Promise<string>;
-  onDidTransformMarkdown: (markdown: string) => Promise<string>;
 }
 
 export type PreviewTheme =
@@ -515,12 +513,6 @@ export function getDefaultParserConfig(): ParserConfig {
     },
     onDidParseMarkdown: async function (html) {
       return html;
-    },
-    onWillTransformMarkdown: async function (markdown) {
-      return markdown;
-    },
-    onDidTransformMarkdown: async function (markdown) {
-      return markdown;
     },
   };
 }
