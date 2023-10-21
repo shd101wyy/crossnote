@@ -36,6 +36,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
   html, and then rendered in the preview
   ```
 
+- (Beta) Supported to export the selected element in preview to .png file and copy the blob to the clipboard:
+
+  ![image](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/assets/1908863/046759d8-6d89-4f41-8420-b863d2094fe7)
+
 ### Bug fixes
 
 - Fixed a bug of importing files that contains empty heading: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1840

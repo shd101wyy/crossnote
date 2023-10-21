@@ -1,6 +1,6 @@
 {
   "name": "crossnote",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
@@ -75,8 +75,10 @@
     "daisyui": "^3.7.3",
     "esbuild-plugin-tailwindcss": "^1.1.1",
     "escape-string-regexp": "^5.0.0",
+    "file-saver": "^2.0.5",
     "html-escaper": "^3.0.3",
     "html-react-parser": "^4.2.2",
+    "html-to-image": "^1.11.11",
     "imagemagick-cli": "^0.5.0",
     "jquery": "^3.7.1",
     "katex": "^0.16.9",
@@ -123,6 +125,7 @@
     "@simbathesailor/use-what-changed": "^2.0.0",
     "@types/cheerio": "0.22.11",
     "@types/crypto-js": "^4.1.1",
+    "@types/file-saver": "^2.0.6",
     "@types/html-escaper": "^3.0.0",
     "@types/jest": "^29.5.5",
     "@types/jquery": "^3.3.29",

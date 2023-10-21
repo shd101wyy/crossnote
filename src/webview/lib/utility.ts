@@ -42,3 +42,29 @@ export function isBackgroundColorLight(element) {
   // Compare the luminance to a threshold (e.g., 128)
   return luminance > 128;
 }
+
+export function copyTextToClipboard(text: string) {
+  const input = document.createElement('textarea');
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  input.value = text;
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand('copy');
+  document.body.removeChild(input);
+}
+
+export function copyBlobToClipboard(blob: Blob) {
+  navigator.clipboard
+    .write([
+      new ClipboardItem({
+        [blob.type]: blob,
+      }),
+    ])
+    .then(() => {
+      console.log('Copied');
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}

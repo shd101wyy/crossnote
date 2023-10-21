@@ -460,7 +460,7 @@ export default function MarkdownEditor() {
   }, [setMarkdownEditorExpanded]);
 
   if (!highlightElementBeingEdited) {
-    return;
+    return null;
   }
 
   return createPortal(
