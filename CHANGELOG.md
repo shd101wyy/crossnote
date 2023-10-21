@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.4] - 2023-10-21
+
+### Bug fixes
+
+- Fixed a bug of importing files that contains empty heading: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1840
+
 ## [0.9.3] - 2023-10-15
 
 ### Bug fixes

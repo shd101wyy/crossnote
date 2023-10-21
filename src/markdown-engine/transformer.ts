@@ -531,6 +531,10 @@ export async function transformMarkdown(
 
           optionsStr += '}';
 
+          if (optionsStr === '{}') {
+            optionsStr = '';
+          }
+
           i = end + 1;
           lineNo = lineNo + 1;
           outputString =
