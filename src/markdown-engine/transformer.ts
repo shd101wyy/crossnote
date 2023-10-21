@@ -307,7 +307,8 @@ export async function transformMarkdown(
       const currentCodeBlockFence = (line.match(/^\s*[`]{3,}/) || [])[0];
       if (currentCodeBlockFence) {
         const rest = line.substring(currentCodeBlockFence.length);
-        if (rest.trim().match(/`+$/)) {
+        if (rest.trim().match(/[`]{3,}/)) {
+          // Issue: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1848
           // This is not a valid code block
           // For example:
           //

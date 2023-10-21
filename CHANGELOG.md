@@ -38,7 +38,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 ### Bug fixes
 
 - Fixed a bug of importing files that contains empty heading: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1840
-- Fixed inline math in image name has rendering problem using pandoc: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1846
+- Fixed a bug of rendering inline math in image name: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1846
+- Fixed a bug of parsing inline code: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1848
 
 ## [0.9.3] - 2023-10-15
 
