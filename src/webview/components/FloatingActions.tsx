@@ -12,6 +12,7 @@ import * as FileSaver from 'file-saver';
 import { toBlob } from 'html-to-image';
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { isVSCodeWebExtension } from '../../utility';
 import PreviewContainer from '../containers/preview';
 import { copyBlobToClipboard, copyTextToClipboard } from '../lib/utility';
 
@@ -165,15 +166,17 @@ export default function FloatingActions() {
                   </button>
                 </div>
               )}
-              <div className={classNames('ml-1 flex')}>
-                <button
-                  className="btn btn-primary btn-circle btn-xs"
-                  title={'Export as png and copy to clipboard'}
-                  onClick={exportAsPng}
-                >
-                  <Icon path={mdiImage} size={0.6}></Icon>
-                </button>
-              </div>
+              {!isVSCodeWebExtension() && (
+                <div className={classNames('ml-1 flex')}>
+                  <button
+                    className="btn btn-primary btn-circle btn-xs"
+                    title={'Export as png and copy to clipboard'}
+                    onClick={exportAsPng}
+                  >
+                    <Icon path={mdiImage} size={0.6}></Icon>
+                  </button>
+                </div>
+              )}
               <div
                 className={classNames(
                   'ml-1 flex',
