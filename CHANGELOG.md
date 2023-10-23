@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.5] - 2023-10-23
+
+### Bug fixes
+
+- Fixed of bug of rendering the KaTeX math expression: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1853
+
 ## [0.9.4] - 2023-10-21
 
 ### New features
