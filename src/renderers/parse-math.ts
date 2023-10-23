@@ -37,7 +37,14 @@ export default ({
     try {
       return katex.renderToString(
         content,
-        Object.assign({}, katexConfig, { displayMode }),
+        Object.assign(
+          {},
+          // NOTE: strucutredClone is necessary here: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1853
+          // it seems like KaTeX will modify the config object,
+          // which will cause `JSON.stringify` in `generateHTMLTemplateForPreview` function in `markdown-engine/index.ts` to fail
+          structuredClone(katexConfig),
+          { displayMode },
+        ),
       );
     } catch (error) {
       return `<span style="color: #ee7f49; font-weight: 500;">${error.toString()}</span>`;
