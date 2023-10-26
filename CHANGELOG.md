@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.6] - 2023-10-24
+
+### Bug fixes
+
+- Fixed importing file with spaces in the path: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1857
+
 ## [0.9.5] - 2023-10-23
 
 ### Bug fixes
