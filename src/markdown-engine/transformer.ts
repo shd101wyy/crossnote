@@ -252,7 +252,6 @@ export async function transformMarkdown(
   // Replace CRLF with LF
   inputString = inputString.replace(/\r\n/g, '\n');
 
-  let lastOpeningCodeBlockFence: string | null = null;
   let codeChunkOffset = 0;
   const slideConfigs: BlockAttributes[] = [];
   const JSAndCssFiles: string[] = [];
@@ -303,6 +302,8 @@ export async function transformMarkdown(
       outputString += blockquotePrefix;
 
       // ========== Start: Code Block ==========
+      // NOTE: Stop checking code block, for issue: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1895
+      /*
       const inCodeBlock = !!lastOpeningCodeBlockFence;
       const currentCodeBlockFence = (line.match(/^\s*[`]{3,}/) || [])[0];
       if (currentCodeBlockFence) {
@@ -359,6 +360,7 @@ export async function transformMarkdown(
         outputString = outputString + line + '\n';
         continue;
       }
+      */
       // ========== End: Code Block ==========
       let headingMatch: RegExpMatchArray | null;
       let taskListItemMatch: RegExpMatchArray | null;
