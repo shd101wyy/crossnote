@@ -1,6 +1,5 @@
 import {
   mdiCancel,
-  mdiExport,
   mdiExportVariant,
   mdiImageOutline,
   mdiInformationOutline,
@@ -9,9 +8,11 @@ import {
   mdiOpenInNew,
   mdiPaletteOutline,
   mdiPencil,
+  mdiSpaOutline,
   mdiSync,
 } from '@mdi/js';
 import Icon from '@mdi/react';
+import classNames from 'classnames';
 import React, { useCallback } from 'react';
 import { Item, ItemParams, Menu, Separator, Submenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
@@ -32,6 +33,7 @@ export default function ContextMenu() {
     sourceUri,
     theme,
     isPresentationMode,
+    enablePreviewZenMode,
   } = PreviewContainer.useContainer();
 
   const handleItemClick = useCallback(
@@ -87,6 +89,10 @@ export default function ContextMenu() {
         }
         case 'export-markdown': {
           postMessage('markdownExport', [sourceUri.current]);
+          break;
+        }
+        case 'toggle-zen-mode': {
+          postMessage('togglePreviewZenMode', [sourceUri.current]);
           break;
         }
         case 'open-image-helper': {
@@ -215,104 +221,71 @@ export default function ContextMenu() {
                   size={0.8}
                   className="mr-2"
                 ></Icon>
+                Export
+              </span>
+            }
+          >
+            <Submenu
+              label={
+                <span className="inline-flex flex-row items-center">HTML</span>
+              }
+            >
+              <Item id="export-html-offline" onClick={handleItemClick}>
+                {'HTML (offline)'}
+              </Item>
+              <Item id="export-html-cdn" onClick={handleItemClick}>
+                {'HTML (cdn hosted)'}
+              </Item>
+            </Submenu>
+            <Submenu
+              label={
+                <span className="inline-flex flex-row items-center">
+                  Chrome (Puppeteer)
+                </span>
+              }
+            >
+              <Item id="export-chrome-pdf" onClick={handleItemClick}>
+                PDF
+              </Item>
+              <Item id="export-chrome-png" onClick={handleItemClick}>
+                PNG
+              </Item>
+              <Item id="export-chrome-jpeg" onClick={handleItemClick}>
+                JPEG
+              </Item>
+            </Submenu>
+            <Item id="export-prince" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">
+                PDF (Prince)
+              </span>
+            </Item>
+            <Submenu
+              label={
+                <span className="inline-flex flex-row items-center">eBook</span>
+              }
+            >
+              <Item id="export-ebook-epub" onClick={handleItemClick}>
+                ePub
+              </Item>
+              <Item id="export-ebook-mobi" onClick={handleItemClick}>
+                Mobi
+              </Item>
+              <Item id="export-ebook-pdf" onClick={handleItemClick}>
+                PDF
+              </Item>
+              <Item id="export-ebook-html" onClick={handleItemClick}>
                 HTML
-              </span>
-            }
-          >
-            <Item id="export-html-offline" onClick={handleItemClick}>
-              {'HTML (offline)'}
+              </Item>
+            </Submenu>
+            <Item id="export-pandoc" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">Pandoc</span>
             </Item>
-            <Item id="export-html-cdn" onClick={handleItemClick}>
-              {'HTML (cdn hosted)'}
-            </Item>
-          </Submenu>
-        )}
-        {!isVSCodeWebExtension && (
-          <Submenu
-            label={
+            <Item id="export-markdown" onClick={handleItemClick}>
               <span className="inline-flex flex-row items-center">
-                <Icon
-                  path={mdiExport}
-                  size={0.8}
-                  className="mr-2 invisible"
-                ></Icon>
-                Chrome (Puppeteer)
+                Save as Markdown
               </span>
-            }
-          >
-            <Item id="export-chrome-pdf" onClick={handleItemClick}>
-              PDF
-            </Item>
-            <Item id="export-chrome-png" onClick={handleItemClick}>
-              PNG
-            </Item>
-            <Item id="export-chrome-jpeg" onClick={handleItemClick}>
-              JPEG
             </Item>
           </Submenu>
-        )}
-        {!isVSCodeWebExtension && (
-          <Item id="export-prince" onClick={handleItemClick}>
-            <span className="inline-flex flex-row items-center">
-              <Icon
-                path={mdiExportVariant}
-                size={0.8}
-                className="mr-2 invisible"
-              ></Icon>
-              PDF (Prince)
-            </span>
-          </Item>
-        )}
-        {!isVSCodeWebExtension && (
-          <Submenu
-            label={
-              <span className="inline-flex flex-row items-center">
-                <Icon
-                  path={mdiExport}
-                  size={0.8}
-                  className="mr-2 invisible"
-                ></Icon>
-                eBook
-              </span>
-            }
-          >
-            <Item id="export-ebook-epub" onClick={handleItemClick}>
-              ePub
-            </Item>
-            <Item id="export-ebook-mobi" onClick={handleItemClick}>
-              Mobi
-            </Item>
-            <Item id="export-ebook-pdf" onClick={handleItemClick}>
-              PDF
-            </Item>
-            <Item id="export-ebook-html" onClick={handleItemClick}>
-              HTML
-            </Item>
-          </Submenu>
-        )}
-        {!isVSCodeWebExtension && (
-          <Item id="export-pandoc" onClick={handleItemClick}>
-            <span className="inline-flex flex-row items-center">
-              <Icon
-                path={mdiExportVariant}
-                size={0.8}
-                className="mr-2 invisible"
-              ></Icon>
-              Pandoc
-            </span>
-          </Item>
-        )}
-        {!isVSCodeWebExtension && (
-          <Item id="export-markdown" onClick={handleItemClick}>
-            <span className="inline-flex flex-row items-center">
-              <Icon
-                path={mdiExportVariant}
-                size={0.8}
-                className="mr-2 invisible"
-              ></Icon>
-              Save as Markdown
-            </span>
-          </Item>
         )}
         {!isVSCodeWebExtension && <Separator></Separator>}
         <Submenu
@@ -356,9 +329,21 @@ export default function ContextMenu() {
             </Item>
           )}
         </Submenu>
+        <Separator></Separator>
+        <Item id="toggle-zen-mode" onClick={handleItemClick}>
+          <span
+            className={classNames(
+              'inline-flex flex-row items-center',
+              enablePreviewZenMode ? 'text-primary font-bold' : '',
+            )}
+          >
+            <Icon path={mdiSpaOutline} size={0.8} className="mr-2"></Icon>
+            Zen Mode
+          </span>
+        </Item>
+        <Separator></Separator>
         {!isVSCodeWebExtension && (
           <>
-            <Separator></Separator>
             <Item id="open-image-helper" onClick={handleItemClick}>
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiImageOutline} size={0.8} className="mr-2"></Icon>
