@@ -163,6 +163,9 @@ const PreviewContainer = createContainer(() => {
   const isVSCode = useMemo(() => {
     return !!config.isVSCode;
   }, [config]);
+  const enablePreviewZenMode = useMemo(() => {
+    return !!config.enablePreviewZenMode;
+  }, [config]);
   const contextMenuId = useMemo(() => {
     return 'crossnote-context-menu';
   }, []);
@@ -862,120 +865,128 @@ const PreviewContainer = createContainer(() => {
     }
   }, [postMessage]);
 
-  const bindHighlightEvent = useCallback((previewElement: HTMLDivElement) => {
-    setHighlightElement(null);
-    const sourceLineElements =
-      previewElement.querySelectorAll('[data-source-line]');
-
-    const highlightElementsThatAddedEventSet = new Set<Element | HTMLElement>();
-    const sourceLineElementToContainerElementMap = new Map<
-      Element | HTMLElement,
-      Element | HTMLElement
-    >();
-
-    highlightElementToLinesMap.current = new Map<
-      HTMLElement | Element,
-      number[]
-    >();
-    highlightElementLines.current = [];
-    const startLinesSet = new Set<number>();
-
-    const bindHighlightElementsEvent = (
-      highlightElements: (HTMLElement | Element)[],
-      startLine: number,
-    ) => {
-      startLinesSet.add(startLine);
-
-      if (highlightElements.length === 0) {
+  const bindHighlightEvent = useCallback(
+    (previewElement: HTMLDivElement) => {
+      // NOTE: No need to handle this event in zen mode.
+      if (enablePreviewZenMode) {
         return;
       }
-      // console.log('* highlightElements: ', highlightElements);
-      const firstHighlightElement = highlightElements[0] as HTMLElement;
-      const linesSet = new Set<number>([startLine]);
 
-      // Iterate over highlightElementToLinesMap
-      // If firstHighlightElement contains the highlightElement in the map
-      // Add its lines to the current linesSet
-      for (const [
-        highlightElement,
-        lines,
-      ] of highlightElementToLinesMap.current) {
-        if (firstHighlightElement.contains(highlightElement)) {
-          lines.forEach((line) => {
-            linesSet.add(line);
-          });
+      setHighlightElement(null);
+      const sourceLineElements =
+        previewElement.querySelectorAll('[data-source-line]');
+
+      const highlightElementsThatAddedEventSet = new Set<
+        Element | HTMLElement
+      >();
+      const sourceLineElementToContainerElementMap = new Map<
+        Element | HTMLElement,
+        Element | HTMLElement
+      >();
+
+      highlightElementToLinesMap.current = new Map<
+        HTMLElement | Element,
+        number[]
+      >();
+      highlightElementLines.current = [];
+      const startLinesSet = new Set<number>();
+
+      const bindHighlightElementsEvent = (
+        highlightElements: (HTMLElement | Element)[],
+        startLine: number,
+      ) => {
+        startLinesSet.add(startLine);
+
+        if (highlightElements.length === 0) {
+          return;
         }
-      }
+        // console.log('* highlightElements: ', highlightElements);
+        const firstHighlightElement = highlightElements[0] as HTMLElement;
+        const linesSet = new Set<number>([startLine]);
 
-      // Add event listeners
-      highlightElements.forEach((highlightElement) => {
-        if (highlightElementsThatAddedEventSet.has(highlightElement)) {
-          const lines =
-            highlightElementToLinesMap.current.get(highlightElement);
-          if (lines) {
+        // Iterate over highlightElementToLinesMap
+        // If firstHighlightElement contains the highlightElement in the map
+        // Add its lines to the current linesSet
+        for (const [
+          highlightElement,
+          lines,
+        ] of highlightElementToLinesMap.current) {
+          if (firstHighlightElement.contains(highlightElement)) {
             lines.forEach((line) => {
               linesSet.add(line);
             });
           }
-          return;
-        } else {
-          highlightElementsThatAddedEventSet.add(highlightElement);
         }
-        highlightElement.addEventListener(
-          /*'mouseenter'*/ 'mouseover',
-          (event) => {
-            event.stopPropagation();
-            setIsMouseOverPreview(true);
 
-            // Remove "highlight-line" class name from all highlight elements.
-            const currentHighlightElements = Array.from(
-              document.getElementsByClassName('highlight-line'),
-            );
-            currentHighlightElements.forEach((currentHighlightElement) => {
-              currentHighlightElement.classList.remove('highlight-line');
-            });
+        // Add event listeners
+        highlightElements.forEach((highlightElement) => {
+          if (highlightElementsThatAddedEventSet.has(highlightElement)) {
+            const lines =
+              highlightElementToLinesMap.current.get(highlightElement);
+            if (lines) {
+              lines.forEach((line) => {
+                linesSet.add(line);
+              });
+            }
+            return;
+          } else {
+            highlightElementsThatAddedEventSet.add(highlightElement);
+          }
+          highlightElement.addEventListener(
+            /*'mouseenter'*/ 'mouseover',
+            (event) => {
+              event.stopPropagation();
+              setIsMouseOverPreview(true);
 
-            // Add "highlight-line" class name.
-            highlightElements.forEach((highlightElement) => {
-              highlightElement.classList.add('highlight-line');
-            });
-            setHighlightElement(firstHighlightElement);
-          },
+              // Remove "highlight-line" class name from all highlight elements.
+              const currentHighlightElements = Array.from(
+                document.getElementsByClassName('highlight-line'),
+              );
+              currentHighlightElements.forEach((currentHighlightElement) => {
+                currentHighlightElement.classList.remove('highlight-line');
+              });
+
+              // Add "highlight-line" class name.
+              highlightElements.forEach((highlightElement) => {
+                highlightElement.classList.add('highlight-line');
+              });
+              setHighlightElement(firstHighlightElement);
+            },
+          );
+          highlightElement.addEventListener(
+            /*'mouseleave'*/ 'mouseout',
+            (event) => {
+              event.stopPropagation();
+              highlightElements.forEach((highlightElement) => {
+                highlightElement.classList.remove('highlight-line');
+                highlightElement.classList.remove('highlight-active');
+              });
+              setHighlightElement(null);
+            },
+          );
+        });
+        highlightElementToLinesMap.current.set(
+          firstHighlightElement,
+          Array.from(linesSet).sort((a, b) => a - b),
         );
-        highlightElement.addEventListener(
-          /*'mouseleave'*/ 'mouseout',
-          (event) => {
-            event.stopPropagation();
-            highlightElements.forEach((highlightElement) => {
-              highlightElement.classList.remove('highlight-line');
-              highlightElement.classList.remove('highlight-active');
-            });
-            setHighlightElement(null);
-          },
-        );
-      });
-      highlightElementToLinesMap.current.set(
-        firstHighlightElement,
-        Array.from(linesSet).sort((a, b) => a - b),
-      );
-    };
+      };
 
-    for (let i = sourceLineElements.length - 1; i >= 0; i--) {
-      const sourceLineElement = sourceLineElements[i];
-      const dataSourceLine = getDataSourceLine(sourceLineElement) ?? 0;
+      for (let i = sourceLineElements.length - 1; i >= 0; i--) {
+        const sourceLineElement = sourceLineElements[i];
+        const dataSourceLine = getDataSourceLine(sourceLineElement) ?? 0;
 
-      if (dataSourceLine > totalLineCount.current) {
-        // FIXME: This means we didn't get the source map correctly.
-        return;
-      }
+        if (dataSourceLine > totalLineCount.current) {
+          // FIXME: This means we didn't get the source map correctly.
+          return;
+        }
 
-      // Ignore the link
-      if (sourceLineElement.tagName === 'A') {
-        continue;
-      }
+        // Ignore the link
+        if (sourceLineElement.tagName === 'A') {
+          continue;
+        }
 
-      // Input List item
-      /*
+        // Input List item
+        /*
       if (
         sourceLineElement.tagName === 'INPUT' &&
         sourceLineElement.classList.contains('task-list-item-checkbox')
@@ -997,112 +1008,119 @@ const PreviewContainer = createContainer(() => {
         }
       }
       */
-      // Code chunk
-      if (
-        sourceLineElement.tagName === 'PRE' &&
-        sourceLineElement.parentElement?.classList.contains('input-div') &&
-        sourceLineElement.parentElement.parentElement?.classList.contains(
-          'code-chunk',
-        )
-      ) {
-        const highlightElement = sourceLineElement.parentElement.parentElement;
-        if (highlightElement) {
-          bindHighlightElementsEvent([highlightElement], dataSourceLine);
+        // Code chunk
+        if (
+          sourceLineElement.tagName === 'PRE' &&
+          sourceLineElement.parentElement?.classList.contains('input-div') &&
+          sourceLineElement.parentElement.parentElement?.classList.contains(
+            'code-chunk',
+          )
+        ) {
+          const highlightElement =
+            sourceLineElement.parentElement.parentElement;
+          if (highlightElement) {
+            bindHighlightElementsEvent([highlightElement], dataSourceLine);
 
-          sourceLineElementToContainerElementMap.set(
-            sourceLineElement,
-            highlightElement,
-          );
-        }
-      }
-      // Image and link
-      else if (
-        sourceLineElement.tagName === 'IMG' ||
-        sourceLineElement.tagName === 'A'
-      ) {
-        const highlightElement = sourceLineElement.parentElement;
-        if (highlightElement) {
-          bindHighlightElementsEvent([highlightElement], dataSourceLine);
-
-          sourceLineElementToContainerElementMap.set(
-            sourceLineElement,
-            highlightElement,
-          );
-        }
-      }
-      // Other elements
-      else {
-        bindHighlightElementsEvent([sourceLineElement], dataSourceLine);
-
-        sourceLineElementToContainerElementMap.set(
-          sourceLineElement,
-          sourceLineElement.parentElement?.tagName === 'P'
-            ? sourceLineElement.parentElement
-            : sourceLineElement,
-        );
-      }
-
-      // First [data-source-line] element
-      // Bind all elements above it
-      if (i == 0) {
-        const highlightElements: (Element | HTMLElement)[] = [];
-        let siblingElement =
-          sourceLineElementToContainerElementMap.get(sourceLineElement)
-            ?.previousElementSibling;
-        while (siblingElement) {
-          if (
-            !(siblingElement.tagName === 'P' && siblingElement.innerHTML === '')
-          ) {
-            highlightElements.push(siblingElement);
+            sourceLineElementToContainerElementMap.set(
+              sourceLineElement,
+              highlightElement,
+            );
           }
-          siblingElement = siblingElement.previousElementSibling;
         }
-        bindHighlightElementsEvent(highlightElements, 0);
-      }
+        // Image and link
+        else if (
+          sourceLineElement.tagName === 'IMG' ||
+          sourceLineElement.tagName === 'A'
+        ) {
+          const highlightElement = sourceLineElement.parentElement;
+          if (highlightElement) {
+            bindHighlightElementsEvent([highlightElement], dataSourceLine);
 
-      // Check elements between this and the next [data-source-line] element who has the same parent
-      if (i < sourceLineElements.length - 1) {
-        for (let j = i + 1; j < sourceLineElements.length; j++) {
-          const nextSourceLineElement = sourceLineElements[j];
-          const sourceLineElementContainer =
-            sourceLineElementToContainerElementMap.get(sourceLineElement);
-          const nextSourceLineElementContainer =
-            sourceLineElementToContainerElementMap.get(nextSourceLineElement);
-          if (
-            sourceLineElementContainer &&
-            nextSourceLineElementContainer &&
-            sourceLineElementContainer !== nextSourceLineElementContainer &&
-            sourceLineElementContainer.parentElement ===
-              nextSourceLineElementContainer.parentElement
-          ) {
-            const highlightElements: (Element | HTMLElement)[] = [];
-            let siblingElement = sourceLineElementContainer.nextElementSibling;
-            while (
-              siblingElement &&
-              siblingElement !== nextSourceLineElementContainer
+            sourceLineElementToContainerElementMap.set(
+              sourceLineElement,
+              highlightElement,
+            );
+          }
+        }
+        // Other elements
+        else {
+          bindHighlightElementsEvent([sourceLineElement], dataSourceLine);
+
+          sourceLineElementToContainerElementMap.set(
+            sourceLineElement,
+            sourceLineElement.parentElement?.tagName === 'P'
+              ? sourceLineElement.parentElement
+              : sourceLineElement,
+          );
+        }
+
+        // First [data-source-line] element
+        // Bind all elements above it
+        if (i == 0) {
+          const highlightElements: (Element | HTMLElement)[] = [];
+          let siblingElement =
+            sourceLineElementToContainerElementMap.get(sourceLineElement)
+              ?.previousElementSibling;
+          while (siblingElement) {
+            if (
+              !(
+                siblingElement.tagName === 'P' &&
+                siblingElement.innerHTML === ''
+              )
             ) {
-              if (
-                !(
-                  siblingElement.tagName === 'P' &&
-                  siblingElement.innerHTML === ''
-                )
-              ) {
-                highlightElements.push(siblingElement);
-              }
-              siblingElement = siblingElement.nextElementSibling;
+              highlightElements.push(siblingElement);
             }
+            siblingElement = siblingElement.previousElementSibling;
+          }
+          bindHighlightElementsEvent(highlightElements, 0);
+        }
 
-            bindHighlightElementsEvent(highlightElements, dataSourceLine);
-            break;
+        // Check elements between this and the next [data-source-line] element who has the same parent
+        if (i < sourceLineElements.length - 1) {
+          for (let j = i + 1; j < sourceLineElements.length; j++) {
+            const nextSourceLineElement = sourceLineElements[j];
+            const sourceLineElementContainer =
+              sourceLineElementToContainerElementMap.get(sourceLineElement);
+            const nextSourceLineElementContainer =
+              sourceLineElementToContainerElementMap.get(nextSourceLineElement);
+            if (
+              sourceLineElementContainer &&
+              nextSourceLineElementContainer &&
+              sourceLineElementContainer !== nextSourceLineElementContainer &&
+              sourceLineElementContainer.parentElement ===
+                nextSourceLineElementContainer.parentElement
+            ) {
+              const highlightElements: (Element | HTMLElement)[] = [];
+              let siblingElement =
+                sourceLineElementContainer.nextElementSibling;
+              while (
+                siblingElement &&
+                siblingElement !== nextSourceLineElementContainer
+              ) {
+                if (
+                  !(
+                    siblingElement.tagName === 'P' &&
+                    siblingElement.innerHTML === ''
+                  )
+                ) {
+                  highlightElements.push(siblingElement);
+                }
+                siblingElement = siblingElement.nextElementSibling;
+              }
+
+              bindHighlightElementsEvent(highlightElements, dataSourceLine);
+              break;
+            }
           }
         }
       }
-    }
 
-    highlightElementLines.current = Array.from(startLinesSet).sort(
-      (a, b) => a - b,
-    );
-  }, []);
+      highlightElementLines.current = Array.from(startLinesSet).sort(
+        (a, b) => a - b,
+      );
+    },
+    [enablePreviewZenMode],
+  );
 
   const updateHtml = useCallback(
     (html: string, id: string, classes: string) => {
@@ -1137,7 +1155,9 @@ const PreviewContainer = createContainer(() => {
           previewElement.current.id = id || '';
           previewElement.current.setAttribute(
             'class',
-            `crossnote markdown-preview ${classes}`,
+            `crossnote markdown-preview ${
+              enablePreviewZenMode ? 'zen-mode' : ''
+            } ${classes}`,
           );
 
           // scroll to initial position
@@ -1166,6 +1186,7 @@ const PreviewContainer = createContainer(() => {
       isPresentationMode,
       postMessage,
       scrollToRevealSourceLine,
+      enablePreviewZenMode,
     ],
   );
 
@@ -1640,6 +1661,7 @@ const PreviewContainer = createContainer(() => {
     clickSidebarTocButton,
     config,
     contextMenuId,
+    enablePreviewZenMode,
     getHighlightElementLineRange,
     hiddenPreviewElement,
     highlightElement,

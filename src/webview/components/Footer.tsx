@@ -15,6 +15,7 @@ export default function Footer() {
     showBacklinks,
     theme,
     markdown,
+    enablePreviewZenMode,
   } = PreviewContainer.useContainer();
   const [readingTimeEstimation, setReadingTimeEstimation] = useState<
     | {
@@ -39,12 +40,15 @@ export default function Footer() {
       data-theme={theme}
     >
       <div
-        className="w-full flex flex-row justify-between items-center backdrop-blur-xl"
+        className={
+          'w-full flex flex-row items-center backdrop-blur-xl ' +
+          (enablePreviewZenMode ? 'justify-end' : 'justify-between')
+        }
         style={{
           backgroundColor: getElementBackgroundColor(document.body),
         }}
       >
-        {readingTimeEstimation && (
+        {!enablePreviewZenMode && readingTimeEstimation && (
           <div className={classNames('p-1 ml-2 text-xs')}>
             {readingTimeEstimation.text}
           </div>

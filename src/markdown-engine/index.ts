@@ -360,6 +360,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
       }
       for (var i = 0; i < vegaEls.length; i++) {
         const vegaEl = vegaEls[i]
+        if (vegaEl.hasAttribute("data-processed")) {
+          continue;
+        }
         try {
           var spec = JSON.parse(vegaEl.textContent);
           vegaEmbed(vegaEl, spec, { actions: false, renderer: 'svg' })

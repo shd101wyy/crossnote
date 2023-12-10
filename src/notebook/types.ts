@@ -194,6 +194,12 @@ export interface NotebookConfig {
   parserConfig: ParserConfig;
 
   /**
+   * Whether to enable preview zen mode.
+   * Enable this option will hide unnecessary UI elements in preview unless your mouse is over it.
+   */
+  enablePreviewZenMode: boolean;
+
+  /**
    * Whether to break on single new line.
    *
    * If set to `false`, then two spaces at the end of line will be required to break a line.
@@ -534,6 +540,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     mathjaxConfig: getDefaultMathjaxConfig(),
     katexConfig: getDefaultKatexConfig(),
     parserConfig: getDefaultParserConfig(),
+    enablePreviewZenMode: false,
     usePandocParser: false,
     breakOnSingleNewLine: true,
     enableTypographer: false,
