@@ -4,6 +4,17 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.7] - 2023-12-10
+
+### New features
+
+- Added `enablePreviewZenMode` option and reorganized the right-click context menu.
+
+### Bug fixes
+
+- Fixed rendering `vega-lite` in `Reveal.js` slide: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1880
+- Removed one github-dark background css attribute: https://github.com/shd101wyy/crossnote/issues/344
+
 ## [0.9.6] - 2023-10-24
 
 ### Changes
