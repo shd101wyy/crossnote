@@ -10,6 +10,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 - Added `enablePreviewZenMode` option and reorganized the right-click context menu.
 
+  ![image](https://github.com/shd101wyy/crossnote/assets/1908863/26e2237e-c6e2-433e-a063-6de2c01a64bb)
+
 ### Bug fixes
 
 - Fixed rendering `vega-lite` in `Reveal.js` slide: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1880
