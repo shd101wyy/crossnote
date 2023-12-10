@@ -695,7 +695,7 @@ export async function transformMarkdown(
         }
         // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types#common_image_file_types
         else if (
-          extname.match(/^\.(apng|avif|gif|jpeg|jpg|png|svg|bmp|webp)/) ||
+          extname.match(/^\.(apng|avif|gif|jpeg|jpg|png|svg|bmp|webp|emf)/) ||
           extname === '' // NOTE: For example, for github image like: ![Screenshot from 2023-10-15 15-34-27](https://github.com/shd101wyy/crossnote/assets/1908863/ede91390-3cca-4b83-8e30-33027bf0a363)
         ) {
           if (importMatch || wikilinkImportMatch) {
