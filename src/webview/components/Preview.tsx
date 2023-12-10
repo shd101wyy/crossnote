@@ -14,6 +14,7 @@ import { Topbar } from './Topbar';
 
 export default function Preview() {
   const {
+    enablePreviewZenMode,
     hiddenPreviewElement,
     isPresentationMode,
     isLoadingPreview,
@@ -80,9 +81,11 @@ export default function Preview() {
       {/** Context menu */}
       <ContextMenu></ContextMenu>
       {/** Floating Actions */}
-      <FloatingActions></FloatingActions>
+      {!enablePreviewZenMode && <FloatingActions></FloatingActions>}
       {/** Markdown Editor */}
-      {highlightElementBeingEdited && <MarkdownEditor></MarkdownEditor>}
+      {!enablePreviewZenMode && highlightElementBeingEdited && (
+        <MarkdownEditor></MarkdownEditor>
+      )}
     </div>
   );
 }

@@ -163,6 +163,9 @@ const PreviewContainer = createContainer(() => {
   const isVSCode = useMemo(() => {
     return !!config.isVSCode;
   }, [config]);
+  const enablePreviewZenMode = useMemo(() => {
+    return !!config.enablePreviewZenMode;
+  }, [config]);
   const contextMenuId = useMemo(() => {
     return 'crossnote-context-menu';
   }, []);
@@ -1137,7 +1140,9 @@ const PreviewContainer = createContainer(() => {
           previewElement.current.id = id || '';
           previewElement.current.setAttribute(
             'class',
-            `crossnote markdown-preview ${classes}`,
+            `crossnote markdown-preview ${
+              enablePreviewZenMode ? 'zen-mode' : ''
+            } ${classes}`,
           );
 
           // scroll to initial position
@@ -1166,6 +1171,7 @@ const PreviewContainer = createContainer(() => {
       isPresentationMode,
       postMessage,
       scrollToRevealSourceLine,
+      enablePreviewZenMode,
     ],
   );
 
@@ -1640,6 +1646,7 @@ const PreviewContainer = createContainer(() => {
     clickSidebarTocButton,
     config,
     contextMenuId,
+    enablePreviewZenMode,
     getHighlightElementLineRange,
     hiddenPreviewElement,
     highlightElement,
