@@ -9,6 +9,7 @@ import { isBackgroundColorLight } from '../lib/utility';
 
 window['jQuery'] = $;
 window['$'] = $;
+const showSidebarTocStorageKey = 'crossnote.showSidebarToc';
 
 function getWindowScrollTop() {
   return document.documentElement.scrollTop || 0;
@@ -116,7 +117,10 @@ const PreviewContainer = createContainer(() => {
   const backlinksElement = useRef<HTMLDivElement>(null);
   const backlinksSha = useRef<string>(SHA256(JSON.stringify([])).toString());
   const [showImageHelper, setShowImageHelper] = useState<boolean>(false);
-  const [showSidebarToc, setShowSidebarToc] = useState<boolean>(false);
+  const [showSidebarToc, setShowSidebarToc] = useState<boolean>(
+    () => localStorage.getItem(showSidebarTocStorageKey) === '1',
+  );
+
   const [sidebarTocHtml, setSidebarTocHtml] = useState<string>('');
   const [showBacklinks, setShowBacklinks] = useState<boolean>(false);
   const [isRefreshingPreview, setIsRefreshingPreview] =
@@ -1653,6 +1657,10 @@ const PreviewContainer = createContainer(() => {
       };
     }
   }, [highlightElementBeingEdited]);
+
+  useEffect(() => {
+    localStorage.setItem(showSidebarTocStorageKey, showSidebarToc ? '1' : '0');
+  }, [showSidebarToc]);
 
   return {
     backlinks,
