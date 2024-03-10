@@ -256,3 +256,9 @@ body.floating-action-open.preview-container {
     max-width: 100%;
   }
 }
+
+// https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1920
+// it seems like tailwindcss overrides the `table` style.
+pre span.token.table {
+  display: inline;
+}

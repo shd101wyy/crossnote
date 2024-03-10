@@ -461,7 +461,7 @@ export async function transformMarkdown(
       }
       // ========== End: Custom Comment ==========
       // ========== Start: Heading ==========
-      else if ((headingMatch = line.match(/^(#{1,7}).*/))) {
+      else if ((headingMatch = line.match(/^(#{1,7})\s.*/))) {
         let heading = line.replace(headingMatch[1], '').trim();
         const tag = headingMatch[1];
         const level = tag.length;
