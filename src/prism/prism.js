@@ -21,11 +21,11 @@ var _self =
             return n instanceof i
               ? new i(n.type, e(n.content), n.alias)
               : Array.isArray(n)
-              ? n.map(e)
-              : n
-                  .replace(/&/g, '&amp;')
-                  .replace(/</g, '&lt;')
-                  .replace(/\u00a0/g, ' ');
+                ? n.map(e)
+                : n
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/\u00a0/g, ' ');
           },
           type: function (e) {
             return Object.prototype.toString.call(e).slice(8, -1);
@@ -415,8 +415,8 @@ var _self =
       'loading' === h || ('interactive' === h && g && g.defer)
         ? document.addEventListener('DOMContentLoaded', f)
         : window.requestAnimationFrame
-        ? window.requestAnimationFrame(f)
-        : window.setTimeout(f, 16);
+          ? window.requestAnimationFrame(f)
+          : window.setTimeout(f, 16);
     }
     return a;
   })(_self);
@@ -7730,8 +7730,8 @@ Prism.languages.jsstacktrace = {
     return 'string' == typeof e
       ? e
       : Array.isArray(e)
-      ? e.map(c).join('')
-      : c(e.content);
+        ? e.map(c).join('')
+        : c(e.content);
   }
   e.hooks.add('after-tokenize', function (t) {
     t.language in u &&
@@ -9730,8 +9730,8 @@ Prism.languages['nand2tetris-hdl'] = {
     return 'string' == typeof e
       ? e
       : Array.isArray(e)
-      ? e.map(t).join('')
-      : t(e.content);
+        ? e.map(t).join('')
+        : t(e.content);
   }
   (e.languages.naniscript = {
     'comment': { pattern: /^([\t ]*);.*/m, lookbehind: !0 },
@@ -11857,8 +11857,8 @@ Prism.languages.r = {
         ? 'string' == typeof t
           ? t
           : 'string' == typeof t.content
-          ? t.content
-          : t.content.map(s).join('')
+            ? t.content
+            : t.content.map(s).join('')
         : '';
     },
     g = function (n) {
@@ -11878,13 +11878,13 @@ Prism.languages.r = {
                     openedBraces: 0,
                   })
               : e.length > 0 && 'punctuation' === o.type && '{' === o.content
-              ? e[e.length - 1].openedBraces++
-              : e.length > 0 &&
-                e[e.length - 1].openedBraces > 0 &&
-                'punctuation' === o.type &&
-                '}' === o.content
-              ? e[e.length - 1].openedBraces--
-              : (i = !0)),
+                ? e[e.length - 1].openedBraces++
+                : e.length > 0 &&
+                    e[e.length - 1].openedBraces > 0 &&
+                    'punctuation' === o.type &&
+                    '}' === o.content
+                  ? e[e.length - 1].openedBraces--
+                  : (i = !0)),
           (i || 'string' == typeof o) &&
             e.length > 0 &&
             0 === e[e.length - 1].openedBraces)
@@ -15276,8 +15276,8 @@ Prism.languages.xojo = {
       return 'string' == typeof e
         ? e
         : 'string' == typeof e.content
-        ? e.content
-        : e.content.map(t).join('');
+          ? e.content
+          : e.content.map(t).join('');
     },
     n = function (a) {
       for (var o = [], i = 0; i < a.length; i++) {
@@ -15296,23 +15296,23 @@ Prism.languages.xojo = {
                     openedBraces: 0,
                   })
               : !(
-                  o.length > 0 &&
+                    o.length > 0 &&
+                    'punctuation' === r.type &&
+                    '{' === r.content
+                  ) ||
+                  (a[i + 1] &&
+                    'punctuation' === a[i + 1].type &&
+                    '{' === a[i + 1].content) ||
+                  (a[i - 1] &&
+                    'plain-text' === a[i - 1].type &&
+                    '{' === a[i - 1].content)
+                ? o.length > 0 &&
+                  o[o.length - 1].openedBraces > 0 &&
                   'punctuation' === r.type &&
-                  '{' === r.content
-                ) ||
-                (a[i + 1] &&
-                  'punctuation' === a[i + 1].type &&
-                  '{' === a[i + 1].content) ||
-                (a[i - 1] &&
-                  'plain-text' === a[i - 1].type &&
-                  '{' === a[i - 1].content)
-              ? o.length > 0 &&
-                o[o.length - 1].openedBraces > 0 &&
-                'punctuation' === r.type &&
-                '}' === r.content
-                ? o[o.length - 1].openedBraces--
-                : 'comment' !== r.type && (s = !0)
-              : o[o.length - 1].openedBraces++),
+                  '}' === r.content
+                  ? o[o.length - 1].openedBraces--
+                  : 'comment' !== r.type && (s = !0)
+                : o[o.length - 1].openedBraces++),
           (s || 'string' == typeof r) &&
             o.length > 0 &&
             0 === o[o.length - 1].openedBraces)

@@ -1063,8 +1063,9 @@ const PreviewContainer = createContainer(() => {
         if (i == 0) {
           const highlightElements: (Element | HTMLElement)[] = [];
           let siblingElement =
-            sourceLineElementToContainerElementMap.get(sourceLineElement)
-              ?.previousElementSibling;
+            sourceLineElementToContainerElementMap.get(
+              sourceLineElement,
+            )?.previousElementSibling;
           while (siblingElement) {
             if (
               !(
