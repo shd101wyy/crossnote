@@ -832,7 +832,6 @@ const PreviewContainer = createContainer(() => {
           }
         } catch (error) {
           // https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1934
-          console.error(error);
           continue;
         }
       }
