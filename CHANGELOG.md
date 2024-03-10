@@ -18,7 +18,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 - Fixed [[BUG] #tag is treated as Header 1](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1937)
 - Fixed [[BUG] toml code block support is not very good](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1920)
-- Fixed [[BUG] If URL encoding is used, the preview cannot be displayed. ](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1934)
+- Fixed [[BUG] If URL encoding is used, the preview cannot be displayed.](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1934)
 
 ## [0.9.7] - 2023-12-10
 
