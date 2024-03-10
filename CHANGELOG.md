@@ -4,6 +4,16 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.8] - 2024-3-10
+
+### New features
+
+- @moonlitusun sidebarToc supports local caching
+
+### Updates
+
+- @oneWaveAdrian updated the `mermaid` version to the latest `10.9.0`.
+
 ## [0.9.7] - 2023-12-10
 
 ### New features
