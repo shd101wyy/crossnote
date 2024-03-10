@@ -784,50 +784,56 @@ const PreviewContainer = createContainer(() => {
         if (!hrefAttr) {
           continue;
         }
-        const href = decodeURIComponent(hrefAttr); // decodeURI here for Chinese like unicode heading
-        if (href && href[0] === '#') {
-          a.onclick = (event) => {
-            event.preventDefault();
-            event.stopPropagation();
+        try {
+          const href = decodeURIComponent(hrefAttr); // decodeURI here for Chinese like unicode heading
+          if (href && href[0] === '#') {
+            a.onclick = (event) => {
+              event.preventDefault();
+              event.stopPropagation();
 
-            if (!previewElement.current) {
-              return;
-            }
+              if (!previewElement.current) {
+                return;
+              }
 
-            // NOTE: CSS.escape is needed here to escape special characters like '[' and number ID.
-            const targetElement = previewElement.current.querySelector(
-              `#${CSS.escape(href.slice(1))}`,
-            ) as HTMLElement;
-            if (!targetElement) {
-              return;
-            }
+              // NOTE: CSS.escape is needed here to escape special characters like '[' and number ID.
+              const targetElement = previewElement.current.querySelector(
+                `#${CSS.escape(href.slice(1))}`,
+              ) as HTMLElement;
+              if (!targetElement) {
+                return;
+              }
 
-            // jump to tag position
-            let offsetTop = 0;
-            let el = targetElement;
-            while (el && el !== previewElement.current) {
-              offsetTop += el.offsetTop;
-              el = el.offsetParent as HTMLElement;
-            }
+              // jump to tag position
+              let offsetTop = 0;
+              let el = targetElement;
+              while (el && el !== previewElement.current) {
+                offsetTop += el.offsetTop;
+                el = el.offsetParent as HTMLElement;
+              }
 
-            if (getWindowScrollTop() > offsetTop) {
-              setWindowScrollTop(offsetTop - 32 - targetElement.offsetHeight);
-            } else {
-              setWindowScrollTop(offsetTop);
-            }
-          };
-        } else {
-          a.onclick = (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            postMessage('clickTagA', [
-              {
-                uri: sourceUri.current,
-                href: encodeURIComponent(href.replace(/\\/g, '/')),
-                scheme: sourceScheme.current,
-              },
-            ]);
-          };
+              if (getWindowScrollTop() > offsetTop) {
+                setWindowScrollTop(offsetTop - 32 - targetElement.offsetHeight);
+              } else {
+                setWindowScrollTop(offsetTop);
+              }
+            };
+          } else {
+            a.onclick = (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              postMessage('clickTagA', [
+                {
+                  uri: sourceUri.current,
+                  href: encodeURIComponent(href.replace(/\\/g, '/')),
+                  scheme: sourceScheme.current,
+                },
+              ]);
+            };
+          }
+        } catch (error) {
+          // https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1934
+          console.error(error);
+          continue;
         }
       }
     },
