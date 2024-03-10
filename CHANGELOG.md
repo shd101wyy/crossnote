@@ -4,7 +4,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
-## [0.9.8] - 2024-3-10
+## [0.9.8] - 2024-03-10
 
 ### New features
 
