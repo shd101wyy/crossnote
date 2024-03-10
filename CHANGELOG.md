@@ -14,6 +14,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 - @oneWaveAdrian updated the `mermaid` version to the latest `10.9.0`.
 
+### Bug fixes
+
+- Fixed [[BUG] #tag is treated as Header 1](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1937)
+
 ## [0.9.7] - 2023-12-10
 
 ### New features
