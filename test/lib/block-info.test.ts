@@ -10,15 +10,15 @@ const testCasesForParseBlockInfo: {
 }[] = [
   {
     input: '',
-    expect: { language: 'text', attributes: { class: 'text' } },
+    expect: { language: '', attributes: { class: '' } },
   },
   {
     input: '{}',
-    expect: { language: 'text', attributes: { class: 'text' } },
+    expect: { language: '', attributes: { class: '' } },
   },
   {
     input: '{#id}',
-    expect: { language: 'text', attributes: { id: 'id', class: 'text' } },
+    expect: { language: '', attributes: { id: 'id', class: '' } },
   },
   {
     input: 'js cmd=true',
@@ -78,8 +78,8 @@ const testCasesForParseBlockInfo: {
   {
     input: ' {just=attribute}',
     expect: {
-      language: 'text',
-      attributes: { just: 'attribute', class: 'text' },
+      language: '',
+      attributes: { just: 'attribute', class: '' },
     },
   },
   {

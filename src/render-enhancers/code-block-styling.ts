@@ -61,7 +61,7 @@ export default async function enhance($: CheerioStatic): Promise<void> {
       $container.empty().append($(`<code></code>`).text(code));
     }
 
-    $container.addClass(`language-${language}`);
+    $container.addClass(`language-${language || 'text'}`);
     if (info.attributes['class']) {
       $container.addClass(info.attributes['class']);
       addLineNumbersIfNecessary($container, code);
