@@ -33,7 +33,7 @@ export const parseBlockInfo = (raw = ''): BlockInfo => {
 
   const classNames = attributes.class ? attributes.class.split(/\s+/) : [];
   if (!language) {
-    language = classNames[0] || 'text';
+    language = classNames[0] || '';
   }
   if (!classNames.includes(language)) {
     attributes.class = [language, ...classNames].join(' ');

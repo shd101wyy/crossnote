@@ -4,6 +4,17 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.9] - 2024-03-11
+
+### Bug fixes
+
+- Fixed [Long sidebarToc does not display completely](https://github.com/shd101wyy/crossnote/pull/354) by @moonlitusun
+- Removed the `text` as the default language selector for code block.
+
+### Chore
+
+- Updated [flake.nix](./flake.nix) and node.js to 20.
+
 ## [0.9.8] - 2024-03-10
 
 ### New features
