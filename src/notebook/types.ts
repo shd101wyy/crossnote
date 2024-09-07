@@ -533,6 +533,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
       '.mkd',
       '.rmd',
       '.qmd',
+      '.mdx',
     ],
     globalCss: '',
     includeInHeader: '',

@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Changes
+
+- Added `.mdx` to the default `markdownFileExtensions`.
+
 ### Updates
 
 - Updated `mermaid` version to the latest `11.1.1`.
