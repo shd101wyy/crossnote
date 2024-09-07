@@ -1,6 +1,6 @@
 {
   "name": "crossnote",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
@@ -81,7 +81,7 @@
     "html-to-image": "^1.11.11",
     "imagemagick-cli": "^0.5.0",
     "jquery": "^3.7.1",
-    "katex": "^0.16.9",
+    "katex": "^0.16.11",
     "less": "^4.2.0",
     "markdown-it": "^13.0.1",
     "markdown-it-abbr": "^1.0.4",
@@ -93,7 +93,7 @@
     "markdown-it-sub": "^1.0.0",
     "markdown-it-sup": "^1.0.0",
     "md5": "^2.3.0",
-    "mermaid": "^10.9.0",
+    "mermaid": "^11.1.1",
     "minisearch": "^6.1.0",
     "mkdirp": "^3.0.1",
     "monaco-editor": "^0.43.0",

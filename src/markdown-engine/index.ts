@@ -783,7 +783,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/katex/katex.min.css',
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.9/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.11/dist/katex.min.css">`;
       }
     } else {
       mathStyle = '';
@@ -812,7 +812,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.1.1/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">
@@ -1730,7 +1730,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig['html'] &&
         ebookConfig['html'].cdn
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.9/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.11/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),

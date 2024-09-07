@@ -262,15 +262,16 @@ const PreviewContainer = createContainer(() => {
       if (t < nonEmptyList[nonEmptyList.length - 1]) {
         el.removeAttribute('data-source-line');
       } else {
-        nonEmptyList.push(t);
-
         let offsetTop = 0;
         while (el && el !== previewElement.current) {
           offsetTop += el.offsetTop;
           el = el.offsetParent as HTMLElement;
         }
 
-        newScrollMap[t] = Math.round(offsetTop);
+        if (offsetTop > 0) {
+          nonEmptyList.push(t);
+          newScrollMap[t] = Math.round(offsetTop);
+        }
       }
     }
 

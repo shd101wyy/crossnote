@@ -80,7 +80,7 @@ main();
 ```js
 const config = {
   // File of extensions to be included in the notebook
-  markdownFileExtensions: [".md", ".markdown", ".mdown", ".mkdn", ".mkd", ".rmd", ".qmd"],
+  markdownFileExtensions: [".md", ".markdown", ".mdown", ".mkdn", ".mkd", ".rmd", ".qmd", ".mdx"],
 
   // The content to be included in HTML `<head>` tag.
   // This is useful for adding custom styles or scripts.
