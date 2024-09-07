@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.10] - 2024-09-07
+
 ### Changes
 
 - Added `.mdx` to the default `markdownFileExtensions`.
@@ -15,7 +17,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### Bug fixes
 
-- Fixed one scroll sync bug.
+- Fixed a scroll sync bug.
 
 ## [0.9.9] - 2024-03-11
 
