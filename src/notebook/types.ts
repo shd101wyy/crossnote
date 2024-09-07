@@ -130,7 +130,7 @@ export type WikiLinkTargetFileNameChangeCase =
 export interface NotebookConfig {
   /**
    * The files of extensions to be included in the notebook
-   * @default [".md", ".markdown", ".mdown", ".mkdn", ".mkd", ".rmd", ".qmd"]
+   * @default [".md", ".markdown", ".mdown", ".mkdn", ".mkd", ".rmd", ".qmd", ".mdx"]
    */
   markdownFileExtensions: string[];
   /**
