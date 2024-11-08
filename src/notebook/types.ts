@@ -541,7 +541,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     mathjaxConfig: getDefaultMathjaxConfig(),
     katexConfig: getDefaultKatexConfig(),
     parserConfig: getDefaultParserConfig(),
-    enablePreviewZenMode: false,
+    enablePreviewZenMode: true,
     usePandocParser: false,
     breakOnSingleNewLine: true,
     enableTypographer: false,
