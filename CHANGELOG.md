@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.11] - 2024-11-08
+
+### Updates
+
+- Updated `mermaid` version to the latest `11.4.0`.
+
 ## [0.9.10] - 2024-09-07
 
 ### Changes
