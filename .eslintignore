@@ -11,3 +11,4 @@ styles/**
 dependencies/**
 src/prism/prism.js
 postcss.config.js
+babel-jest.config.js

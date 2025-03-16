@@ -1,7 +1,9 @@
 // tslint:disable-next-line no-implicit-dependencies
 import MarkdownIt from 'markdown-it';
 import MarkdownItEmoji from 'markdown-it-emoji';
-import fullEmoji from 'markdown-it-emoji/lib/data/full.json';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import fullEmoji from 'markdown-it-emoji/lib/data/full.json' with { type: 'json' };
 import { Notebook } from '../notebook';
 import { fontawesomeObject, isFontawesomebrand } from './fontawesome';
 

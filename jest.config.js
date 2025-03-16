@@ -4,7 +4,7 @@ module.exports = {
   collectCoverageFrom: ['src/**/*.{ts,tsx,js}'],
   moduleFileExtensions: ['ts', 'tsx', 'js'],
   transform: {
-    '^.+\\.m?[tj]sx?$': 'ts-jest',
+    '\\.m?[tj]sx?$': ['babel-jest', { configFile: './babel-jest.config.js' }],
   },
   transformIgnorePatterns: [
     // '/node_modules/(?!\@sindresorhus/slugify)',

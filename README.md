@@ -40,6 +40,9 @@ async function main() {
       codeBlockTheme: 'github.css',
       printBackground: true,
       enableScriptExecution: true, // <= For running code chunks.
+
+      chromePath: '/path/to/chrome', // <= For puppeteer export and open in browser locally.
+      // Recommended to use the absolute path of Chrome executable.
     },
   });
 
@@ -205,7 +208,8 @@ const config = {
   // Chrome executable path, which is used for Puppeteer export. Leaving it empty means the path will be found automatically.
   chromePath: '',
 
-  // ImageMagick command line path. Should be either `magick` or `convert`. Leaving it empty means the path will be found automatically.
+  // ImageMagick command line path. Should be either `magick` or `convert`.
+  // Leaving it empty we will use `sharp` instead.
   imageMagickPath: '',
 
   // Pandoc executable path

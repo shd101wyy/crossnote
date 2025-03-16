@@ -783,7 +783,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/katex/katex.min.css',
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.11/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.21/dist/katex.min.css">`;
       }
     } else {
       mathStyle = '';
@@ -812,7 +812,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.4.0/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.5.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">
@@ -1404,12 +1404,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       timeout = yamlConfig['puppeteer']['timeout'];
     }
     if (timeout && typeof timeout === 'number') {
-      await page.waitForTimeout(timeout);
+      await new Promise((resolve) => setTimeout(resolve, timeout));
     } else if (
       this.notebook.config.puppeteerWaitForTimeout &&
       this.notebook.config.puppeteerWaitForTimeout > 0
     ) {
-      await page.waitForTimeout(this.notebook.config.puppeteerWaitForTimeout);
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.notebook.config.puppeteerWaitForTimeout),
+      );
     }
 
     if (fileType === 'pdf') {
@@ -1730,7 +1732,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig['html'] &&
         ebookConfig['html'].cdn
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.11/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.21/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),

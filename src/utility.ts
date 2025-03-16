@@ -4,6 +4,7 @@ import * as path from 'path';
 import Sval from 'sval';
 import * as temp from 'temp';
 import { JsonObject } from 'type-fest';
+import { fileURLToPath } from 'url';
 import * as vm from 'vm';
 import * as vscode from 'vscode';
 import * as YAML from 'yaml';
@@ -16,7 +17,7 @@ if (!('structuredClone' in globalThis)) {
 
 temp.track();
 
-export function tempOpen(options): Promise<temp.OpenFile> {
+export function tempOpen(options: temp.AffixOptions): Promise<temp.OpenFile> {
   return new Promise((resolve, reject) => {
     temp.open(options, (error, info) => {
       if (error) {
@@ -82,17 +83,20 @@ export function parseYAML(yaml: string = ''): JsonObject {
  * NOTE: The __dirname is actually the ./out/(esm|cjs) directory
  * Get the `./out` directory.
  */
-let crossnoteBuildDirectory_ = (() => {
+let crossnoteBuildDirectory_: string = (() => {
   if (typeof __dirname !== 'undefined') {
+    return path.resolve(__dirname, '../');
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+  } else if (import.meta.url) {
+    // esm
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
     return path.resolve(__dirname, '../');
   } else {
     return '';
-    /*
-    // esm
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    return path.resolve(__dirname, '../../');
-    */
   }
 })();
 
