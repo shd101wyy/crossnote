@@ -24,3 +24,5 @@ I managed some of the libraries by myself instead of through npm to reduce the o
 _Attention_: Need to remove `font: inherit;` from `reveal.css`. Otherwise, `KaTeX` and `MathJax` will have trouble rendering. Also don't forget to add the empty file `none.css`.
 
 _Attention_: Don't forget to modify the `dependentLibraryMaterials` variable in `markdown-engine.ts`
+
+_Attention_: NOTE: We have to disable the `_self = window` line in `prism.js` to make it work with VSCode web extension.
