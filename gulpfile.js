@@ -7,7 +7,7 @@ const fs = require('fs');
 gulp.task('clean-out', function (cb) {
   // Delete ./out folder
   if (fs.existsSync('./out')) {
-    fs.rmdirSync('./out', { recursive: true });
+    fs.rmSync('./out', { recursive: true });
   }
   cb();
 });

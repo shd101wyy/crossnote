@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs = {
-      url = "github:NixOS/nixpkgs/nixos-24.05";
+      url = "github:NixOS/nixpkgs/nixos-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils = { url = "github:numtide/flake-utils"; };
