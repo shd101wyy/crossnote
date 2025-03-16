@@ -1,10 +1,9 @@
-import sharp from 'sharp';
-
 export async function svgElementToPNGFile(
   svgElement: string,
   pngFilePath: string,
 ): Promise<string> {
   try {
+    const sharp = (await import('sharp')).default;
     await sharp(
       Buffer.from(
         svgElement.replace(

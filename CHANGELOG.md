@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.13] - 2025-03-16
+
+### Bug fixes
+
+- Fixed a bug of bundling caused by importing the [sharp](https://www.npmjs.com/package/sharp) package.
+
 ## [0.9.12] - 2025-03-16
 
 ### Changes
