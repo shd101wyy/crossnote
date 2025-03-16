@@ -2,9 +2,6 @@ import { loader } from 'vega-loader';
 import * as YAML from 'yaml';
 import * as utility from '../utility';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const vega = require('../../dependencies/vega/vega.min.js');
-
 async function renderVega(spec: object, baseURL): Promise<string> {
   const svgHeader =
     '<?xml version="1.0" encoding="utf-8"?>\n' +
@@ -16,6 +13,9 @@ async function renderVega(spec: object, baseURL): Promise<string> {
   }
 
   async function helper(): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const vega = require('../../dependencies/vega/vega.min.js');
+
     const view = new vega.View(vega.parse(spec), {
       loader: loader({ baseURL }),
       // logLevel: vega.Warn, // <= this will cause Atom unsafe eval error.

@@ -40,6 +40,9 @@ async function main() {
       codeBlockTheme: 'github.css',
       printBackground: true,
       enableScriptExecution: true, // <= For running code chunks.
+
+      chromePath: '/path/to/chrome', // <= For puppeteer export and open in browser locally.
+      // Recommended to use the absolute path of Chrome executable.
     },
   });
 

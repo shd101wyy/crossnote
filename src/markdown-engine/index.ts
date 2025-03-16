@@ -1404,12 +1404,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       timeout = yamlConfig['puppeteer']['timeout'];
     }
     if (timeout && typeof timeout === 'number') {
-      await page.waitForTimeout(timeout);
+      await new Promise((resolve) => setTimeout(resolve, timeout));
     } else if (
       this.notebook.config.puppeteerWaitForTimeout &&
       this.notebook.config.puppeteerWaitForTimeout > 0
     ) {
-      await page.waitForTimeout(this.notebook.config.puppeteerWaitForTimeout);
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.notebook.config.puppeteerWaitForTimeout),
+      );
     }
 
     if (fileType === 'pdf') {

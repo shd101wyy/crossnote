@@ -15,6 +15,11 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - Updated `mermaid` version to the latest `11.5.0`.
 - Updated `katex` version to the latest `0.16.21`.
 - Updated `prismjs` version to the latest `1.30.0`.
+- Updated `bit-field` version to the latest `1.9.0`.
+
+### Bug fixes
+
+- Fixed the import the crossnote as nodejs esm module. [crossnote#357](https://github.com/shd101wyy/crossnote/issues/357)
 
 ## [0.9.11] - 2024-11-08
 

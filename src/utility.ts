@@ -4,6 +4,7 @@ import * as path from 'path';
 import Sval from 'sval';
 import * as temp from 'temp';
 import { JsonObject } from 'type-fest';
+import { fileURLToPath } from 'url';
 import * as vm from 'vm';
 import * as vscode from 'vscode';
 import * as YAML from 'yaml';
@@ -16,7 +17,7 @@ if (!('structuredClone' in globalThis)) {
 
 temp.track();
 
-export function tempOpen(options): Promise<temp.OpenFile> {
+export function tempOpen(options: temp.AffixOptions): Promise<temp.OpenFile> {
   return new Promise((resolve, reject) => {
     temp.open(options, (error, info) => {
       if (error) {
@@ -86,13 +87,12 @@ let crossnoteBuildDirectory_ = (() => {
   if (typeof __dirname !== 'undefined') {
     return path.resolve(__dirname, '../');
   } else {
-    return '';
-    /*
     // esm
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    return path.resolve(__dirname, '../../');
-    */
+    return path.resolve(__dirname, '../');
   }
 })();
 
