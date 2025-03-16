@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.14] - 2025-03-16
+
+### Bug fixes
+
+- Fixed the build for vscode-web caused by prismjs.
+
 ## [0.9.13] - 2025-03-16
 
 ### Bug fixes
