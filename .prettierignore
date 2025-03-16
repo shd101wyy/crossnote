@@ -24,3 +24,5 @@ styles/*.css
 test.js
 test.mjs
 test/markdown/test-files/**
+
+src/prism/prism.js
