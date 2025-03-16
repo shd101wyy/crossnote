@@ -83,16 +83,20 @@ export function parseYAML(yaml: string = ''): JsonObject {
  * NOTE: The __dirname is actually the ./out/(esm|cjs) directory
  * Get the `./out` directory.
  */
-let crossnoteBuildDirectory_ = (() => {
+let crossnoteBuildDirectory_: string = (() => {
   if (typeof __dirname !== 'undefined') {
     return path.resolve(__dirname, '../');
-  } else {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+  } else if (import.meta.url) {
     // esm
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     return path.resolve(__dirname, '../');
+  } else {
+    return '';
   }
 })();
 

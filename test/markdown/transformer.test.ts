@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'fs';
 import * as path from 'path';
-import { Notebook, transformMarkdown } from '../../src';
+import { transformMarkdown } from '../../src/markdown-engine/transformer';
+import { Notebook } from '../../src/notebook/index';
 
 const testCases = readdirSync(path.join(__dirname, './test-files'))
   .map((fileName) => {

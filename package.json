@@ -1,6 +1,6 @@
 {
   "name": "crossnote",
-  "version": "0.9.11",
+  "version": "0.9.12",
   "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
@@ -123,6 +123,11 @@
     "yaml": "^2.3.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/plugin-transform-runtime": "^7.26.10",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "@babel/preset-typescript": "^7.26.0",
     "@simbathesailor/use-what-changed": "^2.0.0",
     "@types/cheerio": "0.22.11",
     "@types/crypto-js": "^4.1.1",
@@ -149,6 +154,8 @@
     "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
     "autoprefixer": "^10.4.15",
+    "babel-jest": "^29.7.0",
+    "babel-plugin-transform-import-meta": "^2.3.2",
     "concurrently": "^8.2.1",
     "esbuild": "^0.25.0",
     "eslint": "^8.48.0",
