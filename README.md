@@ -205,7 +205,8 @@ const config = {
   // Chrome executable path, which is used for Puppeteer export. Leaving it empty means the path will be found automatically.
   chromePath: '',
 
-  // ImageMagick command line path. Should be either `magick` or `convert`. Leaving it empty means the path will be found automatically.
+  // ImageMagick command line path. Should be either `magick` or `convert`.
+  // Leaving it empty we will use `sharp` instead.
   imageMagickPath: '',
 
   // Pandoc executable path

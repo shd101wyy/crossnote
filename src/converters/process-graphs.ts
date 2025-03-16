@@ -9,8 +9,9 @@ import * as plantumlAPI from '../renderers/puml';
 import * as vegaAPI from '../renderers/vega';
 import * as vegaLiteAPI from '../renderers/vega-lite';
 import { Viz } from '../renderers/viz';
-import { svgElementToPNGFile } from '../tools/magick';
+import * as magick from '../tools/magick';
 import * as mermaidAPI from '../tools/mermaid';
+import * as sharp from '../tools/sharp';
 import * as wavedromAPI from '../tools/wavedrom';
 import { extractCommandFromBlockInfo } from '../utility';
 
@@ -151,11 +152,17 @@ export async function processGraphs(
     }
 
     const pngFilePath = path.resolve(imageDirectoryPath, outFileName);
-    await svgElementToPNGFile(
-      svg,
-      pngFilePath,
-      notebook.config.imageMagickPath,
-    );
+    if (notebook.config.imageMagickPath) {
+      // use `magick`
+      await magick.svgElementToPNGFile(
+        svg,
+        pngFilePath,
+        notebook.config.imageMagickPath,
+      );
+    } else {
+      // use `sharp`
+      await sharp.svgElementToPNGFile(svg, pngFilePath);
+    }
     let displayPNGFilePath;
     if (useRelativeFilePath) {
       displayPNGFilePath =

@@ -6,6 +6,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [0.9.12] - 2025-03-16
 
+### Changes
+
+- Use [sharp](https://www.npmjs.com/package/sharp) to convert svg element to png file if `imageMagickPath` is empty. [crossnote#366](https://github.com/shd101wyy/crossnote/issues/366)
+
 ### Updates
 
 - Updated `mermaid` version to the latest `11.5.0`.
