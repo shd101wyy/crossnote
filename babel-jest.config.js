@@ -1,4 +1,4 @@
-// eslint-disable-next-line no-undef
+/** @type {import('@babel/core').TransformOptions} */
 module.exports = {
   presets: [
     '@babel/preset-env',
