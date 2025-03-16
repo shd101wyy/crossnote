@@ -16,7 +16,8 @@ export default async function enhance($: CheerioStatic): Promise<void> {
         $row.children().each((j, col) => {
           const $col = $(col);
           const text = $col.text();
-          if (!text.length) {
+          const html = $col.html();
+          if (!text.length && !html?.length) {
             // merge to left
             const $prev = $col.prev();
             if ($prev.length) {
