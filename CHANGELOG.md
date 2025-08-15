@@ -4,6 +4,17 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.15] - 2025-08-15
+
+### Bug fixes
+
+- Fixed splitting logic to handle diagrams starting with `<svg>` correctly [crossnote#376](https://github.com/shd101wyy/crossnote/issues/376) by @shiftdownet.
+
+### Updates
+
+- Updated `katex` version to the latest `0.16.22`.
+- Updated `mermaid` version to the latest `11.9.0`.
+
 ## [0.9.14] - 2025-03-16
 
 ### Bug fixes
