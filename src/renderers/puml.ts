@@ -69,15 +69,18 @@ class PlantUMLTask {
       ) {
         data = this.chunks;
         this.chunks = ''; // clear CHUNKS
-        const diagrams = data.split('<?xml ');
-        diagrams.forEach((diagram) => {
-          if (diagram.length) {
-            const callback = this.callbacks.shift();
-            if (callback) {
-              callback(diagram.startsWith('<') ? diagram : '<?xml ' + diagram);
+        const regex = /<svg[^>]*>[\s\S]*?<\/svg>/g;
+        const diagrams = data.match(regex);
+        if ( diagrams != null ) {
+          diagrams.forEach((diagram) => {
+            if (diagram.length) {
+              const callback = this.callbacks.shift();
+              if (callback) {
+                callback(diagram.startsWith('<') ? diagram : '<svg ' + diagram);
+              }
             }
-          }
-        });
+          });
+        }
       }
     });
 
