@@ -1,6 +1,6 @@
 {
   "name": "crossnote",
-  "version": "0.9.14",
+  "version": "0.9.15",
   "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
@@ -17,9 +17,9 @@
   },
   "exports": {
     ".": {
+      "types": "./out/types/src/index.d.ts",
       "import": "./out/esm/index.mjs",
-      "require": "./out/cjs/index.cjs",
-      "types": "./out/types/src/index.d.ts"
+      "require": "./out/cjs/index.cjs"
     }
   },
   "main": "out/cjs/index.cjs",
