@@ -71,7 +71,7 @@ class PlantUMLTask {
         this.chunks = ''; // clear CHUNKS
         const regex = /<svg[^>]*>[\s\S]*?<\/svg>/g;
         const diagrams = data.match(regex);
-        if ( diagrams != null ) {
+        if (diagrams != null) {
           diagrams.forEach((diagram) => {
             if (diagram.length) {
               const callback = this.callbacks.shift();
