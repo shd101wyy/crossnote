@@ -59,7 +59,10 @@
     "singleQuote": true,
     "overrides": [
       {
-        "files": "*.yml",
+        "files": [
+          ".github/**/*.md",
+          "*.yml"
+        ],
         "options": {
           "singleQuote": false
         }
