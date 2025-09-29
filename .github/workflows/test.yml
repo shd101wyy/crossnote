@@ -1,4 +1,4 @@
-name: "Test"
+name: Test
 on:
   push:
     branches:
@@ -11,20 +11,20 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test:
-    name: "Test"
+    name: Test
     runs-on: ubuntu-latest
     steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - name: 'Install nodejs 20'
-        uses: actions/setup-node@v2
+      - name: Install nodejs
+        uses: actions/setup-node@v5
         with:
-          node-version: '20'
-      - name: 'Build and test'
+          node-version-file: .tool-versions
+      - name: Build and test
         run: |
           corepack enable
           yarn install
-          yarn check:all
+          yarn check
           yarn test

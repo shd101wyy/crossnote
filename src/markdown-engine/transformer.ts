@@ -479,9 +479,9 @@ export async function transformMarkdown(
           try {
             opt = parseBlockAttributes(optMatch[0]);
 
-            (classes = opt['class'] ?? ''),
+            ((classes = opt['class'] ?? ''),
               (id = opt['id'] ?? ''),
-              (ignore = opt['ignore']);
+              (ignore = opt['ignore']));
             delete opt['class'];
             delete opt['id'];
             delete opt['ignore'];

@@ -8,13 +8,13 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: 'Install nodejs 20'
-        uses: actions/setup-node@v3
+      - name: Check out code
+        uses: actions/checkout@v5
+      - name: Install nodejs
+        uses: actions/setup-node@v5
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          node-version-file: .tool-versions
+          registry-url: "https://registry.npmjs.org"
       - name: Install dependencies
         run: |
           corepack enable
@@ -30,7 +30,7 @@ jobs:
         with:
           validation_level: warn
           version: ${{ steps.package_version.outputs.current-version }}
-          path: 'CHANGELOG.md'
+          path: CHANGELOG.md
       - name: Publish package
         if: github.ref == 'refs/heads/master'
         run: npm publish
@@ -43,6 +43,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name : ${{ steps.package_version.outputs.current-version}}
+          tag_name: ${{ steps.package_version.outputs.current-version}}
           release_name: ${{ steps.package_version.outputs.current-version}}
           body: ${{ steps.changelog_reader.outputs.changes }}
