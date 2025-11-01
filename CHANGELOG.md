@@ -13,6 +13,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### Changes
 
+- Improve Prettier and CI config [PR#383](https://github.com/shd101wyy/crossnote/pull/383) by [kachkaev](https://github.com/kachkaev).
 - Replace `yarn` with `pnpm` for package management and scripts.
 
 ## [0.9.15] - 2025-08-15
