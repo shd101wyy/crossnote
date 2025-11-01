@@ -106,18 +106,9 @@ export interface HTMLTemplateOption {
 
 // NOTE: The order of the following matters.
 const dependentLibraryMaterials = [
-  {
-    key: 'vega',
-    version: '5.25.0',
-  },
-  {
-    key: 'vega-lite',
-    version: '5.16.1',
-  },
-  {
-    key: 'vega-embed',
-    version: '6.23.0',
-  },
+  { key: 'vega', version: '5.25.0' },
+  { key: 'vega-lite', version: '5.16.1' },
+  { key: 'vega-embed', version: '6.23.0' },
 ];
 
 /**
@@ -812,7 +803,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.9.0/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.12.1/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">
@@ -1384,14 +1375,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       path: dest,
       ...(yamlConfig['isPresentationMode']
         ? {}
-        : {
-            margin: {
-              top: '1cm',
-              bottom: '1cm',
-              left: '1cm',
-              right: '1cm',
-            },
-          }),
+        : { margin: { top: '1cm', bottom: '1cm', left: '1cm', right: '1cm' } }),
       printBackground: this.notebook.config.printBackground,
       ...(yamlConfig['chrome'] || yamlConfig['puppeteer'] || {}),
     };
