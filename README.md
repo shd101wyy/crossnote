@@ -18,11 +18,11 @@ API Documentation: https://shd101wyy.github.io/crossnote/
 # If you are using npm
 $ npm install --save crossnote
 
-# If you are using yarn
-$ yarn add crossnote
-
 # If you are using pnpm
 $ pnpm add crossnote
+
+# If you are using yarn
+$ yarn add crossnote
 ```
 
 ## Example
