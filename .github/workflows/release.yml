@@ -18,11 +18,16 @@ jobs:
           node-version-file: .tool-versions
           registry-url: "https://registry.npmjs.org"
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
       - name: Install dependencies
-        run: corepack enable && yarn install
+        run: pnpm install
 
       - name: Build
-        run: yarn run build
+        run: pnpm run build
 
       - name: Get current package version
         id: package_version

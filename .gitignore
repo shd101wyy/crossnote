@@ -7,7 +7,7 @@ test.js
 test.mjs
 .direnv
 tsconfig.tsbuildinfo
-yarn-error.log
+pnpm-debug.log
 .mume
 mume
 .crossnote

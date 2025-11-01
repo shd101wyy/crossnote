@@ -4,6 +4,18 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.16] - 2025-11-01
+
+### Updates
+
+- Update `mermaid` version to the latest `11.12.1`.
+- Update `katex` version to the latest `0.16.25`.
+
+### Changes
+
+- Improve Prettier and CI config [PR#383](https://github.com/shd101wyy/crossnote/pull/383) by [kachkaev](https://github.com/kachkaev).
+- Replace `yarn` with `pnpm` for package management and scripts.
+
 ## [0.9.15] - 2025-08-15
 
 ### Bug fixes

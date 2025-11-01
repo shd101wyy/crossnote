@@ -25,14 +25,18 @@ jobs:
       - name: Install nodejs
         uses: actions/setup-node@v5
         with:
-          cache: "yarn"
           node-version-file: .tool-versions
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
       - name: Install dependencies
-        run: corepack enable && yarn install
+        run: pnpm install
 
       - name: Run checks
-        run: yarn check:all
+        run: pnpm check:all
 
       - name: Run tests
-        run: yarn test
+        run: pnpm test
