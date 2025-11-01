@@ -30,7 +30,7 @@ jobs:
 
       - name: Build and test
         run: |
-          pnpm install
+          pnpm install --frozen-lockfile
           pnpm typedoc
 
       - name: Deploy 🚀
