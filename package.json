@@ -37,7 +37,7 @@
     "check:tsc": "tsc --project .",
     "compile:less": "gulp compile-less",
     "copy:files": "gulp copy-files",
-    "fix": "pnpm run fix:lint && pnpm run fix:prettier",
+    "fix": "pnpm run fix:eslint && pnpm run fix:prettier",
     "fix:eslint": "eslint --fix .",
     "fix:prettier": "prettier --write \"**/*\"",
     "prepare": "husky install",
