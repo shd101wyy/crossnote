@@ -26,7 +26,7 @@ jobs:
 
       - name: Build and test
         run: |
-          corepack enable
+          corepack use pnpm@latest-10
           pnpm install
           pnpm typedoc
 
