@@ -12,19 +12,19 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v5
-      - name: Install nodejs
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: .tool-versions
-          registry-url: "https://registry.npmjs.org"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+
+      - name: Install nodejs
+        uses: actions/setup-node@v6
         with:
-          version: latest
+          cache: pnpm
+          node-version-file: .tool-versions
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm run build

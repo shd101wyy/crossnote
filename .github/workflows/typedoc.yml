@@ -19,19 +19,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install nodejs
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: .tool-versions
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+
+      - name: Install nodejs
+        uses: actions/setup-node@v6
         with:
-          version: latest
+          cache: pnpm
+          node-version-file: .tool-versions
 
       - name: Build and test
         run: |
-          pnpm install
+          pnpm install --frozen-lockfile
           pnpm typedoc
 
       - name: Deploy 🚀

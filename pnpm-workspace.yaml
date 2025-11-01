@@ -1,0 +1,9 @@
+ignoredBuiltDependencies:
+  - es5-ext ## Broadcasts "Call for peace" message when package is installed in Russia, otherwise no-op
+  - fsevents ## Version 1.2.13 calls node-gyp to rebuild on Darwin
+  - sharp ## Downloads binaries if installing optional dependencies is disabled - https://github.com/lovell/sharp/issues/4318
+
+nodeLinker: isolated
+
+onlyBuiltDependencies:
+  - esbuild ## Optimizes binaries to improve performance - https://github.com/evanw/esbuild/issues/4085#issuecomment-2696009329
