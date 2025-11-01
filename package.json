@@ -27,21 +27,21 @@
     "out"
   ],
   "scripts": {
-    "build": "gulp clean-out && pnpm copy:files && pnpm compile:less && pnpm build:typings && pnpm build:esbuild",
+    "build": "gulp clean-out && pnpm copy:files && ppnpm compile:less && ppnpm build:typings && ppnpm build:esbuild",
     "build:esbuild": "node build.js",
     "build:typings": "tsc --project . --declaration",
-    "build:watch": "gulp clean-out && pnpm copy:files && pnpm compile:less && concurrently \"tsc --project . --watch\" \"node build.js --watch\" \"gulp watch-less\"",
-    "check:all": "npm run check:prettier && npm run check:tsc && npm run check:lint",
-    "check:lint": "eslint .",
+    "build:watch": "gulp clean-out && ppnpm copy:files && ppnpm compile:less && concurrently \"tsc --project . --watch\" \"node build.js --watch\" \"gulp watch-less\"",
+    "check": "pnpm run check:eslint && pnpm run check:prettier && pnpm run check:tsc",
+    "check:eslint": "eslint .",
     "check:prettier": "prettier --check \"**/*\"",
     "check:tsc": "tsc --project .",
     "compile:less": "gulp compile-less",
     "copy:files": "gulp copy-files",
-    "fix": "npm run fix:lint && npm run fix:prettier",
-    "fix:lint": "eslint --fix .",
+    "fix": "pnpm run fix:lint && pnpm run fix:prettier",
+    "fix:eslint": "eslint --fix .",
     "fix:prettier": "prettier --write \"**/*\"",
     "prepare": "husky install",
-    "prepublish": "npm run build",
+    "prepublish": "pnpm run build",
     "test": "jest --no-coverage",
     "test:coverage": "jest",
     "typedoc": "typedoc src/index.ts"
@@ -190,6 +190,7 @@
     "typedoc": "^0.25.1",
     "typescript": "^5.2.2"
   },
+  "packageManager": "pnpm@10.20.0",
   "engines": {
     "node": ">=18.0.0"
   }
