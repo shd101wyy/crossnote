@@ -27,8 +27,8 @@ jobs:
       - name: Build and test
         run: |
           corepack enable
-          yarn install
-          yarn typedoc
+          pnpm install
+          pnpm typedoc
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
