@@ -18,6 +18,9 @@ API Documentation: https://shd101wyy.github.io/crossnote/
 # If you are using npm
 $ npm install --save crossnote
 
+# If you are using pnpm
+$ pnpm add crossnote
+
 # If you are using yarn
 $ yarn add crossnote
 ```
@@ -294,9 +297,9 @@ If your notebook has `.crossnote` directory, then when you run `await Notebook.i
 ## Development
 
 1.  Clone this project.
-2.  Run `yarn install` from shell.
-3.  Run `yarn build:watch` to start the watch mode.
-4.  Run `yarn build` to build the project.
+2.  Run `pnpm install` from shell.
+3.  Run `pnpm build:watch` to start the watch mode.
+4.  Run `pnpm build` to build the project.
 
 Or
 

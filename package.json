@@ -31,17 +31,17 @@
     "build:esbuild": "node build.js",
     "build:typings": "tsc --project . --declaration",
     "build:watch": "gulp clean-out && pnpm copy:files && pnpm compile:less && concurrently \"tsc --project . --watch\" \"node build.js --watch\" \"gulp watch-less\"",
-    "check:all": "npm run check:prettier && npm run check:tsc && npm run check:lint",
-    "check:lint": "eslint .",
+    "check": "pnpm check:eslint && pnpm check:prettier && pnpm check:tsc",
+    "check:eslint": "eslint .",
     "check:prettier": "prettier --check \"**/*\"",
     "check:tsc": "tsc --project .",
     "compile:less": "gulp compile-less",
     "copy:files": "gulp copy-files",
-    "fix": "npm run fix:lint && npm run fix:prettier",
-    "fix:lint": "eslint --fix .",
+    "fix": "pnpm fix:eslint && pnpm fix:prettier",
+    "fix:eslint": "eslint --fix .",
     "fix:prettier": "prettier --write \"**/*\"",
     "prepare": "husky install",
-    "prepublish": "npm run build",
+    "prepublish": "pnpm build",
     "test": "jest --no-coverage",
     "test:coverage": "jest",
     "typedoc": "typedoc src/index.ts"
@@ -190,6 +190,7 @@
     "typedoc": "^0.25.1",
     "typescript": "^5.2.2"
   },
+  "packageManager": "pnpm@10.23.0",
   "engines": {
     "node": ">=18.0.0"
   }
