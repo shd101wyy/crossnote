@@ -2110,7 +2110,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         }
       }
     }
-    return $.html();
+    // Return only the head content, not the full HTML structure
+    return $('head').html() || header;
   }
 
   /**
