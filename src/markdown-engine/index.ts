@@ -535,6 +535,15 @@ window["initRevealPresentation"] = async function() {
       vscodePreviewPanel,
     )}">`;
 
+    // style markdown-it-callout
+    styles += `<link rel="stylesheet" media="screen" href="${utility.addFileProtocol(
+      path.resolve(
+        utility.getCrossnoteBuildDirectory(),
+        './styles/markdown-it-callout.css',
+      ),
+      vscodePreviewPanel,
+    )}">`;
+
     // global styles
     styles += `<style>${this.notebook.config.globalCss}</style>`;
 
@@ -1769,6 +1778,15 @@ sidebarTOCBtn.addEventListener('click', function(event) {
               path.resolve(
                 utility.getCrossnoteBuildDirectory(),
                 './styles/markdown-it-admonition.css',
+              ),
+            )
+          : '',
+        // markdown-it-callout
+        outputHTML.indexOf('callout') > 0
+          ? await this.fs.readFile(
+              path.resolve(
+                utility.getCrossnoteBuildDirectory(),
+                './styles/markdown-it-callout.css',
               ),
             )
           : '',
