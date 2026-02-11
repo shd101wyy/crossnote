@@ -3,6 +3,7 @@ import Token from 'markdown-it/lib/token';
 
 export default (md: MarkdownIt) => {
   const _calloutTypes = new Set([
+    'note',
     'summary',
     'abstract',
     'tldr',
@@ -10,6 +11,7 @@ export default (md: MarkdownIt) => {
     'todo',
     'hint',
     'tip',
+    'important',
     'check',
     'done',
     'success',
@@ -30,6 +32,7 @@ export default (md: MarkdownIt) => {
     'quote',
   ]);
   const _calloutTitleMap: Record<string, string> = {
+    note: 'Note',
     summary: 'Summary',
     abstract: 'Abstract',
     tldr: 'TL;DR',
@@ -37,6 +40,7 @@ export default (md: MarkdownIt) => {
     todo: 'Todo',
     hint: 'Hint',
     tip: 'Tip',
+    important: 'Important',
     check: 'Check',
     done: 'Done',
     success: 'Success',

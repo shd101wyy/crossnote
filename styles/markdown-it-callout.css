@@ -80,6 +80,11 @@ details.callout[open] > summary.callout-title::after {
   --callout-icon: "\E8D2";
 }
 
+.callout[data-callout="note"] {
+  --callout-color: 8, 109, 221;
+  --callout-icon: "\E3C9";
+}
+
 .callout[data-callout="info"] {
   --callout-color: 8, 109, 221;
   --callout-icon: "\E88E";
@@ -91,6 +96,7 @@ details.callout[open] > summary.callout-title::after {
 }
 
 .callout[data-callout="hint"],
+.callout[data-callout="important"],
 .callout[data-callout="tip"] {
   --callout-color: 0, 191, 188;
   --callout-icon: "\E80E";
