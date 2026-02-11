@@ -29,6 +29,34 @@ export default (md: MarkdownIt) => {
     'cite',
     'quote',
   ]);
+  const _calloutTitleMap: Record<string, string> = {
+    summary: 'Summary',
+    abstract: 'Abstract',
+    tldr: 'TL;DR',
+    info: 'Info',
+    todo: 'Todo',
+    hint: 'Hint',
+    tip: 'Tip',
+    check: 'Check',
+    done: 'Done',
+    success: 'Success',
+    help: 'Help',
+    question: 'Question',
+    faq: 'FAQ',
+    attention: 'Attention',
+    caution: 'Caution',
+    warning: 'Warning',
+    fail: 'Fail',
+    failure: 'Failure',
+    missing: 'Missing',
+    danger: 'Danger',
+    error: 'Error',
+    bug: 'Bug',
+    example: 'Example',
+    cite: 'Cite',
+    quote: 'Quote',
+  };
+
   // replace blockquote renderer
   const originalBlockquoteOpen =
     md.renderer.rules.blockquote_open || (() => '<blockquote>\n');
@@ -52,9 +80,6 @@ export default (md: MarkdownIt) => {
     }
   };
 
-  const toTitleCase = (value: string) =>
-    value.length > 0 ? `${value[0].toUpperCase()}${value.slice(1)}` : value;
-
   md.renderer.rules.blockquote_open = (tokens, idx, options, env, self) => {
     const token = tokens[idx];
     // check if it's a callout: see if the first child token is a paragraph and starts with [!
@@ -69,6 +94,8 @@ export default (md: MarkdownIt) => {
       const textToken = tokens[idx + 2]; // inline token
       if (textToken && textToken.type === 'inline') {
         const content = textToken.content;
+
+        // use regex to match the callout pattern: [!type]+ optional title
         const match = content.match(
           /^\[!(\w+)\]([+-])?(?:[ \t]+([^\r\n]+))?(?:\r?\n|$)/,
         );
@@ -77,7 +104,7 @@ export default (md: MarkdownIt) => {
           calloutType = match[1].toLowerCase();
           foldable =
             match[2] === '+' ? 'open' : match[2] === '-' ? 'closed' : null;
-          title = match[3] || calloutType;
+          title = match[3] || '';
 
           // remove the callout marker and "\n" from the inline token's children
           textToken.children =
@@ -113,7 +140,7 @@ export default (md: MarkdownIt) => {
       const calloutTag = foldable ? 'details' : 'div';
       token.meta = { callout: true, type: calloutType, title, calloutTag };
       markCalloutCloseToken(tokens, idx, calloutTag);
-      const displayTitle = title || (foldable ? toTitleCase(calloutType) : '');
+      const displayTitle = title || _calloutTitleMap[calloutType];
       if (foldable) {
         const openAttr = foldable === 'open' ? ' open' : '';
         let html = `<details class="callout" data-callout="${calloutType}"${openAttr}>\n`;
