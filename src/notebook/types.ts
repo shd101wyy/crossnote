@@ -480,6 +480,18 @@ export interface NotebookConfig {
    */
   krokiServer: string;
   /**
+   * The WebSequenceDiagrams server URL.
+   *
+   * @default `https://www.websequencediagrams.com`
+   */
+  webSequenceDiagramsServer: string;
+  /**
+   * API key for WebSequenceDiagrams. Required for wider diagram sizes.
+   *
+   * @default ''
+   */
+  webSequenceDiagramsApiKey: string;
+  /**
    * Whether the current environment is VSCode.
    *
    * @default false
@@ -586,6 +598,8 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     plantumlJarPath: '',
     jsdelivrCdnHost: 'cdn.jsdelivr.net',
     krokiServer: 'https://kroki.io',
+    webSequenceDiagramsServer: 'https://www.websequencediagrams.com',
+    webSequenceDiagramsApiKey: '',
     isVSCode: false,
     alwaysShowBacklinksInPreview: false,
   };

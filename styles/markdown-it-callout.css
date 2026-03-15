@@ -36,7 +36,7 @@
   word-wrap: normal;
   direction: ltr;
   color: rgba(var(--callout-color), 0.8);
-  content: var(--callout-icon, "i")
+  content: var(--callout-icon, "i");
 }
 
 .callout>p {

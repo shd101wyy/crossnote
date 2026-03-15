@@ -12,4 +12,8 @@ pnpm-debug.log
 mume
 .crossnote
 crossnote
+styles/**/*.css
+!styles/markdown-it-admonition.css
+!styles/markdown-it-callout.css
+!styles/twemoji.css
 docs

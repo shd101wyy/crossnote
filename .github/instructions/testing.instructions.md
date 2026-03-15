@@ -38,4 +38,5 @@ describe("functionToTest", () => {
 
 ## Before Submitting
 
-Always run the full check suite: `pnpm check && pnpm test`
+- Always run the full check suite: `pnpm check && pnpm test`
+- Always review your code changes before committing

@@ -784,7 +784,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/katex/katex.min.css',
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.25/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.38/dist/katex.min.css">`;
       }
     } else {
       mathStyle = '';
@@ -813,7 +813,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/mermaid/mermaid.min.js',
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.12.1/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.13.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">
@@ -1726,7 +1726,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig['html'] &&
         ebookConfig['html'].cdn
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.25/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.38/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
           utility.getCrossnoteBuildDirectory(),
@@ -2603,6 +2603,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       plantumlServer: this.notebook.config.plantumlServer,
       plantumlJarPath: this.notebook.config.plantumlJarPath,
       kirokiServer: this.notebook.config.krokiServer,
+      webSequenceDiagramsServer: this.notebook.config.webSequenceDiagramsServer,
+      webSequenceDiagramsApiKey: this.notebook.config.webSequenceDiagramsApiKey,
     });
     await enhanceWithFencedCodeChunks(
       $,

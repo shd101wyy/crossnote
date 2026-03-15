@@ -13,6 +13,7 @@ import { render as renderPlantuml } from '../renderers/puml';
 import { toSVG as vegaToSvg } from '../renderers/vega';
 import { toSVG as vegaLiteToSvg } from '../renderers/vega-lite';
 import { Viz } from '../renderers/viz';
+import { buildWsdImageUrl } from '../renderers/wsd';
 
 // NOTE: We shouldn't need this function anymore
 // because we always put `language` as a class in the attributes.
@@ -44,6 +45,7 @@ const supportedLanguages = [
   'dot',
   'vega',
   'vega-lite',
+  'wsd',
 ];
 
 /**
@@ -59,6 +61,8 @@ export default async function enhance({
   plantumlServer,
   plantumlJarPath,
   kirokiServer,
+  webSequenceDiagramsServer,
+  webSequenceDiagramsApiKey,
 }: {
   $: CheerioStatic;
   graphsCache: { [key: string]: string };
@@ -67,6 +71,8 @@ export default async function enhance({
   plantumlServer: string;
   plantumlJarPath: string;
   kirokiServer: string;
+  webSequenceDiagramsServer: string;
+  webSequenceDiagramsApiKey: string;
 }): Promise<void> {
   const asyncFunctions: Promise<void>[] = [];
   $('[data-role="codeBlock"]').each((i, container) => {
@@ -107,6 +113,8 @@ export default async function enhance({
         plantumlJarPath,
         isKroki,
         kirokiServer,
+        webSequenceDiagramsServer,
+        webSequenceDiagramsApiKey,
       }),
     );
   });
@@ -123,6 +131,8 @@ async function renderDiagram({
   plantumlJarPath,
   isKroki,
   kirokiServer,
+  webSequenceDiagramsServer,
+  webSequenceDiagramsApiKey,
 }: {
   $container: Cheerio;
   normalizedInfo: BlockInfo;
@@ -134,6 +144,8 @@ async function renderDiagram({
   plantumlServer: string;
   isKroki: boolean;
   kirokiServer: string;
+  webSequenceDiagramsServer: string;
+  webSequenceDiagramsApiKey: string;
 }): Promise<void> {
   let $output: string | Cheerio | null = null;
 
@@ -289,6 +301,18 @@ async function renderDiagram({
               normalizedInfo.attributes,
             )}>${svg}</p>`;
           }
+          break;
+        }
+        case 'wsd': {
+          const server =
+            webSequenceDiagramsServer || 'https://www.websequencediagrams.com';
+          const style =
+            (normalizedInfo.attributes['style'] as string) || 'default';
+          const apiKey = webSequenceDiagramsApiKey || undefined;
+          const imgUrl = buildWsdImageUrl(code, server, style, apiKey);
+          $output = `<div ${stringifyBlockAttributes(
+            ensureClassInAttributes(normalizedInfo.attributes, 'wsd'),
+          )}><img src="${escape(imgUrl)}" alt="Sequence Diagram"></div>`;
           break;
         }
       }
