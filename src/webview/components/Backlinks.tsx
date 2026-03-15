@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { URI, Utils } from 'vscode-uri';
 import { Backlink } from '../../notebook';
 import PreviewContainer from '../containers/preview';
+import { sanitizeHtml } from '../lib/sanitize';
 import { BacklinksOrderDirection, BacklinksOrderRecord } from '../lib/types';
 
 export default function Backlinks() {
@@ -187,7 +188,11 @@ export default function Backlinks() {
                           >
                             <Icon path={mdiOpenInNew} size={0.8}></Icon>
                           </a>
-                          <div dangerouslySetInnerHTML={{ __html: html }}></div>
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: sanitizeHtml(html),
+                            }}
+                          ></div>
                         </div>
                       </li>
                     );
