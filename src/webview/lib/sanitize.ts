@@ -5,16 +5,30 @@
 
 import DOMPurify from 'dompurify';
 
+// Script types used as data containers by diagram renderers (not executable)
+const SAFE_SCRIPT_TYPES = new Set(['wavedrom']);
+
 /**
  * DOMPurify configured for markdown preview:
  * - Allows most HTML elements needed for rich markdown rendering
  * - Allows iframes (for embeds) but forces sandbox attribute
- * - Strips all script tags and on* event handlers
+ * - Preserves non-executable data scripts (e.g., WaveDrom)
+ * - Strips executable script tags and on* event handlers
  * - Strips javascript:/vbscript: URLs
  */
 const purify = DOMPurify(window);
 
-// Allow iframes (used for video embeds, etc.) but force sandbox
+// Allow iframes but force sandbox; strip executable scripts while keeping data scripts
+purify.addHook('uponSanitizeElement', (node, data) => {
+  if (data.tagName === 'script') {
+    const el = node as Element;
+    const scriptType = (el.getAttribute?.('type') || '').toLowerCase().trim();
+    if (!SAFE_SCRIPT_TYPES.has(scriptType)) {
+      el.parentNode?.removeChild(el);
+    }
+  }
+});
+
 purify.addHook('afterSanitizeAttributes', (node) => {
   if (node.tagName === 'IFRAME') {
     node.setAttribute('sandbox', '');
@@ -29,9 +43,10 @@ export function sanitizeHtml(html: string): string {
   return purify.sanitize(html, {
     ADD_TAGS: [
       'iframe',
-      // SVG elements used by diagram renderers (mermaid, wavedrom, etc.)
-      'foreignObject',
+      // SVG style elements used by diagram renderers
       'style',
+      // Non-executable data scripts (filtered by uponSanitizeElement hook)
+      'script',
     ],
     ADD_ATTR: [
       'sandbox',

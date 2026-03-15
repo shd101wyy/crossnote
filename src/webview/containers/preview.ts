@@ -521,7 +521,10 @@ const PreviewContainer = createContainer(() => {
         const code = (mermaidGraph.textContent ?? '').trim();
         try {
           const { svg } = await mermaid.render(svgId, code);
-          mermaidGraph.innerHTML = sanitizeHtml(svg);
+          // Mermaid output is from a trusted library, not user HTML.
+          // DOMPurify strips foreignObject (SVG disallowed list) which
+          // mermaid uses for text labels, so we skip sanitization here.
+          mermaidGraph.innerHTML = svg;
         } catch (error) {
           const noiseElement = document.getElementById('d' + svgId);
           if (noiseElement) {
