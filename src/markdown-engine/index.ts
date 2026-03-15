@@ -1076,6 +1076,16 @@ if (typeof(window['Reveal']) !== 'undefined') {
           ),
         );
       }
+
+      // markdown-it-callout
+      if (html.indexOf('callout') > 0) {
+        styleCSS += await this.fs.readFile(
+          path.resolve(
+            utility.getCrossnoteBuildDirectory(),
+            './styles/markdown-it-callout.css',
+          ),
+        );
+      }
     } catch (e) {
       styleCSS = '';
     }
