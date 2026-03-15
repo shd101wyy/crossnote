@@ -52,6 +52,31 @@ export function openFile(filePath: string) {
 }
 
 /**
+ * Detect if running inside WSL (Windows Subsystem for Linux).
+ */
+let _isWSL: boolean | null = null;
+export function isWSL(): boolean {
+  if (_isWSL === null) {
+    _isWSL = !!process.env['WSL_DISTRO_NAME'];
+  }
+  return _isWSL;
+}
+
+/**
+ * Convert a Linux filesystem path to a file:// URL accessible from
+ * a Windows browser when running under WSL.
+ *
+ * e.g. `/home/user/file.js` → `file:////wsl.localhost/Ubuntu/home/user/file.js`
+ */
+export function toFileURL(filePath: string): string {
+  if (isWSL()) {
+    const distro = process.env['WSL_DISTRO_NAME'];
+    return `file:////wsl.localhost/${distro}${filePath}`;
+  }
+  return `file:///${filePath}`;
+}
+
+/**
  * Do nothing and sleep for `ms` milliseconds
  * @param ms
  */

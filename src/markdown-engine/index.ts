@@ -779,9 +779,11 @@ window["initRevealPresentation"] = async function() {
       }
     } else if (this.notebook.config.mathRenderingOption === 'KaTeX') {
       if (options.offline) {
-        mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/katex/katex.min.css',
+        mathStyle = `<link rel="stylesheet" href="${utility.toFileURL(
+          path.resolve(
+            utility.getCrossnoteBuildDirectory(),
+            './dependencies/katex/katex.min.css',
+          ),
         )}">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.38/dist/katex.min.css">`;
@@ -794,9 +796,11 @@ window["initRevealPresentation"] = async function() {
     let fontAwesomeStyle = '';
     if (html.indexOf('<i class="fa') >= 0) {
       if (options.offline) {
-        fontAwesomeStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          `./dependencies/font-awesome/css/all.min.css`,
+        fontAwesomeStyle = `<link rel="stylesheet" href="${utility.toFileURL(
+          path.resolve(
+            utility.getCrossnoteBuildDirectory(),
+            `./dependencies/font-awesome/css/all.min.css`,
+          ),
         )}">`;
       } else {
         fontAwesomeStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">`;
@@ -808,9 +812,11 @@ window["initRevealPresentation"] = async function() {
     let mermaidInitScript = '';
     if (html.indexOf(' class="mermaid') >= 0) {
       if (options.offline) {
-        mermaidScript = `<script type="text/javascript" src="file:///${path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/mermaid/mermaid.min.js',
+        mermaidScript = `<script type="text/javascript" src="${utility.toFileURL(
+          path.resolve(
+            utility.getCrossnoteBuildDirectory(),
+            './dependencies/mermaid/mermaid.min.js',
+          ),
         )}" charset="UTF-8"></script>`;
       } else {
         mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.13.0/dist/mermaid.min.js"></script>`;
@@ -865,17 +871,23 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let wavedromInitScript = ``;
     if (html.indexOf(' class="wavedrom') >= 0) {
       if (options.offline) {
-        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/wavedrom/skins/default.js',
+        wavedromScript += `<script type="text/javascript" src="${utility.toFileURL(
+          path.resolve(
+            utility.getCrossnoteBuildDirectory(),
+            './dependencies/wavedrom/skins/default.js',
+          ),
         )}" charset="UTF-8"></script>`;
-        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/wavedrom/skins/narrow.js',
+        wavedromScript += `<script type="text/javascript" src="${utility.toFileURL(
+          path.resolve(
+            utility.getCrossnoteBuildDirectory(),
+            './dependencies/wavedrom/skins/narrow.js',
+          ),
         )}" charset="UTF-8"></script>`;
-        wavedromScript += `<script type="text/javascript" src="file:///${path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/wavedrom/wavedrom.min.js',
+        wavedromScript += `<script type="text/javascript" src="${utility.toFileURL(
+          path.resolve(
+            utility.getCrossnoteBuildDirectory(),
+            './dependencies/wavedrom/wavedrom.min.js',
+          ),
         )}" charset="UTF-8"></script>`;
       } else {
         wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/default.js"></script>`;
@@ -895,9 +907,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
     ) {
       dependentLibraryMaterials.forEach(({ key, version }) => {
         vegaScript += options.offline
-          ? `<script type="text/javascript" src="file:///${path.resolve(
-              utility.getCrossnoteBuildDirectory(),
-              `./dependencies/${key}/${key}.min.js`,
+          ? `<script type="text/javascript" src="${utility.toFileURL(
+              path.resolve(
+                utility.getCrossnoteBuildDirectory(),
+                `./dependencies/${key}/${key}.min.js`,
+              ),
             )}" charset="UTF-8"></script>`
           : `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
       });
@@ -932,9 +946,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (yamlConfig['isPresentationMode']) {
       if (options.offline) {
         presentationScript = `
-        <script src='file:///${path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/reveal/js/reveal.js',
+        <script src='${utility.toFileURL(
+          path.resolve(
+            utility.getCrossnoteBuildDirectory(),
+            './dependencies/reveal/js/reveal.js',
+          ),
         )}'></script>`;
       } else {
         presentationScript = `
@@ -1033,9 +1049,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
             : this.notebook.config.revealjsTheme;
 
         if (options.offline) {
-          presentationStyle += `<link rel="stylesheet" href="file:///${path.resolve(
-            utility.getCrossnoteBuildDirectory(),
-            `./dependencies/reveal/css/theme/${theme}`,
+          presentationStyle += `<link rel="stylesheet" href="${utility.toFileURL(
+            path.resolve(
+              utility.getCrossnoteBuildDirectory(),
+              `./dependencies/reveal/css/theme/${theme}`,
+            ),
           )}">`;
         } else {
           presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/theme/${theme}">`;
@@ -1386,8 +1404,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     const page = await browser.newPage();
     const loadPath =
-      'file:///' +
-      info.path +
+      utility.toFileURL(info.path) +
       (yamlConfig['isPresentationMode'] ? '?print-pdf' : '');
     await page.goto(loadPath);
 
@@ -1468,7 +1485,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     fs.writeFileSync(info.fd, html);
 
     if (yamlConfig['isPresentationMode']) {
-      const url = 'file:///' + info.path + '?print-pdf';
+      const url = utility.toFileURL(info.path) + '?print-pdf';
       return url;
     } else {
       await princeConvert(info.path, dest);
@@ -1505,7 +1522,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         const stream = request(httpSrc).pipe(fs.createWriteStream(savePath));
 
         stream.on('finish', () => {
-          $img.attr('src', 'file:///' + savePath);
+          $img.attr('src', utility.toFileURL(savePath));
           return resolve(savePath);
         });
       });
@@ -1707,7 +1724,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (ebookConfig['cover']) {
         const cover =
           ebookConfig['cover'][0] === '/'
-            ? 'file:///' + ebookConfig['cover']
+            ? utility.toFileURL(ebookConfig['cover'])
             : ebookConfig['cover'];
         $(':root')
           .children()
@@ -1738,9 +1755,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ) {
         mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.38/dist/katex.min.css">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="file:///${path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/katex/katex.min.css',
+        mathStyle = `<link rel="stylesheet" href="${utility.toFileURL(
+          path.resolve(
+            utility.getCrossnoteBuildDirectory(),
+            './dependencies/katex/katex.min.css',
+          ),
         )}">`;
       }
     }
