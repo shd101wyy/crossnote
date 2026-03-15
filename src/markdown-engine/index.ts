@@ -2603,6 +2603,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       plantumlServer: this.notebook.config.plantumlServer,
       plantumlJarPath: this.notebook.config.plantumlJarPath,
       kirokiServer: this.notebook.config.krokiServer,
+      webSequenceDiagramsServer: this.notebook.config.webSequenceDiagramsServer,
+      webSequenceDiagramsApiKey: this.notebook.config.webSequenceDiagramsApiKey,
     });
     await enhanceWithFencedCodeChunks(
       $,
