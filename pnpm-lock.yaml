@@ -90,8 +90,8 @@ importers:
         specifier: ^3.7.1
         version: 3.7.1
       katex:
-        specifier: ^0.16.25
-        version: 0.16.25
+        specifier: ^0.16.38
+        version: 0.16.38
       less:
         specifier: ^4.2.0
         version: 4.4.2
@@ -4149,8 +4149,8 @@ packages:
   karma-chrome-launcher@2.2.0:
     resolution: {integrity: sha512-uf/ZVpAabDBPvdPdveyk1EPgbnloPvFFGgmRhYLTDH7gEB4nZdSBk8yTU47w1g/drLSx5uMOkjKk7IWKfWg/+w==}
 
-  katex@0.16.25:
-    resolution: {integrity: sha512-woHRUZ/iF23GBP1dkDQMh1QBad9dmr8/PAwNA54VrSOVYgI12MAcE14TqnDdQOdzyEonGzMepYnqBMYdsoAr8Q==}
+  katex@0.16.38:
+    resolution: {integrity: sha512-cjHooZUmIAUmDsHBN+1n8LaZdpmbj03LtYeYPyuYB7OuloiaeaV6N4LcfjcnHVzGWjVQmKrxxTrpDcmSzEZQwQ==}
     hasBin: true
 
   keyv@4.5.4:
@@ -10808,7 +10808,7 @@ snapshots:
       fs-access: 1.0.1
       which: 1.3.1
 
-  katex@0.16.25:
+  katex@0.16.38:
     dependencies:
       commander: 8.3.0
 
@@ -11110,7 +11110,7 @@ snapshots:
       dagre-d3-es: 7.0.14
       dayjs: 1.11.19
       dompurify: 3.3.3
-      katex: 0.16.25
+      katex: 0.16.38
       khroma: 2.1.0
       lodash-es: 4.17.23
       marked: 16.4.1
