@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.18] - 2026-03-15
+
+### Bug fixes
+
+- Fix callout block rendering in file export
+
 ## [0.9.17] - 2026-03-15
 
 ### New features
