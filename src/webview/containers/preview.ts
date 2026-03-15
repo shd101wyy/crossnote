@@ -498,7 +498,7 @@ const PreviewContainer = createContainer(() => {
     }
     const mermaid = window['mermaid']; // window.mermaid doesn't work, has to be written as window['mermaid']
     const mermaidGraphs =
-      previewElement.current.getElementsByClassName('mermaid');
+      previewElement.current.querySelectorAll('div.mermaid');
 
     const validMermaidGraphs: HTMLElement[] = [];
     for (let i = 0; i < mermaidGraphs.length; i++) {

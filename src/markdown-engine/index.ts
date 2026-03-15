@@ -308,7 +308,7 @@ mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
     var currentSlide = event.currentSlide
-    var diagrams = currentSlide.querySelectorAll('.mermaid')
+    var diagrams = currentSlide.querySelectorAll('div.mermaid')
     for (var i = 0; i < diagrams.length; i++) {
       var diagram = diagrams[i]
       if (!diagram.hasAttribute('data-processed')) {
@@ -322,7 +322,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
   Reveal.addEventListener('ready', mermaidRevealHelper)
 } else {
   // The line below will cause mermaid bug in preview.
-  // mermaid.init(null, document.querySelectorAll('.mermaid'))
+  // mermaid.init(null, document.querySelectorAll('div.mermaid'))
 }
 </script>`;
 
@@ -843,7 +843,7 @@ mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
   function mermaidRevealHelper(event) {
     var currentSlide = event.currentSlide
-    var diagrams = currentSlide.querySelectorAll('.mermaid')
+    var diagrams = currentSlide.querySelectorAll('div.mermaid')
     for (var i = 0; i < diagrams.length; i++) {
       var diagram = diagrams[i]
       if (!diagram.hasAttribute('data-processed')) {
@@ -856,11 +856,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
   Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
   Reveal.addEventListener('ready', mermaidRevealHelper)
   await mermaid.run({
-    nodes: document.querySelectorAll('.mermaid')
+    nodes: document.querySelectorAll('div.mermaid')
   })
 } else {
   await mermaid.run({
-    nodes: document.querySelectorAll('.mermaid')
+    nodes: document.querySelectorAll('div.mermaid')
   })
 }
 </script>`;
