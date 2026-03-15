@@ -20,7 +20,7 @@
   margin: 0 -1.2rem;
   padding: 0rem 1.2rem 0rem 3.3rem;
   font-weight: 700;
-  color: rgb(var(--callout-color))
+  color: rgb(var(--callout-color));
 }
 
 .callout .callout-title::before {
