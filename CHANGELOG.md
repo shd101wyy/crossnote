@@ -8,7 +8,9 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### Bug fixes
 
-- Fix santizer for mermaid and wavedrom diagrams.
+- Fix sanitizer for mermaid and wavedrom diagrams.
+- Fix `code_block=true` not preventing mermaid diagram rendering.
+- Fix "Open in Browser" file paths on WSL.
 
 ## [0.9.18] - 2026-03-15
 
