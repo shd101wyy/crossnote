@@ -27,8 +27,8 @@ export function sanitizeRenderedHTML($: CheerioStatic): void {
   $(DANGEROUS_TAGS_SELECTOR).remove();
 
   // Process all elements for dangerous attributes
-  $('*').each((_, el) => {
-    const attribs = (el as any).attribs;
+  $('*').each((_, el: CheerioElement) => {
+    const attribs = el.attribs;
     if (!attribs) {
       return;
     }
@@ -51,8 +51,8 @@ export function sanitizeRenderedHTML($: CheerioStatic): void {
   });
 
   // Sandbox all iframes and remove srcdoc (which can contain arbitrary HTML)
-  $('iframe').each((_, el) => {
-    const attribs = (el as any).attribs;
+  $('iframe').each((_, el: CheerioElement) => {
+    const attribs = el.attribs;
     if (!attribs) {
       return;
     }
