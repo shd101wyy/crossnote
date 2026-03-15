@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.19] - 2026-03-15
+
+### Bug fixes
+
+- Fix santizer for mermaid and wavedrom diagrams.
+
 ## [0.9.18] - 2026-03-15
 
 ### Bug fixes
