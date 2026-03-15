@@ -9,7 +9,10 @@
 const DANGEROUS_URL_PATTERN =
   /^\s*(javascript|vbscript)\s*:|^\s*data\s*:\s*text\/html/i;
 
-const DANGEROUS_TAGS_SELECTOR = 'script, object, embed, applet';
+const DANGEROUS_TAGS = ['object', 'embed', 'applet'];
+
+// Script types that are used as data containers (not executable by browsers)
+const SAFE_SCRIPT_TYPES = new Set(['wavedrom']);
 
 const URL_ATTRIBUTES = ['href', 'src', 'action', 'formaction', 'xlink:href'];
 
@@ -23,8 +26,17 @@ const URL_ATTRIBUTES = ['href', 'src', 'action', 'formaction', 'xlink:href'];
  * before extracting the final HTML string.
  */
 export function sanitizeRenderedHTML($: CheerioStatic): void {
-  // Remove dangerous tags entirely
-  $(DANGEROUS_TAGS_SELECTOR).remove();
+  // Remove dangerous non-script tags entirely
+  $(DANGEROUS_TAGS.join(', ')).remove();
+
+  // Remove script tags, but preserve non-executable data scripts
+  // (e.g., <script type="WaveDrom"> used by wavedrom diagrams)
+  $('script').each((_, el: CheerioElement) => {
+    const scriptType = (el.attribs?.type || '').toLowerCase().trim();
+    if (!SAFE_SCRIPT_TYPES.has(scriptType)) {
+      $(el).remove();
+    }
+  });
 
   // Process all elements for dangerous attributes
   $('*').each((_, el: CheerioElement) => {

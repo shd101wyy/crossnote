@@ -129,6 +129,26 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
       const result = sanitize('<applet code="Evil.class"></applet>');
       expect(result).not.toContain('<applet');
     });
+
+    it('preserves WaveDrom data scripts', () => {
+      const result = sanitize(
+        '<div class="wavedrom"><script type="WaveDrom">{"signal":[]}</script></div>',
+      );
+      expect(result).toContain('<script type="WaveDrom">');
+      expect(result).toContain('{"signal":[]}');
+    });
+
+    it('removes script tags without type', () => {
+      const result = sanitize('<script>alert("xss")</script>');
+      expect(result).not.toContain('<script');
+    });
+
+    it('removes script tags with type="text/javascript"', () => {
+      const result = sanitize(
+        '<script type="text/javascript">alert("xss")</script>',
+      );
+      expect(result).not.toContain('<script');
+    });
   });
 
   describe('iframe sandboxing', () => {
