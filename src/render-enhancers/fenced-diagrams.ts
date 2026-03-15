@@ -46,7 +46,6 @@ const supportedLanguages = [
   'vega',
   'vega-lite',
   'wsd',
-  'sequence-diagram',
 ];
 
 /**
@@ -304,8 +303,7 @@ async function renderDiagram({
           }
           break;
         }
-        case 'wsd':
-        case 'sequence-diagram': {
+        case 'wsd': {
           const server =
             webSequenceDiagramsServer || 'https://www.websequencediagrams.com';
           const style =

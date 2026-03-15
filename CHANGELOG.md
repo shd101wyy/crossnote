@@ -7,6 +7,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 ### New features
 
 - Add markdown-it callout feature with styling https://github.com/shd101wyy/crossnote/pull/387 by [@EmmetZ](https://github.com/EmmetZ).
+- Add WebSequenceDiagrams support in `wsd` code blocks https://github.com/shd101wyy/vscode-markdown-preview-enhanced/pull/2228 by [@smhanov](https://github.com/smhanov).
 
 ### Bug fixes
 
