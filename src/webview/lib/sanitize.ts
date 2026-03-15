@@ -27,7 +27,12 @@ purify.addHook('afterSanitizeAttributes', (node) => {
  */
 export function sanitizeHtml(html: string): string {
   return purify.sanitize(html, {
-    ADD_TAGS: ['iframe'],
+    ADD_TAGS: [
+      'iframe',
+      // SVG elements used by diagram renderers (mermaid, wavedrom, etc.)
+      'foreignObject',
+      'style',
+    ],
     ADD_ATTR: [
       'sandbox',
       'allow',
