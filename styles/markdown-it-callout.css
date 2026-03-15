@@ -1,0 +1,157 @@
+@font-face {
+  font-family: "Material Icons";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Material Icons"), local("MaterialIcons-Regular"), url("data:application/x-font-woff;charset=utf-8;base64,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") format("woff");
+}
+
+
+.callout {
+  --callout-color: 68, 138, 255;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: rgba(var(--callout-color), 0.1);
+}
+
+.callout>.callout-title {
+  margin: 0 -1.2rem;
+  padding: 0rem 1.2rem 0rem 3.3rem;
+  font-weight: 700;
+  color: rgb(var(--callout-color));
+}
+
+.callout .callout-title::before {
+  position: absolute;
+  left: 1.2rem;
+  font-size: 1.2rem;
+  font-family: Material Icons;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  color: rgba(var(--callout-color), 0.8);
+  content: var(--callout-icon, "i")
+}
+
+.callout>p {
+  margin-block-start: 1rem;
+  margin-block-end: 1rem;
+  padding-left: .4rem;
+}
+
+.callout details.callout-title,
+.callout summary.callout-title {
+  cursor: pointer;
+  list-style: none;
+}
+
+.callout summary.callout-title::-webkit-details-marker {
+  display: none;
+}
+
+details.callout > summary.callout-title::after {
+  display: inline-block;
+  width: 0.45em;
+  height: 0.45em;
+  margin-left: 1em;
+  border-right: 2px solid rgb(var(--callout-color));
+  border-bottom: 2px solid rgb(var(--callout-color));
+  transform: translateY(-0.05em) rotate(-45deg);
+  transition: transform 160ms ease, opacity 160ms ease;
+  opacity: 0.9;
+  content: "";
+}
+
+details.callout[open] > summary.callout-title::after {
+  transform: translateY(-0.05em) rotate(45deg);
+  opacity: 1;
+}
+
+.callout[data-callout="summary"],
+.callout[data-callout="tldr"],
+.callout[data-callout="abstract"] {
+  --callout-color: 0, 191, 188;
+  --callout-icon: "\E8D2";
+}
+
+.callout[data-callout="note"] {
+  --callout-color: 8, 109, 221;
+  --callout-icon: "\E3C9";
+}
+
+.callout[data-callout="info"] {
+  --callout-color: 8, 109, 221;
+  --callout-icon: "\E88E";
+}
+
+.callout[data-callout="todo"] {
+  --callout-color: 8, 109, 221;
+  --callout-icon: "\E88E";
+}
+
+.callout[data-callout="hint"],
+.callout[data-callout="important"],
+.callout[data-callout="tip"] {
+  --callout-color: 0, 191, 188;
+  --callout-icon: "\E80E";
+}
+
+.callout[data-callout="check"],
+.callout[data-callout="done"],
+.callout[data-callout="success"] {
+  --callout-color: 8, 185, 78;
+  --callout-icon: "\E876";
+}
+
+.callout[data-callout="help"],
+.callout[data-callout="faq"],
+.callout[data-callout="question"] {
+  --callout-color: 236, 117, 0;
+  --callout-icon: "\E887";
+}
+
+.callout[data-callout="caution"],
+.callout[data-callout="attention"],
+.callout[data-callout="warning"] {
+  --callout-color: 236, 117, 0;
+  --callout-icon: "\E002";
+}
+
+.callout[data-callout="fail"],
+.callout[data-callout="missing"],
+.callout[data-callout="failure"] {
+  --callout-color: 233, 49, 71;
+  --callout-icon: "\E14C";
+}
+
+.callout[data-callout="error"],
+.callout[data-callout="danger"] {
+  --callout-color: 233, 49, 71;
+  --callout-icon: "\E3E7";
+}
+
+.callout[data-callout="bug"] {
+  --callout-color: 233, 49, 71;
+  --callout-icon: "\E868";
+}
+
+.callout[data-callout="example"] {
+  --callout-color: 120, 82, 238;
+  --callout-icon: "\E242";
+}
+
+.callout[data-callout="cite"],
+.callout[data-callout="quote"] {
+  --callout-color: 158, 158, 158;
+  --callout-icon: "\E244";
+}
+
+.callout .callout {
+  margin: 0.75rem 0;
+}
