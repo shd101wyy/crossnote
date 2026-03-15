@@ -98,7 +98,7 @@
     "jquery": "^3.7.1",
     "katex": "^0.16.25",
     "less": "^4.2.0",
-    "markdown-it": "^13.0.1",
+    "markdown-it": "^14.1.1",
     "markdown-it-abbr": "^1.0.4",
     "markdown-it-deflist": "^2.1.0",
     "markdown-it-emoji": "^2.0.2",
