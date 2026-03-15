@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
 import { Backlink, WebviewConfig } from '../../notebook';
+import { sanitizeHtml } from '../lib/sanitize';
 import { isBackgroundColorLight } from '../lib/utility';
 
 window['jQuery'] = $;
@@ -439,7 +440,7 @@ const PreviewContainer = createContainer(() => {
         if (text in wavedromCache.current) {
           // load cache
           const svg = wavedromCache.current[text];
-          el.innerHTML = svg;
+          el.innerHTML = sanitizeHtml(svg);
           newWavedromCache[text] = svg;
           continue;
         }
@@ -520,7 +521,7 @@ const PreviewContainer = createContainer(() => {
         const code = (mermaidGraph.textContent ?? '').trim();
         try {
           const { svg } = await mermaid.render(svgId, code);
-          mermaidGraph.innerHTML = svg;
+          mermaidGraph.innerHTML = sanitizeHtml(svg);
         } catch (error) {
           const noiseElement = document.getElementById('d' + svgId);
           if (noiseElement) {
@@ -1146,7 +1147,7 @@ const PreviewContainer = createContainer(() => {
         return postMessage('refreshPreview', [sourceUri.current]);
       } else {
         previewScrollDelay.current = Date.now() + 500;
-        hiddenPreviewElement.current.innerHTML = html;
+        hiddenPreviewElement.current.innerHTML = sanitizeHtml(html);
         const scrollTop = getWindowScrollTop();
         // init several events
         initEvents().then(() => {
@@ -1501,7 +1502,7 @@ const PreviewContainer = createContainer(() => {
       document.body.classList.add('show-sidebar-toc');
       if (sidebarTocElement.current) {
         if (sidebarTocHtml.length > 0) {
-          sidebarTocElement.current.innerHTML = sidebarTocHtml;
+          sidebarTocElement.current.innerHTML = sanitizeHtml(sidebarTocHtml);
           bindAnchorElementsClickEvent(
             Array.from(sidebarTocElement.current.getElementsByTagName('a')),
           );
@@ -1590,8 +1591,9 @@ const PreviewContainer = createContainer(() => {
       return;
     }
     if (document.body.hasAttribute('data-html')) {
-      previewElement.current.innerHTML =
-        document.body.getAttribute('data-html') ?? '';
+      previewElement.current.innerHTML = sanitizeHtml(
+        document.body.getAttribute('data-html') ?? '',
+      );
       document.body.removeAttribute('data-html');
       setRenderedHtml(previewElement.current.innerHTML);
     }

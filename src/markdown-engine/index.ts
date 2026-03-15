@@ -42,6 +42,7 @@ import enhanceWithResolvedImagePaths from '../render-enhancers/resolved-image-pa
 import * as utility from '../utility';
 import { removeFileProtocol } from '../utility';
 import HeadingIdGenerator from './heading-id-generator';
+import { sanitizeRenderedHTML } from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
 import { transformMarkdown } from './transformer';
 
@@ -2607,6 +2608,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // if (options.emojiToSvg) {
     //   enhanceWithEmojiToSvg($);
     // }
+
+    // Sanitize rendered HTML to prevent XSS (CVE-2025-65716)
+    sanitizeRenderedHTML($);
 
     html =
       frontMatterTable +
