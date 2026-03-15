@@ -277,6 +277,12 @@ const config = {
   // Kroki server url.
   krokiServer: "https://kroki.io",
 
+  // The WebSequenceDiagrams server URL.
+  webSequenceDiagramsServer: "https://www.websequencediagrams.com";
+
+  // API key for WebSequenceDiagrams. Required for wider diagram sizes.
+  webSequenceDiagramsApiKey: "";
+
   // Always show backlinks in the preview.
   alwaysShowBacklinksInPreview: false,
 }
