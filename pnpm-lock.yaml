@@ -183,8 +183,8 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       sval:
-        specifier: ^0.4.8
-        version: 0.4.9
+        specifier: ^0.6.9
+        version: 0.6.9
       temp:
         specifier: ^0.9.4
         version: 0.9.4
@@ -1815,11 +1815,6 @@ packages:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
-
-  acorn@6.4.2:
-    resolution: {integrity: sha512-XtGIhXwF8YM8bJhGxG5kXgjkEuNGLTkoYqVE+KMR+aspr4KGYmKYg7yUe3KghyQ9yheNwLnjmzh/7+gfDBmHCQ==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
 
   acorn@8.15.0:
     resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
@@ -5626,8 +5621,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  sval@0.4.9:
-    resolution: {integrity: sha512-78F3BLk14AOm7VKjI47Txg3+7bI2r7zn4TKfB13UuvhBVW1lCQ/hnlSaXSNl5RXW6BuyiHiMeUyRAr2KutgOEw==}
+  sval@0.6.9:
+    resolution: {integrity: sha512-IZszs15QLaH+N79oRhczeucVLK4J8iUFRn3jgVwwHJylc5v0cxZDCX3fA/4uj8xxINpGpVgEojSi3DTNzyd8jA==}
 
   sver-compat@1.5.0:
     resolution: {integrity: sha512-aFTHfmjwizMNlNE6dsGmoAM4lHjL0CyiobWaFiXWSlD7cIxshW422Nb8KbXCmR6z+0ZEPY+daXJrDyh/vuwTyg==}
@@ -7911,8 +7906,6 @@ snapshots:
   acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
       acorn: 8.15.0
-
-  acorn@6.4.2: {}
 
   acorn@8.15.0: {}
 
@@ -12493,9 +12486,9 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  sval@0.4.9:
+  sval@0.6.9:
     dependencies:
-      acorn: 6.4.2
+      acorn: 8.15.0
 
   sver-compat@1.5.0:
     dependencies:

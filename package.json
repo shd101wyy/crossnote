@@ -1,6 +1,6 @@
 {
   "name": "crossnote",
-  "version": "0.9.19",
+  "version": "0.9.20",
   "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
@@ -128,7 +128,7 @@
     "sharp": "^0.33.5",
     "simple-icons": "^9.13.0",
     "slash": "^5.1.0",
-    "sval": "^0.4.8",
+    "sval": "^0.6.9",
     "temp": "^0.9.4",
     "twemoji": "^13.1.0",
     "type-fest": "^4.3.1",
