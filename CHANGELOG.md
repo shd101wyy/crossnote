@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Updates
+
+- Update `sval` javascript interpreter to the latest `0.6.9`.
+
 ## [0.9.19] - 2026-03-15
 
 ### Bug fixes
