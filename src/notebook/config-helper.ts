@@ -170,6 +170,34 @@ async function getConfigs(
   }
 }
 
+/**
+ * Wrap user-provided parser hooks so they are called with a null-prototype
+ * `this`, preventing prototype-chain escapes (e.g. `this.constructor.constructor`
+ * reaching the host Function/process).
+ */
+function sanitizeParserConfig(
+  defaultParserConfig: ParserConfig,
+  result: Record<string, unknown> | undefined,
+): ParserConfig {
+  const safeThis = Object.create(null);
+  return {
+    onWillParseMarkdown:
+      typeof result?.onWillParseMarkdown === 'function'
+        ? (md: string) =>
+            (
+              result.onWillParseMarkdown as ParserConfig['onWillParseMarkdown']
+            ).call(safeThis, md)
+        : defaultParserConfig.onWillParseMarkdown,
+    onDidParseMarkdown:
+      typeof result?.onDidParseMarkdown === 'function'
+        ? (html: string) =>
+            (
+              result.onDidParseMarkdown as ParserConfig['onDidParseMarkdown']
+            ).call(safeThis, html)
+        : defaultParserConfig.onDidParseMarkdown,
+  };
+}
+
 async function getParserConfig(
   configPath: string,
   fs: FileSystemApi,
@@ -191,10 +219,7 @@ async function getParserConfig(
       // NOTE: Never mind, the above code doesn't work in VSCode Web extension
       const script = await fs.readFile(parserConfigPath);
       const result = interpretJS(script);
-      return {
-        ...defaultParserConfig,
-        ...(result ?? {}),
-      };
+      return sanitizeParserConfig(defaultParserConfig, result);
     } catch (e) {
       console.error(e);
       return defaultParserConfig;

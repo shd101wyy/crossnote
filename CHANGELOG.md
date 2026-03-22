@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Security
+
+- Fix RCE vulnerability in `.crossnote/parser.js` hooks, by @0079522-Z461.
+
 ### Updates
 
 - Update `sval` javascript interpreter to the latest `0.6.9`.
