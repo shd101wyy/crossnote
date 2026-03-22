@@ -1,40 +1,20 @@
 import * as vm from 'vm';
+import { loadConfigsInDirectory } from '../src/notebook/config-helper';
+import { FileSystemApi, ParserConfig } from '../src/notebook/types';
 import { interpretJS } from '../src/utility';
 
+// Mock `less` since it's not available in the test environment
+jest.mock('less', () => ({
+  render: (
+    _input: string,
+    _options: unknown,
+    callback: (error: unknown, output: { css: string } | undefined) => void,
+  ) => {
+    callback(null, { css: '' });
+  },
+}));
+
 describe('parser.js prototype-chain RCE prevention', () => {
-  /**
-   * Simulates the crossnote flow: interpretJS evaluates parser.js,
-   * then the result is spread into a host object (the old vulnerable pattern).
-   */
-  function simulateVulnerableFlow(code: string) {
-    const result = interpretJS(code);
-    // Old pattern: spread into host object — this is what made it exploitable
-    const parserConfig = {
-      onWillParseMarkdown: async (md: string) => md,
-      onDidParseMarkdown: async (html: string) => html,
-      ...(result ?? {}),
-    };
-    return parserConfig;
-  }
-
-  /**
-   * Simulates the fixed flow: hooks are called with a null-prototype `this`.
-   */
-  function simulateFixedFlow(code: string) {
-    const result = interpretJS(code);
-    const safeThis = Object.create(null);
-    return {
-      onWillParseMarkdown:
-        typeof result?.onWillParseMarkdown === 'function'
-          ? (md: string) => result.onWillParseMarkdown.call(safeThis, md)
-          : async (md: string) => md,
-      onDidParseMarkdown:
-        typeof result?.onDidParseMarkdown === 'function'
-          ? (html: string) => result.onDidParseMarkdown.call(safeThis, html)
-          : async (html: string) => html,
-    };
-  }
-
   const maliciousCode = `({
     onWillParseMarkdown: async function(markdown) {
       try {
@@ -63,11 +43,71 @@ describe('parser.js prototype-chain RCE prevention', () => {
     }
   })`;
 
+  /**
+   * Create a mock FileSystemApi that serves the given parser.js content.
+   */
+  function mockFs(parserJsContent: string): FileSystemApi {
+    const files: Record<string, string> = {
+      'test-dir/parser.js': parserJsContent,
+    };
+    return {
+      readFile: async (filePath: string) => {
+        if (files[filePath]) return files[filePath];
+        throw new Error(`File not found: ${filePath}`);
+      },
+      writeFile: async (filePath: string, content: string) => {
+        files[filePath] = content;
+      },
+      mkdir: async () => {},
+      exists: async (filePath: string) =>
+        filePath in files || filePath === 'test-dir',
+      stat: async () => {
+        throw new Error('Not implemented');
+      },
+      readdir: async () => [],
+      unlink: async () => {},
+    };
+  }
+
+  describe('loadConfigsInDirectory (production code path)', () => {
+    it('blocks prototype-chain escape via onWillParseMarkdown', async () => {
+      const fs = mockFs(maliciousCode);
+      const config = await loadConfigsInDirectory('test-dir', fs);
+      const parserConfig = config.parserConfig as ParserConfig;
+      const result = await parserConfig.onWillParseMarkdown('test');
+      expect(result).toMatch(/^BLOCKED:/);
+    });
+
+    it('blocks prototype-chain escape via onDidParseMarkdown', async () => {
+      const fs = mockFs(maliciousCode);
+      const config = await loadConfigsInDirectory('test-dir', fs);
+      const parserConfig = config.parserConfig as ParserConfig;
+      const result = await parserConfig.onDidParseMarkdown('test');
+      expect(result).toMatch(/^BLOCKED:/);
+    });
+
+    it('still allows normal parser hooks to function', async () => {
+      const fs = mockFs(safeCode);
+      const config = await loadConfigsInDirectory('test-dir', fs);
+      const parserConfig = config.parserConfig as ParserConfig;
+      expect(await parserConfig.onWillParseMarkdown('foo baz')).toBe('bar baz');
+      expect(await parserConfig.onDidParseMarkdown('foo baz')).toBe('bar baz');
+    });
+  });
+
   describe('vulnerable pattern (spread into host object)', () => {
+    function simulateVulnerableFlow(code: string) {
+      const result = interpretJS(code);
+      return {
+        onWillParseMarkdown: async (md: string) => md,
+        onDidParseMarkdown: async (html: string) => html,
+        ...(result ?? {}),
+      };
+    }
+
     it('allows prototype-chain escape via onWillParseMarkdown', async () => {
       const config = simulateVulnerableFlow(maliciousCode);
       const result = await config.onWillParseMarkdown('test');
-      // This demonstrates the vulnerability exists in the OLD pattern
       expect(result).toMatch(/^ESCAPED:/);
     });
 
@@ -78,31 +118,10 @@ describe('parser.js prototype-chain RCE prevention', () => {
     });
   });
 
-  describe('fixed pattern (null-prototype this)', () => {
-    it('blocks prototype-chain escape via onWillParseMarkdown', async () => {
-      const config = simulateFixedFlow(maliciousCode);
-      const result = await config.onWillParseMarkdown('test');
-      expect(result).toMatch(/^BLOCKED:/);
-    });
-
-    it('blocks prototype-chain escape via onDidParseMarkdown', async () => {
-      const config = simulateFixedFlow(maliciousCode);
-      const result = await config.onDidParseMarkdown('test');
-      expect(result).toMatch(/^BLOCKED:/);
-    });
-
-    it('still allows normal parser hooks to function', async () => {
-      const config = simulateFixedFlow(safeCode);
-      expect(await config.onWillParseMarkdown('foo baz')).toBe('bar baz');
-      expect(await config.onDidParseMarkdown('foo baz')).toBe('bar baz');
-    });
-  });
-
   describe('vm.runInNewContext isolation (without spread)', () => {
     it('blocks escape when this stays in vm context', async () => {
       const context: Record<string, unknown> = {};
       vm.runInNewContext(`result = (${maliciousCode.trim()})`, context);
-      // Without spreading, this stays the vm-context object
       const result = await (
         context.result as {
           onWillParseMarkdown: (s: string) => Promise<string>;
