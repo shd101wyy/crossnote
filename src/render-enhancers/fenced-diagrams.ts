@@ -9,6 +9,7 @@ import {
 import { BlockInfo } from '../lib/block-info';
 import computeChecksum from '../lib/compute-checksum';
 import { renderBitfield } from '../renderers/bitfield';
+import { D2_NOT_FOUND, renderD2 } from '../renderers/d2';
 import { render as renderPlantuml } from '../renderers/puml';
 import { toSVG as vegaToSvg } from '../renderers/vega';
 import { toSVG as vegaLiteToSvg } from '../renderers/vega-lite';
@@ -46,6 +47,7 @@ const supportedLanguages = [
   'vega',
   'vega-lite',
   'wsd',
+  'd2',
 ];
 
 /**
@@ -63,6 +65,10 @@ export default async function enhance({
   kirokiServer,
   webSequenceDiagramsServer,
   webSequenceDiagramsApiKey,
+  d2Path,
+  d2Layout,
+  d2Theme,
+  d2Sketch,
 }: {
   $: CheerioStatic;
   graphsCache: { [key: string]: string };
@@ -73,9 +79,14 @@ export default async function enhance({
   kirokiServer: string;
   webSequenceDiagramsServer: string;
   webSequenceDiagramsApiKey: string;
+  d2Path: string;
+  d2Layout: string;
+  d2Theme: number;
+  d2Sketch: boolean;
 }): Promise<void> {
   const asyncFunctions: Promise<void>[] = [];
-  $('[data-role="codeBlock"]').each((i, container) => {
+  const allBlocks = $('[data-role="codeBlock"]');
+  allBlocks.each((i, container) => {
     const $container = $(container);
     if ($container.data('executor')) {
       return;
@@ -115,6 +126,10 @@ export default async function enhance({
         kirokiServer,
         webSequenceDiagramsServer,
         webSequenceDiagramsApiKey,
+        d2Path,
+        d2Layout,
+        d2Theme,
+        d2Sketch,
       }),
     );
   });
@@ -133,6 +148,10 @@ async function renderDiagram({
   kirokiServer,
   webSequenceDiagramsServer,
   webSequenceDiagramsApiKey,
+  d2Path,
+  d2Layout,
+  d2Theme,
+  d2Sketch,
 }: {
   $container: Cheerio;
   normalizedInfo: BlockInfo;
@@ -146,6 +165,10 @@ async function renderDiagram({
   kirokiServer: string;
   webSequenceDiagramsServer: string;
   webSequenceDiagramsApiKey: string;
+  d2Path: string;
+  d2Layout: string;
+  d2Theme: number;
+  d2Sketch: boolean;
 }): Promise<void> {
   let $output: string | Cheerio | null = null;
 
@@ -313,6 +336,42 @@ async function renderDiagram({
           $output = `<div ${stringifyBlockAttributes(
             ensureClassInAttributes(normalizedInfo.attributes, 'wsd'),
           )}><img src="${escape(imgUrl)}" alt="Sequence Diagram"></div>`;
+          break;
+        }
+        case 'd2': {
+          // Per-block overrides are parsed by crossnote's block-info parser
+          // from the fence info string (e.g. ```d2 layout=elk theme=200 sketch)
+          // and stored as typed values in normalizedInfo.attributes.
+          const renderOpts = {
+            d2Path: d2Path || 'd2',
+            d2Layout:
+              (normalizedInfo.attributes['layout'] as string) ||
+              d2Layout ||
+              'dagre',
+            d2Theme:
+              (normalizedInfo.attributes['theme'] as number) ?? d2Theme ?? 0,
+            d2Sketch:
+              'sketch' in normalizedInfo.attributes
+                ? normalizedInfo.attributes['sketch'] === true
+                : (d2Sketch ?? false),
+          };
+          // Include resolved render options in the checksum so that changes to
+          // global d2 settings (layout/theme/sketch) correctly bust the cache,
+          // consistent with how per-fence attributes already do via normalizedInfo.
+          const d2Checksum = computeChecksum(
+            JSON.stringify(normalizedInfo) + code + JSON.stringify(renderOpts),
+          );
+          const d2DiagramInCache: string = graphsCache[d2Checksum];
+          if (!d2DiagramInCache) {
+            const result = await renderD2(code, renderOpts);
+            if (result !== D2_NOT_FOUND) {
+              graphsCache[d2Checksum] = result as string;
+              $output = `<div class="d2-diagram">${result}</div>`;
+            }
+            // D2_NOT_FOUND: leave block as-is (d2 not installed)
+          } else {
+            $output = `<div class="d2-diagram">${d2DiagramInCache}</div>`;
+          }
           break;
         }
       }

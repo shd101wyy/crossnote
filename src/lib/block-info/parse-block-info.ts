@@ -6,19 +6,57 @@ export const parseBlockInfo = (raw = ''): BlockInfo => {
   let attributesAsString: string;
   let attributes: BlockAttributes;
   const trimmedParams = raw.trim();
-  const match =
-    trimmedParams.indexOf('{') !== -1
-      ? trimmedParams.match(/^([^\s{]*)\s*\{(.*?)\}/)
-      : trimmedParams.match(/^([^\s]+)\s+(.+?)$/);
-
-  if (match) {
-    if (match[1].length) {
-      language = match[1];
+  if (trimmedParams.indexOf('{') !== -1) {
+    // The transformer appends {data-source-line="N"} to fence info strings,
+    // producing either:
+    //   "lang {attrs} {data-source-line="N"}"  (when attrs already existed)
+    //   "lang pre-attrs {data-source-line="N"}" (space-separated attrs like d2)
+    //   "lang {attrs}"                          (normal case)
+    // Strategy: extract language (up to first space or {), then collect all
+    // brace-group contents and space-separated tokens between them as attrs.
+    const langMatch = trimmedParams.match(/^([^\s{]*)/);
+    if (langMatch?.[1].length) {
+      language = langMatch[1];
     }
-    attributesAsString = match[2];
+    const afterLang = trimmedParams.slice(language?.length ?? 0).trim();
+    // Collect all {…} blocks and bare tokens between them
+    const attrParts: string[] = [];
+    let rest = afterLang;
+    while (rest.length) {
+      const braceStart = rest.indexOf('{');
+      if (braceStart === -1) {
+        // remaining bare tokens
+        const bare = rest.trim();
+        if (bare) attrParts.push(bare);
+        break;
+      }
+      // bare tokens before the brace
+      const bare = rest.slice(0, braceStart).trim();
+      if (bare) attrParts.push(bare);
+      // find matching closing brace
+      let depth = 1;
+      let i = braceStart + 1;
+      while (i < rest.length && depth > 0) {
+        if (rest[i] === '{') depth++;
+        else if (rest[i] === '}') depth--;
+        i++;
+      }
+      const braceContent = rest.slice(braceStart + 1, i - 1).trim();
+      if (braceContent) attrParts.push(braceContent);
+      rest = rest.slice(i).trim();
+    }
+    attributesAsString = attrParts.join(' ');
   } else {
-    language = trimmedParams;
-    attributesAsString = '';
+    const match = trimmedParams.match(/^([^\s]+)\s+(.+?)$/);
+    if (match) {
+      if (match[1].length) {
+        language = match[1];
+      }
+      attributesAsString = match[2];
+    } else {
+      language = trimmedParams;
+      attributesAsString = '';
+    }
   }
 
   if (attributesAsString) {

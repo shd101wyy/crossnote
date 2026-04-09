@@ -370,7 +370,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     presentationInitScript = `<script>
 window["initRevealPresentation"] = async function() {
   ${presentationInitScript}
-}    
+}
 </script>`;
 
     return scripts + presentationInitScript;
@@ -687,7 +687,7 @@ window["initRevealPresentation"] = async function() {
   pre code {
     color: var(--vscode-editor-foreground);
     tab-size: 4;
-  }  
+  }
   </style>
 `
             : ''
@@ -2634,6 +2634,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       kirokiServer: this.notebook.config.krokiServer,
       webSequenceDiagramsServer: this.notebook.config.webSequenceDiagramsServer,
       webSequenceDiagramsApiKey: this.notebook.config.webSequenceDiagramsApiKey,
+      d2Path: this.notebook.config.d2Path,
+      d2Layout: this.notebook.config.d2Layout,
+      d2Theme: this.notebook.config.d2Theme,
+      d2Sketch: this.notebook.config.d2Sketch,
     });
     await enhanceWithFencedCodeChunks(
       $,
