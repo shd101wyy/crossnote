@@ -10,6 +10,7 @@ import MarkdownItSup from 'markdown-it-sup';
 import Token from 'markdown-it/lib/token';
 import * as path from 'path';
 import { URI, Utils } from 'vscode-uri';
+import type { MarkdownRenderer, RenderOptions } from 'markdown_yo';
 import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
 import useMarkdownCallout from '../custom-markdown-it-features/callout';
 import useMarkdownItCodeFences from '../custom-markdown-it-features/code-fences';
@@ -94,6 +95,17 @@ export class Notebook {
   private search: Search = new Search();
 
   public md: MarkdownIt;
+
+  /**
+   * Optional markdown_yo WASM renderer.
+   * Used for HTML rendering when `useMarkdownYoParser` is enabled.
+   */
+  public markdownYoRenderer: MarkdownRenderer | null = null;
+
+  /**
+   * Default render options for markdown_yo, derived from notebook config.
+   */
+  private markdownYoDefaultOptions: RenderOptions = {};
   /**
    * Markdown engines for each note
    * key is the relative path of the note
@@ -119,6 +131,9 @@ export class Notebook {
     this.initFs(fs);
     await this.initConfig(config);
     this.md = this.initMarkdownIt();
+    if (this.config.useMarkdownYoParser) {
+      await this.initMarkdownYo();
+    }
     this.updateConfig({});
   }
 
@@ -177,6 +192,77 @@ export class Notebook {
     }
   }
 
+  /**
+   * Initialize the markdown_yo WASM renderer.
+   * Maps crossnote config options to markdown_yo render options.
+   */
+  private async initMarkdownYo() {
+    try {
+      const { createRenderer } = await import('markdown_yo');
+      this.markdownYoDefaultOptions = this.buildMarkdownYoOptions(
+        /* isForPreview */ true,
+      );
+      this.markdownYoRenderer = await createRenderer(
+        null,
+        this.markdownYoDefaultOptions,
+      );
+    } catch (error) {
+      console.warn('Failed to load markdown_yo WASM renderer:', error);
+      this.markdownYoRenderer = null;
+    }
+  }
+
+  /**
+   * Build markdown_yo render options from the current notebook config.
+   */
+  public buildMarkdownYoOptions(isForPreview: boolean): RenderOptions {
+    const c = this.config;
+    return {
+      html: true,
+      typographer: !!c.enableTypographer,
+      // Always-on features in crossnote (plugins loaded unconditionally)
+      subscript: true,
+      superscript: true,
+      mark: true,
+      footnote: true,
+      deflist: true,
+      abbr: true,
+      admonition: true,
+      callout: true,
+      // Conditional features
+      emoji: !!c.enableEmojiSyntax,
+      wikilink: !!c.enableWikiLinkSyntax,
+      critic: !!c.enableCriticMarkupSyntax,
+      math: c.mathRenderingOption !== 'None',
+      sourceMap: isForPreview,
+    };
+  }
+
+  /**
+   * Render markdown to HTML using markdown_yo (WASM) if available,
+   * otherwise falls back to markdown-it.
+   */
+  public renderMarkdown(
+    markdown: string,
+    options?: { isForPreview?: boolean },
+  ): string {
+    if (this.markdownYoRenderer) {
+      const renderOpts = options?.isForPreview
+        ? undefined // uses default options (with sourceMap)
+        : this.buildMarkdownYoOptions(false);
+      return this.markdownYoRenderer.render(markdown, renderOpts);
+    }
+    // Fallback to markdown-it
+    if (options?.isForPreview) {
+      return this.md.render(markdown);
+    }
+    const md = this.initMarkdownIt({
+      ...this.md.options,
+      sourceMap: false,
+    });
+    return md.render(markdown);
+  }
+
   public updateConfig(config: Partial<NotebookConfig>) {
     this.config = {
       ...this.config,
@@ -192,6 +278,13 @@ export class Notebook {
       breaks: !!this.config.breakOnSingleNewLine,
       linkify: !!this.config.enableLinkify,
     });
+
+    // Update markdown_yo default options
+    if (this.markdownYoRenderer) {
+      this.markdownYoDefaultOptions = this.buildMarkdownYoOptions(
+        /* isForPreview */ true,
+      );
+    }
   }
 
   private interpolateConfig() {
