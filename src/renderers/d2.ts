@@ -3,6 +3,7 @@
 // the web extension gracefully falls back to a plain code block.
 import { execFile } from 'child_process';
 import * as crypto from 'crypto';
+import { escape } from 'html-escaper';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -64,20 +65,20 @@ export async function renderD2(
       );
     });
     return await fs.promises.readFile(tmpOut, 'utf8');
-  } catch (err: any) {
+  } catch (err: unknown) {
     // d2 binary not found — caller falls back to plain code block.
-    // On Windows with shell:true, cmd.exe exits with code 1 and prints
-    // "is not recognized..." instead of an OS-level ENOENT.
-    const msg: string = err?.message ?? String(err);
+    // Some Windows environments report a missing executable via stderr text
+    // such as "is not recognized..." instead of an OS-level ENOENT.
+    const msg = err instanceof Error ? err.message : String(err);
+    const code = (err as NodeJS.ErrnoException).code;
     const isNotFound =
-      err?.code === 'ENOENT' ||
+      code === 'ENOENT' ||
       /not recognized as an internal or external command/i.test(msg) ||
       /not found/i.test(msg) ||
       /cannot find/i.test(msg) ||
       /No such file or directory/i.test(msg);
     if (isNotFound) return D2_NOT_FOUND;
-    const escaped = msg.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return `<pre class="language-text"><code>D2 error: ${escaped}</code></pre>`;
+    return `<pre class="language-text"><code>D2 error: ${escape(msg)}</code></pre>`;
   } finally {
     fs.promises.unlink(tmpIn).catch(() => undefined);
     fs.promises.unlink(tmpOut).catch(() => undefined);

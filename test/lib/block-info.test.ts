@@ -103,6 +103,41 @@ const testCasesForParseBlockInfo: {
       attributes: { just: 'attribute', class: 'html python js' },
     },
   },
+  // D2-style space-separated attributes (no braces)
+  {
+    input: 'd2 layout=elk theme=200 sketch',
+    expect: {
+      language: 'd2',
+      attributes: { class: 'd2', layout: 'elk', theme: 200, sketch: true },
+    },
+  },
+  // Transformer output for d2 block: space-attrs + appended {data-source-line="N"}
+  {
+    input: 'd2 layout=elk theme=200 sketch {data-source-line="5"}',
+    expect: {
+      language: 'd2',
+      attributes: {
+        'class': 'd2',
+        'layout': 'elk',
+        'theme': 200,
+        'sketch': true,
+        'data-source-line': '5',
+      },
+    },
+  },
+  // Transformer output when original attrs were in braces: lang {attrs} {data-source-line="N"}
+  {
+    input: 'd2 {layout=elk theme=200} {data-source-line="5"}',
+    expect: {
+      language: 'd2',
+      attributes: {
+        'class': 'd2',
+        'layout': 'elk',
+        'theme': 200,
+        'data-source-line': '5',
+      },
+    },
+  },
 ];
 
 const testCasesForNormalizeCodeBlockInfo: {
