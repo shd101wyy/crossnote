@@ -11,6 +11,7 @@ import Token from 'markdown-it/lib/token';
 import * as path from 'path';
 import { URI, Utils } from 'vscode-uri';
 import type { MarkdownRenderer, RenderOptions } from 'markdown_yo';
+import parseMath from '../renderers/parse-math';
 import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
 import useMarkdownCallout from '../custom-markdown-it-features/callout';
 import useMarkdownItCodeFences from '../custom-markdown-it-features/code-fences';
@@ -220,6 +221,7 @@ export class Notebook {
     return {
       html: true,
       typographer: !!c.enableTypographer,
+      breaks: !!c.breakOnSingleNewLine,
       // Always-on features in crossnote (plugins loaded unconditionally)
       subscript: true,
       superscript: true,
@@ -250,7 +252,9 @@ export class Notebook {
       const renderOpts = options?.isForPreview
         ? undefined // uses default options (with sourceMap)
         : this.buildMarkdownYoOptions(false);
-      return this.markdownYoRenderer.render(markdown, renderOpts);
+      let html = this.markdownYoRenderer.render(markdown, renderOpts);
+      html = this.postProcessMarkdownYo(html);
+      return html;
     }
     // Fallback to markdown-it
     if (options?.isForPreview) {
@@ -261,6 +265,55 @@ export class Notebook {
       sourceMap: false,
     });
     return md.render(markdown);
+  }
+
+  /**
+   * Post-process markdown_yo HTML output:
+   * - Render math expressions with KaTeX (when mathRenderingOption is 'KaTeX')
+   * - Append file extension to wikilink hrefs
+   */
+  private postProcessMarkdownYo(html: string): string {
+    // Post-process math: replace <span class="mathjax-exps">$...$</span>
+    // and <div class="mathjax-exps">$$...$$</div> with KaTeX-rendered HTML
+    if (this.config.mathRenderingOption === 'KaTeX') {
+      html = html.replace(
+        /<(span|div) class="mathjax-exps">(\${1,2})([\s\S]*?)\2<\/\1>/g,
+        (_match, _tag, delim, content) => {
+          const displayMode = delim === '$$';
+          return parseMath({
+            content: content.trim(),
+            openTag: delim,
+            closeTag: delim,
+            displayMode,
+            renderingOption: this.config.mathRenderingOption,
+            katexConfig: this.config.katexConfig,
+          });
+        },
+      );
+    } else if (this.config.mathRenderingOption === 'MathJax') {
+      // MathJax mode: normalize newlines in math content to spaces
+      html = html.replace(
+        /<(span|div) class="mathjax-exps">(\${1,2})([\s\S]*?)\2<\/\1>/g,
+        (_match, tag, delim, content) => {
+          const normalized = content.replace(/\n/g, ' ').trim();
+          const text = delim + normalized + delim;
+          return `<${tag} class="mathjax-exps">${text}</${tag}>`;
+        },
+      );
+    }
+
+    // Post-process wikilinks: append file extension to href
+    if (this.config.enableWikiLinkSyntax) {
+      html = html.replace(
+        /<a href="([^"]*)"( class="wikilink")/g,
+        (_match, href, classAttr) => {
+          const processed = this.processWikilink(href);
+          return `<a href="${processed.link}"${classAttr}`;
+        },
+      );
+    }
+
+    return html;
   }
 
   public updateConfig(config: Partial<NotebookConfig>) {
