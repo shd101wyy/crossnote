@@ -122,6 +122,9 @@ importers:
       markdown-it-sup:
         specifier: ^1.0.0
         version: 1.0.0
+      markdown_yo:
+        specifier: ^0.0.4
+        version: 0.0.4
       md5:
         specifier: ^2.3.0
         version: 2.3.0
@@ -4366,6 +4369,9 @@ packages:
   markdown-it@8.4.2:
     resolution: {integrity: sha512-GcRz3AWTqSUphY3vsUqQSFMbgR38a4Lh3GWlHRh/7MRwz8mcu9n2IO7HOh+bXHrR9kOPDl5RNCaEsrneb+xhHQ==}
     hasBin: true
+
+  markdown_yo@0.0.4:
+    resolution: {integrity: sha512-qLS6za6NK5qSmU52OtDZz7hD8PeQ3XRRHzrePLFear+iefsCq/KEnNm3hsltDH35VSHmS/bB75JlC/3Rth3Elw==}
 
   marked@16.4.1:
     resolution: {integrity: sha512-ntROs7RaN3EvWfy3EZi14H4YxmT6A5YvywfhO+0pm+cH/dnSQRmdAmoFIc3B9aiwTehyk7pESH4ofyBY+V5hZg==}
@@ -11058,6 +11064,8 @@ snapshots:
       linkify-it: 2.2.0
       mdurl: 1.0.1
       uc.micro: 1.0.6
+
+  markdown_yo@0.0.4: {}
 
   marked@16.4.1: {}
 

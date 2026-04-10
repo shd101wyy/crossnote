@@ -4,6 +4,26 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### New features
+
+- Add experimental support for [markdown_yo](https://github.com/shd101wyy/markdown_yo), a high-performance Markdown-to-HTML renderer written in the [Yo](https://github.com/shd101wyy/Yo) programming language and compiled to WebAssembly.
+  - Enable with `useMarkdownYoParser: true` in notebook config.
+  - Replaces markdown-it for HTML rendering; markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).
+  - Supports CommonMark, GFM tables, strikethrough, subscript, superscript, mark/highlight, math, emoji, wikilinks, CriticMarkup, abbreviations, definition lists, admonitions, callouts, footnotes, source maps, and line breaks.
+  - KaTeX and MathJax math rendering are both supported via post-processing.
+  - Wikilink href post-processing applies the same file extension rules as markdown-it.
+  - Performance comparison (median of 10 runs, Apple M4):
+
+    | Input Size | markdown-it (JS) | Native  | Speedup | WASM     | Speedup |
+    | ---------- | ---------------- | ------- | ------- | -------- | ------- |
+    | 64 KB      | 1.6 ms           | 0.4 ms  | 4.5×    | 12.9 ms  | 0.1×    |
+    | 256 KB     | 6.7 ms           | 1.2 ms  | 5.3×    | 13.1 ms  | 0.5×    |
+    | 1 MB       | 28.8 ms          | 4.8 ms  | 6.0×    | 13.5 ms  | 2.1×    |
+    | 5 MB       | 158.9 ms         | 23.3 ms | 6.8×    | 32.6 ms  | 4.9×    |
+    | 20 MB      | 722.8 ms         | 95.4 ms | 7.6×    | 121.5 ms | 6.0×    |
+
+    _Native: clang -O3 -flto. WASM: Emscripten, Node.js, -O3 -flto. WASM overhead at small sizes is dominated by one-time WASM compilation startup (~12ms). Crossnote uses the WASM version for cross-platform compatibility._
+
 ## [0.9.20] - 2026-03-22
 
 ### Security
