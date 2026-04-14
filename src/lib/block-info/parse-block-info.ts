@@ -7,13 +7,16 @@ export const parseBlockInfo = (raw = ''): BlockInfo => {
   let attributes: BlockAttributes;
   const trimmedParams = raw.trim();
   if (trimmedParams.indexOf('{') !== -1) {
-    // The transformer appends {data-source-line="N"} to fence info strings,
-    // producing either:
-    //   "lang {attrs} {data-source-line="N"}"  (when attrs already existed)
-    //   "lang pre-attrs {data-source-line="N"}" (space-separated attrs like d2)
-    //   "lang {attrs}"                          (normal case)
-    // Strategy: extract language (up to first space or {), then collect all
-    // brace-group contents and space-separated tokens between them as attrs.
+    // The transformer appends {data-source-line="N"} to fence info strings.
+    // Depending on whether the fence already had attrs, it produces one of:
+    //
+    //   "lang {attrs data-source-line="N"}"       ← brace-attrs merged with source line
+    //   "lang space-attrs {data-source-line="N"}" ← space-attrs with source line appended
+    //   "lang {data-source-line="N"}"             ← no prior attrs, source line only
+    //   "lang {attrs}"                            ← no source tracking (normal case)
+    //
+    // Strategy: extract the language token (up to first space or '{'), then
+    // gather all brace-group contents and bare space-separated tokens as attrs.
     const langMatch = trimmedParams.match(/^([^\s{]*)/);
     if (langMatch?.[1].length) {
       language = langMatch[1];
