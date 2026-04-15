@@ -12,9 +12,8 @@
  * rendering pipeline.
  */
 
-import { escape } from 'html-escaper';
 import MarkdownIt from 'markdown-it';
-import { normalizeBlockInfo, parseBlockInfo } from '../lib/block-info';
+import { renderCodeBlockToken } from './code-fences';
 
 export default (md: MarkdownIt) => {
   // Block rule: parse :::type ... ::: fences
@@ -22,29 +21,10 @@ export default (md: MarkdownIt) => {
     alt: ['paragraph', 'reference', 'blockquote', 'list'],
   });
 
-  // Renderer: produce the same <pre data-role="codeBlock"> output as
-  // code-fences.ts so the existing render-enhancer pipeline (fenced-diagrams,
-  // fenced-code-chunks, etc.) picks it up without modification.
-  md.renderer.rules['colon_fence'] = (tokens, idx) => {
-    const token = tokens[idx];
-    const info = token.info.trim();
-    const parsedInfo = parseBlockInfo(info);
-    const normalizedInfo = normalizeBlockInfo(parsedInfo);
-    const content = escape(token.content);
-    const finalBreak =
-      idx < tokens.length && tokens[idx].type === 'list_item_close' ? '\n' : '';
-
-    return (
-      `<pre data-role="codeBlock"` +
-      ` data-info="${escape(info)}"` +
-      ` data-parsed-info="${escape(JSON.stringify(parsedInfo))}"` +
-      ` data-normalized-info="${escape(JSON.stringify(normalizedInfo))}"` +
-      ('data-source-line' in parsedInfo.attributes
-        ? ` data-source-line="${parsedInfo.attributes['data-source-line']}"`
-        : '') +
-      `>${content}</pre>${finalBreak}`
-    );
-  };
+  // Renderer: reuse the same rendering logic as backtick-fenced code blocks so
+  // the existing render-enhancer pipeline (fenced-diagrams, fenced-code-chunks,
+  // etc.) picks it up without modification.
+  md.renderer.rules['colon_fence'] = renderCodeBlockToken;
 };
 
 const COLON = 0x3a; // ':'

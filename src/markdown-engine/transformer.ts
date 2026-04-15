@@ -253,6 +253,7 @@ export async function transformMarkdown(
   inputString = inputString.replace(/\r\n/g, '\n');
 
   let lastOpeningCodeBlockFence: string | null = null;
+  let lastOpeningColonFence: string | null = null;
   let codeChunkOffset = 0;
   const slideConfigs: BlockAttributes[] = [];
   const JSAndCssFiles: string[] = [];
@@ -301,6 +302,58 @@ export async function transformMarkdown(
       // eslint-disable-next-line prefer-const
       let { line, blockquotePrefix, end } = getLine(i);
       outputString += blockquotePrefix;
+
+      // ========== Start: Colon Code Block ==========
+      // Handle :::lang ... ::: fences (Azure DevOps / GitLab wiki style).
+      // This section must run before the backtick-fence section so that
+      // backtick fences inside a colon block are treated as content.
+      const inColonCodeBlock = !!lastOpeningColonFence;
+      const colonFenceMatch = line.match(/^\s*(:{3,})(.*)/);
+      if (colonFenceMatch) {
+        const colonMarker = colonFenceMatch[1];
+        const afterColons = colonFenceMatch[2].trim();
+        if (!inColonCodeBlock && afterColons.length > 0) {
+          // Opening colon fence — inject data-source-line into the info string
+          // so the renderer can attach it to the <pre> element for preview sync.
+          if (canCreateAnchor()) {
+            const optStart = line.indexOf('{');
+            const optEnd = line.lastIndexOf('}');
+            if (optStart > 0 && optEnd > 0) {
+              const optString = line.substring(optStart + 1, optEnd);
+              line =
+                line.substring(0, optStart) +
+                ` {${optString} data-source-line="${lineNo + 1}"}`;
+            } else {
+              line = line.trimEnd() + ` {data-source-line="${lineNo + 1}"}`;
+            }
+          }
+          lastOpeningColonFence = colonMarker;
+          i = end + 1;
+          lineNo = lineNo + 1;
+          outputString = outputString + line + '\n';
+          continue;
+        } else if (
+          inColonCodeBlock &&
+          afterColons.length === 0 &&
+          colonMarker.length >= lastOpeningColonFence!.length
+        ) {
+          // Closing colon fence
+          lastOpeningColonFence = null;
+          i = end + 1;
+          lineNo = lineNo + 1;
+          outputString = outputString + line + '\n';
+          continue;
+        }
+      }
+
+      if (inColonCodeBlock) {
+        // Inside a colon block — pass through unchanged, like backtick blocks
+        i = end + 1;
+        lineNo = lineNo + 1;
+        outputString = outputString + line + '\n';
+        continue;
+      }
+      // ========== End: Colon Code Block ==========
 
       // ========== Start: Code Block ==========
       const inCodeBlock = !!lastOpeningCodeBlockFence;
