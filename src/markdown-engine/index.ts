@@ -830,7 +830,7 @@ window["initRevealPresentation"] = async function() {
           ),
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.13.0/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.14.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">
