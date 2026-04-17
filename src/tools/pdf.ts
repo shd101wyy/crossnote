@@ -78,7 +78,6 @@ export function toSVGMarkdown(
           });
 
           let svgMarkdown = '';
-          const r = Math.random();
 
           items.forEach((fileName) => {
             const match = fileName.match(
@@ -115,7 +114,7 @@ export function toSVGMarkdown(
                   svgZoom ? `style="zoom:${svgZoom};"` : ''
                 }>`;
               } else {
-                svgMarkdown += `![](${svgFilePath}?${r})\n`;
+                svgMarkdown += `![](${svgFilePath})\n`;
               }
             }
           });
