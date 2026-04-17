@@ -104,9 +104,9 @@ export class Notebook {
   public markdownYoRenderer: MarkdownRenderer | null = null;
 
   /**
-   * Default render options for markdown_yo, derived from notebook config.
+   * Tracks in-flight markdown_yo initialization to avoid duplicate loads.
    */
-  private markdownYoDefaultOptions: RenderOptions = {};
+  private markdownYoRendererPromise: Promise<void> | null = null;
   /**
    * Markdown engines for each note
    * key is the relative path of the note
@@ -195,22 +195,41 @@ export class Notebook {
 
   /**
    * Initialize the markdown_yo WASM renderer.
-   * Maps crossnote config options to markdown_yo render options.
    */
   private async initMarkdownYo() {
-    try {
-      const { createRenderer } = await import('markdown_yo');
-      this.markdownYoDefaultOptions = this.buildMarkdownYoOptions(
-        /* isForPreview */ true,
-      );
-      this.markdownYoRenderer = await createRenderer(
-        null,
-        this.markdownYoDefaultOptions,
-      );
-    } catch (error) {
-      console.warn('Failed to load markdown_yo WASM renderer:', error);
-      this.markdownYoRenderer = null;
+    if (this.markdownYoRendererPromise) {
+      await this.markdownYoRendererPromise;
+      return;
     }
+
+    if (this.markdownYoRenderer) {
+      return;
+    }
+
+    this.markdownYoRendererPromise = (async () => {
+      try {
+        const { createRenderer } = await import('markdown_yo');
+        const renderer = await createRenderer();
+
+        if (this.config.useMarkdownYoParser) {
+          this.markdownYoRenderer = renderer;
+        } else {
+          renderer.destroy();
+        }
+      } catch (error) {
+        console.warn('Failed to load markdown_yo WASM renderer:', error);
+        this.markdownYoRenderer = null;
+      } finally {
+        this.markdownYoRendererPromise = null;
+      }
+    })();
+
+    await this.markdownYoRendererPromise;
+  }
+
+  private destroyMarkdownYo() {
+    this.markdownYoRenderer?.destroy();
+    this.markdownYoRenderer = null;
   }
 
   /**
@@ -248,10 +267,8 @@ export class Notebook {
     markdown: string,
     options?: { isForPreview?: boolean },
   ): string {
-    if (this.markdownYoRenderer) {
-      const renderOpts = options?.isForPreview
-        ? undefined // uses default options (with sourceMap)
-        : this.buildMarkdownYoOptions(false);
+    if (this.config.useMarkdownYoParser && this.markdownYoRenderer) {
+      const renderOpts = this.buildMarkdownYoOptions(!!options?.isForPreview);
       let html = this.markdownYoRenderer.render(markdown, renderOpts);
       html = this.postProcessMarkdownYo(html);
       return html;
@@ -332,11 +349,10 @@ export class Notebook {
       linkify: !!this.config.enableLinkify,
     });
 
-    // Update markdown_yo default options
-    if (this.markdownYoRenderer) {
-      this.markdownYoDefaultOptions = this.buildMarkdownYoOptions(
-        /* isForPreview */ true,
-      );
+    if (this.config.useMarkdownYoParser) {
+      void this.initMarkdownYo();
+    } else {
+      this.destroyMarkdownYo();
     }
   }
 
