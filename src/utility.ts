@@ -63,13 +63,20 @@ export function isWSL(): boolean {
 }
 
 /**
- * Convert a Linux filesystem path to a file:// URL accessible from
- * a Windows browser when running under WSL.
+ * Convert a filesystem path to a file:// URL.
  *
- * e.g. `/home/user/file.js` → `file:////wsl.localhost/Ubuntu/home/user/file.js`
+ * When `useWSL` is true and the environment is WSL, produces a URL
+ * accessible from a Windows browser:
+ *   e.g. `/home/user/file.js` → `file:////wsl.localhost/Ubuntu/home/user/file.js`
+ *
+ * Otherwise returns a standard file:// URL (suitable for export tools
+ * like puppeteer, prince, or ebook-convert that run inside WSL).
  */
-export function toFileURL(filePath: string): string {
-  if (isWSL()) {
+export function toFileURL(
+  filePath: string,
+  { useWSL = false }: { useWSL?: boolean } = {},
+): string {
+  if (useWSL && isWSL()) {
     const distro = process.env['WSL_DISTRO_NAME'];
     return `file:////wsl.localhost/${distro}${filePath}`;
   }

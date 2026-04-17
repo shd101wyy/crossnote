@@ -103,6 +103,13 @@ export interface HTMLTemplateOption {
    * whether to embed svg images
    */
   embedSVG?: boolean;
+  /**
+   * Whether the HTML will be opened in a browser (e.g. "Open in Browser").
+   * When true under WSL, file:// URLs are translated so Windows browsers
+   * can reach WSL filesystem paths.  Export tools (puppeteer, prince,
+   * ebook-convert) run inside WSL and must NOT use translated URLs.
+   */
+  isForBrowser?: boolean;
 }
 
 // NOTE: The order of the following matters.
@@ -736,6 +743,10 @@ window["initRevealPresentation"] = async function() {
     yamlConfig = {},
     options: HTMLTemplateOption,
   ): Promise<string> {
+    // Build file:// URLs.  Only translate for WSL when opening in a browser.
+    const fileURL = (p: string) =>
+      utility.toFileURL(p, { useWSL: !!options.isForBrowser });
+
     // get `id` and `class`
     const elementId = yamlConfig['id'] || '';
     let elementClass = yamlConfig['class'] || [];
@@ -779,7 +790,7 @@ window["initRevealPresentation"] = async function() {
       }
     } else if (this.notebook.config.mathRenderingOption === 'KaTeX') {
       if (options.offline) {
-        mathStyle = `<link rel="stylesheet" href="${utility.toFileURL(
+        mathStyle = `<link rel="stylesheet" href="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/katex/katex.min.css',
@@ -796,7 +807,7 @@ window["initRevealPresentation"] = async function() {
     let fontAwesomeStyle = '';
     if (html.indexOf('<i class="fa') >= 0) {
       if (options.offline) {
-        fontAwesomeStyle = `<link rel="stylesheet" href="${utility.toFileURL(
+        fontAwesomeStyle = `<link rel="stylesheet" href="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             `./dependencies/font-awesome/css/all.min.css`,
@@ -812,7 +823,7 @@ window["initRevealPresentation"] = async function() {
     let mermaidInitScript = '';
     if (html.indexOf(' class="mermaid') >= 0) {
       if (options.offline) {
-        mermaidScript = `<script type="text/javascript" src="${utility.toFileURL(
+        mermaidScript = `<script type="text/javascript" src="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/mermaid/mermaid.min.js',
@@ -871,19 +882,19 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let wavedromInitScript = ``;
     if (html.indexOf(' class="wavedrom') >= 0) {
       if (options.offline) {
-        wavedromScript += `<script type="text/javascript" src="${utility.toFileURL(
+        wavedromScript += `<script type="text/javascript" src="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/wavedrom/skins/default.js',
           ),
         )}" charset="UTF-8"></script>`;
-        wavedromScript += `<script type="text/javascript" src="${utility.toFileURL(
+        wavedromScript += `<script type="text/javascript" src="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/wavedrom/skins/narrow.js',
           ),
         )}" charset="UTF-8"></script>`;
-        wavedromScript += `<script type="text/javascript" src="${utility.toFileURL(
+        wavedromScript += `<script type="text/javascript" src="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/wavedrom/wavedrom.min.js',
@@ -907,7 +918,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     ) {
       dependentLibraryMaterials.forEach(({ key, version }) => {
         vegaScript += options.offline
-          ? `<script type="text/javascript" src="${utility.toFileURL(
+          ? `<script type="text/javascript" src="${fileURL(
               path.resolve(
                 utility.getCrossnoteBuildDirectory(),
                 `./dependencies/${key}/${key}.min.js`,
@@ -946,7 +957,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (yamlConfig['isPresentationMode']) {
       if (options.offline) {
         presentationScript = `
-        <script src='${utility.toFileURL(
+        <script src='${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/reveal/js/reveal.js',
@@ -1049,7 +1060,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
             : this.notebook.config.revealjsTheme;
 
         if (options.offline) {
-          presentationStyle += `<link rel="stylesheet" href="${utility.toFileURL(
+          presentationStyle += `<link rel="stylesheet" href="${fileURL(
             path.resolve(
               utility.getCrossnoteBuildDirectory(),
               `./dependencies/reveal/css/theme/${theme}`,
@@ -1254,8 +1265,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       isForPrince: false,
       offline: true,
       embedLocalImages: false,
+      isForBrowser: true,
     });
-    // create temp file
     const info = await utility.tempOpen({
       prefix: 'crossnote',
       suffix: '.html',
