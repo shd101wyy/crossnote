@@ -492,6 +492,30 @@ export interface NotebookConfig {
    */
   webSequenceDiagramsApiKey: string;
   /**
+   * Path to the D2 executable.
+   *
+   * @default `d2`
+   */
+  d2Path: string;
+  /**
+   * Default layout engine for D2 diagrams.
+   *
+   * @default `dagre`
+   */
+  d2Layout: string;
+  /**
+   * Default theme ID for D2 diagrams.
+   *
+   * @default 0
+   */
+  d2Theme: number;
+  /**
+   * Whether to render D2 diagrams in sketch (hand-drawn) style.
+   *
+   * @default false
+   */
+  d2Sketch: boolean;
+  /**
    * Whether the current environment is VSCode.
    *
    * @default false
@@ -611,6 +635,10 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     krokiServer: 'https://kroki.io',
     webSequenceDiagramsServer: 'https://www.websequencediagrams.com',
     webSequenceDiagramsApiKey: '',
+    d2Path: 'd2',
+    d2Layout: 'dagre',
+    d2Theme: 0,
+    d2Sketch: false,
     isVSCode: false,
     alwaysShowBacklinksInPreview: false,
     useMarkdownYoParser: false,

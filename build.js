@@ -15,6 +15,7 @@ const sharedConfig = {
     'path',
     'child_process',
     'os',
+    'crypto',
     'vm',
     'stream',
     'node:fs/promises',

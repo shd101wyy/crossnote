@@ -15,6 +15,7 @@ import parseMath from '../renderers/parse-math';
 import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
 import useMarkdownCallout from '../custom-markdown-it-features/callout';
 import useMarkdownItCodeFences from '../custom-markdown-it-features/code-fences';
+import useMarkdownItColonFencedCodeBlocks from '../custom-markdown-it-features/colon-fenced-code-blocks';
 import useMarkdownItCriticMarkup from '../custom-markdown-it-features/critic-markup';
 import useMarkdownItCurlyBracketAttributes from '../custom-markdown-it-features/curly-bracket-attributes';
 import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
@@ -168,6 +169,7 @@ export class Notebook {
     md.use(MarkdownItMark);
 
     useMarkdownItCodeFences(md);
+    useMarkdownItColonFencedCodeBlocks(md);
     useMarkdownItCurlyBracketAttributes(md);
     useMarkdownItCriticMarkup(md, this);
     useMarkdownItEmoji(md, this);
