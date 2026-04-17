@@ -24,6 +24,30 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
     _Native: clang -O3 -flto. WASM: Emscripten, Node.js, -O3 -flto. WASM overhead at small sizes is dominated by one-time WASM compilation startup (~12ms). Crossnote uses the WASM version for cross-platform compatibility._
 
+- Support rendering [D2](https://d2lang.com) diagrams via the `d2` CLI. D2 fenced code blocks are rendered as SVG diagrams in the preview. If the `d2` executable is not installed, blocks are silently rendered as plain code blocks. https://github.com/shd101wyy/crossnote/pull/405 by @kvdogan
+  - New settings: `markdown-preview-enhanced.d2Path`, `d2Layout`, `d2Theme`, `d2Sketch`
+  - Per-block overrides supported in the fence info string: ` ```d2 layout=elk theme=200 sketch `
+
+- Support colon-fenced code blocks. https://github.com/shd101wyy/crossnote/pull/409 by @hryktrd
+
+  Exampe:
+
+  ```
+  :::mermaid
+  graph TD
+  A --> B
+  :::
+  ```
+
+### Fixes
+
+- Fix SVG file path by removing random parameter. https://github.com/shd101wyy/crossnote/pull/404 by @fs570714
+- Fix a bug exporting files in WSL on Windows.
+
+### Updates
+
+- Update `mermaid` version to the latest `11.14.0`.
+
 ## [0.9.20] - 2026-03-22
 
 ### Security
