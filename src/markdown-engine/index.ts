@@ -244,6 +244,12 @@ export class MarkdownEngine {
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
 
+    // tikzjax (for client-side TikZ rendering in web extension)
+    if (utility.isVSCodeWebExtension()) {
+      scripts += `<link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">`;
+      scripts += `<script src="https://tikzjax.com/v1/tikzjax.js"></script>`;
+    }
+
     // math
     if (
       this.notebook.config.mathRenderingOption === 'MathJax' ||
@@ -908,6 +914,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
       wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`;
     }
 
+    // tikzjax (client-side fallback for <script type="text/tikz"> blocks)
+    let tikzjaxScript = '';
+    let tikzjaxStyle = '';
+    if (html.indexOf('type="text/tikz"') >= 0) {
+      tikzjaxScript = `<script src="https://tikzjax.com/v1/tikzjax.js"></script>`;
+      tikzjaxStyle = `<link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">`;
+    }
+
     // vega and vega-lite with vega-embed
     // https://vega.github.io/vega/usage/#embed
     let vegaScript = ``;
@@ -1196,9 +1210,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${presentationStyle}
       ${mathStyle}
       ${fontAwesomeStyle}
+      ${tikzjaxStyle}
       ${presentationScript}
       ${mermaidScript}
       ${wavedromScript}
+      ${tikzjaxScript}
       ${vegaScript}
       <style>
       ${styles}

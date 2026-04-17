@@ -114,6 +114,7 @@
     "minisearch": "^6.1.0",
     "mkdirp": "^3.0.1",
     "monaco-editor": "^0.43.0",
+    "node-tikzjax": "^1.0.5",
     "object-hash": "^3.0.0",
     "onml": "^2.1.0",
     "pako": "^2.1.0",

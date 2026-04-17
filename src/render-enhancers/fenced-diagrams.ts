@@ -10,6 +10,7 @@ import { BlockInfo } from '../lib/block-info';
 import computeChecksum from '../lib/compute-checksum';
 import { renderBitfield } from '../renderers/bitfield';
 import { D2_NOT_FOUND, renderD2 } from '../renderers/d2';
+import { TIKZ_NOT_AVAILABLE, renderTikz } from '../renderers/tikz';
 import { render as renderPlantuml } from '../renderers/puml';
 import { toSVG as vegaToSvg } from '../renderers/vega';
 import { toSVG as vegaLiteToSvg } from '../renderers/vega-lite';
@@ -48,6 +49,7 @@ const supportedLanguages = [
   'vega-lite',
   'wsd',
   'd2',
+  'tikz',
 ];
 
 /**
@@ -372,6 +374,42 @@ async function renderDiagram({
           } else {
             $output = `<div class="d2-diagram">${d2DiagramInCache}</div>`;
           }
+          break;
+        }
+        case 'tikz': {
+          let svg = diagramInCache;
+          if (!svg) {
+            const tikzOpts = {
+              texPackages:
+                typeof normalizedInfo.attributes['texPackages'] === 'string'
+                  ? (JSON.parse(
+                      normalizedInfo.attributes['texPackages'] as string,
+                    ) as Record<string, string>)
+                  : undefined,
+              tikzLibraries: normalizedInfo.attributes[
+                'tikzLibraries'
+              ] as string,
+              addToPreamble: normalizedInfo.attributes[
+                'addToPreamble'
+              ] as string,
+            };
+            const result = await renderTikz(code, tikzOpts);
+            if (result === TIKZ_NOT_AVAILABLE) {
+              // Fall back to client-side rendering via tikzjax
+              $output = `<div ${stringifyBlockAttributes(
+                ensureClassInAttributes(
+                  normalizedInfo.attributes,
+                  normalizedInfo.language,
+                ),
+              )}><script type="text/tikz">${code}</script></div>`;
+              break;
+            }
+            svg = result;
+            graphsCache[checksum] = svg;
+          }
+          $output = `<div ${stringifyBlockAttributes(
+            normalizedInfo.attributes,
+          )}>${svg}</div>`;
           break;
         }
       }

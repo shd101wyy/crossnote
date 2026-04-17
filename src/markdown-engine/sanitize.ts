@@ -12,7 +12,7 @@ const DANGEROUS_URL_PATTERN =
 const DANGEROUS_TAGS = ['object', 'embed', 'applet'];
 
 // Script types that are used as data containers (not executable by browsers)
-const SAFE_SCRIPT_TYPES = new Set(['wavedrom']);
+const SAFE_SCRIPT_TYPES = new Set(['wavedrom', 'text/tikz']);
 
 const URL_ATTRIBUTES = ['href', 'src', 'action', 'formaction', 'xlink:href'];
 
