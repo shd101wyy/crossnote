@@ -95,6 +95,12 @@ const config = {
   // Enable this option will render markdown by pandoc instead of markdown-it.
   usePandocParser: false,
 
+  // Use markdown_yo (WASM) as the markdown renderer instead of markdown-it.
+  // markdown_yo is a high-performance Markdown-to-HTML converter compiled to WebAssembly,
+  // written in the Yo programming language. When enabled, markdown-it is still used for
+  // token-based operations (e.g., backlink extraction, note mention processing).
+  useMarkdownYoParser: false,
+
   // In Markdown, a single newline character doesn't cause a line break in the generated HTML. In GitHub Flavored Markdown, that is not true. Enable this config option to insert line breaks in rendered HTML for single newlines in Markdown source.
   breakOnSingleNewLine: true,
 
@@ -299,6 +305,33 @@ If your notebook has `.crossnote` directory, then when you run `await Notebook.i
 ├── parser.js
 └── style.less
 ```
+
+## markdown_yo (Experimental)
+
+Crossnote supports an optional high-performance markdown renderer called [markdown_yo](https://github.com/shd101wyy/markdown_yo), written in the [Yo programming language](https://github.com/shd101wyy/Yo) and compiled to WebAssembly. When enabled, it replaces markdown-it for HTML rendering while markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).
+
+To enable it, set `useMarkdownYoParser: true` in your notebook config.
+
+### Performance
+
+markdown_yo is significantly faster than markdown-it, especially for large documents:
+
+| Input Size | markdown-it (JS) | Native  | Speedup | WASM     | Speedup |
+| ---------- | ---------------- | ------- | ------- | -------- | ------- |
+| 64 KB      | 1.6 ms           | 0.4 ms  | 4.5×    | 12.9 ms  | 0.1×    |
+| 256 KB     | 6.7 ms           | 1.2 ms  | 5.3×    | 13.1 ms  | 0.5×    |
+| 1 MB       | 28.8 ms          | 4.8 ms  | 6.0×    | 13.5 ms  | 2.1×    |
+| 5 MB       | 158.9 ms         | 23.3 ms | 6.8×    | 32.6 ms  | 4.9×    |
+| 20 MB      | 722.8 ms         | 95.4 ms | 7.6×    | 121.5 ms | 6.0×    |
+
+_Native: Apple M4, macOS, clang -O3 -flto. WASM: Emscripten, Node.js, -O3 -flto._
+_WASM overhead at small sizes (64K, 256K) is dominated by one-time WASM compilation startup (~12ms). For documents ≥1MB the WASM renderer is 2–6× faster._
+
+Crossnote uses the WASM version for browser and Node.js compatibility.
+
+### Supported Features
+
+markdown_yo supports CommonMark, GFM tables, strikethrough, and these extensions: subscript, superscript, mark/highlight, math ($..$ / $$..$$), emoji shortcodes, wikilinks, CriticMarkup, abbreviations, definition lists, admonitions, callouts, footnotes, source maps, and line breaks.
 
 ## Development
 

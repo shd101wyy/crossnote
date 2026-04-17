@@ -526,6 +526,17 @@ export interface NotebookConfig {
    * Whether to always show backlinks in preview.
    */
   alwaysShowBacklinksInPreview: boolean;
+
+  /**
+   * Whether to use markdown_yo (WASM) as the markdown renderer.
+   *
+   * When enabled, markdown_yo will be used for HTML rendering instead of
+   * markdown-it. markdown-it is still used for token-based operations
+   * (e.g., backlink extraction, note mention processing).
+   *
+   * @default false
+   */
+  useMarkdownYoParser: boolean;
 }
 
 export function getDefaultMermaidConfig(): MermaidConfig {
@@ -630,6 +641,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     d2Sketch: false,
     isVSCode: false,
     alwaysShowBacklinksInPreview: false,
+    useMarkdownYoParser: false,
   };
 }
 

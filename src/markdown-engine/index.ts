@@ -2557,17 +2557,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         )}</code></pre>`;
       }
     } else {
-      // markdown-it
-      if (options.isForPreview) {
-        html = this.notebook.md.render(outputString);
-      } else {
-        // NOTE: We disable the source map here.
-        const md = this.notebook.initMarkdownIt({
-          ...this.notebook.md.options,
-          sourceMap: false,
-        });
-        html = md.render(outputString);
-      }
+      // markdown-it or markdown_yo
+      html = this.notebook.renderMarkdown(outputString, {
+        isForPreview: options.isForPreview,
+      });
     }
 
     /**

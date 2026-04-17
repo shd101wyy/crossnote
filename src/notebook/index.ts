@@ -10,6 +10,8 @@ import MarkdownItSup from 'markdown-it-sup';
 import Token from 'markdown-it/lib/token';
 import * as path from 'path';
 import { URI, Utils } from 'vscode-uri';
+import type { MarkdownRenderer, RenderOptions } from 'markdown_yo';
+import parseMath from '../renderers/parse-math';
 import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
 import useMarkdownCallout from '../custom-markdown-it-features/callout';
 import useMarkdownItCodeFences from '../custom-markdown-it-features/code-fences';
@@ -95,6 +97,17 @@ export class Notebook {
   private search: Search = new Search();
 
   public md: MarkdownIt;
+
+  /**
+   * Optional markdown_yo WASM renderer.
+   * Used for HTML rendering when `useMarkdownYoParser` is enabled.
+   */
+  public markdownYoRenderer: MarkdownRenderer | null = null;
+
+  /**
+   * Tracks in-flight markdown_yo initialization to avoid duplicate loads.
+   */
+  private markdownYoRendererPromise: Promise<void> | null = null;
   /**
    * Markdown engines for each note
    * key is the relative path of the note
@@ -120,6 +133,9 @@ export class Notebook {
     this.initFs(fs);
     await this.initConfig(config);
     this.md = this.initMarkdownIt();
+    if (this.config.useMarkdownYoParser) {
+      await this.initMarkdownYo();
+    }
     this.updateConfig({});
   }
 
@@ -179,6 +195,146 @@ export class Notebook {
     }
   }
 
+  /**
+   * Initialize the markdown_yo WASM renderer.
+   */
+  private async initMarkdownYo() {
+    if (this.markdownYoRendererPromise) {
+      await this.markdownYoRendererPromise;
+      return;
+    }
+
+    if (this.markdownYoRenderer) {
+      return;
+    }
+
+    this.markdownYoRendererPromise = (async () => {
+      try {
+        const { createRenderer } = await import('markdown_yo');
+        const renderer = await createRenderer();
+
+        if (this.config.useMarkdownYoParser) {
+          this.markdownYoRenderer = renderer;
+        } else {
+          renderer.destroy();
+        }
+      } catch (error) {
+        console.warn('Failed to load markdown_yo WASM renderer:', error);
+        this.markdownYoRenderer = null;
+      } finally {
+        this.markdownYoRendererPromise = null;
+      }
+    })();
+
+    await this.markdownYoRendererPromise;
+  }
+
+  private destroyMarkdownYo() {
+    this.markdownYoRenderer?.destroy();
+    this.markdownYoRenderer = null;
+  }
+
+  /**
+   * Build markdown_yo render options from the current notebook config.
+   */
+  public buildMarkdownYoOptions(isForPreview: boolean): RenderOptions {
+    const c = this.config;
+    return {
+      html: true,
+      typographer: !!c.enableTypographer,
+      breaks: !!c.breakOnSingleNewLine,
+      // Always-on features in crossnote (plugins loaded unconditionally)
+      subscript: true,
+      superscript: true,
+      mark: true,
+      footnote: true,
+      deflist: true,
+      abbr: true,
+      admonition: true,
+      callout: true,
+      // Conditional features
+      emoji: !!c.enableEmojiSyntax,
+      wikilink: !!c.enableWikiLinkSyntax,
+      critic: !!c.enableCriticMarkupSyntax,
+      math: c.mathRenderingOption !== 'None',
+      sourceMap: isForPreview,
+    };
+  }
+
+  /**
+   * Render markdown to HTML using markdown_yo (WASM) if available,
+   * otherwise falls back to markdown-it.
+   */
+  public renderMarkdown(
+    markdown: string,
+    options?: { isForPreview?: boolean },
+  ): string {
+    if (this.config.useMarkdownYoParser && this.markdownYoRenderer) {
+      const renderOpts = this.buildMarkdownYoOptions(!!options?.isForPreview);
+      let html = this.markdownYoRenderer.render(markdown, renderOpts);
+      html = this.postProcessMarkdownYo(html);
+      return html;
+    }
+    // Fallback to markdown-it
+    if (options?.isForPreview) {
+      return this.md.render(markdown);
+    }
+    const md = this.initMarkdownIt({
+      ...this.md.options,
+      sourceMap: false,
+    });
+    return md.render(markdown);
+  }
+
+  /**
+   * Post-process markdown_yo HTML output:
+   * - Render math expressions with KaTeX (when mathRenderingOption is 'KaTeX')
+   * - Append file extension to wikilink hrefs
+   */
+  private postProcessMarkdownYo(html: string): string {
+    // Post-process math: replace <span class="mathjax-exps">$...$</span>
+    // and <div class="mathjax-exps">$$...$$</div> with KaTeX-rendered HTML
+    if (this.config.mathRenderingOption === 'KaTeX') {
+      html = html.replace(
+        /<(span|div) class="mathjax-exps">(\${1,2})([\s\S]*?)\2<\/\1>/g,
+        (_match, _tag, delim, content) => {
+          const displayMode = delim === '$$';
+          return parseMath({
+            content: content.trim(),
+            openTag: delim,
+            closeTag: delim,
+            displayMode,
+            renderingOption: this.config.mathRenderingOption,
+            katexConfig: this.config.katexConfig,
+          });
+        },
+      );
+    } else if (this.config.mathRenderingOption === 'MathJax') {
+      // MathJax mode: normalize newlines in math content to spaces
+      html = html.replace(
+        /<(span|div) class="mathjax-exps">(\${1,2})([\s\S]*?)\2<\/\1>/g,
+        (_match, tag, delim, content) => {
+          const normalized = content.replace(/\n/g, ' ').trim();
+          const text = delim + normalized + delim;
+          return `<${tag} class="mathjax-exps">${text}</${tag}>`;
+        },
+      );
+    }
+
+    // Post-process wikilinks: append file extension to href
+    if (this.config.enableWikiLinkSyntax) {
+      html = html.replace(
+        /<a href="([^"]*)"( class="wikilink")/g,
+        (_match, href, classAttr) => {
+          const processed = this.processWikilink(href);
+          return `<a href="${processed.link}"${classAttr}`;
+        },
+      );
+    }
+
+    return html;
+  }
+
   public updateConfig(config: Partial<NotebookConfig>) {
     this.config = {
       ...this.config,
@@ -194,6 +350,12 @@ export class Notebook {
       breaks: !!this.config.breakOnSingleNewLine,
       linkify: !!this.config.enableLinkify,
     });
+
+    if (this.config.useMarkdownYoParser) {
+      void this.initMarkdownYo();
+    } else {
+      this.destroyMarkdownYo();
+    }
   }
 
   private interpolateConfig() {
