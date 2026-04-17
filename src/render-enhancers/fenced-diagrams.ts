@@ -379,19 +379,17 @@ async function renderDiagram({
         case 'tikz': {
           let svg = diagramInCache;
           if (!svg) {
+            const attrs = normalizedInfo.attributes;
+            const texPkgRaw = attrs['texPackages'] ?? attrs['tex_packages'];
             const tikzOpts = {
               texPackages:
-                typeof normalizedInfo.attributes['texPackages'] === 'string'
-                  ? (JSON.parse(
-                      normalizedInfo.attributes['texPackages'] as string,
-                    ) as Record<string, string>)
+                typeof texPkgRaw === 'string'
+                  ? (JSON.parse(texPkgRaw) as Record<string, string>)
                   : undefined,
-              tikzLibraries: normalizedInfo.attributes[
-                'tikzLibraries'
-              ] as string,
-              addToPreamble: normalizedInfo.attributes[
-                'addToPreamble'
-              ] as string,
+              tikzLibraries: (attrs['tikzLibraries'] ??
+                attrs['tikz_libraries']) as string,
+              addToPreamble: (attrs['addToPreamble'] ??
+                attrs['add_to_preamble']) as string,
             };
             const result = await renderTikz(code, tikzOpts);
             if (result === TIKZ_NOT_AVAILABLE) {
