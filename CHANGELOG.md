@@ -42,11 +42,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 ### Fixes
 
 - Fix SVG file path by removing random parameter. https://github.com/shd101wyy/crossnote/pull/404 by @fs570714
-- Fix a bug exporting files in WSL on Windows.
+- Fix a bug exporting files in WSL on Windows. https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2246
 
 ### Updates
 
 - Update `mermaid` version to the latest `11.14.0`.
+- Update `katex` version to the latest `0.16.45`.
 
 ## [0.9.20] - 2026-03-22
 

@@ -97,7 +97,7 @@
     "html-to-image": "^1.11.11",
     "imagemagick-cli": "^0.5.0",
     "jquery": "^3.7.1",
-    "katex": "^0.16.38",
+    "katex": "^0.16.45",
     "less": "^4.2.0",
     "markdown_yo": "^0.0.5",
     "markdown-it": "^14.1.1",
