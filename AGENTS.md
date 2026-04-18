@@ -78,3 +78,14 @@ This project processes untrusted markdown content that may contain malicious HTM
 2. Add a case in `src/render-enhancers/fenced-diagrams.ts`
 3. Add tests in `test/<name>.test.ts`
 4. Document options in CHANGELOG.md under `[Unreleased]`
+
+## TikZ Renderer Notes
+
+The TikZ renderer (`src/renderers/tikz.ts`) uses `node-tikzjax` which requires:
+
+- WASM data files (`tex.wasm.gz`, `core.dump.gz`, `tex_files.tar.gz`) present adjacent to the bundle
+- `jsdom`'s `xhr-sync-worker.js` resolvable at load time (used by node-tikzjax's DOM manipulation layer)
+
+In development with vscode-markdown-preview-enhanced, `build.js` handles copying these files. If adding new native dependencies with similar WASM or file-path requirements, follow the same pattern in vscode-mpe's `build.js`.
+
+Base TeX packages (`amsmath`, `amssymb`, `amsfonts`, `amstext`, `array`) are loaded for every TikZ render. Specialized packages (`tikz-cd`, `pgfplots`, `circuitikz`, `chemfig`, `tikz-3dplot`) are auto-detected from the source code. Users can override via the `texPackages` fence attribute.
