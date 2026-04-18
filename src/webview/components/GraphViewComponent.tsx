@@ -54,12 +54,22 @@ export default function GraphViewComponent() {
   const transformRef = useRef<ZoomTransform>(zoomIdentity);
   const nodesRef = useRef<D3Node[]>([]);
   const linksRef = useRef<D3Link[]>([]);
+  const zoomBehaviorRef = useRef<ReturnType<
+    typeof zoom<HTMLCanvasElement, unknown>
+  > | null>(null);
+  const activeFilePathRef = useRef<string>('');
 
   const [graphData, setGraphData] = useState<GraphViewData | null>(null);
   const [activeFilePath, setActiveFilePath] = useState<string>('');
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('global');
+
+  // Keep a ref in sync so simulation callbacks can read the latest value
+  // without needing to be in the dependency array
+  useEffect(() => {
+    activeFilePathRef.current = activeFilePath;
+  }, [activeFilePath]);
 
   const vscodeApi = useMemo(() => {
     if (globalThis.acquireVsCodeApi) {
@@ -277,6 +287,23 @@ export default function GraphViewComponent() {
     linksRef.current = d3Links;
 
     simulation.on('tick', scheduleRedraw);
+    simulation.on('end', () => {
+      // After simulation stabilizes, center the view on the active node (if any)
+      const canvas = canvasRef.current;
+      const afp = activeFilePathRef.current;
+      if (!canvas || !afp || !zoomBehaviorRef.current) return;
+      const activeNode = nodesRef.current.find((n) => n.id === afp);
+      if (!activeNode || activeNode.x == null || activeNode.y == null) return;
+      const tx = canvas.width / 2 - activeNode.x;
+      const ty = canvas.height / 2 - activeNode.y;
+      select(canvas)
+        .transition()
+        .duration(600)
+        .call(
+          zoomBehaviorRef.current.transform,
+          zoomIdentity.translate(tx, ty),
+        );
+    });
     simulation.alpha(0.3).restart();
 
     return () => {
@@ -301,6 +328,7 @@ export default function GraphViewComponent() {
         scheduleRedraw();
       });
 
+    zoomBehaviorRef.current = zoomBehavior;
     select(canvas).call(zoomBehavior);
 
     return () => {
@@ -393,8 +421,11 @@ export default function GraphViewComponent() {
       };
       if (message.command === 'graphData') {
         if (message.data) setGraphData(message.data);
-        if (message.activeFilePath != null)
+        if (message.activeFilePath != null) {
           setActiveFilePath(message.activeFilePath);
+          // Default to local mode when a specific file is focused
+          setViewMode('local');
+        }
       } else if (message.command === 'setActiveFile') {
         if (message.filePath != null) setActiveFilePath(message.filePath);
       }

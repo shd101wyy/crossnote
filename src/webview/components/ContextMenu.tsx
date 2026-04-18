@@ -1,6 +1,7 @@
 import {
   mdiCancel,
   mdiExportVariant,
+  mdiGraph,
   mdiImageOutline,
   mdiInformationOutline,
   mdiMoonFull,
@@ -39,6 +40,10 @@ export default function ContextMenu() {
   const handleItemClick = useCallback(
     ({ id }: ItemParams<unknown, unknown>) => {
       switch (id) {
+        case 'open-graph-view': {
+          postMessage('openGraphView', [sourceUri.current]);
+          break;
+        }
         case 'open-in-browser': {
           postMessage('openInBrowser', [sourceUri.current]);
           break;
@@ -203,6 +208,13 @@ export default function ContextMenu() {
   return (
     <div data-theme={theme} className="select-none">
       <Menu id={contextMenuId} theme={theme === 'dark' ? 'dark' : undefined}>
+        <Item id="open-graph-view" onClick={handleItemClick}>
+          <span className="inline-flex flex-row items-center">
+            <Icon path={mdiGraph} size={0.8} className="mr-2"></Icon>
+            Open Graph View
+          </span>
+        </Item>
+        <Separator></Separator>
         {!isVSCodeWebExtension && (
           <>
             <Item id="open-in-browser" onClick={handleItemClick}>
