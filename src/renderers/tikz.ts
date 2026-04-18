@@ -59,6 +59,50 @@ async function loadTex2Svg() {
 }
 
 /**
+ * Auto-detect TikZ packages/libraries required by common environments.
+ * Maps environment names to their required packages.
+ */
+const ENV_PACKAGE_MAP: Record<
+  string,
+  { packages?: Record<string, string>; libraries?: string }
+> = {
+  tikzcd: { packages: { 'tikz-cd': '' } },
+  tikzpicture: {},
+  // pgfplots uses its own package
+  axis: { packages: { pgfplots: '' } },
+  semilogxaxis: { packages: { pgfplots: '' } },
+  semilogyaxis: { packages: { pgfplots: '' } },
+  loglogaxis: { packages: { pgfplots: '' } },
+};
+
+/**
+ * Infer additional packages/libraries from the code by detecting environments.
+ */
+function inferPackagesFromCode(
+  code: string,
+  options?: TikzRenderOptions,
+): TikzRenderOptions {
+  const merged: TikzRenderOptions = {
+    texPackages: { ...options?.texPackages },
+    tikzLibraries: options?.tikzLibraries,
+    addToPreamble: options?.addToPreamble,
+  };
+
+  // Scan for \begin{envName} and auto-add required packages
+  const envPattern = /\\begin\{(\w+)\}/g;
+  let match;
+  while ((match = envPattern.exec(code)) !== null) {
+    const env = match[1];
+    const mapped = ENV_PACKAGE_MAP[env];
+    if (mapped?.packages) {
+      merged.texPackages = { ...mapped.packages, ...merged.texPackages };
+    }
+  }
+
+  return merged;
+}
+
+/**
  * Render TikZ source code to SVG using node-tikzjax (Node.js only).
  *
  * Returns `TIKZ_NOT_AVAILABLE` if node-tikzjax cannot be loaded, or an
@@ -79,10 +123,11 @@ export async function renderTikz(
       if (!input.includes('\\begin{document}')) {
         input = `\\begin{document}\n${input}\n\\end{document}`;
       }
+      const opts = inferPackagesFromCode(code, options);
       const svg = await fn(input, {
-        texPackages: options?.texPackages,
-        tikzLibraries: options?.tikzLibraries,
-        addToPreamble: options?.addToPreamble,
+        texPackages: opts.texPackages,
+        tikzLibraries: opts.tikzLibraries,
+        addToPreamble: opts.addToPreamble,
       });
       return svg;
     } catch (err: unknown) {
