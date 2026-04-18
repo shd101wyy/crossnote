@@ -665,17 +665,17 @@ export default function GraphViewComponent() {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
 
-        {/* Global / Local toggle */}
-        <div className="flex rounded-btn border border-base-300 overflow-hidden text-xs shrink-0">
+        {/* Global / Local toggle — use btn-group style for clean appearance */}
+        <div className="join shrink-0">
           <button
-            className={`px-2 py-1 ${viewMode === 'global' ? 'bg-primary text-primary-content' : 'bg-base-100 hover:bg-base-200'}`}
+            className={`join-item btn btn-xs ${viewMode === 'global' ? 'btn-primary' : 'btn-ghost'}`}
             onClick={() => setViewMode('global')}
             title="Show all notes"
           >
             Global
           </button>
           <button
-            className={`px-2 py-1 ${viewMode === 'local' ? 'bg-primary text-primary-content' : 'bg-base-100 hover:bg-base-200'}`}
+            className={`join-item btn btn-xs ${viewMode === 'local' ? 'btn-primary' : 'btn-ghost'}`}
             onClick={() => setViewMode('local')}
             title="Show notes connected to the current file"
           >
