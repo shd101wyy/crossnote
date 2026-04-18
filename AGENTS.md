@@ -1,4 +1,6 @@
-# Copilot Instructions for Crossnote
+# Agent Instructions for Crossnote
+
+This file provides context for AI coding agents (GitHub Copilot, Claude, etc.) working in this repository.
 
 ## Project Overview
 
@@ -10,6 +12,7 @@ Crossnote is the core markdown rendering engine behind the **Markdown Preview En
 - **`src/markdown-engine/`** — Core rendering pipeline: `parseMD` transforms markdown → HTML via markdown-it, then enhances with cheerio
 - **`src/custom-markdown-it-features/`** — markdown-it plugins (math, emoji, wiki links, widgets, etc.)
 - **`src/render-enhancers/`** — Post-render HTML transformations via cheerio (diagrams, code chunks, math, images)
+- **`src/renderers/`** — Diagram renderer modules (mermaid, tikz, wavedrom, etc.)
 - **`src/webview/`** — React-based preview UI rendered in a VS Code webview (browser context)
 - **`src/converters/`** — Export to PDF, ebook, pandoc, etc.
 
@@ -20,7 +23,7 @@ Crossnote is the core markdown rendering engine behind the **Markdown Preview En
 - **Single quotes** everywhere (Prettier-enforced)
 - **Import order**: Node.js builtins → third-party → relative (alphabetical within groups)
 - **Naming**: `camelCase` for functions/variables, `PascalCase` for classes/components/types
-- **TypeScript**: `strictNullChecks` enabled, `noUnusedLocals` enabled — no `any` types (ESLint enforced)
+- **TypeScript**: `strict: true`, `noUnusedLocals: true` — no `any` types without an ESLint disable comment explaining why
 
 ### Testing
 
@@ -35,6 +38,7 @@ Crossnote is the core markdown rendering engine behind the **Markdown Preview En
 - Build: `pnpm build` (esbuild + TypeScript declarations)
 - Lint: `pnpm check` (ESLint + Prettier + tsc)
 - Fix: `pnpm fix` (auto-fix ESLint + Prettier)
+- Always run `pnpm check && pnpm test` before committing
 
 ## Security Requirements
 
@@ -45,12 +49,13 @@ This project processes untrusted markdown content that may contain malicious HTM
 - HTML rendered by `md.render()` in `parseMD` is sanitized via `sanitizeRenderedHTML()` in `src/markdown-engine/sanitize.ts`
 - Uses cheerio (already loaded for post-processing) to strip dangerous elements/attributes
 - **Never bypass this sanitization** — it covers all output paths (preview, export, etc.)
+- All render enhancers must run **before** `sanitizeRenderedHTML($)` in `parseMD`
 
 ### Client-side (webview/browser context)
 
 - All `innerHTML` assignments use `sanitizeHtml()` from `src/webview/lib/sanitize.ts` (DOMPurify wrapper)
 - **Never use `innerHTML = unsanitizedString`** or `dangerouslySetInnerHTML={{ __html: unsanitizedString }}`
-- Third-party SVG output (mermaid, wavedrom) must also be sanitized before DOM insertion
+- Third-party SVG output (mermaid, wavedrom, tikz) must also be sanitized before DOM insertion
 
 ### What the sanitizer strips
 
@@ -65,3 +70,11 @@ This project processes untrusted markdown content that may contain malicious HTM
 - `enableScriptExecution` controls code chunk execution, **not** HTML sanitization
 - The webview build (`build.js` → `webviewConfig`) bundles all deps for `platform: 'browser'`
 - The library build marks all `package.json` dependencies as `external`
+- After making changes, run `pnpm build` so the downstream `vscode-markdown-preview-enhanced` repo can pick up the updated `out/` artifacts via `yarn add ../crossnote`
+
+## Adding a New Diagram Renderer
+
+1. Create `src/renderers/<name>.ts` with a `render<Name>()` export
+2. Add a case in `src/render-enhancers/fenced-diagrams.ts`
+3. Add tests in `test/<name>.test.ts`
+4. Document options in CHANGELOG.md under `[Unreleased]`

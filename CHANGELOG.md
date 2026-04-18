@@ -51,6 +51,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 - Fix SVG file path by removing random parameter. https://github.com/shd101wyy/crossnote/pull/404 by @fs570714
 - Fix a bug exporting files in WSL on Windows. https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2246
+- Fix `gulp-less` failing to compile during `pnpm build` when Google Fonts URLs in theme `.less` files were unreachable (e.g., in offline/CI environments). Remote `@import url(...)` directives are now passed through as plain CSS without being fetched at compile time.
 
 ### Updates
 
