@@ -1,6 +1,6 @@
-import { createRequire } from 'module';
 import structuredClone from '@ungap/structured-clone';
 import * as child_process from 'child_process';
+import { createRequire } from 'module';
 import * as path from 'path';
 import Sval from 'sval';
 import * as temp from 'temp';
@@ -408,7 +408,12 @@ export function replaceVariablesInString(
   inputString: string,
   replacements: { [key: string]: string } = {},
 ) {
-  return inputString.replace(/\${([^}]+)}/g, (match, token) => {
+  // Expand ~ and $HOME at the start of paths
+  const result = inputString
+    .replace(/^~(?=\/|$)/, process.env['HOME'] ?? '~')
+    .replace(/^\$HOME(?=\/|$)/, process.env['HOME'] ?? '$HOME');
+
+  return result.replace(/\${([^}]+)}/g, (match, token) => {
     if (token.startsWith('env:')) {
       return process.env[token.replace(/^env:/, '').trim()] ?? '';
     } else {
