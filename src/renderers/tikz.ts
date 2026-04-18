@@ -27,7 +27,8 @@ export interface TikzRenderOptions {
 
   /**
    * Embed a font CSS `@import` in the SVG so TeX fonts render correctly.
-   * Defaults to true. Set `fontCssUrl` to override the font stylesheet URL.
+   * Defaults to false (the `@import` URL can be blocked by VSCode's webview CSP).
+   * Set to true and configure `fontCssUrl` if you have a local or allowed font URL.
    */
   embedFontCss?: boolean;
 
@@ -150,8 +151,10 @@ export async function renderTikz(
         tikzLibraries: options?.tikzLibraries,
         addToPreamble: options?.addToPreamble,
         showConsole: options?.showConsole ?? false,
-        // Embed font CSS by default so TeX fonts render correctly in previews.
-        embedFontCss: options?.embedFontCss ?? true,
+        // embedFontCss: defaults to false because the @import URL in the
+        // embedded <style> tag can be blocked by VSCode's webview CSP.
+        // Users can opt in via the fence attribute: embedFontCss or embed_font_css.
+        embedFontCss: options?.embedFontCss ?? false,
         fontCssUrl: options?.fontCssUrl,
       });
       return svg;
