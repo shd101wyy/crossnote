@@ -96,9 +96,16 @@ const config = {
   // Options: 'markdown-it' (default), 'pandoc', 'markdown_yo'
   // - 'markdown-it': built-in markdown-it renderer
   // - 'pandoc': render via Pandoc (requires Pandoc installed)
-  // - 'markdown_yo': high-performance WASM renderer (see below); markdown-it is
+  // - 'markdown_yo': high-performance renderer (see below); markdown-it is
   //   still used for token-based operations (backlink extraction, etc.)
   markdownParser: 'markdown-it',
+
+  // Path to the markdown_yo native binary.
+  // When set and markdownParser is 'markdown_yo', crossnote invokes this binary
+  // (via stdin/stdout) instead of the bundled WASM module.
+  // See the "markdown_yo" section below for performance guidance.
+  // Supports $HOME and ~ variable substitution. Default: '' (use WASM).
+  markdownYoBinaryPath: '',
 
   // In Markdown, a single newline character doesn't cause a line break in the generated HTML. In GitHub Flavored Markdown, that is not true. Enable this config option to insert line breaks in rendered HTML for single newlines in Markdown source.
   breakOnSingleNewLine: true,
@@ -313,20 +320,29 @@ To enable it, set `markdownParser: 'markdown_yo'` in your notebook config.
 
 ### Performance
 
-markdown_yo is significantly faster than markdown-it, especially for large documents:
+By default, crossnote uses the **WASM** build of markdown_yo. The WASM module is initialized once per notebook and reused for all subsequent renders. The table below shows steady-state render times (WASM module already loaded) measured on an x86_64 Linux machine, compared to the native binary invoked as a subprocess:
 
-| Input Size | markdown-it (JS) | Native  | Speedup | WASM     | Speedup |
-| ---------- | ---------------- | ------- | ------- | -------- | ------- |
-| 64 KB      | 1.6 ms           | 0.4 ms  | 4.5×    | 12.9 ms  | 0.1×    |
-| 256 KB     | 6.7 ms           | 1.2 ms  | 5.3×    | 13.1 ms  | 0.5×    |
-| 1 MB       | 28.8 ms          | 4.8 ms  | 6.0×    | 13.5 ms  | 2.1×    |
-| 5 MB       | 158.9 ms         | 23.3 ms | 6.8×    | 32.6 ms  | 4.9×    |
-| 20 MB      | 722.8 ms         | 95.4 ms | 7.6×    | 121.5 ms | 6.0×    |
+| Input Size | markdown-it | WASM (pre-init) | Native binary (spawn) |
+| ---------- | ----------- | --------------- | --------------------- |
+| 60 KB      | ~1.6 ms     | ~1 ms           | ~2 ms                 |
+| 256 KB     | ~6.7 ms     | ~4 ms           | ~3 ms                 |
+| 1 MB       | ~28.8 ms    | ~83 ms          | ~64 ms                |
+| 18 MB      | ~722 ms     | ~344 ms         | ~246 ms               |
 
-_Native: Apple M4, macOS, clang -O3 -flto. WASM: Emscripten, Node.js, -O3 -flto._
-_WASM overhead at small sizes (64K, 256K) is dominated by one-time WASM compilation startup (~12ms). For documents ≥1MB the WASM renderer is 2–6× faster._
+_WASM times are measured in-process with a pre-initialized renderer (typical crossnote usage). Native binary times include process spawn + stdin/stdout I/O overhead._
 
-Crossnote uses the WASM version for browser and Node.js compatibility.
+For very large files (≥1 MB), the native binary is ~1.3× faster than WASM because WASM's memory overhead grows with document size. For small files (<256 KB), WASM is comparable or slightly faster since there is no subprocess overhead.
+
+### Native Binary
+
+If you have a locally built markdown_yo binary, you can configure crossnote to use it instead of WASM by setting `markdownYoBinaryPath`:
+
+```yaml
+markdownParser: markdown_yo
+markdownYoBinaryPath: /path/to/markdown_yo
+```
+
+Supports `$HOME` and `~` variable substitution. The `breakOnSingleNewLine` option is not supported by the native binary CLI and is silently ignored when this path is set.
 
 ### Supported Features
 
