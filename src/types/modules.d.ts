@@ -97,3 +97,5 @@ declare module 'reading-time/lib/reading-time' {
   };
   export default readingTime;
 }
+
+declare module '*.css' {}

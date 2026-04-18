@@ -12,7 +12,7 @@ export async function renderBitfield(code: string, options: JsonObject) {
     return html;
   } catch (error) {
     return `<pre class="language-text"><code>${escape(
-      error.toString(),
+      String(error),
     )}</code></pre>`;
   }
 }

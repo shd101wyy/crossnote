@@ -2177,8 +2177,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         } else if (typeof fileTypes === 'string') {
           func({ fileType: fileTypes, openFileAfterGeneration: false });
         } else if (fileTypes instanceof Array) {
-          fileTypes.forEach((fileType: string) => {
-            func({ fileType, openFileAfterGeneration: false });
+          fileTypes.forEach((fileType) => {
+            func({
+              fileType: fileType as string,
+              openFileAfterGeneration: false,
+            });
           });
         }
       } else if (!isWeb && exporter === 'pandoc') {
@@ -2190,8 +2193,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         } else if (typeof fileTypes === 'string') {
           this.eBookExport({ fileType: fileTypes });
         } else if (fileTypes instanceof Array) {
-          fileTypes.forEach((fileType: string) => {
-            this.eBookExport({ fileType });
+          fileTypes.forEach((fileType) => {
+            this.eBookExport({ fileType: fileType as string });
           });
         }
       }
@@ -2565,7 +2568,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         );
         program.stdin?.end(outputString, 'utf-8');
       } catch (error) {
-        let errorMessage = error.toString();
+        let errorMessage = String(error);
         if (errorMessage.indexOf('Error: write EPIPE') >= 0) {
           errorMessage = `"pandoc" is required to be installed.\nCheck "http://pandoc.org/installing.html" website.`;
         }
@@ -2659,7 +2662,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         html = await this.pandocRender(outputString, args);
       } catch (error) {
         html = `<pre class="language-text"><code>${escape(
-          error.toString(),
+          String(error),
         )}</code></pre>`;
       }
     } else {

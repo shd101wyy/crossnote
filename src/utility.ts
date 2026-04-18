@@ -22,7 +22,7 @@ export function tempOpen(options: temp.AffixOptions): Promise<temp.OpenFile> {
   return new Promise((resolve, reject) => {
     temp.open(options, (error, info) => {
       if (error) {
-        return reject(error.toString());
+        return reject(String(error));
       } else {
         return resolve(info);
       }
@@ -107,7 +107,7 @@ export function parseYAML(yaml: string = ''): JsonObject {
     return YAML.parse(yaml);
   } catch (error) {
     return {
-      error: error.toString(),
+      error: String(error),
     };
   }
 }

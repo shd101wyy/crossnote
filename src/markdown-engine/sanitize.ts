@@ -7,7 +7,7 @@
  */
 
 import type { CheerioAPI } from 'cheerio';
-import type { Element } from 'domhandler';
+import type { AnyNode, Element } from 'domhandler';
 
 const DANGEROUS_URL_PATTERN =
   /^\s*(javascript|vbscript)\s*:|^\s*data\s*:\s*text\/html/i;
@@ -42,8 +42,11 @@ export function sanitizeRenderedHTML($: CheerioAPI): void {
   });
 
   // Process all elements for dangerous attributes
-  $('*').each((_, el: Element) => {
-    const attribs = el.attribs;
+  $('*').each((_, el: AnyNode) => {
+    if (!('attribs' in el)) {
+      return;
+    }
+    const attribs = (el as Element).attribs;
     if (!attribs) {
       return;
     }

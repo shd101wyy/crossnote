@@ -1026,7 +1026,7 @@ export async function transformMarkdown(
             continue;
           } catch (error) {
             output = `<pre class="language-text"><code>${escape(
-              error.toString(),
+              String(error),
             )}</code></pre>  `;
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;

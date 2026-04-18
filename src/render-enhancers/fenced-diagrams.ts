@@ -231,7 +231,7 @@ async function renderDiagram({
         graphsCache[checksum] = $output; // store to new cache
       } catch (error) {
         $output = `<pre class="language-text"><code>${escape(
-          error.toString(),
+          String(error),
         )}</code></pre>`;
       }
     }
@@ -418,7 +418,7 @@ async function renderDiagram({
     } catch (error) {
       $output = $(
         `<pre class="language-text"><code>${escape(
-          error.toString(),
+          String(error),
         )}</code></pre>`,
       );
     }

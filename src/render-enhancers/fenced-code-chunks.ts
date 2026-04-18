@@ -278,7 +278,7 @@ export async function runCodeChunk(
     }
   } catch (error) {
     result = `<pre class="language-text"><code>${escape(
-      error.toString(),
+      String(error),
     )}</code></pre>`;
   }
 

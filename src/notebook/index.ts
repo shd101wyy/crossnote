@@ -85,9 +85,9 @@ interface RefreshNotesArgs extends RefreshNotesIfNotLoaded {
 }
 
 export class Notebook {
-  public notebookPath: URI;
-  public config: NotebookConfig;
-  public fs: FileSystemApi;
+  public notebookPath!: URI;
+  public config!: NotebookConfig;
+  public fs!: FileSystemApi;
 
   public notes: Notes = {};
   public hasLoadedNotes: boolean = false;
@@ -96,7 +96,7 @@ export class Notebook {
 
   private search: Search = new Search();
 
-  public md: MarkdownIt;
+  public md!: MarkdownIt;
 
   /**
    * Optional markdown_yo WASM renderer.

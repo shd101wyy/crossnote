@@ -18,10 +18,8 @@
     "outDir": "./out/types/",
     "resolveJsonModule": true,
     "allowJs": true,
-    "noImplicitAny": true
-    // "declarationMap": true
-    // "outFile": "./out/types/index.d.ts"
-    //     "strict": true
+    "noImplicitAny": true,
+    "strict": true
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": [

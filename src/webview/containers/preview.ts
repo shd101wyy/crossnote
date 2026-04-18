@@ -505,7 +505,7 @@ const PreviewContainer = createContainer(() => {
         validMermaidGraphs.push(mermaidGraph);
       } catch (error) {
         mermaidGraph.innerHTML = `<pre class="language-text"><code>${escape(
-          error.toString(),
+          String(error),
         )}</code></pre>`;
       }
     }
@@ -528,7 +528,7 @@ const PreviewContainer = createContainer(() => {
             noiseElement.style.display = 'none';
           }
           mermaidGraph.innerHTML = `<pre class="language-text"><code>${escape(
-            error.toString(),
+            String(error),
           )}</code></pre>`;
         }
       });
@@ -568,7 +568,7 @@ const PreviewContainer = createContainer(() => {
         } catch (error) {
           const outputDiv = codeChunk.getElementsByClassName('output-div')[0];
           outputDiv.innerHTML = `<pre class="language-text"><code>${escape(
-            error.toString(),
+            String(error),
           )}</code></pre>`;
         }
       } else {

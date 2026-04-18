@@ -89,7 +89,7 @@ const renderMath = (
     )}>${mathHtml}</p>`;
   } catch (error) {
     $output = `<pre class="language-text"><code>${escape(
-      error.toString(),
+      String(error),
     )}</code></pre>`;
   }
   return $output;

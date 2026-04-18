@@ -23,7 +23,7 @@ export type FileSystemApi = {
   writeFile: (
     path: string,
     content: string,
-    encoding?: string,
+    encoding?: BufferEncoding,
   ) => Promise<void>;
   mkdir: (path: string) => Promise<void>;
   exists: (path: string) => Promise<boolean>;
