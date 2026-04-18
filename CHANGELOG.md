@@ -4,10 +4,17 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Breaking changes
+
+- **`usePandocParser` and `useMarkdownYoParser` config fields have been removed.** Use the new unified `markdownParser` field instead:
+  - `usePandocParser: true` → `markdownParser: 'pandoc'`
+  - `useMarkdownYoParser: true` → `markdownParser: 'markdown_yo'`
+  - Default (markdown-it) → `markdownParser: 'markdown-it'` (or omit the field)
+
 ### New features
 
 - Add experimental support for [markdown_yo](https://github.com/shd101wyy/markdown_yo), a high-performance Markdown-to-HTML renderer written in the [Yo](https://github.com/shd101wyy/Yo) programming language and compiled to WebAssembly.
-  - Enable with `useMarkdownYoParser: true` in notebook config.
+  - Enable with `markdownParser: 'markdown_yo'` in notebook config (previously `useMarkdownYoParser: true`).
   - Replaces markdown-it for HTML rendering; markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).
   - Supports CommonMark, GFM tables, strikethrough, subscript, superscript, mark/highlight, math, emoji, wikilinks, CriticMarkup, abbreviations, definition lists, admonitions, callouts, footnotes, source maps, and line breaks.
   - KaTeX and MathJax math rendering are both supported via post-processing.

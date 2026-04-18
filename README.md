@@ -92,14 +92,13 @@ const config = {
   // This is useful for adding custom styles or scripts.
   includeInHeader: "",
 
-  // Enable this option will render markdown by pandoc instead of markdown-it.
-  usePandocParser: false,
-
-  // Use markdown_yo (WASM) as the markdown renderer instead of markdown-it.
-  // markdown_yo is a high-performance Markdown-to-HTML converter compiled to WebAssembly,
-  // written in the Yo programming language. When enabled, markdown-it is still used for
-  // token-based operations (e.g., backlink extraction, note mention processing).
-  useMarkdownYoParser: false,
+  // Markdown parser to use for rendering.
+  // Options: 'markdown-it' (default), 'pandoc', 'markdown_yo'
+  // - 'markdown-it': built-in markdown-it renderer
+  // - 'pandoc': render via Pandoc (requires Pandoc installed)
+  // - 'markdown_yo': high-performance WASM renderer (see below); markdown-it is
+  //   still used for token-based operations (backlink extraction, etc.)
+  markdownParser: 'markdown-it',
 
   // In Markdown, a single newline character doesn't cause a line break in the generated HTML. In GitHub Flavored Markdown, that is not true. Enable this config option to insert line breaks in rendered HTML for single newlines in Markdown source.
   breakOnSingleNewLine: true,
@@ -310,7 +309,7 @@ If your notebook has `.crossnote` directory, then when you run `await Notebook.i
 
 Crossnote supports an optional high-performance markdown renderer called [markdown_yo](https://github.com/shd101wyy/markdown_yo), written in the [Yo programming language](https://github.com/shd101wyy/Yo) and compiled to WebAssembly. When enabled, it replaces markdown-it for HTML rendering while markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).
 
-To enable it, set `useMarkdownYoParser: true` in your notebook config.
+To enable it, set `markdownParser: 'markdown_yo'` in your notebook config.
 
 ### Performance
 

@@ -254,7 +254,7 @@ export class MarkdownEngine {
     // math
     if (
       this.notebook.config.mathRenderingOption === 'MathJax' ||
-      this.notebook.config.usePandocParser
+      this.notebook.config.markdownParser === 'pandoc'
     ) {
       // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
       const mathJaxConfig = copy({
@@ -492,7 +492,7 @@ window["initRevealPresentation"] = async function() {
     // check math
     if (
       this.notebook.config.mathRenderingOption === 'KaTeX' &&
-      !this.notebook.config.usePandocParser
+      this.notebook.config.markdownParser !== 'pandoc'
     ) {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
@@ -795,7 +795,7 @@ window["initRevealPresentation"] = async function() {
     let mathStyle: string;
     if (
       this.notebook.config.mathRenderingOption === 'MathJax' ||
-      this.notebook.config.usePandocParser
+      this.notebook.config.markdownParser === 'pandoc'
     ) {
       // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
       const mathJaxConfig = copy({
@@ -2318,7 +2318,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
   /**
    * process input string, skip front-matter
-   * if usePandocParser. return {
+   * if markdownParser === 'pandoc'. return {
    *      content: frontMatterString
    * }
    * else if display table. return {
@@ -2337,7 +2337,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (frontMatterString) {
       const data = utility.parseYAML(frontMatterString);
 
-      if (this.notebook.config.usePandocParser) {
+      if (this.notebook.config.markdownParser === 'pandoc') {
         // use pandoc parser, so don't change inputString
         return { content: frontMatterString, table: '', data: data || {} };
       } else if (
@@ -2613,7 +2613,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
       projectDirectoryPath: this.projectDirectoryPath.fsPath,
       forPreview: options.isForPreview,
-      usePandocParser: this.notebook.config.usePandocParser,
+      markdownParser: this.notebook.config.markdownParser,
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
@@ -2637,7 +2637,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * render markdown to html
      */
     let html: string;
-    if (this.notebook.config.usePandocParser) {
+    if (this.notebook.config.markdownParser === 'pandoc') {
       // pandoc
       try {
         let args = (yamlConfig['pandoc_args'] || []) as string[];

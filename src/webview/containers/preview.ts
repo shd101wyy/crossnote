@@ -384,7 +384,10 @@ const PreviewContainer = createContainer(() => {
       if (!hiddenPreviewElement.current) {
         return resolve();
       }
-      if (config.mathRenderingOption === 'MathJax' || config.usePandocParser) {
+      if (
+        config.mathRenderingOption === 'MathJax' ||
+        config.markdownParser === 'pandoc'
+      ) {
         // .mathjax-exps, .math.inline, .math.display
         const unprocessedElements =
           hiddenPreviewElement.current.querySelectorAll(

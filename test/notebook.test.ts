@@ -6,7 +6,7 @@ describe('Notebook markdown_yo rendering', () => {
     const notebook = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
       config: {
-        useMarkdownYoParser: true,
+        markdownParser: 'markdown_yo',
         enableTypographer: false,
       },
     });
@@ -26,7 +26,7 @@ describe('Notebook markdown_yo rendering', () => {
     const notebook = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
       config: {
-        useMarkdownYoParser: true,
+        markdownParser: 'markdown_yo',
       },
     });
 
@@ -34,7 +34,7 @@ describe('Notebook markdown_yo rendering', () => {
       notebook.renderMarkdown('[[My Note]]', { isForPreview: true }),
     ).toContain('class="wikilink"');
 
-    notebook.updateConfig({ useMarkdownYoParser: false });
+    notebook.updateConfig({ markdownParser: 'markdown-it' });
 
     const html = notebook.renderMarkdown('[[My Note]]', { isForPreview: true });
     expect(html).toContain('href="My Note.md"');

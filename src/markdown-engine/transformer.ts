@@ -12,6 +12,7 @@ import {
 } from '../lib/block-attributes';
 import computeChecksum from '../lib/compute-checksum';
 import { Notebook } from '../notebook';
+import { MarkdownParser } from '../notebook/types';
 import * as PDF from '../tools/pdf';
 import { CustomSubjects } from './custom-subjects';
 import HeadingIdGenerator from './heading-id-generator';
@@ -49,7 +50,7 @@ export interface TransformMarkdownOptions {
   filesCache: { [key: string]: string };
   useRelativeFilePath: boolean;
   forPreview: boolean;
-  usePandocParser?: boolean;
+  markdownParser?: MarkdownParser;
   forMarkdownExport?: boolean;
   protocolsWhiteListRegExp: RegExp | null;
   notSourceFile?: boolean;
@@ -230,7 +231,7 @@ export async function transformMarkdown(
     useRelativeFilePath = false,
     forPreview = false,
     forMarkdownExport = false,
-    usePandocParser = false,
+    markdownParser = 'markdown-it' as MarkdownParser,
     protocolsWhiteListRegExp = null,
     notSourceFile = false,
     imageDirectoryPath = '',
@@ -241,6 +242,7 @@ export async function transformMarkdown(
     timestamp,
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
+  const usePandocParser = markdownParser === 'pandoc';
   // Replace CRLF with LF
   inputString = inputString.replace(/\r\n/g, '\n');
 
@@ -538,7 +540,7 @@ export async function transformMarkdown(
 
         if (!id) {
           id = headingIdGenerator.generateId(heading);
-          if (notebook.config.usePandocParser) {
+          if (notebook.config.markdownParser === 'pandoc') {
             id = id.replace(/^[\d-]+/, '');
             if (!id) {
               id = 'section';
@@ -868,7 +870,7 @@ export async function transformMarkdown(
                   filesCache,
                   useRelativeFilePath: false,
                   forPreview: false,
-                  usePandocParser,
+                  markdownParser,
                   forMarkdownExport,
                   protocolsWhiteListRegExp,
                   notSourceFile: true, // <= this is not the sourcefile

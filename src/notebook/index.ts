@@ -100,7 +100,7 @@ export class Notebook {
 
   /**
    * Optional markdown_yo WASM renderer.
-   * Used for HTML rendering when `useMarkdownYoParser` is enabled.
+   * Used for HTML rendering when `markdownParser === 'markdown_yo'`.
    */
   public markdownYoRenderer: MarkdownRenderer | null = null;
 
@@ -133,7 +133,7 @@ export class Notebook {
     this.initFs(fs);
     await this.initConfig(config);
     this.md = this.initMarkdownIt();
-    if (this.config.useMarkdownYoParser) {
+    if (this.config.markdownParser === 'markdown_yo') {
       await this.initMarkdownYo();
     }
     this.updateConfig({});
@@ -213,7 +213,7 @@ export class Notebook {
         const { createRenderer } = await import('markdown_yo');
         const renderer = await createRenderer();
 
-        if (this.config.useMarkdownYoParser) {
+        if (this.config.markdownParser === 'markdown_yo') {
           this.markdownYoRenderer = renderer;
         } else {
           renderer.destroy();
@@ -269,7 +269,10 @@ export class Notebook {
     markdown: string,
     options?: { isForPreview?: boolean },
   ): string {
-    if (this.config.useMarkdownYoParser && this.markdownYoRenderer) {
+    if (
+      this.config.markdownParser === 'markdown_yo' &&
+      this.markdownYoRenderer
+    ) {
       const renderOpts = this.buildMarkdownYoOptions(!!options?.isForPreview);
       let html = this.markdownYoRenderer.render(markdown, renderOpts);
       html = this.postProcessMarkdownYo(html);
@@ -351,7 +354,7 @@ export class Notebook {
       linkify: !!this.config.enableLinkify,
     });
 
-    if (this.config.useMarkdownYoParser) {
+    if (this.config.markdownParser === 'markdown_yo') {
       void this.initMarkdownYo();
     } else {
       this.destroyMarkdownYo();

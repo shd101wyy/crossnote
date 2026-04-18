@@ -418,7 +418,7 @@ export async function pandocConvert(
     filesCache,
     protocolsWhiteListRegExp,
     forPreview: false,
-    usePandocParser: true,
+    markdownParser: 'pandoc',
     notebook,
   });
   text = data.outputString;

@@ -9,6 +9,8 @@ export type { KatexOptions } from 'katex';
 export type { MermaidConfig } from 'mermaid';
 export const IS_NODE = typeof window === 'undefined';
 
+export type MarkdownParser = 'markdown-it' | 'pandoc' | 'markdown_yo';
+
 export type FileSystemStats = {
   mtimeMs: number;
   ctimeMs: number;
@@ -180,11 +182,15 @@ export interface NotebookConfig {
   katexConfig: KatexOptions;
 
   /**
-   * Whether to use Pandoc parser.
+   * Markdown parser to use for rendering.
    *
-   * @default false
+   * - `'markdown-it'` (default) — built-in markdown-it renderer
+   * - `'pandoc'` — render via Pandoc (requires Pandoc installed)
+   * - `'markdown_yo'` — render via markdown_yo (WASM)
+   *
+   * @default 'markdown-it'
    */
-  usePandocParser: boolean;
+  markdownParser: MarkdownParser;
 
   /**
    * Parser configuration.
@@ -526,17 +532,6 @@ export interface NotebookConfig {
    * Whether to always show backlinks in preview.
    */
   alwaysShowBacklinksInPreview: boolean;
-
-  /**
-   * Whether to use markdown_yo (WASM) as the markdown renderer.
-   *
-   * When enabled, markdown_yo will be used for HTML rendering instead of
-   * markdown-it. markdown-it is still used for token-based operations
-   * (e.g., backlink extraction, note mention processing).
-   *
-   * @default false
-   */
-  useMarkdownYoParser: boolean;
 }
 
 export function getDefaultMermaidConfig(): MermaidConfig {
@@ -589,7 +584,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     katexConfig: getDefaultKatexConfig(),
     parserConfig: getDefaultParserConfig(),
     enablePreviewZenMode: true,
-    usePandocParser: false,
+    markdownParser: 'markdown-it',
     breakOnSingleNewLine: true,
     enableTypographer: false,
     enableWikiLinkSyntax: true,
@@ -641,7 +636,6 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     d2Sketch: false,
     isVSCode: false,
     alwaysShowBacklinksInPreview: false,
-    useMarkdownYoParser: false,
   };
 }
 

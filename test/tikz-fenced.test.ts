@@ -9,7 +9,7 @@ describe('TikZ fenced diagram integration', () => {
     notebook = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
       config: {
-        usePandocParser: false,
+        markdownParser: 'markdown-it',
       },
     });
   });

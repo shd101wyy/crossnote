@@ -248,7 +248,7 @@ export async function markdownConvert(
     useRelativeFilePath,
     filesCache,
     forPreview: false,
-    usePandocParser: true, // NOTE: We need to set this to true here even though we don't use pandoc to parse the markdown.
+    markdownParser: 'pandoc', // NOTE: We need to set this to 'pandoc' here even though we don't use pandoc to parse the markdown.
     forMarkdownExport: true,
     protocolsWhiteListRegExp,
     imageDirectoryPath,
