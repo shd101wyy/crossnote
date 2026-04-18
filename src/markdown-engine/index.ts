@@ -406,7 +406,7 @@ window["initRevealPresentation"] = async function() {
   /**
    * Map preview theme to prism theme.
    */
-  private static AutoPrismThemeMap: Record<string, string> = {
+  private static AutoPrismThemeMap = {
     'atom-dark.css': 'atom-dark.css',
     'atom-light.css': 'atom-light.css',
     'atom-material.css': 'atom-material.css',
@@ -424,7 +424,7 @@ window["initRevealPresentation"] = async function() {
     'vue.css': 'vue.css',
   };
 
-  private static AutoPrismThemeMapForPresentation: Record<string, string> = {
+  private static AutoPrismThemeMapForPresentation = {
     'beige.css': 'pen-paper-coffee.css',
     'black.css': 'one-dark.css',
     'blood.css': 'monokai.css',
@@ -460,12 +460,16 @@ window["initRevealPresentation"] = async function() {
           (presentationObj?.['theme'] as string | undefined) ??
           this.notebook.config.revealjsTheme;
         return (
-          MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] ??
-          'default.css'
+          (
+            MarkdownEngine.AutoPrismThemeMapForPresentation as Record<
+              string,
+              string
+            >
+          )[presentationTheme] ?? 'default.css'
         );
       } else {
         return (
-          MarkdownEngine.AutoPrismThemeMap[
+          (MarkdownEngine.AutoPrismThemeMap as Record<string, string>)[
             this.notebook.config.previewTheme as string
           ] ?? 'default.css'
         );
@@ -1873,7 +1877,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             `./styles/prism_theme/${
-              /*this.getPrismTheme(false)*/ MarkdownEngine.AutoPrismThemeMap[
+              /*this.getPrismTheme(false)*/ (
+                MarkdownEngine.AutoPrismThemeMap as Record<string, string>
+              )[
                 (ebookConfig['theme'] as string | undefined) ||
                   this.notebook.config.previewTheme
               ]

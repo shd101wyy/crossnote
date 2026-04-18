@@ -61,7 +61,7 @@ export interface TransformMarkdownOptions {
   timestamp?: number;
 }
 
-const fileExtensionToLanguageMap: Record<string, string> = {
+const fileExtensionToLanguageMap = {
   vhd: 'vhdl',
   erl: 'erlang',
   dot: 'dot',
@@ -823,7 +823,9 @@ export async function transformMarkdown(
               const fileExtension = extname.slice(1, extname.length);
               output = `\`\`\`${
                 config['as'] ||
-                fileExtensionToLanguageMap[fileExtension] ||
+                (fileExtensionToLanguageMap as Record<string, string>)[
+                  fileExtension
+                ] ||
                 fileExtension
               } ${stringifyBlockAttributes(
                 config,
@@ -841,7 +843,9 @@ export async function transformMarkdown(
               const fileExtension = extname.slice(1, extname.length);
               output = `\`\`\`${
                 config['as'] ||
-                fileExtensionToLanguageMap[fileExtension] ||
+                (fileExtensionToLanguageMap as Record<string, string>)[
+                  fileExtension
+                ] ||
                 fileExtension
               } ${stringifyBlockAttributes(
                 config,
@@ -994,7 +998,9 @@ export async function transformMarkdown(
                 const fileExtension = extname.slice(1, extname.length);
                 output = `\`\`\`${
                   aS ||
-                  fileExtensionToLanguageMap[fileExtension] ||
+                  (fileExtensionToLanguageMap as Record<string, string>)[
+                    fileExtension
+                  ] ||
                   fileExtension
                 } ${
                   config ? stringifyBlockAttributes(config) : ''

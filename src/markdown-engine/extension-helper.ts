@@ -1,6 +1,6 @@
 // modified according to the prism website
 // http://prismjs.com/#languages-list
-const scopesForLanguageName: Record<string, string> = {
+const scopesForLanguageName = {
   'sh': 'bash',
   'bash': 'bash',
   'c': 'c',
@@ -55,5 +55,7 @@ const scopesForLanguageName: Record<string, string> = {
 
 export function scopeForLanguageName(language: string) {
   language = language.toLowerCase();
-  return scopesForLanguageName[language] || language;
+  return (
+    (scopesForLanguageName as Record<string, string>)[language] || language
+  );
 }
