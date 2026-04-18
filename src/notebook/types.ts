@@ -186,11 +186,28 @@ export interface NotebookConfig {
    *
    * - `'markdown-it'` (default) — built-in markdown-it renderer
    * - `'pandoc'` — render via Pandoc (requires Pandoc installed)
-   * - `'markdown_yo'` — render via markdown_yo (WASM)
+   * - `'markdown_yo'` — render via markdown_yo (WASM or native binary)
    *
    * @default 'markdown-it'
    */
   markdownParser: MarkdownParser;
+
+  /**
+   * Path to the `markdown_yo` native binary.
+   *
+   * When set, crossnote will invoke this binary (via stdin/stdout) instead of
+   * the bundled WASM module when `markdownParser` is `'markdown_yo'`.
+   *
+   * **Performance note:** the native binary is faster for files under ~300 KB
+   * (roughly 6× faster than WASM due to lower per-call overhead). For very
+   * large files (>500 KB) the subprocess I/O cost may exceed the WASM render
+   * time, so WASM (the default) is preferable in those cases.
+   *
+   * Supports `$HOME` and `~` variable substitution.
+   *
+   * @default `''` (use WASM)
+   */
+  markdownYoBinaryPath: string;
 
   /**
    * Parser configuration.
@@ -611,6 +628,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     printBackground: false,
     chromePath: '',
     imageMagickPath: '',
+    markdownYoBinaryPath: '',
     pandocPath: 'pandoc',
     pandocMarkdownFlavor: 'markdown-raw_tex+tex_math_single_backslash',
     pandocArguments: [],

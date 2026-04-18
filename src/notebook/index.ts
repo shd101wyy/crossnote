@@ -1,5 +1,6 @@
 import { Mutex } from 'async-mutex';
 import * as caseAnything from 'case-anything';
+import { execFileSync } from 'child_process';
 import MarkdownIt from 'markdown-it';
 import MarkdownItAbbr from 'markdown-it-abbr';
 import MarkdownItDeflist from 'markdown-it-deflist';
@@ -262,6 +263,34 @@ export class Notebook {
   }
 
   /**
+   * Convert markdown_yo RenderOptions to CLI flags for the native binary.
+   */
+  private buildMarkdownYoBinaryArgs(opts: RenderOptions): string[] {
+    const flags: string[] = [];
+    if (opts.html) flags.push('--html');
+    if (opts.typographer) flags.push('--typographer');
+    if (opts.commonmark) flags.push('--commonmark');
+    if (opts.subscript) flags.push('--subscript');
+    if (opts.superscript) flags.push('--superscript');
+    if (opts.mark) flags.push('--mark');
+    if (opts.math) flags.push('--math');
+    if (opts.emoji) flags.push('--emoji');
+    if (opts.wikilink) flags.push('--wikilink');
+    if (opts.critic) flags.push('--critic');
+    if (opts.abbr) flags.push('--abbr');
+    if (opts.deflist) flags.push('--deflist');
+    if (opts.admonition) flags.push('--admonition');
+    if (opts.callout) flags.push('--callout');
+    if (opts.footnote) flags.push('--footnote');
+    if (opts.sourceMap) flags.push('--source-map');
+    // Note: the `breaks` option (breakOnSingleNewLine) is not supported by the
+    // native binary CLI and is silently ignored when using markdownYoBinaryPath.
+    // Read from stdin
+    flags.push('-');
+    return flags;
+  }
+
+  /**
    * Render markdown to HTML using markdown_yo (WASM) if available,
    * otherwise falls back to markdown-it.
    */
@@ -269,16 +298,32 @@ export class Notebook {
     markdown: string,
     options?: { isForPreview?: boolean },
   ): string {
-    if (
-      this.config.markdownParser === 'markdown_yo' &&
-      this.markdownYoRenderer
-    ) {
+    if (this.config.markdownParser === 'markdown_yo') {
       const renderOpts = this.buildMarkdownYoOptions(!!options?.isForPreview);
-      let html = this.markdownYoRenderer.render(markdown, renderOpts);
-      html = this.postProcessMarkdownYo(html);
-      return html;
+      const binaryPath = this.config.markdownYoBinaryPath;
+      let html: string;
+      if (binaryPath) {
+        const args = this.buildMarkdownYoBinaryArgs(renderOpts);
+        html = execFileSync(binaryPath, args, {
+          input: markdown,
+          encoding: 'utf8',
+          maxBuffer: 256 * 1024 * 1024,
+        });
+      } else if (this.markdownYoRenderer) {
+        html = this.markdownYoRenderer.render(markdown, renderOpts);
+      } else {
+        // WASM not yet loaded — fall through to markdown-it
+        return this.renderMarkdownWithMarkdownIt(markdown, options);
+      }
+      return this.postProcessMarkdownYo(html);
     }
-    // Fallback to markdown-it
+    return this.renderMarkdownWithMarkdownIt(markdown, options);
+  }
+
+  private renderMarkdownWithMarkdownIt(
+    markdown: string,
+    options?: { isForPreview?: boolean },
+  ): string {
     if (options?.isForPreview) {
       return this.md.render(markdown);
     }
@@ -382,6 +427,10 @@ export class Notebook {
     );
     this.config.pandocPath = replaceVariablesInString(
       this.config.pandocPath,
+      replacements,
+    );
+    this.config.markdownYoBinaryPath = replaceVariablesInString(
+      this.config.markdownYoBinaryPath,
       replacements,
     );
     this.config.plantumlJarPath = replaceVariablesInString(
