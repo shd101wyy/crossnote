@@ -13,6 +13,19 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### New features
 
+- **Graph view** — Obsidian-style interactive note graph, accessible via "Markdown Preview Enhanced: Open Graph View" in the command palette, the editor right-click context menu, or the button in the preview bottom bar.
+  - Force-directed D3 canvas layout; supports pan and zoom.
+  - **Global / Local** toggle: Global shows all notes; Local shows only the current file and its connected neighbors (configurable depth 1–5 via a slider).
+  - Node sizing by connection count (more links → larger node).
+  - **By Folder** toggle: color nodes by their parent directory using stable HSL hues.
+  - Search/filter input to highlight matching nodes.
+  - Click a node to open the corresponding file in the editor.
+  - Hover highlights direct neighbors and dims the rest.
+  - Directional arrowheads on edges (scales with zoom).
+  - Adapts to the VS Code light/dark/high-contrast theme.
+  - Last-used Global/Local mode and By Folder preference are persisted across sessions.
+  - Refreshes automatically when any markdown file in the workspace is saved.
+
 - Add experimental support for [markdown_yo](https://github.com/shd101wyy/markdown_yo), a high-performance Markdown-to-HTML renderer written in the [Yo](https://github.com/shd101wyy/Yo) programming language and compiled to WebAssembly.
   - Enable with `markdownParser: 'markdown_yo'` in notebook config (previously `useMarkdownYoParser: true`).
   - Replaces markdown-it for HTML rendering; markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).
