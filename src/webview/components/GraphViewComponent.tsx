@@ -38,14 +38,66 @@ type D3Link = SimulationLinkDatum<D3Node>;
 
 type ViewMode = 'global' | 'local';
 
-const NODE_RADIUS = 6;
-const ACTIVE_NODE_COLOR = '#ef4444';
-const DEFAULT_NODE_COLOR = '#3b82f6';
-const HOVER_NODE_COLOR = '#f59e0b';
-const NEIGHBOR_NODE_COLOR = '#10b981';
-const LINK_COLOR = 'rgba(148, 163, 184, 0.5)';
-const ACTIVE_LINK_COLOR = 'rgba(99, 102, 241, 0.8)';
+const MIN_NODE_RADIUS = 5;
+const MAX_NODE_RADIUS = 14;
 const TEXT_MIN_ZOOM = 0.4;
+
+interface ThemeColors {
+  background: string;
+  text: string;
+  activeNode: string;
+  hoverNode: string;
+  neighborNode: string;
+  defaultNode: string;
+  link: string;
+  activeLink: string;
+}
+
+function getCssVar(name: string, fallback: string): string {
+  return (
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
+    fallback
+  );
+}
+
+function buildThemeColors(isDark: boolean): ThemeColors {
+  return isDark
+    ? {
+        background: getCssVar('--vscode-editor-background', '#1e1e2e'),
+        text: getCssVar('--vscode-editor-foreground', '#cdd6f4'),
+        activeNode: '#f38ba8',
+        hoverNode: '#fab387',
+        neighborNode: '#a6e3a1',
+        defaultNode: getCssVar('--vscode-charts-blue', '#89b4fa'),
+        link: 'rgba(255,255,255,0.12)',
+        activeLink: getCssVar('--vscode-focusBorder', 'rgba(137,180,250,0.75)'),
+      }
+    : {
+        background: getCssVar('--vscode-editor-background', '#ffffff'),
+        text: getCssVar('--vscode-editor-foreground', '#374151'),
+        activeNode: '#dc2626',
+        hoverNode: '#d97706',
+        neighborNode: '#16a34a',
+        defaultNode: getCssVar('--vscode-charts-blue', '#2563eb'),
+        link: 'rgba(0,0,0,0.12)',
+        activeLink: getCssVar('--vscode-focusBorder', 'rgba(37,99,235,0.75)'),
+      };
+}
+
+/** Stable hue from a string, used for folder-based node coloring. */
+function stringToHue(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash) % 360;
+}
+
+function getFolderFromPath(nodeId: string): string {
+  const parts = nodeId.replace(/\\/g, '/').split('/');
+  return parts.length > 1 ? parts[parts.length - 2] : '';
+}
 
 export default function GraphViewComponent() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -64,12 +116,30 @@ export default function GraphViewComponent() {
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('global');
+  const [localDepth, setLocalDepth] = useState(1);
+  const [colorByFolder, setColorByFolder] = useState(false);
 
-  // Keep a ref in sync so simulation callbacks can read the latest value
+  // Keep ref in sync so simulation callbacks can read the latest active path
   // without needing to be in the dependency array
   useEffect(() => {
     activeFilePathRef.current = activeFilePath;
   }, [activeFilePath]);
+
+  // Detect VS Code theme from body class (set by VS Code itself)
+  const isDarkTheme = useMemo(() => {
+    return (
+      document.body.classList.contains('vscode-dark') ||
+      document.body.classList.contains('vscode-high-contrast')
+    );
+  }, []);
+
+  const themeColors = useMemo(
+    () => buildThemeColors(isDarkTheme),
+    [isDarkTheme],
+  );
+
+  // DaisyUI theme for the toolbar/UI chrome
+  const daisyTheme = isDarkTheme ? 'dark' : 'light';
 
   const vscodeApi = useMemo(() => {
     if (globalThis.acquireVsCodeApi) {
@@ -89,7 +159,7 @@ export default function GraphViewComponent() {
     [vscodeApi],
   );
 
-  // Compute neighbor sets for the active hovered node
+  // Neighbor ids of the currently hovered node
   const neighborIds = useMemo(() => {
     const ids = new Set<string>();
     if (!hoveredNodeId || !graphData) return ids;
@@ -108,23 +178,92 @@ export default function GraphViewComponent() {
     return ids;
   }, [hoveredNodeId, graphData]);
 
-  // Filter nodes/links for local mode
+  // Per-node connection count for sizing
+  const nodeDegreeMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (!graphData) return map;
+    for (const link of graphData.links) {
+      const src =
+        typeof link.source === 'string'
+          ? link.source
+          : (link.source as GraphViewNode).id;
+      const tgt =
+        typeof link.target === 'string'
+          ? link.target
+          : (link.target as GraphViewNode).id;
+      map.set(src, (map.get(src) ?? 0) + 1);
+      map.set(tgt, (map.get(tgt) ?? 0) + 1);
+    }
+    return map;
+  }, [graphData]);
+
+  const maxDegree = useMemo(() => {
+    let max = 1;
+    for (const v of nodeDegreeMap.values()) if (v > max) max = v;
+    return max;
+  }, [nodeDegreeMap]);
+
+  const getNodeRadius = useCallback(
+    (nodeId: string) => {
+      const degree = nodeDegreeMap.get(nodeId) ?? 0;
+      return (
+        MIN_NODE_RADIUS +
+        (degree / maxDegree) * (MAX_NODE_RADIUS - MIN_NODE_RADIUS)
+      );
+    },
+    [nodeDegreeMap, maxDegree],
+  );
+
+  // Stable folder → color mapping (one hue per unique parent folder)
+  const folderColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!graphData) return map;
+    for (const node of graphData.nodes) {
+      const folder = getFolderFromPath(node.id);
+      if (!map.has(folder)) {
+        const hue = stringToHue(folder || node.id);
+        map.set(
+          folder,
+          isDarkTheme ? `hsl(${hue},65%,65%)` : `hsl(${hue},55%,40%)`,
+        );
+      }
+    }
+    return map;
+  }, [graphData, isDarkTheme]);
+
+  // BFS-based local mode: include up to `localDepth` hops from the active file
   const localNodeIds = useMemo(() => {
     const ids = new Set<string>();
     if (!activeFilePath || !graphData) return ids;
+    let frontier = new Set([activeFilePath]);
     ids.add(activeFilePath);
-    for (const link of graphData.links) {
-      const src = typeof link.source === 'string' ? link.source : link.source;
-      const tgt = typeof link.target === 'string' ? link.target : link.target;
-      const srcId = typeof src === 'object' ? (src as GraphViewNode).id : src;
-      const tgtId = typeof tgt === 'object' ? (tgt as GraphViewNode).id : tgt;
-      if (srcId === activeFilePath || tgtId === activeFilePath) {
-        ids.add(srcId);
-        ids.add(tgtId);
+    for (let d = 0; d < localDepth; d++) {
+      const next = new Set<string>();
+      for (const nodeId of frontier) {
+        for (const link of graphData.links) {
+          const src =
+            typeof link.source === 'string'
+              ? link.source
+              : (link.source as GraphViewNode).id;
+          const tgt =
+            typeof link.target === 'string'
+              ? link.target
+              : (link.target as GraphViewNode).id;
+          if (src === nodeId && !ids.has(tgt)) {
+            ids.add(tgt);
+            next.add(tgt);
+          }
+          if (tgt === nodeId && !ids.has(src)) {
+            ids.add(src);
+            next.add(src);
+          }
+        }
       }
+      frontier = next;
+      if (frontier.size === 0) break;
     }
     return ids;
-  }, [activeFilePath, graphData]);
+  }, [activeFilePath, graphData, localDepth]);
 
   const visibleData = useMemo(() => {
     if (!graphData) return { nodes: [], links: [] };
@@ -174,7 +313,9 @@ export default function GraphViewComponent() {
     const links = linksRef.current;
 
     ctx.save();
-    ctx.clearRect(0, 0, width, height);
+    // Fill background with theme color
+    ctx.fillStyle = themeColors.background;
+    ctx.fillRect(0, 0, width, height);
     ctx.translate(t.x, t.y);
     ctx.scale(t.k, t.k);
 
@@ -194,10 +335,12 @@ export default function GraphViewComponent() {
       ctx.beginPath();
       ctx.moveTo(src.x, src.y);
       ctx.lineTo(tgt.x, tgt.y);
-      ctx.strokeStyle = isActiveLink ? ACTIVE_LINK_COLOR : LINK_COLOR;
+      ctx.strokeStyle = isActiveLink
+        ? themeColors.activeLink
+        : themeColors.link;
       ctx.lineWidth = isActiveLink ? 1.5 / t.k : 1 / t.k;
       ctx.globalAlpha =
-        isHovering && !isActiveLink ? 0.2 : isFiltering ? 0.3 : 1;
+        isHovering && !isActiveLink ? 0.15 : isFiltering ? 0.25 : 1;
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
@@ -211,48 +354,67 @@ export default function GraphViewComponent() {
       const isNeighbor = neighborIds.has(node.id);
       const isMatch = searchMatches.has(node.id);
 
-      let color: string;
-      if (isActive) color = ACTIVE_NODE_COLOR;
-      else if (isHovered) color = HOVER_NODE_COLOR;
-      else if (isNeighbor) color = NEIGHBOR_NODE_COLOR;
-      else color = DEFAULT_NODE_COLOR;
+      const baseRadius = getNodeRadius(node.id);
+      const radius = isActive || isHovered ? baseRadius * 1.4 : baseRadius;
 
-      const radius = isActive || isHovered ? NODE_RADIUS * 1.4 : NODE_RADIUS;
+      let color: string;
+      if (isActive) color = themeColors.activeNode;
+      else if (isHovered) color = themeColors.hoverNode;
+      else if (isNeighbor) color = themeColors.neighborNode;
+      else if (colorByFolder) {
+        const folder = getFolderFromPath(node.id);
+        color = folderColorMap.get(folder) ?? themeColors.defaultNode;
+      } else {
+        color = themeColors.defaultNode;
+      }
 
       const dimmed =
         (isHovering && !isHovered && !isNeighbor && !isActive) ||
         (isFiltering && !isMatch && !isActive);
 
-      ctx.globalAlpha = dimmed ? 0.2 : 1;
+      ctx.globalAlpha = dimmed ? 0.15 : 1;
 
       ctx.beginPath();
       ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
       ctx.fillStyle = color;
       ctx.fill();
 
-      if (isMatch || isActive) {
+      // Ring indicator for active/hovered/matched nodes
+      if (isMatch || isActive || isHovered) {
         ctx.beginPath();
-        ctx.arc(node.x, node.y, radius + 3, 0, 2 * Math.PI);
-        ctx.strokeStyle = isActive ? ACTIVE_NODE_COLOR : '#f59e0b';
+        ctx.arc(node.x, node.y, radius + 3 / t.k, 0, 2 * Math.PI);
+        ctx.strokeStyle = isActive
+          ? themeColors.activeNode
+          : themeColors.hoverNode;
         ctx.lineWidth = 2 / t.k;
         ctx.stroke();
       }
 
       ctx.globalAlpha = 1;
 
-      // Draw label
+      // Labels (only at sufficient zoom)
       if (t.k > TEXT_MIN_ZOOM) {
-        const labelAlpha = dimmed ? 0.2 : 1;
-        ctx.globalAlpha = labelAlpha;
-        ctx.fillStyle = isActive || isHovered ? '#1e293b' : '#475569';
-        ctx.font = `${isActive || isHovered ? 'bold ' : ''}${Math.max(10, 12 / t.k)}px sans-serif`;
+        ctx.globalAlpha = dimmed ? 0.15 : 1;
+        ctx.fillStyle = themeColors.text;
+        const fontSize = Math.max(10, 12 / t.k);
+        ctx.font = `${isActive || isHovered ? 'bold ' : ''}${fontSize}px var(--vscode-font-family,system-ui,sans-serif)`;
         ctx.fillText(node.label, node.x + radius + 3, node.y + 4);
         ctx.globalAlpha = 1;
       }
     }
 
     ctx.restore();
-  }, [activeFilePath, hoveredNodeId, neighborIds, searchMatches, searchQuery]);
+  }, [
+    activeFilePath,
+    colorByFolder,
+    folderColorMap,
+    getNodeRadius,
+    hoveredNodeId,
+    neighborIds,
+    searchMatches,
+    searchQuery,
+    themeColors,
+  ]);
 
   const scheduleRedraw = useCallback(() => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
@@ -266,7 +428,7 @@ export default function GraphViewComponent() {
 
     const d3Nodes: D3Node[] = visibleData.nodes.map((n) => ({
       ...n,
-      // preserve position if we already have it
+      // Preserve existing positions to avoid layout thrash on minor data changes
       x: nodesRef.current.find((e) => e.id === n.id)?.x,
       y: nodesRef.current.find((e) => e.id === n.id)?.y,
     }));
@@ -281,22 +443,21 @@ export default function GraphViewComponent() {
       )
       .force('charge', forceManyBody<D3Node>().strength(-200))
       .force('center', forceCenter(canvas.width / 2, canvas.height / 2))
-      .force('collide', forceCollide<D3Node>(NODE_RADIUS * 2));
+      .force('collide', forceCollide<D3Node>(MAX_NODE_RADIUS * 2));
 
     nodesRef.current = d3Nodes;
     linksRef.current = d3Links;
 
     simulation.on('tick', scheduleRedraw);
     simulation.on('end', () => {
-      // After simulation stabilizes, center the view on the active node (if any)
-      const canvas = canvasRef.current;
+      const c = canvasRef.current;
       const afp = activeFilePathRef.current;
-      if (!canvas || !afp || !zoomBehaviorRef.current) return;
+      if (!c || !afp || !zoomBehaviorRef.current) return;
       const activeNode = nodesRef.current.find((n) => n.id === afp);
       if (!activeNode || activeNode.x == null || activeNode.y == null) return;
-      const tx = canvas.width / 2 - activeNode.x;
-      const ty = canvas.height / 2 - activeNode.y;
-      select(canvas)
+      const tx = c.width / 2 - activeNode.x;
+      const ty = c.height / 2 - activeNode.y;
+      select(c)
         .transition()
         .duration(600)
         .call(
@@ -311,12 +472,18 @@ export default function GraphViewComponent() {
     };
   }, [visibleData, scheduleRedraw]);
 
-  // Redraw when hover/search/active change
+  // Redraw when hover/search/active state changes (no simulation restart needed)
   useEffect(() => {
     scheduleRedraw();
-  }, [hoveredNodeId, searchMatches, activeFilePath, scheduleRedraw]);
+  }, [
+    hoveredNodeId,
+    searchMatches,
+    activeFilePath,
+    colorByFolder,
+    scheduleRedraw,
+  ]);
 
-  // Set up zoom on canvas
+  // Set up zoom/pan on canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -336,28 +503,26 @@ export default function GraphViewComponent() {
     };
   }, [scheduleRedraw]);
 
-  // Get canvas coordinates adjusted for zoom/pan
   const canvasToWorld = useCallback((cx: number, cy: number) => {
     const t = transformRef.current;
-    return {
-      x: (cx - t.x) / t.k,
-      y: (cy - t.y) / t.k,
-    };
+    return { x: (cx - t.x) / t.k, y: (cy - t.y) / t.k };
   }, []);
 
-  const getNodeAtPos = useCallback((worldX: number, worldY: number) => {
-    const nodes = nodesRef.current;
-    for (let i = nodes.length - 1; i >= 0; i--) {
-      const n = nodes[i];
-      if (n.x == null || n.y == null) continue;
-      const dx = worldX - n.x;
-      const dy = worldY - n.y;
-      if (Math.sqrt(dx * dx + dy * dy) <= NODE_RADIUS * 1.5) {
-        return n;
+  const getNodeAtPos = useCallback(
+    (worldX: number, worldY: number) => {
+      const nodes = nodesRef.current;
+      for (let i = nodes.length - 1; i >= 0; i--) {
+        const n = nodes[i];
+        if (n.x == null || n.y == null) continue;
+        const dx = worldX - n.x;
+        const dy = worldY - n.y;
+        const r = getNodeRadius(n.id) * 1.5;
+        if (Math.sqrt(dx * dx + dy * dy) <= r) return n;
       }
-    }
-    return null;
-  }, []);
+      return null;
+    },
+    [getNodeRadius],
+  );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -385,9 +550,7 @@ export default function GraphViewComponent() {
         e.clientY - rect.top,
       );
       const node = getNodeAtPos(x, y);
-      if (node) {
-        postMessage('openFile', [node.id]);
-      }
+      if (node) postMessage('openFile', [node.id]);
     },
     [canvasToWorld, getNodeAtPos, postMessage],
   );
@@ -410,7 +573,7 @@ export default function GraphViewComponent() {
     return () => observer.disconnect();
   }, [scheduleRedraw]);
 
-  // IPC: listen for messages from extension host
+  // IPC: receive graph data and active file updates from extension host
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       const message = event.data as {
@@ -423,7 +586,6 @@ export default function GraphViewComponent() {
         if (message.data) setGraphData(message.data);
         if (message.activeFilePath != null) {
           setActiveFilePath(message.activeFilePath);
-          // Default to local mode when a specific file is focused
           setViewMode('local');
         }
       } else if (message.command === 'setActiveFile') {
@@ -443,17 +605,23 @@ export default function GraphViewComponent() {
   const linkCount = visibleData.links.length;
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-base-100 text-base-content">
+    <div
+      data-theme={daisyTheme}
+      className="flex flex-col h-screen w-screen bg-base-100 text-base-content"
+    >
       {/* Toolbar */}
-      <div className="flex flex-row items-center gap-2 px-3 py-2 border-b border-base-300 bg-base-200 shrink-0">
+      <div className="flex flex-row flex-wrap items-center gap-2 px-3 py-2 border-b border-base-300 bg-base-200 shrink-0">
+        {/* Search */}
         <input
           type="text"
           placeholder="Search notes…"
-          className="input input-xs input-bordered flex-1 max-w-xs"
+          className="input input-xs input-bordered flex-1 min-w-[120px] max-w-xs"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <div className="flex rounded-btn border border-base-300 overflow-hidden text-xs">
+
+        {/* Global / Local toggle */}
+        <div className="flex rounded-btn border border-base-300 overflow-hidden text-xs shrink-0">
           <button
             className={`px-2 py-1 ${viewMode === 'global' ? 'bg-primary text-primary-content' : 'bg-base-100 hover:bg-base-200'}`}
             onClick={() => setViewMode('global')}
@@ -464,12 +632,42 @@ export default function GraphViewComponent() {
           <button
             className={`px-2 py-1 ${viewMode === 'local' ? 'bg-primary text-primary-content' : 'bg-base-100 hover:bg-base-200'}`}
             onClick={() => setViewMode('local')}
-            title="Show only notes connected to the current file"
+            title="Show notes connected to the current file"
           >
             Local
           </button>
         </div>
-        <span className="text-xs text-base-content/50 hidden sm:inline">
+
+        {/* Depth slider — only visible in local mode */}
+        {viewMode === 'local' && (
+          <div className="flex items-center gap-1 text-xs shrink-0">
+            <span className="text-base-content/60">Depth</span>
+            <input
+              type="range"
+              min={1}
+              max={5}
+              value={localDepth}
+              onChange={(e) => setLocalDepth(Number(e.target.value))}
+              className="range range-xs range-primary w-20"
+              title={`Show ${localDepth} hop${localDepth > 1 ? 's' : ''} from current file`}
+            />
+            <span className="w-3 text-center font-mono text-base-content/80">
+              {localDepth}
+            </span>
+          </div>
+        )}
+
+        {/* Color by folder toggle */}
+        <button
+          className={`btn btn-xs shrink-0 ${colorByFolder ? 'btn-primary' : 'btn-ghost border border-base-300'}`}
+          onClick={() => setColorByFolder((v) => !v)}
+          title="Color nodes by folder"
+        >
+          By Folder
+        </button>
+
+        {/* Stats */}
+        <span className="text-xs text-base-content/50 ml-auto hidden sm:inline">
           {nodeCount} notes · {linkCount} links
         </span>
       </div>
@@ -498,7 +696,7 @@ export default function GraphViewComponent() {
 
       {/* Hover tooltip */}
       {hoveredNodeId && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-base-300 text-base-content text-xs px-2 py-1 rounded pointer-events-none z-50 max-w-xs truncate">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-base-300 text-base-content text-xs px-2 py-1 rounded pointer-events-none z-50 max-w-xs truncate shadow">
           {nodesRef.current.find((n) => n.id === hoveredNodeId)?.label ??
             hoveredNodeId}
         </div>
