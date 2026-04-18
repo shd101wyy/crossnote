@@ -154,6 +154,45 @@ function normalizeMarkdownYoCodeBlocks($: CheerioAPI): void {
   });
 }
 
+/**
+ * Normalize headings produced by markdown_yo.
+ *
+ * The transformer appends `{#id .class data-source-line="N"}` to headings for
+ * markdown-it's attrs plugin. markdown_yo does not understand this syntax and
+ * renders it as literal text. Strip the trailing `{...}` block and apply the
+ * encoded attributes to the heading element instead.
+ */
+function normalizeMarkdownYoHeadings($: CheerioAPI): void {
+  $('h1, h2, h3, h4, h5, h6').each((_i, heading) => {
+    const $h = $(heading);
+    const rawHtml = $h.html() ?? '';
+    // Match a trailing {…} block at end of heading content
+    const match = rawHtml.match(/^([\s\S]*?)\s*(\{[^{}]+\})\s*$/);
+    if (!match) return;
+
+    try {
+      const attrs = parseBlockAttributes(match[2]);
+      // Restore heading content without the {…} block
+      $h.html(match[1]);
+
+      if (attrs['id']) {
+        $h.attr('id', String(attrs['id']));
+      }
+      if (attrs['class']) {
+        $h.addClass(String(attrs['class']));
+      }
+      // Apply all remaining attributes (e.g. data-source-line)
+      for (const [key, val] of Object.entries(attrs)) {
+        if (key !== 'id' && key !== 'class' && key !== 'ignore') {
+          $h.attr(key, String(val));
+        }
+      }
+    } catch {
+      // Leave heading as-is if attribute parsing fails
+    }
+  });
+}
+
 // NOTE: The order of the following matters.
 const dependentLibraryMaterials = [
   { key: 'vega', version: '5.25.0' },
@@ -2763,8 +2802,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // markdown_yo outputs standard <pre><code class="language-xxx"> elements.
     // Normalize them to the data-role="codeBlock" format expected by all
     // render enhancers (code-block-styling, fenced-diagrams, fenced-math, etc.)
+    // Also normalize headings: strip the {#id .class data-source-line="N"}
+    // suffix appended by the transformer (markdown-it attrs syntax) and apply
+    // those attributes directly to the heading elements.
     if (this.notebook.config.markdownParser === 'markdown_yo') {
       normalizeMarkdownYoCodeBlocks($);
+      normalizeMarkdownYoHeadings($);
     }
 
     await enhanceWithFencedMath(
