@@ -397,7 +397,12 @@ async function renderDiagram({
             };
             const result = await renderTikz(code, tikzOpts);
             if (result === TIKZ_NOT_AVAILABLE) {
-              // Fall back to client-side rendering via tikzjax
+              // Fall back to client-side rendering via tikzjax.
+              // This path is taken when node-tikzjax fails to load (e.g., in
+              // web/browser environments or when the WASM files are missing).
+              console.warn(
+                '[crossnote] TikZ server-side rendering unavailable, falling back to client-side tikzjax',
+              );
               $output = `<div ${stringifyBlockAttributes(
                 ensureClassInAttributes(
                   normalizedInfo.attributes,

@@ -49,8 +49,10 @@ async function loadTex2Svg() {
       typeof defaultExport === 'function'
         ? defaultExport
         : defaultExport?.default;
-  } catch {
-    // Module not available (browser/web environment)
+  } catch (err) {
+    // Module not available (browser/web environment) or WASM data files missing.
+    // Log to help diagnose silent failures in bundled environments.
+    console.error('[crossnote] node-tikzjax failed to load:', err);
     tex2svg = null;
   }
   return tex2svg;
