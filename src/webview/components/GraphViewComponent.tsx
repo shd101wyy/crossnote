@@ -631,18 +631,21 @@ export default function GraphViewComponent() {
         data?: GraphViewData;
         activeFilePath?: string;
         filePath?: string;
+        viewMode?: ViewMode;
+        colorByFolder?: boolean;
       };
       if (message.command === 'graphData') {
         if (message.data) {
-          // Only auto-switch to local mode on the initial load (when graphData was null)
           setGraphData((prev) => {
             const isFirstLoad = prev === null;
-            if (message.activeFilePath != null) {
-              setActiveFilePath(message.activeFilePath);
-              if (isFirstLoad) {
-                setViewMode('local');
-              }
+            if (isFirstLoad) {
+              // Apply persisted settings from extension on initial load
+              if (message.viewMode != null) setViewMode(message.viewMode);
+              if (message.colorByFolder != null)
+                setColorByFolder(message.colorByFolder);
             }
+            if (message.activeFilePath != null)
+              setActiveFilePath(message.activeFilePath);
             return message.data ?? prev;
           });
         } else if (message.activeFilePath != null) {
@@ -684,14 +687,22 @@ export default function GraphViewComponent() {
         <div className="join shrink-0">
           <button
             className={`join-item btn btn-xs ${viewMode === 'global' ? 'btn-primary' : 'btn-ghost'}`}
-            onClick={() => setViewMode('global')}
+            onClick={() => {
+              setViewMode('global');
+              postMessage('saveSetting', [
+                { key: 'viewMode', value: 'global' },
+              ]);
+            }}
             title="Show all notes"
           >
             Global
           </button>
           <button
             className={`join-item btn btn-xs ${viewMode === 'local' ? 'btn-primary' : 'btn-ghost'}`}
-            onClick={() => setViewMode('local')}
+            onClick={() => {
+              setViewMode('local');
+              postMessage('saveSetting', [{ key: 'viewMode', value: 'local' }]);
+            }}
             title="Show notes connected to the current file"
           >
             Local
@@ -720,7 +731,11 @@ export default function GraphViewComponent() {
         {/* Color by folder toggle */}
         <button
           className={`btn btn-xs shrink-0 ${colorByFolder ? 'btn-primary' : 'btn-ghost border border-base-300'}`}
-          onClick={() => setColorByFolder((v) => !v)}
+          onClick={() => {
+            const next = !colorByFolder;
+            setColorByFolder(next);
+            postMessage('saveSetting', [{ key: 'colorByFolder', value: next }]);
+          }}
           title="Color nodes by folder"
         >
           By Folder
