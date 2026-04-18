@@ -12,6 +12,7 @@ const sharedConfig = {
   // sourcemap: true,
   external: [
     'fs',
+    'module',
     'path',
     'child_process',
     'os',
