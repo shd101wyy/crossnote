@@ -18,6 +18,24 @@ export interface TikzRenderOptions {
    * Additional source code to add to the preamble.
    */
   addToPreamble?: string;
+
+  /**
+   * Print the TeX engine console output to stderr. Useful for debugging
+   * when a diagram fails to render. Defaults to false.
+   */
+  showConsole?: boolean;
+
+  /**
+   * Embed a font CSS `@import` in the SVG so TeX fonts render correctly.
+   * Defaults to true. Set `fontCssUrl` to override the font stylesheet URL.
+   */
+  embedFontCss?: boolean;
+
+  /**
+   * URL for the font CSS stylesheet embedded when `embedFontCss` is true.
+   * Defaults to the jsDelivr CDN copy of node-tikzjax's fonts.css.
+   */
+  fontCssUrl?: string;
 }
 
 /**
@@ -102,6 +120,10 @@ export async function renderTikz(
         texPackages: { ...DEFAULT_TEX_PACKAGES, ...options?.texPackages },
         tikzLibraries: options?.tikzLibraries,
         addToPreamble: options?.addToPreamble,
+        showConsole: options?.showConsole ?? false,
+        // Embed font CSS by default so TeX fonts render correctly in previews.
+        embedFontCss: options?.embedFontCss ?? true,
+        fontCssUrl: options?.fontCssUrl,
       });
       return svg;
     } catch (err: unknown) {

@@ -394,6 +394,12 @@ async function renderDiagram({
                 attrs['tikz_libraries']) as string,
               addToPreamble: (attrs['addToPreamble'] ??
                 attrs['add_to_preamble']) as string,
+              showConsole: attrs['showConsole'] === true,
+              embedFontCss:
+                attrs['embedFontCss'] !== undefined
+                  ? (attrs['embedFontCss'] as boolean)
+                  : undefined,
+              fontCssUrl: attrs['fontCssUrl'] as string | undefined,
             };
             const result = await renderTikz(code, tikzOpts);
             if (result === TIKZ_NOT_AVAILABLE) {
