@@ -42,8 +42,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - Support rendering [TikZ](https://tikz.dev/) diagrams via ` ```tikz ` fenced code blocks. https://github.com/shd101wyy/crossnote/issues/380
   - In Node.js (desktop VS Code): renders TikZ to SVG server-side using [node-tikzjax](https://github.com/prinsss/node-tikzjax), with caching.
   - In web (VS Code web extension) and HTML export: falls back to client-side rendering via [tikzjax.com](https://tikzjax.com).
-  - Per-block options supported in the fence info string: `texPackages` / `tex_packages`, `tikzLibraries` / `tikz_libraries`, `addToPreamble` / `add_to_preamble` (both camelCase and snake_case accepted).
+  - Per-block options supported in the fence info string: `texPackages` / `tex_packages`, `tikzLibraries` / `tikz_libraries`, `addToPreamble` / `add_to_preamble`, `showConsole` / `show_console`, `embedFontCss` / `embed_font_css`, `fontCssUrl` / `font_css_url` (both camelCase and snake_case accepted).
   - Automatically wraps code in `\begin{document}...\end{document}` if not present.
+  - Loads a default set of common TeX packages for every render: `amsmath`, `amssymb`, `amsfonts`, `amstext`, `chemfig`, `tikz-cd`, `circuitikz`, `pgfplots`, `array`, `tikz-3dplot`.
+  - `embedFontCss` is enabled by default so TeX Computer Modern fonts render correctly.
 
 ### Fixes
 

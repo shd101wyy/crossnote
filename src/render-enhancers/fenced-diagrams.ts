@@ -394,12 +394,16 @@ async function renderDiagram({
                 attrs['tikz_libraries']) as string,
               addToPreamble: (attrs['addToPreamble'] ??
                 attrs['add_to_preamble']) as string,
-              showConsole: attrs['showConsole'] === true,
+              showConsole:
+                (attrs['showConsole'] ?? attrs['show_console']) === true,
               embedFontCss:
-                attrs['embedFontCss'] !== undefined
-                  ? (attrs['embedFontCss'] as boolean)
+                (attrs['embedFontCss'] ?? attrs['embed_font_css']) !== undefined
+                  ? ((attrs['embedFontCss'] ??
+                      attrs['embed_font_css']) as boolean)
                   : undefined,
-              fontCssUrl: attrs['fontCssUrl'] as string | undefined,
+              fontCssUrl: (attrs['fontCssUrl'] ?? attrs['font_css_url']) as
+                | string
+                | undefined,
             };
             const result = await renderTikz(code, tikzOpts);
             if (result === TIKZ_NOT_AVAILABLE) {
