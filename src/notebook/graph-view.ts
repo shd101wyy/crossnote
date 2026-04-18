@@ -53,7 +53,10 @@ export function constructGraphView(notebook: Notebook): GraphViewData {
       for (const referredByFilePath in notebook.referenceMap.map[filePath]) {
         if (
           // eslint-disable-next-line no-prototype-builtins
-          notebook.referenceMap.map[filePath].hasOwnProperty(referredByFilePath)
+          notebook.referenceMap.map[filePath].hasOwnProperty(
+            referredByFilePath,
+          ) &&
+          referredByFilePath !== filePath // skip self-links
         ) {
           addNode(referredByFilePath);
           links.push({

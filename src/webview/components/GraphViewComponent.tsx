@@ -461,10 +461,15 @@ export default function GraphViewComponent() {
     themeColors,
   ]);
 
+  // Keep a ref to the latest draw so scheduleRedraw stays stable (no deps)
+  const drawRef = useRef<() => void>(() => undefined);
+  // Sync ref every render so it always points to the latest draw closure
+  drawRef.current = draw;
+
   const scheduleRedraw = useCallback(() => {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    animFrameRef.current = requestAnimationFrame(draw);
-  }, [draw]);
+    animFrameRef.current = requestAnimationFrame(() => drawRef.current());
+  }, []); // stable — never recreated
 
   // Initialize simulation when visible data changes
   useEffect(() => {
