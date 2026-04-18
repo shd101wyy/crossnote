@@ -44,8 +44,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
   - In web (VS Code web extension) and HTML export: falls back to client-side rendering via [tikzjax.com](https://tikzjax.com).
   - Per-block options supported in the fence info string: `texPackages` / `tex_packages`, `tikzLibraries` / `tikz_libraries`, `addToPreamble` / `add_to_preamble`, `showConsole` / `show_console`, `embedFontCss` / `embed_font_css`, `fontCssUrl` / `font_css_url` (both camelCase and snake_case accepted).
   - Automatically wraps code in `\begin{document}...\end{document}` if not present.
-  - Loads a default set of common TeX packages for every render: `amsmath`, `amssymb`, `amsfonts`, `amstext`, `chemfig`, `tikz-cd`, `circuitikz`, `pgfplots`, `array`, `tikz-3dplot`.
-  - `embedFontCss` is enabled by default so TeX Computer Modern fonts render correctly.
+  - Automatically loads base TeX packages for every render: `amsmath`, `amssymb`, `amsfonts`, `amstext`, `array`.
+  - Auto-detects and loads specialized packages from the code: `tikz-cd` (for `\begin{tikzcd}`), `pgfplots` (for `\begin{axis}`), `circuitikz` (for `\begin{circuitikz}`), `chemfig` (for `\chemfig`), `tikz-3dplot` (for `\tdplotsetmaincoords`). Additional packages can be specified via `texPackages`.
 
 ### Fixes
 

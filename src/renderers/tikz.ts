@@ -77,22 +77,46 @@ async function loadTex2Svg() {
 }
 
 /**
- * Default TeX packages loaded for every TikZ render, matching the set
- * bundled by tikzjax.com. All of these are included in node-tikzjax's
- * built-in TeX distribution.
+ * Base TeX packages that are safe to load for every TikZ render.
+ * These are lightweight math/font packages unlikely to conflict.
  */
-const DEFAULT_TEX_PACKAGES: Record<string, string> = {
-  'amsmath': '',
-  'amstext': '',
-  'amsfonts': '',
-  'amssymb': '',
-  'array': '',
-  'chemfig': '',
-  'circuitikz': '',
-  'pgfplots': '',
-  'tikz-3dplot': '',
-  'tikz-cd': '',
+const BASE_TEX_PACKAGES: Record<string, string> = {
+  amsmath: '',
+  amstext: '',
+  amsfonts: '',
+  amssymb: '',
+  array: '',
 };
+
+/**
+ * Mapping of code patterns to the TeX package required to render them.
+ * These packages are heavier and only loaded when detected in the source.
+ */
+const AUTO_DETECT_PACKAGES: Array<{
+  pattern: RegExp;
+  pkg: string;
+  opts?: string;
+}> = [
+  { pattern: /\\begin\{tikzcd\}/, pkg: 'tikz-cd' },
+  {
+    pattern:
+      /\\begin\{axis\}|\\begin\{semilogxaxis\}|\\begin\{semilogyaxis\}|pgfplots/,
+    pkg: 'pgfplots',
+  },
+  { pattern: /\\begin\{circuitikz\}/, pkg: 'circuitikz' },
+  { pattern: /\\chemfig|\\schemestart/, pkg: 'chemfig' },
+  { pattern: /\\tdplotsetmaincoords|tdplot_/, pkg: 'tikz-3dplot' },
+];
+
+function inferPackages(code: string): Record<string, string> {
+  const pkgs: Record<string, string> = {};
+  for (const { pattern, pkg, opts } of AUTO_DETECT_PACKAGES) {
+    if (pattern.test(code)) {
+      pkgs[pkg] = opts ?? '';
+    }
+  }
+  return pkgs;
+}
 
 /**
  * Render TikZ source code to SVG using node-tikzjax (Node.js only).
@@ -116,8 +140,13 @@ export async function renderTikz(
         input = `\\begin{document}\n${input}\n\\end{document}`;
       }
       const svg = await fn(input, {
-        // Merge defaults first so user-specified packages take precedence.
-        texPackages: { ...DEFAULT_TEX_PACKAGES, ...options?.texPackages },
+        // Base packages + auto-detected packages + user-specified packages.
+        // User-specified packages take the highest precedence.
+        texPackages: {
+          ...BASE_TEX_PACKAGES,
+          ...inferPackages(input),
+          ...options?.texPackages,
+        },
         tikzLibraries: options?.tikzLibraries,
         addToPreamble: options?.addToPreamble,
         showConsole: options?.showConsole ?? false,
