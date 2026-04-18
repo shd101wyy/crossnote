@@ -6,6 +6,9 @@
  * handlers, script tags, javascript: URLs).
  */
 
+import type { CheerioAPI } from 'cheerio';
+import type { Element } from 'domhandler';
+
 const DANGEROUS_URL_PATTERN =
   /^\s*(javascript|vbscript)\s*:|^\s*data\s*:\s*text\/html/i;
 
@@ -25,13 +28,13 @@ const URL_ATTRIBUTES = ['href', 'src', 'action', 'formaction', 'xlink:href'];
  * Must be called after all render enhancements are applied and
  * before extracting the final HTML string.
  */
-export function sanitizeRenderedHTML($: CheerioStatic): void {
+export function sanitizeRenderedHTML($: CheerioAPI): void {
   // Remove dangerous non-script tags entirely
   $(DANGEROUS_TAGS.join(', ')).remove();
 
   // Remove script tags, but preserve non-executable data scripts
   // (e.g., <script type="WaveDrom"> used by wavedrom diagrams)
-  $('script').each((_, el: CheerioElement) => {
+  $('script').each((_, el: Element) => {
     const scriptType = (el.attribs?.type || '').toLowerCase().trim();
     if (!SAFE_SCRIPT_TYPES.has(scriptType)) {
       $(el).remove();
@@ -39,7 +42,7 @@ export function sanitizeRenderedHTML($: CheerioStatic): void {
   });
 
   // Process all elements for dangerous attributes
-  $('*').each((_, el: CheerioElement) => {
+  $('*').each((_, el: Element) => {
     const attribs = el.attribs;
     if (!attribs) {
       return;
@@ -63,7 +66,7 @@ export function sanitizeRenderedHTML($: CheerioStatic): void {
   });
 
   // Sandbox all iframes and remove srcdoc (which can contain arbitrary HTML)
-  $('iframe').each((_, el: CheerioElement) => {
+  $('iframe').each((_, el: Element) => {
     const attribs = el.attribs;
     if (!attribs) {
       return;

@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 export type WebviewMessageEvent = {
   command: 'updateHtml';
   totalLineCount: number;

@@ -1,6 +1,6 @@
 import MiniSearch, { SearchOptions, SearchResult } from 'minisearch';
 
-export function slugify(str: string, separater = '-'): string {
+export function slugify(str: string, separater: string = '-'): string {
   return str.replace(
     /[.\s!@#$%^&*()\-=_+~`[\]{}\\<>?/|（）【】:：，。]+/g,
     separater,

@@ -11,7 +11,7 @@ export async function mermaidToPNG(
   mermaidCode: string,
   pngFilePath: string,
   projectDirectoryPath: string,
-  themeName,
+  themeName: string,
 ): Promise<string> {
   const info = await tempOpen({
     prefix: 'crossnote-mermaid',
@@ -43,8 +43,8 @@ export async function mermaidToPNG(
     return pngFilePath;
   } catch (error) {
     throw new Error(
-      'mermaid CLI is required to be installed.\nCheck https://github.com/mermaid-js/mermaid-cli for more information.\n\n' +
-        error.toString(),
+      'mermaid CLI is required to be installed.\nCheck https://github.com/mermaid-js/mermaid-cli for more information.',
+      { cause: error },
     );
   }
 }

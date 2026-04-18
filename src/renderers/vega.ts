@@ -2,7 +2,7 @@ import { loader } from 'vega-loader';
 import * as YAML from 'yaml';
 import * as utility from '../utility';
 
-async function renderVega(spec: object, baseURL): Promise<string> {
+async function renderVega(spec: object, baseURL: string): Promise<string> {
   const svgHeader =
     '<?xml version="1.0" encoding="utf-8"?>\n' +
     '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" ' +
@@ -13,7 +13,7 @@ async function renderVega(spec: object, baseURL): Promise<string> {
   }
 
   async function helper(): Promise<string> {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const vega = require('../../dependencies/vega/vega.min.js');
 
     const view = new vega.View(vega.parse(spec), {

@@ -1,7 +1,6 @@
 // sm.ms api
 import * as fs from 'fs';
 import * as path from 'path';
-import * as request from 'request';
 
 // imgur api
 // referred from node-imgur:
@@ -19,8 +18,8 @@ const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID || 'f0ea04148a54268';
  * @param imageUrl http://... image url
  */
 async function addImageURLToHistory(
-  imageFilePath,
-  imageUrl,
+  imageFilePath: string,
+  imageUrl: string,
   imageHistoryPath?: string,
 ) {
   let description;
@@ -45,7 +44,7 @@ async function addImageURLToHistory(
   let data: string;
   try {
     data = fs.readFileSync(imageHistoryPath, { encoding: 'utf-8' });
-  } catch (e) {
+  } catch {
     data = '';
   }
   data =
@@ -66,71 +65,58 @@ ${new Date().toString()}
  * Upload image to imgur
  * @param filePath
  */
-function imgurUploadImage(filePath: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const headers = {
-      Authorization: `Client-ID ${IMGUR_CLIENT_ID}`,
-    };
+async function imgurUploadImage(filePath: string): Promise<string> {
+  const fileContent = fs.readFileSync(filePath);
+  const formData = new FormData();
+  formData.append('image', new Blob([fileContent]), path.basename(filePath));
 
-    request.post(
-      {
-        url: `${IMGUR_API_URL}image`,
-        encoding: 'utf8',
-        formData: { image: fs.createReadStream(filePath) },
-        json: true,
-        headers,
-      },
-      (err, httpResponse, body) => {
-        if (err) {
-          return reject(err);
-        }
-        if (body.success) {
-          const url = body.data.link;
-          addImageURLToHistory(filePath, url);
-          return resolve(url);
-        } else {
-          return resolve(body.data.error.message);
-        }
-      },
-    );
+  const response = await fetch(`${IMGUR_API_URL}image`, {
+    method: 'POST',
+    headers: { Authorization: `Client-ID ${IMGUR_CLIENT_ID}` },
+    body: formData,
   });
+  const body = (await response.json()) as {
+    success: boolean;
+    data: { link?: string; error?: { message: string } };
+  };
+
+  if (body.success && body.data.link) {
+    await addImageURLToHistory(filePath, body.data.link);
+    return body.data.link;
+  }
+  return body.data.error?.message ?? 'Unknown imgur error';
 }
 
 /**
  * Upload image to sm.ms
  * @param filePath
  */
-function smmsUploadImage(filePath: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const headers = {
-      'authority': 'sm.ms',
-      'user-agent': 'crossnote',
-      'referer': '',
+async function smmsUploadImage(filePath: string): Promise<string> {
+  const fileContent = fs.readFileSync(filePath);
+  const formData = new FormData();
+  formData.append('smfile', new Blob([fileContent]), path.basename(filePath));
+
+  try {
+    const response = await fetch('https://sm.ms/api/v2/upload', {
+      method: 'POST',
+      headers: { 'authority': 'sm.ms', 'user-agent': 'crossnote' },
+      body: formData,
+    });
+    const body = (await response.json()) as {
+      code: string;
+      msg?: string;
+      data?: { url: string };
     };
-    request.post(
-      {
-        url: 'https://sm.ms/api/v2/upload',
-        formData: { smfile: fs.createReadStream(filePath) },
-        headers,
-      },
-      (err, httpResponse, body) => {
-        try {
-          body = JSON.parse(body);
-          if (err) {
-            return reject('Failed to upload image');
-          } else if (body.code === 'error') {
-            return reject(body.msg);
-          } else {
-            const url = body.data.url;
-            addImageURLToHistory(filePath, url);
-            return resolve(url);
-          }
-        } catch (error) {
-          return reject('Failed to connect to sm.ms host');
-        }
-      },
-    );
-  });
+
+    if (body.code === 'error') {
+      throw new Error(body.msg ?? 'Upload failed');
+    }
+    const url = body.data!.url;
+    await addImageURLToHistory(filePath, url);
+    return url;
+  } catch {
+    throw new Error('Failed to connect to sm.ms host');
+  }
 }
 
 /**
@@ -209,7 +195,15 @@ export function uploadImage(
   {
     method = 'imgur',
     qiniu = { AccessKey: '', SecretKey: '', Bucket: '', Domain: '' },
-  },
+  }: {
+    method?: string;
+    qiniu?: {
+      AccessKey: string;
+      SecretKey: string;
+      Bucket: string;
+      Domain: string;
+    };
+  } = {},
 ): Promise<string> {
   if (method === 'imgur') {
     return imgurUploadImage(imageFilePath);

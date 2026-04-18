@@ -590,7 +590,7 @@ export class Notebook {
 
   public async getNote(
     filePath: string,
-    refreshNoteRelations = false,
+    refreshNoteRelations: boolean = false,
   ): Promise<Note | null> {
     filePath = this.resolveNoteRelativePath(filePath);
     if (!refreshNoteRelations && filePath in this.notes) {
@@ -600,7 +600,7 @@ export class Notebook {
     let stats: FileSystemStats;
     try {
       stats = await this.fs.stat(absFilePath);
-    } catch (error) {
+    } catch {
       return null;
     }
     if (
@@ -654,7 +654,7 @@ export class Notebook {
 
         // markdown = matter.stringify(data.content, frontMatter); // <= NOTE: I think gray-matter has bug. Although I delete "note" section from front-matter, it still includes it.
         markdown = matterStringify(data.content, frontMatter);
-      } catch (error) {
+      } catch {
         // Do nothing
         markdown =
           "Please fix front-matter. (👈 Don't forget to delete this line)\n\n" +
@@ -716,7 +716,7 @@ export class Notebook {
       this.referenceMap = new ReferenceMap();
       this.search = new Search();
     }
-    let files: string[] = [];
+    let files: string[];
     try {
       files = await this.fs.readdir(
         path.resolve(this.notebookPath.fsPath, dir),
@@ -821,7 +821,7 @@ export class Notebook {
     delete this.notes[note.filePath];
   }
 
-  public async deleteNote(filePath: string, alreadyDeleted = false) {
+  public async deleteNote(filePath: string, alreadyDeleted: boolean = false) {
     const absFilePath = this.resolveNoteAbsolutePath(filePath);
     if (alreadyDeleted || (await this.fs.exists(absFilePath))) {
       await this.fs.unlink(absFilePath);

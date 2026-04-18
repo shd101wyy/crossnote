@@ -1,13 +1,14 @@
 // tslint:disable no-var-requires member-ordering
 
 import * as cheerio from 'cheerio';
+import type { CheerioAPI, Cheerio } from 'cheerio';
+import type { Element, AnyNode } from 'domhandler';
 import { execFile } from 'child_process';
 import { copy } from 'copy-anything';
 import CryptoJS from 'crypto-js';
 import * as fs from 'fs';
 import { escape } from 'html-escaper';
 import * as path from 'path';
-import request from 'request';
 import { JsonObject } from 'type-fest';
 import * as vscode from 'vscode';
 import { URI } from 'vscode-uri';
@@ -197,8 +198,8 @@ export class MarkdownEngine {
    * Generate scripts string for preview usage.
    */
   private generateScriptsForPreview(
-    isForPresentation = false,
-    yamlConfig = {},
+    isForPresentation: boolean = false,
+    yamlConfig: Record<string, unknown> = {},
     vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
     let scripts = '';
@@ -427,7 +428,10 @@ window["initRevealPresentation"] = async function() {
   /**
    * Automatically pick code block theme for preview.
    */
-  private getPrismTheme(isPresentationMode = false, yamlConfig = {}) {
+  private getPrismTheme(
+    isPresentationMode: boolean = false,
+    yamlConfig: Record<string, unknown> = {},
+  ) {
     if (this.notebook.config.codeBlockTheme === 'auto.css') {
       /**
        * Automatically pick code block theme for preview.
@@ -458,8 +462,8 @@ window["initRevealPresentation"] = async function() {
    * Generate styles string for preview usage.
    */
   private generateStylesForPreview(
-    isPresentationMode = false,
-    yamlConfig = {},
+    isPresentationMode: boolean = false,
+    yamlConfig: Record<string, unknown> = {},
     vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
     let styles = '';
@@ -746,7 +750,7 @@ window["initRevealPresentation"] = async function() {
    */
   public async generateHTMLTemplateForExport(
     html: string,
-    yamlConfig = {},
+    yamlConfig: Record<string, unknown> = {},
     options: HTMLTemplateOption,
   ): Promise<string> {
     // Build file:// URLs.  Only translate for WSL when opening in a browser.
@@ -754,15 +758,15 @@ window["initRevealPresentation"] = async function() {
       utility.toFileURL(p, { useWSL: !!options.isForBrowser });
 
     // get `id` and `class`
-    const elementId = yamlConfig['id'] || '';
-    let elementClass = yamlConfig['class'] || [];
+    const elementId = (yamlConfig['id'] as string) || '';
+    let elementClass = (yamlConfig['class'] as string | string[]) || [];
     if (typeof elementClass === 'string') {
       elementClass = [elementClass];
     }
     elementClass = elementClass.join(' ');
 
     // math style and script
-    let mathStyle = '';
+    let mathStyle: string;
     if (
       this.notebook.config.mathRenderingOption === 'MathJax' ||
       this.notebook.config.usePandocParser
@@ -1038,7 +1042,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let title = path.basename(this.filePath);
     title = title.slice(0, title.length - path.extname(title).length); // remove '.md'
     if (yamlConfig['title']) {
-      title = yamlConfig['title'];
+      title = yamlConfig['title'] as string;
     }
 
     // prism and preview theme
@@ -1059,7 +1063,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
               path.resolve(
                 utility.getCrossnoteBuildDirectory(),
                 `./styles/prism_theme/${this.getPrismTheme(
-                  yamlConfig['isPresentationMode'],
+                  yamlConfig['isPresentationMode'] as boolean | undefined,
                   yamlConfig,
                 )}`,
               ),
@@ -1129,7 +1133,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           ),
         );
       }
-    } catch (e) {
+    } catch {
       styleCSS = '';
     }
 
@@ -1175,18 +1179,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // task list script
     if (html.indexOf('task-list-item-checkbox') >= 0) {
       const $ = cheerio.load('<div>' + html + '</div>');
-      $('.task-list-item-checkbox').each(
-        (index: number, elem: CheerioElement) => {
-          const $elem = $(elem);
-          let $li = $elem.parent();
-          if (!$li[0].name.match(/^li$/i)) {
-            $li = $li.parent();
-          }
-          if ($li[0].name.match(/^li$/i)) {
-            $li.addClass('task-list-item');
-          }
-        },
-      );
+      $('.task-list-item-checkbox').each((index: number, elem: Element) => {
+        const $elem = $(elem);
+        let $li = $elem.parent();
+        if (!$li[0].name.match(/^li$/i)) {
+          $li = $li.parent();
+        }
+        if ($li[0].name.match(/^li$/i)) {
+          $li.addClass('task-list-item');
+        }
+      });
       html = $.html();
     }
 
@@ -1265,7 +1267,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   /**
    * generate HTML file and open it in browser
    */
-  public async openInBrowser({ runAllCodeChunks = false }): Promise<void> {
+  public async openInBrowser({
+    runAllCodeChunks = false,
+  }: { runAllCodeChunks?: boolean } = {}): Promise<void> {
     const inputString = await this.fs.readFile(this.filePath);
     let html;
     let yamlConfig;
@@ -1302,7 +1306,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   public async htmlExport({
     offline = false,
     runAllCodeChunks = false,
-  }): Promise<string> {
+  }: { offline?: boolean; runAllCodeChunks?: boolean } = {}): Promise<string> {
     const inputString = await this.fs.readFile(this.filePath);
     let html;
     let yamlConfig;
@@ -1371,7 +1375,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     fileType = 'pdf',
     runAllCodeChunks = false,
     openFileAfterGeneration = false,
-  }): Promise<string> {
+  }: {
+    fileType?: string;
+    runAllCodeChunks?: boolean;
+    openFileAfterGeneration?: boolean;
+  } = {}): Promise<string> {
     const inputString = await this.fs.readFile(this.filePath);
     let html;
     let yamlConfig;
@@ -1393,7 +1401,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       offline: true,
     });
 
-    let executablePath = '';
+    let executablePath: string;
     try {
       executablePath = this.notebook.config.chromePath;
       if (!executablePath) {
@@ -1414,9 +1422,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // in the bundled version of the VSCode extension.
     // So we use the cjs module instead.
     // TypeError: Invalid host defined options
-    const puppeteer = await import(
-      'puppeteer-core/lib/cjs/puppeteer/puppeteer-core.js'
-    );
+    const puppeteer =
+      await import('puppeteer-core/lib/cjs/puppeteer/puppeteer-core.js');
     const browser = await puppeteer.launch({
       args: this.notebook.config.puppeteerArgs || [],
       executablePath,
@@ -1483,7 +1490,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   public async princeExport({
     runAllCodeChunks = false,
     openFileAfterGeneration = false,
-  }): Promise<string> {
+  }: {
+    runAllCodeChunks?: boolean;
+    openFileAfterGeneration?: boolean;
+  } = {}): Promise<string> {
     const inputString = await this.fs.readFile(this.filePath);
     let html;
     let yamlConfig;
@@ -1525,8 +1535,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
   }
 
-  private async eBookDownloadImages($, dest): Promise<string[]> {
-    const imagesToDownload: Cheerio[] = [];
+  private async eBookDownloadImages(
+    $: CheerioAPI,
+    dest: string,
+  ): Promise<string[]> {
+    const imagesToDownload: Cheerio<AnyNode>[] = [];
     if (path.extname(dest) === '.epub' || path.extname('dest') === '.mobi') {
       $('img').each((offset, img) => {
         const $img = $(img);
@@ -1537,22 +1550,26 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
     }
 
-    const asyncFunctions = imagesToDownload.map(($img) => {
-      return new Promise<string>((resolve) => {
-        const httpSrc = $img.attr('src');
-        let savePath =
-          Math.random().toString(36).substr(2, 9) +
-          '_' +
-          path.basename(httpSrc);
-        savePath = path.resolve(this.fileDirectoryPath, savePath);
+    const asyncFunctions = imagesToDownload.map(async ($img) => {
+      const httpSrc = $img.attr('src') ?? '';
+      let savePath =
+        Math.random().toString(36).substr(2, 9) + '_' + path.basename(httpSrc);
+      savePath = path.resolve(this.fileDirectoryPath, savePath);
 
-        const stream = request(httpSrc).pipe(fs.createWriteStream(savePath));
-
-        stream.on('finish', () => {
-          $img.attr('src', utility.toFileURL(savePath));
-          return resolve(savePath);
-        });
-      });
+      const response = await fetch(httpSrc);
+      if (!response.ok || !response.body) {
+        throw new Error(`Failed to download image from ${httpSrc}`);
+      }
+      const { pipeline } = await import('stream/promises');
+      const { Readable } = await import('stream');
+      await pipeline(
+        Readable.fromWeb(
+          response.body as Parameters<typeof Readable.fromWeb>[0],
+        ),
+        fs.createWriteStream(savePath),
+      );
+      $img.attr('src', utility.toFileURL(savePath));
+      return savePath;
     });
 
     return Promise.all(asyncFunctions);
@@ -1644,7 +1661,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     // load the last ul as TOC, analyze toc links
-    function getStructure($ul, level) {
+    function getStructure($ul: ReturnType<CheerioAPI>, level: number) {
       $ul.children('li').each((offset, li) => {
         const $li = $(li);
         const $a = $li.children('a').first();
@@ -1656,7 +1673,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           return;
         }
 
-        const filePath = decodeURIComponent($a.attr('href')); // markdown file path
+        const filePath = decodeURIComponent($a.attr('href') ?? ''); // markdown file path
         const heading = $a.html() ?? '';
         const id = headingIdGenerator.generateId(`ebook-heading-` + heading); // "ebook-heading-id-" + headingOffset;
 
@@ -1728,7 +1745,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       $$('a').each((index, a) => {
         const $a = $$(a);
         const href = $a.attr('href');
-        if (href.startsWith('file://')) {
+        if (href && href.startsWith('file://')) {
           results.forEach((result) => {
             if (result.filePath === utility.removeFileProtocol(href)) {
               $a.attr('href', '#' + result.id);
@@ -1792,7 +1809,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     // prism and preview theme
-    let styleCSS = '';
+    let styleCSS: string;
     try {
       const styles = await Promise.all([
         // style template
@@ -1849,7 +1866,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           : '',
       ]);
       styleCSS = styles.join('');
-    } catch (e) {
+    } catch {
       styleCSS = '';
     }
 
@@ -1857,7 +1874,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let globalStyles = '';
     try {
       globalStyles = this.notebook.config.globalCss;
-    } catch (error) {
+    } catch {
       // ignore it
     }
 
@@ -1920,7 +1937,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   public async pandocExport({
     runAllCodeChunks = false,
     openFileAfterGeneration = false,
-  }): Promise<string> {
+  }: {
+    runAllCodeChunks?: boolean;
+    openFileAfterGeneration?: boolean;
+  } = {}): Promise<string> {
     let inputString = await this.fs.readFile(this.filePath);
 
     if (this.notebook.config.parserConfig.onWillParseMarkdown) {
@@ -1978,7 +1998,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   /**
    * markdown(gfm) export
    */
-  public async markdownExport({ runAllCodeChunks = false }): Promise<string> {
+  public async markdownExport({
+    runAllCodeChunks = false,
+  }: { runAllCodeChunks?: boolean } = {}): Promise<string> {
     let inputString = await this.fs.readFile(this.filePath);
 
     if (runAllCodeChunks) {
@@ -2127,7 +2149,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   private resolveFilePath(
     filePath: string = '',
     relative: boolean,
-    fileDirectoryPath = '',
+    fileDirectoryPath: string = '',
   ) {
     if (
       filePath.match(this.protocolsWhiteListRegExp) ||
@@ -2207,7 +2229,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     this.graphsCache = {};
   }
 
-  private frontMatterToTable(arg) {
+  private frontMatterToTable(arg: unknown) {
     if (arg instanceof Array) {
       let tbody = '<tbody><tr>';
       arg.forEach(
@@ -2230,7 +2252,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
       return `<table>${thead}${tbody}</table>`;
     } else {
-      return escape(arg);
+      return escape(arg as string);
     }
   }
 
@@ -2250,7 +2272,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private processFrontMatter(
     frontMatterString: string,
-    hideFrontMatter = false,
+    hideFrontMatter: boolean = false,
   ): { content: string; table: string; data: JsonObject } {
     if (frontMatterString) {
       const data = utility.parseYAML(frontMatterString);

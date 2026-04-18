@@ -3,7 +3,7 @@ import { escape } from 'html-escaper';
 import * as less from 'less';
 import * as Papa from 'papaparse';
 import * as path from 'path';
-import request from 'request';
+
 import * as temp from 'temp';
 import {
   BlockAttributes,
@@ -73,7 +73,7 @@ const fileExtensionToLanguageMap = {
  * Convert 2D array to markdown table.
  * The first row is headings.
  */
-function twoDArrayToMarkdownTable(twoDArr) {
+function twoDArrayToMarkdownTable(twoDArr: string[][]): string {
   let output = '  \n';
   twoDArr.forEach((arr, offset) => {
     let i = 0;
@@ -116,32 +116,27 @@ let DOWNLOADS_TEMP_FOLDER: string | null = null;
 /**
  * download file and return its local path
  */
-function downloadFileIfNecessary(filePath: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    if (!filePath.match(/^https?:\/\//)) {
-      return resolve(filePath);
-    }
+async function downloadFileIfNecessary(filePath: string): Promise<string> {
+  if (!filePath.match(/^https?:\/\//)) {
+    return filePath;
+  }
 
-    if (!DOWNLOADS_TEMP_FOLDER) {
-      DOWNLOADS_TEMP_FOLDER = temp.mkdirSync('crossnote_downloads');
-    }
-    request.get(
-      { url: filePath, encoding: 'binary' },
-      async (error, response, body) => {
-        if (error) {
-          return reject(error);
-        } else {
-          const localFilePath =
-            path.resolve(
-              DOWNLOADS_TEMP_FOLDER ?? '/tmp/crossnote_downloads',
-              computeChecksum(filePath),
-            ) + path.extname(filePath);
-          await fs.writeFile(localFilePath, body, 'binary');
-          return localFilePath;
-        }
-      },
-    );
-  });
+  if (!DOWNLOADS_TEMP_FOLDER) {
+    DOWNLOADS_TEMP_FOLDER = temp.mkdirSync('crossnote_downloads');
+  }
+
+  const response = await fetch(filePath);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${filePath}: ${response.status}`);
+  }
+  const buffer = await response.arrayBuffer();
+  const localFilePath =
+    path.resolve(
+      DOWNLOADS_TEMP_FOLDER ?? '/tmp/crossnote_downloads',
+      computeChecksum(filePath),
+    ) + path.extname(filePath);
+  await fs.writeFile(localFilePath, Buffer.from(buffer));
+  return localFilePath;
 }
 
 /**
@@ -162,7 +157,7 @@ async function loadFile(
     imageDirectoryPath: string;
     notebook: Notebook;
   },
-  filesCache = {},
+  filesCache: { [key: string]: string } = {},
 ): Promise<string> {
   if (filesCache[filePath]) {
     return filesCache[filePath];
@@ -210,14 +205,11 @@ async function loadFile(
         .replace('/blob/', '/');
     }
 
-    return await new Promise<string>((resolve, reject) => {
-      request(filePath, (error, response, body) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(body.toString());
-        }
-      });
+    return await fetch(filePath).then((res) => {
+      if (!res.ok) {
+        throw new Error(`Failed to fetch ${filePath}: ${res.status}`);
+      }
+      return res.text();
     });
   } else {
     // local file
@@ -270,7 +262,7 @@ export async function transformMarkdown(
    */
   async function helper(
     i: number,
-    lineNo = 0,
+    lineNo: number = 0,
   ): Promise<TransformMarkdownOutput> {
     let outputString = '';
 
@@ -281,7 +273,7 @@ export async function transformMarkdown(
       }
       let line = inputString.substring(i, end);
 
-      let blockquotePrefix = '';
+      let blockquotePrefix: string;
       const blockquoteMatch = line.match(/^\s*(>+)\s?/);
       if (blockquoteMatch) {
         blockquotePrefix = blockquoteMatch[0];
@@ -532,13 +524,13 @@ export async function transformMarkdown(
           try {
             opt = parseBlockAttributes(optMatch[0]);
 
-            ((classes = opt['class'] ?? ''),
-              (id = opt['id'] ?? ''),
-              (ignore = opt['ignore']));
+            classes = opt['class'] ?? '';
+            id = opt['id'] ?? '';
+            ignore = opt['ignore'];
             delete opt['class'];
             delete opt['id'];
             delete opt['ignore'];
-          } catch (e) {
+          } catch {
             heading = 'OptionsError: ' + optMatch[1];
             ignore = true;
           }
@@ -690,7 +682,7 @@ export async function transformMarkdown(
         if (configStr.length > 0) {
           try {
             config = parseBlockAttributes(configStr);
-          } catch (error) {
+          } catch {
             // null
           }
         }
@@ -865,25 +857,22 @@ export async function transformMarkdown(
               }
               // markdown files
               // this return here is necessary
-              const {
-                outputString: output2,
-                // eslint-disable-next-line prefer-const
-                headings: headings2,
-              } = await transformMarkdown(fileContent, {
-                fileDirectoryPath: path.dirname(absoluteFilePath),
-                projectDirectoryPath,
-                filesCache,
-                useRelativeFilePath: false,
-                forPreview: false,
-                usePandocParser,
-                forMarkdownExport,
-                protocolsWhiteListRegExp,
-                notSourceFile: true, // <= this is not the sourcefile
-                imageDirectoryPath,
-                notebook,
-                headingIdGenerator,
-                fileHash,
-              });
+              const { outputString: output2, headings: headings2 } =
+                await transformMarkdown(fileContent, {
+                  fileDirectoryPath: path.dirname(absoluteFilePath),
+                  projectDirectoryPath,
+                  filesCache,
+                  useRelativeFilePath: false,
+                  forPreview: false,
+                  usePandocParser,
+                  forMarkdownExport,
+                  protocolsWhiteListRegExp,
+                  notSourceFile: true, // <= this is not the sourcefile
+                  imageDirectoryPath,
+                  notebook,
+                  headingIdGenerator,
+                  fileHash,
+                });
 
               output = '\n' + output2 + '  ';
               headings = headings.concat(headings2);
@@ -899,7 +888,9 @@ export async function transformMarkdown(
                 )}</code></pre>  `;
               } else {
                 // format csv to markdown table
-                output = twoDArrayToMarkdownTable(parseResult.data);
+                output = twoDArrayToMarkdownTable(
+                  parseResult.data as string[][],
+                );
               }
             } else if (extname === '.css' || extname === '.js') {
               if (!forPreview) {
@@ -1129,7 +1120,7 @@ export async function transformMarkdown(
     };
   }
 
-  let endFrontMatterOffset = 0;
+  let endFrontMatterOffset: number;
   if (
     inputString.startsWith('---') &&
     /* tslint:disable-next-line:no-conditional-assignment */

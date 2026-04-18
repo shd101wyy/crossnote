@@ -1,14 +1,11 @@
 import { escape } from 'html-escaper';
+import onml from 'onml';
 import { JsonObject } from 'type-fest';
+import render from 'bit-field/lib/render';
 import { interpretJS } from '../utility';
 
 export async function renderBitfield(code: string, options: JsonObject) {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const render = require('bit-field/lib/render');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const onml = require('onml');
-
     const reg = interpretJS(code);
     const jsonml = render(reg, options);
     const html = onml.stringify(jsonml);

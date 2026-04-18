@@ -65,7 +65,7 @@ export const parseBlockInfo = (raw = ''): BlockInfo => {
   if (attributesAsString) {
     try {
       attributes = parseBlockAttributes(attributesAsString);
-    } catch (e) {
+    } catch {
       attributes = {};
     }
   } else {

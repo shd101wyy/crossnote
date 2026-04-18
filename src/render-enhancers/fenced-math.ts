@@ -1,3 +1,4 @@
+import type { CheerioAPI } from 'cheerio';
 import { escape } from 'html-escaper';
 import { KatexOptions } from 'katex';
 import { stringifyBlockAttributes } from '../lib/block-attributes';
@@ -18,7 +19,7 @@ const supportedLanguages = ['math'];
  * @param $ cheerio element containing the entire document
  */
 export default async function enhance(
-  $,
+  $: CheerioAPI,
   renderingOption: MathRenderingOption,
   mathBlockDelimiters: string[][],
   katexConfig: KatexOptions,
@@ -29,7 +30,9 @@ export default async function enhance(
       return;
     }
 
-    const normalizedInfo: BlockInfo = $container.data('normalizedInfo');
+    const normalizedInfo: BlockInfo = $container.data(
+      'normalizedInfo',
+    ) as BlockInfo;
     if (
       normalizedInfo.attributes['literate'] === false ||
       normalizedInfo.attributes['cmd'] === false ||
@@ -52,15 +55,16 @@ export default async function enhance(
       mathBlockDelimiters,
       katexConfig,
     );
-    normalizedInfo.attributes['output_first'] === true
-      ? $container.before($renderedMath)
-      : $container.after($renderedMath);
+    if (normalizedInfo.attributes['output_first'] === true) {
+      $container.before($renderedMath);
+    } else {
+      $container.after($renderedMath);
+    }
 
     if (normalizedInfo.attributes['hide'] !== false) {
       $container.data('hiddenByEnhancer', true);
     }
   });
-  return $;
 }
 
 const renderMath = (
@@ -70,7 +74,7 @@ const renderMath = (
   mathBlockDelimiters: string[][],
   katexConfig: KatexOptions,
 ): string => {
-  let $output: string | null = null;
+  let $output: string | null;
   try {
     const mathHtml = parseMath({
       content: code,

@@ -4,18 +4,18 @@ export function getElementBackgroundColor(element: HTMLElement) {
   return bgColor;
 }
 
-export function isBackgroundColorLight(element) {
+export function isBackgroundColorLight(element: HTMLElement): boolean {
   // Get the computed background color
   const bgColor = getElementBackgroundColor(element);
 
   // Function to calculate luminance from a color string
-  function calculateLuminance(color) {
+  function calculateLuminance(color: string): number {
     // Remove any spaces and convert to lowercase
     color = color.replace(/\s+/g, '').toLowerCase();
 
     // If the color starts with "rgb", extract the RGB values
     if (color.startsWith('rgb')) {
-      const rgb = color.match(/\d+/g).map(Number);
+      const rgb = (color.match(/\d+/g) ?? []).map(Number);
       const r = rgb[0];
       const g = rgb[1];
       const b = rgb[2];

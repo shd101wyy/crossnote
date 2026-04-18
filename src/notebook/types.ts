@@ -561,10 +561,10 @@ export function getDefaultKatexConfig(): KatexOptions {
 
 export function getDefaultParserConfig(): ParserConfig {
   return {
-    onWillParseMarkdown: async function (markdown) {
+    onWillParseMarkdown: async function (markdown: string) {
       return markdown;
     },
-    onDidParseMarkdown: async function (html) {
+    onDidParseMarkdown: async function (html: string) {
       return html;
     },
   };

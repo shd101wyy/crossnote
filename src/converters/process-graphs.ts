@@ -75,7 +75,7 @@ export async function processGraphs(
             try {
               options = parseBlockAttributes(optionsMatch[0]);
               optionsStr = optionsMatch[1];
-            } catch (error) {
+            } catch {
               options = {};
             }
           }
@@ -137,7 +137,7 @@ export async function processGraphs(
   }
 
   async function convertSVGToPNGFile(
-    outFileName = '',
+    outFileName: string = '',
     svg: string,
     /* tslint:disable-next-line:no-shadowed-variable */
     lines: string[],

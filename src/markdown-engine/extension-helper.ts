@@ -53,7 +53,7 @@ const scopesForLanguageName = {
   'diff': 'diff',
 };
 
-export function scopeForLanguageName(language) {
+export function scopeForLanguageName(language: string) {
   language = language.toLowerCase();
   return scopesForLanguageName[language] || language;
 }

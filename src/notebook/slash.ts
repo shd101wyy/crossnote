@@ -1,5 +1,5 @@
 // https://github.com/sindresorhus/slash
-export default function slash(path) {
+export default function slash(path: string) {
   const isExtendedLengthPath = path.startsWith('\\\\?\\');
 
   if (isExtendedLengthPath) {

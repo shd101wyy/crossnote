@@ -1,3 +1,5 @@
+import type { CheerioAPI, Cheerio } from 'cheerio';
+import type { AnyNode } from 'domhandler';
 import { escape } from 'html-escaper';
 import { run } from '../code-chunk/code-chunk';
 import { CodeChunkData, CodeChunksData } from '../code-chunk/code-chunk-data';
@@ -10,7 +12,7 @@ import { HeadingData, toc } from '../markdown-engine/toc';
 import { extractCommandFromBlockInfo } from '../utility';
 
 export default async function enhance(
-  $: CheerioStatic,
+  $: CheerioAPI,
   codeChunksData: CodeChunksData,
   renderOptions: MarkdownEngineRenderOption,
   runOptions: RunCodeChunkOptions,
@@ -23,7 +25,9 @@ export default async function enhance(
       return;
     }
 
-    const normalizedInfo: BlockInfo = $container.data('normalizedInfo');
+    const normalizedInfo: BlockInfo = $container.data(
+      'normalizedInfo',
+    ) as BlockInfo;
     if (!normalizedInfo.attributes['cmd']) {
       return;
     }
@@ -46,9 +50,9 @@ export default async function enhance(
 }
 
 export async function renderCodeBlock(
-  $container: Cheerio,
+  $container: Cheerio<AnyNode>,
   normalizedInfo: BlockInfo,
-  $: CheerioStatic,
+  $: CheerioAPI,
   codeChunksData: CodeChunksData,
   arrayOfCodeChunkData: CodeChunkData[],
   renderOptions: MarkdownEngineRenderOption,
@@ -128,15 +132,16 @@ export async function renderCodeBlock(
   // check javascript code chunk
   if (!renderOptions.isForPreview && isJavascript) {
     outputDiv += `<script>${code}</script>`;
-    result = codeChunkData.normalizedInfo.attributes['element'] || '';
   }
 
   $codeWrapper.append(buttonGroup);
   $codeWrapper.append(statusDiv);
 
-  normalizedInfo.attributes['output_first'] === true
-    ? $codeAndOutputWrapper.prepend(outputDiv)
-    : $codeAndOutputWrapper.append(outputDiv);
+  if (normalizedInfo.attributes['output_first'] === true) {
+    $codeAndOutputWrapper.prepend(outputDiv);
+  } else {
+    $codeAndOutputWrapper.append(outputDiv);
+  }
 }
 
 export interface RunCodeChunkOptions {
@@ -150,7 +155,6 @@ export interface RunCodeChunkOptions {
     result: string,
     filePath: string,
   ) => Promise<string>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseMD: (
     inputString: string,
     options: MarkdownEngineRenderOption,

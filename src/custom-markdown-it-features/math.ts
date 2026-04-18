@@ -38,9 +38,8 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       return false; // not math
     }
 
-    let content: string | null = null;
+    let content: string | null;
     let end = -1;
-
     let i = state.pos + openTag.length;
     while (i < state.src.length) {
       if (closeTag && state.src.startsWith(closeTag, i)) {

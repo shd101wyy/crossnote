@@ -94,11 +94,8 @@ const PreviewContainer = createContainer(() => {
   const previewScrollDelay = useRef<number>(0);
   const scrollMap = useRef<number[] | null>(null);
   const wavedromCache = useRef<Record<string, string>>({});
-  // eslint-disable-next-line no-undef
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
-  // eslint-disable-next-line no-undef
   // const refreshingTimeout = useRef<NodeJS.Timeout | null>(null);
-  // eslint-disable-next-line no-undef
   const isLoadingPreviewRef = useRef<boolean>(true);
   /**
    * Track the slide line number, and (h, v) indices
@@ -466,10 +463,10 @@ const PreviewContainer = createContainer(() => {
 
       const vegaElements =
         previewElement.current.querySelectorAll('.vega, .vega-lite');
-      function reportVegaError(el, error) {
+      function reportVegaError(el: Element, error: unknown) {
         el.innerHTML =
           '<pre class="language-text"><code>' +
-          escape(error.toString()) +
+          escape(String(error)) +
           '</code></pre>';
       }
       for (let i = 0; i < vegaElements.length; i++) {
@@ -835,7 +832,7 @@ const PreviewContainer = createContainer(() => {
               ]);
             };
           }
-        } catch (error) {
+        } catch {
           // https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1934
           continue;
         }
@@ -1355,7 +1352,6 @@ const PreviewContainer = createContainer(() => {
       */
       } else if (data.command === 'openImageHelper') {
         // TODO: Replace this with headless modal
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setShowImageHelper(true);
       } else if (data.command === 'runAllCodeChunks') {
         runAllCodeChunks();

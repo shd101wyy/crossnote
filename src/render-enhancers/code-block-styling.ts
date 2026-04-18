@@ -1,3 +1,5 @@
+import type { CheerioAPI, Cheerio } from 'cheerio';
+import type { AnyNode } from 'domhandler';
 import { escape } from 'html-escaper';
 import { BlockInfo } from '../lib/block-info/index';
 import { scopeForLanguageName } from '../markdown-engine/extension-helper';
@@ -17,7 +19,7 @@ Prism.hooks.add('wrap', (env) => {
 defineKLanguage(Prism);
 defineIeleLanguage(Prism);
 
-export default async function enhance($: CheerioStatic): Promise<void> {
+export default async function enhance($: CheerioAPI): Promise<void> {
   // spaced code blocks
   // this is for pandoc parser
   $('pre>code').each((i, codeElement) => {
@@ -46,7 +48,7 @@ export default async function enhance($: CheerioStatic): Promise<void> {
     const code = $container.text();
 
     // determine code language
-    const info: BlockInfo = $container.data('normalizedInfo');
+    const info: BlockInfo = $container.data('normalizedInfo') as BlockInfo;
     const language = guessPrismLanguage(
       scopeForLanguageName(info.language),
       code,
@@ -56,7 +58,7 @@ export default async function enhance($: CheerioStatic): Promise<void> {
     try {
       const html = Prism.highlight(code, Prism.languages[language], language);
       $container.empty().append($(`<code></code>`).html(html));
-    } catch (error) {
+    } catch {
       // ...or regarded as plain text on failure
       $container.empty().append($(`<code></code>`).text(code));
     }
@@ -95,7 +97,10 @@ function guessPrismLanguage(language: string, code: string) {
  * @param
  * @param code
  */
-function addLineNumbersIfNecessary($container, code: string): void {
+function addLineNumbersIfNecessary(
+  $container: Cheerio<AnyNode>,
+  code: string,
+): void {
   if ($container.hasClass('numberLines')) {
     $container.addClass('line-numbers');
     $container.removeClass('numberLines');
@@ -123,7 +128,7 @@ function addLineNumbersIfNecessary($container, code: string): void {
  * @param highlight
  */
 function highlightLines(
-  $container: Cheerio,
+  $container: Cheerio<AnyNode>,
   code: string,
   highlight: string | string[] | number,
 ): void {

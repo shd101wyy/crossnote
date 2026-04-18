@@ -1,3 +1,4 @@
+import type { CheerioAPI } from 'cheerio';
 import { MarkdownEngineRenderOption } from '../markdown-engine';
 
 /**
@@ -6,7 +7,7 @@ import { MarkdownEngineRenderOption } from '../markdown-engine';
  * @return cheerio object
  */
 export default async function enhance(
-  $,
+  $: CheerioAPI,
   options: MarkdownEngineRenderOption,
   resolveFilePath: (
     path: string,
@@ -23,6 +24,9 @@ export default async function enhance(
 
     const img = $(imgElement);
     const src = img.attr(srcTag);
+    if (!src) {
+      return;
+    }
 
     img.attr(
       srcTag,

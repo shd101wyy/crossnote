@@ -37,7 +37,7 @@ export interface MatterOutput {
 }
 
 export function matter(markdown: string): MatterOutput {
-  let endFrontMatterOffset = 0;
+  let endFrontMatterOffset: number;
   let frontMatter = {};
   if (
     markdown.startsWith('---') &&

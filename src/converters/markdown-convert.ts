@@ -19,7 +19,15 @@ import { processGraphs } from './process-graphs';
  */
 function processMath(
   text: string,
-  { mathInlineDelimiters, mathBlockDelimiters, mathRenderingOnlineService },
+  {
+    mathInlineDelimiters,
+    mathBlockDelimiters,
+    mathRenderingOnlineService,
+  }: {
+    mathInlineDelimiters: string[][];
+    mathBlockDelimiters: string[][];
+    mathRenderingOnlineService: string;
+  },
 ): string {
   let line = text.replace(/\\\$/g, '#slash_dollarsign#');
 
@@ -110,13 +118,13 @@ function processMath(
  * @param protocolsWhiteListRegExp
  */
 function processPaths(
-  text,
-  fileDirectoryPath,
-  projectDirectoryPath,
-  useRelativeFilePath,
+  text: string,
+  fileDirectoryPath: string,
+  projectDirectoryPath: string,
+  useRelativeFilePath: boolean,
   protocolsWhiteListRegExp: RegExp,
 ) {
-  function resolvePath(src) {
+  function resolvePath(src: string) {
     if (src.match(protocolsWhiteListRegExp)) {
       // do nothing
     } else if (useRelativeFilePath) {
@@ -173,7 +181,7 @@ function processPaths(
 }
 
 export async function markdownConvert(
-  text,
+  text: string,
   {
     projectDirectoryPath,
     fileDirectoryPath,

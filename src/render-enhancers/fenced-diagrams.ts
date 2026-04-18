@@ -1,4 +1,6 @@
 // tslint:disable:ban-types no-var-requires
+import type { CheerioAPI, Cheerio } from 'cheerio';
+import type { AnyNode } from 'domhandler';
 import fetch from 'cross-fetch';
 import { escape } from 'html-escaper';
 import * as YAML from 'yaml';
@@ -72,7 +74,7 @@ export default async function enhance({
   d2Theme,
   d2Sketch,
 }: {
-  $: CheerioStatic;
+  $: CheerioAPI;
   graphsCache: { [key: string]: string };
   fileDirectoryPath: string;
   imageDirectoryPath: string;
@@ -94,7 +96,9 @@ export default async function enhance({
       return;
     }
 
-    const normalizedInfo: BlockInfo = $container.data('normalizedInfo');
+    const normalizedInfo: BlockInfo = $container.data(
+      'normalizedInfo',
+    ) as BlockInfo;
     // Check if Kroki is enabled
     const isKroki =
       !!normalizedInfo.attributes['kroki'] ||
@@ -155,9 +159,9 @@ async function renderDiagram({
   d2Theme,
   d2Sketch,
 }: {
-  $container: Cheerio;
+  $container: Cheerio<AnyNode>;
   normalizedInfo: BlockInfo;
-  $: CheerioStatic;
+  $: CheerioAPI;
   graphsCache: { [key: string]: string };
   fileDirectoryPath: string;
   imageDirectoryPath: string;
@@ -172,7 +176,7 @@ async function renderDiagram({
   d2Theme: number;
   d2Sketch: boolean;
 }): Promise<void> {
-  let $output: string | Cheerio | null = null;
+  let $output: string | Cheerio<AnyNode> | null = null;
 
   const code = $container.text();
   const checksum = computeChecksum(JSON.stringify(normalizedInfo) + code);
@@ -421,9 +425,11 @@ async function renderDiagram({
   }
 
   if ($output !== null) {
-    normalizedInfo.attributes['output_first'] === true
-      ? $container.before($output as string)
-      : $container.after($output as string);
+    if (normalizedInfo.attributes['output_first'] === true) {
+      $container.before($output as string);
+    } else {
+      $container.after($output as string);
+    }
   }
 
   if (

@@ -1,3 +1,4 @@
+import { createRequire } from 'module';
 import structuredClone from '@ungap/structured-clone';
 import * as child_process from 'child_process';
 import * as path from 'path';
@@ -221,7 +222,7 @@ export { uploadImage } from './tools/image-uploader';
  *     https://github.com/atom/loophole/blob/master/src/loophole.coffee
  * @param fn
  */
-export function allowUnsafeEval(fn) {
+export function allowUnsafeEval<T>(fn: () => T): T {
   const previousEval = globalThis.eval;
   try {
     globalThis.eval = (source) => vm.runInThisContext(source);
@@ -244,7 +245,7 @@ export async function allowUnsafeEvalAync(fn: () => Promise<any>) {
   }
 }
 
-export function allowUnsafeNewFunction(fn) {
+export function allowUnsafeNewFunction<T>(fn: () => T): T {
   const previousFunction = globalThis.Function;
   try {
     globalThis.Function = Function as FunctionConstructor;
@@ -281,10 +282,12 @@ export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
   }
 }
 
+const _require = createRequire(__filename);
+
 export const loadDependency = (dependencyPath: string) =>
   allowUnsafeEval(() =>
     allowUnsafeNewFunction(() =>
-      require(
+      _require(
         path.resolve(
           getCrossnoteBuildDirectory(),
           'dependencies',
@@ -353,7 +356,7 @@ export function interpretJS(code: string) {
 export function findClosingTagIndex(
   inputString: string,
   tagName: string,
-  startIndex = 0,
+  startIndex: number = 0,
 ) {
   const openTag = `<${tagName}`;
   const closeTag = `</${tagName}>`;
