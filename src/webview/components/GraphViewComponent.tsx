@@ -628,10 +628,20 @@ export default function GraphViewComponent() {
         filePath?: string;
       };
       if (message.command === 'graphData') {
-        if (message.data) setGraphData(message.data);
-        if (message.activeFilePath != null) {
+        if (message.data) {
+          // Only auto-switch to local mode on the initial load (when graphData was null)
+          setGraphData((prev) => {
+            const isFirstLoad = prev === null;
+            if (message.activeFilePath != null) {
+              setActiveFilePath(message.activeFilePath);
+              if (isFirstLoad) {
+                setViewMode('local');
+              }
+            }
+            return message.data ?? prev;
+          });
+        } else if (message.activeFilePath != null) {
           setActiveFilePath(message.activeFilePath);
-          setViewMode('local');
         }
       } else if (message.command === 'setActiveFile') {
         if (message.filePath != null) setActiveFilePath(message.filePath);
