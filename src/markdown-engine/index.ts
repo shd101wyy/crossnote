@@ -145,6 +145,9 @@ function normalizeMarkdownYoCodeBlocks($: CheerioAPI): void {
     const parsedInfo = parseBlockInfo(language);
     const normalizedInfo = normalizeBlockInfo(parsedInfo);
 
+    // NOTE: .attr() adds to existing attributes; .html() only replaces inner
+    // content. Any data-source-line set by markdown_yo's native sourceMap
+    // feature is preserved on the <pre> element.
     $pre
       .attr('data-role', 'codeBlock')
       .attr('data-info', language)
