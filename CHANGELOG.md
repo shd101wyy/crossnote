@@ -6,18 +6,6 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### New features
 
-- Support rendering [TikZ](https://tikz.dev) diagrams in fenced code blocks using [node-tikzjax](https://github.com/prinsss/node-tikzjax). TikZ fenced code blocks are rendered as SVG diagrams in the preview.
-
-  Example:
-
-  ````
-  ```tikz
-  \begin{tikzpicture}
-    \draw (0,0) circle (1in);
-  \end{tikzpicture}
-  ```
-  ````
-
 - Add experimental support for [markdown_yo](https://github.com/shd101wyy/markdown_yo), a high-performance Markdown-to-HTML renderer written in the [Yo](https://github.com/shd101wyy/Yo) programming language and compiled to WebAssembly.
   - Enable with `useMarkdownYoParser: true` in notebook config.
   - Replaces markdown-it for HTML rendering; markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).
