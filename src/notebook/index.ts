@@ -566,7 +566,7 @@ export class Notebook {
     };
 
     const references = traverse(tokens, null, [], 0);
-    const mentions: Mentions = new Set<FilePath>();
+    const mentions: Mentions = {};
     const oldMentions = note.mentions;
 
     // Remove old references
@@ -661,7 +661,7 @@ export class Notebook {
           markdown;
       }
 
-      let oldMentions: Mentions = new Set<FilePath>();
+      let oldMentions: Mentions = {};
       const oldNote = this.notes[filePath];
       if (oldNote) {
         oldMentions = oldNote.mentions;

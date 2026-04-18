@@ -310,7 +310,7 @@ export function Function(...args: string[]) {
     }
   }
 
-  const params = [];
+  const params: string[] = [];
   for (let j = 0, len = paramLists.length; j < len; j++) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let paramList: any = paramLists[j];
@@ -347,7 +347,7 @@ export function interpretJS(code: string) {
     interpreter.run(`exports.result = (${code})`);
     return interpreter.exports.result;
   } else {
-    const context = {};
+    const context: Record<string, unknown> = {};
     vm.runInNewContext(`result = (${code})`, context);
     return context['result'];
   }

@@ -44,7 +44,7 @@ export async function processGraphs(
     start: number;
     end: number;
     content: string;
-    options: object;
+    options: Record<string, unknown>;
     optionsStr: string;
   }[] = [];
 
@@ -115,7 +115,7 @@ export async function processGraphs(
 
   let imgCount = 0;
 
-  const asyncFunctions = [];
+  const asyncFunctions: Promise<string>[] = [];
   const imagePaths: string[] = [];
 
   let currentCodeChunk: CodeChunkData | null = null;
@@ -216,13 +216,13 @@ export async function processGraphs(
           });
         }
         await convertSVGToPNGFile(
-          options['filename'],
+          options['filename'] as string | undefined,
           svg,
           lines,
           start,
           end,
           true,
-          options['alt'],
+          (options['alt'] as string | undefined) || '',
           optionsStr,
         );
       } catch (error) {
@@ -234,17 +234,17 @@ export async function processGraphs(
         const checksum = computeChecksum(optionsStr + content);
         let svg = graphsCache[checksum];
         if (!svg) {
-          const engine = options['engine'] || 'dot';
+          const engine = (options['engine'] as string | undefined) || 'dot';
           svg = await Viz(content, { engine });
         }
         await convertSVGToPNGFile(
-          options['filename'],
+          options['filename'] as string | undefined,
           svg,
           lines,
           start,
           end,
           true,
-          options['alt'],
+          (options['alt'] as string | undefined) || '',
           optionsStr,
         );
       } catch (error) {
@@ -260,13 +260,13 @@ export async function processGraphs(
           svg = await vegaLiteAPI.toSVG(content, fileDirectoryPath);
         }
         await convertSVGToPNGFile(
-          options['filename'],
+          options['filename'] as string | undefined,
           svg,
           lines,
           start,
           end,
           true,
-          options['alt'],
+          (options['alt'] as string | undefined) || '',
           optionsStr,
         );
       } catch (error) {
@@ -282,13 +282,13 @@ export async function processGraphs(
           svg = await vegaAPI.toSVG(content, fileDirectoryPath);
         }
         await convertSVGToPNGFile(
-          options['filename'],
+          options['filename'] as string | undefined,
           svg,
           lines,
           start,
           end,
           true,
-          options['alt'],
+          (options['alt'] as string | undefined) || '',
           optionsStr,
         );
       } catch (error) {
@@ -298,7 +298,7 @@ export async function processGraphs(
     } else if (def.match(/^mermaid/)) {
       // mermaid-cli Ver.8.4.8 has a bug, render in png https://github.com/mermaid-js/mermaid/issues/664
       try {
-        let pngFileName = options['filename'];
+        let pngFileName = options['filename'] as string | undefined;
         if (!pngFileName) {
           pngFileName = imageFilePrefix + imgCount + '.png';
         }
@@ -324,7 +324,7 @@ export async function processGraphs(
         }
         clearCodeBlock(lines, start, end);
 
-        let altCaption = options['alt'];
+        let altCaption = (options['alt'] as string | undefined) || '';
         if (altCaption == null) {
           altCaption = '';
         }
@@ -353,13 +353,13 @@ export async function processGraphs(
           svg = await wavedromAPI.render(content, projectDirectoryPath);
         }
         await convertSVGToPNGFile(
-          options['filename'],
+          options['filename'] as string | undefined,
           svg,
           lines,
           start,
           end,
           true,
-          options['alt'],
+          (options['alt'] as string | undefined) || '',
           optionsStr,
         );
       } catch (error) {
@@ -395,7 +395,7 @@ export async function processGraphs(
                 start,
                 end,
                 false,
-                options['alt'],
+                (options['alt'] as string | undefined) || '',
                 optionsStr,
               )
             ).replace(/\\/g, '/');

@@ -1,6 +1,6 @@
 // modified according to the prism website
 // http://prismjs.com/#languages-list
-const scopesForLanguageName = {
+const scopesForLanguageName: Record<string, string> = {
   'sh': 'bash',
   'bash': 'bash',
   'c': 'c',

@@ -1,4 +1,4 @@
-import type { CheerioAPI, Cheerio } from 'cheerio';
+import type { Cheerio, CheerioAPI } from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import { escape } from 'html-escaper';
 import { BlockInfo } from '../lib/block-info/index';
@@ -7,11 +7,11 @@ import defineIeleLanguage from '../prism/iele';
 import defineKLanguage from '../prism/k';
 import Prism from '../prism/prism';
 
-Prism.hooks.add('wrap', (env) => {
-  if (env.type !== 'keyword') {
+Prism.hooks.add('wrap', (env: Record<string, unknown>) => {
+  if (env['type'] !== 'keyword') {
     return;
   }
-  env.classes.push(`keyword-${env.content}`);
+  (env['classes'] as string[]).push(`keyword-${env['content']}`);
 });
 // loadLanguages(); // Load all languages
 

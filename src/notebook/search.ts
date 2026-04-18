@@ -28,8 +28,12 @@ export default class Search {
       extractField: (document, fieldName) => {
         if (fieldName === 'aliases') {
           return document['aliases'].join('|');
+        } else if (fieldName === 'title') {
+          return document.title;
+        } else if (fieldName === 'filePath') {
+          return document.filePath;
         } else {
-          return document[fieldName];
+          return document.id;
         }
       },
       tokenize: (string) => {

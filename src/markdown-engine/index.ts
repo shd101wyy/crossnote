@@ -257,19 +257,24 @@ export class MarkdownEngine {
       this.notebook.config.usePandocParser
     ) {
       // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
-      const mathJaxConfig = copy({ ...this.notebook.config.mathjaxConfig });
-      mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
-      mathJaxConfig['tex']['inlineMath'] =
-        this.notebook.config.mathInlineDelimiters;
-      mathJaxConfig['tex']['displayMath'] =
-        this.notebook.config.mathBlockDelimiters;
+      const mathJaxConfig = copy({
+        ...this.notebook.config.mathjaxConfig,
+      }) as Record<string, unknown>;
+      const texConfig = (mathJaxConfig['tex'] || {}) as Record<string, unknown>;
+      mathJaxConfig['tex'] = texConfig;
+      texConfig['inlineMath'] = this.notebook.config.mathInlineDelimiters;
+      texConfig['displayMath'] = this.notebook.config.mathBlockDelimiters;
 
       // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
       // Disable typesetting on startup
-      mathJaxConfig['startup'] = mathJaxConfig['startup'] || {};
+      const startupConfig = (mathJaxConfig['startup'] || {}) as Record<
+        string,
+        unknown
+      >;
+      mathJaxConfig['startup'] = startupConfig;
       if (!isForPresentation) {
-        mathJaxConfig['startup']['typeset'] = false;
-        mathJaxConfig['startup']['elements'] = ['.hidden-preview']; // Only render on this element
+        startupConfig['typeset'] = false;
+        startupConfig['elements'] = ['.hidden-preview']; // Only render on this element
       }
 
       scripts += `<script type="text/javascript"> window.MathJax = (${JSON.stringify(
@@ -289,7 +294,15 @@ export class MarkdownEngine {
         vscodePreviewPanel,
       )}'></script>`;
 
-      let presentationConfig = yamlConfig['presentation'] || {};
+      let presentationConfig: Record<string, unknown> = {};
+      const presentationValue = yamlConfig['presentation'];
+      if (
+        typeof presentationValue === 'object' &&
+        presentationValue !== null &&
+        !Array.isArray(presentationValue)
+      ) {
+        presentationConfig = presentationValue as Record<string, unknown>;
+      }
       if (typeof presentationConfig !== 'object') {
         presentationConfig = {};
       }
@@ -393,7 +406,7 @@ window["initRevealPresentation"] = async function() {
   /**
    * Map preview theme to prism theme.
    */
-  private static AutoPrismThemeMap = {
+  private static AutoPrismThemeMap: Record<string, string> = {
     'atom-dark.css': 'atom-dark.css',
     'atom-light.css': 'atom-light.css',
     'atom-material.css': 'atom-material.css',
@@ -411,7 +424,7 @@ window["initRevealPresentation"] = async function() {
     'vue.css': 'vue.css',
   };
 
-  private static AutoPrismThemeMapForPresentation = {
+  private static AutoPrismThemeMapForPresentation: Record<string, string> = {
     'beige.css': 'pen-paper-coffee.css',
     'black.css': 'one-dark.css',
     'blood.css': 'monokai.css',
@@ -437,20 +450,24 @@ window["initRevealPresentation"] = async function() {
        * Automatically pick code block theme for preview.
        */
       if (isPresentationMode) {
-        const presentationTheme =
-          yamlConfig['presentation'] &&
+        const presentationObj =
           typeof yamlConfig['presentation'] === 'object' &&
-          yamlConfig['presentation']['theme']
-            ? yamlConfig['presentation']['theme']
-            : this.notebook.config.revealjsTheme;
+          yamlConfig['presentation'] !== null &&
+          !Array.isArray(yamlConfig['presentation'])
+            ? (yamlConfig['presentation'] as Record<string, unknown>)
+            : null;
+        const presentationTheme =
+          (presentationObj?.['theme'] as string | undefined) ??
+          this.notebook.config.revealjsTheme;
         return (
           MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] ??
           'default.css'
         );
       } else {
         return (
-          MarkdownEngine.AutoPrismThemeMap[this.notebook.config.previewTheme] ??
-          'default.css'
+          MarkdownEngine.AutoPrismThemeMap[
+            this.notebook.config.previewTheme as string
+          ] ?? 'default.css'
         );
       }
     } else {
@@ -511,13 +528,18 @@ window["initRevealPresentation"] = async function() {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          `./dependencies/reveal/css/theme/${
-            yamlConfig['presentation'] &&
-            typeof yamlConfig['presentation'] === 'object' &&
-            yamlConfig['presentation']['theme']
-              ? yamlConfig['presentation']['theme']
-              : this.notebook.config.revealjsTheme
-          }`,
+          `./dependencies/reveal/css/theme/${(() => {
+            const presObj =
+              typeof yamlConfig['presentation'] === 'object' &&
+              yamlConfig['presentation'] !== null &&
+              !Array.isArray(yamlConfig['presentation'])
+                ? (yamlConfig['presentation'] as Record<string, unknown>)
+                : null;
+            return (
+              (presObj?.['theme'] as string | undefined) ??
+              this.notebook.config.revealjsTheme
+            );
+          })()}`,
         ),
         vscodePreviewPanel,
       )}" >`;
@@ -772,12 +794,16 @@ window["initRevealPresentation"] = async function() {
       this.notebook.config.usePandocParser
     ) {
       // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
-      const mathJaxConfig = copy({ ...this.notebook.config.mathjaxConfig });
-      mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
-      mathJaxConfig['tex']['inlineMath'] =
-        this.notebook.config.mathInlineDelimiters;
-      mathJaxConfig['tex']['displayMath'] =
-        this.notebook.config.mathBlockDelimiters;
+      const mathJaxConfig = copy({
+        ...this.notebook.config.mathjaxConfig,
+      }) as Record<string, unknown>;
+      const texConfig2 = (mathJaxConfig['tex'] || {}) as Record<
+        string,
+        unknown
+      >;
+      mathJaxConfig['tex'] = texConfig2;
+      texConfig2['inlineMath'] = this.notebook.config.mathInlineDelimiters;
+      texConfig2['displayMath'] = this.notebook.config.mathBlockDelimiters;
 
       if (options.offline) {
         mathStyle = `
@@ -986,8 +1012,15 @@ if (typeof(window['Reveal']) !== 'undefined') {
         <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/reveal.js'></script>`;
       }
 
-      const presentationConfig = yamlConfig['presentation'] || {};
-      const dependencies = presentationConfig['dependencies'] || [];
+      const presentationConfigRaw = yamlConfig['presentation'];
+      const presentationConfig: Record<string, unknown> =
+        typeof presentationConfigRaw === 'object' &&
+        presentationConfigRaw !== null &&
+        !Array.isArray(presentationConfigRaw)
+          ? { ...(presentationConfigRaw as Record<string, unknown>) }
+          : {};
+      const dependencies =
+        (presentationConfig['dependencies'] as unknown[] | undefined) || [];
       if (presentationConfig['enableSpeakerNotes']) {
         if (options.offline) {
           dependencies.push({
@@ -1070,12 +1103,15 @@ if (typeof(window['Reveal']) !== 'undefined') {
             );
 
       if (yamlConfig['isPresentationMode']) {
-        const theme =
-          yamlConfig['presentation'] &&
+        const presObj2 =
           typeof yamlConfig['presentation'] === 'object' &&
-          yamlConfig['presentation']['theme']
-            ? yamlConfig['presentation']['theme']
-            : this.notebook.config.revealjsTheme;
+          yamlConfig['presentation'] !== null &&
+          !Array.isArray(yamlConfig['presentation'])
+            ? (yamlConfig['presentation'] as Record<string, unknown>)
+            : null;
+        const theme =
+          (presObj2?.['theme'] as string | undefined) ??
+          this.notebook.config.revealjsTheme;
 
         if (options.offline) {
           presentationStyle += `<link rel="stylesheet" href="${fileURL(
@@ -1149,7 +1185,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
       !yamlConfig['isPresentationMode'] &&
       !options.isForPrint &&
       (!('html' in yamlConfig) ||
-        (yamlConfig['html'] && yamlConfig['html']['toc'] !== false))
+        (yamlConfig['html'] &&
+          (yamlConfig['html'] as Record<string, unknown>)['toc'] !== false))
     ) {
       // enable sidebar toc by default
       sidebarTOC = `<div class="md-sidebar-toc">${this.tocHTML}</div>`;
@@ -1159,7 +1196,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       sidebarTOCScript = `
 <script>
 ${
-  yamlConfig['html'] && yamlConfig['html']['toc']
+  yamlConfig['html'] && (yamlConfig['html'] as Record<string, unknown>)['toc']
     ? `document.body.setAttribute('html-show-sidebar-toc', true)`
     : ''
 }
@@ -1317,15 +1354,15 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       isForPreview: false,
       runAllCodeChunks,
     }));
-    const htmlConfig = yamlConfig['html'] || {};
+    const htmlConfig = (yamlConfig['html'] || {}) as Record<string, unknown>;
     if ('offline' in htmlConfig) {
-      offline = htmlConfig['offline'];
+      offline = htmlConfig['offline'] as boolean;
     }
-    const embedLocalImages = htmlConfig['embed_local_images']; // <= embedLocalImages is disabled by default.
+    const embedLocalImages = !!htmlConfig['embed_local_images']; // <= embedLocalImages is disabled by default.
 
     let embedSVG = true; // <= embedSvg is enabled by default.
     if ('embed_svg' in htmlConfig) {
-      embedSVG = htmlConfig['embed_svg'];
+      embedSVG = htmlConfig['embed_svg'] as boolean;
     }
 
     let dest = this.filePath;
@@ -1409,7 +1446,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         executablePath =
           chromePaths.chrome ||
           chromePaths.chromeCanary ||
-          chromePaths.chromium;
+          chromePaths.chromium ||
+          '';
       }
     } catch {
       executablePath = '';
@@ -1442,21 +1480,33 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       (yamlConfig['isPresentationMode'] ? '?print-pdf' : '');
     await page.goto(loadPath);
 
-    const puppeteerConfig = {
+    const chromeConfig =
+      yamlConfig['chrome'] &&
+      typeof yamlConfig['chrome'] === 'object' &&
+      !Array.isArray(yamlConfig['chrome'])
+        ? (yamlConfig['chrome'] as Record<string, unknown>)
+        : undefined;
+    const puppeteerConfig2 =
+      yamlConfig['puppeteer'] &&
+      typeof yamlConfig['puppeteer'] === 'object' &&
+      !Array.isArray(yamlConfig['puppeteer'])
+        ? (yamlConfig['puppeteer'] as Record<string, unknown>)
+        : undefined;
+    const puppeteerConfig: Record<string, unknown> = {
       path: dest,
       ...(yamlConfig['isPresentationMode']
         ? {}
         : { margin: { top: '1cm', bottom: '1cm', left: '1cm', right: '1cm' } }),
       printBackground: this.notebook.config.printBackground,
-      ...(yamlConfig['chrome'] || yamlConfig['puppeteer'] || {}),
+      ...(chromeConfig || puppeteerConfig2 || {}),
     };
 
     // wait for timeout
     let timeout = 0;
-    if (yamlConfig['chrome'] && yamlConfig['chrome']['timeout']) {
-      timeout = yamlConfig['chrome']['timeout'];
-    } else if (yamlConfig['puppeteer'] && yamlConfig['puppeteer']['timeout']) {
-      timeout = yamlConfig['puppeteer']['timeout'];
+    if (chromeConfig && chromeConfig['timeout']) {
+      timeout = chromeConfig['timeout'] as number;
+    } else if (puppeteerConfig2 && puppeteerConfig2['timeout']) {
+      timeout = puppeteerConfig2['timeout'] as number;
     }
     if (timeout && typeof timeout === 'number') {
       await new Promise((resolve) => setTimeout(resolve, timeout));
@@ -1610,7 +1660,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       '.' + fileType.toLowerCase(),
     );
 
-    const ebookConfig = yamlConfig['ebook'] || {};
+    const ebookConfig = (yamlConfig['ebook'] || {}) as Record<string, unknown>;
     if (!ebookConfig) {
       throw new Error(
         'eBook config not found. Please insert ebook front-matter to your markdown file.',
@@ -1619,7 +1669,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (ebookConfig['cover']) {
       // change cover to absolute path if necessary
-      const cover = ebookConfig['cover'];
+      const cover = ebookConfig['cover'] as string;
       ebookConfig['cover'] = utility.removeFileProtocol(
         this.resolveFilePath(cover, false),
       );
@@ -1734,6 +1784,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       level: number;
       filePath: string;
       html?: string;
+      offset: number;
     }[];
     results = results.sort((a, b) => a['offset'] - b['offset']);
 
@@ -1766,15 +1817,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (path.extname(dest) === '.html') {
       // check cover
       if (ebookConfig['cover']) {
-        const cover =
-          ebookConfig['cover'][0] === '/'
-            ? utility.toFileURL(ebookConfig['cover'])
-            : ebookConfig['cover'];
+        const cover = ebookConfig['cover'] as string;
+        const coverUrl = cover[0] === '/' ? utility.toFileURL(cover) : cover;
         $(':root')
           .children()
           .first()
           .prepend(
-            `<img style="display:block; margin-bottom: 24px;" src="${cover}">`,
+            `<img style="display:block; margin-bottom: 24px;" src="${coverUrl}">`,
           );
       }
 
@@ -1795,7 +1844,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (
         path.extname(dest) === '.html' &&
         ebookConfig['html'] &&
-        ebookConfig['html'].cdn
+        (ebookConfig['html'] as Record<string, unknown>)['cdn']
       ) {
         mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.45/dist/katex.min.css">`;
       } else {
@@ -1825,7 +1874,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             utility.getCrossnoteBuildDirectory(),
             `./styles/prism_theme/${
               /*this.getPrismTheme(false)*/ MarkdownEngine.AutoPrismThemeMap[
-                ebookConfig['theme'] || this.notebook.config.previewTheme
+                (ebookConfig['theme'] as string | undefined) ||
+                  this.notebook.config.previewTheme
               ]
             }`,
           ),
@@ -1842,7 +1892,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             `./styles/preview_theme/${
-              ebookConfig['theme'] || this.notebook.config.previewTheme
+              (ebookConfig['theme'] as string | undefined) ||
+              this.notebook.config.previewTheme
             }`,
           ),
         ),
@@ -2013,7 +2064,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
     }
 
-    let config = {};
+    let config: Record<string, unknown> = {};
 
     if (inputString.startsWith('---')) {
       const endFrontMatterOffset = inputString.indexOf('\n---');
@@ -2034,9 +2085,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      *     use_absolute_image_path:      as the name shows.
      *     ignore_from_front_matter:    default is true.
      */
-    let markdownConfig = {};
+    let markdownConfig: Record<string, unknown> = {};
     if (config['markdown']) {
-      markdownConfig = { ...config['markdown'] };
+      markdownConfig = { ...(config['markdown'] as Record<string, unknown>) };
     }
 
     if (!markdownConfig['image_dir']) {
@@ -2052,7 +2103,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           '_' + path.extname(this.filePath),
         );
       }
-      markdownConfig['path'] = path.basename(markdownConfig['path']);
+      markdownConfig['path'] = path.basename(markdownConfig['path'] as string);
     }
 
     // ignore_from_front_matter is `true` by default
@@ -2244,7 +2295,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         // eslint-disable-next-line no-prototype-builtins
         if (arg.hasOwnProperty(key)) {
           thead += `<th>${escape(key)}</th>`;
-          tbody += `<td>${this.frontMatterToTable(arg[key])}</td>`;
+          tbody += `<td>${this.frontMatterToTable((arg as Record<string, unknown>)[key])}</td>`;
         }
       }
       thead += '</tr></thead>';
@@ -2616,10 +2667,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * render tocHTML for [TOC] and sidebar TOC
      */
     // if (!utility.isArrayEqual(headings, this.headings)) { // <== this code is wrong, as it will always be true...
-    const tocConfig = yamlConfig['toc'] || {};
-    const depthFrom = tocConfig['depth_from'] || 1;
-    const depthTo = tocConfig['depth_to'] || 6;
-    const ordered = tocConfig['ordered'];
+    const tocConfig = (yamlConfig['toc'] || {}) as Record<string, unknown>;
+    const depthFrom = (tocConfig['depth_from'] as number | undefined) || 1;
+    const depthTo = (tocConfig['depth_to'] as number | undefined) || 6;
+    const ordered = !!tocConfig['ordered'];
 
     // Collaposible ToC
     // NOTE: We disable the source map here.

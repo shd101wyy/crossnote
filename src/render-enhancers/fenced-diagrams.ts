@@ -440,7 +440,11 @@ async function renderDiagram({
   }
 }
 
-const hiddenCode = (code, attributes, language) =>
+const hiddenCode = (
+  code: string,
+  attributes: Record<string, unknown>,
+  language: string,
+) =>
   `<p ${stringifyBlockAttributes(
     ensureClassInAttributes(attributes, language),
   )}><span style="display: none">${code}</span></p>`;

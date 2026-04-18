@@ -199,7 +199,7 @@ export async function markdownConvert(
     graphsCache: { [key: string]: string };
     notebook: Notebook;
   },
-  config: object,
+  config: Record<string, unknown>,
 ): Promise<string> {
   if (!config['path']) {
     throw new Error('{path} has to be specified');
@@ -211,10 +211,12 @@ export async function markdownConvert(
 
   // dest
   let outputFilePath;
-  if (config['path'][0] === '/') {
-    outputFilePath = path.resolve(projectDirectoryPath, '.' + config['path']);
+  const configPath = config['path'] as string;
+  const configImageDir = config['image_dir'] as string;
+  if (configPath[0] === '/') {
+    outputFilePath = path.resolve(projectDirectoryPath, '.' + configPath);
   } else {
-    outputFilePath = path.resolve(fileDirectoryPath, config['path']);
+    outputFilePath = path.resolve(fileDirectoryPath, configPath);
   }
 
   for (const key in filesCache) {
@@ -224,13 +226,13 @@ export async function markdownConvert(
   }
 
   let imageDirectoryPath: string;
-  if (config['image_dir'][0] === '/') {
+  if (configImageDir[0] === '/') {
     imageDirectoryPath = path.resolve(
       projectDirectoryPath,
-      '.' + config['image_dir'],
+      '.' + configImageDir,
     );
   } else {
-    imageDirectoryPath = path.resolve(fileDirectoryPath, config['image_dir']);
+    imageDirectoryPath = path.resolve(fileDirectoryPath, configImageDir);
   }
 
   const useRelativeFilePath = !config['absolute_image_path'];

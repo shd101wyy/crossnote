@@ -61,7 +61,7 @@ export interface TransformMarkdownOptions {
   timestamp?: number;
 }
 
-const fileExtensionToLanguageMap = {
+const fileExtensionToLanguageMap: Record<string, string> = {
   vhd: 'vhdl',
   erl: 'erlang',
   dot: 'dot',
@@ -454,7 +454,7 @@ export async function transformMarkdown(
             const newlinesMatch = content.match(/\n/g);
             const newlines = newlinesMatch ? newlinesMatch.length : 0;
             const optionsMatch = content.trim().match(/^([^\s]+?)\s([\s\S]+)$/);
-            let options = {};
+            let options: Record<string, unknown> = {};
             if (optionsMatch && optionsMatch[2]) {
               options = parseBlockAttributes(optionsMatch[2]);
             }

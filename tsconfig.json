@@ -17,7 +17,8 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./out/types/",
     "resolveJsonModule": true,
-    "allowJs": true
+    "allowJs": true,
+    "noImplicitAny": true
     // "declarationMap": true
     // "outFile": "./out/types/index.d.ts"
     //     "strict": true

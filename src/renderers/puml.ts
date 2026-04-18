@@ -60,7 +60,7 @@ class PlantUMLTask {
     ]);
 
     this.task.stdout.on('data', (chunk) => {
-      let data = chunk.toString();
+      let data: string = (chunk as Buffer | string).toString();
       this.chunks += data;
       if (
         this.chunks.trimRight().endsWith('</svg>') &&

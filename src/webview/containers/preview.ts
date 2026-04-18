@@ -320,7 +320,7 @@ const PreviewContainer = createContainer(() => {
     let j = scrollMap.length - 1;
     let count = 0;
     let screenRow = -1; // the screenRow is the bufferRow in vscode.
-    let mid;
+    let mid = 0;
 
     while (count < 20) {
       if (Math.abs(top - scrollMap[i]) < 20) {
@@ -425,7 +425,7 @@ const PreviewContainer = createContainer(() => {
     }
     const els = hiddenPreviewElement.current.getElementsByClassName('wavedrom');
     if (els.length) {
-      const newWavedromCache = {};
+      const newWavedromCache: Record<string, string> = {};
       for (let i = 0; i < els.length; i++) {
         const el = els[i] as HTMLElement;
         el.id = 'wavedrom' + i;
@@ -477,7 +477,7 @@ const PreviewContainer = createContainer(() => {
         try {
           const spec = JSON.parse((vegaElement.textContent ?? '').trim());
           window['vegaEmbed'](vegaElement, spec, { actions: false }).catch(
-            (error) => {
+            (error: unknown) => {
               reportVegaError(vegaElement, error);
             },
           );
@@ -1264,7 +1264,7 @@ const PreviewContainer = createContainer(() => {
         return;
       }
 
-      const { indexh, indexv } = event;
+      const { indexh, indexv } = event as { indexh: number; indexv: number };
       for (const slideData of slidesData.current) {
         const { h, v, line } = slideData;
         if (h === indexh && v === indexv) {

@@ -18,7 +18,7 @@ export default async function enhance(
   runOptions: RunCodeChunkOptions,
 ): Promise<void> {
   const asyncFunctions: Promise<void>[] = [];
-  const arrayOfCodeChunkData = [];
+  const arrayOfCodeChunkData: CodeChunkData[] = [];
   $('[data-role="codeBlock"]').each((i, container) => {
     const $container = $(container);
     if ($container.data('executor')) {
