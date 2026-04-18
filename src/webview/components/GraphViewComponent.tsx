@@ -322,7 +322,7 @@ export default function GraphViewComponent() {
     const isFiltering = searchQuery.trim().length > 0;
     const isHovering = hoveredNodeId !== null;
 
-    // Draw links
+    // Draw links with directional arrow heads
     for (const link of links) {
       const src = link.source as D3Node;
       const tgt = link.target as D3Node;
@@ -332,16 +332,61 @@ export default function GraphViewComponent() {
       const isActiveLink =
         isHovering && (src.id === hoveredNodeId || tgt.id === hoveredNodeId);
 
-      ctx.beginPath();
-      ctx.moveTo(src.x, src.y);
-      ctx.lineTo(tgt.x, tgt.y);
-      ctx.strokeStyle = isActiveLink
+      const alpha = isHovering && !isActiveLink ? 0.15 : isFiltering ? 0.25 : 1;
+      const strokeColor = isActiveLink
         ? themeColors.activeLink
         : themeColors.link;
-      ctx.lineWidth = isActiveLink ? 1.5 / t.k : 1 / t.k;
-      ctx.globalAlpha =
-        isHovering && !isActiveLink ? 0.15 : isFiltering ? 0.25 : 1;
+      const lineW = isActiveLink ? 1.5 / t.k : 1 / t.k;
+
+      // Direction vector
+      const dx = tgt.x - src.x;
+      const dy = tgt.y - src.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 1) continue;
+      const ux = dx / dist;
+      const uy = dy / dist;
+
+      // Stop the line at the target node's surface
+      const tgtRadius =
+        getNodeRadius(tgt.id) *
+        (tgt.id === activeFilePath || tgt.id === hoveredNodeId ? 1.4 : 1);
+      const arrowLen = 7 / t.k;
+      const arrowAngle = Math.PI / 7; // ~25°
+      const angle = Math.atan2(dy, dx);
+
+      // Arrowhead tip sits just outside the target node
+      const tipX = tgt.x - ux * (tgtRadius + 1 / t.k);
+      const tipY = tgt.y - uy * (tgtRadius + 1 / t.k);
+
+      // Line body ends before the arrowhead base
+      const bodyEndX = tipX - ux * arrowLen;
+      const bodyEndY = tipY - uy * arrowLen;
+
+      ctx.globalAlpha = alpha;
+
+      // Line body
+      ctx.beginPath();
+      ctx.moveTo(src.x, src.y);
+      ctx.lineTo(bodyEndX, bodyEndY);
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = lineW;
       ctx.stroke();
+
+      // Filled arrowhead triangle
+      ctx.beginPath();
+      ctx.moveTo(tipX, tipY);
+      ctx.lineTo(
+        tipX - arrowLen * Math.cos(angle - arrowAngle),
+        tipY - arrowLen * Math.sin(angle - arrowAngle),
+      );
+      ctx.lineTo(
+        tipX - arrowLen * Math.cos(angle + arrowAngle),
+        tipY - arrowLen * Math.sin(angle + arrowAngle),
+      );
+      ctx.closePath();
+      ctx.fillStyle = strokeColor;
+      ctx.fill();
+
       ctx.globalAlpha = 1;
     }
 
