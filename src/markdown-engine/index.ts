@@ -113,6 +113,47 @@ export interface HTMLTemplateOption {
   isForBrowser?: boolean;
 }
 
+/**
+ * Normalize code blocks produced by markdown_yo to the data-role="codeBlock"
+ * format expected by all render enhancers (code-block-styling, fenced-diagrams,
+ * fenced-math, fenced-code-chunks).
+ *
+ * markdown_yo outputs: <pre><code class="language-xxx">code</code></pre>
+ * Enhancers expect:    <pre data-role="codeBlock" data-info="xxx"
+ *                           data-parsed-info="..." data-normalized-info="...">
+ *                        code
+ *                      </pre>
+ */
+function normalizeMarkdownYoCodeBlocks($: CheerioAPI): void {
+  $('pre:not([data-role="codeBlock"])').each((_i, pre) => {
+    const $pre = $(pre);
+    const $code = $pre.children('code').first();
+    if (!$code.length) return;
+
+    // Extract language from class="language-xxx" or "lang-xxx"
+    const classes = ($code.attr('class') ?? '').split(/\s+/);
+    let language = '';
+    for (const cls of classes) {
+      const m = cls.match(/^(?:language|lang)-(.+)$/);
+      if (m) {
+        language = m[1];
+        break;
+      }
+    }
+
+    const code = $code.text(); // decoded text
+    const parsedInfo = parseBlockInfo(language);
+    const normalizedInfo = normalizeBlockInfo(parsedInfo);
+
+    $pre
+      .attr('data-role', 'codeBlock')
+      .attr('data-info', language)
+      .attr('data-parsed-info', JSON.stringify(parsedInfo))
+      .attr('data-normalized-info', JSON.stringify(normalizedInfo))
+      .html(escape(code));
+  });
+}
+
 // NOTE: The order of the following matters.
 const dependentLibraryMaterials = [
   { key: 'vega', version: '5.25.0' },
@@ -2718,6 +2759,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * resolve image paths and render code block.
      */
     const $ = cheerio.load(html);
+
+    // markdown_yo outputs standard <pre><code class="language-xxx"> elements.
+    // Normalize them to the data-role="codeBlock" format expected by all
+    // render enhancers (code-block-styling, fenced-diagrams, fenced-math, etc.)
+    if (this.notebook.config.markdownParser === 'markdown_yo') {
+      normalizeMarkdownYoCodeBlocks($);
+    }
+
     await enhanceWithFencedMath(
       $,
       this.notebook.config.mathRenderingOption,
