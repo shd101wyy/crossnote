@@ -852,6 +852,54 @@ window["initRevealPresentation"] = async function() {
   }
 
   /**
+   * Generate a minimal HTML template for the graph view webview.
+   * Unlike generateHTMLTemplateForPreview, this does not parse any markdown —
+   * it just creates a shell that loads graph-view.js.
+   */
+  public generateHTMLTemplateForGraphView({
+    vscodePreviewPanel,
+    contentSecurityPolicy = '',
+  }: {
+    vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
+    contentSecurityPolicy?: string;
+  }): string {
+    const webviewScript = utility.addFileProtocol(
+      path.resolve(
+        utility.getCrossnoteBuildDirectory(),
+        './webview/graph-view.js',
+      ),
+      vscodePreviewPanel,
+    );
+    const webviewCss = utility.addFileProtocol(
+      path.resolve(
+        utility.getCrossnoteBuildDirectory(),
+        './webview/graph-view.css',
+      ),
+      vscodePreviewPanel,
+    );
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+  <meta charset="UTF-8">
+  ${
+    contentSecurityPolicy
+      ? `<meta http-equiv="Content-Security-Policy" content="${contentSecurityPolicy}" />`
+      : ''
+  }
+  <link rel="stylesheet" href="${webviewCss}">
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <script src="${webviewScript}"></script>
+</body>
+</html>`;
+  }
+
+  /**
    * Generate HTML content
    * @param html: this is the final content you want to put.
    * @param yamlConfig: this is the front matter.

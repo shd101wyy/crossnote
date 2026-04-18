@@ -43,6 +43,8 @@ import {
 } from './types';
 
 export * from './types';
+export { constructGraphView } from './graph-view';
+export type { GraphViewData, GraphViewLink, GraphViewNode } from './graph-view';
 
 const defaultMarkdownItConfig: Partial<ExtendedMarkdownItOptions> = {
   html: true, // Enable HTML tags in source
