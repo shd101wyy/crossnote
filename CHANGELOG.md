@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.20] - 2026-04-19
+
 ### Breaking changes
 
 - **`usePandocParser` and `useMarkdownYoParser` config fields have been removed.** Use the new unified `markdownParser` field instead:
@@ -30,6 +32,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
     | 20 MB      | 722.8 ms         | 95.4 ms | 7.6×    | 121.5 ms | 6.0×    |
 
     _Native: clang -O3 -flto. WASM: Emscripten, Node.js, -O3 -flto. WASM overhead at small sizes is dominated by one-time WASM compilation startup (~12ms). Crossnote uses the WASM version for cross-platform compatibility._
+
+  - Pre-built binaries for Linux, macOS, and Windows are available at [github.com/shd101wyy/markdown_yo/releases](https://github.com/shd101wyy/markdown_yo/releases). To use them, set `markdownYoBinaryPath` in your notebook config.
 
 - Support rendering [D2](https://d2lang.com) diagrams via the `d2` CLI. D2 fenced code blocks are rendered as SVG diagrams in the preview. If the `d2` executable is not installed, blocks are silently rendered as plain code blocks. https://github.com/shd101wyy/crossnote/pull/405 by @kvdogan
   - New settings: `markdown-preview-enhanced.d2Path`, `d2Layout`, `d2Theme`, `d2Sketch`

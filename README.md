@@ -335,7 +335,9 @@ For very large files (≥1 MB), the native binary is ~1.3× faster than WASM bec
 
 ### Native Binary
 
-If you have a locally built markdown_yo binary, you can configure crossnote to use it instead of WASM by setting `markdownYoBinaryPath`:
+Pre-built binaries for Linux, macOS, and Windows are available at [github.com/shd101wyy/markdown_yo/releases](https://github.com/shd101wyy/markdown_yo/releases).
+
+To use a native binary instead of WASM, set `markdownYoBinaryPath`:
 
 ```yaml
 markdownParser: markdown_yo
