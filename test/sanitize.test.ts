@@ -138,6 +138,16 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
       expect(result).toContain('{"signal":[]}');
     });
 
+    it('preserves TikZ scripts', () => {
+      const tikzCode =
+        '\\begin{tikzpicture}\\draw (0,0) -- (1,1);\\end{tikzpicture}';
+      const result = sanitize(
+        `<div><script type="text/tikz">${tikzCode}</script></div>`,
+      );
+      expect(result).toContain('<script type="text/tikz">');
+      expect(result).toContain(tikzCode);
+    });
+
     it('removes script tags without type', () => {
       const result = sanitize('<script>alert("xss")</script>');
       expect(result).not.toContain('<script');

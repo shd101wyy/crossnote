@@ -16,9 +16,8 @@ export async function svgElementToPNGFile(
       .toFile(pngFilePath);
   } catch (error) {
     throw new Error(
-      'sharp conversion failure\n' +
-        error.toString() +
-        '\n\nPlease make sure you have libvips installed.',
+      'sharp conversion failure\n\nPlease make sure you have libvips installed.',
+      { cause: error },
     );
   }
 

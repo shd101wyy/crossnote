@@ -1,4 +1,4 @@
-import { Bars3Icon, LinkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, LinkIcon, ShareIcon } from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
 import readingTime from 'reading-time/lib/reading-time';
@@ -16,6 +16,8 @@ export default function Footer() {
     theme,
     markdown,
     enablePreviewZenMode,
+    postMessage,
+    sourceUri,
   } = PreviewContainer.useContainer();
   const [readingTimeEstimation, setReadingTimeEstimation] = useState<
     | {
@@ -59,6 +61,15 @@ export default function Footer() {
             isMobile || isMouseOverPreview ? '' : 'invisible',
           )}
         >
+          <div
+            className="p-1 cursor-pointer hover:text-primary w-5 h-5"
+            title="Open graph view"
+            onClick={() => {
+              postMessage('openGraphView', [sourceUri.current]);
+            }}
+          >
+            <ShareIcon className="w-5 h-5"></ShareIcon>
+          </div>
           <div
             className={classNames(
               'p-1 cursor-pointer hover:text-primary w-5 h-5',

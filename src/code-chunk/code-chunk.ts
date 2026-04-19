@@ -119,7 +119,7 @@ except Exception:
 
   // check macros
   let findInputFileMacro = false;
-  args = args.map((arg) => {
+  args = args.map((arg: string) => {
     if (arg === '$input_file') {
       findInputFileMacro = true;
       return savePath;
@@ -160,7 +160,7 @@ except Exception:
   });
 }
 
-const fileExtensionMap = {
+const fileExtensionMap: Record<string, string> = {
   'go': '.go',
   'javascript': '.js',
   'python': '.py',

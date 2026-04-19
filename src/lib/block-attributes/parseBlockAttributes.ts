@@ -20,7 +20,10 @@ const normalizeValue = (value: string): boolean | number | string => {
   return value;
 };
 
-const extractStringWithBrackets = (text, start): Node | void => {
+const extractStringWithBrackets = (
+  text: string,
+  start: number,
+): Node | void => {
   if (text[start] !== '(') {
     return;
   }
@@ -41,7 +44,7 @@ const extractStringWithBrackets = (text, start): Node | void => {
   return [text.substring(start, end), end, 'stringWithBrackets'];
 };
 
-const extractStringInQuotes = (text, start): Node | void => {
+const extractStringInQuotes = (text: string, start: number): Node | void => {
   const quote = text[start];
   if (!'\'"“`'.includes(quote)) {
     return;
@@ -95,7 +98,7 @@ const extractWord = (text: string, start: number): Node | void => {
   return [text.substring(start, i), i, 'word'];
 };
 
-const extractArray = (text, start): Node | void => {
+const extractArray = (text: string, start: number): Node | void => {
   if (text[start] !== '[') {
     return;
   }

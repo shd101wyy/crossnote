@@ -1,14 +1,17 @@
+import type { CheerioAPI, Cheerio } from 'cheerio';
+import type { AnyNode } from 'domhandler';
+
 /**
  * Extend table syntax to support colspan and rowspan for merging cells
  * @param $
  */
-export default async function enhance($: CheerioStatic): Promise<void> {
-  const rowspans: [Cheerio, Cheerio][] = []; // ^
-  const colspans: [Cheerio, Cheerio][] = []; // >
-  const colspans2: [Cheerio, Cheerio][] = []; // empty
+export default async function enhance($: CheerioAPI): Promise<void> {
+  const rowspans: [Cheerio<AnyNode>, Cheerio<AnyNode>][] = []; // ^
+  const colspans: [Cheerio<AnyNode>, Cheerio<AnyNode>][] = []; // >
+  const colspans2: [Cheerio<AnyNode>, Cheerio<AnyNode>][] = []; // empty
   $('table').each((i, table) => {
     const $table = $(table);
-    let $prevRow: Cheerio | null = null;
+    let $prevRow: Cheerio<AnyNode> | null = null;
     $table.children().each((a, headBody) => {
       const $headBody = $(headBody);
       $headBody.children().each((i2, row) => {
@@ -54,8 +57,8 @@ export default async function enhance($: CheerioStatic): Promise<void> {
   for (let i = rowspans.length - 1; i >= 0; i--) {
     const [$prev, $col] = rowspans[i];
     const rowspan =
-      (parseInt($prev.attr('rowspan'), 10) || 1) +
-      (parseInt($col.attr('rowspan'), 10) || 1);
+      (parseInt($prev.attr('rowspan') ?? '', 10) || 1) +
+      (parseInt($col.attr('rowspan') ?? '', 10) || 1);
     $prev.attr('rowspan', rowspan.toString());
     $col.remove();
   }
@@ -63,16 +66,16 @@ export default async function enhance($: CheerioStatic): Promise<void> {
   for (let i = 0; i < colspans.length; i++) {
     const [$prev, $col] = colspans[i];
     const colspan =
-      (parseInt($prev.attr('colspan'), 10) || 1) +
-      (parseInt($col.attr('colspan'), 10) || 1);
+      (parseInt($prev.attr('colspan') ?? '', 10) || 1) +
+      (parseInt($col.attr('colspan') ?? '', 10) || 1);
     $col.attr('colspan', colspan.toString());
     $prev.remove();
   }
   for (let i = colspans2.length - 1; i >= 0; i--) {
     const [$prev, $col] = colspans2[i];
     const colspan =
-      (parseInt($prev.attr('colspan'), 10) || 1) +
-      (parseInt($col.attr('colspan'), 10) || 1);
+      (parseInt($prev.attr('colspan') ?? '', 10) || 1) +
+      (parseInt($col.attr('colspan') ?? '', 10) || 1);
     $prev.attr('colspan', colspan.toString());
     $col.remove();
   }

@@ -26,8 +26,8 @@ export async function render(
     return svg;
   } catch (error) {
     throw new Error(
-      'wavedrom CLI is required to be installed.\nCheck http://github.com/wavedrom/cli for more information.\n\n' +
-        error.toString(),
+      'wavedrom CLI is required to be installed.\nCheck http://github.com/wavedrom/cli for more information.',
+      { cause: error },
     );
   }
 }

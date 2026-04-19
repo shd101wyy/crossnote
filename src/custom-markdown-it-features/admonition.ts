@@ -78,14 +78,14 @@ export default (md: MarkdownIt) => {
     if (marker !== _marker) return false;
 
     // scan marker length
-    let mem = pos;
+    const mem = pos;
     pos = state.skipChars(pos, marker);
     const len = pos - mem;
     if (len < _minMarkerLen) return false;
 
     const markup: string = state.src.slice(mem, pos);
-    let type = '';
-    let title = '';
+    let type: string;
+    let title: string;
     const paramsr: string[] = state.src.slice(pos, max).trim().split(' ');
     type = (paramsr.shift() ?? '').toLowerCase();
     title = paramsr.join(' ');
@@ -111,7 +111,7 @@ export default (md: MarkdownIt) => {
         // also block seems to be autoclosed by end of parent
         break;
       }
-      pos = mem = state.bMarks[nextLine] + state.tShift[nextLine];
+      pos = state.bMarks[nextLine] + state.tShift[nextLine];
       max = state.eMarks[nextLine];
 
       if (pos < max && state.sCount[nextLine] < state.blkIndent) {

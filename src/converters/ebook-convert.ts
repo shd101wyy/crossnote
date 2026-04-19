@@ -5,62 +5,65 @@ import * as path from 'path';
 // ebook-convert is requied (calibre), which can be got from https://calibre-ebook.com/download
 // xpath http://www.w3schools.com/xsl/xpath_syntax.asp
 
-function processMetadata(config = {}, args) {
-  const title = config['title'] || 'No Title';
+function processMetadata(config: Record<string, unknown> = {}, args: string[]) {
+  const title = (config['title'] as string) || 'No Title';
   args.push('--title', title);
 
   if (config['authors']) {
-    args.push('--authors', config['authors']);
+    args.push('--authors', config['authors'] as string);
   }
 
   if (config['cover']) {
-    args.push('--cover', config['cover']);
+    args.push('--cover', config['cover'] as string);
   }
 
   if (config['comment']) {
-    args.push('--comments', config['comments']);
+    args.push('--comments', config['comments'] as string);
   }
 
   if (config['publisher']) {
-    args.push('--publisher', config['publisher']);
+    args.push('--publisher', config['publisher'] as string);
   }
 
   if (config['book-producer']) {
-    args.push('--book-producer', config['book-producer']);
+    args.push('--book-producer', config['book-producer'] as string);
   }
 
   if (config['pubdate']) {
-    args.push('--pubdate', config['pubdate']);
+    args.push('--pubdate', config['pubdate'] as string);
   }
 
   if (config['language']) {
-    args.push('--language', config['language']);
+    args.push('--language', config['language'] as string);
   }
 
   if (config['isbn']) {
-    args.push('--isbn', config['isbn']);
+    args.push('--isbn', config['isbn'] as string);
   }
 
   if (config['tags']) {
-    args.push('--tags', config['tags']);
+    args.push('--tags', config['tags'] as string);
   }
 
   if (config['series']) {
-    args.push('--series', config['series']);
+    args.push('--series', config['series'] as string);
   }
 
   if (config['rating']) {
-    args.push('--rating', config['rating']);
+    args.push('--rating', config['rating'] as string);
   }
 }
 
-function processAppearance(config = {}, args) {
+function processAppearance(
+  config: Record<string, unknown> = {},
+  args: string[],
+) {
   if (config['asciiize']) {
     args.push('--asciiize');
   }
 
   if (config['base-font-size']) {
-    args.push('--base-font-size=' + config['base-font-size']);
+    args.push('--base-font-size=' + (config['base-font-size'] as string));
   }
 
   if (config['disable-font-rescaling']) {
@@ -68,7 +71,7 @@ function processAppearance(config = {}, args) {
   }
 
   if (config['line-height']) {
-    args.push('--line-height=' + config['line-height']);
+    args.push('--line-height=' + (config['line-height'] as string));
   }
 
   let marginTop = 72;
@@ -76,7 +79,7 @@ function processAppearance(config = {}, args) {
   let marginBottom = 72;
   let marginLeft = 72;
   if (config['margin']) {
-    const margin: number[] | number = config['margin'];
+    const margin = config['margin'] as number[] | number;
     if (margin instanceof Array) {
       if (margin.length === 1) {
         marginTop = margin[0];
@@ -102,16 +105,16 @@ function processAppearance(config = {}, args) {
     }
   } else {
     if (config['margin-top']) {
-      marginTop = config['margin-top'];
+      marginTop = config['margin-top'] as number;
     }
     if (config['margin-right']) {
-      marginRight = config['margin-right'];
+      marginRight = config['margin-right'] as number;
     }
     if (config['margin-bottom']) {
-      marginBottom = config['margin-bottom'];
+      marginBottom = config['margin-bottom'] as number;
     }
     if (config['margin-left']) {
-      marginLeft = config['margin-left'];
+      marginLeft = config['margin-left'] as number;
     }
   }
 
@@ -121,7 +124,7 @@ function processAppearance(config = {}, args) {
   args.push('--margin-right=' + marginRight);
 }
 
-function processEPub(config = {}, args) {
+function processEPub(config: Record<string, unknown> = {}, args: string[]) {
   if (config['no-default-epub-cover']) {
     args.push('--no-default-epub-cover');
   }
@@ -133,21 +136,23 @@ function processEPub(config = {}, args) {
   }
 }
 
-function processPDF(config = {}, args) {
+function processPDF(config: Record<string, unknown> = {}, args: string[]) {
   if (config['paper-size']) {
-    args.push('--paper-size', config['paper-size']);
+    args.push('--paper-size', config['paper-size'] as string);
   }
 
   if (config['default-font-size']) {
-    args.push('--pdf-default-font-size=' + config['default-font-size']);
+    args.push(
+      '--pdf-default-font-size=' + (config['default-font-size'] as string),
+    );
   }
 
   if (config['header-template']) {
-    args.push('--pdf-header-template', config['header-template']);
+    args.push('--pdf-header-template', config['header-template'] as string);
   }
 
   if (config['footer-template']) {
-    args.push('--pdf-footer-template', config['footer-template']);
+    args.push('--pdf-footer-template', config['footer-template'] as string);
   }
 
   if (config['page-numbers']) {
@@ -164,7 +169,11 @@ function processPDF(config = {}, args) {
  * @param dest: output path
  */
 
-export function ebookConvert(src, dest, config = {}) {
+export function ebookConvert(
+  src: string,
+  dest: string,
+  config: Record<string, unknown> = {},
+) {
   return new Promise<void>((resolve, reject) => {
     const args = [
       src,
@@ -184,13 +193,13 @@ export function ebookConvert(src, dest, config = {}) {
     // output formats
     const format = path.extname(dest).slice(1);
     if (format === 'epub') {
-      processEPub(config['epub'], args);
+      processEPub(config['epub'] as Record<string, unknown>, args);
     } else if (format === 'pdf') {
-      processPDF(config['pdf'], args);
+      processPDF(config['pdf'] as Record<string, unknown>, args);
     }
 
     // arguments
-    const ebookArgs = config['args'] || [];
+    const ebookArgs = (config['args'] as string[]) || [];
     ebookArgs.forEach((arg) => {
       args.push(arg);
     });

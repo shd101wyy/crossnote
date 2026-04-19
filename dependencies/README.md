@@ -6,8 +6,8 @@ I managed some of the libraries by myself instead of through npm to reduce the o
 {
   "font-awesome": "6.4.2", // Download from here: https://fontawesome.com/download
   // Fontawesome cheatsheet is available here: https://kapeli.com/cheat_sheets/Font_Awesome.docset/Contents/Resources/Documents/index
-  "katex": "v0.16.38", // Only keep the css and fonts files.
-  "mermaid": "11.13.0", // https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js
+  "katex": "v0.16.45", // Only keep the css and fonts files.
+  "mermaid": "11.14.0", // https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js
   // https://www.jsdelivr.com/package/npm/mermaid
   "reveal": "4.6.0",
 

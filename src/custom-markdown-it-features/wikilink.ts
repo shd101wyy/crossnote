@@ -15,7 +15,7 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       return false;
     }
 
-    let content: string | null = null;
+    let content: string | null;
     const tag = ']]';
     let end = -1;
 

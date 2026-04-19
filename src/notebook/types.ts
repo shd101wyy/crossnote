@@ -9,6 +9,8 @@ export type { KatexOptions } from 'katex';
 export type { MermaidConfig } from 'mermaid';
 export const IS_NODE = typeof window === 'undefined';
 
+export type MarkdownParser = 'markdown-it' | 'pandoc' | 'markdown_yo';
+
 export type FileSystemStats = {
   mtimeMs: number;
   ctimeMs: number;
@@ -23,7 +25,7 @@ export type FileSystemApi = {
   writeFile: (
     path: string,
     content: string,
-    encoding?: string,
+    encoding?: BufferEncoding,
   ) => Promise<void>;
   mkdir: (path: string) => Promise<void>;
   exists: (path: string) => Promise<boolean>;
@@ -180,11 +182,32 @@ export interface NotebookConfig {
   katexConfig: KatexOptions;
 
   /**
-   * Whether to use Pandoc parser.
+   * Markdown parser to use for rendering.
    *
-   * @default false
+   * - `'markdown-it'` (default) — built-in markdown-it renderer
+   * - `'pandoc'` — render via Pandoc (requires Pandoc installed)
+   * - `'markdown_yo'` — render via markdown_yo (WASM or native binary)
+   *
+   * @default 'markdown-it'
    */
-  usePandocParser: boolean;
+  markdownParser: MarkdownParser;
+
+  /**
+   * Path to the `markdown_yo` native binary.
+   *
+   * When set, crossnote will invoke this binary (via stdin/stdout) instead of
+   * the bundled WASM module when `markdownParser` is `'markdown_yo'`.
+   *
+   * **Performance note:** the native binary is faster for files under ~300 KB
+   * (roughly 6× faster than WASM due to lower per-call overhead). For very
+   * large files (>500 KB) the subprocess I/O cost may exceed the WASM render
+   * time, so WASM (the default) is preferable in those cases.
+   *
+   * Supports `$HOME` and `~` variable substitution.
+   *
+   * @default `''` (use WASM)
+   */
+  markdownYoBinaryPath: string;
 
   /**
    * Parser configuration.
@@ -526,17 +549,6 @@ export interface NotebookConfig {
    * Whether to always show backlinks in preview.
    */
   alwaysShowBacklinksInPreview: boolean;
-
-  /**
-   * Whether to use markdown_yo (WASM) as the markdown renderer.
-   *
-   * When enabled, markdown_yo will be used for HTML rendering instead of
-   * markdown-it. markdown-it is still used for token-based operations
-   * (e.g., backlink extraction, note mention processing).
-   *
-   * @default false
-   */
-  useMarkdownYoParser: boolean;
 }
 
 export function getDefaultMermaidConfig(): MermaidConfig {
@@ -561,10 +573,10 @@ export function getDefaultKatexConfig(): KatexOptions {
 
 export function getDefaultParserConfig(): ParserConfig {
   return {
-    onWillParseMarkdown: async function (markdown) {
+    onWillParseMarkdown: async function (markdown: string) {
       return markdown;
     },
-    onDidParseMarkdown: async function (html) {
+    onDidParseMarkdown: async function (html: string) {
       return html;
     },
   };
@@ -589,7 +601,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     katexConfig: getDefaultKatexConfig(),
     parserConfig: getDefaultParserConfig(),
     enablePreviewZenMode: true,
-    usePandocParser: false,
+    markdownParser: 'markdown-it',
     breakOnSingleNewLine: true,
     enableTypographer: false,
     enableWikiLinkSyntax: true,
@@ -616,6 +628,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     printBackground: false,
     chromePath: '',
     imageMagickPath: '',
+    markdownYoBinaryPath: '',
     pandocPath: 'pandoc',
     pandocMarkdownFlavor: 'markdown-raw_tex+tex_math_single_backslash',
     pandocArguments: [],
@@ -641,7 +654,6 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     d2Sketch: false,
     isVSCode: false,
     alwaysShowBacklinksInPreview: false,
-    useMarkdownYoParser: false,
   };
 }
 

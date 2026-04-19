@@ -29,7 +29,6 @@ export default function MarkdownEditor() {
     markdownEditorExpanded,
     setMarkdownEditorExpanded,
   } = PreviewContainer.useContainer();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const editorRef = useRef<monacoEditor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof Monaco | null>(null);
   const isSuggestionWidgetOpened = useRef(false);
@@ -235,7 +234,10 @@ export default function MarkdownEditor() {
     }
 
     monaco.languages.registerCompletionItemProvider('markdown', {
-      provideCompletionItems: function (model, position) {
+      provideCompletionItems: function (
+        model: monacoEditor.ITextModel,
+        position: Monaco.Position,
+      ) {
         const text = model.getValueInRange({
           startLineNumber: position.lineNumber,
           endLineNumber: position.lineNumber,
@@ -372,9 +374,11 @@ export default function MarkdownEditor() {
     )?.widget as any;
 
     if (suggestionWidget) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       suggestionWidget.value.onDidShow(() => {
         isSuggestionWidgetOpened.current = true;
       });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       suggestionWidget.value.onDidHide(() => {
         isSuggestionWidgetOpened.current = false;
       });

@@ -19,7 +19,15 @@ import { processGraphs } from './process-graphs';
  */
 function processMath(
   text: string,
-  { mathInlineDelimiters, mathBlockDelimiters, mathRenderingOnlineService },
+  {
+    mathInlineDelimiters,
+    mathBlockDelimiters,
+    mathRenderingOnlineService,
+  }: {
+    mathInlineDelimiters: string[][];
+    mathBlockDelimiters: string[][];
+    mathRenderingOnlineService: string;
+  },
 ): string {
   let line = text.replace(/\\\$/g, '#slash_dollarsign#');
 
@@ -110,13 +118,13 @@ function processMath(
  * @param protocolsWhiteListRegExp
  */
 function processPaths(
-  text,
-  fileDirectoryPath,
-  projectDirectoryPath,
-  useRelativeFilePath,
+  text: string,
+  fileDirectoryPath: string,
+  projectDirectoryPath: string,
+  useRelativeFilePath: boolean,
   protocolsWhiteListRegExp: RegExp,
 ) {
-  function resolvePath(src) {
+  function resolvePath(src: string) {
     if (src.match(protocolsWhiteListRegExp)) {
       // do nothing
     } else if (useRelativeFilePath) {
@@ -173,7 +181,7 @@ function processPaths(
 }
 
 export async function markdownConvert(
-  text,
+  text: string,
   {
     projectDirectoryPath,
     fileDirectoryPath,
@@ -191,7 +199,7 @@ export async function markdownConvert(
     graphsCache: { [key: string]: string };
     notebook: Notebook;
   },
-  config: object,
+  config: Record<string, unknown>,
 ): Promise<string> {
   if (!config['path']) {
     throw new Error('{path} has to be specified');
@@ -203,10 +211,12 @@ export async function markdownConvert(
 
   // dest
   let outputFilePath;
-  if (config['path'][0] === '/') {
-    outputFilePath = path.resolve(projectDirectoryPath, '.' + config['path']);
+  const configPath = config['path'] as string;
+  const configImageDir = config['image_dir'] as string;
+  if (configPath[0] === '/') {
+    outputFilePath = path.resolve(projectDirectoryPath, '.' + configPath);
   } else {
-    outputFilePath = path.resolve(fileDirectoryPath, config['path']);
+    outputFilePath = path.resolve(fileDirectoryPath, configPath);
   }
 
   for (const key in filesCache) {
@@ -216,13 +226,13 @@ export async function markdownConvert(
   }
 
   let imageDirectoryPath: string;
-  if (config['image_dir'][0] === '/') {
+  if (configImageDir[0] === '/') {
     imageDirectoryPath = path.resolve(
       projectDirectoryPath,
-      '.' + config['image_dir'],
+      '.' + configImageDir,
     );
   } else {
-    imageDirectoryPath = path.resolve(fileDirectoryPath, config['image_dir']);
+    imageDirectoryPath = path.resolve(fileDirectoryPath, configImageDir);
   }
 
   const useRelativeFilePath = !config['absolute_image_path'];
@@ -238,7 +248,7 @@ export async function markdownConvert(
     useRelativeFilePath,
     filesCache,
     forPreview: false,
-    usePandocParser: true, // NOTE: We need to set this to true here even though we don't use pandoc to parse the markdown.
+    markdownParser: 'pandoc', // NOTE: We need to set this to 'pandoc' here even though we don't use pandoc to parse the markdown.
     forMarkdownExport: true,
     protocolsWhiteListRegExp,
     imageDirectoryPath,

@@ -33,7 +33,7 @@ function getFileExtension(documentType: string) {
  */
 
 function processOutputConfig(
-  config: object,
+  config: Record<string, unknown>,
   args: string[],
   latexEngine: string = 'pdflatex',
 ) {
@@ -105,8 +105,8 @@ function processOutputConfig(
   }
 
   if (config['includes'] && typeof config['includes'] === 'object') {
-    const includesConfig = config['includes'];
-    const helper = (prefix, data) => {
+    const includesConfig = config['includes'] as Record<string, unknown>;
+    const helper = (prefix: string, data: string | string[]) => {
       if (typeof data === 'string') {
         args.push(prefix + data);
       } else if (data.constructor === Array) {
@@ -118,13 +118,22 @@ function processOutputConfig(
 
     // TODO: includesConfig['in_header'] is array
     if (includesConfig['in_header']) {
-      helper('--include-in-header=', includesConfig['in_header']);
+      helper(
+        '--include-in-header=',
+        includesConfig['in_header'] as string | string[],
+      );
     }
     if (includesConfig['before_body']) {
-      helper('--include-before-body=', includesConfig['before_body']);
+      helper(
+        '--include-before-body=',
+        includesConfig['before_body'] as string | string[],
+      );
     }
     if (includesConfig['after_body']) {
-      helper('--include-after-body=', includesConfig['after_body']);
+      helper(
+        '--include-after-body=',
+        includesConfig['after_body'] as string | string[],
+      );
     }
   }
 
@@ -135,36 +144,43 @@ function processOutputConfig(
   // All other arguments give here can override the
   // defaults from above
   if (config['pandoc_args']) {
-    config['pandoc_args'].forEach((arg) => args.push(arg));
+    (config['pandoc_args'] as string[]).forEach((arg: string) =>
+      args.push(arg),
+    );
   }
 }
 
-function loadOutputYAML(fileDirectoryPath, config) {
+function loadOutputYAML(
+  fileDirectoryPath: string,
+  config: Record<string, unknown>,
+) {
   const yamlPath = path.resolve(fileDirectoryPath, '_output.yaml');
-  let yaml: string = '';
+  let yaml: string;
   try {
     yaml = fs.readFileSync(yamlPath, { encoding: 'utf-8' });
-  } catch (error) {
+  } catch {
     return Object.assign({}, config);
   }
 
-  let data = {};
+  let data: Record<string, unknown> = {};
   if (yaml) {
-    data = utility.parseYAML(yaml);
+    data = utility.parseYAML(yaml) as Record<string, unknown>;
   }
 
   if (config['output']) {
     if (typeof config['output'] === 'string' && data[config['output']]) {
       const format = config['output'];
-      config['output'] = {};
-      config['output'][format] = data[format];
+      config['output'] = {} as Record<string, unknown>;
+      (config['output'] as Record<string, unknown>)[format] = data[format];
     } else {
-      const format = Object.keys(config['output'])[0];
+      const format = Object.keys(
+        config['output'] as Record<string, unknown>,
+      )[0];
       if (data[format]) {
-        config['output'][format] = Object.assign(
+        (config['output'] as Record<string, unknown>)[format] = Object.assign(
           {},
           data[format],
-          config['output'][format],
+          (config['output'] as Record<string, unknown>)[format],
         );
       }
     }
@@ -214,8 +230,12 @@ function processConfigPaths(config, fileDirectoryPath, projectDirectoryPath)->
       outputConfig['template'] = helper(outputConfig['template'])
 */
 
-function processPaths(text, fileDirectoryPath, projectDirectoryPath) {
-  function resolvePath(src) {
+function processPaths(
+  text: string,
+  fileDirectoryPath: string,
+  projectDirectoryPath: string,
+) {
+  function resolvePath(src: string) {
     if (src.startsWith('/')) {
       return path.relative(
         fileDirectoryPath,
@@ -270,7 +290,7 @@ callback(err, outputFilePath)
  * @return outputFilePath
  */
 export async function pandocConvert(
-  text,
+  text: string,
   {
     fileDirectoryPath,
     projectDirectoryPath,
@@ -291,7 +311,7 @@ export async function pandocConvert(
     graphsCache: { [key: string]: string };
     notebook: Notebook;
   },
-  config = {},
+  config: Record<string, unknown> = {},
 ): Promise<string> {
   config = loadOutputYAML(fileDirectoryPath, config);
   // TODO =>
@@ -300,17 +320,21 @@ export async function pandocConvert(
     notebook.config.pandocMarkdownFlavor.replace(/-raw_tex/, ''),
   ];
 
-  let extension: string | null = null;
-  let outputConfig = null;
-  let documentFormat: string | null = null;
+  let extension: string | null;
+  let outputConfig: Record<string, unknown> | null = null;
+  let documentFormat: string | null;
   if (config['output']) {
     if (typeof config['output'] === 'string') {
       documentFormat = config['output'];
       extension = getFileExtension(documentFormat);
     } else {
-      documentFormat = Object.keys(config['output'])[0];
+      documentFormat = Object.keys(
+        config['output'] as Record<string, unknown>,
+      )[0];
       extension = getFileExtension(documentFormat);
-      outputConfig = config['output'][documentFormat];
+      outputConfig = (config['output'] as Record<string, unknown>)[
+        documentFormat
+      ] as Record<string, unknown>;
     }
   } else {
     throw new Error('Output format needs to be specified.');
@@ -335,7 +359,7 @@ export async function pandocConvert(
   // dest
   let outputFilePath;
   if (outputConfig && outputConfig['path']) {
-    outputFilePath = outputConfig['path'];
+    outputFilePath = outputConfig['path'] as string;
     if (outputFilePath.startsWith('/')) {
       outputFilePath = path.resolve(projectDirectoryPath, '.' + outputFilePath);
     } else {
@@ -376,7 +400,11 @@ export async function pandocConvert(
   // processConfigPaths config, fileDirectoryPath, projectDirectoryPath
 
   // process output config
-  processOutputConfig(outputConfig || {}, args, notebook.config.latexEngine);
+  processOutputConfig(
+    outputConfig || ({} as Record<string, unknown>),
+    args,
+    notebook.config.latexEngine,
+  );
 
   if (notebook.config.parserConfig.onWillParseMarkdown) {
     text = await notebook.config.parserConfig.onWillParseMarkdown(text);
@@ -390,7 +418,7 @@ export async function pandocConvert(
     filesCache,
     protocolsWhiteListRegExp,
     forPreview: false,
-    usePandocParser: true,
+    markdownParser: 'pandoc',
     notebook,
   });
   text = data.outputString;

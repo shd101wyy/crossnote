@@ -1,5 +1,7 @@
 import { Mutex } from 'async-mutex';
 import * as caseAnything from 'case-anything';
+import ignore, { type Ignore } from 'ignore';
+import { execFileSync } from 'child_process';
 import MarkdownIt from 'markdown-it';
 import MarkdownItAbbr from 'markdown-it-abbr';
 import MarkdownItDeflist from 'markdown-it-deflist';
@@ -42,6 +44,8 @@ import {
 } from './types';
 
 export * from './types';
+export { constructGraphView } from './graph-view';
+export type { GraphViewData, GraphViewLink, GraphViewNode } from './graph-view';
 
 const defaultMarkdownItConfig: Partial<ExtendedMarkdownItOptions> = {
   html: true, // Enable HTML tags in source
@@ -84,10 +88,20 @@ interface RefreshNotesArgs extends RefreshNotesIfNotLoaded {
   refreshRelations?: boolean;
 }
 
+/** Internal shape used during the recursive directory walk. */
+interface RefreshNotesInternalArgs extends RefreshNotesArgs {
+  /**
+   * Accumulated .gitignore rules from ancestor directories.
+   * Each entry: ig = parsed rules; base = directory path relative to the
+   * notebook root, using forward slashes (POSIX), with no trailing slash.
+   */
+  gitignoreStack?: Array<{ ig: Ignore; base: string }>;
+}
+
 export class Notebook {
-  public notebookPath: URI;
-  public config: NotebookConfig;
-  public fs: FileSystemApi;
+  public notebookPath!: URI;
+  public config!: NotebookConfig;
+  public fs!: FileSystemApi;
 
   public notes: Notes = {};
   public hasLoadedNotes: boolean = false;
@@ -96,11 +110,11 @@ export class Notebook {
 
   private search: Search = new Search();
 
-  public md: MarkdownIt;
+  public md!: MarkdownIt;
 
   /**
    * Optional markdown_yo WASM renderer.
-   * Used for HTML rendering when `useMarkdownYoParser` is enabled.
+   * Used for HTML rendering when `markdownParser === 'markdown_yo'`.
    */
   public markdownYoRenderer: MarkdownRenderer | null = null;
 
@@ -133,7 +147,7 @@ export class Notebook {
     this.initFs(fs);
     await this.initConfig(config);
     this.md = this.initMarkdownIt();
-    if (this.config.useMarkdownYoParser) {
+    if (this.config.markdownParser === 'markdown_yo') {
       await this.initMarkdownYo();
     }
     this.updateConfig({});
@@ -213,7 +227,7 @@ export class Notebook {
         const { createRenderer } = await import('markdown_yo');
         const renderer = await createRenderer();
 
-        if (this.config.useMarkdownYoParser) {
+        if (this.config.markdownParser === 'markdown_yo') {
           this.markdownYoRenderer = renderer;
         } else {
           renderer.destroy();
@@ -262,6 +276,34 @@ export class Notebook {
   }
 
   /**
+   * Convert markdown_yo RenderOptions to CLI flags for the native binary.
+   */
+  private buildMarkdownYoBinaryArgs(opts: RenderOptions): string[] {
+    const flags: string[] = [];
+    if (opts.html) flags.push('--html');
+    if (opts.typographer) flags.push('--typographer');
+    if (opts.commonmark) flags.push('--commonmark');
+    if (opts.subscript) flags.push('--subscript');
+    if (opts.superscript) flags.push('--superscript');
+    if (opts.mark) flags.push('--mark');
+    if (opts.math) flags.push('--math');
+    if (opts.emoji) flags.push('--emoji');
+    if (opts.wikilink) flags.push('--wikilink');
+    if (opts.critic) flags.push('--critic');
+    if (opts.abbr) flags.push('--abbr');
+    if (opts.deflist) flags.push('--deflist');
+    if (opts.admonition) flags.push('--admonition');
+    if (opts.callout) flags.push('--callout');
+    if (opts.footnote) flags.push('--footnote');
+    if (opts.sourceMap) flags.push('--source-map');
+    // Note: the `breaks` option (breakOnSingleNewLine) is not supported by the
+    // native binary CLI and is silently ignored when using markdownYoBinaryPath.
+    // Read from stdin
+    flags.push('-');
+    return flags;
+  }
+
+  /**
    * Render markdown to HTML using markdown_yo (WASM) if available,
    * otherwise falls back to markdown-it.
    */
@@ -269,13 +311,32 @@ export class Notebook {
     markdown: string,
     options?: { isForPreview?: boolean },
   ): string {
-    if (this.config.useMarkdownYoParser && this.markdownYoRenderer) {
+    if (this.config.markdownParser === 'markdown_yo') {
       const renderOpts = this.buildMarkdownYoOptions(!!options?.isForPreview);
-      let html = this.markdownYoRenderer.render(markdown, renderOpts);
-      html = this.postProcessMarkdownYo(html);
-      return html;
+      const binaryPath = this.config.markdownYoBinaryPath;
+      let html: string;
+      if (binaryPath) {
+        const args = this.buildMarkdownYoBinaryArgs(renderOpts);
+        html = execFileSync(binaryPath, args, {
+          input: markdown,
+          encoding: 'utf8',
+          maxBuffer: 256 * 1024 * 1024,
+        });
+      } else if (this.markdownYoRenderer) {
+        html = this.markdownYoRenderer.render(markdown, renderOpts);
+      } else {
+        // WASM not yet loaded — fall through to markdown-it
+        return this.renderMarkdownWithMarkdownIt(markdown, options);
+      }
+      return this.postProcessMarkdownYo(html);
     }
-    // Fallback to markdown-it
+    return this.renderMarkdownWithMarkdownIt(markdown, options);
+  }
+
+  private renderMarkdownWithMarkdownIt(
+    markdown: string,
+    options?: { isForPreview?: boolean },
+  ): string {
     if (options?.isForPreview) {
       return this.md.render(markdown);
     }
@@ -351,7 +412,7 @@ export class Notebook {
       linkify: !!this.config.enableLinkify,
     });
 
-    if (this.config.useMarkdownYoParser) {
+    if (this.config.markdownParser === 'markdown_yo') {
       void this.initMarkdownYo();
     } else {
       this.destroyMarkdownYo();
@@ -379,6 +440,10 @@ export class Notebook {
     );
     this.config.pandocPath = replaceVariablesInString(
       this.config.pandocPath,
+      replacements,
+    );
+    this.config.markdownYoBinaryPath = replaceVariablesInString(
+      this.config.markdownYoBinaryPath,
       replacements,
     );
     this.config.plantumlJarPath = replaceVariablesInString(
@@ -566,7 +631,7 @@ export class Notebook {
     };
 
     const references = traverse(tokens, null, [], 0);
-    const mentions: Mentions = new Set<FilePath>();
+    const mentions: Mentions = {};
     const oldMentions = note.mentions;
 
     // Remove old references
@@ -590,7 +655,7 @@ export class Notebook {
 
   public async getNote(
     filePath: string,
-    refreshNoteRelations = false,
+    refreshNoteRelations: boolean = false,
   ): Promise<Note | null> {
     filePath = this.resolveNoteRelativePath(filePath);
     if (!refreshNoteRelations && filePath in this.notes) {
@@ -600,7 +665,7 @@ export class Notebook {
     let stats: FileSystemStats;
     try {
       stats = await this.fs.stat(absFilePath);
-    } catch (error) {
+    } catch {
       return null;
     }
     if (
@@ -654,14 +719,14 @@ export class Notebook {
 
         // markdown = matter.stringify(data.content, frontMatter); // <= NOTE: I think gray-matter has bug. Although I delete "note" section from front-matter, it still includes it.
         markdown = matterStringify(data.content, frontMatter);
-      } catch (error) {
+      } catch {
         // Do nothing
         markdown =
           "Please fix front-matter. (👈 Don't forget to delete this line)\n\n" +
           markdown;
       }
 
-      let oldMentions: Mentions = new Set<FilePath>();
+      let oldMentions: Mentions = {};
       const oldNote = this.notes[filePath];
       if (oldNote) {
         oldMentions = oldNote.mentions;
@@ -706,37 +771,108 @@ export class Notebook {
     return this.notes;
   }
 
-  public async refreshNotes({
-    dir = './',
-    includeSubdirectories = false,
-    refreshRelations = true,
-  }: RefreshNotesArgs): Promise<Notes> {
+  /** Try to load a .gitignore file from the given absolute directory path. */
+  private async loadGitignoreForDir(
+    dirAbsPath: string,
+  ): Promise<Ignore | null> {
+    try {
+      const content = await this.fs.readFile(
+        path.join(dirAbsPath, '.gitignore'),
+      );
+      return ignore().add(content);
+    } catch {
+      // No .gitignore in this directory, or unreadable — that's fine.
+      return null;
+    }
+  }
+
+  public async refreshNotes(args: RefreshNotesArgs): Promise<Notes> {
+    const { refreshRelations = true } = args;
     if (refreshRelations) {
       this.notes = {};
       this.referenceMap = new ReferenceMap();
       this.search = new Search();
     }
-    let files: string[] = [];
+    await this._refreshNotesInternal({ ...args, refreshRelations: false });
+    if (refreshRelations) {
+      for (const filePath in this.notes) {
+        await this.processNoteMentionsAndMentionedBy(filePath);
+      }
+    }
+    return this.notes;
+  }
+
+  private async _refreshNotesInternal({
+    dir = './',
+    includeSubdirectories = false,
+    gitignoreStack = [],
+  }: RefreshNotesInternalArgs): Promise<void> {
+    const dirAbsPath = path.resolve(this.notebookPath.fsPath, dir);
+
+    // Normalize to a forward-slash path relative to the notebook root
+    // (POSIX separators required by the `ignore` package).
+    const normalizedDir = path
+      .relative(this.notebookPath.fsPath, dirAbsPath)
+      .replace(/\\/g, '/');
+
+    // Load .gitignore from this directory and push onto the stack.
+    const localIg = await this.loadGitignoreForDir(dirAbsPath);
+    const currentStack: Array<{ ig: Ignore; base: string }> = localIg
+      ? [...gitignoreStack, { ig: localIg, base: normalizedDir || '.' }]
+      : gitignoreStack;
+
+    /**
+     * Returns true if `relPath` (relative to notebook root, forward-slash)
+     * should be excluded by any .gitignore in the current stack.
+     *
+     * Each .gitignore instance is checked with the path made relative to its
+     * own directory, matching standard git semantics (patterns in a nested
+     * .gitignore are relative to that directory, not the repo root).
+     */
+    const isIgnoredByGitignore = (relPath: string): boolean => {
+      for (const { ig, base } of currentStack) {
+        const relFromBase =
+          base === '.' || base === ''
+            ? relPath
+            : path.posix.relative(base, relPath);
+        // Skip if relPath is outside this .gitignore's directory.
+        if (relFromBase.startsWith('..')) {
+          continue;
+        }
+        if (ig.ignores(relFromBase)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    let files: string[];
     try {
-      files = await this.fs.readdir(
-        path.resolve(this.notebookPath.fsPath, dir),
-      );
+      files = await this.fs.readdir(dirAbsPath);
     } catch (error) {
       console.error(error);
       files = [];
     }
-    const refreshNotesPromises: Promise<Notes>[] = [];
+    const subdirPromises: Promise<void>[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
 
-      // TODO: Check .gitignore
-      // ignore several directories
+      // Always skip .git and node_modules regardless of .gitignore.
       if (file.match(/^(node_modules|\.git)$/)) {
         continue;
       }
 
-      const absFilePath = path.resolve(this.notebookPath.fsPath, dir, file);
+      const absFilePath = path.resolve(dirAbsPath, file);
+      const relFromNotebook = path
+        .relative(this.notebookPath.fsPath, absFilePath)
+        .replace(/\\/g, '/');
+
+      // Respect .gitignore rules.
+      if (currentStack.length > 0 && isIgnoredByGitignore(relFromNotebook)) {
+        continue;
+      }
+
       const note = await this.getNote(
         path.relative(this.notebookPath.fsPath, absFilePath),
       );
@@ -752,24 +888,16 @@ export class Notebook {
         console.error(error);
       }
       if (stats && stats.isDirectory() && includeSubdirectories) {
-        refreshNotesPromises.push(
-          this.refreshNotes({
+        subdirPromises.push(
+          this._refreshNotesInternal({
             dir: path.relative(this.notebookPath.fsPath, absFilePath),
             includeSubdirectories,
-            refreshRelations: false,
+            gitignoreStack: currentStack,
           }),
         );
       }
     }
-    await Promise.all(refreshNotesPromises);
-
-    if (refreshRelations) {
-      for (const filePath in this.notes) {
-        await this.processNoteMentionsAndMentionedBy(filePath);
-      }
-    }
-
-    return this.notes;
+    await Promise.all(subdirPromises);
   }
 
   /*
@@ -821,7 +949,7 @@ export class Notebook {
     delete this.notes[note.filePath];
   }
 
-  public async deleteNote(filePath: string, alreadyDeleted = false) {
+  public async deleteNote(filePath: string, alreadyDeleted: boolean = false) {
     const absFilePath = this.resolveNoteAbsolutePath(filePath);
     if (alreadyDeleted || (await this.fs.exists(absFilePath))) {
       await this.fs.unlink(absFilePath);

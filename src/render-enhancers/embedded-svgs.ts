@@ -1,4 +1,5 @@
 import { extname } from 'path';
+import type { CheerioAPI } from 'cheerio';
 import { Notebook } from '../notebook';
 import { removeFileProtocol } from '../utility';
 
@@ -7,14 +8,14 @@ import { removeFileProtocol } from '../utility';
  * @param $
  */
 export default async function enhance(
-  $: CheerioStatic,
+  $: CheerioAPI,
   notebook: Notebook,
   resolveFilePath: (path: string, useRelativeFilePath: boolean) => string,
 ): Promise<void> {
   const asyncFunctions: Promise<string | null>[] = [];
   $('img').each((i, img) => {
     const $img = $(img);
-    let src = resolveFilePath($img.attr('src'), false);
+    let src = resolveFilePath($img.attr('src') ?? '', false);
 
     const fileProtocolMatch = src.match(/^(file|vscode-resource):\/\/+/);
     if (fileProtocolMatch) {

@@ -1,7 +1,7 @@
 import MarkdownIt from 'markdown-it';
 import HeadingIdGenerator from './heading-id-generator';
 
-function nPrefix(str, n) {
+function nPrefix(str: string, n: number): string {
   let output = '';
   for (let i = 0; i < n; i++) {
     output += str;
@@ -18,7 +18,7 @@ function nPrefix(str, n) {
  * check issue #41
  */
 
-function sanitizeContent(content) {
+function sanitizeContent(content: string): string {
   let output = '';
   let offset = 0;
 
@@ -28,7 +28,7 @@ function sanitizeContent(content) {
   // test [^footnote]
   const r =
     /!?\[([^\]]*)\]\(([^)]*)\)|<([^>]*)>([^<]*)<\/([^>]*)>|\[\^([^\]]*)\]/g;
-  let match: RegExpExecArray | null = null;
+  let match: RegExpExecArray | null;
   // tslint:disable-next-line:no-conditional-assignment
   while ((match = r.exec(content))) {
     output += content.slice(offset, match.index);
@@ -164,7 +164,6 @@ export function generateSidebarToCHTML(
     return heading;
   });
 
-  let tocHtml = '';
   let smallestLevel = headings[0].level;
   for (let i = 0; i < headings.length; i++) {
     if (headings[i].level < smallestLevel) {
@@ -254,7 +253,7 @@ export function generateSidebarToCHTML(
     return result;
   };
 
-  tocHtml = `
+  const tocHtml = `
 <div class="md-toc">
 ${convertHeadingsDataToHTML(
   headings,

@@ -1,4 +1,5 @@
 import { extname } from 'path';
+import type { CheerioAPI } from 'cheerio';
 import { Notebook } from '../notebook';
 import { removeFileProtocol } from '../utility';
 
@@ -6,7 +7,7 @@ import { removeFileProtocol } from '../utility';
  * Embed local images. Load the image file and display it in base64 format
  */
 export default async function enhance(
-  $: CheerioStatic,
+  $: CheerioAPI,
   notebook: Notebook,
   resolveFilePath: (path: string, useRelativeFilePath: boolean) => string,
 ): Promise<void> {
@@ -14,7 +15,7 @@ export default async function enhance(
 
   $('img').each((i, img) => {
     const $img = $(img);
-    let src = resolveFilePath($img.attr('src'), false);
+    let src = resolveFilePath($img.attr('src') ?? '', false);
 
     const fileProtocolMatch = src.match(/^(file|vscode-resource):\/\/+/);
     if (fileProtocolMatch) {

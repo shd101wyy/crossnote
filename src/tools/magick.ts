@@ -22,9 +22,8 @@ export async function svgElementToPNGFile(
     }
   } catch (error) {
     throw new Error(
-      'imagemagick-cli failure\n' +
-        error.toString() +
-        '\n\nPlease make sure you have ImageMagick installed.',
+      'imagemagick-cli failure\n\nPlease make sure you have ImageMagick installed.',
+      { cause: error },
     );
   }
 

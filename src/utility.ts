@@ -21,7 +21,7 @@ export function tempOpen(options: temp.AffixOptions): Promise<temp.OpenFile> {
   return new Promise((resolve, reject) => {
     temp.open(options, (error, info) => {
       if (error) {
-        return reject(error.toString());
+        return reject(String(error));
       } else {
         return resolve(info);
       }
@@ -63,13 +63,20 @@ export function isWSL(): boolean {
 }
 
 /**
- * Convert a Linux filesystem path to a file:// URL accessible from
- * a Windows browser when running under WSL.
+ * Convert a filesystem path to a file:// URL.
  *
- * e.g. `/home/user/file.js` → `file:////wsl.localhost/Ubuntu/home/user/file.js`
+ * When `useWSL` is true and the environment is WSL, produces a URL
+ * accessible from a Windows browser:
+ *   e.g. `/home/user/file.js` → `file:////wsl.localhost/Ubuntu/home/user/file.js`
+ *
+ * Otherwise returns a standard file:// URL (suitable for export tools
+ * like puppeteer, prince, or ebook-convert that run inside WSL).
  */
-export function toFileURL(filePath: string): string {
-  if (isWSL()) {
+export function toFileURL(
+  filePath: string,
+  { useWSL = false }: { useWSL?: boolean } = {},
+): string {
+  if (useWSL && isWSL()) {
     const distro = process.env['WSL_DISTRO_NAME'];
     return `file:////wsl.localhost/${distro}${filePath}`;
   }
@@ -99,7 +106,7 @@ export function parseYAML(yaml: string = ''): JsonObject {
     return YAML.parse(yaml);
   } catch (error) {
     return {
-      error: error.toString(),
+      error: String(error),
     };
   }
 }
@@ -214,7 +221,7 @@ export { uploadImage } from './tools/image-uploader';
  *     https://github.com/atom/loophole/blob/master/src/loophole.coffee
  * @param fn
  */
-export function allowUnsafeEval(fn) {
+export function allowUnsafeEval<T>(fn: () => T): T {
   const previousEval = globalThis.eval;
   try {
     globalThis.eval = (source) => vm.runInThisContext(source);
@@ -237,7 +244,7 @@ export async function allowUnsafeEvalAync(fn: () => Promise<any>) {
   }
 }
 
-export function allowUnsafeNewFunction(fn) {
+export function allowUnsafeNewFunction<T>(fn: () => T): T {
   const previousFunction = globalThis.Function;
   try {
     globalThis.Function = Function as FunctionConstructor;
@@ -274,19 +281,6 @@ export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
   }
 }
 
-export const loadDependency = (dependencyPath: string) =>
-  allowUnsafeEval(() =>
-    allowUnsafeNewFunction(() =>
-      require(
-        path.resolve(
-          getCrossnoteBuildDirectory(),
-          'dependencies',
-          dependencyPath,
-        ),
-      ),
-    ),
-  );
-
 export const extractCommandFromBlockInfo = (info: BlockInfo) =>
   info.attributes['cmd'] === true ? info.language : info.attributes['cmd'];
 
@@ -300,7 +294,7 @@ export function Function(...args: string[]) {
     }
   }
 
-  const params = [];
+  const params: string[] = [];
   for (let j = 0, len = paramLists.length; j < len; j++) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let paramList: any = paramLists[j];
@@ -337,7 +331,7 @@ export function interpretJS(code: string) {
     interpreter.run(`exports.result = (${code})`);
     return interpreter.exports.result;
   } else {
-    const context = {};
+    const context: Record<string, unknown> = {};
     vm.runInNewContext(`result = (${code})`, context);
     return context['result'];
   }
@@ -346,7 +340,7 @@ export function interpretJS(code: string) {
 export function findClosingTagIndex(
   inputString: string,
   tagName: string,
-  startIndex = 0,
+  startIndex: number = 0,
 ) {
   const openTag = `<${tagName}`;
   const closeTag = `</${tagName}>`;
@@ -398,7 +392,12 @@ export function replaceVariablesInString(
   inputString: string,
   replacements: { [key: string]: string } = {},
 ) {
-  return inputString.replace(/\${([^}]+)}/g, (match, token) => {
+  // Expand ~ and $HOME at the start of paths
+  const result = inputString
+    .replace(/^~(?=\/|$)/, process.env['HOME'] ?? '~')
+    .replace(/^\$HOME(?=\/|$)/, process.env['HOME'] ?? '$HOME');
+
+  return result.replace(/\${([^}]+)}/g, (match, token) => {
     if (token.startsWith('env:')) {
       return process.env[token.replace(/^env:/, '').trim()] ?? '';
     } else {

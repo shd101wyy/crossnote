@@ -94,11 +94,11 @@ const PreviewContainer = createContainer(() => {
   const previewScrollDelay = useRef<number>(0);
   const scrollMap = useRef<number[] | null>(null);
   const wavedromCache = useRef<Record<string, string>>({});
-  // eslint-disable-next-line no-undef
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
-  // eslint-disable-next-line no-undef
+  // Set to true during each animation tick scroll so scrollPreview can skip it.
+  // requestAnimationFrame fires after scroll events, so resetting there works.
+  const isAnimatingScroll = useRef<boolean>(false);
   // const refreshingTimeout = useRef<NodeJS.Timeout | null>(null);
-  // eslint-disable-next-line no-undef
   const isLoadingPreviewRef = useRef<boolean>(true);
   /**
    * Track the slide line number, and (h, v) indices
@@ -154,10 +154,15 @@ const PreviewContainer = createContainer(() => {
     return document.body.classList.contains('vscode-web-extension');
   }, []);
   const vscodeApi = useMemo(() => {
-    if (globalThis.acquireVsCodeApi) {
-      return globalThis.acquireVsCodeApi();
-    }
-    return null;
+    // acquireVsCodeApi is injected by VS Code into the webview global scope.
+    // We use a typed cast to avoid the ts(7017) implicit-any error that occurs
+    // when accessing properties directly on globalThis without an index signature.
+    const acquire = (
+      window as Window & {
+        acquireVsCodeApi?: () => { postMessage(message: unknown): void };
+      }
+    ).acquireVsCodeApi;
+    return acquire ? acquire() : null;
   }, []);
   const config = useMemo(() => {
     return JSON.parse(
@@ -323,7 +328,7 @@ const PreviewContainer = createContainer(() => {
     let j = scrollMap.length - 1;
     let count = 0;
     let screenRow = -1; // the screenRow is the bufferRow in vscode.
-    let mid;
+    let mid = 0;
 
     while (count < 20) {
       if (Math.abs(top - scrollMap[i]) < 20) {
@@ -362,10 +367,14 @@ const PreviewContainer = createContainer(() => {
       return;
     }
 
-    // When the user manually scrolls, cancel any programmatic scroll animation
-    // that might be running (e.g. scroll-to-cursor-line on file open).
-    // Without this, the animation keeps overriding the user's scroll position
-    // and the preview keeps snapping back to the top.
+    // Skip scroll events that were triggered by our own animation ticks.
+    // isAnimatingScroll is set true before each setWindowScrollTop call and
+    // reset via requestAnimationFrame (which fires after scroll events).
+    if (isAnimatingScroll.current) {
+      return;
+    }
+
+    // Real user scroll: cancel any pending animation so the user wins.
     if (scrollTimeout.current) {
       clearTimeout(scrollTimeout.current);
       scrollTimeout.current = null;
@@ -393,7 +402,10 @@ const PreviewContainer = createContainer(() => {
       if (!hiddenPreviewElement.current) {
         return resolve();
       }
-      if (config.mathRenderingOption === 'MathJax' || config.usePandocParser) {
+      if (
+        config.mathRenderingOption === 'MathJax' ||
+        config.markdownParser === 'pandoc'
+      ) {
         // .mathjax-exps, .math.inline, .math.display
         const unprocessedElements =
           hiddenPreviewElement.current.querySelectorAll(
@@ -434,7 +446,7 @@ const PreviewContainer = createContainer(() => {
     }
     const els = hiddenPreviewElement.current.getElementsByClassName('wavedrom');
     if (els.length) {
-      const newWavedromCache = {};
+      const newWavedromCache: Record<string, string> = {};
       for (let i = 0; i < els.length; i++) {
         const el = els[i] as HTMLElement;
         el.id = 'wavedrom' + i;
@@ -464,6 +476,28 @@ const PreviewContainer = createContainer(() => {
     }
   }, []);
 
+  const renderTikzjax = useCallback(async () => {
+    if (!hiddenPreviewElement.current) return;
+    const tikzScripts = hiddenPreviewElement.current.querySelectorAll(
+      'script[type="text/tikz"]',
+    );
+    if (!tikzScripts.length) return;
+    const tikzjaxRender = (window as Window & { tikzjaxRender?: () => void })
+      .tikzjaxRender;
+    if (typeof tikzjaxRender !== 'function') return;
+    // Trigger tikzjax async processing (it scans document for text/tikz scripts)
+    tikzjaxRender();
+    // Poll until all tikz scripts have been replaced with rendered SVG (or timeout)
+    const startTime = Date.now();
+    while (
+      hiddenPreviewElement.current.querySelectorAll('script[type="text/tikz"]')
+        .length > 0 &&
+      Date.now() - startTime < 30000
+    ) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }, []);
+
   const renderInteractiveVega = useCallback(() => {
     return new Promise<void>((resolve) => {
       if (!previewElement.current) {
@@ -472,10 +506,10 @@ const PreviewContainer = createContainer(() => {
 
       const vegaElements =
         previewElement.current.querySelectorAll('.vega, .vega-lite');
-      function reportVegaError(el, error) {
+      function reportVegaError(el: Element, error: unknown) {
         el.innerHTML =
           '<pre class="language-text"><code>' +
-          escape(error.toString()) +
+          escape(String(error)) +
           '</code></pre>';
       }
       for (let i = 0; i < vegaElements.length; i++) {
@@ -486,7 +520,7 @@ const PreviewContainer = createContainer(() => {
         try {
           const spec = JSON.parse((vegaElement.textContent ?? '').trim());
           window['vegaEmbed'](vegaElement, spec, { actions: false }).catch(
-            (error) => {
+            (error: unknown) => {
               reportVegaError(vegaElement, error);
             },
           );
@@ -514,7 +548,7 @@ const PreviewContainer = createContainer(() => {
         validMermaidGraphs.push(mermaidGraph);
       } catch (error) {
         mermaidGraph.innerHTML = `<pre class="language-text"><code>${escape(
-          error.toString(),
+          String(error),
         )}</code></pre>`;
       }
     }
@@ -537,7 +571,7 @@ const PreviewContainer = createContainer(() => {
             noiseElement.style.display = 'none';
           }
           mermaidGraph.innerHTML = `<pre class="language-text"><code>${escape(
-            error.toString(),
+            String(error),
           )}</code></pre>`;
         }
       });
@@ -577,7 +611,7 @@ const PreviewContainer = createContainer(() => {
         } catch (error) {
           const outputDiv = codeChunk.getElementsByClassName('output-div')[0];
           outputDiv.innerHTML = `<pre class="language-text"><code>${escape(
-            error.toString(),
+            String(error),
           )}</code></pre>`;
         }
       } else {
@@ -660,7 +694,7 @@ const PreviewContainer = createContainer(() => {
     }
     try {
       setIsRefreshingPreview(true);
-      await Promise.all([renderMathJax(), renderWavedrom()]);
+      await Promise.all([renderMathJax(), renderWavedrom(), renderTikzjax()]);
 
       previewElement.current.innerHTML = hiddenPreviewElement.current.innerHTML;
       hiddenPreviewElement.current.innerHTML = '';
@@ -679,6 +713,7 @@ const PreviewContainer = createContainer(() => {
     renderInteractiveVega,
     renderMathJax,
     renderMermaid,
+    renderTikzjax,
     renderWavedrom,
     setupCodeChunks,
   ]);
@@ -717,7 +752,11 @@ const PreviewContainer = createContainer(() => {
 
         if (duration <= 0) {
           previewScrollDelay.current = Date.now() + 500;
+          isAnimatingScroll.current = true;
           setWindowScrollTop(scrollTop);
+          requestAnimationFrame(() => {
+            isAnimatingScroll.current = false;
+          });
           return;
         }
 
@@ -728,7 +767,11 @@ const PreviewContainer = createContainer(() => {
         // disable preview onscroll
         previewScrollDelay.current = Date.now() + 500;
 
+        isAnimatingScroll.current = true;
         setWindowScrollTop(getWindowScrollTop() + perTick);
+        requestAnimationFrame(() => {
+          isAnimatingScroll.current = false;
+        });
         if (getWindowScrollTop() === scrollTop) {
           return;
         }
@@ -841,7 +884,7 @@ const PreviewContainer = createContainer(() => {
               ]);
             };
           }
-        } catch (error) {
+        } catch {
           // https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1934
           continue;
         }
@@ -1273,7 +1316,7 @@ const PreviewContainer = createContainer(() => {
         return;
       }
 
-      const { indexh, indexv } = event;
+      const { indexh, indexv } = event as { indexh: number; indexv: number };
       for (const slideData of slidesData.current) {
         const { h, v, line } = slideData;
         if (h === indexh && v === indexv) {
@@ -1361,7 +1404,6 @@ const PreviewContainer = createContainer(() => {
       */
       } else if (data.command === 'openImageHelper') {
         // TODO: Replace this with headless modal
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setShowImageHelper(true);
       } else if (data.command === 'runAllCodeChunks') {
         runAllCodeChunks();

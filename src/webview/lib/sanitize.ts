@@ -6,7 +6,7 @@
 import DOMPurify from 'dompurify';
 
 // Script types used as data containers by diagram renderers (not executable)
-const SAFE_SCRIPT_TYPES = new Set(['wavedrom']);
+const SAFE_SCRIPT_TYPES = new Set(['wavedrom', 'text/tikz']);
 
 /**
  * DOMPurify configured for markdown preview:

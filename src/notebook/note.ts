@@ -16,7 +16,7 @@ export interface NoteConfig {
   aliases?: string[];
 }
 
-export type Mentions = Set<FilePath>;
+export type Mentions = Record<string, boolean>;
 
 export interface Note {
   /**

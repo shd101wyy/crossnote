@@ -60,7 +60,7 @@ async function getGlobalStyles(configPath: string, fs: FileSystemApi) {
   let fileContent: string;
   try {
     fileContent = await fs.readFile(globalLessPath);
-  } catch (e) {
+  } catch {
     // create style.less file
     fileContent = `
 /* Please visit the URL below for more information: */
@@ -75,7 +75,7 @@ async function getGlobalStyles(configPath: string, fs: FileSystemApi) {
   }
 
   return await new Promise<string>((resolve) => {
-    const generateErrorMessage = (error) => {
+    const generateErrorMessage = (error: unknown) => {
       return `html body:before {
         content: "Failed to compile \`style.less\`. ${error}" !important;
         padding: 2em !important;
@@ -102,7 +102,7 @@ async function getHeaderIncludes(configPath: string, fs: FileSystemApi) {
   let fileContent: string;
   try {
     fileContent = await fs.readFile(headerIncludesPath);
-  } catch (e) {
+  } catch {
     // create head.html file
     fileContent = `<!-- The content below will be included at the end of the <head> element. -->
 <script type="text/javascript">
@@ -144,7 +144,6 @@ async function getConfigs(
   if (await fs.exists(configScriptPath)) {
     try {
       // HACK: Dyamic import here doesn't work for the VSCode packaged extension.
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       /*
       const result = isVSCodeWebExtension()
         ? await import(configScriptPath + `?version=${Date.now()}`)
@@ -207,7 +206,6 @@ async function getParserConfig(
   if (await fs.exists(parserConfigPath)) {
     try {
       // HACK: Dyamic import here doesn't work for the VSCode packaged extension.
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       /*
       const result = isVSCodeWebExtension()
         ? await import(parserConfigPath)

@@ -32,7 +32,7 @@ export default (md: MarkdownIt, notebook: Notebook) => {
 
       let i = pos + 3;
       let end = -1;
-      let content: string | null = null;
+      let content: string | null;
       while (i < src.length) {
         if (src.startsWith(closeTag, i)) {
           end = i;

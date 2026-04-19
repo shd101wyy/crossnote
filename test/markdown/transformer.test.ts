@@ -22,7 +22,7 @@ describe('test markdown transformer', () => {
       const notebook = await Notebook.init({
         notebookPath: path.resolve(__dirname, './test-files'),
         config: {
-          usePandocParser: false,
+          markdownParser: 'markdown-it',
         },
       });
       const transform = async (markdown: string) => {

@@ -1,4 +1,7 @@
-export default function (Prism) {
+export default function (Prism: {
+  languages: Record<string, unknown>;
+  [key: string]: unknown;
+}) {
   Prism.languages.k = {
     'comment': [
       {

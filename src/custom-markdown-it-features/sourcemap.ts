@@ -1,4 +1,5 @@
 import MarkdownIt from 'markdown-it';
+import Token from 'markdown-it/lib/token';
 import { ExtendedMarkdownItOptions } from '../notebook';
 
 /**
@@ -7,8 +8,8 @@ import { ExtendedMarkdownItOptions } from '../notebook';
 export default (md: MarkdownIt) => {
   const defaultRenderer = md.renderer.renderToken.bind(md.renderer);
   md.renderer.renderToken = function (
-    tokens,
-    idx,
+    tokens: Token[],
+    idx: number,
     options: ExtendedMarkdownItOptions,
   ) {
     if (!options.sourceMap) {

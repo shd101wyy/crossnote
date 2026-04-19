@@ -1,13 +1,14 @@
 // tslint:disable no-var-requires member-ordering
 
 import * as cheerio from 'cheerio';
+import type { CheerioAPI, Cheerio } from 'cheerio';
+import type { Element, AnyNode } from 'domhandler';
 import { execFile } from 'child_process';
 import { copy } from 'copy-anything';
 import CryptoJS from 'crypto-js';
 import * as fs from 'fs';
 import { escape } from 'html-escaper';
 import * as path from 'path';
-import request from 'request';
 import { JsonObject } from 'type-fest';
 import * as vscode from 'vscode';
 import { URI } from 'vscode-uri';
@@ -103,6 +104,96 @@ export interface HTMLTemplateOption {
    * whether to embed svg images
    */
   embedSVG?: boolean;
+  /**
+   * Whether the HTML will be opened in a browser (e.g. "Open in Browser").
+   * When true under WSL, file:// URLs are translated so Windows browsers
+   * can reach WSL filesystem paths.  Export tools (puppeteer, prince,
+   * ebook-convert) run inside WSL and must NOT use translated URLs.
+   */
+  isForBrowser?: boolean;
+}
+
+/**
+ * Normalize code blocks produced by markdown_yo to the data-role="codeBlock"
+ * format expected by all render enhancers (code-block-styling, fenced-diagrams,
+ * fenced-math, fenced-code-chunks).
+ *
+ * markdown_yo outputs: <pre><code class="language-xxx">code</code></pre>
+ * Enhancers expect:    <pre data-role="codeBlock" data-info="xxx"
+ *                           data-parsed-info="..." data-normalized-info="...">
+ *                        code
+ *                      </pre>
+ */
+function normalizeMarkdownYoCodeBlocks($: CheerioAPI): void {
+  $('pre:not([data-role="codeBlock"])').each((_i, pre) => {
+    const $pre = $(pre);
+    const $code = $pre.children('code').first();
+    if (!$code.length) return;
+
+    // Extract language from class="language-xxx" or "lang-xxx"
+    const classes = ($code.attr('class') ?? '').split(/\s+/);
+    let language = '';
+    for (const cls of classes) {
+      const m = cls.match(/^(?:language|lang)-(.+)$/);
+      if (m) {
+        language = m[1];
+        break;
+      }
+    }
+
+    const code = $code.text(); // decoded text
+    const parsedInfo = parseBlockInfo(language);
+    const normalizedInfo = normalizeBlockInfo(parsedInfo);
+
+    // NOTE: .attr() adds to existing attributes; .html() only replaces inner
+    // content. Any data-source-line set by markdown_yo's native sourceMap
+    // feature is preserved on the <pre> element.
+    $pre
+      .attr('data-role', 'codeBlock')
+      .attr('data-info', language)
+      .attr('data-parsed-info', JSON.stringify(parsedInfo))
+      .attr('data-normalized-info', JSON.stringify(normalizedInfo))
+      .html(escape(code));
+  });
+}
+
+/**
+ * Normalize headings produced by markdown_yo.
+ *
+ * The transformer appends `{#id .class data-source-line="N"}` to headings for
+ * markdown-it's attrs plugin. markdown_yo does not understand this syntax and
+ * renders it as literal text. Strip the trailing `{...}` block and apply the
+ * encoded attributes to the heading element instead.
+ */
+function normalizeMarkdownYoHeadings($: CheerioAPI): void {
+  $('h1, h2, h3, h4, h5, h6').each((_i, heading) => {
+    const $h = $(heading);
+    const rawHtml = $h.html() ?? '';
+    // Match a trailing {…} block at end of heading content
+    const match = rawHtml.match(/^([\s\S]*?)\s*(\{[^{}]+\})\s*$/);
+    if (!match) return;
+
+    try {
+      const attrs = parseBlockAttributes(match[2]);
+      // Restore heading content without the {…} block
+      $h.html(match[1]);
+
+      if (attrs['id']) {
+        $h.attr('id', String(attrs['id']));
+      }
+      if (attrs['class']) {
+        $h.addClass(String(attrs['class']));
+      }
+      // Apply all remaining attributes (e.g. data-source-line)
+      for (const [key, val] of Object.entries(attrs)) {
+        if (key !== 'id' && key !== 'class' && key !== 'ignore') {
+          $h.attr(key, String(val));
+        }
+      }
+    } catch {
+      // Leave heading as-is if attribute parsing fails
+    }
+  });
 }
 
 // NOTE: The order of the following matters.
@@ -190,8 +281,8 @@ export class MarkdownEngine {
    * Generate scripts string for preview usage.
    */
   private generateScriptsForPreview(
-    isForPresentation = false,
-    yamlConfig = {},
+    isForPresentation: boolean = false,
+    yamlConfig: Record<string, unknown> = {},
     vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
     let scripts = '';
@@ -237,25 +328,41 @@ export class MarkdownEngine {
       vscodePreviewPanel,
     )}" charset="UTF-8"></script>`;
 
+    // tikzjax (for client-side TikZ rendering in web extension)
+    if (utility.isVSCodeWebExtension()) {
+      scripts += `<link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">`;
+      scripts += `<script src="https://tikzjax.com/v1/tikzjax.js"></script>`;
+      // Expose tikzjax's window.onload handler as window.tikzjaxRender so the
+      // webview can re-trigger it after dynamically inserting markdown content.
+      // tikzjax sets window.onload synchronously, so this script (which follows
+      // in document order) runs after that assignment.
+      scripts += `<script>window.tikzjaxRender = function() { return typeof window.onload === 'function' ? window.onload.call(window) : Promise.resolve(); };</script>`;
+    }
+
     // math
     if (
       this.notebook.config.mathRenderingOption === 'MathJax' ||
-      this.notebook.config.usePandocParser
+      this.notebook.config.markdownParser === 'pandoc'
     ) {
       // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
-      const mathJaxConfig = copy({ ...this.notebook.config.mathjaxConfig });
-      mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
-      mathJaxConfig['tex']['inlineMath'] =
-        this.notebook.config.mathInlineDelimiters;
-      mathJaxConfig['tex']['displayMath'] =
-        this.notebook.config.mathBlockDelimiters;
+      const mathJaxConfig = copy({
+        ...this.notebook.config.mathjaxConfig,
+      }) as Record<string, unknown>;
+      const texConfig = (mathJaxConfig['tex'] || {}) as Record<string, unknown>;
+      mathJaxConfig['tex'] = texConfig;
+      texConfig['inlineMath'] = this.notebook.config.mathInlineDelimiters;
+      texConfig['displayMath'] = this.notebook.config.mathBlockDelimiters;
 
       // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
       // Disable typesetting on startup
-      mathJaxConfig['startup'] = mathJaxConfig['startup'] || {};
+      const startupConfig = (mathJaxConfig['startup'] || {}) as Record<
+        string,
+        unknown
+      >;
+      mathJaxConfig['startup'] = startupConfig;
       if (!isForPresentation) {
-        mathJaxConfig['startup']['typeset'] = false;
-        mathJaxConfig['startup']['elements'] = ['.hidden-preview']; // Only render on this element
+        startupConfig['typeset'] = false;
+        startupConfig['elements'] = ['.hidden-preview']; // Only render on this element
       }
 
       scripts += `<script type="text/javascript"> window.MathJax = (${JSON.stringify(
@@ -275,7 +382,15 @@ export class MarkdownEngine {
         vscodePreviewPanel,
       )}'></script>`;
 
-      let presentationConfig = yamlConfig['presentation'] || {};
+      let presentationConfig: Record<string, unknown> = {};
+      const presentationValue = yamlConfig['presentation'];
+      if (
+        typeof presentationValue === 'object' &&
+        presentationValue !== null &&
+        !Array.isArray(presentationValue)
+      ) {
+        presentationConfig = presentationValue as Record<string, unknown>;
+      }
       if (typeof presentationConfig !== 'object') {
         presentationConfig = {};
       }
@@ -414,26 +529,37 @@ window["initRevealPresentation"] = async function() {
   /**
    * Automatically pick code block theme for preview.
    */
-  private getPrismTheme(isPresentationMode = false, yamlConfig = {}) {
+  private getPrismTheme(
+    isPresentationMode: boolean = false,
+    yamlConfig: Record<string, unknown> = {},
+  ) {
     if (this.notebook.config.codeBlockTheme === 'auto.css') {
       /**
        * Automatically pick code block theme for preview.
        */
       if (isPresentationMode) {
-        const presentationTheme =
-          yamlConfig['presentation'] &&
+        const presentationObj =
           typeof yamlConfig['presentation'] === 'object' &&
-          yamlConfig['presentation']['theme']
-            ? yamlConfig['presentation']['theme']
-            : this.notebook.config.revealjsTheme;
+          yamlConfig['presentation'] !== null &&
+          !Array.isArray(yamlConfig['presentation'])
+            ? (yamlConfig['presentation'] as Record<string, unknown>)
+            : null;
+        const presentationTheme =
+          (presentationObj?.['theme'] as string | undefined) ??
+          this.notebook.config.revealjsTheme;
         return (
-          MarkdownEngine.AutoPrismThemeMapForPresentation[presentationTheme] ??
-          'default.css'
+          (
+            MarkdownEngine.AutoPrismThemeMapForPresentation as Record<
+              string,
+              string
+            >
+          )[presentationTheme] ?? 'default.css'
         );
       } else {
         return (
-          MarkdownEngine.AutoPrismThemeMap[this.notebook.config.previewTheme] ??
-          'default.css'
+          (MarkdownEngine.AutoPrismThemeMap as Record<string, string>)[
+            this.notebook.config.previewTheme as string
+          ] ?? 'default.css'
         );
       }
     } else {
@@ -445,8 +571,8 @@ window["initRevealPresentation"] = async function() {
    * Generate styles string for preview usage.
    */
   private generateStylesForPreview(
-    isPresentationMode = false,
-    yamlConfig = {},
+    isPresentationMode: boolean = false,
+    yamlConfig: Record<string, unknown> = {},
     vscodePreviewPanel: vscode.WebviewPanel | null = null,
   ) {
     let styles = '';
@@ -454,7 +580,7 @@ window["initRevealPresentation"] = async function() {
     // check math
     if (
       this.notebook.config.mathRenderingOption === 'KaTeX' &&
-      !this.notebook.config.usePandocParser
+      this.notebook.config.markdownParser !== 'pandoc'
     ) {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
@@ -494,13 +620,18 @@ window["initRevealPresentation"] = async function() {
       styles += `<link rel="stylesheet" href="${utility.addFileProtocol(
         path.resolve(
           utility.getCrossnoteBuildDirectory(),
-          `./dependencies/reveal/css/theme/${
-            yamlConfig['presentation'] &&
-            typeof yamlConfig['presentation'] === 'object' &&
-            yamlConfig['presentation']['theme']
-              ? yamlConfig['presentation']['theme']
-              : this.notebook.config.revealjsTheme
-          }`,
+          `./dependencies/reveal/css/theme/${(() => {
+            const presObj =
+              typeof yamlConfig['presentation'] === 'object' &&
+              yamlConfig['presentation'] !== null &&
+              !Array.isArray(yamlConfig['presentation'])
+                ? (yamlConfig['presentation'] as Record<string, unknown>)
+                : null;
+            return (
+              (presObj?.['theme'] as string | undefined) ??
+              this.notebook.config.revealjsTheme
+            );
+          })()}`,
         ),
         vscodePreviewPanel,
       )}" >`;
@@ -726,6 +857,54 @@ window["initRevealPresentation"] = async function() {
   }
 
   /**
+   * Generate a minimal HTML template for the graph view webview.
+   * Unlike generateHTMLTemplateForPreview, this does not parse any markdown —
+   * it just creates a shell that loads graph-view.js.
+   */
+  public generateHTMLTemplateForGraphView({
+    vscodePreviewPanel,
+    contentSecurityPolicy = '',
+  }: {
+    vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
+    contentSecurityPolicy?: string;
+  }): string {
+    const webviewScript = utility.addFileProtocol(
+      path.resolve(
+        utility.getCrossnoteBuildDirectory(),
+        './webview/graph-view.js',
+      ),
+      vscodePreviewPanel,
+    );
+    const webviewCss = utility.addFileProtocol(
+      path.resolve(
+        utility.getCrossnoteBuildDirectory(),
+        './webview/graph-view.css',
+      ),
+      vscodePreviewPanel,
+    );
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+  <meta charset="UTF-8">
+  ${
+    contentSecurityPolicy
+      ? `<meta http-equiv="Content-Security-Policy" content="${contentSecurityPolicy}" />`
+      : ''
+  }
+  <link rel="stylesheet" href="${webviewCss}">
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <script src="${webviewScript}"></script>
+</body>
+</html>`;
+  }
+
+  /**
    * Generate HTML content
    * @param html: this is the final content you want to put.
    * @param yamlConfig: this is the front matter.
@@ -733,30 +912,38 @@ window["initRevealPresentation"] = async function() {
    */
   public async generateHTMLTemplateForExport(
     html: string,
-    yamlConfig = {},
+    yamlConfig: Record<string, unknown> = {},
     options: HTMLTemplateOption,
   ): Promise<string> {
+    // Build file:// URLs.  Only translate for WSL when opening in a browser.
+    const fileURL = (p: string) =>
+      utility.toFileURL(p, { useWSL: !!options.isForBrowser });
+
     // get `id` and `class`
-    const elementId = yamlConfig['id'] || '';
-    let elementClass = yamlConfig['class'] || [];
+    const elementId = (yamlConfig['id'] as string) || '';
+    let elementClass = (yamlConfig['class'] as string | string[]) || [];
     if (typeof elementClass === 'string') {
       elementClass = [elementClass];
     }
     elementClass = elementClass.join(' ');
 
     // math style and script
-    let mathStyle = '';
+    let mathStyle: string;
     if (
       this.notebook.config.mathRenderingOption === 'MathJax' ||
-      this.notebook.config.usePandocParser
+      this.notebook.config.markdownParser === 'pandoc'
     ) {
       // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
-      const mathJaxConfig = copy({ ...this.notebook.config.mathjaxConfig });
-      mathJaxConfig['tex'] = mathJaxConfig['tex'] || {};
-      mathJaxConfig['tex']['inlineMath'] =
-        this.notebook.config.mathInlineDelimiters;
-      mathJaxConfig['tex']['displayMath'] =
-        this.notebook.config.mathBlockDelimiters;
+      const mathJaxConfig = copy({
+        ...this.notebook.config.mathjaxConfig,
+      }) as Record<string, unknown>;
+      const texConfig2 = (mathJaxConfig['tex'] || {}) as Record<
+        string,
+        unknown
+      >;
+      mathJaxConfig['tex'] = texConfig2;
+      texConfig2['inlineMath'] = this.notebook.config.mathInlineDelimiters;
+      texConfig2['displayMath'] = this.notebook.config.mathBlockDelimiters;
 
       if (options.offline) {
         mathStyle = `
@@ -779,14 +966,14 @@ window["initRevealPresentation"] = async function() {
       }
     } else if (this.notebook.config.mathRenderingOption === 'KaTeX') {
       if (options.offline) {
-        mathStyle = `<link rel="stylesheet" href="${utility.toFileURL(
+        mathStyle = `<link rel="stylesheet" href="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/katex/katex.min.css',
           ),
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.38/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.45/dist/katex.min.css">`;
       }
     } else {
       mathStyle = '';
@@ -796,7 +983,7 @@ window["initRevealPresentation"] = async function() {
     let fontAwesomeStyle = '';
     if (html.indexOf('<i class="fa') >= 0) {
       if (options.offline) {
-        fontAwesomeStyle = `<link rel="stylesheet" href="${utility.toFileURL(
+        fontAwesomeStyle = `<link rel="stylesheet" href="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             `./dependencies/font-awesome/css/all.min.css`,
@@ -812,14 +999,14 @@ window["initRevealPresentation"] = async function() {
     let mermaidInitScript = '';
     if (html.indexOf(' class="mermaid') >= 0) {
       if (options.offline) {
-        mermaidScript = `<script type="text/javascript" src="${utility.toFileURL(
+        mermaidScript = `<script type="text/javascript" src="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/mermaid/mermaid.min.js',
           ),
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.13.0/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.14.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">
@@ -871,19 +1058,19 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let wavedromInitScript = ``;
     if (html.indexOf(' class="wavedrom') >= 0) {
       if (options.offline) {
-        wavedromScript += `<script type="text/javascript" src="${utility.toFileURL(
+        wavedromScript += `<script type="text/javascript" src="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/wavedrom/skins/default.js',
           ),
         )}" charset="UTF-8"></script>`;
-        wavedromScript += `<script type="text/javascript" src="${utility.toFileURL(
+        wavedromScript += `<script type="text/javascript" src="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/wavedrom/skins/narrow.js',
           ),
         )}" charset="UTF-8"></script>`;
-        wavedromScript += `<script type="text/javascript" src="${utility.toFileURL(
+        wavedromScript += `<script type="text/javascript" src="${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/wavedrom/wavedrom.min.js',
@@ -897,6 +1084,14 @@ if (typeof(window['Reveal']) !== 'undefined') {
       wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`;
     }
 
+    // tikzjax (client-side fallback for <script type="text/tikz"> blocks)
+    let tikzjaxScript = '';
+    let tikzjaxStyle = '';
+    if (html.indexOf('type="text/tikz"') >= 0) {
+      tikzjaxScript = `<script src="https://tikzjax.com/v1/tikzjax.js"></script>`;
+      tikzjaxStyle = `<link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">`;
+    }
+
     // vega and vega-lite with vega-embed
     // https://vega.github.io/vega/usage/#embed
     let vegaScript = ``;
@@ -907,7 +1102,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     ) {
       dependentLibraryMaterials.forEach(({ key, version }) => {
         vegaScript += options.offline
-          ? `<script type="text/javascript" src="${utility.toFileURL(
+          ? `<script type="text/javascript" src="${fileURL(
               path.resolve(
                 utility.getCrossnoteBuildDirectory(),
                 `./dependencies/${key}/${key}.min.js`,
@@ -946,7 +1141,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     if (yamlConfig['isPresentationMode']) {
       if (options.offline) {
         presentationScript = `
-        <script src='${utility.toFileURL(
+        <script src='${fileURL(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             './dependencies/reveal/js/reveal.js',
@@ -957,8 +1152,15 @@ if (typeof(window['Reveal']) !== 'undefined') {
         <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/reveal.js'></script>`;
       }
 
-      const presentationConfig = yamlConfig['presentation'] || {};
-      const dependencies = presentationConfig['dependencies'] || [];
+      const presentationConfigRaw = yamlConfig['presentation'];
+      const presentationConfig: Record<string, unknown> =
+        typeof presentationConfigRaw === 'object' &&
+        presentationConfigRaw !== null &&
+        !Array.isArray(presentationConfigRaw)
+          ? { ...(presentationConfigRaw as Record<string, unknown>) }
+          : {};
+      const dependencies =
+        (presentationConfig['dependencies'] as unknown[] | undefined) || [];
       if (presentationConfig['enableSpeakerNotes']) {
         if (options.offline) {
           dependencies.push({
@@ -1013,7 +1215,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let title = path.basename(this.filePath);
     title = title.slice(0, title.length - path.extname(title).length); // remove '.md'
     if (yamlConfig['title']) {
-      title = yamlConfig['title'];
+      title = yamlConfig['title'] as string;
     }
 
     // prism and preview theme
@@ -1034,22 +1236,25 @@ if (typeof(window['Reveal']) !== 'undefined') {
               path.resolve(
                 utility.getCrossnoteBuildDirectory(),
                 `./styles/prism_theme/${this.getPrismTheme(
-                  yamlConfig['isPresentationMode'],
+                  yamlConfig['isPresentationMode'] as boolean | undefined,
                   yamlConfig,
                 )}`,
               ),
             );
 
       if (yamlConfig['isPresentationMode']) {
-        const theme =
-          yamlConfig['presentation'] &&
+        const presObj2 =
           typeof yamlConfig['presentation'] === 'object' &&
-          yamlConfig['presentation']['theme']
-            ? yamlConfig['presentation']['theme']
-            : this.notebook.config.revealjsTheme;
+          yamlConfig['presentation'] !== null &&
+          !Array.isArray(yamlConfig['presentation'])
+            ? (yamlConfig['presentation'] as Record<string, unknown>)
+            : null;
+        const theme =
+          (presObj2?.['theme'] as string | undefined) ??
+          this.notebook.config.revealjsTheme;
 
         if (options.offline) {
-          presentationStyle += `<link rel="stylesheet" href="${utility.toFileURL(
+          presentationStyle += `<link rel="stylesheet" href="${fileURL(
             path.resolve(
               utility.getCrossnoteBuildDirectory(),
               `./dependencies/reveal/css/theme/${theme}`,
@@ -1104,7 +1309,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
           ),
         );
       }
-    } catch (e) {
+    } catch {
       styleCSS = '';
     }
 
@@ -1120,7 +1325,8 @@ if (typeof(window['Reveal']) !== 'undefined') {
       !yamlConfig['isPresentationMode'] &&
       !options.isForPrint &&
       (!('html' in yamlConfig) ||
-        (yamlConfig['html'] && yamlConfig['html']['toc'] !== false))
+        (yamlConfig['html'] &&
+          (yamlConfig['html'] as Record<string, unknown>)['toc'] !== false))
     ) {
       // enable sidebar toc by default
       sidebarTOC = `<div class="md-sidebar-toc">${this.tocHTML}</div>`;
@@ -1130,7 +1336,7 @@ if (typeof(window['Reveal']) !== 'undefined') {
       sidebarTOCScript = `
 <script>
 ${
-  yamlConfig['html'] && yamlConfig['html']['toc']
+  yamlConfig['html'] && (yamlConfig['html'] as Record<string, unknown>)['toc']
     ? `document.body.setAttribute('html-show-sidebar-toc', true)`
     : ''
 }
@@ -1150,18 +1356,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // task list script
     if (html.indexOf('task-list-item-checkbox') >= 0) {
       const $ = cheerio.load('<div>' + html + '</div>');
-      $('.task-list-item-checkbox').each(
-        (index: number, elem: CheerioElement) => {
-          const $elem = $(elem);
-          let $li = $elem.parent();
-          if (!$li[0].name.match(/^li$/i)) {
-            $li = $li.parent();
-          }
-          if ($li[0].name.match(/^li$/i)) {
-            $li.addClass('task-list-item');
-          }
-        },
-      );
+      $('.task-list-item-checkbox').each((index: number, elem: Element) => {
+        const $elem = $(elem);
+        let $li = $elem.parent();
+        if (!$li[0].name.match(/^li$/i)) {
+          $li = $li.parent();
+        }
+        if ($li[0].name.match(/^li$/i)) {
+          $li.addClass('task-list-item');
+        }
+      });
       html = $.html();
     }
 
@@ -1185,9 +1389,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${presentationStyle}
       ${mathStyle}
       ${fontAwesomeStyle}
+      ${tikzjaxStyle}
       ${presentationScript}
       ${mermaidScript}
       ${wavedromScript}
+      ${tikzjaxScript}
       ${vegaScript}
       <style>
       ${styles}
@@ -1238,7 +1444,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   /**
    * generate HTML file and open it in browser
    */
-  public async openInBrowser({ runAllCodeChunks = false }): Promise<void> {
+  public async openInBrowser({
+    runAllCodeChunks = false,
+  }: { runAllCodeChunks?: boolean } = {}): Promise<void> {
     const inputString = await this.fs.readFile(this.filePath);
     let html;
     let yamlConfig;
@@ -1254,8 +1462,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       isForPrince: false,
       offline: true,
       embedLocalImages: false,
+      isForBrowser: true,
     });
-    // create temp file
     const info = await utility.tempOpen({
       prefix: 'crossnote',
       suffix: '.html',
@@ -1275,7 +1483,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   public async htmlExport({
     offline = false,
     runAllCodeChunks = false,
-  }): Promise<string> {
+  }: { offline?: boolean; runAllCodeChunks?: boolean } = {}): Promise<string> {
     const inputString = await this.fs.readFile(this.filePath);
     let html;
     let yamlConfig;
@@ -1286,15 +1494,15 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       isForPreview: false,
       runAllCodeChunks,
     }));
-    const htmlConfig = yamlConfig['html'] || {};
+    const htmlConfig = (yamlConfig['html'] || {}) as Record<string, unknown>;
     if ('offline' in htmlConfig) {
-      offline = htmlConfig['offline'];
+      offline = htmlConfig['offline'] as boolean;
     }
-    const embedLocalImages = htmlConfig['embed_local_images']; // <= embedLocalImages is disabled by default.
+    const embedLocalImages = !!htmlConfig['embed_local_images']; // <= embedLocalImages is disabled by default.
 
     let embedSVG = true; // <= embedSvg is enabled by default.
     if ('embed_svg' in htmlConfig) {
-      embedSVG = htmlConfig['embed_svg'];
+      embedSVG = htmlConfig['embed_svg'] as boolean;
     }
 
     let dest = this.filePath;
@@ -1344,7 +1552,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     fileType = 'pdf',
     runAllCodeChunks = false,
     openFileAfterGeneration = false,
-  }): Promise<string> {
+  }: {
+    fileType?: string;
+    runAllCodeChunks?: boolean;
+    openFileAfterGeneration?: boolean;
+  } = {}): Promise<string> {
     const inputString = await this.fs.readFile(this.filePath);
     let html;
     let yamlConfig;
@@ -1366,7 +1578,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       offline: true,
     });
 
-    let executablePath = '';
+    let executablePath: string;
     try {
       executablePath = this.notebook.config.chromePath;
       if (!executablePath) {
@@ -1374,7 +1586,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         executablePath =
           chromePaths.chrome ||
           chromePaths.chromeCanary ||
-          chromePaths.chromium;
+          chromePaths.chromium ||
+          '';
       }
     } catch {
       executablePath = '';
@@ -1387,9 +1600,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // in the bundled version of the VSCode extension.
     // So we use the cjs module instead.
     // TypeError: Invalid host defined options
-    const puppeteer = await import(
-      'puppeteer-core/lib/cjs/puppeteer/puppeteer-core.js'
-    );
+    const puppeteer =
+      await import('puppeteer-core/lib/cjs/puppeteer/puppeteer-core.js');
     const browser = await puppeteer.launch({
       args: this.notebook.config.puppeteerArgs || [],
       executablePath,
@@ -1408,21 +1620,33 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       (yamlConfig['isPresentationMode'] ? '?print-pdf' : '');
     await page.goto(loadPath);
 
-    const puppeteerConfig = {
+    const chromeConfig =
+      yamlConfig['chrome'] &&
+      typeof yamlConfig['chrome'] === 'object' &&
+      !Array.isArray(yamlConfig['chrome'])
+        ? (yamlConfig['chrome'] as Record<string, unknown>)
+        : undefined;
+    const puppeteerConfig2 =
+      yamlConfig['puppeteer'] &&
+      typeof yamlConfig['puppeteer'] === 'object' &&
+      !Array.isArray(yamlConfig['puppeteer'])
+        ? (yamlConfig['puppeteer'] as Record<string, unknown>)
+        : undefined;
+    const puppeteerConfig: Record<string, unknown> = {
       path: dest,
       ...(yamlConfig['isPresentationMode']
         ? {}
         : { margin: { top: '1cm', bottom: '1cm', left: '1cm', right: '1cm' } }),
       printBackground: this.notebook.config.printBackground,
-      ...(yamlConfig['chrome'] || yamlConfig['puppeteer'] || {}),
+      ...(chromeConfig || puppeteerConfig2 || {}),
     };
 
     // wait for timeout
     let timeout = 0;
-    if (yamlConfig['chrome'] && yamlConfig['chrome']['timeout']) {
-      timeout = yamlConfig['chrome']['timeout'];
-    } else if (yamlConfig['puppeteer'] && yamlConfig['puppeteer']['timeout']) {
-      timeout = yamlConfig['puppeteer']['timeout'];
+    if (chromeConfig && chromeConfig['timeout']) {
+      timeout = chromeConfig['timeout'] as number;
+    } else if (puppeteerConfig2 && puppeteerConfig2['timeout']) {
+      timeout = puppeteerConfig2['timeout'] as number;
     }
     if (timeout && typeof timeout === 'number') {
       await new Promise((resolve) => setTimeout(resolve, timeout));
@@ -1456,7 +1680,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   public async princeExport({
     runAllCodeChunks = false,
     openFileAfterGeneration = false,
-  }): Promise<string> {
+  }: {
+    runAllCodeChunks?: boolean;
+    openFileAfterGeneration?: boolean;
+  } = {}): Promise<string> {
     const inputString = await this.fs.readFile(this.filePath);
     let html;
     let yamlConfig;
@@ -1498,8 +1725,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
   }
 
-  private async eBookDownloadImages($, dest): Promise<string[]> {
-    const imagesToDownload: Cheerio[] = [];
+  private async eBookDownloadImages(
+    $: CheerioAPI,
+    dest: string,
+  ): Promise<string[]> {
+    const imagesToDownload: Cheerio<AnyNode>[] = [];
     if (path.extname(dest) === '.epub' || path.extname('dest') === '.mobi') {
       $('img').each((offset, img) => {
         const $img = $(img);
@@ -1510,22 +1740,26 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
     }
 
-    const asyncFunctions = imagesToDownload.map(($img) => {
-      return new Promise<string>((resolve) => {
-        const httpSrc = $img.attr('src');
-        let savePath =
-          Math.random().toString(36).substr(2, 9) +
-          '_' +
-          path.basename(httpSrc);
-        savePath = path.resolve(this.fileDirectoryPath, savePath);
+    const asyncFunctions = imagesToDownload.map(async ($img) => {
+      const httpSrc = $img.attr('src') ?? '';
+      let savePath =
+        Math.random().toString(36).substr(2, 9) + '_' + path.basename(httpSrc);
+      savePath = path.resolve(this.fileDirectoryPath, savePath);
 
-        const stream = request(httpSrc).pipe(fs.createWriteStream(savePath));
-
-        stream.on('finish', () => {
-          $img.attr('src', utility.toFileURL(savePath));
-          return resolve(savePath);
-        });
-      });
+      const response = await fetch(httpSrc);
+      if (!response.ok || !response.body) {
+        throw new Error(`Failed to download image from ${httpSrc}`);
+      }
+      const { pipeline } = await import('stream/promises');
+      const { Readable } = await import('stream');
+      await pipeline(
+        Readable.fromWeb(
+          response.body as Parameters<typeof Readable.fromWeb>[0],
+        ),
+        fs.createWriteStream(savePath),
+      );
+      $img.attr('src', utility.toFileURL(savePath));
+      return savePath;
     });
 
     return Promise.all(asyncFunctions);
@@ -1566,7 +1800,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       '.' + fileType.toLowerCase(),
     );
 
-    const ebookConfig = yamlConfig['ebook'] || {};
+    const ebookConfig = (yamlConfig['ebook'] || {}) as Record<string, unknown>;
     if (!ebookConfig) {
       throw new Error(
         'eBook config not found. Please insert ebook front-matter to your markdown file.',
@@ -1575,7 +1809,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (ebookConfig['cover']) {
       // change cover to absolute path if necessary
-      const cover = ebookConfig['cover'];
+      const cover = ebookConfig['cover'] as string;
       ebookConfig['cover'] = utility.removeFileProtocol(
         this.resolveFilePath(cover, false),
       );
@@ -1617,7 +1851,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     // load the last ul as TOC, analyze toc links
-    function getStructure($ul, level) {
+    function getStructure($ul: ReturnType<CheerioAPI>, level: number) {
       $ul.children('li').each((offset, li) => {
         const $li = $(li);
         const $a = $li.children('a').first();
@@ -1629,7 +1863,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           return;
         }
 
-        const filePath = decodeURIComponent($a.attr('href')); // markdown file path
+        const filePath = decodeURIComponent($a.attr('href') ?? ''); // markdown file path
         const heading = $a.html() ?? '';
         const id = headingIdGenerator.generateId(`ebook-heading-` + heading); // "ebook-heading-id-" + headingOffset;
 
@@ -1690,6 +1924,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       level: number;
       filePath: string;
       html?: string;
+      offset: number;
     }[];
     results = results.sort((a, b) => a['offset'] - b['offset']);
 
@@ -1701,7 +1936,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       $$('a').each((index, a) => {
         const $a = $$(a);
         const href = $a.attr('href');
-        if (href.startsWith('file://')) {
+        if (href && href.startsWith('file://')) {
           results.forEach((result) => {
             if (result.filePath === utility.removeFileProtocol(href)) {
               $a.attr('href', '#' + result.id);
@@ -1722,15 +1957,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (path.extname(dest) === '.html') {
       // check cover
       if (ebookConfig['cover']) {
-        const cover =
-          ebookConfig['cover'][0] === '/'
-            ? utility.toFileURL(ebookConfig['cover'])
-            : ebookConfig['cover'];
+        const cover = ebookConfig['cover'] as string;
+        const coverUrl = cover[0] === '/' ? utility.toFileURL(cover) : cover;
         $(':root')
           .children()
           .first()
           .prepend(
-            `<img style="display:block; margin-bottom: 24px;" src="${cover}">`,
+            `<img style="display:block; margin-bottom: 24px;" src="${coverUrl}">`,
           );
       }
 
@@ -1751,9 +1984,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (
         path.extname(dest) === '.html' &&
         ebookConfig['html'] &&
-        ebookConfig['html'].cdn
+        (ebookConfig['html'] as Record<string, unknown>)['cdn']
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.38/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.45/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="${utility.toFileURL(
           path.resolve(
@@ -1765,7 +1998,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     // prism and preview theme
-    let styleCSS = '';
+    let styleCSS: string;
     try {
       const styles = await Promise.all([
         // style template
@@ -1780,8 +2013,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             `./styles/prism_theme/${
-              /*this.getPrismTheme(false)*/ MarkdownEngine.AutoPrismThemeMap[
-                ebookConfig['theme'] || this.notebook.config.previewTheme
+              /*this.getPrismTheme(false)*/ (
+                MarkdownEngine.AutoPrismThemeMap as Record<string, string>
+              )[
+                (ebookConfig['theme'] as string | undefined) ||
+                  this.notebook.config.previewTheme
               ]
             }`,
           ),
@@ -1798,7 +2034,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             `./styles/preview_theme/${
-              ebookConfig['theme'] || this.notebook.config.previewTheme
+              (ebookConfig['theme'] as string | undefined) ||
+              this.notebook.config.previewTheme
             }`,
           ),
         ),
@@ -1822,7 +2059,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           : '',
       ]);
       styleCSS = styles.join('');
-    } catch (e) {
+    } catch {
       styleCSS = '';
     }
 
@@ -1830,7 +2067,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let globalStyles = '';
     try {
       globalStyles = this.notebook.config.globalCss;
-    } catch (error) {
+    } catch {
       // ignore it
     }
 
@@ -1893,7 +2130,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   public async pandocExport({
     runAllCodeChunks = false,
     openFileAfterGeneration = false,
-  }): Promise<string> {
+  }: {
+    runAllCodeChunks?: boolean;
+    openFileAfterGeneration?: boolean;
+  } = {}): Promise<string> {
     let inputString = await this.fs.readFile(this.filePath);
 
     if (this.notebook.config.parserConfig.onWillParseMarkdown) {
@@ -1951,7 +2191,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   /**
    * markdown(gfm) export
    */
-  public async markdownExport({ runAllCodeChunks = false }): Promise<string> {
+  public async markdownExport({
+    runAllCodeChunks = false,
+  }: { runAllCodeChunks?: boolean } = {}): Promise<string> {
     let inputString = await this.fs.readFile(this.filePath);
 
     if (runAllCodeChunks) {
@@ -1964,7 +2206,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
     }
 
-    let config = {};
+    let config: Record<string, unknown> = {};
 
     if (inputString.startsWith('---')) {
       const endFrontMatterOffset = inputString.indexOf('\n---');
@@ -1985,9 +2227,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      *     use_absolute_image_path:      as the name shows.
      *     ignore_from_front_matter:    default is true.
      */
-    let markdownConfig = {};
+    let markdownConfig: Record<string, unknown> = {};
     if (config['markdown']) {
-      markdownConfig = { ...config['markdown'] };
+      markdownConfig = { ...(config['markdown'] as Record<string, unknown>) };
     }
 
     if (!markdownConfig['image_dir']) {
@@ -2003,7 +2245,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           '_' + path.extname(this.filePath),
         );
       }
-      markdownConfig['path'] = path.basename(markdownConfig['path']);
+      markdownConfig['path'] = path.basename(markdownConfig['path'] as string);
     }
 
     // ignore_from_front_matter is `true` by default
@@ -2071,8 +2313,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         } else if (typeof fileTypes === 'string') {
           func({ fileType: fileTypes, openFileAfterGeneration: false });
         } else if (fileTypes instanceof Array) {
-          fileTypes.forEach((fileType: string) => {
-            func({ fileType, openFileAfterGeneration: false });
+          fileTypes.forEach((fileType) => {
+            func({
+              fileType: fileType as string,
+              openFileAfterGeneration: false,
+            });
           });
         }
       } else if (!isWeb && exporter === 'pandoc') {
@@ -2084,8 +2329,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         } else if (typeof fileTypes === 'string') {
           this.eBookExport({ fileType: fileTypes });
         } else if (fileTypes instanceof Array) {
-          fileTypes.forEach((fileType: string) => {
-            this.eBookExport({ fileType });
+          fileTypes.forEach((fileType) => {
+            this.eBookExport({ fileType: fileType as string });
           });
         }
       }
@@ -2100,7 +2345,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   private resolveFilePath(
     filePath: string = '',
     relative: boolean,
-    fileDirectoryPath = '',
+    fileDirectoryPath: string = '',
   ) {
     if (
       filePath.match(this.protocolsWhiteListRegExp) ||
@@ -2180,7 +2425,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     this.graphsCache = {};
   }
 
-  private frontMatterToTable(arg) {
+  private frontMatterToTable(arg: unknown) {
     if (arg instanceof Array) {
       let tbody = '<tbody><tr>';
       arg.forEach(
@@ -2195,7 +2440,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         // eslint-disable-next-line no-prototype-builtins
         if (arg.hasOwnProperty(key)) {
           thead += `<th>${escape(key)}</th>`;
-          tbody += `<td>${this.frontMatterToTable(arg[key])}</td>`;
+          tbody += `<td>${this.frontMatterToTable((arg as Record<string, unknown>)[key])}</td>`;
         }
       }
       thead += '</tr></thead>';
@@ -2203,13 +2448,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
       return `<table>${thead}${tbody}</table>`;
     } else {
-      return escape(arg);
+      return escape(arg as string);
     }
   }
 
   /**
    * process input string, skip front-matter
-   * if usePandocParser. return {
+   * if markdownParser === 'pandoc'. return {
    *      content: frontMatterString
    * }
    * else if display table. return {
@@ -2223,12 +2468,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    */
   private processFrontMatter(
     frontMatterString: string,
-    hideFrontMatter = false,
+    hideFrontMatter: boolean = false,
   ): { content: string; table: string; data: JsonObject } {
     if (frontMatterString) {
       const data = utility.parseYAML(frontMatterString);
 
-      if (this.notebook.config.usePandocParser) {
+      if (this.notebook.config.markdownParser === 'pandoc') {
         // use pandoc parser, so don't change inputString
         return { content: frontMatterString, table: '', data: data || {} };
       } else if (
@@ -2459,7 +2704,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         );
         program.stdin?.end(outputString, 'utf-8');
       } catch (error) {
-        let errorMessage = error.toString();
+        let errorMessage = String(error);
         if (errorMessage.indexOf('Error: write EPIPE') >= 0) {
           errorMessage = `"pandoc" is required to be installed.\nCheck "http://pandoc.org/installing.html" website.`;
         }
@@ -2504,7 +2749,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       fileDirectoryPath: options.fileDirectoryPath || this.fileDirectoryPath,
       projectDirectoryPath: this.projectDirectoryPath.fsPath,
       forPreview: options.isForPreview,
-      usePandocParser: this.notebook.config.usePandocParser,
+      markdownParser: this.notebook.config.markdownParser,
       protocolsWhiteListRegExp: this.protocolsWhiteListRegExp,
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
@@ -2528,7 +2773,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * render markdown to html
      */
     let html: string;
-    if (this.notebook.config.usePandocParser) {
+    if (this.notebook.config.markdownParser === 'pandoc') {
       // pandoc
       try {
         let args = (yamlConfig['pandoc_args'] || []) as string[];
@@ -2553,7 +2798,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         html = await this.pandocRender(outputString, args);
       } catch (error) {
         html = `<pre class="language-text"><code>${escape(
-          error.toString(),
+          String(error),
         )}</code></pre>`;
       }
     } else {
@@ -2567,10 +2812,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * render tocHTML for [TOC] and sidebar TOC
      */
     // if (!utility.isArrayEqual(headings, this.headings)) { // <== this code is wrong, as it will always be true...
-    const tocConfig = yamlConfig['toc'] || {};
-    const depthFrom = tocConfig['depth_from'] || 1;
-    const depthTo = tocConfig['depth_to'] || 6;
-    const ordered = tocConfig['ordered'];
+    const tocConfig = (yamlConfig['toc'] || {}) as Record<string, unknown>;
+    const depthFrom = (tocConfig['depth_from'] as number | undefined) || 1;
+    const depthTo = (tocConfig['depth_to'] as number | undefined) || 6;
+    const ordered = !!tocConfig['ordered'];
 
     // Collaposible ToC
     // NOTE: We disable the source map here.
@@ -2609,6 +2854,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      * resolve image paths and render code block.
      */
     const $ = cheerio.load(html);
+
+    // markdown_yo outputs standard <pre><code class="language-xxx"> elements.
+    // Normalize them to the data-role="codeBlock" format expected by all
+    // render enhancers (code-block-styling, fenced-diagrams, fenced-math, etc.)
+    // Also normalize headings: strip the {#id .class data-source-line="N"}
+    // suffix appended by the transformer (markdown-it attrs syntax) and apply
+    // those attributes directly to the heading elements.
+    if (this.notebook.config.markdownParser === 'markdown_yo') {
+      normalizeMarkdownYoCodeBlocks($);
+      normalizeMarkdownYoHeadings($);
+    }
+
     await enhanceWithFencedMath(
       $,
       this.notebook.config.mathRenderingOption,

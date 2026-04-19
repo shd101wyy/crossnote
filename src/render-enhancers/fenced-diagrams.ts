@@ -1,4 +1,6 @@
 // tslint:disable:ban-types no-var-requires
+import type { CheerioAPI, Cheerio } from 'cheerio';
+import type { AnyNode } from 'domhandler';
 import fetch from 'cross-fetch';
 import { escape } from 'html-escaper';
 import * as YAML from 'yaml';
@@ -10,6 +12,7 @@ import { BlockInfo } from '../lib/block-info';
 import computeChecksum from '../lib/compute-checksum';
 import { renderBitfield } from '../renderers/bitfield';
 import { D2_NOT_FOUND, renderD2 } from '../renderers/d2';
+import { TIKZ_NOT_AVAILABLE, renderTikz } from '../renderers/tikz';
 import { render as renderPlantuml } from '../renderers/puml';
 import { toSVG as vegaToSvg } from '../renderers/vega';
 import { toSVG as vegaLiteToSvg } from '../renderers/vega-lite';
@@ -48,6 +51,7 @@ const supportedLanguages = [
   'vega-lite',
   'wsd',
   'd2',
+  'tikz',
 ];
 
 /**
@@ -70,7 +74,7 @@ export default async function enhance({
   d2Theme,
   d2Sketch,
 }: {
-  $: CheerioStatic;
+  $: CheerioAPI;
   graphsCache: { [key: string]: string };
   fileDirectoryPath: string;
   imageDirectoryPath: string;
@@ -92,7 +96,9 @@ export default async function enhance({
       return;
     }
 
-    const normalizedInfo: BlockInfo = $container.data('normalizedInfo');
+    const normalizedInfo: BlockInfo = $container.data(
+      'normalizedInfo',
+    ) as BlockInfo;
     // Check if Kroki is enabled
     const isKroki =
       !!normalizedInfo.attributes['kroki'] ||
@@ -153,9 +159,9 @@ async function renderDiagram({
   d2Theme,
   d2Sketch,
 }: {
-  $container: Cheerio;
+  $container: Cheerio<AnyNode>;
   normalizedInfo: BlockInfo;
-  $: CheerioStatic;
+  $: CheerioAPI;
   graphsCache: { [key: string]: string };
   fileDirectoryPath: string;
   imageDirectoryPath: string;
@@ -170,7 +176,7 @@ async function renderDiagram({
   d2Theme: number;
   d2Sketch: boolean;
 }): Promise<void> {
-  let $output: string | Cheerio | null = null;
+  let $output: string | Cheerio<AnyNode> | null = null;
 
   const code = $container.text();
   const checksum = computeChecksum(JSON.stringify(normalizedInfo) + code);
@@ -225,7 +231,7 @@ async function renderDiagram({
         graphsCache[checksum] = $output; // store to new cache
       } catch (error) {
         $output = `<pre class="language-text"><code>${escape(
-          error.toString(),
+          String(error),
         )}</code></pre>`;
       }
     }
@@ -374,20 +380,71 @@ async function renderDiagram({
           }
           break;
         }
+        case 'tikz': {
+          let svg = diagramInCache;
+          if (!svg) {
+            const attrs = normalizedInfo.attributes;
+            const texPkgRaw = attrs['texPackages'] ?? attrs['tex_packages'];
+            const tikzOpts = {
+              texPackages:
+                typeof texPkgRaw === 'string'
+                  ? (JSON.parse(texPkgRaw) as Record<string, string>)
+                  : undefined,
+              tikzLibraries: (attrs['tikzLibraries'] ??
+                attrs['tikz_libraries']) as string,
+              addToPreamble: (attrs['addToPreamble'] ??
+                attrs['add_to_preamble']) as string,
+              showConsole:
+                (attrs['showConsole'] ?? attrs['show_console']) === true,
+              embedFontCss:
+                (attrs['embedFontCss'] ?? attrs['embed_font_css']) !== undefined
+                  ? ((attrs['embedFontCss'] ??
+                      attrs['embed_font_css']) as boolean)
+                  : undefined,
+              fontCssUrl: (attrs['fontCssUrl'] ?? attrs['font_css_url']) as
+                | string
+                | undefined,
+            };
+            const result = await renderTikz(code, tikzOpts);
+            if (result === TIKZ_NOT_AVAILABLE) {
+              // Fall back to client-side rendering via tikzjax.
+              // This path is taken when node-tikzjax fails to load (e.g., in
+              // web/browser environments or when the WASM files are missing).
+              console.warn(
+                '[crossnote] TikZ server-side rendering unavailable, falling back to client-side tikzjax',
+              );
+              $output = `<div ${stringifyBlockAttributes(
+                ensureClassInAttributes(
+                  normalizedInfo.attributes,
+                  normalizedInfo.language,
+                ),
+              )}><script type="text/tikz">${code}</script></div>`;
+              break;
+            }
+            svg = result;
+            graphsCache[checksum] = svg;
+          }
+          $output = `<div ${stringifyBlockAttributes(
+            normalizedInfo.attributes,
+          )}>${svg}</div>`;
+          break;
+        }
       }
     } catch (error) {
       $output = $(
         `<pre class="language-text"><code>${escape(
-          error.toString(),
+          String(error),
         )}</code></pre>`,
       );
     }
   }
 
   if ($output !== null) {
-    normalizedInfo.attributes['output_first'] === true
-      ? $container.before($output as string)
-      : $container.after($output as string);
+    if (normalizedInfo.attributes['output_first'] === true) {
+      $container.before($output as string);
+    } else {
+      $container.after($output as string);
+    }
   }
 
   if (
@@ -398,7 +455,11 @@ async function renderDiagram({
   }
 }
 
-const hiddenCode = (code, attributes, language) =>
+const hiddenCode = (
+  code: string,
+  attributes: Record<string, unknown>,
+  language: string,
+) =>
   `<p ${stringifyBlockAttributes(
     ensureClassInAttributes(attributes, language),
   )}><span style="display: none">${code}</span></p>`;
