@@ -46,11 +46,6 @@
     "test:coverage": "jest",
     "typedoc": "typedoc src/index.ts"
   },
-  "lint-staged": {
-    "**/*": [
-      "prettier --write"
-    ]
-  },
   "prettier": {
     "plugins": [
       "prettier-plugin-packagejson"
