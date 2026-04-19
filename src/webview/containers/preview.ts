@@ -362,11 +362,17 @@ const PreviewContainer = createContainer(() => {
       return;
     }
 
-    buildScrollMap();
-
-    if (Date.now() < previewScrollDelay.current) {
-      return;
+    // When the user manually scrolls, cancel any programmatic scroll animation
+    // that might be running (e.g. scroll-to-cursor-line on file open).
+    // Without this, the animation keeps overriding the user's scroll position
+    // and the preview keeps snapping back to the top.
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+      scrollTimeout.current = null;
     }
+    previewScrollDelay.current = 0;
+
+    buildScrollMap();
     previewSyncSource();
   }, [buildScrollMap, config.scrollSync, previewSyncSource]);
 
