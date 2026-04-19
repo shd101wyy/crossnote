@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag or SHA to deploy from"
+        required: false
+        default: "master"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,6 +23,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v5
         with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
           fetch-depth: 0
 
       - name: Install pnpm

@@ -39,3 +39,6 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+
+      - name: Build typedoc
+        run: pnpm typedoc
