@@ -1,5 +1,6 @@
 import { Mutex } from 'async-mutex';
 import * as caseAnything from 'case-anything';
+import ignore, { type Ignore } from 'ignore';
 import { execFileSync } from 'child_process';
 import MarkdownIt from 'markdown-it';
 import MarkdownItAbbr from 'markdown-it-abbr';
@@ -85,6 +86,16 @@ interface RefreshNotesIfNotLoaded {
 
 interface RefreshNotesArgs extends RefreshNotesIfNotLoaded {
   refreshRelations?: boolean;
+}
+
+/** Internal shape used during the recursive directory walk. */
+interface RefreshNotesInternalArgs extends RefreshNotesArgs {
+  /**
+   * Accumulated .gitignore rules from ancestor directories.
+   * Each entry: ig = parsed rules; base = directory path relative to the
+   * notebook root, using forward slashes (POSIX), with no trailing slash.
+   */
+  gitignoreStack?: Array<{ ig: Ignore; base: string }>;
 }
 
 export class Notebook {
@@ -760,37 +771,108 @@ export class Notebook {
     return this.notes;
   }
 
-  public async refreshNotes({
-    dir = './',
-    includeSubdirectories = false,
-    refreshRelations = true,
-  }: RefreshNotesArgs): Promise<Notes> {
+  /** Try to load a .gitignore file from the given absolute directory path. */
+  private async loadGitignoreForDir(
+    dirAbsPath: string,
+  ): Promise<Ignore | null> {
+    try {
+      const content = await this.fs.readFile(
+        path.join(dirAbsPath, '.gitignore'),
+      );
+      return ignore().add(content);
+    } catch {
+      // No .gitignore in this directory, or unreadable — that's fine.
+      return null;
+    }
+  }
+
+  public async refreshNotes(args: RefreshNotesArgs): Promise<Notes> {
+    const { refreshRelations = true } = args;
     if (refreshRelations) {
       this.notes = {};
       this.referenceMap = new ReferenceMap();
       this.search = new Search();
     }
+    await this._refreshNotesInternal({ ...args, refreshRelations: false });
+    if (refreshRelations) {
+      for (const filePath in this.notes) {
+        await this.processNoteMentionsAndMentionedBy(filePath);
+      }
+    }
+    return this.notes;
+  }
+
+  private async _refreshNotesInternal({
+    dir = './',
+    includeSubdirectories = false,
+    gitignoreStack = [],
+  }: RefreshNotesInternalArgs): Promise<void> {
+    const dirAbsPath = path.resolve(this.notebookPath.fsPath, dir);
+
+    // Normalize to a forward-slash path relative to the notebook root
+    // (POSIX separators required by the `ignore` package).
+    const normalizedDir = path
+      .relative(this.notebookPath.fsPath, dirAbsPath)
+      .replace(/\\/g, '/');
+
+    // Load .gitignore from this directory and push onto the stack.
+    const localIg = await this.loadGitignoreForDir(dirAbsPath);
+    const currentStack: Array<{ ig: Ignore; base: string }> = localIg
+      ? [...gitignoreStack, { ig: localIg, base: normalizedDir || '.' }]
+      : gitignoreStack;
+
+    /**
+     * Returns true if `relPath` (relative to notebook root, forward-slash)
+     * should be excluded by any .gitignore in the current stack.
+     *
+     * Each .gitignore instance is checked with the path made relative to its
+     * own directory, matching standard git semantics (patterns in a nested
+     * .gitignore are relative to that directory, not the repo root).
+     */
+    const isIgnoredByGitignore = (relPath: string): boolean => {
+      for (const { ig, base } of currentStack) {
+        const relFromBase =
+          base === '.' || base === ''
+            ? relPath
+            : path.posix.relative(base, relPath);
+        // Skip if relPath is outside this .gitignore's directory.
+        if (relFromBase.startsWith('..')) {
+          continue;
+        }
+        if (ig.ignores(relFromBase)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
     let files: string[];
     try {
-      files = await this.fs.readdir(
-        path.resolve(this.notebookPath.fsPath, dir),
-      );
+      files = await this.fs.readdir(dirAbsPath);
     } catch (error) {
       console.error(error);
       files = [];
     }
-    const refreshNotesPromises: Promise<Notes>[] = [];
+    const subdirPromises: Promise<void>[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
 
-      // TODO: Check .gitignore
-      // ignore several directories
+      // Always skip .git and node_modules regardless of .gitignore.
       if (file.match(/^(node_modules|\.git)$/)) {
         continue;
       }
 
-      const absFilePath = path.resolve(this.notebookPath.fsPath, dir, file);
+      const absFilePath = path.resolve(dirAbsPath, file);
+      const relFromNotebook = path
+        .relative(this.notebookPath.fsPath, absFilePath)
+        .replace(/\\/g, '/');
+
+      // Respect .gitignore rules.
+      if (currentStack.length > 0 && isIgnoredByGitignore(relFromNotebook)) {
+        continue;
+      }
+
       const note = await this.getNote(
         path.relative(this.notebookPath.fsPath, absFilePath),
       );
@@ -806,24 +888,16 @@ export class Notebook {
         console.error(error);
       }
       if (stats && stats.isDirectory() && includeSubdirectories) {
-        refreshNotesPromises.push(
-          this.refreshNotes({
+        subdirPromises.push(
+          this._refreshNotesInternal({
             dir: path.relative(this.notebookPath.fsPath, absFilePath),
             includeSubdirectories,
-            refreshRelations: false,
+            gitignoreStack: currentStack,
           }),
         );
       }
     }
-    await Promise.all(refreshNotesPromises);
-
-    if (refreshRelations) {
-      for (const filePath in this.notes) {
-        await this.processNoteMentionsAndMentionedBy(filePath);
-      }
-    }
-
-    return this.notes;
+    await Promise.all(subdirPromises);
   }
 
   /*

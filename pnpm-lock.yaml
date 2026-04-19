@@ -113,6 +113,9 @@ importers:
       html-to-image:
         specifier: ^1.11.11
         version: 1.11.13
+      ignore:
+        specifier: ^7.0.5
+        version: 7.0.5
       imagemagick-cli:
         specifier: ^0.5.0
         version: 0.5.0
