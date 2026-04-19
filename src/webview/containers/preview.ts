@@ -95,6 +95,9 @@ const PreviewContainer = createContainer(() => {
   const scrollMap = useRef<number[] | null>(null);
   const wavedromCache = useRef<Record<string, string>>({});
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  // Set to true during each animation tick scroll so scrollPreview can skip it.
+  // requestAnimationFrame fires after scroll events, so resetting there works.
+  const isAnimatingScroll = useRef<boolean>(false);
   // const refreshingTimeout = useRef<NodeJS.Timeout | null>(null);
   const isLoadingPreviewRef = useRef<boolean>(true);
   /**
@@ -364,11 +367,21 @@ const PreviewContainer = createContainer(() => {
       return;
     }
 
-    buildScrollMap();
-
-    if (Date.now() < previewScrollDelay.current) {
+    // Skip scroll events that were triggered by our own animation ticks.
+    // isAnimatingScroll is set true before each setWindowScrollTop call and
+    // reset via requestAnimationFrame (which fires after scroll events).
+    if (isAnimatingScroll.current) {
       return;
     }
+
+    // Real user scroll: cancel any pending animation so the user wins.
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+      scrollTimeout.current = null;
+    }
+    previewScrollDelay.current = 0;
+
+    buildScrollMap();
     previewSyncSource();
   }, [buildScrollMap, config.scrollSync, previewSyncSource]);
 
@@ -739,7 +752,11 @@ const PreviewContainer = createContainer(() => {
 
         if (duration <= 0) {
           previewScrollDelay.current = Date.now() + 500;
+          isAnimatingScroll.current = true;
           setWindowScrollTop(scrollTop);
+          requestAnimationFrame(() => {
+            isAnimatingScroll.current = false;
+          });
           return;
         }
 
@@ -750,7 +767,11 @@ const PreviewContainer = createContainer(() => {
         // disable preview onscroll
         previewScrollDelay.current = Date.now() + 500;
 
+        isAnimatingScroll.current = true;
         setWindowScrollTop(getWindowScrollTop() + perTick);
+        requestAnimationFrame(() => {
+          isAnimatingScroll.current = false;
+        });
         if (getWindowScrollTop() === scrollTop) {
           return;
         }
