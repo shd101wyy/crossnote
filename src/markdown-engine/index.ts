@@ -332,6 +332,11 @@ export class MarkdownEngine {
     if (utility.isVSCodeWebExtension()) {
       scripts += `<link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">`;
       scripts += `<script src="https://tikzjax.com/v1/tikzjax.js"></script>`;
+      // Expose tikzjax's window.onload handler as window.tikzjaxRender so the
+      // webview can re-trigger it after dynamically inserting markdown content.
+      // tikzjax sets window.onload synchronously, so this script (which follows
+      // in document order) runs after that assignment.
+      scripts += `<script>window.tikzjaxRender = function() { return typeof window.onload === 'function' ? window.onload.call(window) : Promise.resolve(); };</script>`;
     }
 
     // math

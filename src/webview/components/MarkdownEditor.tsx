@@ -374,9 +374,11 @@ export default function MarkdownEditor() {
     )?.widget as any;
 
     if (suggestionWidget) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       suggestionWidget.value.onDidShow(() => {
         isSuggestionWidgetOpened.current = true;
       });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       suggestionWidget.value.onDidHide(() => {
         isSuggestionWidgetOpened.current = false;
       });

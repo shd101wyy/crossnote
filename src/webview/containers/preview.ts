@@ -151,10 +151,15 @@ const PreviewContainer = createContainer(() => {
     return document.body.classList.contains('vscode-web-extension');
   }, []);
   const vscodeApi = useMemo(() => {
-    if (globalThis.acquireVsCodeApi) {
-      return globalThis.acquireVsCodeApi();
-    }
-    return null;
+    // acquireVsCodeApi is injected by VS Code into the webview global scope.
+    // We use a typed cast to avoid the ts(7017) implicit-any error that occurs
+    // when accessing properties directly on globalThis without an index signature.
+    const acquire = (
+      window as Window & {
+        acquireVsCodeApi?: () => { postMessage(message: unknown): void };
+      }
+    ).acquireVsCodeApi;
+    return acquire ? acquire() : null;
   }, []);
   const config = useMemo(() => {
     return JSON.parse(
@@ -458,6 +463,28 @@ const PreviewContainer = createContainer(() => {
     }
   }, []);
 
+  const renderTikzjax = useCallback(async () => {
+    if (!hiddenPreviewElement.current) return;
+    const tikzScripts = hiddenPreviewElement.current.querySelectorAll(
+      'script[type="text/tikz"]',
+    );
+    if (!tikzScripts.length) return;
+    const tikzjaxRender = (window as Window & { tikzjaxRender?: () => void })
+      .tikzjaxRender;
+    if (typeof tikzjaxRender !== 'function') return;
+    // Trigger tikzjax async processing (it scans document for text/tikz scripts)
+    tikzjaxRender();
+    // Poll until all tikz scripts have been replaced with rendered SVG (or timeout)
+    const startTime = Date.now();
+    while (
+      hiddenPreviewElement.current.querySelectorAll('script[type="text/tikz"]')
+        .length > 0 &&
+      Date.now() - startTime < 30000
+    ) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+  }, []);
+
   const renderInteractiveVega = useCallback(() => {
     return new Promise<void>((resolve) => {
       if (!previewElement.current) {
@@ -654,7 +681,7 @@ const PreviewContainer = createContainer(() => {
     }
     try {
       setIsRefreshingPreview(true);
-      await Promise.all([renderMathJax(), renderWavedrom()]);
+      await Promise.all([renderMathJax(), renderWavedrom(), renderTikzjax()]);
 
       previewElement.current.innerHTML = hiddenPreviewElement.current.innerHTML;
       hiddenPreviewElement.current.innerHTML = '';
@@ -673,6 +700,7 @@ const PreviewContainer = createContainer(() => {
     renderInteractiveVega,
     renderMathJax,
     renderMermaid,
+    renderTikzjax,
     renderWavedrom,
     setupCodeChunks,
   ]);

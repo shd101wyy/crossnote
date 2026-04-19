@@ -38,7 +38,7 @@ export default tseslint.config(
     },
   },
 
-  // Browser + React for webview files
+  // Browser + React for webview files (type-aware)
   {
     files: ['src/webview/**/*.{ts,tsx}'],
     plugins: {
@@ -50,12 +50,19 @@ export default tseslint.config(
     },
     languageOptions: {
       globals: globals.browser,
+      parserOptions: {
+        project: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     rules: {
       ...pluginReact.configs.flat['jsx-runtime'].rules,
       // Classic rules only (skip React Compiler rules new in v7)
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
+      // Catch calling functions that are implicitly typed as `any` (e.g., ts(7017) patterns).
+      // This complements the tsc check and surfaces the issue in ESLint diagnostics too.
+      '@typescript-eslint/no-unsafe-call': 'error',
     },
   },
 
