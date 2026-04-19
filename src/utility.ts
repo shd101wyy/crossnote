@@ -1,6 +1,5 @@
 import structuredClone from '@ungap/structured-clone';
 import * as child_process from 'child_process';
-import { createRequire } from 'module';
 import * as path from 'path';
 import Sval from 'sval';
 import * as temp from 'temp';
@@ -281,21 +280,6 @@ export async function allowUnsafeEvalAndUnsafeNewFunctionAsync(
     globalThis.Function = previousFunction;
   }
 }
-
-const _require = createRequire(__filename);
-
-export const loadDependency = (dependencyPath: string) =>
-  allowUnsafeEval(() =>
-    allowUnsafeNewFunction(() =>
-      _require(
-        path.resolve(
-          getCrossnoteBuildDirectory(),
-          'dependencies',
-          dependencyPath,
-        ),
-      ),
-    ),
-  );
 
 export const extractCommandFromBlockInfo = (info: BlockInfo) =>
   info.attributes['cmd'] === true ? info.language : info.attributes['cmd'];
