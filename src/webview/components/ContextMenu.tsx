@@ -123,6 +123,7 @@ export default function ContextMenu() {
         case 'select-preview-theme-one-light':
         case 'select-preview-theme-solarized-dark':
         case 'select-preview-theme-solarized-light':
+        case 'select-preview-theme-vscode':
         case 'select-preview-theme-vue': {
           postMessage('setPreviewTheme', [
             sourceUri.current,
@@ -151,6 +152,7 @@ export default function ContextMenu() {
         case 'select-code-block-theme-solarized-dark':
         case 'select-code-block-theme-solarized-light':
         case 'select-code-block-theme-twilight':
+        case 'select-code-block-theme-vscode':
         case 'select-code-block-theme-vue':
         case 'select-code-block-theme-vs':
         case 'select-code-block-theme-xonokai': {
@@ -171,6 +173,7 @@ export default function ContextMenu() {
         case 'select-revealjs-theme-simple':
         case 'select-revealjs-theme-sky':
         case 'select-revealjs-theme-solarized':
+        case 'select-revealjs-theme-vscode':
         case 'select-revealjs-theme-white': {
           postMessage('setRevealjsTheme', [
             sourceUri.current,
@@ -581,6 +584,26 @@ export default function ContextMenu() {
               </span>
             </Item>
           </Submenu>
+          {isVSCode && (
+            <Item id="select-preview-theme-vscode" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">
+                <Icon
+                  path={mdiPaletteOutline}
+                  size={0.8}
+                  className="mr-2"
+                ></Icon>
+                <span
+                  className={
+                    config.previewTheme === 'vscode.css'
+                      ? 'text-primary font-bold'
+                      : ''
+                  }
+                >
+                  VS Code
+                </span>
+              </span>
+            </Item>
+          )}
           <Item id="select-preview-theme-none" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiCancel} size={0.8} className="mr-2"></Icon>
@@ -930,6 +953,26 @@ export default function ContextMenu() {
               </span>
             </Item>
           </Submenu>
+          {isVSCode && (
+            <Item id="select-code-block-theme-vscode" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">
+                <Icon
+                  path={mdiPaletteOutline}
+                  size={0.8}
+                  className="mr-2"
+                ></Icon>
+                <span
+                  className={
+                    config.codeBlockTheme === 'vscode.css'
+                      ? 'text-primary font-bold'
+                      : ''
+                  }
+                >
+                  VS Code
+                </span>
+              </span>
+            </Item>
+          )}
           <Item id="select-code-block-theme-auto" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiCancel} size={0.8} className="mr-2"></Icon>
@@ -1099,6 +1142,26 @@ export default function ContextMenu() {
               </span>
             </Item>
           </Submenu>
+          {isVSCode && (
+            <Item id="select-revealjs-theme-vscode" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">
+                <Icon
+                  path={mdiPaletteOutline}
+                  size={0.8}
+                  className="mr-2"
+                ></Icon>
+                <span
+                  className={
+                    config.revealjsTheme === 'vscode.css'
+                      ? 'text-primary font-bold'
+                      : ''
+                  }
+                >
+                  VS Code
+                </span>
+              </span>
+            </Item>
+          )}
           <Item id="select-revealjs-theme-none" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiCancel} size={0.8} className="mr-2"></Icon>

@@ -1,0 +1,328 @@
+/**
+ * VS Code theme for Markdown Preview Enhanced.
+ * Uses VS Code CSS custom properties so the preview automatically
+ * matches the editor's current color theme (light, dark, or high-contrast).
+ * Only meaningful inside a VS Code webview.
+ */
+
+body {
+  font-family: var(--vscode-font-family, system-ui, -apple-system, sans-serif);
+  font-size: 16px;
+  font-weight: var(--vscode-font-weight, 400);
+  line-height: 1.6;
+  color: var(--vscode-editor-foreground);
+  background-color: var(--vscode-editor-background);
+  overflow: initial;
+  box-sizing: border-box;
+  word-wrap: break-word;
+}
+
+body > :first-child {
+  margin-top: 0;
+}
+
+/* Headings */
+body h1,
+body h2,
+body h3,
+body h4,
+body h5,
+body h6 {
+  line-height: 1.2;
+  margin-top: 1em;
+  margin-bottom: 16px;
+  color: var(--vscode-editor-foreground);
+  font-weight: 600;
+}
+
+body h1 {
+  font-size: 2em;
+  font-weight: 300;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--vscode-textSeparator-foreground, rgba(128,128,128,0.35));
+}
+
+body h2 {
+  font-size: 1.5em;
+  font-weight: 400;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--vscode-textSeparator-foreground, rgba(128,128,128,0.35));
+}
+
+body h3 { font-size: 1.25em; font-weight: 500; }
+body h4 { font-size: 1.1em; }
+body h5 { font-size: 1em; }
+body h6 { font-size: 1em; opacity: 0.7; }
+
+/* Emphasis */
+body strong {
+  color: var(--vscode-editor-foreground);
+}
+
+body del {
+  opacity: 0.6;
+}
+
+/* Links */
+body a:not([href]) {
+  color: inherit;
+  text-decoration: none;
+}
+
+body a {
+  color: var(--vscode-textLink-foreground, #3794ff);
+  text-decoration: none;
+}
+
+body a:hover {
+  color: var(--vscode-textLink-activeForeground, #3794ff);
+  text-decoration: underline;
+}
+
+/* Images */
+body img {
+  max-width: 100%;
+}
+
+/* Paragraphs */
+body > p {
+  margin-top: 0;
+  margin-bottom: 16px;
+  word-wrap: break-word;
+}
+
+/* Lists */
+body > ul,
+body > ol {
+  margin-bottom: 16px;
+}
+
+body ul,
+body ol {
+  padding-left: 2em;
+}
+
+body ul.no-list,
+body ol.no-list {
+  padding: 0;
+  list-style-type: none;
+}
+
+body ul ul,
+body ul ol,
+body ol ol,
+body ol ul {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+body li {
+  margin-bottom: 0;
+}
+
+body li.task-list-item {
+  list-style: none;
+}
+
+body li > p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+body .task-list-item-checkbox {
+  margin: 0 0.2em 0.25em -1.8em;
+  vertical-align: middle;
+}
+
+body .task-list-item-checkbox:hover {
+  cursor: pointer;
+}
+
+/* Blockquotes */
+body blockquote {
+  margin: 16px 0;
+  font-size: inherit;
+  padding: 0 15px;
+  color: var(--vscode-editor-foreground);
+  opacity: 0.8;
+  background-color: var(--vscode-textBlockQuote-background, transparent);
+  border-left: 4px solid var(--vscode-textBlockQuote-border, rgba(128,128,128,0.5));
+}
+
+body blockquote > :first-child {
+  margin-top: 0;
+}
+
+body blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* Horizontal Rule */
+body hr {
+  height: 2px;
+  margin: 32px 0;
+  background-color: var(--vscode-textSeparator-foreground, rgba(128,128,128,0.35));
+  border: 0 none;
+}
+
+/* Tables */
+body table {
+  margin: 10px 0 15px 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+  display: block;
+  width: 100%;
+  overflow: auto;
+  word-break: normal;
+  word-break: keep-all;
+}
+
+body table th {
+  font-weight: bold;
+  color: var(--vscode-editor-foreground);
+}
+
+body table td,
+body table th {
+  border: 1px solid var(--vscode-textSeparator-foreground, rgba(128,128,128,0.35));
+  padding: 6px 13px;
+}
+
+/* Definition List */
+body dl {
+  padding: 0;
+}
+
+body dl dt {
+  padding: 0;
+  margin-top: 16px;
+  font-size: 1em;
+  font-style: italic;
+  font-weight: bold;
+}
+
+body dl dd {
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+/* Code (inline) */
+body code {
+  font-family: var(--vscode-editor-font-family, 'Cascadia Code', Menlo, Monaco, Consolas, 'Courier New', monospace);
+  font-size: 0.85em;
+  color: var(--vscode-textPreformat-foreground, var(--vscode-editor-foreground));
+  background-color: var(--vscode-textPreformat-background, rgba(128,128,128,0.15));
+  border-radius: 3px;
+  padding: 0.2em 0;
+}
+
+body code::before,
+body code::after {
+  letter-spacing: -0.2em;
+  content: '\00a0';
+}
+
+/* Code blocks */
+body pre > code {
+  padding: 0;
+  margin: 0;
+  word-break: normal;
+  white-space: pre;
+  background: transparent;
+  border: 0;
+}
+
+body .highlight {
+  margin-bottom: 16px;
+}
+
+body .highlight pre,
+body pre {
+  padding: 1em;
+  overflow: auto;
+  line-height: 1.45;
+  border-radius: 3px;
+}
+
+body .highlight pre {
+  margin-bottom: 0;
+  word-break: normal;
+}
+
+body pre code,
+body pre tt {
+  display: inline;
+  max-width: initial;
+  padding: 0;
+  margin: 0;
+  overflow: initial;
+  line-height: inherit;
+  word-wrap: normal;
+  background-color: transparent;
+  border: 0;
+}
+
+body pre code:before,
+body pre code:after,
+body pre tt:before,
+body pre tt:after {
+  content: normal;
+}
+
+body p,
+body blockquote,
+body ul,
+body ol,
+body dl,
+body pre {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+/* Keyboard */
+body kbd {
+  color: var(--vscode-keybindingLabel-foreground, var(--vscode-editor-foreground));
+  border: 1px solid var(--vscode-keybindingLabel-border, rgba(128,128,128,0.35));
+  border-bottom: 2px solid var(--vscode-keybindingLabel-bottomBorder, rgba(128,128,128,0.5));
+  padding: 2px 4px;
+  background-color: var(--vscode-keybindingLabel-background, rgba(128,128,128,0.1));
+  border-radius: 3px;
+}
+
+/* Print */
+@media print {
+  body {
+    background-color: #fff;
+    color: #333;
+  }
+
+  body h1,
+  body h2,
+  body h3,
+  body h4,
+  body h5,
+  body h6 {
+    color: #333;
+    page-break-after: avoid;
+  }
+
+  body pre {
+    page-break-inside: avoid;
+  }
+
+  body table {
+    display: table;
+  }
+
+  body img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  body pre,
+  body code {
+    word-wrap: break-word;
+    white-space: pre;
+  }
+}

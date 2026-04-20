@@ -159,108 +159,57 @@ export function generateSidebarToCHTML(
   headings = headings.filter((heading) => {
     return heading.level >= depthFrom && heading.level <= depthTo;
   });
-  headings = headings.map((heading, index) => {
-    heading.offset = index;
-    return heading;
-  });
+
+  if (!headings.length) {
+    return '';
+  }
 
   let smallestLevel = headings[0].level;
-  for (let i = 0; i < headings.length; i++) {
-    if (headings[i].level < smallestLevel) {
-      smallestLevel = headings[i].level;
+  for (const heading of headings) {
+    if (heading.level < smallestLevel) {
+      smallestLevel = heading.level;
     }
   }
 
   /**
-   * Get list of sub headers
+   * Recursively build TOC HTML from a slice of headings.
+   * Each heading "owns" all subsequent headings with a strictly higher level,
+   * up to the next heading at the same or lower level.
+   * Headings with children are wrapped in <details open> for collapsibility.
    */
-  const getSubHeadings = (
-    headingsData: HeadingData[],
-    expectedLevel: number,
-    startOffset: number,
-  ): HeadingData[] => {
-    const arr: HeadingData[] = [];
-    for (let i = startOffset; i < headingsData.length; i++) {
-      const heading = headingsData[i];
-      if (heading.level === expectedLevel) {
-        arr.push(heading);
-      } else if (heading.level < expectedLevel) {
-        break;
-      } else {
-        continue;
+  const buildToc = (slice: HeadingData[]): string => {
+    let html = '';
+    let i = 0;
+    while (i < slice.length) {
+      const heading = slice[i];
+      const content = heading.content.trim();
+      const headingHtml = md.render(content);
+      const headingId = heading.id || headingIdGenerator.generateId(content);
+      const level = heading.level - smallestLevel;
+
+      // Collect children: all subsequent headings with higher level
+      let j = i + 1;
+      while (j < slice.length && slice[j].level > heading.level) {
+        j++;
       }
+      const children = slice.slice(i + 1, j);
+
+      if (children.length > 0) {
+        html += `<details open class="md-toc-details">
+<summary class="md-toc-link-wrapper" data-level="${level}">
+  <a href="#${headingId}" class="md-toc-link">${headingHtml}</a>
+</summary>
+${buildToc(children)}</details>\n`;
+      } else {
+        html += `<div class="md-toc-link-wrapper" data-level="${level}">
+  <a href="#${headingId}" class="md-toc-link">${headingHtml}</a>
+</div>\n`;
+      }
+
+      i = j;
     }
-    return arr;
+    return html;
   };
 
-  /**
-   * Build the ToC Html
-   */
-  const convertHeadingsDataToHTML = (
-    allHeadingsData: HeadingData[],
-    headingsData: HeadingData[],
-  ) => {
-    const left = 24;
-    const marginLeftDelta = 18;
-    let result = '';
-    for (let i = 0; i < headingsData.length; i++) {
-      const heading = headingsData[i];
-
-      if (heading.offset === undefined) {
-        continue;
-      }
-
-      const subHeadings = getSubHeadings(
-        allHeadingsData,
-        heading.level + 1,
-        heading.offset + 1,
-      );
-
-      const leftIndentStyle = `padding-left:${
-        heading.level === smallestLevel ? 0 : left
-      }px;`;
-      const paddingStyle = `padding:0;`;
-
-      const headingHtml = md.render(heading.content);
-      const headingId =
-        heading.id || headingIdGenerator.generateId(heading.content);
-      if (subHeadings.length) {
-        result += `<details style="${paddingStyle};${leftIndentStyle}" ${
-          'open' // headingsData.length === smallestLevel ? "open" : ""
-        }>
-        <summary class="md-toc-link-wrapper">
-          <a href="#${headingId}" class="md-toc-link">${headingHtml}</a>
-          </summary>
-        <div>
-          ${convertHeadingsDataToHTML(allHeadingsData, subHeadings)}
-        </div>
-      </details>
-    `;
-      } else {
-        result += `<div class="md-toc-link-wrapper" style="${paddingStyle};display:list-item;list-style:square;margin-left:${
-          heading.level === smallestLevel
-            ? marginLeftDelta
-            : left + marginLeftDelta
-        }px">
-          <a
-            href="#${headingId}"
-            class="md-toc-link"
-          >
-            ${headingHtml}
-          </a></div>`;
-      }
-    }
-    return result;
-  };
-
-  const tocHtml = `
-<div class="md-toc">
-${convertHeadingsDataToHTML(
-  headings,
-  getSubHeadings(headings, smallestLevel, 0),
-)}
-</div>
-`;
-
-  return tocHtml;
+  return `<div class="md-toc">\n${buildToc(headings)}</div>\n`;
 }

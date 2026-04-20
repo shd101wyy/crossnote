@@ -50,23 +50,69 @@ body {
       position: fixed;
       top: 0;
       right: 0;
-      width: 268px;
+      width: var(--sidebar-toc-width, 280px);
       height: 100%;
-      padding: 32px 0;
-      overflow: auto;
+      display: flex;
+      flex-direction: row;
       background-color: @bg;
-      // color: @fg;
-      font-size: 14px;
-      box-shadow: -4px 0px 12px rgba(150, 150, 150, 0.33);
+      font-size: 13px;
+      border-left: 1px solid rgba(150, 150, 150, 0.2);
       box-sizing: border-box;
+      z-index: 40;
+
+      .md-sidebar-toc-resize-handle {
+        flex-shrink: 0;
+        width: 4px;
+        cursor: col-resize;
+        background: transparent;
+        transition: background-color 0.15s;
+
+        &:hover,
+        &:active {
+          background-color: rgba(100, 100, 100, 0.25);
+        }
+      }
+
+      .md-sidebar-toc-content {
+        .scrollbar-style();
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 24px 0 32px;
+      }
 
       a {
-        // color: @fg;
         text-decoration: none;
+        display: block;
+        padding: 3px 16px 3px 12px;
+        border-left: 2px solid transparent;
+        transition:
+          background-color 0.15s,
+          border-color 0.15s;
+        line-height: 1.5;
+
+        &:hover {
+          background-color: rgba(150, 150, 150, 0.1);
+        }
       }
 
       .md-toc {
-        padding: 0 16px;
+        padding: 0 4px;
+
+        .md-toc-details {
+          margin: 0;
+          padding: 0;
+          border: none;
+        }
+
+        summary.md-toc-link-wrapper {
+          cursor: pointer;
+          list-style-position: outside;
+
+          &::marker {
+            font-size: 0.85em;
+          }
+        }
 
         .md-toc-link-wrapper {
           .md-toc-link {
@@ -80,15 +126,36 @@ body {
           }
 
           &.highlighted {
-            .md-toc-link {
-              font-weight: 800;
+            > a,
+            > .md-toc-link {
+              border-left-color: currentColor;
+              font-weight: 600;
             }
+          }
+
+          &[data-level='0'] {
+            margin-left: 12px;
+          }
+          &[data-level='1'] {
+            margin-left: 28px;
+          }
+          &[data-level='2'] {
+            margin-left: 44px;
+          }
+          &[data-level='3'] {
+            margin-left: 60px;
+          }
+          &[data-level='4'] {
+            margin-left: 76px;
+          }
+          &[data-level='5'] {
+            margin-left: 92px;
           }
         }
       }
     }
     .crossnote {
-      width: calc(~'100% - 268px');
+      width: calc(~'100% - var(--sidebar-toc-width, 280px)');
     }
   }
 

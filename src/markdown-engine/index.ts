@@ -510,6 +510,7 @@ window["initRevealPresentation"] = async function() {
     'solarized-light.css': 'solarized-light.css',
     'solarized-dark.css': 'solarized-dark.css',
     'vue.css': 'vue.css',
+    'vscode.css': 'vscode.css',
   };
 
   private static AutoPrismThemeMapForPresentation = {
@@ -524,7 +525,29 @@ window["initRevealPresentation"] = async function() {
     'sky.css': 'default.css',
     'solarized.css': 'solarized-light.css',
     'white.css': 'default.css',
+    'vscode.css': 'vscode.css',
   };
+
+  /**
+   * Resolve VS Code-only themes to standard fallbacks for export contexts
+   * where VS Code CSS variables are not available.
+   */
+  private static resolveThemeForExport(
+    theme: string,
+    type: 'preview' | 'codeBlock' | 'revealjs',
+  ): string {
+    if (theme !== 'vscode.css') {
+      return theme;
+    }
+    switch (type) {
+      case 'preview':
+        return 'github-light.css';
+      case 'codeBlock':
+        return 'default.css';
+      case 'revealjs':
+        return 'white.css';
+    }
+  }
 
   /**
    * Automatically pick code block theme for preview.
@@ -1235,9 +1258,12 @@ if (typeof(window['Reveal']) !== 'undefined') {
           : await this.fs.readFile(
               path.resolve(
                 utility.getCrossnoteBuildDirectory(),
-                `./styles/prism_theme/${this.getPrismTheme(
-                  yamlConfig['isPresentationMode'] as boolean | undefined,
-                  yamlConfig,
+                `./styles/prism_theme/${MarkdownEngine.resolveThemeForExport(
+                  this.getPrismTheme(
+                    yamlConfig['isPresentationMode'] as boolean | undefined,
+                    yamlConfig,
+                  ),
+                  'codeBlock',
                 )}`,
               ),
             );
@@ -1249,9 +1275,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
           !Array.isArray(yamlConfig['presentation'])
             ? (yamlConfig['presentation'] as Record<string, unknown>)
             : null;
-        const theme =
+        const theme = MarkdownEngine.resolveThemeForExport(
           (presObj2?.['theme'] as string | undefined) ??
-          this.notebook.config.revealjsTheme;
+            this.notebook.config.revealjsTheme,
+          'revealjs',
+        );
 
         if (options.offline) {
           presentationStyle += `<link rel="stylesheet" href="${fileURL(
@@ -1277,7 +1305,10 @@ if (typeof(window['Reveal']) !== 'undefined') {
             : await this.fs.readFile(
                 path.resolve(
                   utility.getCrossnoteBuildDirectory(),
-                  `./styles/preview_theme/${this.notebook.config.previewTheme}`,
+                  `./styles/preview_theme/${MarkdownEngine.resolveThemeForExport(
+                    this.notebook.config.previewTheme,
+                    'preview',
+                  )}`,
                 ),
               );
       }
@@ -2012,14 +2043,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         await this.fs.readFile(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
-            `./styles/prism_theme/${
-              /*this.getPrismTheme(false)*/ (
-                MarkdownEngine.AutoPrismThemeMap as Record<string, string>
-              )[
+            `./styles/prism_theme/${MarkdownEngine.resolveThemeForExport(
+              (MarkdownEngine.AutoPrismThemeMap as Record<string, string>)[
                 (ebookConfig['theme'] as string | undefined) ||
                   this.notebook.config.previewTheme
-              ]
-            }`,
+              ] ?? 'default.css',
+              'codeBlock',
+            )}`,
           ),
         ),
         // twemoji css style
@@ -2033,10 +2063,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         await this.fs.readFile(
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
-            `./styles/preview_theme/${
+            `./styles/preview_theme/${MarkdownEngine.resolveThemeForExport(
               (ebookConfig['theme'] as string | undefined) ||
-              this.notebook.config.previewTheme
-            }`,
+                this.notebook.config.previewTheme,
+              'preview',
+            )}`,
           ),
         ),
         // markdown-it-admonition

@@ -14,7 +14,7 @@ describe('TikZ fenced diagram integration', () => {
     });
   });
 
-  it('renders tikz code block as client-side fallback', async () => {
+  it('renders tikz code block as SVG', async () => {
     const markdown = [
       '```tikz',
       '\\begin{tikzpicture}',
@@ -33,15 +33,12 @@ describe('TikZ fenced diagram integration', () => {
     });
 
     const $ = cheerio.load(html);
-    const tikzScript = $('script[type="text/tikz"]');
-    // In Jest, node-tikzjax can't load, so the fallback
-    // <script type="text/tikz"> should be used.
-    expect(tikzScript.length).toBe(1);
-    expect(tikzScript.text()).toContain('\\begin{tikzpicture}');
-    expect(tikzScript.text()).toContain('\\draw (0,0) -- (1,1);');
+    const svg = $('svg');
+    expect(svg.length).toBe(1);
+    expect(svg.attr('xmlns')).toBe('http://www.w3.org/2000/svg');
   });
 
-  it('preserves tikz script through sanitization', async () => {
+  it('renders tikz and sanitizes output', async () => {
     const markdown = [
       '```tikz',
       '\\begin{tikzpicture}',
@@ -59,8 +56,8 @@ describe('TikZ fenced diagram integration', () => {
       hideFrontMatter: false,
     });
 
-    // The tikz script should survive sanitization
-    expect(html).toContain('type="text/tikz"');
+    // Should contain rendered SVG, not raw script tags
+    expect(html).toContain('<svg');
     expect(html).not.toContain('<script>alert');
   });
 });

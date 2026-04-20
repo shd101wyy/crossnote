@@ -28,10 +28,17 @@ gulp.task('compile-less', function (cb) {
     .pipe(cleanCss())
     .pipe(gulp.dest('./out/styles'));
 
-  // 2. Copy all files except *.less in ./styles to ./out/styles
+  // 2. Minify CSS files (not .less) in ./styles
   gulp
-    .src(['./styles/**/*', '!./styles/**/*.less'])
+    .src(['./styles/**/*.css'])
     .pipe(cleanCss())
+    .pipe(gulp.dest('./out/styles'));
+
+  // 3. Copy non-CSS/non-less assets (e.g. images) as binary
+  gulp
+    .src(['./styles/**/*', '!./styles/**/*.less', '!./styles/**/*.css'], {
+      encoding: false,
+    })
     .pipe(gulp.dest('./out/styles'));
 
   cb();
@@ -46,7 +53,10 @@ gulp.task('watch-less', function (cb) {
 
 gulp.task('copy-files', function (cb) {
   // Copy ./dependencies to ./out
-  gulp.src('./dependencies/**/*').pipe(gulp.dest('./out/dependencies'));
+  // encoding: false prevents Gulp 5 from treating binary files (fonts, etc.) as UTF-8
+  gulp
+    .src('./dependencies/**/*', { encoding: false })
+    .pipe(gulp.dest('./out/dependencies'));
 
   cb();
 });
