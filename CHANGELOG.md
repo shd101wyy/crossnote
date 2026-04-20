@@ -6,7 +6,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### Bug fixes
 
-- Fix KaTeX math rendering broken by DOMPurify 3.4.0 — MathML elements (`<semantics>`, `<annotation>`, `<annotation-xml>`) and the `encoding` attribute are now preserved in the client-side sanitizer, preventing raw LaTeX text from leaking into the visible output ([vscode-mpe#2263](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2263))
+- Fix KaTeX fonts corrupted during build — Gulp 5's default `encoding: 'utf8'` was mangling binary font files (`.woff2`, `.woff`, `.ttf`), causing "Failed to decode downloaded font" errors and broken math rendering in VS Code preview ([vscode-mpe#2263](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2263))
+- Fix KaTeX MathML stripped by DOMPurify 3.4.0 — `<semantics>`, `<annotation>`, `<annotation-xml>` elements and the `encoding` attribute are now preserved in the client-side sanitizer, restoring accessibility and copy-paste of math expressions
 
 ### Internal
 
