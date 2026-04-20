@@ -99,6 +99,21 @@ body {
       .md-toc {
         padding: 0 4px;
 
+        .md-toc-details {
+          margin: 0;
+          padding: 0;
+          border: none;
+        }
+
+        summary.md-toc-link-wrapper {
+          cursor: pointer;
+          list-style-position: outside;
+
+          &::marker {
+            font-size: 0.85em;
+          }
+        }
+
         .md-toc-link-wrapper {
           .md-toc-link {
             display: inline;
@@ -116,6 +131,25 @@ body {
               border-left-color: currentColor;
               font-weight: 600;
             }
+          }
+
+          &[data-level='0'] {
+            margin-left: 12px;
+          }
+          &[data-level='1'] {
+            margin-left: 28px;
+          }
+          &[data-level='2'] {
+            margin-left: 44px;
+          }
+          &[data-level='3'] {
+            margin-left: 60px;
+          }
+          &[data-level='4'] {
+            margin-left: 76px;
+          }
+          &[data-level='5'] {
+            margin-left: 92px;
           }
         }
       }

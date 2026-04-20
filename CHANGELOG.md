@@ -9,6 +9,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - Fix KaTeX fonts corrupted during build — Gulp 5's default `encoding: 'utf8'` was mangling binary font files (`.woff2`, `.woff`, `.ttf`), causing "Failed to decode downloaded font" errors and broken math rendering in VS Code preview ([vscode-mpe#2263](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2263))
 - Fix KaTeX MathML stripped by DOMPurify 3.4.0 — `<semantics>`, `<annotation>`, `<annotation-xml>` elements and the `encoding` attribute are now preserved in the client-side sanitizer, restoring accessibility and copy-paste of math expressions
 
+### Improvements
+
+- Modernize sidebar TOC panel — resizable via drag handle, persistent width, subtle border, hover states, and left accent bar for active heading
+- Fix TOC alignment — replace mixed `<details>`/`<div list-item>` rendering with consistent `data-level`-based indentation so headings at the same level always align ([vscode-mpe#2204](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2204))
+- TOC sections with sub-headings are now collapsible via disclosure triangles (both sidebar and inline `[TOC]`)
+
 ### Internal
 
 - Fix `jest.config.js` `transformIgnorePatterns` (was empty array causing babel-jest to transform all node_modules)
