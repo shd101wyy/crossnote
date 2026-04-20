@@ -1,0 +1,309 @@
+/**
+ * VS Code Prism theme for Markdown Preview Enhanced.
+ * Uses the same syntax token colors as VS Code's built-in Default Light+
+ * and Default Dark+ themes, switched automatically via body.vscode-light
+ * and body.vscode-dark classes that VS Code injects into the webview.
+ */
+
+/* ============================================================
+ * Token color custom properties
+ * Default to Dark+ colors; overridden for Light+ below.
+ * ============================================================ */
+:root {
+  --prism-foreground: var(--vscode-editor-foreground, #d4d4d4);
+  --prism-background: rgba(255, 255, 255, 0.06);
+  --prism-selection: var(--vscode-editor-selectionBackground, rgba(264,264,264,0.25));
+  --prism-comment: #6a9955;
+  --prism-string: #ce9178;
+  --prism-keyword: #569cd6;
+  --prism-keyword-control: #c586c0;
+  --prism-function: #dcdcaa;
+  --prism-number: #b5cea8;
+  --prism-type: #4ec9b0;
+  --prism-variable: #9cdcfe;
+  --prism-constant: #4fc1ff;
+  --prism-tag: #569cd6;
+  --prism-attr-name: #9cdcfe;
+  --prism-attr-value: #ce9178;
+  --prism-punctuation: #d4d4d4;
+  --prism-operator: #d4d4d4;
+  --prism-regex: #d16969;
+  --prism-inserted: #b5cea8;
+  --prism-deleted: #ce9178;
+  --prism-property: #9cdcfe;
+  --prism-selector: #d7ba7d;
+}
+
+/* Light+ overrides */
+body.vscode-light,
+body[data-vscode-theme-kind="vscode-light"],
+body[data-vscode-theme-kind="vscode-high-contrast-light"] {
+  --prism-foreground: var(--vscode-editor-foreground, #000000);
+  --prism-background: rgba(0, 0, 0, 0.04);
+  --prism-selection: var(--vscode-editor-selectionBackground, #add6ff);
+  --prism-comment: #008000;
+  --prism-string: #a31515;
+  --prism-keyword: #0000ff;
+  --prism-keyword-control: #af00db;
+  --prism-function: #795e26;
+  --prism-number: #098658;
+  --prism-type: #267f99;
+  --prism-variable: #001080;
+  --prism-constant: #0070c1;
+  --prism-tag: #800000;
+  --prism-attr-name: #e50000;
+  --prism-attr-value: #0000ff;
+  --prism-punctuation: #000000;
+  --prism-operator: #000000;
+  --prism-regex: #811f3f;
+  --prism-inserted: #098658;
+  --prism-deleted: #a31515;
+  --prism-property: #e50000;
+  --prism-selector: #800000;
+}
+
+/* High-contrast dark overrides */
+body.vscode-high-contrast,
+body[data-vscode-theme-kind="vscode-high-contrast"] {
+  --prism-foreground: var(--vscode-editor-foreground, #ffffff);
+  --prism-background: rgba(255, 255, 255, 0.08);
+  --prism-selection: var(--vscode-editor-selectionBackground, rgba(255,255,255,0.3));
+  --prism-comment: #7ca668;
+  --prism-string: #ce9178;
+  --prism-keyword: #569cd6;
+  --prism-keyword-control: #c586c0;
+  --prism-function: #dcdcaa;
+  --prism-number: #b5cea8;
+  --prism-type: #4ec9b0;
+  --prism-variable: #9cdcfe;
+  --prism-constant: #4fc1ff;
+  --prism-tag: #569cd6;
+  --prism-attr-name: #9cdcfe;
+  --prism-punctuation: #ffffff;
+  --prism-operator: #ffffff;
+  --prism-regex: #d16969;
+}
+
+/* ============================================================
+ * Base styles
+ * ============================================================ */
+code[class*="language-"],
+pre[class*="language-"] {
+    color: var(--prism-foreground);
+    font-family: var(--vscode-editor-font-family, Consolas, 'Courier New', monospace);
+    direction: ltr;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    font-size: 0.95em;
+    line-height: 1.5;
+
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+}
+
+pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
+code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
+    background: var(--prism-selection);
+}
+
+pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
+code[class*="language-"]::selection, code[class*="language-"] ::selection {
+    background: var(--prism-selection);
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+    padding: 1em;
+    margin: .5em 0;
+    overflow: auto;
+    background-color: var(--prism-background);
+    border-radius: 3px;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+    padding: .2em .4em;
+    border-radius: .3em;
+    white-space: normal;
+    background: var(--vscode-textPreformat-background, rgba(128,128,128,0.15));
+}
+
+/* ============================================================
+ * Token colors
+ * ============================================================ */
+
+/* Comments */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: var(--prism-comment);
+    font-style: italic;
+}
+
+/* Punctuation */
+.token.punctuation {
+    color: var(--prism-punctuation);
+}
+
+.namespace {
+    opacity: 0.7;
+}
+
+/* Tags (HTML), booleans, numbers, constants, symbols */
+.token.tag {
+    color: var(--prism-tag);
+}
+
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+    color: var(--prism-number);
+}
+
+.token.deleted {
+    color: var(--prism-deleted);
+}
+
+/* Selectors, attribute names */
+.token.selector {
+    color: var(--prism-selector);
+}
+
+.token.attr-name {
+    color: var(--prism-attr-name);
+}
+
+/* Strings, characters, attribute values, inserted */
+.token.string,
+.token.char,
+.token.attr-value {
+    color: var(--prism-string);
+}
+
+.token.builtin {
+    color: var(--prism-type);
+}
+
+.token.inserted {
+    color: var(--prism-inserted);
+}
+
+/* Operators, URLs */
+.token.operator {
+    color: var(--prism-operator);
+}
+
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+    color: var(--prism-string);
+}
+
+/* Keywords */
+.token.atrule,
+.token.keyword {
+    color: var(--prism-keyword);
+}
+
+/* Control flow keywords */
+.token.keyword.control-flow {
+    color: var(--prism-keyword-control);
+}
+
+/* Functions */
+.token.function {
+    color: var(--prism-function);
+}
+
+.token.class-name {
+    color: var(--prism-type);
+}
+
+/* Regex, important, variable */
+.token.regex {
+    color: var(--prism-regex);
+}
+
+.token.variable {
+    color: var(--prism-variable);
+}
+
+.token.property {
+    color: var(--prism-property);
+}
+
+.token.important,
+.token.bold {
+    font-weight: bold;
+}
+
+.token.italic {
+    font-style: italic;
+}
+
+.token.entity {
+    cursor: help;
+}
+
+/* ============================================================
+ * Line highlighting
+ * ============================================================ */
+pre[data-line] {
+    position: relative;
+    padding: 1em 0 1em 3em;
+}
+
+pre[data-line] .line-highlight-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: transparent;
+    display: block;
+    width: 100%;
+}
+
+pre[data-line] .line-highlight {
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: inherit 0;
+    margin-top: 1em;
+    background: var(--prism-selection);
+    pointer-events: none;
+    line-height: inherit;
+    white-space: pre;
+}
+
+pre[data-line] .line-highlight:before,
+pre[data-line] .line-highlight[data-end]:after {
+    content: attr(data-start);
+    position: absolute;
+    top: .4em;
+    left: .6em;
+    min-width: 1em;
+    padding: 0 .5em;
+    background-color: rgba(128,128,128,0.4);
+    color: var(--prism-foreground);
+    font: bold 65%/1.5 sans-serif;
+    text-align: center;
+    vertical-align: .3em;
+    border-radius: 999px;
+    text-shadow: none;
+}
+
+pre[data-line] .line-highlight[data-end]:after {
+    content: attr(data-end);
+    top: auto;
+    bottom: .4em;
+}

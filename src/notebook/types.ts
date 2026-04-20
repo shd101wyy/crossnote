@@ -66,6 +66,7 @@ export type PreviewTheme =
   | 'one-light.css'
   | 'solarized-dark.css'
   | 'solarized-light.css'
+  | 'vscode.css'
   | 'vue.css';
 
 export type CodeBlockTheme =
@@ -90,6 +91,7 @@ export type CodeBlockTheme =
   | 'solarized-dark.css'
   | 'solarized-light.css'
   | 'twilight.css'
+  | 'vscode.css'
   | 'vue.css'
   | 'vs.css'
   | 'xonokai.css';
@@ -105,6 +107,7 @@ export type RevealJsTheme =
   | 'simple.css'
   | 'sky.css'
   | 'solarized.css'
+  | 'vscode.css'
   | 'white.css'
   | 'none.css';
 

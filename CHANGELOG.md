@@ -14,6 +14,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - Modernize sidebar TOC panel — resizable via drag handle, persistent width, subtle border, hover states, and left accent bar for active heading
 - Fix TOC alignment — replace mixed `<details>`/`<div list-item>` rendering with consistent `data-level`-based indentation so headings at the same level always align ([vscode-mpe#2204](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2204))
 - TOC sections with sub-headings are now collapsible via disclosure triangles (both sidebar and inline `[TOC]`)
+- Add "VS Code" theme options for Preview Theme, Code Block Theme, and Reveal.js Theme that automatically match the editor's current color theme (light, dark, or high-contrast). Code Block theme uses VS Code's Default Light+/Dark+ syntax colors. Only shown in the context menu when running inside VS Code.
 
 ### Internal
 
