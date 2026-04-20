@@ -1507,6 +1507,10 @@ const PreviewContainer = createContainer(() => {
     scrollMap.current = null;
   }, []);
 
+  const onSidebarResized = useCallback(() => {
+    scrollMap.current = null;
+  }, []);
+
   /**
    * Please note the range is zero-based [startLine, endLine)
    */
@@ -1759,6 +1763,7 @@ const PreviewContainer = createContainer(() => {
     showSidebarToc,
     sidebarTocElement,
     sidebarTocHtml,
+    onSidebarResized,
     sourceScheme,
     sourceUri,
     theme,
