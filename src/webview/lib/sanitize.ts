@@ -47,6 +47,10 @@ export function sanitizeHtml(html: string): string {
       'style',
       // Non-executable data scripts (filtered by uponSanitizeElement hook)
       'script',
+      // MathML elements used by KaTeX (DOMPurify 3.4.0+ strips these by default)
+      'semantics',
+      'annotation',
+      'annotation-xml',
     ],
     ADD_ATTR: [
       'sandbox',
@@ -54,6 +58,8 @@ export function sanitizeHtml(html: string): string {
       'allowfullscreen',
       'frameborder',
       'scrolling',
+      // MathML attributes used by KaTeX
+      'encoding',
       // data-* attributes used by crossnote
       'data-source-line',
       'data-source-lines',

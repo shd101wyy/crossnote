@@ -4,6 +4,16 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- Fix KaTeX math rendering broken by DOMPurify 3.4.0 — MathML elements (`<semantics>`, `<annotation>`, `<annotation-xml>`) and the `encoding` attribute are now preserved in the client-side sanitizer, preventing raw LaTeX text from leaking into the visible output ([vscode-mpe#2263](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2263))
+
+### Internal
+
+- Fix `jest.config.js` `transformIgnorePatterns` (was empty array causing babel-jest to transform all node_modules)
+- TikZ tests now verify actual SVG rendering instead of testing the fallback path
+- Add `webview-sanitize.test.ts` with 13 tests for the client-side DOMPurify sanitizer (KaTeX preservation, security, regression)
+
 ## [0.9.21] - 2026-04-19
 
 ### Breaking changes
