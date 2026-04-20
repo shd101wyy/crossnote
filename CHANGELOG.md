@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.22] - 2026-04-21
+
 ### Bug fixes
 
 - Fix KaTeX fonts corrupted during build — Gulp 5's default `encoding: 'utf8'` was mangling binary font files (`.woff2`, `.woff`, `.ttf`), causing "Failed to decode downloaded font" errors and broken math rendering in VS Code preview ([vscode-mpe#2263](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2263))
