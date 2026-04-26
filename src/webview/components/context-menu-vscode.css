@@ -1,0 +1,62 @@
+/*
+ * VS Code-native context menu overrides for react-contexify.
+ *
+ * These rules only apply when the .native-vscode-menu class is present on the
+ * Menu component (controlled by the useVSCodeThemeForContextMenu config option) AND
+ * the preview runs inside a VS Code webview (body has vscode-* classes and
+ * --vscode-* CSS custom properties).
+ */
+
+body:is(
+    .vscode-dark,
+    .vscode-light,
+    .vscode-high-contrast,
+    .vscode-high-contrast-light
+  )
+  .native-vscode-menu.contexify {
+  --contexify-menu-minWidth: 160px;
+  --contexify-itemContent-padding: 4px 8px;
+  --contexify-separator-margin: 3px;
+  --contexify-menu-bgColor: var(--vscode-menu-background);
+  --contexify-separator-color: var(--vscode-menu-separatorBackground);
+  --contexify-item-color: var(--vscode-menu-foreground);
+  --contexify-activeItem-color: var(--vscode-menu-selectionForeground);
+  --contexify-activeItem-bgColor: var(--vscode-menu-selectionBackground);
+  --contexify-rightSlot-color: var(--vscode-menu-foreground);
+  --contexify-arrow-color: var(--vscode-menu-foreground);
+  color: var(--vscode-menu-foreground);
+  font-size: var(--vscode-font-size);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'Ubuntu',
+    'Droid Sans', sans-serif;
+  line-height: normal;
+  border: 1px solid var(--vscode-menu-border, transparent);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+
+/*
+ * Override react-contexify built-in theme classes (.contexify_theme-dark,
+ * .contexify_theme-light) which set variables directly on the element and
+ * would otherwise win over the above rules.
+ */
+body:is(
+    .vscode-dark,
+    .vscode-light,
+    .vscode-high-contrast,
+    .vscode-high-contrast-light
+  )
+  .native-vscode-menu.contexify.contexify_theme-dark,
+body:is(
+    .vscode-dark,
+    .vscode-light,
+    .vscode-high-contrast,
+    .vscode-high-contrast-light
+  )
+  .native-vscode-menu.contexify.contexify_theme-light {
+  --contexify-menu-bgColor: var(--vscode-menu-background);
+  --contexify-separator-color: var(--vscode-menu-separatorBackground);
+  --contexify-item-color: var(--vscode-menu-foreground);
+  --contexify-activeItem-color: var(--vscode-menu-selectionForeground);
+  --contexify-activeItem-bgColor: var(--vscode-menu-selectionBackground);
+}

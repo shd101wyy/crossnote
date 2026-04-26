@@ -17,6 +17,7 @@ import classNames from 'classnames';
 import React, { useCallback } from 'react';
 import { Item, ItemParams, Menu, Separator, Submenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
+import './context-menu-vscode.css';
 import PreviewContainer from '../containers/preview';
 
 export default function ContextMenu() {
@@ -208,9 +209,19 @@ export default function ContextMenu() {
     [postMessage, previewSyncSource, setShowImageHelper, sourceUri],
   );
 
+  const useNativeMenu =
+    (isVSCode || isVSCodeWebExtension) &&
+    config.useVSCodeThemeForContextMenu !== false;
+
   return (
     <div data-theme={theme} className="select-none">
-      <Menu id={contextMenuId} theme={theme === 'dark' ? 'dark' : undefined}>
+      <Menu
+        id={contextMenuId}
+        theme={
+          useNativeMenu ? undefined : theme === 'dark' ? 'dark' : undefined
+        }
+        className={useNativeMenu ? 'native-vscode-menu' : undefined}
+      >
         <Item id="open-graph-view" onClick={handleItemClick}>
           <span className="inline-flex flex-row items-center">
             <Icon path={mdiGraph} size={0.8} className="mr-2"></Icon>
