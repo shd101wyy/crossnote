@@ -549,6 +549,18 @@ export interface NotebookConfig {
   isVSCode: boolean;
 
   /**
+   * Whether to use a native VS Code-style context menu in the preview.
+   *
+   * When enabled, the right-click context menu inherits VS Code's theme
+   * colors and font instead of using the preview theme's styling.
+   *
+   * Only takes effect when running inside VS Code.
+   *
+   * @default false
+   */
+  useVSCodeThemeForContextMenu: boolean;
+
+  /**
    * Whether to always show backlinks in preview.
    */
   alwaysShowBacklinksInPreview: boolean;
@@ -657,6 +669,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     d2Sketch: false,
     isVSCode: false,
     alwaysShowBacklinksInPreview: false,
+    useVSCodeThemeForContextMenu: false,
   };
 }
 
