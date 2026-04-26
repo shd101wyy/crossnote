@@ -1,4 +1,10 @@
-import { Bars3Icon, LinkIcon, ShareIcon } from '@heroicons/react/24/outline';
+import {
+  Bars3Icon,
+  LinkIcon,
+  MagnifyingGlassMinusIcon,
+  MagnifyingGlassPlusIcon,
+  ShareIcon,
+} from '@heroicons/react/24/outline';
 import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
 import readingTime from 'reading-time/lib/reading-time';
@@ -18,6 +24,8 @@ export default function Footer() {
     enablePreviewZenMode,
     postMessage,
     sourceUri,
+    zoomIn,
+    zoomOut,
   } = PreviewContainer.useContainer();
   const [readingTimeEstimation, setReadingTimeEstimation] = useState<
     | {
@@ -81,6 +89,20 @@ export default function Footer() {
             }}
           >
             <LinkIcon className="w-5 h-5"></LinkIcon>
+          </div>
+          <div
+            className="p-1 cursor-pointer hover:text-primary w-5 h-5"
+            title="Zoom out"
+            onClick={() => zoomOut()}
+          >
+            <MagnifyingGlassMinusIcon className="w-5 h-5"></MagnifyingGlassMinusIcon>
+          </div>
+          <div
+            className="p-1 cursor-pointer hover:text-primary w-5 h-5"
+            title="Zoom in"
+            onClick={() => zoomIn()}
+          >
+            <MagnifyingGlassPlusIcon className="w-5 h-5"></MagnifyingGlassPlusIcon>
           </div>
           <div
             className="p-1 cursor-pointer hover:text-primary w-5 h-5"
