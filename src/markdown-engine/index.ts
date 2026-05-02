@@ -31,6 +31,7 @@ import {
 import enhanceWithCodeBlockStyling from '../render-enhancers/code-block-styling';
 import enhanceWithEmbeddedLocalImages from '../render-enhancers/embedded-local-images';
 import enhanceWithEmbeddedSvgs from '../render-enhancers/embedded-svgs';
+import enhanceWithEmbeddedWikilinks from '../render-enhancers/embedded-wikilinks';
 import enhanceWithExtendedTableSyntax from '../render-enhancers/extended-table-syntax';
 import enhanceWithFencedCodeChunks, {
   RunCodeChunkOptions,
@@ -2937,6 +2938,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       // extend table
       await enhanceWithExtendedTableSyntax($);
     }
+
+    await enhanceWithEmbeddedWikilinks(
+      $,
+      this.notebook,
+      options.fileDirectoryPath || this.fileDirectoryPath,
+    );
 
     // Disable this function because of issue:
     // https://github.com/shd101wyy/markdown-preview-enhanced/issues/1287

@@ -1051,6 +1051,36 @@ export async function transformMarkdown(
         }
       }
       // =========== End: File import ============
+      // =========== Start: Inline wikilink embed ============
+      else if (
+        line.match(/!\[\[[^\]]+\]\]/) &&
+        // Block-level ![[...]] is already handled by the wikilinkImportMatch above.
+        // Only process inline occurrences (surrounded by other text on the same line).
+        !line.match(/^\s*!\[\[(.+?)\]\](?:{([^}]*)})?\s*$/)
+      ) {
+        line = line.replace(
+          /!\[\[([^\]]+)\]\]/g,
+          (_match: string, content: string) => {
+            const { text, link } = notebook.processWikilink(content);
+            const extname = path.extname(link).toLowerCase();
+
+            // Image files: convert to standard markdown image syntax
+            if (
+              extname.match(/^\.(apng|avif|gif|jpeg|jpg|png|svg|bmp|webp|emf)/)
+            ) {
+              return `![${text}](${link})`;
+            }
+
+            // Markdown and other files: create wikilink-embed placeholder
+            return `<wikilink-embed class="wikilink-embed" data-wikilink-embed-path="${encodeURIComponent(link)}" data-wikilink-embed-text="${encodeURIComponent(text)}"></wikilink-embed>`;
+          },
+        );
+        i = end + 1;
+        lineNo = lineNo + 1;
+        outputString = outputString + line + '\n';
+        continue;
+      }
+      // =========== End: Inline wikilink embed ============
       // =========== Start: Normal line ============
       else {
         i = end + 1;
