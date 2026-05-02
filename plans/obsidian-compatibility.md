@@ -130,11 +130,9 @@ Integration tests cover:
 
 ### 3. Inline metadata fields (`field:: value`)
 
-**Status: PLANNED**
+**Status: NOT PLANNED** — superseded by `{...}` block attributes
 
-Obsidian's inline field syntax allows embedding YAML-like key-value pairs in body text: `field:: value`. These can be queried by Dataview.
-
-**Design approach**: Add a markdown-it plugin that parses `key:: value` patterns and renders them as `data-` attributes on the containing element. The notebook search system can index these.
+Crossnote's existing `{...}` block attribute syntax (`src/lib/block-attributes/`) already provides typed key-value pairs with query potential. This is more powerful than Obsidian's `field:: value` plain-text syntax and better suited for driving a query/Kanban engine (see #7).
 
 ---
 
@@ -194,11 +192,9 @@ Integration tests cover:
 
 ### 5. `%% comments %%`
 
-**Status: PLANNED**
+**Status: NOT PLANNED**
 
-Obsidian uses `%% comment %%` for inline comments hidden in reading view. Crossnote has CriticMarkup but not the `%%` syntax.
-
-**Design approach**: Add a transformer pre-processing step that strips `%%...%%` blocks before rendering (for preview) or markdown-it rule that hides them.
+Crossnote already supports `<!-- comment -->` (standard HTML comments) which serve the same purpose. Adding `%%` syntax would be redundant.
 
 ---
 
@@ -212,11 +208,22 @@ The tag plugin accepts `/` in tag names, enabling `#parent/child` nested tags.
 
 ## Priority 3: Lower Impact / Larger Scope
 
-### 7. Kanban / Dataview-like query views
+### 7. Query / Kanban views (Dataview-like)
 
-**Status: DEFERRED**
+**Status: PLANNED**
 
-Would require a larger subsystem. Crossnote's code chunk system could serve as the execution engine.
+Crossnote's existing `{...}` block attributes (typed key-value pairs: bool, number, string) can drive a query engine without needing Obsidian-style `field:: value` inline metadata. Combined with code chunk execution (`cmd`), the architecture already supports:
+
+- **Query syntax**: A ` ```query {status=todo tag=bug} ``` ` code block that uses `{...}` attributes as the query language
+- **Indexing**: Extend the notebook `search.ts` to index block attributes per-note
+- **Rendering**: Query results render as data tables, lists, or Kanban boards
+
+Design approach:
+
+1. Add block attribute indexing to the notebook's search/note refresh pipeline
+2. Create a query executor that finds matching blocks across notes
+3. Add a `query` fenced code block renderer (similar to existing diagram renderers)
+4. Kanban view as a rendering option for query results with `{status}` grouping
 
 ### 8. Canvas
 
@@ -242,4 +249,6 @@ Obsidian's infinite canvas is a major feature requiring a complete UI component.
 ---
 
 _Last updated: 2026-05-02_
-_Implementation: #1 (Note embedding), #2 (Block references), #4 (Tag parsing), #6 (Nested tags) completed._
+_Implemented: #1 (Note embedding), #2 (Block references), #4 (Tag parsing), #6 (Nested tags)_
+_Not planned: #3 (superseded by `{...}`), #5 (redundant with `<!-- -->`)_
+_Planned: #7 (Query/Kanban via `{...}` attributes), #8 (Canvas — deferred)_

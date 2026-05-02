@@ -4,6 +4,21 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### New features
+
+- **Note embedding via `![[note]]`** — Inline wikilink embed syntax renders referenced note content directly in preview. Works with all three parsers (markdown-it, pandoc, markdown_yo). Supports heading hash fragments (`![[note#section]]`), alias syntax (`![[note|Title]]`), and recursion depth limit (3). Image wikilinks (`![[image.png]]`) continue to render as standard images.
+- **Block references via `^block-id`** — Add `^block-id` suffix at end of paragraphs/list items to assign explicit block IDs. Reference them with `[[note^block-id]]` or `![[note^block-id]]` to embed just that block. Combined `#heading^block-id` extracts a block within a heading section. `processWikilink` extended to handle block ref fragments alongside hash fragments.
+- **Tag parsing via `#tag`** — New `enableTagSyntax` config (default `true`) with markdown-it plugin that renders `#tag-name` as `<span class="tag">`. Supports nested tags (`#parent/child`), excludes URL fragments and numbers-only patterns, and integrates with the existing note mention tracking system for backlinks. Pandoc/markdown_yo render tags as plain text.
+
+### Improvements
+
+- `processWikilink` return type expanded with optional `hash` and `blockRef` fields for callers that need them separately from the link
+
+### Internal
+
+- Added 22 new tests across 4 test suites for wikilink embedding, block references, and tag parsing
+- Plan doc at `plans/obsidian-compatibility.md` tracking Obsidian feature parity gaps
+
 ## [0.9.22] - 2026-04-21
 
 ### Bug fixes
