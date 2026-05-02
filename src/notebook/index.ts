@@ -24,6 +24,7 @@ import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
 import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed';
 import useMarkdownItMath from '../custom-markdown-it-features/math';
 import useMarkdownItSourceMap from '../custom-markdown-it-features/sourcemap';
+import useMarkdownItTag from '../custom-markdown-it-features/tag';
 import useMarkdownItWidget from '../custom-markdown-it-features/widget';
 import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
 import { MarkdownEngine } from '../markdown-engine';
@@ -193,6 +194,7 @@ export class Notebook {
     useMarkdownAdmonition(md);
     useMarkdownCallout(md);
     useMarkdownItSourceMap(md);
+    useMarkdownItTag(md, this);
     useMarkdownItWidget(md, this);
     return md;
   }

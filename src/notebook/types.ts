@@ -292,6 +292,16 @@ export interface NotebookConfig {
    */
   enableCriticMarkupSyntax: boolean;
   /**
+   * Whether to enable tag syntax.
+   *
+   * When enabled, `#tag-name` patterns in body text are rendered as
+   * tag elements (`<span class="tag">`). Supports nested tags like
+   * `#parent/child`.
+   *
+   * @default true
+   */
+  enableTagSyntax: boolean;
+  /**
    * The protocols white list.
    *
    * @default `http://, https://, atom://, file://, mailto:, tel:`
@@ -614,6 +624,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     enableEmojiSyntax: true,
     enableExtendedTableSyntax: false,
     enableCriticMarkupSyntax: false,
+    enableTagSyntax: true,
     useGitHubStylePipedLink: false,
     protocolsWhiteList: 'http://, https://, atom://, file://, mailto:, tel:',
     mathRenderingOption: 'KaTeX',

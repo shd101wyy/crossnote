@@ -142,11 +142,53 @@ Obsidian's inline field syntax allows embedding YAML-like key-value pairs in bod
 
 ### 4. Tag parsing (`#tag`)
 
-**Status: PLANNED**
+**Status: COMPLETE ✅**
 
-The notebook already has a `tag` token handler in `processNoteMentionsAndMentionedBy` (line 586 of `src/notebook/index.ts`) but no markdown-it plugin generates `tag` tokens from `#tagname` syntax.
+#### Design
 
-**Design approach**: Add a markdown-it plugin that generates `tag` tokens for `#tag` patterns. Support nested tags `#parent/child`.
+The notebook already had a `tag` token handler in `processNoteMentionsAndMentionedBy` but no markdown-it plugin generated `tag` tokens. This adds the plugin plus a config toggle.
+
+#### Implementation
+
+- **Config**: `enableTagSyntax: boolean` (default `true`) in `NotebookConfig`
+- **Plugin** (`src/custom-markdown-it-features/tag.ts`):
+  - Inline rule matching `#tag-name` patterns using `\#` prefix
+  - Excludes: URL fragments (`/#`), HTML entities (`&#`), query params (`?`), word chars before `#`
+  - Valid chars: `[0-9A-Za-z_-/]` for nested `#parent/child` support
+  - Requires at least one letter/underscore (not numbers-only like `#123`)
+  - Renders as `<span class="tag">#tag-name</span>`
+  - Doesn't match inside code blocks/inline code (markdown-it's built-in code handling takes precedence)
+- **Wiring**: `useMarkdownItTag(md, this)` in `initMarkdownIt`
+
+#### Parser Support
+
+| Parser      | Status        | Notes                                               |
+| ----------- | ------------- | --------------------------------------------------- |
+| markdown-it | ✅ Completed  | Token-level tag parsing                             |
+| pandoc      | ⚠️ Plain text | Renders as `#tag` plain text (no special rendering) |
+| markdown_yo | ⚠️ Plain text | `RenderOptions` type has no `tag` field             |
+
+#### Tests
+
+| Test Type   | File                             | Tests |
+| ----------- | -------------------------------- | ----- |
+| Transformer | `test11.md` / `test11.expect.md` | 1     |
+| Integration | `test/tag.test.ts`               | 10    |
+
+Integration tests cover:
+
+- Basic/nested tag rendering
+- Tag at start of line (not confused with heading)
+- No match inside inline code or fenced code blocks
+- No match after `/` (URL fragments), `#` before word chars, numbers-only
+- `enableTagSyntax: false` disables rendering
+- Token generation for `processNoteMentionsAndMentionedBy`
+
+#### Limitations
+
+- Pandoc and markdown_yo render tags as plain text (no `<span class="tag">` wrapping)
+- `#` at line start followed by non-space is treated as a tag, not a heading (Obsidian-compatible)
+- Double-hash `##tag` produces a dangling `#` before the tag span (edge case)
 
 ---
 
@@ -162,9 +204,9 @@ Obsidian uses `%% comment %%` for inline comments hidden in reading view. Crossn
 
 ### 6. Nested tag support (`#parent/child`)
 
-**Status: PLANNED**
+**Status: COMPLETE ✅** (included in #4)
 
-Depends on #4. Enables hierarchical tag organization.
+The tag plugin accepts `/` in tag names, enabling `#parent/child` nested tags.
 
 ---
 
@@ -200,4 +242,4 @@ Obsidian's infinite canvas is a major feature requiring a complete UI component.
 ---
 
 _Last updated: 2026-05-02_
-_Implementation: Feature #1 (Note embedding), #2 (Block references) completed._
+_Implementation: #1 (Note embedding), #2 (Block references), #4 (Tag parsing), #6 (Nested tags) completed._
