@@ -1101,6 +1101,24 @@ export async function transformMarkdown(
             return `${rest} <span id="${blockId}" class="block-id"></span>`;
           },
         );
+
+        // Handle #tag syntax: replace #tag-name with <span class="tag">
+        // when enableTagSyntax is on.  Only needed for non-markdown-it
+        // parsers (markdown-it handles it via the tag plugin).
+        // The tag must be preceded by whitespace, punctuation, or line
+        // start (not word chars, /, &, ?).
+        if (
+          notebook.config.enableTagSyntax &&
+          markdownParser !== 'markdown-it'
+        ) {
+          line = line.replace(
+            /(^|[\s,.;:!?()[\]{}'"\\])#([a-zA-Z_][a-zA-Z0-9_/-]*)/g,
+            (_match: string, prefix: string, tagName: string) => {
+              return `${prefix}<span class="tag">#${tagName}</span>`;
+            },
+          );
+        }
+
         i = end + 1;
         lineNo = lineNo + 1;
         outputString = outputString + line + '\n';

@@ -102,4 +102,46 @@ describe('Tag syntax', () => {
 
     expect(headingTokens.length).toBe(0);
   });
+
+  it('renders #tag via transformer for pandoc parser', async () => {
+    const notebookP = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {
+        markdownParser: 'pandoc',
+      },
+    });
+    const markdown = 'Hello #world tag here';
+    const engine = notebookP.getNoteMarkdownEngine(
+      path.resolve(__dirname, './markdown/test-files/test-tag-pandoc.md'),
+    );
+    const { html } = await engine.parseMD(markdown, {
+      useRelativeFilePath: false,
+      isForPreview: true,
+      hideFrontMatter: false,
+    });
+
+    expect(html).toContain('class="tag"');
+    expect(html).toContain('#world');
+  });
+
+  it('renders #tag via transformer for markdown_yo parser', async () => {
+    const notebookYo = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {
+        markdownParser: 'markdown_yo',
+      },
+    });
+    const markdown = 'Hello #world tag here';
+    const engine = notebookYo.getNoteMarkdownEngine(
+      path.resolve(__dirname, './markdown/test-files/test-tag-yo.md'),
+    );
+    const { html } = await engine.parseMD(markdown, {
+      useRelativeFilePath: false,
+      isForPreview: true,
+      hideFrontMatter: false,
+    });
+
+    expect(html).toContain('class="tag"');
+    expect(html).toContain('#world');
+  });
 });

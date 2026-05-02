@@ -160,11 +160,11 @@ The notebook already had a `tag` token handler in `processNoteMentionsAndMention
 
 #### Parser Support
 
-| Parser      | Status        | Notes                                               |
-| ----------- | ------------- | --------------------------------------------------- |
-| markdown-it | ✅ Completed  | Token-level tag parsing                             |
-| pandoc      | ⚠️ Plain text | Renders as `#tag` plain text (no special rendering) |
-| markdown_yo | ⚠️ Plain text | `RenderOptions` type has no `tag` field             |
+| Parser      | Status       | Notes                              |
+| ----------- | ------------ | ---------------------------------- |
+| markdown-it | ✅ Completed | Token-level tag parsing via plugin |
+| pandoc      | ✅ Completed | Via transformer pre-processing     |
+| markdown_yo | ✅ Completed | Via transformer pre-processing     |
 
 #### Tests
 
@@ -184,9 +184,8 @@ Integration tests cover:
 
 #### Limitations
 
-- Pandoc and markdown_yo render tags as plain text (no `<span class="tag">` wrapping)
+- Transformer replacement uses regex — may have edge cases with `#` inside link URLs for non-markdown-it parsers (markdown-it is fine due to token-level parsing)
 - `#` at line start followed by non-space is treated as a tag, not a heading (Obsidian-compatible)
-- Double-hash `##tag` produces a dangling `#` before the tag span (edge case)
 
 ---
 
