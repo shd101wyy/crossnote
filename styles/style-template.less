@@ -157,10 +157,12 @@
   }
 
   // Inline #tag styling (Obsidian-like)
+  // Uses VS Code badge variables inside VS Code; falls back to
+  // semi-transparent background that works on both light and dark.
   .tag {
-    background-color: rgba(27, 31, 35, 0.05);
+    background-color: var(--vscode-badge-background, rgba(128, 128, 128, 0.15));
     border-radius: 2em;
-    color: #383d41;
+    color: var(--vscode-badge-foreground, inherit);
     font-size: 0.85em;
     font-weight: 500;
     padding: 0.15em 0.4em;
@@ -168,16 +170,25 @@
     text-decoration: none;
 
     &:hover {
-      background-color: rgba(27, 31, 35, 0.1);
+      background-color: var(
+        --vscode-badge-background,
+        rgba(128, 128, 128, 0.25)
+      );
     }
   }
 
   // Embedded wikilink note content
+  // Reuses blockquote theme variables for a consistent inset look.
   .wikilink-embed-content {
-    border-left: 3px solid var(--vscode-textLink-foreground, #0969da);
+    border-left: 3px solid
+      var(--vscode-textBlockQuote-border, rgba(128, 128, 128, 0.3));
+    background: var(
+      --vscode-textBlockQuote-background,
+      rgba(128, 128, 128, 0.05)
+    );
     margin: 0.5em 0;
-    padding: 0.25em 0.75em;
-    opacity: 0.92;
+    padding: 0.5em 0.75em;
+    border-radius: 0 3px 3px 0;
 
     &.wikilink-embed-error {
       border-left-color: var(--vscode-errorForeground, #cf222e);
@@ -196,9 +207,15 @@
         margin-top: 0.25em;
       }
     }
+
+    // Nested embeds get progressively tighter
+    .wikilink-embed-content {
+      margin: 0.25em 0;
+      padding: 0.25em 0.5em;
+    }
   }
 
-  // Block reference ID markers (hidden by default, shown on hover)
+  // Block reference ID markers (hidden by default)
   .block-id {
     display: none;
   }
