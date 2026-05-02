@@ -13,6 +13,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 ### Improvements
 
 - `processWikilink` return type expanded with optional `hash` and `blockRef` fields for callers that need them separately from the link
+- Added CSS styling in `style-template.less` for `.tag` (pill-shaped background), `.wikilink-embed-content` (left-border accent), and `.block-id` (hidden marker) elements
 
 ### Internal
 

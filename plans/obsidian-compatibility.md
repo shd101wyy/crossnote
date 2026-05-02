@@ -121,10 +121,9 @@ Integration tests cover:
 
 #### Limitations
 
-- No auto-generated block IDs (blocks must have explicit `^id` suffix)
-- Block references within embedded content use the parent element only (not sibling expansion)
-- Non-embed `[[note^block-id]]` links preserve the `^` in the href (browser won't auto-navigate to `#^id`)
-- Block ID syntax uses regex on raw markdown — may have edge cases with inline code, emphasis, etc. containing `^`
+- No auto-generated block IDs — block references require explicit `^id` syntax. Auto-generation (showing available blocks on `[[^`) is an editor-side feature (VS Code extension), not a rendering concern.
+- Block references within embedded content use the parent element only
+- Non-embed `[[note^block-id]]` links preserve `^` in href
 
 ---
 
