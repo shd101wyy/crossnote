@@ -74,11 +74,57 @@ Integration tests cover:
 
 ### 2. Block references `[[note#^block-id]]`
 
-**Status: PLANNED**
+**Status: COMPLETE ✅**
 
-Obsidian supports referencing specific blocks (paragraphs, lists) via `^block-id` anchors. Crossnote currently only supports heading-level `#heading-id` anchors.
+#### Design
 
-**Design approach**: Extend the wikilink parser to handle `#^block-id` anchors, generate IDs for block-level elements during rendering, and resolve references in the render enhancer.
+Obsidian supports referencing specific blocks (paragraphs, list items) via `^block-id` anchors. This implementation adds:
+
+- `^block-id` syntax at end of paragraphs/list items to assign explicit block IDs
+- `[[note^block-id]]` and `[[note#heading^block-id]]` wikilink references
+- `![[note^block-id]]` embed that extracts just the referenced block
+
+#### Implementation
+
+1. **`processWikilink`** (`src/notebook/index.ts:1030-1093`):
+   - Extended to extract `^block-id` fragments alongside `#hash` fragments
+   - Return type expanded to include `hash` and `blockRef` fields
+   - Supports combined `#heading^block-id` syntax
+
+2. **Transformer block ID syntax** (`src/markdown-engine/transformer.ts:1080-1086`):
+   - Detects ` ^block-id` suffix at end of non-code, non-heading lines
+   - Strips the suffix and inserts `<span id="block-id" class="block-id"></span>`
+   - Works for paragraphs, list items, blockquotes
+
+3. **Transformer inline embed handler** (`src/markdown-engine/transformer.ts:1061-1091`):
+   - Passes `blockRef` as separate `data-wikilink-embed-block-ref` attribute
+   - Strips `^blockRef` from embed path before encoding
+
+4. **Render enhancer** (`src/render-enhancers/embedded-wikilinks.ts:155-168`):
+   - Finds `<span id="block-id">` in rendered HTML
+   - Extracts parent block-level element (p, li, blockquote) for embedding
+   - Shows error if block reference not found
+
+#### Tests
+
+| Test Type   | File                                  | Tests    |
+| ----------- | ------------------------------------- | -------- |
+| Transformer | `test10.md` / `test10.expect.md`      | 1        |
+| Integration | `test/wikilink-embed.test.ts` (5 new) | 10 total |
+
+Integration tests cover:
+
+- `^block-id` syntax rendering
+- `![[note^block-id]]` block extraction
+- `![[note#heading^block-id]]` combined heading + block extraction
+- Missing block reference error handling
+
+#### Limitations
+
+- No auto-generated block IDs (blocks must have explicit `^id` suffix)
+- Block references within embedded content use the parent element only (not sibling expansion)
+- Non-embed `[[note^block-id]]` links preserve the `^` in the href (browser won't auto-navigate to `#^id`)
+- Block ID syntax uses regex on raw markdown — may have edge cases with inline code, emphasis, etc. containing `^`
 
 ---
 
@@ -154,4 +200,4 @@ Obsidian's infinite canvas is a major feature requiring a complete UI component.
 ---
 
 _Last updated: 2026-05-02_
-_Implementation: Feature #1 (Note embedding via `![[note]]`) completed._
+_Implementation: Feature #1 (Note embedding), #2 (Block references) completed._

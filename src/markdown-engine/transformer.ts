@@ -1061,7 +1061,7 @@ export async function transformMarkdown(
         line = line.replace(
           /!\[\[([^\]]+)\]\]/g,
           (_match: string, content: string) => {
-            const { text, link } = notebook.processWikilink(content);
+            const { text, link, blockRef } = notebook.processWikilink(content);
             const extname = path.extname(link).toLowerCase();
 
             // Image files: convert to standard markdown image syntax
@@ -1071,8 +1071,18 @@ export async function transformMarkdown(
               return `![${text}](${link})`;
             }
 
+            // Build embed path: use link (with hash stripped for cleaner path)
+            // and pass blockRef separately
+            let embedLink = link;
+            if (blockRef) {
+              embedLink = link.replace(new RegExp(`\\${blockRef}$`), '');
+            }
+            const blockRefAttr = blockRef
+              ? ` data-wikilink-embed-block-ref="${encodeURIComponent(blockRef.slice(1))}"`
+              : '';
+
             // Markdown and other files: create wikilink-embed placeholder
-            return `<wikilink-embed class="wikilink-embed" data-wikilink-embed-path="${encodeURIComponent(link)}" data-wikilink-embed-text="${encodeURIComponent(text)}"></wikilink-embed>`;
+            return `<wikilink-embed class="wikilink-embed" data-wikilink-embed-path="${encodeURIComponent(embedLink)}" data-wikilink-embed-text="${encodeURIComponent(text)}"${blockRefAttr}></wikilink-embed>`;
           },
         );
         i = end + 1;
@@ -1083,6 +1093,14 @@ export async function transformMarkdown(
       // =========== End: Inline wikilink embed ============
       // =========== Start: Normal line ============
       else {
+        // Handle ^block-id syntax: strip ^block-id suffix and insert
+        // <span id="block-id" class="block-id"></span> for block references.
+        line = line.replace(
+          /(.*?)\s+\^([a-zA-Z0-9_-]+)$/,
+          (_match: string, rest: string, blockId: string) => {
+            return `${rest} <span id="${blockId}" class="block-id"></span>`;
+          },
+        );
         i = end + 1;
         lineNo = lineNo + 1;
         outputString = outputString + line + '\n';

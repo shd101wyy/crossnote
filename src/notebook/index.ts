@@ -1027,7 +1027,12 @@ export class Notebook {
    * @param content content is string like "Test", "test.md | Test"
    * @returns
    */
-  public processWikilink(content: string): { text: string; link: string } {
+  public processWikilink(content: string): {
+    text: string;
+    link: string;
+    hash?: string;
+    blockRef?: string;
+  } {
     const splits = content.split('|');
     let link: string;
     let text: string;
@@ -1044,12 +1049,22 @@ export class Notebook {
       }
     }
 
-    // parse hash from link
+    // parse hash and block reference from link
+    // Support: [[note#heading]], [[note^block-id]], [[note#heading^block-id]]
     const hashIndex = link.lastIndexOf('#');
+    const blockRefIndex = link.lastIndexOf('^');
     let hash = '';
-    if (hashIndex >= 0) {
+    let blockRef = '';
+    if (hashIndex >= 0 && blockRefIndex >= 0 && blockRefIndex > hashIndex) {
+      hash = link.slice(hashIndex, blockRefIndex);
+      blockRef = link.slice(blockRefIndex);
+      link = link.slice(0, hashIndex);
+    } else if (hashIndex >= 0) {
       hash = link.slice(hashIndex);
       link = link.slice(0, hashIndex);
+    } else if (blockRefIndex >= 0) {
+      blockRef = link.slice(blockRefIndex);
+      link = link.slice(0, blockRefIndex);
     }
 
     // transform file name if needed
@@ -1078,7 +1093,10 @@ export class Notebook {
     if (hash) {
       link += hash;
     }
+    if (blockRef) {
+      link += blockRef;
+    }
 
-    return { link, text };
+    return { link, text, hash, blockRef };
   }
 }

@@ -30,6 +30,9 @@ export default async function enhance(
     const embedText = decodeURIComponent(
       attribs['data-wikilink-embed-text'] || '',
     );
+    const blockRef = decodeURIComponent(
+      attribs['data-wikilink-embed-block-ref'] || '',
+    );
     if (!embedPath) return;
 
     asyncFunctions.push(
@@ -40,6 +43,7 @@ export default async function enhance(
         $(el),
         embedPath,
         embedText,
+        blockRef,
         embedDepth,
       ),
     );
@@ -55,6 +59,7 @@ async function resolveEmbed(
   $placeholder: ReturnType<CheerioAPI>,
   embedPath: string,
   embedText: string,
+  blockRef: string,
   depth: number,
 ): Promise<void> {
   if (embedPath.match(/^https?:\/\//)) {
@@ -142,9 +147,30 @@ async function resolveEmbed(
       const embed$ = cheerio.load(`<div>${html}</div>`);
       await enhance(embed$, notebook, embedFileDir, depth + 1);
 
-      $placeholder.replaceWith(
-        `<div class="wikilink-embed-content">${embed$.html()}</div>`,
-      );
+      let resultHtml = embed$.html();
+
+      if (blockRef) {
+        // Extract just the referenced block from rendered HTML.
+        // Find the span/div with the block ID, then extract its
+        // parent block-level element (p, li, blockquote, etc.)
+        const blockSpan = embed$(`#${blockRef}, [id="${blockRef}"]`).first();
+        if (blockSpan.length) {
+          const parent = blockSpan.parent();
+          if (parent.length) {
+            resultHtml = `<div class="wikilink-embed-content">${cheerioLoadHtml(parent.toString() ?? '')}</div>`;
+          } else {
+            resultHtml = `<div class="wikilink-embed-content">${cheerioLoadHtml(blockSpan.toString() ?? '')}</div>`;
+          }
+        } else {
+          resultHtml = `<div class="wikilink-embed-content wikilink-embed-error">Block reference not found: ${escape(
+            blockRef,
+          )}</div>`;
+        }
+      } else {
+        resultHtml = `<div class="wikilink-embed-content">${resultHtml}</div>`;
+      }
+
+      $placeholder.replaceWith(resultHtml);
     } catch (error) {
       $placeholder.replaceWith(
         `<div class="wikilink-embed-content wikilink-embed-error">Error rendering embed: ${escape(
@@ -167,4 +193,10 @@ async function resolveEmbed(
       )}</code></pre></div>`,
     );
   }
+}
+
+function cheerioLoadHtml(html: string): string {
+  const $ = cheerio.load(`<div>${html}</div>`);
+  const bodyHtml = $('body').html() ?? '';
+  return bodyHtml;
 }
