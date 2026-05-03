@@ -4,6 +4,9 @@ import {
   mdiGraph,
   mdiImageOutline,
   mdiInformationOutline,
+  mdiMagnify,
+  mdiMagnifyMinus,
+  mdiMagnifyPlus,
   mdiMoonFull,
   mdiMoonNew,
   mdiOpenInNew,
@@ -35,6 +38,10 @@ export default function ContextMenu() {
     theme,
     isPresentationMode,
     enablePreviewZenMode,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+    zoomLevel,
   } = PreviewContainer.useContainer();
 
   const handleItemClick = useCallback(
@@ -185,6 +192,18 @@ export default function ContextMenu() {
           postMessage('openExternalEditor', [sourceUri.current]);
           break;
         }
+        case 'zoom-in': {
+          zoomIn();
+          break;
+        }
+        case 'zoom-out': {
+          zoomOut();
+          break;
+        }
+        case 'reset-zoom': {
+          resetZoom();
+          break;
+        }
         case 'open-documentation': {
           postMessage('openDocumentation');
           break;
@@ -205,7 +224,15 @@ export default function ContextMenu() {
           break;
       }
     },
-    [postMessage, previewSyncSource, setShowImageHelper, sourceUri],
+    [
+      postMessage,
+      previewSyncSource,
+      resetZoom,
+      setShowImageHelper,
+      sourceUri,
+      zoomIn,
+      zoomOut,
+    ],
   );
 
   return (
@@ -374,6 +401,34 @@ export default function ContextMenu() {
             Sync Source
           </span>
         </Item>
+        <Separator></Separator>
+        <Submenu
+          label={
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiMagnify} size={0.8} className="mr-2"></Icon>
+              Zoom ({Math.round(zoomLevel * 100)}%)
+            </span>
+          }
+        >
+          <Item id="zoom-in" onClick={handleItemClick}>
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiMagnifyPlus} size={0.8} className="mr-2"></Icon>
+              Zoom In
+            </span>
+          </Item>
+          <Item id="zoom-out" onClick={handleItemClick}>
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiMagnifyMinus} size={0.8} className="mr-2"></Icon>
+              Zoom Out
+            </span>
+          </Item>
+          <Item id="reset-zoom" onClick={handleItemClick}>
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiMagnify} size={0.8} className="mr-2"></Icon>
+              Reset Zoom
+            </span>
+          </Item>
+        </Submenu>
         <Separator></Separator>
         <Submenu
           label={
