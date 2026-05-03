@@ -386,11 +386,11 @@ const PreviewContainer = createContainer(() => {
   }, [buildScrollMap, config.scrollSync, previewSyncSource]);
 
   const zoomIn = useCallback(() => {
-    setZoomLevel((x) => x + 0.1);
+    setZoomLevel((x) => Math.min(x + 0.1, 5));
   }, []);
 
   const zoomOut = useCallback(() => {
-    setZoomLevel((x) => x - 0.1);
+    setZoomLevel((x) => Math.max(x - 0.1, 0.2));
   }, []);
 
   const resetZoom = useCallback(() => {
@@ -1415,7 +1415,7 @@ const PreviewContainer = createContainer(() => {
         previewSyncSource();
       } else if (data.command === 'copy') {
         document.execCommand('copy');
-      } else if (data.command === 'zommIn') {
+      } else if (data.command === 'zoomIn' || data.command === 'zommIn') {
         zoomIn();
       } else if (data.command === 'zoomOut') {
         zoomOut();
@@ -1635,6 +1635,91 @@ const PreviewContainer = createContainer(() => {
   }, [isVSCode, postMessage, zoomLevel]);
 
   /**
+   * Apply zoom level to the document body and counter-zoom fixed elements
+   * so they remain at their original size.
+   */
+  useEffect(() => {
+    document.body.style.zoom = String(zoomLevel);
+
+    if (zoomLevel !== 1) {
+      const counterZoom = 1 / zoomLevel;
+      const els = document.querySelectorAll<HTMLElement>('.fixed, .contexify');
+      for (const el of els) {
+        // Skip nested .contexify (submenus) — they inherit the
+        // parent's counter-zoom automatically.
+        if (
+          el.classList.contains('contexify') &&
+          el.parentElement?.closest('.contexify')
+        ) {
+          el.style.zoom = '';
+          continue;
+        }
+        el.style.zoom = String(counterZoom);
+      }
+    } else {
+      const els = document.querySelectorAll<HTMLElement>('.fixed, .contexify');
+      for (const el of els) {
+        el.style.zoom = '';
+      }
+    }
+  }, [zoomLevel]);
+
+  /**
+   * Counter-zoom newly added fixed / context-menu elements via
+   * MutationObserver so late-rendered DOM stays consistent.
+   */
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      if (zoomLevel === 1) {
+        return;
+      }
+      const counterZoom = 1 / zoomLevel;
+      const els = document.querySelectorAll<HTMLElement>('.fixed, .contexify');
+      for (const el of els) {
+        if (
+          el.classList.contains('contexify') &&
+          el.parentElement?.closest('.contexify')
+        ) {
+          el.style.zoom = '';
+          continue;
+        }
+        el.style.zoom = String(counterZoom);
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+    };
+  }, [zoomLevel]);
+
+  /**
+   * Ctrl+wheel (Cmd+wheel on macOS) zoom handler.
+   */
+  useEffect(() => {
+    const handler = (e: WheelEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.deltaY < 0) {
+        zoomIn();
+      } else {
+        zoomOut();
+      }
+    };
+    document.addEventListener('wheel', handler, {
+      passive: false,
+      capture: true,
+    });
+    return () => {
+      document.removeEventListener('wheel', handler, {
+        capture: true,
+      } as EventListenerOptions);
+    };
+  }, [zoomIn, zoomOut]);
+
+  /**
    * On load
    */
   useEffect(() => {
@@ -1767,7 +1852,10 @@ const PreviewContainer = createContainer(() => {
     sourceScheme,
     sourceUri,
     theme,
+    zoomIn,
     zoomLevel,
+    zoomOut,
+    resetZoom,
   };
 });
 

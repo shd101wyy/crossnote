@@ -4,6 +4,9 @@ import {
   mdiGraph,
   mdiImageOutline,
   mdiInformationOutline,
+  mdiMagnify,
+  mdiMagnifyMinus,
+  mdiMagnifyPlus,
   mdiMoonFull,
   mdiMoonNew,
   mdiOpenInNew,
@@ -17,6 +20,7 @@ import classNames from 'classnames';
 import React, { useCallback } from 'react';
 import { Item, ItemParams, Menu, Separator, Submenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
+import './context-menu-vscode.css';
 import PreviewContainer from '../containers/preview';
 
 export default function ContextMenu() {
@@ -35,6 +39,10 @@ export default function ContextMenu() {
     theme,
     isPresentationMode,
     enablePreviewZenMode,
+    zoomIn,
+    zoomOut,
+    resetZoom,
+    zoomLevel,
   } = PreviewContainer.useContainer();
 
   const handleItemClick = useCallback(
@@ -185,6 +193,18 @@ export default function ContextMenu() {
           postMessage('openExternalEditor', [sourceUri.current]);
           break;
         }
+        case 'zoom-in': {
+          zoomIn();
+          break;
+        }
+        case 'zoom-out': {
+          zoomOut();
+          break;
+        }
+        case 'reset-zoom': {
+          resetZoom();
+          break;
+        }
         case 'open-documentation': {
           postMessage('openDocumentation');
           break;
@@ -205,12 +225,30 @@ export default function ContextMenu() {
           break;
       }
     },
-    [postMessage, previewSyncSource, setShowImageHelper, sourceUri],
+    [
+      postMessage,
+      previewSyncSource,
+      resetZoom,
+      setShowImageHelper,
+      sourceUri,
+      zoomIn,
+      zoomOut,
+    ],
   );
+
+  const useNativeMenu =
+    (isVSCode || isVSCodeWebExtension) &&
+    config.useVSCodeThemeForContextMenu !== false;
 
   return (
     <div data-theme={theme} className="select-none">
-      <Menu id={contextMenuId} theme={theme === 'dark' ? 'dark' : undefined}>
+      <Menu
+        id={contextMenuId}
+        theme={
+          useNativeMenu ? undefined : theme === 'dark' ? 'dark' : undefined
+        }
+        className={useNativeMenu ? 'native-vscode-menu' : undefined}
+      >
         <Item id="open-graph-view" onClick={handleItemClick}>
           <span className="inline-flex flex-row items-center">
             <Icon path={mdiGraph} size={0.8} className="mr-2"></Icon>
@@ -374,6 +412,34 @@ export default function ContextMenu() {
             Sync Source
           </span>
         </Item>
+        <Separator></Separator>
+        <Submenu
+          label={
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiMagnify} size={0.8} className="mr-2"></Icon>
+              Zoom ({Math.round(zoomLevel * 100)}%)
+            </span>
+          }
+        >
+          <Item id="zoom-in" onClick={handleItemClick}>
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiMagnifyPlus} size={0.8} className="mr-2"></Icon>
+              Zoom In
+            </span>
+          </Item>
+          <Item id="zoom-out" onClick={handleItemClick}>
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiMagnifyMinus} size={0.8} className="mr-2"></Icon>
+              Zoom Out
+            </span>
+          </Item>
+          <Item id="reset-zoom" onClick={handleItemClick}>
+            <span className="inline-flex flex-row items-center">
+              <Icon path={mdiMagnify} size={0.8} className="mr-2"></Icon>
+              Reset Zoom
+            </span>
+          </Item>
+        </Submenu>
         <Separator></Separator>
         <Submenu
           label={
