@@ -76,6 +76,8 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       return '';
     }
 
-    return `<span class="tag">#${md.utils.escapeHtml(content)}</span>`;
+    const escaped = md.utils.escapeHtml(content);
+    const href = `tag://${encodeURIComponent(content)}`;
+    return `<a class="tag" data-tag="${escaped}" href="${href}">#${escaped}</a>`;
   };
 };

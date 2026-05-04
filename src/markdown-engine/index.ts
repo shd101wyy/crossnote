@@ -2382,6 +2382,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (
       filePath.match(this.protocolsWhiteListRegExp) ||
       filePath.startsWith('data:image/') ||
+      filePath.startsWith('tag://') ||
       filePath[0] === '#'
     ) {
       return filePath;

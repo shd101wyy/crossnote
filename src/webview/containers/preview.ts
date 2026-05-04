@@ -840,7 +840,22 @@ const PreviewContainer = createContainer(() => {
         }
         try {
           const href = decodeURIComponent(hrefAttr); // decodeURI here for Chinese like unicode heading
-          if (href && href[0] === '#') {
+          // #tag anchors: route to a dedicated clickTag message so the host can
+          // implement tag search / backlinks without colliding with file links.
+          if (a.classList.contains('tag') || href.startsWith('tag://')) {
+            const tagName = a.dataset.tag || href.replace(/^tag:\/\//, '');
+            a.onclick = (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              postMessage('clickTag', [
+                {
+                  uri: sourceUri.current,
+                  tag: tagName,
+                  scheme: sourceScheme.current,
+                },
+              ]);
+            };
+          } else if (href && href[0] === '#') {
             a.onclick = (event) => {
               event.preventDefault();
               event.stopPropagation();

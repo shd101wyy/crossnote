@@ -14,27 +14,32 @@ describe('Tag syntax', () => {
     });
   });
 
-  it('renders #tag as span with class=tag', async () => {
+  it('renders #tag as anchor with class=tag and data-tag', async () => {
     const html = notebook.renderMarkdown('Hello #world here', {
       isForPreview: true,
     });
-    expect(html).toContain('class="tag"');
-    expect(html).toContain('#world');
+    expect(html).toContain('<a class="tag"');
+    expect(html).toContain('data-tag="world"');
+    expect(html).toContain('href="tag://world"');
+    expect(html).toContain('>#world</a>');
   });
 
-  it('renders nested #parent/child tags', async () => {
+  it('renders nested #parent/child tags as anchor with encoded href', async () => {
     const html = notebook.renderMarkdown('Check #topic/subtopic', {
       isForPreview: true,
     });
-    expect(html).toContain('class="tag"');
-    expect(html).toContain('#topic/subtopic');
+    expect(html).toContain('<a class="tag"');
+    expect(html).toContain('data-tag="topic/subtopic"');
+    expect(html).toContain('href="tag://topic%2Fsubtopic"');
+    expect(html).toContain('>#topic/subtopic</a>');
   });
 
-  it('renders #tag at start of line', async () => {
+  it('renders #tag at start of line as anchor', async () => {
     const html = notebook.renderMarkdown('#tag-at-start of line', {
       isForPreview: true,
     });
-    expect(html).toContain('class="tag"');
+    expect(html).toContain('<a class="tag"');
+    expect(html).toContain('data-tag="tag-at-start"');
     expect(html).toContain('#tag-at-start');
     // Should NOT be a heading
     expect(html).not.toContain('<h1');
@@ -120,7 +125,9 @@ describe('Tag syntax', () => {
       hideFrontMatter: false,
     });
 
-    expect(html).toContain('class="tag"');
+    expect(html).toContain('<a class="tag"');
+    expect(html).toContain('data-tag="world"');
+    expect(html).toContain('href="tag://world"');
     expect(html).toContain('#world');
   });
 
@@ -141,7 +148,42 @@ describe('Tag syntax', () => {
       hideFrontMatter: false,
     });
 
-    expect(html).toContain('class="tag"');
+    expect(html).toContain('<a class="tag"');
+    expect(html).toContain('data-tag="world"');
+    expect(html).toContain('href="tag://world"');
     expect(html).toContain('#world');
+  });
+
+  it('encodes nested tag href but keeps slash readable in data-tag', async () => {
+    const html = notebook.renderMarkdown('Topic #parent/child here', {
+      isForPreview: true,
+    });
+    // data-tag should preserve the slash (more readable for the host)
+    expect(html).toContain('data-tag="parent/child"');
+    // href must percent-encode the slash so URL parsing on the host is unambiguous
+    expect(html).toContain('href="tag://parent%2Fchild"');
+  });
+
+  it('preserves transformer-rendered tag on pandoc parser too (nested)', async () => {
+    const notebookP = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {
+        markdownParser: 'pandoc',
+      },
+    });
+    const engine = notebookP.getNoteMarkdownEngine(
+      path.resolve(
+        __dirname,
+        './markdown/test-files/test-tag-pandoc-nested.md',
+      ),
+    );
+    const { html } = await engine.parseMD('Topic #parent/child here', {
+      useRelativeFilePath: false,
+      isForPreview: true,
+      hideFrontMatter: false,
+    });
+    expect(html).toContain('<a class="tag"');
+    expect(html).toContain('data-tag="parent/child"');
+    expect(html).toContain('href="tag://parent%2Fchild"');
   });
 });
