@@ -49,6 +49,11 @@ export { constructGraphView } from './graph-view';
 export type { GraphViewData, GraphViewLink, GraphViewNode } from './graph-view';
 export { ReferenceMap, TagReferenceMap } from './reference';
 export type { Reference, ReferenceKind } from './reference';
+export {
+  extractBlockIds,
+  extractHeadings,
+  findFragmentTargetLine,
+} from './note-fragments';
 
 const defaultMarkdownItConfig: Partial<ExtendedMarkdownItOptions> = {
   html: true, // Enable HTML tags in source
