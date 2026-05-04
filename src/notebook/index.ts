@@ -124,6 +124,17 @@ export class Notebook {
    */
   public tagReferenceMap: TagReferenceMap = new TagReferenceMap();
   private refreshNotesIfNotLoadedMutex: Mutex = new Mutex();
+  /**
+   * Serialises calls to refreshNotes so two callers can't interleave
+   * the wipe-and-rebuild cycle (which would leave the indices in a
+   * half-rebuilt state — the second wipe would happen after the first
+   * loop had populated entries the second wipe expects to remove,
+   * etc.).  refreshNotesIfNotLoaded above goes through its own mutex
+   * but ultimately calls refreshNotes; sharing one mutex across both
+   * wouldn't be safe (refreshNotesIfNotLoaded would deadlock when it
+   * calls refreshNotes while holding the same lock).
+   */
+  private refreshNotesMutex: Mutex = new Mutex();
 
   private search: Search = new Search();
 
@@ -759,6 +770,15 @@ export class Notebook {
       stats.isFile() &&
       this.config.markdownFileExtensions.includes(path.extname(filePath))
     ) {
+      // Skip oversized files so a checked-in 50 MB log/data dump
+      // with a `.md` extension can't pin its full content (plus a
+      // markdown-it token tree several × that size) in memory.
+      // The caller can still open the file via wikilink click —
+      // it's just not held by the in-memory index.
+      const sizeLimit = this.config.maxNoteFileSize ?? 0;
+      if (sizeLimit > 0 && stats.size > sizeLimit) {
+        return null;
+      }
       let markdown = (await this.fs.readFile(absFilePath)) as string;
 
       // Read the noteConfig, which is like <!-- note {...} --> at the end of the markdown file
@@ -874,20 +894,22 @@ export class Notebook {
   }
 
   public async refreshNotes(args: RefreshNotesArgs): Promise<Notes> {
-    const { refreshRelations = true } = args;
-    if (refreshRelations) {
-      this.notes = {};
-      this.referenceMap = new ReferenceMap();
-      this.tagReferenceMap = new TagReferenceMap();
-      this.search = new Search();
-    }
-    await this._refreshNotesInternal({ ...args, refreshRelations: false });
-    if (refreshRelations) {
-      for (const filePath in this.notes) {
-        await this.processNoteMentionsAndMentionedBy(filePath);
+    return this.refreshNotesMutex.runExclusive(async () => {
+      const { refreshRelations = true } = args;
+      if (refreshRelations) {
+        this.notes = {};
+        this.referenceMap = new ReferenceMap();
+        this.tagReferenceMap = new TagReferenceMap();
+        this.search = new Search();
       }
-    }
-    return this.notes;
+      await this._refreshNotesInternal({ ...args, refreshRelations: false });
+      if (refreshRelations) {
+        for (const filePath in this.notes) {
+          await this.processNoteMentionsAndMentionedBy(filePath);
+        }
+      }
+      return this.notes;
+    });
   }
 
   private async _refreshNotesInternal({

@@ -311,6 +311,16 @@ const config = {
 
   // Always show backlinks in the preview.
   alwaysShowBacklinksInPreview: false,
+
+  // Maximum size (in bytes) of a markdown file that crossnote will
+  // load into the in-memory note index.  Files larger than this are
+  // skipped during `refreshNotes` so a checked-in 50 MB log / data
+  // dump with a `.md` extension can't pin its full content (plus a
+  // markdown-it token tree several × that size) in memory.  Files
+  // above the cap are still openable by wikilink click — they're
+  // just not indexed for autocomplete, backlinks, or the tag panel.
+  // Set to 0 to disable the cap entirely.
+  maxNoteFileSize: 5_242_880, // 5 MiB
 }
 ```
 

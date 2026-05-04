@@ -4,7 +4,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
-## [0.9.22] - 2026-05-04
+## [0.9.23] - 2026-05-04
 
 ### New features
 
@@ -13,6 +13,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - **Tag parsing via `#tag`** — New `enableTagSyntax` config (default `true`) with markdown-it plugin and transformer pre-processing for pandoc/markdown_yo. Renders `#tag-name` as `<a class="tag" data-tag="…" href="tag://…">` so tags are clickable like wikilinks: clicking dispatches a `clickTag` postMessage (`{ uri, tag, scheme }`) that the host extension can route to tag search/backlinks. Supports nested tags (`#parent/child`), excludes URL fragments and numbers-only patterns, and integrates with the existing note mention tracking system for backlinks. Tag styling resets per-theme anchor decorations (underline, text-shadow, box-shadow) for a consistent pill shape across preview themes.
 - **Preview zoom controls** — Add zoom in / zoom out / reset zoom commands accessible via the context menu (with current zoom level shown), the footer toolbar (magnifier icons), and `Ctrl/Cmd + mouse wheel`. Zoom level is clamped to 20%–500% and applied via `document.body.style.zoom`; fixed-position elements (`.fixed`, `.contexify`) are counter-zoomed so toolbars and menus stay at their original size. Fixes a typo in the existing `zommIn` host command (now accepts both `zoomIn` and `zommIn` for backward compatibility) ([#418](https://github.com/shd101wyy/crossnote/pull/418), thanks @nielsvdc)
 - **VS Code-themed context menu** — New `useVSCodeThemeForContextMenu` config (default `false`). When enabled inside a VS Code webview, the right-click context menu inherits VS Code's menu colors, font, and border via `--vscode-menu-*` CSS variables instead of using the bundled Contexify light/dark theme ([#419](https://github.com/shd101wyy/crossnote/pull/419), thanks @nielsvdc)
+- **Global `#tag` index** — Tags are now indexed as notebook-wide metadata in a separate `tagReferenceMap` (case-folded, location-independent) instead of being routed through the file `referenceMap` with synthetic per-directory paths. Adds `Notebook.getAllTags()`, `getNotesReferringToTag(tag)`, and `getTagBacklinks(tag)` (parallel to `getNoteBacklinks`). Fixes the pre-existing bug where the same `#mytag` mentioned from `notes/foo.md` and `docs/bar.md` indexed under different phantom paths and never unified.
+- **`maxNoteFileSize` config (default `5 MiB`)** — Markdown files larger than the cap are skipped during `refreshNotes` so a checked-in 50 MB log/data dump with a `.md` extension can't pin its full content (plus a markdown-it token tree several × that size) in the in-memory index. Set to `0` to disable. Files above the cap are still openable by wikilink click — they're just not indexed for autocomplete, backlinks, or the tag panel.
 
 ### Bug fixes
 
@@ -20,11 +22,18 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - Fix `:::name … :::` Pandoc-style fenced divs being rendered as `<pre>` code blocks (markdown-it) or as literal `:::name {data-source-line="…"}` text (pandoc / markdown_yo) since 0.9.21. The colon-fenced code-block plugin now distinguishes a small whitelist of diagram languages (mermaid, plantuml, wavedrom, graphviz, vega/vega-lite, d2, tikz, …) from arbitrary div-class names; only the former takes the `<pre>` path, everything else renders as `<div class="name">` with the inner content parsed as markdown. The transformer rewrites the markers as raw HTML for non-markdown-it parsers so Pandoc/markdown_yo also produce a real `<div>`. Fixes [vscode-mpe#2275](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2275)
 - Fix headings rendering as literal `Heading {#id data-source-line="…"}` text — when `enableTagSyntax` is on, the inline tag plugin was capturing `#id` from the curly-bracket attribute span and splitting the text token, which prevented the curly-bracket-attributes core ruler from lifting the trailing `{…}` into heading attributes. The plugin and the transformer fallback now both skip `#` candidates that fall inside a `{…}` span, and the curly-bracket attributes are correctly applied to the heading element.
 - Fix tag clicks being silent no-ops — DOMPurify's default URL allowlist drops the `tag://` scheme, leaving `<a class="tag">` with no href. The webview-side sanitizer now allows `tag:` (so right-click "Copy link" works) and `bindAnchorElementsClickEvent` falls back to `data-tag` for class="tag" anchors even if some other layer strips the href.
+- Add a `Mutex` around `Notebook.refreshNotes` (alongside the existing `refreshNotesIfNotLoadedMutex`) so two concurrent callers can't interleave the wipe-and-rebuild cycle and leave the indices half-rebuilt.
 
 ### Improvements
 
 - `processWikilink` return type expanded with optional `hash` and `blockRef` fields for callers that need them separately from the link
 - Added CSS styling in `style-template.less` for `.tag` (pill-shaped background), `.wikilink-embed-content` (left-border accent), and `.block-id` (hidden marker) elements
+- **`getBacklinkedNotes` / `getNotesReferringToTag` / `getTagBacklinks` now read from the in-memory `notes` map directly** instead of `await getNote(filePath)` per referrer. Same observable behaviour, eliminates N async fs round-trips per call (felt on the Backlinks panel and the tag click quick-pick).
+- New public helpers exposed from crossnote: `extractBlockIds`, `extractHeadings`, `findFragmentTargetLine`, `matter` re-export, plus `Note` / `Notes` / `NoteConfig` type re-exports — host extensions can navigate fragments and front-matter without re-implementing the parsing rules.
+
+### Memory model — known limitation
+
+Notes are loaded eagerly into an in-memory map and stay there for the lifetime of the `Notebook` instance. Token trees from `processNoteMentionsAndMentionedBy` are retained on each `Reference` so the Backlinks panel can re-render HTML on demand. This is fine for typical notebooks (≤ 1 000 notes) but grows linearly — roughly tens of MB per 1 000 notes including token bloat. Improvements being considered for a future release: token-stripping in `Reference` (re-tokenize on demand for the Backlinks panel), `Note.markdown` becoming an accessor that re-reads from disk, mtime-keyed parse cache. The new `maxNoteFileSize` cap mitigates the worst pathological case (a single huge committed file).
 
 ### Internal
 

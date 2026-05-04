@@ -574,6 +574,23 @@ export interface NotebookConfig {
    * Whether to always show backlinks in preview.
    */
   alwaysShowBacklinksInPreview: boolean;
+
+  /**
+   * Maximum size (in bytes) of a markdown file that crossnote will
+   * load into the in-memory index.  Files larger than this are
+   * skipped during `refreshNotes` — they won't appear in
+   * autocomplete / backlinks / tag panel, and clicking a wikilink to
+   * them still opens the file (they're just not indexed).
+   *
+   * Prevents pathological cases where a committed log / data dump
+   * with a `.md` extension would otherwise pin its full contents in
+   * memory plus a fully-parsed markdown-it token tree.
+   *
+   * Set to `0` to disable the cap entirely.
+   *
+   * @default 5_242_880  (5 MiB)
+   */
+  maxNoteFileSize: number;
 }
 
 export function getDefaultMermaidConfig(): MermaidConfig {
@@ -680,6 +697,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     d2Sketch: false,
     isVSCode: false,
     alwaysShowBacklinksInPreview: false,
+    maxNoteFileSize: 5 * 1024 * 1024,
     useVSCodeThemeForContextMenu: false,
   };
 }
