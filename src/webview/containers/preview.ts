@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
 import { Backlink, WebviewConfig } from '../../notebook';
+import { classifyAnchorClick } from '../lib/anchor-routing';
 import { sanitizeHtml } from '../lib/sanitize';
 import { isBackgroundColorLight } from '../lib/utility';
 
@@ -838,24 +839,29 @@ const PreviewContainer = createContainer(() => {
         if (!hrefAttr) {
           continue;
         }
-        try {
-          const href = decodeURIComponent(hrefAttr); // decodeURI here for Chinese like unicode heading
-          // #tag anchors: route to a dedicated clickTag message so the host can
-          // implement tag search / backlinks without colliding with file links.
-          if (a.classList.contains('tag') || href.startsWith('tag://')) {
-            const tagName = a.dataset.tag || href.replace(/^tag:\/\//, '');
+        const action = classifyAnchorClick(a, hrefAttr);
+        if (!action) {
+          // https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1934
+          continue;
+        }
+        switch (action.kind) {
+          case 'tag': {
+            // Route to a dedicated clickTag message so the host can implement
+            // tag search / backlinks without colliding with file links.
             a.onclick = (event) => {
               event.preventDefault();
               event.stopPropagation();
               postMessage('clickTag', [
                 {
                   uri: sourceUri.current,
-                  tag: tagName,
+                  tag: action.tag,
                   scheme: sourceScheme.current,
                 },
               ]);
             };
-          } else if (href && href[0] === '#') {
+            break;
+          }
+          case 'in-page-anchor': {
             a.onclick = (event) => {
               event.preventDefault();
               event.stopPropagation();
@@ -866,7 +872,7 @@ const PreviewContainer = createContainer(() => {
 
               // NOTE: CSS.escape is needed here to escape special characters like '[' and number ID.
               const targetElement = previewElement.current.querySelector(
-                `#${CSS.escape(href.slice(1))}`,
+                `#${CSS.escape(action.targetId)}`,
               ) as HTMLElement;
               if (!targetElement) {
                 return;
@@ -886,22 +892,22 @@ const PreviewContainer = createContainer(() => {
                 setWindowScrollTop(offsetTop);
               }
             };
-          } else {
+            break;
+          }
+          case 'external': {
             a.onclick = (event) => {
               event.preventDefault();
               event.stopPropagation();
               postMessage('clickTagA', [
                 {
                   uri: sourceUri.current,
-                  href: encodeURIComponent(href.replace(/\\/g, '/')),
+                  href: encodeURIComponent(action.href.replace(/\\/g, '/')),
                   scheme: sourceScheme.current,
                 },
               ]);
             };
+            break;
           }
-        } catch {
-          // https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1934
-          continue;
         }
       }
     },
