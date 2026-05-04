@@ -32,7 +32,7 @@ import { replaceVariablesInString } from '../utility';
 import { loadConfigsInDirectory, wrapNodeFSAsApi } from './config-helper';
 import { matter, matterStringify } from './markdown';
 import { FilePath, Mentions, Note, NoteConfig, Notes } from './note';
-import { Reference, ReferenceMap } from './reference';
+import { Reference, ReferenceMap, TagReferenceMap } from './reference';
 import Search from './search';
 import {
   Backlink,
@@ -47,6 +47,8 @@ import {
 export * from './types';
 export { constructGraphView } from './graph-view';
 export type { GraphViewData, GraphViewLink, GraphViewNode } from './graph-view';
+export { ReferenceMap, TagReferenceMap } from './reference';
+export type { Reference, ReferenceKind } from './reference';
 
 const defaultMarkdownItConfig: Partial<ExtendedMarkdownItOptions> = {
   html: true, // Enable HTML tags in source
@@ -107,6 +109,12 @@ export class Notebook {
   public notes: Notes = {};
   public hasLoadedNotes: boolean = false;
   public referenceMap: ReferenceMap = new ReferenceMap();
+  /**
+   * Global `#tag` index.  Independent of the file system: tags are
+   * notebook-wide metadata, not phantom paths.  See
+   * src/notebook/reference.ts for shape.
+   */
+  public tagReferenceMap: TagReferenceMap = new TagReferenceMap();
   private refreshNotesIfNotLoadedMutex: Mutex = new Mutex();
 
   private search: Search = new Search();
@@ -475,6 +483,58 @@ export class Notebook {
     }
   }
 
+  /**
+   * List every tag that has been mentioned anywhere in the notebook.
+   * Tags are case-folded, so the returned values are lowercase.
+   */
+  public getAllTags(): string[] {
+    return this.tagReferenceMap.getAllTags();
+  }
+
+  /**
+   * Notes that mention a given `#tag`, anywhere in the notebook.
+   * Tag is matched case-insensitively.
+   */
+  public async getNotesReferringToTag(tag: string): Promise<Notes> {
+    const referrers = this.tagReferenceMap.getReferrers(tag);
+    const notes: Notes = {};
+    for (const filePath of referrers.keys()) {
+      const note = await this.getNote(filePath);
+      if (note) {
+        notes[filePath] = note;
+      }
+    }
+    return notes;
+  }
+
+  /**
+   * Same shape as `getNoteBacklinks`, but for a `#tag` rather than a
+   * note filepath.  Each Backlink groups a referrer note with the
+   * individual `#tag` references inside it (token + rendered HTML).
+   */
+  public async getTagBacklinks(tag: string): Promise<Backlink[]> {
+    const referrers = this.tagReferenceMap.getReferrers(tag);
+    const backlinks: Backlink[] = [];
+    for (const [filePath, references] of referrers) {
+      const note = await this.getNote(filePath);
+      if (!note) continue;
+      backlinks.push({
+        note: {
+          notebookPath: note.notebookPath,
+          filePath: note.filePath,
+          title: note.title,
+          config: note.config,
+        },
+        references,
+        referenceHtmls: references.map((reference) => {
+          const tokens = [reference.parentToken ?? reference.token];
+          return this.md.renderer.render(tokens, this.md.options, {});
+        }),
+      });
+    }
+    return backlinks;
+  }
+
   public async getNoteBacklinks(filePath: string): Promise<Backlink[]> {
     const backlinkedNotes = await this.getBacklinkedNotes(filePath);
     const backlinks: Backlink[] = [];
@@ -584,17 +644,20 @@ export class Notebook {
             link, // resolveLink(link),
             parentToken,
             token,
+            kind: 'wikilink',
           });
         } else if (token.type === 'tag') {
+          // Tags are notebook-global metadata: don't synthesise a fake
+          // file path the way wikilinks do.  link='' here; the caller
+          // routes by kind into the tagReferenceMap.
           const text = token.content.trim();
-          const link = token.content.trim();
-          // console.log("find link token: ", token, parentToken);
           results.push({
             elementId: token.attrGet('id') || '',
             text,
-            link: resolveLink(link),
+            link: '',
             parentToken,
             token,
+            kind: 'tag',
           });
         } else if (
           token.type === 'link_open' &&
@@ -623,6 +686,7 @@ export class Notebook {
               link,
               parentToken,
               token,
+              kind: 'link',
             });
           }
         } else if (token.children && token.children.length) {
@@ -636,16 +700,26 @@ export class Notebook {
     const mentions: Mentions = {};
     const oldMentions = note.mentions;
 
-    // Remove old references
+    // Remove old file-level references
     for (const filePath in oldMentions) {
       this.referenceMap.deleteReferences(filePath, note.filePath);
     }
+    // Remove old tag references for this note (rebuild from scratch)
+    this.tagReferenceMap.deleteReferencesFrom(note.filePath);
 
-    // Handle new references
+    // Handle new references — dispatch by kind:
+    //   'tag' → tagReferenceMap (global, not path-relative)
+    //   anything else → referenceMap (per-file)
     for (let i = 0; i < references.length; i++) {
-      const { link } = references[i];
+      const ref = references[i];
+      if (ref.kind === 'tag') {
+        this.tagReferenceMap.addReference(ref.text, note.filePath, ref);
+        continue;
+      }
+      const { link } = ref;
+      if (!link) continue;
       mentions[link] = true;
-      this.referenceMap.addReference(link, note.filePath, references[i]);
+      this.referenceMap.addReference(link, note.filePath, ref);
     }
 
     // Add self to reference map to declare the existence of the file itself
@@ -793,6 +867,7 @@ export class Notebook {
     if (refreshRelations) {
       this.notes = {};
       this.referenceMap = new ReferenceMap();
+      this.tagReferenceMap = new TagReferenceMap();
       this.search = new Search();
     }
     await this._refreshNotesInternal({ ...args, refreshRelations: false });
@@ -944,6 +1019,8 @@ export class Notebook {
     if (!note) {
       return;
     }
+    // Drop any tag references this note contributed.
+    this.tagReferenceMap.deleteReferencesFrom(note.filePath);
     const mentions = note.mentions;
     for (const filePath in mentions) {
       this.referenceMap.deleteReferences(filePath, note.filePath);
