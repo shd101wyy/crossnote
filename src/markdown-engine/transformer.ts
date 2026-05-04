@@ -14,6 +14,7 @@ import computeChecksum from '../lib/compute-checksum';
 import { Notebook } from '../notebook';
 import { MarkdownParser } from '../notebook/types';
 import * as PDF from '../tools/pdf';
+import { COLON_FENCE_CODE_LANGUAGES } from '../custom-markdown-it-features/colon-fenced-code-blocks';
 import { CustomSubjects } from './custom-subjects';
 import HeadingIdGenerator from './heading-id-generator';
 import { HeadingData } from './toc';
@@ -247,7 +248,12 @@ export async function transformMarkdown(
   inputString = inputString.replace(/\r\n/g, '\n');
 
   let lastOpeningCodeBlockFence: string | null = null;
-  let lastOpeningColonFence: string | null = null;
+  // null when not inside a `:::name … :::` block; 'code' when the inner
+  // content is a code/diagram fence (markdown-it consumes it via the
+  // colon_fence plugin); 'html-div' when we rewrote the markers as raw HTML
+  // <div>/</div> (pandoc / markdown_yo path for non-code names).
+  let colonFenceState: null | 'code' | 'html-div' = null;
+  let colonFenceMarkerLen = 0;
   let codeChunkOffset = 0;
   const slideConfigs: BlockAttributes[] = [];
   const JSAndCssFiles: string[] = [];
@@ -297,42 +303,81 @@ export async function transformMarkdown(
       let { line, blockquotePrefix, end } = getLine(i);
       outputString += blockquotePrefix;
 
-      // ========== Start: Colon Code Block ==========
-      // Handle :::lang ... ::: fences (Azure DevOps / GitLab wiki style).
+      // ========== Start: Colon Fence (code or div) ==========
+      // Handle :::name ... ::: fences.  Two sub-cases:
+      //
+      //   1. :::<diagram-lang>     — Azure DevOps / GitLab wiki style code
+      //                              fence (mermaid, plantuml, …).  Markdown-it
+      //                              consumes the block via the colon_fence
+      //                              plugin; we just inject {data-source-line}
+      //                              for preview sync.
+      //   2. :::<other-name>       — Pandoc-style fenced div.  For pandoc /
+      //                              markdown_yo we rewrite the open/close
+      //                              markers as raw HTML <div>/</div> so the
+      //                              non-markdown-it parsers don't render the
+      //                              colons as literal text (#2275).  Blank
+      //                              lines around the rewritten markers keep
+      //                              the inner content parsing as markdown.
+      //
+      // Markdown-it's own colon_fence plugin handles the div case for the
+      // markdown-it parser (it emits <div class="…">) so we leave the markup
+      // intact in that path.
+      //
       // This section must run before the backtick-fence section so that
       // backtick fences inside a colon block are treated as content.
-      const inColonCodeBlock = !!lastOpeningColonFence;
+      const inColonCodeBlock = colonFenceState === 'code';
+      const inColonHtmlDiv = colonFenceState === 'html-div';
       const colonFenceMatch = line.match(/^\s*(:{3,})(.*)/);
       if (colonFenceMatch) {
         const colonMarker = colonFenceMatch[1];
         const afterColons = colonFenceMatch[2].trim();
-        if (!inColonCodeBlock && afterColons.length > 0) {
-          // Opening colon fence — inject data-source-line into the info string
-          // so the renderer can attach it to the <pre> element for preview sync.
-          if (canCreateAnchor()) {
-            const optStart = line.indexOf('{');
-            const optEnd = line.lastIndexOf('}');
-            if (optStart > 0 && optEnd > 0) {
-              const optString = line.substring(optStart + 1, optEnd);
-              line =
-                line.substring(0, optStart) +
-                ` {${optString} data-source-line="${lineNo + 1}"}`;
-            } else {
-              line = line.trimEnd() + ` {data-source-line="${lineNo + 1}"}`;
+        if (!inColonCodeBlock && !inColonHtmlDiv && afterColons.length > 0) {
+          // Opening colon fence
+          const langMatch = afterColons.match(/^([^\s{]+)/);
+          const lang = (langMatch?.[1] ?? '').toLowerCase();
+          const isCodeLang = COLON_FENCE_CODE_LANGUAGES.has(lang);
+          if (markdownParser !== 'markdown-it' && !isCodeLang) {
+            // Pandoc / markdown_yo fenced-div path — rewrite as HTML so the
+            // non-markdown-it parsers don't print `:::name` literally.
+            const sourceLineAttr = canCreateAnchor()
+              ? ` data-source-line="${lineNo + 1}"`
+              : '';
+            line = `<div class="${lang}"${sourceLineAttr}>\n`;
+            colonFenceState = 'html-div';
+            colonFenceMarkerLen = colonMarker.length;
+          } else {
+            // Markdown-it (any info) or known code-language fence — keep the
+            // ::: markers and inject {data-source-line} into the info string.
+            if (canCreateAnchor()) {
+              const optStart = line.indexOf('{');
+              const optEnd = line.lastIndexOf('}');
+              if (optStart > 0 && optEnd > 0) {
+                const optString = line.substring(optStart + 1, optEnd);
+                line =
+                  line.substring(0, optStart) +
+                  ` {${optString} data-source-line="${lineNo + 1}"}`;
+              } else {
+                line = line.trimEnd() + ` {data-source-line="${lineNo + 1}"}`;
+              }
             }
+            colonFenceState = 'code';
+            colonFenceMarkerLen = colonMarker.length;
           }
-          lastOpeningColonFence = colonMarker;
           i = end + 1;
           lineNo = lineNo + 1;
           outputString = outputString + line + '\n';
           continue;
         } else if (
-          inColonCodeBlock &&
+          (inColonCodeBlock || inColonHtmlDiv) &&
           afterColons.length === 0 &&
-          colonMarker.length >= lastOpeningColonFence!.length
+          colonMarker.length >= colonFenceMarkerLen
         ) {
           // Closing colon fence
-          lastOpeningColonFence = null;
+          if (inColonHtmlDiv) {
+            line = '</div>';
+          }
+          colonFenceState = null;
+          colonFenceMarkerLen = 0;
           i = end + 1;
           lineNo = lineNo + 1;
           outputString = outputString + line + '\n';
@@ -341,13 +386,17 @@ export async function transformMarkdown(
       }
 
       if (inColonCodeBlock) {
-        // Inside a colon block — pass through unchanged, like backtick blocks
+        // Inside a colon code block — pass through unchanged, like backtick
+        // blocks (no markdown parsing of the content).
         i = end + 1;
         lineNo = lineNo + 1;
         outputString = outputString + line + '\n';
         continue;
       }
-      // ========== End: Colon Code Block ==========
+      // Inside an html-div colon block we do NOT short-circuit — the inner
+      // content should continue through the rest of the transformer (anchors,
+      // tag syntax, …) and is parsed as markdown by the downstream parser.
+      // ========== End: Colon Fence ==========
 
       // ========== Start: Code Block ==========
       const inCodeBlock = !!lastOpeningCodeBlockFence;
