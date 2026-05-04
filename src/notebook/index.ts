@@ -600,8 +600,16 @@ export class Notebook {
     if (!note) {
       return;
     }
+    // Re-fetch the body via the lazy loader: by the time this runs the
+    // cache may already have evicted `note.markdown` (e.g. on a second
+    // call for the same file).  `getNoteMarkdown` returns the cached
+    // body if present, otherwise re-reads from disk.
+    const markdown = await this.getNoteMarkdown(filePath);
+    if (markdown == null) {
+      return;
+    }
     // Get mentions
-    const tokens = this.md.parse(note.markdown, {});
+    const tokens = this.md.parse(markdown, {});
 
     /**
      * Change the link to path relative to the notebook directory
@@ -797,6 +805,54 @@ export class Notebook {
     if (!refreshNoteRelations && filePath in this.notes) {
       return this.notes[filePath];
     }
+    const note = await this.loadNoteFromDisk(filePath);
+    if (!note) {
+      return null;
+    }
+    if (refreshNoteRelations) {
+      // Body is attached to the cached entry while mentions / tags get
+      // extracted (so `processNoteMentionsAndMentionedBy` -> `getNoteMarkdown`
+      // hits the cache instead of round-tripping back to disk).
+      this.notes[note.filePath] = note;
+      this.search.add(note.filePath, note.title, note.config.aliases);
+      await this.processNoteMentionsAndMentionedBy(note.filePath);
+      // Now swap in a body-less clone so the cache is lean.  We return
+      // the body-bearing original to the caller — they just refreshed,
+      // they'd expect to get the content back without a second disk
+      // read.  Future `getNote(filePath)` (no refresh) returns the
+      // body-less cached struct; `getNoteMarkdown(filePath)` is the
+      // documented way to fetch the body on demand.
+      this.notes[note.filePath] = { ...note, markdown: undefined };
+    }
+    return note;
+  }
+
+  /**
+   * Read a note's markdown body, lazily.  Returns the cached body if
+   * one is still attached (rare — the cache evicts after mentions
+   * extraction), otherwise re-reads from disk and runs the same
+   * front-matter normalisation as `getNote`.
+   *
+   * Returns `null` for files that aren't markdown (extension not in
+   * `markdownFileExtensions`), are missing, or exceed `maxNoteFileSize`.
+   */
+  public async getNoteMarkdown(filePath: string): Promise<string | null> {
+    filePath = this.resolveNoteRelativePath(filePath);
+    const cached = this.notes[filePath];
+    if (cached?.markdown != null) {
+      return cached.markdown;
+    }
+    const note = await this.loadNoteFromDisk(filePath);
+    return note?.markdown ?? null;
+  }
+
+  /**
+   * Read a note from disk and return a fresh `Note` (with `markdown`
+   * populated and front-matter normalised).  No caching — the caller
+   * decides whether to stash it in `this.notes`.
+   */
+  private async loadNoteFromDisk(filePath: string): Promise<Note | null> {
+    filePath = this.resolveNoteRelativePath(filePath);
     const absFilePath = this.resolveNoteAbsolutePath(filePath);
     let stats: FileSystemStats;
     try {
@@ -805,98 +861,88 @@ export class Notebook {
       return null;
     }
     if (
-      stats.isFile() &&
-      this.config.markdownFileExtensions.includes(path.extname(filePath))
+      !stats.isFile() ||
+      !this.config.markdownFileExtensions.includes(path.extname(filePath))
     ) {
-      // Skip oversized files so a checked-in 50 MB log/data dump
-      // with a `.md` extension can't pin its full content (plus a
-      // markdown-it token tree several × that size) in memory.
-      // The caller can still open the file via wikilink click —
-      // it's just not held by the in-memory index.
-      const sizeLimit = this.config.maxNoteFileSize ?? 0;
-      if (sizeLimit > 0 && stats.size > sizeLimit) {
-        return null;
-      }
-      let markdown = (await this.fs.readFile(absFilePath)) as string;
-
-      // Read the noteConfig, which is like <!-- note {...} --> at the end of the markdown file
-      const noteConfig: NoteConfig = {
-        createdAt: new Date(stats.ctimeMs),
-        modifiedAt: new Date(stats.mtimeMs),
-        aliases: [],
-      };
-
-      try {
-        const data = matter(markdown);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const frontMatter: any = Object.assign({}, data.data);
-
-        // New note config design in beta 3
-        if (data.data['created']) {
-          noteConfig.createdAt = new Date(data.data['created'] as string);
-          delete frontMatter['created'];
-        }
-        if (data.data['modified']) {
-          noteConfig.modifiedAt = new Date(data.data['modified'] as string);
-          delete frontMatter['modified'];
-        }
-        if (data.data['pinned']) {
-          noteConfig.pinned = data.data['pinned'] as boolean;
-          delete frontMatter['pinned'];
-        }
-        if (data.data['favorited']) {
-          noteConfig.favorited = data.data['favorited'] as boolean;
-          delete frontMatter['favorited'];
-        }
-        if (data.data['icon']) {
-          noteConfig.icon = data.data['icon'] as string;
-          delete frontMatter['icon'];
-        }
-        if (data.data['aliases']) {
-          const aliases = (data.data['aliases'] || []) as string[] | string;
-          if (typeof aliases === 'string') {
-            noteConfig.aliases = aliases.split(',').map((x) => x.trim());
-          } else {
-            noteConfig.aliases = aliases;
-          }
-          delete frontMatter['aliases'];
-        }
-
-        // markdown = matter.stringify(data.content, frontMatter); // <= NOTE: I think gray-matter has bug. Although I delete "note" section from front-matter, it still includes it.
-        markdown = matterStringify(data.content, frontMatter);
-      } catch {
-        // Do nothing
-        markdown =
-          "Please fix front-matter. (👈 Don't forget to delete this line)\n\n" +
-          markdown;
-      }
-
-      let oldMentions: Mentions = {};
-      const oldNote = this.notes[filePath];
-      if (oldNote) {
-        oldMentions = oldNote.mentions;
-      }
-
-      // Create note
-      const note: Note = {
-        notebookPath: this.notebookPath,
-        filePath: path.relative(this.notebookPath.fsPath, absFilePath),
-        title: path.basename(absFilePath).replace(/\.md$/, ''),
-        markdown,
-        config: noteConfig,
-        mentions: oldMentions,
-      };
-
-      if (refreshNoteRelations) {
-        this.notes[note.filePath] = note;
-        this.search.add(note.filePath, note.title, note.config.aliases);
-        await this.processNoteMentionsAndMentionedBy(note.filePath);
-      }
-
-      return note;
-    } else {
       return null;
     }
+    // Skip oversized files so a checked-in 50 MB log/data dump
+    // with a `.md` extension can't pin its full content (plus a
+    // markdown-it token tree several × that size) in memory.
+    // The caller can still open the file via wikilink click —
+    // it's just not held by the in-memory index.
+    const sizeLimit = this.config.maxNoteFileSize ?? 0;
+    if (sizeLimit > 0 && stats.size > sizeLimit) {
+      return null;
+    }
+    let markdown = (await this.fs.readFile(absFilePath)) as string;
+
+    // Read the noteConfig, which is like <!-- note {...} --> at the end of the markdown file
+    const noteConfig: NoteConfig = {
+      createdAt: new Date(stats.ctimeMs),
+      modifiedAt: new Date(stats.mtimeMs),
+      aliases: [],
+    };
+
+    try {
+      const data = matter(markdown);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const frontMatter: any = Object.assign({}, data.data);
+
+      // New note config design in beta 3
+      if (data.data['created']) {
+        noteConfig.createdAt = new Date(data.data['created'] as string);
+        delete frontMatter['created'];
+      }
+      if (data.data['modified']) {
+        noteConfig.modifiedAt = new Date(data.data['modified'] as string);
+        delete frontMatter['modified'];
+      }
+      if (data.data['pinned']) {
+        noteConfig.pinned = data.data['pinned'] as boolean;
+        delete frontMatter['pinned'];
+      }
+      if (data.data['favorited']) {
+        noteConfig.favorited = data.data['favorited'] as boolean;
+        delete frontMatter['favorited'];
+      }
+      if (data.data['icon']) {
+        noteConfig.icon = data.data['icon'] as string;
+        delete frontMatter['icon'];
+      }
+      if (data.data['aliases']) {
+        const aliases = (data.data['aliases'] || []) as string[] | string;
+        if (typeof aliases === 'string') {
+          noteConfig.aliases = aliases.split(',').map((x) => x.trim());
+        } else {
+          noteConfig.aliases = aliases;
+        }
+        delete frontMatter['aliases'];
+      }
+
+      // markdown = matter.stringify(data.content, frontMatter); // <= NOTE: I think gray-matter has bug. Although I delete "note" section from front-matter, it still includes it.
+      markdown = matterStringify(data.content, frontMatter);
+    } catch {
+      // Do nothing
+      markdown =
+        "Please fix front-matter. (👈 Don't forget to delete this line)\n\n" +
+        markdown;
+    }
+
+    let oldMentions: Mentions = {};
+    const oldNote = this.notes[filePath];
+    if (oldNote) {
+      oldMentions = oldNote.mentions;
+    }
+
+    return {
+      notebookPath: this.notebookPath,
+      filePath: path.relative(this.notebookPath.fsPath, absFilePath),
+      title: path.basename(absFilePath).replace(/\.md$/, ''),
+      markdown,
+      config: noteConfig,
+      mentions: oldMentions,
+    };
   }
 
   public async refreshNotesIfNotLoaded({
@@ -944,6 +990,16 @@ export class Notebook {
       if (refreshRelations) {
         for (const filePath in this.notes) {
           await this.processNoteMentionsAndMentionedBy(filePath);
+        }
+      }
+      // Invariant at quiescence: cached `Note` entries don't retain the
+      // markdown body — only metadata + reference graph.  Eviction runs
+      // unconditionally so the `refreshRelations: false` path (which
+      // skips mentions extraction) also leaves the cache lean.
+      for (const filePath in this.notes) {
+        const cached = this.notes[filePath];
+        if (cached) {
+          cached.markdown = undefined;
         }
       }
       return this.notes;

@@ -32,9 +32,15 @@ export interface Note {
    */
   title: string;
   /**
-   * Note content.
+   * Note content.  Optional: the in-memory `Notebook.notes` cache evicts
+   * `markdown` after extracting mentions / tags, so a note returned by
+   * `Notebook.getNote(...)` may have `markdown` undefined.  Use
+   * `Notebook.getNoteMarkdown(filePath)` to lazy-load the body from
+   * disk on demand — that's the only call site guaranteed to return
+   * the current file content without keeping every note's full text
+   * resident.
    */
-  markdown: string;
+  markdown?: string;
   /**
    * Note config.
    */
