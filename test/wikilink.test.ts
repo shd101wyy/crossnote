@@ -85,3 +85,106 @@ describe('Inline wikilink rendering', () => {
     expect(html).toContain('>README &gt; ^abc</a>');
   });
 });
+
+describe('Wikilink + useGitHubStylePipedLink (Wikipedia order, default)', () => {
+  // useGitHubStylePipedLink: false (default) → [[link|text]]
+  let notebook: Notebook;
+
+  beforeAll(async () => {
+    notebook = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {
+        markdownParser: 'markdown-it',
+        useGitHubStylePipedLink: false,
+      },
+    });
+  });
+
+  it('extracts block ref from link side (no alias)', () => {
+    const { text, link, blockRef } = notebook.processWikilink('README^abc');
+    expect(text).toBe('README^abc');
+    expect(link).toBe('README.md^abc');
+    expect(blockRef).toBe('^abc');
+  });
+
+  it('extracts block ref from the link side of [[link|text]]', () => {
+    const { text, link, blockRef } = notebook.processWikilink(
+      'README^abc|My Block',
+    );
+    expect(text).toBe('My Block');
+    expect(link).toBe('README.md^abc');
+    expect(blockRef).toBe('^abc');
+  });
+
+  it('extracts heading + block ref from [[link|text]]', () => {
+    const { text, link, hash, blockRef } = notebook.processWikilink(
+      'README#Setup^abc|Setup block',
+    );
+    expect(text).toBe('Setup block');
+    // Final link keeps both heading and block fragments so the host
+    // resolver can navigate within the heading section if it wants to.
+    expect(link).toBe('README.md#Setup^abc');
+    expect(hash).toBe('#Setup');
+    expect(blockRef).toBe('^abc');
+  });
+
+  it('renders [[link|alias]] with the user alias as display', () => {
+    const html = notebook.renderMarkdown('See [[README^abc|My Block]] here', {
+      isForPreview: true,
+    });
+    expect(html).toContain('>My Block</a>');
+    expect(html).toContain('href="README.md^abc"');
+    // The Obsidian-style auto-format must NOT kick in when there's an alias.
+    expect(html).not.toContain('&gt;');
+  });
+});
+
+describe('Wikilink + useGitHubStylePipedLink (GitHub order)', () => {
+  // useGitHubStylePipedLink: true → [[text|link]]
+  let notebook: Notebook;
+
+  beforeAll(async () => {
+    notebook = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {
+        markdownParser: 'markdown-it',
+        useGitHubStylePipedLink: true,
+      },
+    });
+  });
+
+  it('still works without an alias (no pipe)', () => {
+    const { text, link, blockRef } = notebook.processWikilink('README^abc');
+    expect(text).toBe('README^abc');
+    expect(link).toBe('README.md^abc');
+    expect(blockRef).toBe('^abc');
+  });
+
+  it('extracts block ref from the link side of [[text|link]]', () => {
+    const { text, link, blockRef } = notebook.processWikilink(
+      'My Block|README^abc',
+    );
+    expect(text).toBe('My Block');
+    expect(link).toBe('README.md^abc');
+    expect(blockRef).toBe('^abc');
+  });
+
+  it('extracts heading + block ref from [[text|link]]', () => {
+    const { text, link, hash, blockRef } = notebook.processWikilink(
+      'Setup block|README#Setup^abc',
+    );
+    expect(text).toBe('Setup block');
+    expect(link).toBe('README.md#Setup^abc');
+    expect(hash).toBe('#Setup');
+    expect(blockRef).toBe('^abc');
+  });
+
+  it('renders [[alias|link]] with the user alias as display', () => {
+    const html = notebook.renderMarkdown('See [[My Block|README^abc]] here', {
+      isForPreview: true,
+    });
+    expect(html).toContain('>My Block</a>');
+    expect(html).toContain('href="README.md^abc"');
+    expect(html).not.toContain('&gt;');
+  });
+});
