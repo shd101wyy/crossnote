@@ -644,26 +644,54 @@ export class Notebook {
           // TODO: Support normal links
           const r = this.processWikilink(token.content);
           const { text } = r;
-          let { link } = r;
+          const rawLink = r.link; // may include `#heading` and/or `^block`
 
-          if (link.match(/https?:\/\//)) {
+          if (rawLink.match(/https?:\/\//)) {
             // TODO: Ignore more protocols
             continue;
           }
 
-          // Replace the token content
-          link = resolveLink(link);
-          if (this.config.useGitHubStylePipedLink) {
-            token.content = `${text} | ${addFileProtocol(link)}`;
-          } else {
-            token.content = `${addFileProtocol(link)} | ${text}`;
+          // Split the file part from any URL fragment.  Without this
+          // step, processWikilink-output like 'README.md#^abc' would
+          // get '.md' tacked on by resolveLink (which only checks
+          // endsWith('.md')) — producing phantom referenceMap keys
+          // like 'README.md#^abc.md' that show up as ghost nodes in
+          // the graph view and click-through to nonexistent files.
+          const fragmentMarker = rawLink.match(/[#^]/);
+          const fileLink = fragmentMarker
+            ? rawLink.slice(0, fragmentMarker.index)
+            : rawLink;
+          const fragment = fragmentMarker
+            ? rawLink.slice(fragmentMarker.index)
+            : '';
+
+          // Skip non-markdown attachments (images, PDFs, …).  They
+          // aren't notes — they shouldn't be graph nodes or appear
+          // in the backlinks panel.  Click-through still works
+          // because the host extension resolves the wikilink target
+          // independently; the indexing layer is what we're filtering
+          // here.
+          const ext = path.extname(fileLink);
+          if (ext && !this.config.markdownFileExtensions.includes(ext)) {
+            continue;
           }
 
-          // console.log("find link token: ", token, parentToken);
+          // Resolve to a notebook-relative file path (the index key)
+          // and reattach the fragment for the URL embedded in the
+          // token content (so the renderer's `<a href>` still
+          // navigates to the right heading / block).
+          const resolvedFile = resolveLink(fileLink);
+          const resolvedFull = resolvedFile + fragment;
+          if (this.config.useGitHubStylePipedLink) {
+            token.content = `${text} | ${addFileProtocol(resolvedFull)}`;
+          } else {
+            token.content = `${addFileProtocol(resolvedFull)} | ${text}`;
+          }
+
           results.push({
             elementId: token.attrGet('id') || '',
             text,
-            link, // resolveLink(link),
+            link: resolvedFile, // referenceMap key — bare file path
             parentToken,
             token,
             kind: 'wikilink',
