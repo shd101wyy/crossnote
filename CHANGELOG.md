@@ -23,6 +23,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - Fix headings rendering as literal `Heading {#id data-source-line="…"}` text — when `enableTagSyntax` is on, the inline tag plugin was capturing `#id` from the curly-bracket attribute span and splitting the text token, which prevented the curly-bracket-attributes core ruler from lifting the trailing `{…}` into heading attributes. The plugin and the transformer fallback now both skip `#` candidates that fall inside a `{…}` span, and the curly-bracket attributes are correctly applied to the heading element.
 - Fix tag clicks being silent no-ops — DOMPurify's default URL allowlist drops the `tag://` scheme, leaving `<a class="tag">` with no href. The webview-side sanitizer now allows `tag:` (so right-click "Copy link" works) and `bindAnchorElementsClickEvent` falls back to `data-tag` for class="tag" anchors even if some other layer strips the href.
 - Add a `Mutex` around `Notebook.refreshNotes` (alongside the existing `refreshNotesIfNotLoadedMutex`) so two concurrent callers can't interleave the wipe-and-rebuild cycle and leave the indices half-rebuilt.
+- Fix `findFragmentTargetLine` failing to resolve explicit `{#custom-id}` heading IDs — a heading written as `## Foo {#bar}` renders as `<h2 id="bar">` (the curly-bracket-attributes plugin emits the explicit id), but `findFragmentTargetLine` was only matching the auto-generated slug (`foo`), so a wikilink to `#bar` silently dropped to nowhere. Now tries the explicit-id pass first (extracting `#id` from the trailing `{...}` span, ignoring attribute order), then falls back to the auto-slug.
 
 ### Improvements
 
@@ -40,7 +41,7 @@ The eager in-memory note cache is now slim: it holds metadata (title, aliases, f
 
 ### Internal
 
-- Added 36 new tests across 5 test suites for wikilink embedding, block references, tag parsing, lazy markdown loading, reference HTML pre-rendering, and incremental refresh
+- Added 41 new tests across 5 test suites for wikilink embedding, block references, tag parsing, lazy markdown loading, reference HTML pre-rendering, incremental refresh, and explicit `{#id}` heading-fragment resolution
 - Plan doc at `plans/obsidian-compatibility.md` tracking Obsidian feature parity gaps
 
 ## [0.9.22] - 2026-04-21

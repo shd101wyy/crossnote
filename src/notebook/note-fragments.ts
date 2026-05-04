@@ -97,8 +97,13 @@ export function extractHeadings(
  *      fragment, so combined `Heading^id` fragments still resolve to
  *      the block (block IDs are unique per file, so we ignore the
  *      heading prefix).
- *   2. Heading slug — generated with HeadingIdGenerator so anchors
- *      like `#Setup` line up with how crossnote renders headings.
+ *   2. Explicit `{#custom-id}` block-attribute span on a heading —
+ *      mirrors what the curly-bracket-attributes plugin does at
+ *      render time (`# Foo {#bar}` emits `<h1 id="bar">`), so a
+ *      wikilink to `#bar` resolves to that heading line.
+ *   3. Auto-generated heading slug — produced with
+ *      HeadingIdGenerator so anchors like `#Setup` line up with how
+ *      crossnote renders headings without explicit IDs.
  *
  * Returns -1 if no match.
  */
@@ -114,6 +119,26 @@ export function findFragmentTargetLine(text: string, fragment: string): number {
       if (re.test(lines[i])) {
         return i;
       }
+    }
+  }
+
+  // Explicit `{#id}` pass.  A heading like `## Foo {#bar}` renders as
+  // `<h2 id="bar">`; the curly-bracket-attributes plugin extracts
+  // `#bar` regardless of position inside `{...}` (works with
+  // `{#bar .cls}`, `{.cls #bar}`, `{ #bar }`).  We mirror the same
+  // permissive shape here.
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.match(/^#+\s+/)) continue;
+    const attrMatch = line.match(/\{([^}]+)\}\s*$/);
+    if (!attrMatch) continue;
+    // `(?:^|\s)#([a-zA-Z][\w-]*)` — `#` at start-of-curly or after
+    // whitespace, followed by an identifier.  Avoids matching
+    // `key=#value` or other accidental `#` placements.
+    const idMatch = attrMatch[1].match(/(?:^|\s)#([a-zA-Z][\w-]*)/);
+    if (!idMatch) continue;
+    if (idMatch[1] === fragment) {
+      return i;
     }
   }
 

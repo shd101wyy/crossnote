@@ -177,4 +177,48 @@ describe('findFragmentTargetLine', () => {
     const text = '## My Heading {#custom-id}\n\nBody.';
     expect(findFragmentTargetLine(text, 'my-heading')).toBe(0);
   });
+
+  it('resolves an explicit {#custom-id} on a heading', () => {
+    // `## Foo {#bar}` renders as `<h2 id="bar">`, so a wikilink to
+    // `#bar` should resolve to that line — not be silently lost
+    // because the auto-slug is `foo`.
+    const text = '## Foo {#bar}\n\nBody.';
+    expect(findFragmentTargetLine(text, 'bar')).toBe(0);
+  });
+
+  it('resolves an explicit {#id .class} regardless of attribute order', () => {
+    const text = [
+      '# Title {.intro #welcome}',
+      '',
+      '## Subtitle {#part-one .body}',
+      '',
+      '### With spaces inside { #spacey  .x }',
+    ].join('\n');
+    expect(findFragmentTargetLine(text, 'welcome')).toBe(0);
+    expect(findFragmentTargetLine(text, 'part-one')).toBe(2);
+    expect(findFragmentTargetLine(text, 'spacey')).toBe(4);
+  });
+
+  it('prefers the explicit id over the auto-slug when both could match', () => {
+    // Two headings: one whose auto-slug equals "bar", another whose
+    // explicit id is "bar".  The renderer applies the explicit id, so
+    // we should prefer it (return its line, not the auto-slug match).
+    const text = ['# Bar', '', '## Other {#bar}'].join('\n');
+    expect(findFragmentTargetLine(text, 'bar')).toBe(2);
+  });
+
+  it('falls back to the auto-slug when no heading has the explicit id', () => {
+    const text = '## Setup\n\nBody.';
+    expect(findFragmentTargetLine(text, 'setup')).toBe(0);
+  });
+
+  it('does not pick up `#id` from a key=value attribute pair', () => {
+    // `key=#bar` is not a valid id token (the curly-bracket-attributes
+    // plugin parses `key="value"` / `key=value` separately).  Make
+    // sure the regex doesn't accidentally capture the `#bar` here.
+    const text = '## Foo {data=#bar}\n\nBody.';
+    // Should NOT resolve `#bar` to this line.  Auto-slug is `foo`.
+    expect(findFragmentTargetLine(text, 'bar')).toBe(-1);
+    expect(findFragmentTargetLine(text, 'foo')).toBe(0);
+  });
 });
