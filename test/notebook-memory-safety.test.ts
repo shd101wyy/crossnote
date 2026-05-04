@@ -312,3 +312,253 @@ describe('Notebook lazy markdown loading', () => {
     expect(await nb.getNoteMarkdown('big.md')).toBeNull();
   });
 });
+
+describe('Reference html pre-rendering', () => {
+  let notebookPath: string;
+
+  beforeEach(async () => {
+    notebookPath = await fs.mkdtemp(path.join(os.tmpdir(), 'crossnote-href-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(notebookPath, { recursive: true, force: true });
+  });
+
+  async function writeNote(name: string, body: string) {
+    await fs.writeFile(path.join(notebookPath, name), body);
+  }
+
+  it('References carry pre-rendered html instead of markdown-it Tokens', async () => {
+    await writeNote('a.md', '# A\n\nSee [[b]] and #shared here.\n');
+    await writeNote('b.md', '# B\n\n');
+
+    const nb = await Notebook.init({
+      notebookPath,
+      config: { markdownParser: 'markdown-it' },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+
+    // File-link reference (a.md -> b.md).
+    const refs = await nb.getReferences('b.md', 'a.md');
+    expect(refs.length).toBeGreaterThan(0);
+    for (const ref of refs) {
+      expect(typeof ref.html).toBe('string');
+      expect(ref.html.length).toBeGreaterThan(0);
+      // Token fields are gone — explicit check so future regressions
+      // (e.g. someone re-adding parentToken for a "convenience" reason)
+      // get caught.
+      expect(
+        (ref as unknown as Record<string, unknown>).parentToken,
+      ).toBeUndefined();
+      expect((ref as unknown as Record<string, unknown>).token).toBeUndefined();
+    }
+
+    // Tag reference: the `#shared` mention in a.md.
+    const tagRefs = nb.tagReferenceMap.getReferrers('shared').get('a.md');
+    expect(tagRefs).toBeDefined();
+    expect(tagRefs!.length).toBe(1);
+    expect(tagRefs![0].html).toContain('class="tag"');
+    expect(tagRefs![0].html).toContain('shared');
+  });
+
+  it('getNoteBacklinks returns the pre-rendered html unchanged', async () => {
+    await writeNote('a.md', '# A\n\nLinking to [[b]] for context.\n');
+    await writeNote('b.md', '# B\n\n');
+
+    const nb = await Notebook.init({
+      notebookPath,
+      config: { markdownParser: 'markdown-it' },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+
+    const backlinks = await nb.getNoteBacklinks('b.md');
+    expect(backlinks.length).toBe(1);
+    expect(backlinks[0].referenceHtmls.length).toBeGreaterThan(0);
+    // The pre-rendered html should match what's stored on the
+    // reference itself — no second render pass at panel time.
+    expect(backlinks[0].referenceHtmls[0]).toBe(
+      backlinks[0].references[0].html,
+    );
+    expect(backlinks[0].referenceHtmls[0]).toContain('Linking to');
+  });
+
+  it('Reference.sourceLine carries the parent paragraph line for click-through', async () => {
+    // Three lines of body before the wikilink so we can pin down the
+    // line number — markdown-it counts source lines from 0, with the
+    // frontmatter-stripped content going through the source-map plugin.
+    await writeNote(
+      'a.md',
+      '# A\n\nLine one.\n\nLine two.\n\nSee [[b]] on line six.\n',
+    );
+    await writeNote('b.md', '# B\n\n');
+
+    const nb = await Notebook.init({
+      notebookPath,
+      config: { markdownParser: 'markdown-it' },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+
+    const refs = await nb.getReferences('b.md', 'a.md');
+    expect(refs.length).toBe(1);
+    // Line is zero-based; we just assert it's a number and not 0
+    // (the wikilink isn't on the first line).
+    expect(typeof refs[0].sourceLine).toBe('number');
+    expect(refs[0].sourceLine).toBeGreaterThan(0);
+  });
+});
+
+describe('refreshNotesIncremental', () => {
+  let notebookPath: string;
+
+  beforeEach(async () => {
+    notebookPath = await fs.mkdtemp(path.join(os.tmpdir(), 'crossnote-inc-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(notebookPath, { recursive: true, force: true });
+  });
+
+  async function writeNote(name: string, body: string) {
+    await fs.writeFile(path.join(notebookPath, name), body);
+  }
+
+  async function bumpMtime(name: string, futureMs: number) {
+    // Force the mtime forward so the incremental walk sees a strictly
+    // newer value than the last recorded `processedMtimes` entry —
+    // matches what happens after a real edit + save on most file
+    // systems, just deterministic and instant.
+    const target = new Date(Date.now() + futureMs);
+    await fs.utimes(path.join(notebookPath, name), target, target);
+  }
+
+  it('detects newly added files', async () => {
+    await writeNote('a.md', '# A\n\n');
+    const nb = await Notebook.init({
+      notebookPath,
+      config: { markdownParser: 'markdown-it' },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+    expect(Object.keys(nb.notes)).toEqual(['a.md']);
+
+    // Add a new file post-refresh.
+    await writeNote('b.md', '# B\n\nLinks to [[a]]\n');
+    await nb.refreshNotesIncremental({
+      dir: '.',
+      includeSubdirectories: true,
+    });
+    expect(Object.keys(nb.notes).sort()).toEqual(['a.md', 'b.md']);
+    // The new file's wikilink to `a` is reflected in the reference graph.
+    expect(nb.referenceMap.map['a.md']?.['b.md']).toBeDefined();
+  });
+
+  it('re-processes a file whose content (and mtime) changed', async () => {
+    await writeNote('a.md', '# A\n\nLinks to [[b]]\n');
+    await writeNote('b.md', '# B\n\n');
+    await writeNote('c.md', '# C\n\n');
+
+    const nb = await Notebook.init({
+      notebookPath,
+      config: { markdownParser: 'markdown-it' },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+    expect(nb.referenceMap.map['b.md']?.['a.md']).toBeDefined();
+    expect(nb.referenceMap.map['c.md']?.['a.md']).toBeUndefined();
+
+    // Rewrite a.md to point at c.md instead of b.md, then bump mtime.
+    await writeNote('a.md', '# A\n\nLinks to [[c]] now\n');
+    await bumpMtime('a.md', 60_000);
+
+    await nb.refreshNotesIncremental({
+      dir: '.',
+      includeSubdirectories: true,
+    });
+
+    // The old wikilink target is gone, the new one is in.
+    expect(nb.referenceMap.map['b.md']?.['a.md']).toBeUndefined();
+    expect(nb.referenceMap.map['c.md']?.['a.md']).toBeDefined();
+  });
+
+  it('removes a deleted file from the cache and reference graph', async () => {
+    await writeNote('a.md', '# A\n\nLinks to [[b]] and uses #shared\n');
+    await writeNote('b.md', '# B\n\n');
+    const nb = await Notebook.init({
+      notebookPath,
+      config: { markdownParser: 'markdown-it' },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+    expect(nb.tagReferenceMap.getReferrers('shared').size).toBe(1);
+
+    await fs.unlink(path.join(notebookPath, 'a.md'));
+    await nb.refreshNotesIncremental({
+      dir: '.',
+      includeSubdirectories: true,
+    });
+
+    expect(nb.notes['a.md']).toBeUndefined();
+    // Tag references contributed by the deleted file are gone.
+    expect(nb.tagReferenceMap.getReferrers('shared').size).toBe(0);
+    // File references too (a.md -> b.md should be gone).
+    expect(nb.referenceMap.map['b.md']?.['a.md']).toBeUndefined();
+  });
+
+  it('skips re-processing files whose mtime is unchanged', async () => {
+    await writeNote('a.md', '# A\n\nUses #shared\n');
+    await writeNote('b.md', '# B\n\nUses #shared too\n');
+
+    const nb = await Notebook.init({
+      notebookPath,
+      config: { markdownParser: 'markdown-it' },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+
+    // Snapshot the references-by-identity for both notes.  If we
+    // re-process either, its `Reference[]` array is freshly allocated
+    // and the identity check fails.
+    const aRefsBefore = nb.tagReferenceMap.getReferrers('shared').get('a.md');
+    const bRefsBefore = nb.tagReferenceMap.getReferrers('shared').get('b.md');
+    expect(aRefsBefore).toBeDefined();
+    expect(bRefsBefore).toBeDefined();
+
+    // No file edits.  Incremental refresh should skip both.
+    await nb.refreshNotesIncremental({
+      dir: '.',
+      includeSubdirectories: true,
+    });
+
+    const aRefsAfter = nb.tagReferenceMap.getReferrers('shared').get('a.md');
+    const bRefsAfter = nb.tagReferenceMap.getReferrers('shared').get('b.md');
+    // Same array reference == we didn't re-process and rebuild.
+    expect(aRefsAfter).toBe(aRefsBefore);
+    expect(bRefsAfter).toBe(bRefsBefore);
+  });
+
+  it('only re-processes the file whose mtime advanced', async () => {
+    await writeNote('a.md', '# A\n\nUses #shared\n');
+    await writeNote('b.md', '# B\n\nUses #shared too\n');
+    const nb = await Notebook.init({
+      notebookPath,
+      config: { markdownParser: 'markdown-it' },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+
+    const aRefsBefore = nb.tagReferenceMap.getReferrers('shared').get('a.md');
+    const bRefsBefore = nb.tagReferenceMap.getReferrers('shared').get('b.md');
+
+    // Edit only a.md.
+    await writeNote('a.md', '# A\n\nNow uses #shared and #other\n');
+    await bumpMtime('a.md', 60_000);
+
+    await nb.refreshNotesIncremental({
+      dir: '.',
+      includeSubdirectories: true,
+    });
+
+    const aRefsAfter = nb.tagReferenceMap.getReferrers('shared').get('a.md');
+    const bRefsAfter = nb.tagReferenceMap.getReferrers('shared').get('b.md');
+    // a.md was re-processed (fresh array), b.md was not (same reference).
+    expect(aRefsAfter).not.toBe(aRefsBefore);
+    expect(bRefsAfter).toBe(bRefsBefore);
+    // The new tag from the edited file showed up.
+    expect(nb.tagReferenceMap.getReferrers('other').has('a.md')).toBe(true);
+  });
+});

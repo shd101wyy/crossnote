@@ -136,6 +136,15 @@ export class Notebook {
    */
   private refreshNotesMutex: Mutex = new Mutex();
 
+  /**
+   * Per-file mtime (in ms since epoch) at the moment we last ran
+   * `processNoteMentionsAndMentionedBy` against it.  Used by
+   * `refreshNotesIncremental` to decide which files need re-processing
+   * — files whose on-disk mtime matches the recorded value are skipped.
+   * `refreshNotes` (full rebuild) clears this map alongside `notes`.
+   */
+  private processedMtimes: Map<string, number> = new Map();
+
   private search: Search = new Search();
 
   public md!: MarkdownIt;
@@ -548,10 +557,7 @@ export class Notebook {
           config: note.config,
         },
         references,
-        referenceHtmls: references.map((reference) => {
-          const tokens = [reference.parentToken ?? reference.token];
-          return this.md.renderer.render(tokens, this.md.options, {});
-        }),
+        referenceHtmls: references.map((reference) => reference.html),
       });
     }
     return backlinks;
@@ -574,11 +580,7 @@ export class Notebook {
         },
         references,
         // FIXME: The link is not correct. Needs to resolve the path correctly.
-        referenceHtmls: references.map((reference) => {
-          const tokens = [reference.parentToken ?? reference.token];
-          const html = this.md.renderer.render(tokens, this.md.options, {});
-          return html;
-        }),
+        referenceHtmls: references.map((reference) => reference.html),
       });
     }
 
@@ -593,6 +595,33 @@ export class Notebook {
       this.resolveNoteRelativePath(noteFilePath),
       this.resolveNoteRelativePath(backlinkedNoteFilePath),
     );
+  }
+
+  /**
+   * Render the surrounding inline context of a reference token to HTML.
+   * Prefer the parent inline token (which carries the whole paragraph
+   * text including emphasis / formatting around the reference); fall
+   * back to the reference token itself if there's no parent.
+   *
+   * Pre-rendering at index time means `Reference` doesn't need to keep
+   * the original markdown-it `Token` objects in memory — the Backlinks
+   * panel just reads `reference.html`.
+   */
+  private renderReferenceHtml(parentToken: Token | null, token: Token): string {
+    return this.md.renderer.render([parentToken ?? token], this.md.options, {});
+  }
+
+  /**
+   * Source line of the reference (zero-based, into the referrer note's
+   * markdown).  Prefer the parent inline token's `.map[0]`; fall back
+   * to the reference token itself.  Undefined if no token had a map.
+   */
+  private referenceSourceLine(
+    parentToken: Token | null,
+    token: Token,
+  ): number | undefined {
+    const line = parentToken?.map?.[0] ?? token.map?.[0];
+    return typeof line === 'number' ? line : undefined;
   }
 
   async processNoteMentionsAndMentionedBy(filePath: string) {
@@ -706,8 +735,8 @@ export class Notebook {
             elementId: token.attrGet('id') || '',
             text,
             link: resolvedFile, // referenceMap key — bare file path
-            parentToken,
-            token,
+            html: this.renderReferenceHtml(parentToken, token),
+            sourceLine: this.referenceSourceLine(parentToken, token),
             kind: 'wikilink',
           });
         } else if (token.type === 'tag') {
@@ -719,8 +748,8 @@ export class Notebook {
             elementId: token.attrGet('id') || '',
             text,
             link: '',
-            parentToken,
-            token,
+            html: this.renderReferenceHtml(parentToken, token),
+            sourceLine: this.referenceSourceLine(parentToken, token),
             kind: 'tag',
           });
         } else if (
@@ -752,8 +781,8 @@ export class Notebook {
               elementId: token.attrGet('id') || '',
               text,
               link,
-              parentToken,
-              token,
+              html: this.renderReferenceHtml(parentToken, token),
+              sourceLine: this.referenceSourceLine(parentToken, token),
               kind: 'link',
             });
           }
@@ -985,11 +1014,23 @@ export class Notebook {
         this.referenceMap = new ReferenceMap();
         this.tagReferenceMap = new TagReferenceMap();
         this.search = new Search();
+        this.processedMtimes.clear();
       }
       await this._refreshNotesInternal({ ...args, refreshRelations: false });
       if (refreshRelations) {
         for (const filePath in this.notes) {
           await this.processNoteMentionsAndMentionedBy(filePath);
+          // Stamp the per-file mtime so a follow-up
+          // `refreshNotesIncremental` knows this file is up to date.
+          // Floor to integer ms — `note.config.modifiedAt.getTime()`
+          // is already integer (Date constructor truncates), but
+          // `stats.mtimeMs` (in `_collectOnDiskMtimes`) carries
+          // fractional ns-precision on Linux/Darwin, so without the
+          // floor there a strict `>` comparison would always fire.
+          this.processedMtimes.set(
+            filePath,
+            Math.floor(this.notes[filePath].config.modifiedAt.getTime()),
+          );
         }
       }
       // Invariant at quiescence: cached `Note` entries don't retain the
@@ -1004,6 +1045,170 @@ export class Notebook {
       }
       return this.notes;
     });
+  }
+
+  /**
+   * Incremental version of `refreshNotes`: instead of wiping the
+   * indices and rebuilding from scratch, walk the workspace and only
+   * re-process files whose on-disk mtime has advanced past the value
+   * recorded in `processedMtimes` (set during the most recent full
+   * refresh or prior incremental refresh).  Newly-added files are
+   * processed; cached entries that no longer exist on disk are
+   * removed (their reference / tag entries cleaned up).
+   *
+   * Designed to be cheap to call from a file-system watcher.  The
+   * directory walk still has to stat every file under `dir`, but the
+   * O(N) markdown re-tokenisation is skipped for unchanged files.
+   *
+   * Shares the `refreshNotesMutex` with `refreshNotes` so the two
+   * can't race against each other.
+   */
+  public async refreshNotesIncremental(args: RefreshNotesArgs): Promise<Notes> {
+    return this.refreshNotesMutex.runExclusive(async () => {
+      const { dir = './', includeSubdirectories = false } = args;
+      const onDisk = new Map<string, number>();
+      await this._collectOnDiskMtimes(dir, includeSubdirectories, [], onDisk);
+
+      // (1) Removals: cached files no longer on disk.
+      const toRemove: string[] = [];
+      for (const fp of Object.keys(this.notes)) {
+        if (!onDisk.has(fp)) toRemove.push(fp);
+      }
+      for (const fp of toRemove) {
+        await this.removeNoteRelations(fp);
+        this.search.remove(fp);
+        this.processedMtimes.delete(fp);
+      }
+
+      // (2) Additions + changes.  An entry is processed if:
+      //   - it's not in the mtimes map (new file, or first time this
+      //     incremental run sees it); OR
+      //   - the on-disk mtime is strictly newer than the last stamp.
+      // Strict `>` matches what most fs watchers signal (granularity
+      // is at least 1 ms on Linux/Darwin; we don't need fudge here).
+      const toProcess: string[] = [];
+      for (const [fp, mtime] of onDisk) {
+        const stamped = this.processedMtimes.get(fp);
+        if (stamped === undefined || mtime > stamped) {
+          toProcess.push(fp);
+        }
+      }
+
+      for (const fp of toProcess) {
+        const note = await this.loadNoteFromDisk(fp);
+        if (!note) continue;
+        const wasNew = !(note.filePath in this.notes);
+        // Stash with body intact so processNoteMentionsAndMentionedBy
+        // hits the cache.  Eviction below.
+        this.notes[note.filePath] = note;
+        if (wasNew) {
+          this.search.add(note.filePath, note.title, note.config.aliases);
+        }
+        await this.processNoteMentionsAndMentionedBy(note.filePath);
+        // Stamp using the on-disk mtime captured during the walk so
+        // it matches what `_collectOnDiskMtimes` will see on the next
+        // call (both already floored).
+        this.processedMtimes.set(note.filePath, onDisk.get(note.filePath)!);
+      }
+
+      // Same eviction invariant as `refreshNotes`.
+      for (const filePath in this.notes) {
+        const cached = this.notes[filePath];
+        if (cached) {
+          cached.markdown = undefined;
+        }
+      }
+      return this.notes;
+    });
+  }
+
+  /**
+   * Recursively stat all files under `dir` (relative to the notebook
+   * root), respecting .gitignore in the same way as
+   * `_refreshNotesInternal`, and write each markdown file's
+   * notebook-relative path → mtimeMs into `out`.  Files that are too
+   * large (`maxNoteFileSize`) or have a non-markdown extension are
+   * excluded — the same gates `loadNoteFromDisk` applies — so the
+   * incremental refresh never tries to process something that the
+   * loader would reject.
+   */
+  private async _collectOnDiskMtimes(
+    dir: string,
+    includeSubdirectories: boolean,
+    gitignoreStack: Array<{ ig: Ignore; base: string }>,
+    out: Map<string, number>,
+  ): Promise<void> {
+    const dirAbsPath = path.resolve(this.notebookPath.fsPath, dir);
+    const normalizedDir = path
+      .relative(this.notebookPath.fsPath, dirAbsPath)
+      .replace(/\\/g, '/');
+
+    const localIg = await this.loadGitignoreForDir(dirAbsPath);
+    const currentStack: Array<{ ig: Ignore; base: string }> = localIg
+      ? [...gitignoreStack, { ig: localIg, base: normalizedDir || '.' }]
+      : gitignoreStack;
+
+    const isIgnoredByGitignore = (relPath: string): boolean => {
+      for (const { ig, base } of currentStack) {
+        const relFromBase =
+          base === '.' || base === ''
+            ? relPath
+            : path.posix.relative(base, relPath);
+        if (relFromBase.startsWith('..')) continue;
+        if (ig.ignores(relFromBase)) return true;
+      }
+      return false;
+    };
+
+    let files: string[];
+    try {
+      files = await this.fs.readdir(dirAbsPath);
+    } catch {
+      return;
+    }
+
+    const subdirPromises: Promise<void>[] = [];
+    const sizeLimit = this.config.maxNoteFileSize ?? 0;
+
+    for (const file of files) {
+      if (file.match(/^(node_modules|\.git)$/)) continue;
+
+      const absFilePath = path.resolve(dirAbsPath, file);
+      const relFromNotebook = path
+        .relative(this.notebookPath.fsPath, absFilePath)
+        .replace(/\\/g, '/');
+
+      if (currentStack.length > 0 && isIgnoredByGitignore(relFromNotebook)) {
+        continue;
+      }
+
+      let stats: FileSystemStats;
+      try {
+        stats = await this.fs.stat(absFilePath);
+      } catch {
+        continue;
+      }
+      if (stats.isFile()) {
+        const ext = path.extname(absFilePath);
+        if (
+          this.config.markdownFileExtensions.includes(ext) &&
+          (sizeLimit <= 0 || stats.size <= sizeLimit)
+        ) {
+          // Floor: see comment in `refreshNotes` stamping path.
+          out.set(relFromNotebook, Math.floor(stats.mtimeMs));
+        }
+      } else if (stats.isDirectory() && includeSubdirectories) {
+        subdirPromises.push(
+          this._collectOnDiskMtimes(
+            relFromNotebook,
+            includeSubdirectories,
+            currentStack,
+            out,
+          ),
+        );
+      }
+    }
+    await Promise.all(subdirPromises);
   }
 
   private async _refreshNotesInternal({

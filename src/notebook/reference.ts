@@ -1,5 +1,3 @@
-import Token from 'markdown-it/lib/token';
-
 /**
  * What kind of source produced this reference.
  *   'wikilink' — `[[Note]]` / `![[Note]]` / `[[Note#H]]` / `[[Note^abc]]`
@@ -13,8 +11,6 @@ export interface Reference {
    * The id of the referenced element
    */
   elementId: string;
-  parentToken: Token | null;
-  token: Token;
   text: string;
   /**
    * For 'wikilink' / 'link' references: the resolved file path
@@ -23,6 +19,24 @@ export interface Reference {
    */
   link: string;
   kind?: ReferenceKind;
+  /**
+   * Pre-rendered HTML of the reference's surrounding inline context
+   * (the parent inline token if available, else the reference token
+   * itself).  Computed once at index time and stored here so the
+   * Backlinks panel can render without retaining the original
+   * markdown-it Token trees.  Used directly as `referenceHtmls` by
+   * `getNoteBacklinks` / `getTagBacklinks`.
+   */
+  html: string;
+  /**
+   * Source line (zero-based, into the referrer note's markdown) where
+   * this reference's surrounding paragraph starts — taken from the
+   * parent inline token's `.map[0]`, falling back to the reference
+   * token's own `.map[0]`.  Used by the Backlinks panel to build
+   * click-through `#L<n>` URI fragments.  Undefined if the parser
+   * didn't carry source-map info on the token.
+   */
+  sourceLine?: number;
 }
 
 export class ReferenceMap {
