@@ -233,6 +233,49 @@ describe('Tag syntax', () => {
     expect(html).toContain('href="tag://parent%2Fchild"');
   });
 
+  it('transformer skips #tag inside markdown image alt text (markdown_yo)', async () => {
+    // Regression: the transformer used to wrap `<a class="tag">` inside
+    // `![alt #bug](img.png)` because the regex didn't know about
+    // markdown link/image ranges, producing malformed HTML.
+    const notebookYo = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {
+        markdownParser: 'markdown_yo',
+      },
+    });
+    const engine = notebookYo.getNoteMarkdownEngine(
+      path.resolve(__dirname, './markdown/test-files/test-tag-yo-altskip.md'),
+    );
+    const { html } = await engine.parseMD(
+      'Check ![screenshot #bugfix](img.png) here.\n',
+      {
+        useRelativeFilePath: false,
+        isForPreview: true,
+        hideFrontMatter: false,
+      },
+    );
+    // The `#bugfix` is inside `[…]` — must not be wrapped.
+    expect(html).not.toContain('class="tag"');
+  });
+
+  it('transformer skips #tag inside markdown link text (markdown_yo)', async () => {
+    const notebookYo = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {
+        markdownParser: 'markdown_yo',
+      },
+    });
+    const engine = notebookYo.getNoteMarkdownEngine(
+      path.resolve(__dirname, './markdown/test-files/test-tag-yo-linkskip.md'),
+    );
+    const { html } = await engine.parseMD('See [link #x](http://e.com).\n', {
+      useRelativeFilePath: false,
+      isForPreview: true,
+      hideFrontMatter: false,
+    });
+    expect(html).not.toContain('class="tag"');
+  });
+
   it('transformer skips #id inside {...} block-attributes (markdown_yo)', async () => {
     // For non-markdown-it parsers the tag substitution happens in the
     // transformer regex.  Make sure the curly-bracket attribute span

@@ -92,9 +92,19 @@ export function formatWikilinkDisplay(raw: string): string {
   } else if (hashIdx === -1) {
     // ^block only
     parts = [raw.slice(0, blockIdx), raw.slice(blockIdx)];
-  } else if (blockIdx === -1 || blockIdx < hashIdx) {
-    // # only (or weird ^…# order — treat as # only)
+  } else if (blockIdx === -1) {
+    // # only
     parts = [raw.slice(0, hashIdx), raw.slice(hashIdx + 1)];
+  } else if (blockIdx < hashIdx) {
+    // Reverse order `Note^abc#Heading` — Obsidian doesn't actually
+    // produce this shape, but if a user types it we still split into
+    // three readable parts in source order rather than dropping the
+    // block ref silently.
+    parts = [
+      raw.slice(0, blockIdx),
+      raw.slice(blockIdx, hashIdx),
+      raw.slice(hashIdx + 1),
+    ];
   } else {
     // Note#Heading^block
     parts = [

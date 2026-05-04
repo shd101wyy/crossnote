@@ -1691,9 +1691,17 @@ const PreviewContainer = createContainer(() => {
   /**
    * Counter-zoom newly added fixed / context-menu elements via
    * MutationObserver so late-rendered DOM stays consistent.
+   *
+   * Coalesce mutations through requestAnimationFrame so a burst of
+   * subtree changes (mermaid / wavedrom / tikz layout, in particular,
+   * fires dozens of mutations per render) only triggers one
+   * full-document `querySelectorAll` per frame instead of one per
+   * mutation.
    */
   useEffect(() => {
-    const observer = new MutationObserver(() => {
+    let rafHandle = 0;
+    const apply = () => {
+      rafHandle = 0;
       if (zoomLevel === 1) {
         return;
       }
@@ -1709,10 +1717,16 @@ const PreviewContainer = createContainer(() => {
         }
         el.style.zoom = String(counterZoom);
       }
+    };
+    const observer = new MutationObserver(() => {
+      if (zoomLevel === 1) return;
+      if (rafHandle) return;
+      rafHandle = requestAnimationFrame(apply);
     });
     observer.observe(document.body, { childList: true, subtree: true });
     return () => {
       observer.disconnect();
+      if (rafHandle) cancelAnimationFrame(rafHandle);
     };
   }, [zoomLevel]);
 

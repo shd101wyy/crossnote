@@ -149,12 +149,23 @@ export class TagReferenceMap {
   /**
    * Drop every reference for which `referrerFilePath` is the source —
    * called when re-processing a note after it's been edited.
+   *
+   * Collects the now-empty tag keys first and deletes them after the
+   * walk.  Per ECMA-262 24.1.5 deleting the *current* entry of a Map
+   * during for…of iteration is actually safe (the iterator just
+   * skips empty slots), but writing it as a two-pass keeps the code
+   * easier to reason about and protects against future edits that
+   * might delete *other* entries in the loop body.
    */
   public deleteReferencesFrom(referrerFilePath: string) {
+    const emptied: string[] = [];
     for (const [tag, perFile] of this.map) {
       if (perFile.delete(referrerFilePath) && perFile.size === 0) {
-        this.map.delete(tag);
+        emptied.push(tag);
       }
+    }
+    for (const tag of emptied) {
+      this.map.delete(tag);
     }
   }
 

@@ -121,7 +121,15 @@ export function findFragmentTargetLine(text: string, fragment: string): number {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line.match(/^#+\s+/)) {
-      const heading = line.replace(/^#+\s+/, '');
+      // Strip the heading marker AND any trailing `{#explicit-id …}`
+      // attribute span, the same way extractHeadings does.  Without
+      // this, `## My Heading {#custom-id}` would slug to
+      // `my-heading-custom-id` instead of `my-heading`, and a link to
+      // `#my-heading` wouldn't resolve to it.
+      const heading = line
+        .replace(/^#+\s+/, '')
+        .replace(/\s*\{[^}]+\}\s*$/, '')
+        .trim();
       const headingId = headingIdGenerator.generateId(heading);
       if (headingId === fragment) {
         return i;

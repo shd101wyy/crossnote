@@ -169,4 +169,12 @@ describe('findFragmentTargetLine', () => {
   it('returns -1 when the fragment matches neither a block nor a heading', () => {
     expect(findFragmentTargetLine('# Setup\n\nBody.', 'NoSuchAnchor')).toBe(-1);
   });
+
+  it('strips trailing {#explicit-id} before slugifying the heading', () => {
+    // Without the strip, "## My Heading {#custom-id}" would slug to
+    // "my-heading-custom-id" instead of "my-heading", and a link to
+    // `#my-heading` would never resolve.
+    const text = '## My Heading {#custom-id}\n\nBody.';
+    expect(findFragmentTargetLine(text, 'my-heading')).toBe(0);
+  });
 });

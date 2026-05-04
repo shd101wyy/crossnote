@@ -28,6 +28,12 @@ describe('formatWikilinkDisplay', () => {
   it('drops empty leading note for self-links ^block', () => {
     expect(formatWikilinkDisplay('^abc')).toBe('^abc');
   });
+
+  it('preserves both parts when ^ appears before # (reverse order)', () => {
+    // Obsidian doesn't actually produce this shape, but we shouldn't
+    // silently drop the block ref when a user types it.
+    expect(formatWikilinkDisplay('Note^abc#wrong')).toBe('Note > ^abc > wrong');
+  });
 });
 
 describe('Inline wikilink rendering', () => {
@@ -177,6 +183,16 @@ describe('Wikilink + useGitHubStylePipedLink (GitHub order)', () => {
     expect(link).toBe('README.md#Setup^abc');
     expect(hash).toBe('#Setup');
     expect(blockRef).toBe('^abc');
+  });
+
+  it('renders [[Note^abc]] (no pipe, GitHub mode) with auto-formatted display', () => {
+    const html = notebook.renderMarkdown('See [[README^abc]] here', {
+      isForPreview: true,
+    });
+    // Same auto-format as the no-pipe Wikipedia-mode case — the
+    // pipe-config only matters when there IS a pipe.
+    expect(html).toContain('>README &gt; ^abc</a>');
+    expect(html).toContain('href="README.md^abc"');
   });
 
   it('renders [[alias|link]] with the user alias as display', () => {

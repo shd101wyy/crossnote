@@ -1156,21 +1156,31 @@ export async function transformMarkdown(
         // parsers (markdown-it handles it via the tag plugin).
         //
         // The tag must be preceded by whitespace, punctuation, or line
-        // start (not word chars, /, &, ?), AND must not be inside a
-        // `{...}` block-attribute span — those are heading IDs / link
-        // attributes (e.g. `# Heading {#myid}` or transformer-injected
-        // `{#myid data-source-line="1"}`).  Track curly ranges first and
-        // skip any candidate whose offset falls inside one.
+        // start (not word chars, /, &, ?), AND must not be inside any
+        // of these range types:
+        //   - `{...}` block-attribute spans (heading IDs / transformer
+        //     injections like `{#myid data-source-line="1"}`)
+        //   - `[...]` link / image text spans (the alt text of
+        //     `![alt #bug](img.png)` and link text `[label #x](u)`)
+        //   - `(...)` link / image URL spans (in case the URL itself
+        //     contains a `#fragment`)
+        // Track these ranges first and skip any candidate whose offset
+        // falls inside one.
         if (
           notebook.config.enableTagSyntax &&
           markdownParser !== 'markdown-it'
         ) {
-          const curlyRanges: Array<[number, number]> = [];
-          const curlyRe = /\{[^}]*\}/g;
-          let cm: RegExpExecArray | null;
-          while ((cm = curlyRe.exec(line)) !== null) {
-            curlyRanges.push([cm.index, cm.index + cm[0].length]);
-          }
+          const skipRanges: Array<[number, number]> = [];
+          const collect = (re: RegExp) => {
+            re.lastIndex = 0;
+            let cm: RegExpExecArray | null;
+            while ((cm = re.exec(line)) !== null) {
+              skipRanges.push([cm.index, cm.index + cm[0].length]);
+            }
+          };
+          collect(/\{[^}]*\}/g); // {#id ...}
+          collect(/!?\[[^\]]*\]/g); // [text] or ![alt]
+          collect(/\([^)]*\)/g); // (url) — pairs with the [..] above
           line = line.replace(
             /(^|[\s,.;:!?()[\]'"\\])#([a-zA-Z_][a-zA-Z0-9_/-]*)/g,
             (
@@ -1180,7 +1190,7 @@ export async function transformMarkdown(
               offset: number,
             ) => {
               const tagStart = offset + prefix.length;
-              for (const [s, e] of curlyRanges) {
+              for (const [s, e] of skipRanges) {
                 if (tagStart >= s && tagStart < e) {
                   return match;
                 }
