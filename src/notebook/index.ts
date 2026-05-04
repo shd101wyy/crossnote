@@ -609,8 +609,14 @@ export class Notebook {
      * @returns
      */
     const resolveLink = (link: string) => {
-      if (!link.endsWith('.md')) {
-        link = link + '.md';
+      // If the link has no file extension, apply the configured
+      // wikilink default (`.md` by default, but configurable so a
+      // notebook using `.markdown` or another extension keeps its
+      // own convention).  Don't blindly tack `.md` onto links that
+      // already have ANY extension — that's how `note.markdown` or
+      // `image.jpg` used to become `note.markdown.md` / `image.jpg.md`.
+      if (!path.extname(link)) {
+        link = link + this.config.wikiLinkTargetFileExtension;
       }
       if (link.startsWith('/')) {
         return path.relative(
@@ -717,10 +723,14 @@ export class Notebook {
           if (token.attrs?.length && token.attrs[0][0] === 'href') {
             let link = decodeURI(token.attrs[0][1]);
             const text = tokens[i + 1].content.trim();
+            // Accept any of the configured markdownFileExtensions, not
+            // just literal `.md` — a notebook using `.markdown` /
+            // `.mdx` / `.qmd` should still index its own links.
+            const linkExt = path.extname(link).toLowerCase();
             if (
               link.match(/https?:\/\//) ||
               !text.length ||
-              !link.endsWith('.md')
+              !this.config.markdownFileExtensions.includes(linkExt)
             ) {
               // TODO: Ignore more protocols
               continue;

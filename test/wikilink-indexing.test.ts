@@ -125,4 +125,42 @@ describe('wikilink indexing', () => {
     expect(refs).toHaveLength(1);
     expect(refs[0].link).toBe('README.md');
   });
+
+  it('honours markdownFileExtensions: .markdown is treated as a note', async () => {
+    await writeNote('README.markdown', '# README\n');
+    await writeNote('TEST.markdown', 'See [[README]] here.\n');
+
+    const nb = await Notebook.init({
+      notebookPath,
+      config: {
+        markdownParser: 'markdown-it',
+        markdownFileExtensions: ['.markdown'],
+        wikiLinkTargetFileExtension: '.markdown',
+      },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+
+    expect(nb.referenceMap.map['README.markdown']).toBeDefined();
+    expect(
+      nb.referenceMap.map['README.markdown']['TEST.markdown'],
+    ).toHaveLength(1);
+    // No phantom ".md"-suffixed key
+    expect(nb.referenceMap.map['README.markdown.md']).toBeUndefined();
+  });
+
+  it('handles a [[Note.markdown]] explicit extension', async () => {
+    await writeNote('README.markdown', '# README\n');
+    await writeNote('TEST.md', 'See [[README.markdown]] here.\n');
+    const nb = await Notebook.init({
+      notebookPath,
+      config: {
+        markdownParser: 'markdown-it',
+        markdownFileExtensions: ['.md', '.markdown'],
+      },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+
+    expect(nb.referenceMap.map['README.markdown']).toBeDefined();
+    expect(nb.referenceMap.map['README.markdown']['TEST.md']).toHaveLength(1);
+  });
 });
