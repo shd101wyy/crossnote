@@ -964,10 +964,21 @@ export class Notebook {
       oldMentions = oldNote.mentions;
     }
 
+    // Strip whichever configured markdown extension the file uses,
+    // not just literal `.md` — a notebook configured with `.markdown`
+    // / `.mdx` / `.qmd` / etc. should produce titles like `readme`,
+    // not `readme.markdown`.  The title flows into the search index
+    // and the Backlinks panel label, so using the bare basename
+    // matters for UX in non-`.md` notebooks.
+    const baseExt = path.extname(absFilePath);
+    const title = this.config.markdownFileExtensions.includes(baseExt)
+      ? path.basename(absFilePath, baseExt)
+      : path.basename(absFilePath);
+
     return {
       notebookPath: this.notebookPath,
       filePath: path.relative(this.notebookPath.fsPath, absFilePath),
-      title: path.basename(absFilePath).replace(/\.md$/, ''),
+      title,
       markdown,
       config: noteConfig,
       mentions: oldMentions,
@@ -1107,8 +1118,15 @@ export class Notebook {
         await this.processNoteMentionsAndMentionedBy(note.filePath);
         // Stamp using the on-disk mtime captured during the walk so
         // it matches what `_collectOnDiskMtimes` will see on the next
-        // call (both already floored).
-        this.processedMtimes.set(note.filePath, onDisk.get(note.filePath)!);
+        // call (both already floored).  Defensive lookup: if
+        // `loadNoteFromDisk` ever normalises filePath differently
+        // than `_collectOnDiskMtimes` (e.g. path-separator drift on
+        // Windows), the mtime won't be in the map — better to skip
+        // the stamp than poison `processedMtimes` with NaN/undefined.
+        const stampedMtime = onDisk.get(note.filePath);
+        if (stampedMtime !== undefined) {
+          this.processedMtimes.set(note.filePath, stampedMtime);
+        }
       }
 
       // Same eviction invariant as `refreshNotes`.
@@ -1123,103 +1141,33 @@ export class Notebook {
   }
 
   /**
-   * Recursively stat all files under `dir` (relative to the notebook
-   * root), respecting .gitignore in the same way as
-   * `_refreshNotesInternal`, and write each markdown file's
-   * notebook-relative path → mtimeMs into `out`.  Files that are too
-   * large (`maxNoteFileSize`) or have a non-markdown extension are
-   * excluded — the same gates `loadNoteFromDisk` applies — so the
-   * incremental refresh never tries to process something that the
-   * loader would reject.
+   * Recursively walk `dir` (relative to the notebook root), respecting
+   * .gitignore at each level, and invoke `onFile(absPath, relPath, stats)`
+   * for every regular file encountered.  `relPath` is forward-slash,
+   * notebook-root-relative — the form `referenceMap` and friends use
+   * as keys.
+   *
+   * Built-in skips: `node_modules`, `.git`, and anything matched by
+   * a .gitignore in the current stack.  Directories are descended
+   * into iff `includeSubdirectories` is true.
+   *
+   * Both `_refreshNotesInternal` (full rebuild) and
+   * `_collectOnDiskMtimes` (incremental refresh) drive their work
+   * through this helper so the gitignore semantics are defined in
+   * exactly one place.  Used to be duplicated; please don't reintroduce
+   * the duplication when adding new walk-driven features.
    */
-  private async _collectOnDiskMtimes(
+  private async _walkNotebookDir(
     dir: string,
     includeSubdirectories: boolean,
     gitignoreStack: Array<{ ig: Ignore; base: string }>,
-    out: Map<string, number>,
+    onFile: (args: {
+      absPath: string;
+      relPath: string;
+      stats: FileSystemStats;
+    }) => Promise<void>,
   ): Promise<void> {
     const dirAbsPath = path.resolve(this.notebookPath.fsPath, dir);
-    const normalizedDir = path
-      .relative(this.notebookPath.fsPath, dirAbsPath)
-      .replace(/\\/g, '/');
-
-    const localIg = await this.loadGitignoreForDir(dirAbsPath);
-    const currentStack: Array<{ ig: Ignore; base: string }> = localIg
-      ? [...gitignoreStack, { ig: localIg, base: normalizedDir || '.' }]
-      : gitignoreStack;
-
-    const isIgnoredByGitignore = (relPath: string): boolean => {
-      for (const { ig, base } of currentStack) {
-        const relFromBase =
-          base === '.' || base === ''
-            ? relPath
-            : path.posix.relative(base, relPath);
-        if (relFromBase.startsWith('..')) continue;
-        if (ig.ignores(relFromBase)) return true;
-      }
-      return false;
-    };
-
-    let files: string[];
-    try {
-      files = await this.fs.readdir(dirAbsPath);
-    } catch {
-      return;
-    }
-
-    const subdirPromises: Promise<void>[] = [];
-    const sizeLimit = this.config.maxNoteFileSize ?? 0;
-
-    for (const file of files) {
-      if (file.match(/^(node_modules|\.git)$/)) continue;
-
-      const absFilePath = path.resolve(dirAbsPath, file);
-      const relFromNotebook = path
-        .relative(this.notebookPath.fsPath, absFilePath)
-        .replace(/\\/g, '/');
-
-      if (currentStack.length > 0 && isIgnoredByGitignore(relFromNotebook)) {
-        continue;
-      }
-
-      let stats: FileSystemStats;
-      try {
-        stats = await this.fs.stat(absFilePath);
-      } catch {
-        continue;
-      }
-      if (stats.isFile()) {
-        const ext = path.extname(absFilePath);
-        if (
-          this.config.markdownFileExtensions.includes(ext) &&
-          (sizeLimit <= 0 || stats.size <= sizeLimit)
-        ) {
-          // Floor: see comment in `refreshNotes` stamping path.
-          out.set(relFromNotebook, Math.floor(stats.mtimeMs));
-        }
-      } else if (stats.isDirectory() && includeSubdirectories) {
-        subdirPromises.push(
-          this._collectOnDiskMtimes(
-            relFromNotebook,
-            includeSubdirectories,
-            currentStack,
-            out,
-          ),
-        );
-      }
-    }
-    await Promise.all(subdirPromises);
-  }
-
-  private async _refreshNotesInternal({
-    dir = './',
-    includeSubdirectories = false,
-    gitignoreStack = [],
-  }: RefreshNotesInternalArgs): Promise<void> {
-    const dirAbsPath = path.resolve(this.notebookPath.fsPath, dir);
-
-    // Normalize to a forward-slash path relative to the notebook root
-    // (POSIX separators required by the `ignore` package).
     const normalizedDir = path
       .relative(this.notebookPath.fsPath, dirAbsPath)
       .replace(/\\/g, '/');
@@ -1260,13 +1208,12 @@ export class Notebook {
       files = await this.fs.readdir(dirAbsPath);
     } catch (error) {
       console.error(error);
-      files = [];
+      return;
     }
+
     const subdirPromises: Promise<void>[] = [];
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-
+    for (const file of files) {
       // Always skip .git and node_modules regardless of .gitignore.
       if (file.match(/^(node_modules|\.git)$/)) {
         continue;
@@ -1277,36 +1224,90 @@ export class Notebook {
         .relative(this.notebookPath.fsPath, absFilePath)
         .replace(/\\/g, '/');
 
-      // Respect .gitignore rules.
       if (currentStack.length > 0 && isIgnoredByGitignore(relFromNotebook)) {
         continue;
       }
 
-      const note = await this.getNote(
-        path.relative(this.notebookPath.fsPath, absFilePath),
-      );
-      if (note) {
-        this.notes[note.filePath] = note;
-        this.search.add(note.filePath, note.title, note.config.aliases);
-      }
-
-      let stats;
+      let stats: FileSystemStats;
       try {
         stats = await this.fs.stat(absFilePath);
       } catch (error) {
         console.error(error);
+        continue;
       }
-      if (stats && stats.isDirectory() && includeSubdirectories) {
+
+      if (stats.isFile()) {
+        await onFile({
+          absPath: absFilePath,
+          relPath: relFromNotebook,
+          stats,
+        });
+      } else if (stats.isDirectory() && includeSubdirectories) {
         subdirPromises.push(
-          this._refreshNotesInternal({
-            dir: path.relative(this.notebookPath.fsPath, absFilePath),
+          this._walkNotebookDir(
+            relFromNotebook,
             includeSubdirectories,
-            gitignoreStack: currentStack,
-          }),
+            currentStack,
+            onFile,
+          ),
         );
       }
     }
     await Promise.all(subdirPromises);
+  }
+
+  /**
+   * Recursively stat all files under `dir` and write each markdown
+   * file's notebook-relative path → mtimeMs into `out`.  Files too
+   * large (`maxNoteFileSize`) or with a non-markdown extension are
+   * excluded — the same gates `loadNoteFromDisk` applies — so the
+   * incremental refresh never tries to process something that the
+   * loader would reject.
+   */
+  private async _collectOnDiskMtimes(
+    dir: string,
+    includeSubdirectories: boolean,
+    gitignoreStack: Array<{ ig: Ignore; base: string }>,
+    out: Map<string, number>,
+  ): Promise<void> {
+    const sizeLimit = this.config.maxNoteFileSize ?? 0;
+    await this._walkNotebookDir(
+      dir,
+      includeSubdirectories,
+      gitignoreStack,
+      async ({ relPath, stats }) => {
+        const ext = path.extname(relPath);
+        if (
+          this.config.markdownFileExtensions.includes(ext) &&
+          (sizeLimit <= 0 || stats.size <= sizeLimit)
+        ) {
+          // Floor: see comment in `refreshNotes` stamping path.
+          out.set(relPath, Math.floor(stats.mtimeMs));
+        }
+      },
+    );
+  }
+
+  private async _refreshNotesInternal({
+    dir = './',
+    includeSubdirectories = false,
+    gitignoreStack = [],
+  }: RefreshNotesInternalArgs): Promise<void> {
+    await this._walkNotebookDir(
+      dir,
+      includeSubdirectories,
+      gitignoreStack,
+      async ({ relPath }) => {
+        // `loadNoteFromDisk` (via `getNote`) re-stats and applies the
+        // markdownFileExtensions / maxNoteFileSize gates; non-markdown
+        // and oversized files come back null and are skipped.
+        const note = await this.getNote(relPath);
+        if (note) {
+          this.notes[note.filePath] = note;
+          this.search.add(note.filePath, note.title, note.config.aliases);
+        }
+      },
+    );
   }
 
   /*

@@ -221,4 +221,22 @@ describe('findFragmentTargetLine', () => {
     expect(findFragmentTargetLine(text, 'bar')).toBe(-1);
     expect(findFragmentTargetLine(text, 'foo')).toBe(0);
   });
+
+  it('does not treat 7+ leading hashes as a heading', () => {
+    // `extractHeadings` already enforces the markdown ATX cap (max 6
+    // hashes); `findFragmentTargetLine` should match.  Without the
+    // cap, a paragraph starting with `####### ...` would resolve as
+    // a heading and shadow real headings further down the file.
+    const text = ['####### Not a heading {#foo}', '', '## Real Heading'].join(
+      '\n',
+    );
+    // Auto-slug match should NOT find the 7-hash line; should resolve
+    // the real h2 instead.
+    expect(findFragmentTargetLine(text, 'real-heading')).toBe(2);
+    // Explicit-id `#foo` on the 7-hash line is NOT a heading id either,
+    // so a wikilink to `#foo` should not resolve.
+    expect(findFragmentTargetLine(text, 'foo')).toBe(-1);
+    // Sanity: at exactly 6 hashes it IS a heading.
+    expect(findFragmentTargetLine('###### Six {#bar}', 'bar')).toBe(0);
+  });
 });

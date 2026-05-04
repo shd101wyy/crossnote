@@ -127,9 +127,14 @@ export function findFragmentTargetLine(text: string, fragment: string): number {
   // `#bar` regardless of position inside `{...}` (works with
   // `{#bar .cls}`, `{.cls #bar}`, `{ #bar }`).  We mirror the same
   // permissive shape here.
+  //
+  // The heading shape is `^#{1,6}\s+` — markdown caps ATX headings at
+  // 6 hashes; 7+ hashes is a paragraph as far as the renderer is
+  // concerned.  Matches `extractHeadings` so a fragment never resolves
+  // to a "heading" line that the renderer would have ignored.
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (!line.match(/^#+\s+/)) continue;
+    if (!line.match(/^#{1,6}\s+/)) continue;
     const attrMatch = line.match(/\{([^}]+)\}\s*$/);
     if (!attrMatch) continue;
     // `(?:^|\s)#([a-zA-Z][\w-]*)` — `#` at start-of-curly or after
@@ -145,7 +150,7 @@ export function findFragmentTargetLine(text: string, fragment: string): number {
   const headingIdGenerator = new HeadingIdGenerator();
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (line.match(/^#+\s+/)) {
+    if (line.match(/^#{1,6}\s+/)) {
       // Strip the heading marker AND any trailing `{#explicit-id …}`
       // attribute span, the same way extractHeadings does.  Without
       // this, `## My Heading {#custom-id}` would slug to

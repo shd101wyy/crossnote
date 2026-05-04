@@ -163,4 +163,27 @@ describe('wikilink indexing', () => {
     expect(nb.referenceMap.map['README.markdown']).toBeDefined();
     expect(nb.referenceMap.map['README.markdown']['TEST.md']).toHaveLength(1);
   });
+
+  it('strips the configured extension when deriving the note title', async () => {
+    // Pre-fix, `title: path.basename(absFilePath).replace(/\.md$/, '')`
+    // only removed literal `.md`, so a `.markdown` / `.mdx` / `.qmd`
+    // notebook ended up with titles like `readme.markdown`.  That
+    // title flows into search and the Backlinks panel label.
+    await writeNote('README.markdown', '# README\n');
+    await writeNote('notes.mdx', '# Notes\n');
+    await writeNote('plain.md', '# Plain\n');
+
+    const nb = await Notebook.init({
+      notebookPath,
+      config: {
+        markdownParser: 'markdown-it',
+        markdownFileExtensions: ['.md', '.markdown', '.mdx'],
+      },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+
+    expect(nb.notes['README.markdown'].title).toBe('README');
+    expect(nb.notes['notes.mdx'].title).toBe('notes');
+    expect(nb.notes['plain.md'].title).toBe('plain');
+  });
 });
