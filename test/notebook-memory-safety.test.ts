@@ -160,7 +160,7 @@ describe('Notebook lazy markdown loading', () => {
     await fs.writeFile(path.join(notebookPath, name), body);
   }
 
-  it('evicts note.markdown from cache after refresh', async () => {
+  it('Note struct holds metadata and reference graph, not body', async () => {
     await writeNote('a.md', '# A\n\nLinks to [[b]] and uses #shared\n');
     await writeNote('b.md', '# B\n\nLinks back to [[a]] and uses #shared\n');
 
@@ -170,21 +170,28 @@ describe('Notebook lazy markdown loading', () => {
     });
     await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
 
-    // Cached struct still has metadata + reference graph.
+    // Cached struct has metadata + reference graph.
     expect(nb.notes['a.md']).toBeDefined();
     expect(nb.notes['a.md'].title).toBe('a');
-    // But the body is no longer pinned in memory.
-    expect(nb.notes['a.md'].markdown).toBeUndefined();
-    expect(nb.notes['b.md'].markdown).toBeUndefined();
+    // The body is not on the Note (compile-time enforced — `Note`
+    // has no `markdown` field).  Runtime sanity: confirm no rogue
+    // property leaked through.
+    expect(
+      (nb.notes['a.md'] as unknown as Record<string, unknown>).markdown,
+    ).toBeUndefined();
+    expect(
+      (nb.notes['b.md'] as unknown as Record<string, unknown>).markdown,
+    ).toBeUndefined();
 
-    // Reference / tag indices were built from the (now-evicted) bodies,
-    // so the side effects survived the eviction.
+    // Reference / tag indices were built from the bodies during the
+    // single-pass walk; the side effects survived the body falling
+    // out of scope.
     expect(nb.tagReferenceMap.getReferrers('shared').size).toBe(2);
     expect(nb.referenceMap.map['a.md']).toBeDefined();
     expect(nb.referenceMap.map['b.md']).toBeDefined();
   });
 
-  it('getNoteMarkdown lazy-reads the body from disk on demand', async () => {
+  it('getNoteMarkdown reads the body from disk on demand', async () => {
     await writeNote('a.md', '# A\n\nOriginal body.\n');
     const nb = await Notebook.init({
       notebookPath,
@@ -192,8 +199,8 @@ describe('Notebook lazy markdown loading', () => {
     });
     await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
 
-    // Cache is empty; getNoteMarkdown re-reads from disk.
-    expect(nb.notes['a.md'].markdown).toBeUndefined();
+    // Body is never cached on the Note struct; getNoteMarkdown is
+    // the canonical fetch path.
     const md = await nb.getNoteMarkdown('a.md');
     expect(md).toContain('Original body.');
   });
@@ -247,21 +254,13 @@ describe('Notebook lazy markdown loading', () => {
       notebookPath,
       config: { markdownParser: 'markdown-it' },
     });
-    // First, capture the body that getNote produces — load with
-    // refreshNoteRelations: true so we hit the disk-read + normalise
-    // path.  The cached struct has its body stripped right after, but
-    // the returned object still carries it.
-    const fresh = await nb.getNote('fm.md', true);
-    expect(fresh).not.toBeNull();
-    const expectedBody = fresh!.markdown!;
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
 
-    // Now read via the lazy loader.  Cache was evicted, so this re-reads
-    // from disk and should apply the identical normalisation.
-    expect(nb.notes['fm.md'].markdown).toBeUndefined();
+    // The lazy loader applies front-matter normalisation: strips the
+    // recognized note-config keys but leaves arbitrary user keys
+    // (like `title` / `tags`) in place.
     const lazyBody = await nb.getNoteMarkdown('fm.md');
-    expect(lazyBody).toBe(expectedBody);
-    // Sanity: the recognized note-config keys were stripped from
-    // front-matter; non-recognised ones (`title`, `tags`) survived.
+    expect(lazyBody).not.toBeNull();
     expect(lazyBody).not.toContain('created:');
     expect(lazyBody).not.toContain('pinned:');
     expect(lazyBody).not.toContain('aliases:');
@@ -269,21 +268,22 @@ describe('Notebook lazy markdown loading', () => {
     expect(lazyBody).toContain('tags:');
     expect(lazyBody).toContain('# Body heading');
     expect(lazyBody).toContain('[[link]]');
-    // Front-matter-derived NoteConfig still landed in the cached struct.
+
+    // Two consecutive lazy reads return identical content (idempotent).
+    const lazyBodyAgain = await nb.getNoteMarkdown('fm.md');
+    expect(lazyBodyAgain).toBe(lazyBody);
+
+    // Front-matter-derived NoteConfig landed in the cached struct.
     expect(nb.notes['fm.md'].config.aliases).toEqual(['Note A']);
     expect(nb.notes['fm.md'].config.pinned).toBe(true);
   });
 
-  it('refreshNotes({ refreshRelations: false }) also evicts bodies', async () => {
+  it('refreshNotes({ refreshRelations: false }) also keeps cache lean', async () => {
     await writeNote('a.md', '# A\n\nBody.\n');
     const nb = await Notebook.init({
       notebookPath,
       config: { markdownParser: 'markdown-it' },
     });
-    // First, do a normal refresh to populate everything, then call
-    // again with refreshRelations: false (the lightweight path that
-    // skips mentions extraction).  The eviction invariant should still
-    // hold afterwards.
     await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
     await nb.refreshNotes({
       dir: '.',
@@ -291,7 +291,10 @@ describe('Notebook lazy markdown loading', () => {
       refreshRelations: false,
     });
     expect(nb.notes['a.md']).toBeDefined();
-    expect(nb.notes['a.md'].markdown).toBeUndefined();
+    // Body is fundamentally not on the Note — type-checked.
+    expect(
+      (nb.notes['a.md'] as unknown as Record<string, unknown>).markdown,
+    ).toBeUndefined();
   });
 
   it('getNoteMarkdown returns null for missing / non-markdown / oversized files', async () => {

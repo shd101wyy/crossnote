@@ -624,16 +624,18 @@ export class Notebook {
     return typeof line === 'number' ? line : undefined;
   }
 
-  async processNoteMentionsAndMentionedBy(filePath: string) {
+  async processNoteMentionsAndMentionedBy(
+    filePath: string,
+    markdownOverride?: string,
+  ) {
     const note = await this.getNote(filePath);
     if (!note) {
       return;
     }
-    // Re-fetch the body via the lazy loader: by the time this runs the
-    // cache may already have evicted `note.markdown` (e.g. on a second
-    // call for the same file).  `getNoteMarkdown` returns the cached
-    // body if present, otherwise re-reads from disk.
-    const markdown = await this.getNoteMarkdown(filePath);
+    // Caller can hand in the body if they just loaded it from disk
+    // (refresh paths do this), avoiding a second round trip.  Without
+    // an override we go through `getNoteMarkdown` which re-reads.
+    const markdown = markdownOverride ?? (await this.getNoteMarkdown(filePath));
     if (markdown == null) {
       return;
     }
@@ -834,53 +836,46 @@ export class Notebook {
     if (!refreshNoteRelations && filePath in this.notes) {
       return this.notes[filePath];
     }
-    const note = await this.loadNoteFromDisk(filePath);
-    if (!note) {
+    const result = await this.loadNoteFromDisk(filePath);
+    if (!result) {
       return null;
     }
+    const { note, markdown } = result;
     if (refreshNoteRelations) {
-      // Body is attached to the cached entry while mentions / tags get
-      // extracted (so `processNoteMentionsAndMentionedBy` -> `getNoteMarkdown`
-      // hits the cache instead of round-tripping back to disk).
       this.notes[note.filePath] = note;
       this.search.add(note.filePath, note.title, note.config.aliases);
-      await this.processNoteMentionsAndMentionedBy(note.filePath);
-      // Now swap in a body-less clone so the cache is lean.  We return
-      // the body-bearing original to the caller — they just refreshed,
-      // they'd expect to get the content back without a second disk
-      // read.  Future `getNote(filePath)` (no refresh) returns the
-      // body-less cached struct; `getNoteMarkdown(filePath)` is the
-      // documented way to fetch the body on demand.
-      this.notes[note.filePath] = { ...note, markdown: undefined };
+      // Pass the freshly-loaded markdown straight through so the
+      // processor doesn't re-stat / re-read the same file we just
+      // opened.
+      await this.processNoteMentionsAndMentionedBy(note.filePath, markdown);
     }
     return note;
   }
 
   /**
-   * Read a note's markdown body, lazily.  Returns the cached body if
-   * one is still attached (rare — the cache evicts after mentions
-   * extraction), otherwise re-reads from disk and runs the same
-   * front-matter normalisation as `getNote`.
+   * Read a note's markdown body, lazily.  Always reads from disk and
+   * runs the same front-matter normalisation as `getNote` — the body
+   * is intentionally not cached on `Note`, so this is the canonical
+   * way to fetch it.
    *
    * Returns `null` for files that aren't markdown (extension not in
    * `markdownFileExtensions`), are missing, or exceed `maxNoteFileSize`.
    */
   public async getNoteMarkdown(filePath: string): Promise<string | null> {
     filePath = this.resolveNoteRelativePath(filePath);
-    const cached = this.notes[filePath];
-    if (cached?.markdown != null) {
-      return cached.markdown;
-    }
-    const note = await this.loadNoteFromDisk(filePath);
-    return note?.markdown ?? null;
+    const result = await this.loadNoteFromDisk(filePath);
+    return result?.markdown ?? null;
   }
 
   /**
-   * Read a note from disk and return a fresh `Note` (with `markdown`
-   * populated and front-matter normalised).  No caching — the caller
-   * decides whether to stash it in `this.notes`.
+   * Read a note from disk.  Returns the parsed `Note` struct
+   * (metadata only — body lives on disk) alongside the
+   * front-matter-normalised `markdown` body.  No caching — the caller
+   * decides whether to stash the note into `this.notes`.
    */
-  private async loadNoteFromDisk(filePath: string): Promise<Note | null> {
+  private async loadNoteFromDisk(
+    filePath: string,
+  ): Promise<{ note: Note; markdown: string } | null> {
     filePath = this.resolveNoteRelativePath(filePath);
     const absFilePath = this.resolveNoteAbsolutePath(filePath);
     let stats: FileSystemStats;
@@ -976,12 +971,14 @@ export class Notebook {
       : path.basename(absFilePath);
 
     return {
-      notebookPath: this.notebookPath,
-      filePath: path.relative(this.notebookPath.fsPath, absFilePath),
-      title,
+      note: {
+        notebookPath: this.notebookPath,
+        filePath: path.relative(this.notebookPath.fsPath, absFilePath),
+        title,
+        config: noteConfig,
+        mentions: oldMentions,
+      },
       markdown,
-      config: noteConfig,
-      mentions: oldMentions,
     };
   }
 
@@ -1027,33 +1024,10 @@ export class Notebook {
         this.search = new Search();
         this.processedMtimes.clear();
       }
-      await this._refreshNotesInternal({ ...args, refreshRelations: false });
-      if (refreshRelations) {
-        for (const filePath in this.notes) {
-          await this.processNoteMentionsAndMentionedBy(filePath);
-          // Stamp the per-file mtime so a follow-up
-          // `refreshNotesIncremental` knows this file is up to date.
-          // Floor to integer ms — `note.config.modifiedAt.getTime()`
-          // is already integer (Date constructor truncates), but
-          // `stats.mtimeMs` (in `_collectOnDiskMtimes`) carries
-          // fractional ns-precision on Linux/Darwin, so without the
-          // floor there a strict `>` comparison would always fire.
-          this.processedMtimes.set(
-            filePath,
-            Math.floor(this.notes[filePath].config.modifiedAt.getTime()),
-          );
-        }
-      }
-      // Invariant at quiescence: cached `Note` entries don't retain the
-      // markdown body — only metadata + reference graph.  Eviction runs
-      // unconditionally so the `refreshRelations: false` path (which
-      // skips mentions extraction) also leaves the cache lean.
-      for (const filePath in this.notes) {
-        const cached = this.notes[filePath];
-        if (cached) {
-          cached.markdown = undefined;
-        }
-      }
+      await this._refreshNotesInternal({
+        ...args,
+        refreshRelations,
+      });
       return this.notes;
     });
   }
@@ -1106,16 +1080,17 @@ export class Notebook {
       }
 
       for (const fp of toProcess) {
-        const note = await this.loadNoteFromDisk(fp);
-        if (!note) continue;
+        const result = await this.loadNoteFromDisk(fp);
+        if (!result) continue;
+        const { note, markdown } = result;
         const wasNew = !(note.filePath in this.notes);
-        // Stash with body intact so processNoteMentionsAndMentionedBy
-        // hits the cache.  Eviction below.
         this.notes[note.filePath] = note;
         if (wasNew) {
           this.search.add(note.filePath, note.title, note.config.aliases);
         }
-        await this.processNoteMentionsAndMentionedBy(note.filePath);
+        // Pass the freshly-loaded markdown straight through — saves a
+        // second disk read inside processNoteMentionsAndMentionedBy.
+        await this.processNoteMentionsAndMentionedBy(note.filePath, markdown);
         // Stamp using the on-disk mtime captured during the walk so
         // it matches what `_collectOnDiskMtimes` will see on the next
         // call (both already floored).  Defensive lookup: if
@@ -1129,13 +1104,6 @@ export class Notebook {
         }
       }
 
-      // Same eviction invariant as `refreshNotes`.
-      for (const filePath in this.notes) {
-        const cached = this.notes[filePath];
-        if (cached) {
-          cached.markdown = undefined;
-        }
-      }
       return this.notes;
     });
   }
@@ -1292,19 +1260,29 @@ export class Notebook {
     dir = './',
     includeSubdirectories = false,
     gitignoreStack = [],
+    refreshRelations = true,
   }: RefreshNotesInternalArgs): Promise<void> {
     await this._walkNotebookDir(
       dir,
       includeSubdirectories,
       gitignoreStack,
-      async ({ relPath }) => {
-        // `loadNoteFromDisk` (via `getNote`) re-stats and applies the
-        // markdownFileExtensions / maxNoteFileSize gates; non-markdown
-        // and oversized files come back null and are skipped.
-        const note = await this.getNote(relPath);
-        if (note) {
-          this.notes[note.filePath] = note;
-          this.search.add(note.filePath, note.title, note.config.aliases);
+      async ({ relPath, stats }) => {
+        // `loadNoteFromDisk` applies the markdownFileExtensions /
+        // maxNoteFileSize gates; non-markdown and oversized files
+        // come back null and are skipped.  Body lives in the local
+        // `markdown` here, never enters `this.notes`.
+        const result = await this.loadNoteFromDisk(relPath);
+        if (!result) return;
+        const { note, markdown } = result;
+        this.notes[note.filePath] = note;
+        this.search.add(note.filePath, note.title, note.config.aliases);
+        if (refreshRelations) {
+          // Single pass — extract mentions / tags off the markdown we
+          // just read, before moving on to the next file.  Used to be
+          // a separate post-walk loop in `refreshNotes`; folding it
+          // here means the body never has to be re-fetched.
+          await this.processNoteMentionsAndMentionedBy(note.filePath, markdown);
+          this.processedMtimes.set(note.filePath, Math.floor(stats.mtimeMs));
         }
       },
     );
