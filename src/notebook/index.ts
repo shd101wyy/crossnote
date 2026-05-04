@@ -472,23 +472,23 @@ export class Notebook {
 
   public async getBacklinkedNotes(filePath: string): Promise<Notes> {
     filePath = this.resolveNoteRelativePath(filePath);
-    if (filePath in this.referenceMap.map) {
-      const map = this.referenceMap.map[filePath];
-      const notes: Notes = {};
-      for (const rFilePath in map) {
-        if (rFilePath === filePath) {
-          // Don't include self
-          continue;
-        }
-        const note = await this.getNote(rFilePath);
-        if (note) {
-          notes[rFilePath] = note;
-        }
-      }
-      return notes;
-    } else {
+    if (!(filePath in this.referenceMap.map)) {
       return {};
     }
+    const map = this.referenceMap.map[filePath];
+    const notes: Notes = {};
+    // Use the in-memory `notes` map directly: by the time the host
+    // calls into us the workspace has been refreshed (refreshNotes /
+    // refreshNotesIfNotLoaded), so every referrer in the index has a
+    // corresponding loaded Note.  Falling back to `await getNote`
+    // would re-stat and re-read the file from disk on every backlink
+    // hit — N async hops for N referrers.
+    for (const rFilePath in map) {
+      if (rFilePath === filePath) continue; // exclude self
+      const note = this.notes[rFilePath];
+      if (note) notes[rFilePath] = note;
+    }
+    return notes;
   }
 
   /**
@@ -502,15 +502,18 @@ export class Notebook {
   /**
    * Notes that mention a given `#tag`, anywhere in the notebook.
    * Tag is matched case-insensitively.
+   *
+   * Reads from the in-memory `notes` map — same rationale as
+   * `getBacklinkedNotes`: re-loading each referrer from disk would be
+   * N async hops for no win, since the index can only contain
+   * referrers we already loaded.
    */
   public async getNotesReferringToTag(tag: string): Promise<Notes> {
     const referrers = this.tagReferenceMap.getReferrers(tag);
     const notes: Notes = {};
     for (const filePath of referrers.keys()) {
-      const note = await this.getNote(filePath);
-      if (note) {
-        notes[filePath] = note;
-      }
+      const note = this.notes[filePath];
+      if (note) notes[filePath] = note;
     }
     return notes;
   }
@@ -524,7 +527,7 @@ export class Notebook {
     const referrers = this.tagReferenceMap.getReferrers(tag);
     const backlinks: Backlink[] = [];
     for (const [filePath, references] of referrers) {
-      const note = await this.getNote(filePath);
+      const note = this.notes[filePath];
       if (!note) continue;
       backlinks.push({
         note: {
