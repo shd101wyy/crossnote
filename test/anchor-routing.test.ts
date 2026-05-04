@@ -40,6 +40,15 @@ describe('classifyAnchorClick', () => {
     expect(action).toEqual({ kind: 'tag', tag: 'standalone' });
   });
 
+  it('still routes to tag click when href has been stripped by a sanitizer', () => {
+    // DOMPurify (and other sanitizers) drop `href="tag://…"` unless the
+    // scheme is on the allowlist.  In that case the anchor still carries
+    // class="tag" and data-tag, so the click handler must keep working.
+    const a = makeAnchor('<a class="tag" data-tag="readme">#readme</a>');
+    const action = classifyAnchorClick(a, a.getAttribute('href') ?? '');
+    expect(action).toEqual({ kind: 'tag', tag: 'readme' });
+  });
+
   it('routes # hrefs to in-page anchor scrolling', () => {
     const a = makeAnchor('<a href="#section-2">Jump</a>');
     const action = classifyAnchorClick(a, a.getAttribute('href') ?? '');

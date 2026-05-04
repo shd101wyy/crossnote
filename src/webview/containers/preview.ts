@@ -835,8 +835,11 @@ const PreviewContainer = createContainer(() => {
     (anchorElements: Array<HTMLAnchorElement>) => {
       for (let i = 0; i < anchorElements.length; i++) {
         const a = anchorElements[i];
-        const hrefAttr = a.getAttribute('href');
-        if (!hrefAttr) {
+        const hrefAttr = a.getAttribute('href') ?? '';
+        // Tag anchors carry the tag name in `data-tag` and don't strictly
+        // need an href — some sanitizers strip the `tag://` scheme.  For
+        // every other anchor a missing href means there's nothing to do.
+        if (!hrefAttr && !a.classList.contains('tag')) {
           continue;
         }
         const action = classifyAnchorClick(a, hrefAttr);

@@ -36,6 +36,13 @@ purify.addHook('afterSanitizeAttributes', (node) => {
   }
 });
 
+// DOMPurify's built-in URL allowlist, plus `tag:` for Obsidian-style #tag
+// anchors emitted by the markdown-it tag plugin.  Without this the href
+// gets stripped, the anchor falls through to "no href → skip" in the
+// click-binding loop, and clicking a #tag becomes a silent no-op.
+const ALLOWED_URI_REGEXP =
+  /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|tag):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
+
 /**
  * Sanitize HTML string for safe DOM insertion.
  */
@@ -74,5 +81,6 @@ export function sanitizeHtml(html: string): string {
       'data-background-iframe',
     ],
     ALLOW_DATA_ATTR: true,
+    ALLOWED_URI_REGEXP,
   });
 }
