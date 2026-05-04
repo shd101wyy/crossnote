@@ -143,6 +143,20 @@ const config = {
   // Please check http://criticmarkup.com/users-guide.php for more information.
   enableCriticMarkupSyntax: false
 
+  // Enable Obsidian-style #tag syntax in body text.
+  // Renders `#tag-name` (and nested `#parent/child`) as clickable
+  // pill-shaped anchors that emit a `clickTag` postMessage when clicked,
+  // so the host extension can route to a tag-specific search/backlinks
+  // panel.  Tags inside code spans, fenced code blocks, URL fragments,
+  // and `{...}` block-attribute spans are skipped.
+  enableTagSyntax: true,
+
+  // When true, the right-click context menu in the preview inherits the
+  // VS Code theme (colours, font, border) instead of using the default
+  // Contexify dark/light theme.  Only takes effect when running inside
+  // a VS Code webview (the rule is gated on body.vscode-* classes).
+  useVSCodeThemeForContextMenu: false,
+
   // Front matter rendering option
   frontMatterRenderingOption: 'none', // 'none' | 'table' | 'code block'
 
