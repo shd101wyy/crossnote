@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.22] - 2026-05-04
+
 ### New features
 
 - **Note embedding via `![[note]]`** — Inline wikilink embed syntax renders referenced note content directly in preview. Works with all three parsers (markdown-it, pandoc, markdown_yo). Supports heading hash fragments (`![[note#section]]`), alias syntax (`![[note|Title]]`), and recursion depth limit (3). Image wikilinks (`![[image.png]]`) continue to render as standard images.
@@ -16,6 +18,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 - Fix sidebar TOC inserting huge vertical gaps for headings that start with `<digits>. ` (e.g. `# 1. Introduction`) — `generateSidebarToCHTML` was passing heading text through `md.render()` which interpreted the leading digit-dot-space as an ordered list, wrapping each TOC entry in `<ol><li>` and stacking the list margins. Switched to `md.renderInline()` so only inline rules run on heading content. Fixes [vscode-mpe#2276](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2276) and [#2277](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2277)
 - Fix `:::name … :::` Pandoc-style fenced divs being rendered as `<pre>` code blocks (markdown-it) or as literal `:::name {data-source-line="…"}` text (pandoc / markdown_yo) since 0.9.21. The colon-fenced code-block plugin now distinguishes a small whitelist of diagram languages (mermaid, plantuml, wavedrom, graphviz, vega/vega-lite, d2, tikz, …) from arbitrary div-class names; only the former takes the `<pre>` path, everything else renders as `<div class="name">` with the inner content parsed as markdown. The transformer rewrites the markers as raw HTML for non-markdown-it parsers so Pandoc/markdown_yo also produce a real `<div>`. Fixes [vscode-mpe#2275](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2275)
+- Fix headings rendering as literal `Heading {#id data-source-line="…"}` text — when `enableTagSyntax` is on, the inline tag plugin was capturing `#id` from the curly-bracket attribute span and splitting the text token, which prevented the curly-bracket-attributes core ruler from lifting the trailing `{…}` into heading attributes. The plugin and the transformer fallback now both skip `#` candidates that fall inside a `{…}` span, and the curly-bracket attributes are correctly applied to the heading element.
+- Fix tag clicks being silent no-ops — DOMPurify's default URL allowlist drops the `tag://` scheme, leaving `<a class="tag">` with no href. The webview-side sanitizer now allows `tag:` (so right-click "Copy link" works) and `bindAnchorElementsClickEvent` falls back to `data-tag` for class="tag" anchors even if some other layer strips the href.
 
 ### Improvements
 
