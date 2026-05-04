@@ -34,6 +34,24 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       }
     }
 
+    // Don't match #tag inside a `{...}` block-attribute span on the same
+    // line (e.g. heading IDs like `# Heading {#myid}` or transformer-injected
+    // `{#myid data-source-line="1"}`).  Walk backward; if we find an open `{`
+    // before any closing `}` or newline, we're inside an attribute block and
+    // must defer to the curly-bracket-attributes core ruler.
+    {
+      let p = state.pos - 1;
+      while (p >= 0) {
+        const ch = state.src.charCodeAt(p);
+        if (ch === 0x7d /* '}' */) break;
+        if (ch === 0x0a /* '\n' */) break;
+        if (ch === 0x7b /* '{' */) {
+          return false;
+        }
+        p--;
+      }
+    }
+
     // Scan forward: collect tag name characters
     let end = state.pos + 1;
     while (end < state.src.length) {

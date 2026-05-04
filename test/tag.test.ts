@@ -75,6 +75,52 @@ describe('Tag syntax', () => {
     expect(html).not.toContain('class="tag"');
   });
 
+  it('does not render #id inside heading {#id} block-attributes', async () => {
+    // Regression: `# Heading {#myid}` was being broken because the tag
+    // plugin captured `#myid`, splitting the text token and preventing
+    // the curly-bracket-attributes core ruler from lifting the trailing
+    // `{...}` into heading attributes.
+    const html = notebook.renderMarkdown('# Heading {#myid}', {
+      isForPreview: true,
+    });
+    expect(html).not.toContain('class="tag"');
+    expect(html).not.toContain('>#myid<');
+    expect(html).toMatch(/<h1[^>]*\bid="myid"/);
+  });
+
+  it('does not render #id inside heading {.class #id} block-attributes', async () => {
+    const html = notebook.renderMarkdown('# Heading {.cool #myid}', {
+      isForPreview: true,
+    });
+    expect(html).not.toContain('class="tag"');
+    expect(html).not.toContain('>#myid<');
+  });
+
+  it('does not render transformer-injected {#id data-source-line=...} as a tag', async () => {
+    // The transformer auto-appends `{#id data-source-line="N"}` to every
+    // heading.  The plugin must not capture `#id` from that injection.
+    const engine = notebook.getNoteMarkdownEngine(
+      path.resolve(__dirname, './markdown/test-files/test-tag-heading.md'),
+    );
+    const { html } = await engine.parseMD('# Markdown', {
+      useRelativeFilePath: false,
+      isForPreview: true,
+      hideFrontMatter: false,
+    });
+    expect(html).not.toContain('class="tag"');
+    expect(html).not.toContain('{#markdown');
+    expect(html).not.toContain('data-source-line="1"}');
+    expect(html).toMatch(/<h1[^>]*\bid="markdown"/);
+  });
+
+  it('still renders a real #tag immediately after a closed {...} block', async () => {
+    const html = notebook.renderMarkdown('Text {#cls} #realtag here', {
+      isForPreview: true,
+    });
+    expect(html).toContain('<a class="tag"');
+    expect(html).toContain('data-tag="realtag"');
+  });
+
   it('respects enableTagSyntax config when disabled', async () => {
     const disabledNotebook = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
@@ -185,5 +231,27 @@ describe('Tag syntax', () => {
     expect(html).toContain('<a class="tag"');
     expect(html).toContain('data-tag="parent/child"');
     expect(html).toContain('href="tag://parent%2Fchild"');
+  });
+
+  it('transformer skips #id inside {...} block-attributes (markdown_yo)', async () => {
+    // For non-markdown-it parsers the tag substitution happens in the
+    // transformer regex.  Make sure the curly-bracket attribute span
+    // injected on every heading is not turned into a tag.
+    const notebookYo = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {
+        markdownParser: 'markdown_yo',
+      },
+    });
+    const engine = notebookYo.getNoteMarkdownEngine(
+      path.resolve(__dirname, './markdown/test-files/test-tag-yo-heading.md'),
+    );
+    const { html } = await engine.parseMD('# Markdown', {
+      useRelativeFilePath: false,
+      isForPreview: true,
+      hideFrontMatter: false,
+    });
+    expect(html).not.toContain('class="tag"');
+    expect(html).not.toContain('{#markdown');
   });
 });

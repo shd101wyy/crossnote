@@ -1154,15 +1154,37 @@ export async function transformMarkdown(
         // Handle #tag syntax: replace #tag-name with <a class="tag">
         // when enableTagSyntax is on.  Only needed for non-markdown-it
         // parsers (markdown-it handles it via the tag plugin).
+        //
         // The tag must be preceded by whitespace, punctuation, or line
-        // start (not word chars, /, &, ?).
+        // start (not word chars, /, &, ?), AND must not be inside a
+        // `{...}` block-attribute span — those are heading IDs / link
+        // attributes (e.g. `# Heading {#myid}` or transformer-injected
+        // `{#myid data-source-line="1"}`).  Track curly ranges first and
+        // skip any candidate whose offset falls inside one.
         if (
           notebook.config.enableTagSyntax &&
           markdownParser !== 'markdown-it'
         ) {
+          const curlyRanges: Array<[number, number]> = [];
+          const curlyRe = /\{[^}]*\}/g;
+          let cm: RegExpExecArray | null;
+          while ((cm = curlyRe.exec(line)) !== null) {
+            curlyRanges.push([cm.index, cm.index + cm[0].length]);
+          }
           line = line.replace(
-            /(^|[\s,.;:!?()[\]{}'"\\])#([a-zA-Z_][a-zA-Z0-9_/-]*)/g,
-            (_match: string, prefix: string, tagName: string) => {
+            /(^|[\s,.;:!?()[\]'"\\])#([a-zA-Z_][a-zA-Z0-9_/-]*)/g,
+            (
+              match: string,
+              prefix: string,
+              tagName: string,
+              offset: number,
+            ) => {
+              const tagStart = offset + prefix.length;
+              for (const [s, e] of curlyRanges) {
+                if (tagStart >= s && tagStart < e) {
+                  return match;
+                }
+              }
               const href = `tag://${encodeURIComponent(tagName)}`;
               return `${prefix}<a class="tag" data-tag="${tagName}" href="${href}">#${tagName}</a>`;
             },
