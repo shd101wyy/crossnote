@@ -54,6 +54,9 @@ export {
   extractHeadings,
   findFragmentTargetLine,
 } from './note-fragments';
+export type { Note, Notes, NoteConfig, Mentions } from './note';
+export { matter, matterStringify } from './markdown';
+export type { MatterOutput } from './markdown';
 
 const defaultMarkdownItConfig: Partial<ExtendedMarkdownItOptions> = {
   html: true, // Enable HTML tags in source
