@@ -39,6 +39,10 @@ function createSanitizer() {
     }
   });
 
+  // Mirror the ALLOWED_URI_REGEXP in src/webview/lib/sanitize.ts.
+  const ALLOWED_URI_REGEXP =
+    /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|tag):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
+
   return (html: string): string =>
     purify.sanitize(html, {
       ADD_TAGS: [
@@ -69,6 +73,7 @@ function createSanitizer() {
         'data-background-iframe',
       ],
       ALLOW_DATA_ATTR: true,
+      ALLOWED_URI_REGEXP,
     });
 }
 
@@ -210,6 +215,36 @@ describe('DOMPurify sanitizeHtml (client-side)', () => {
     it('sandboxes iframes', () => {
       const result = sanitize('<iframe src="https://example.com"></iframe>');
       expect(result).toContain('sandbox=""');
+    });
+  });
+
+  describe('tag:// scheme preservation', () => {
+    it('preserves href="tag://name" on tag anchors', () => {
+      // Defense-in-depth: even if the href is stripped, the click handler
+      // falls back to data-tag, but having href intact lets right-click
+      // "Copy Link" produce something meaningful and is the natural form.
+      const input =
+        '<a class="tag" data-tag="readme" href="tag://readme">#readme</a>';
+      const result = sanitize(input);
+      expect(result).toContain('href="tag://readme"');
+      expect(result).toContain('data-tag="readme"');
+      expect(result).toContain('class="tag"');
+    });
+
+    it('preserves percent-encoded tag href for nested tags', () => {
+      const input =
+        '<a class="tag" data-tag="parent/child" href="tag://parent%2Fchild">#parent/child</a>';
+      const result = sanitize(input);
+      expect(result).toContain('href="tag://parent%2Fchild"');
+      expect(result).toContain('data-tag="parent/child"');
+    });
+
+    it('does NOT preserve other unknown schemes', () => {
+      // Sanity check that we're not weakening the URL allowlist beyond
+      // adding tag:.
+      const input = '<a href="javascript:alert(1)">x</a>';
+      const result = sanitize(input);
+      expect(result).not.toContain('javascript:');
     });
   });
 

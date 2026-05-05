@@ -24,6 +24,7 @@ import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
 import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed';
 import useMarkdownItMath from '../custom-markdown-it-features/math';
 import useMarkdownItSourceMap from '../custom-markdown-it-features/sourcemap';
+import useMarkdownItTag from '../custom-markdown-it-features/tag';
 import useMarkdownItWidget from '../custom-markdown-it-features/widget';
 import useMarkdownItWikilink from '../custom-markdown-it-features/wikilink';
 import { MarkdownEngine } from '../markdown-engine';
@@ -31,7 +32,7 @@ import { replaceVariablesInString } from '../utility';
 import { loadConfigsInDirectory, wrapNodeFSAsApi } from './config-helper';
 import { matter, matterStringify } from './markdown';
 import { FilePath, Mentions, Note, NoteConfig, Notes } from './note';
-import { Reference, ReferenceMap } from './reference';
+import { Reference, ReferenceMap, TagReferenceMap } from './reference';
 import Search from './search';
 import {
   Backlink,
@@ -46,6 +47,16 @@ import {
 export * from './types';
 export { constructGraphView } from './graph-view';
 export type { GraphViewData, GraphViewLink, GraphViewNode } from './graph-view';
+export { ReferenceMap, TagReferenceMap } from './reference';
+export type { Reference, ReferenceKind } from './reference';
+export {
+  extractBlockIds,
+  extractHeadings,
+  findFragmentTargetLine,
+} from './note-fragments';
+export type { Note, Notes, NoteConfig, Mentions } from './note';
+export { matter, matterStringify } from './markdown';
+export type { MatterOutput } from './markdown';
 
 const defaultMarkdownItConfig: Partial<ExtendedMarkdownItOptions> = {
   html: true, // Enable HTML tags in source
@@ -106,7 +117,33 @@ export class Notebook {
   public notes: Notes = {};
   public hasLoadedNotes: boolean = false;
   public referenceMap: ReferenceMap = new ReferenceMap();
+  /**
+   * Global `#tag` index.  Independent of the file system: tags are
+   * notebook-wide metadata, not phantom paths.  See
+   * src/notebook/reference.ts for shape.
+   */
+  public tagReferenceMap: TagReferenceMap = new TagReferenceMap();
   private refreshNotesIfNotLoadedMutex: Mutex = new Mutex();
+  /**
+   * Serialises calls to refreshNotes so two callers can't interleave
+   * the wipe-and-rebuild cycle (which would leave the indices in a
+   * half-rebuilt state — the second wipe would happen after the first
+   * loop had populated entries the second wipe expects to remove,
+   * etc.).  refreshNotesIfNotLoaded above goes through its own mutex
+   * but ultimately calls refreshNotes; sharing one mutex across both
+   * wouldn't be safe (refreshNotesIfNotLoaded would deadlock when it
+   * calls refreshNotes while holding the same lock).
+   */
+  private refreshNotesMutex: Mutex = new Mutex();
+
+  /**
+   * Per-file mtime (in ms since epoch) at the moment we last ran
+   * `processNoteMentionsAndMentionedBy` against it.  Used by
+   * `refreshNotesIncremental` to decide which files need re-processing
+   * — files whose on-disk mtime matches the recorded value are skipped.
+   * `refreshNotes` (full rebuild) clears this map alongside `notes`.
+   */
+  private processedMtimes: Map<string, number> = new Map();
 
   private search: Search = new Search();
 
@@ -193,6 +230,7 @@ export class Notebook {
     useMarkdownAdmonition(md);
     useMarkdownCallout(md);
     useMarkdownItSourceMap(md);
+    useMarkdownItTag(md, this);
     useMarkdownItWidget(md, this);
     return md;
   }
@@ -454,23 +492,75 @@ export class Notebook {
 
   public async getBacklinkedNotes(filePath: string): Promise<Notes> {
     filePath = this.resolveNoteRelativePath(filePath);
-    if (filePath in this.referenceMap.map) {
-      const map = this.referenceMap.map[filePath];
-      const notes: Notes = {};
-      for (const rFilePath in map) {
-        if (rFilePath === filePath) {
-          // Don't include self
-          continue;
-        }
-        const note = await this.getNote(rFilePath);
-        if (note) {
-          notes[rFilePath] = note;
-        }
-      }
-      return notes;
-    } else {
+    if (!(filePath in this.referenceMap.map)) {
       return {};
     }
+    const map = this.referenceMap.map[filePath];
+    const notes: Notes = {};
+    // Use the in-memory `notes` map directly: by the time the host
+    // calls into us the workspace has been refreshed (refreshNotes /
+    // refreshNotesIfNotLoaded), so every referrer in the index has a
+    // corresponding loaded Note.  Falling back to `await getNote`
+    // would re-stat and re-read the file from disk on every backlink
+    // hit — N async hops for N referrers.
+    for (const rFilePath in map) {
+      if (rFilePath === filePath) continue; // exclude self
+      const note = this.notes[rFilePath];
+      if (note) notes[rFilePath] = note;
+    }
+    return notes;
+  }
+
+  /**
+   * List every tag that has been mentioned anywhere in the notebook.
+   * Tags are case-folded, so the returned values are lowercase.
+   */
+  public getAllTags(): string[] {
+    return this.tagReferenceMap.getAllTags();
+  }
+
+  /**
+   * Notes that mention a given `#tag`, anywhere in the notebook.
+   * Tag is matched case-insensitively.
+   *
+   * Reads from the in-memory `notes` map — same rationale as
+   * `getBacklinkedNotes`: re-loading each referrer from disk would be
+   * N async hops for no win, since the index can only contain
+   * referrers we already loaded.
+   */
+  public async getNotesReferringToTag(tag: string): Promise<Notes> {
+    const referrers = this.tagReferenceMap.getReferrers(tag);
+    const notes: Notes = {};
+    for (const filePath of referrers.keys()) {
+      const note = this.notes[filePath];
+      if (note) notes[filePath] = note;
+    }
+    return notes;
+  }
+
+  /**
+   * Same shape as `getNoteBacklinks`, but for a `#tag` rather than a
+   * note filepath.  Each Backlink groups a referrer note with the
+   * individual `#tag` references inside it (token + rendered HTML).
+   */
+  public async getTagBacklinks(tag: string): Promise<Backlink[]> {
+    const referrers = this.tagReferenceMap.getReferrers(tag);
+    const backlinks: Backlink[] = [];
+    for (const [filePath, references] of referrers) {
+      const note = this.notes[filePath];
+      if (!note) continue;
+      backlinks.push({
+        note: {
+          notebookPath: note.notebookPath,
+          filePath: note.filePath,
+          title: note.title,
+          config: note.config,
+        },
+        references,
+        referenceHtmls: references.map((reference) => reference.html),
+      });
+    }
+    return backlinks;
   }
 
   public async getNoteBacklinks(filePath: string): Promise<Backlink[]> {
@@ -490,11 +580,7 @@ export class Notebook {
         },
         references,
         // FIXME: The link is not correct. Needs to resolve the path correctly.
-        referenceHtmls: references.map((reference) => {
-          const tokens = [reference.parentToken ?? reference.token];
-          const html = this.md.renderer.render(tokens, this.md.options, {});
-          return html;
-        }),
+        referenceHtmls: references.map((reference) => reference.html),
       });
     }
 
@@ -511,13 +597,50 @@ export class Notebook {
     );
   }
 
-  async processNoteMentionsAndMentionedBy(filePath: string) {
+  /**
+   * Render the surrounding inline context of a reference token to HTML.
+   * Prefer the parent inline token (which carries the whole paragraph
+   * text including emphasis / formatting around the reference); fall
+   * back to the reference token itself if there's no parent.
+   *
+   * Pre-rendering at index time means `Reference` doesn't need to keep
+   * the original markdown-it `Token` objects in memory — the Backlinks
+   * panel just reads `reference.html`.
+   */
+  private renderReferenceHtml(parentToken: Token | null, token: Token): string {
+    return this.md.renderer.render([parentToken ?? token], this.md.options, {});
+  }
+
+  /**
+   * Source line of the reference (zero-based, into the referrer note's
+   * markdown).  Prefer the parent inline token's `.map[0]`; fall back
+   * to the reference token itself.  Undefined if no token had a map.
+   */
+  private referenceSourceLine(
+    parentToken: Token | null,
+    token: Token,
+  ): number | undefined {
+    const line = parentToken?.map?.[0] ?? token.map?.[0];
+    return typeof line === 'number' ? line : undefined;
+  }
+
+  async processNoteMentionsAndMentionedBy(
+    filePath: string,
+    markdownOverride?: string,
+  ) {
     const note = await this.getNote(filePath);
     if (!note) {
       return;
     }
+    // Caller can hand in the body if they just loaded it from disk
+    // (refresh paths do this), avoiding a second round trip.  Without
+    // an override we go through `getNoteMarkdown` which re-reads.
+    const markdown = markdownOverride ?? (await this.getNoteMarkdown(filePath));
+    if (markdown == null) {
+      return;
+    }
     // Get mentions
-    const tokens = this.md.parse(note.markdown, {});
+    const tokens = this.md.parse(markdown, {});
 
     /**
      * Change the link to path relative to the notebook directory
@@ -525,8 +648,14 @@ export class Notebook {
      * @returns
      */
     const resolveLink = (link: string) => {
-      if (!link.endsWith('.md')) {
-        link = link + '.md';
+      // If the link has no file extension, apply the configured
+      // wikilink default (`.md` by default, but configurable so a
+      // notebook using `.markdown` or another extension keeps its
+      // own convention).  Don't blindly tack `.md` onto links that
+      // already have ANY extension — that's how `note.markdown` or
+      // `image.jpg` used to become `note.markdown.md` / `image.jpg.md`.
+      if (!path.extname(link)) {
+        link = link + this.config.wikiLinkTargetFileExtension;
       }
       if (link.startsWith('/')) {
         return path.relative(
@@ -560,39 +689,70 @@ export class Notebook {
           // TODO: Support normal links
           const r = this.processWikilink(token.content);
           const { text } = r;
-          let { link } = r;
+          const rawLink = r.link; // may include `#heading` and/or `^block`
 
-          if (link.match(/https?:\/\//)) {
+          if (rawLink.match(/https?:\/\//)) {
             // TODO: Ignore more protocols
             continue;
           }
 
-          // Replace the token content
-          link = resolveLink(link);
-          if (this.config.useGitHubStylePipedLink) {
-            token.content = `${text} | ${addFileProtocol(link)}`;
-          } else {
-            token.content = `${addFileProtocol(link)} | ${text}`;
+          // Split the file part from any URL fragment.  Without this
+          // step, processWikilink-output like 'README.md#^abc' would
+          // get '.md' tacked on by resolveLink (which only checks
+          // endsWith('.md')) — producing phantom referenceMap keys
+          // like 'README.md#^abc.md' that show up as ghost nodes in
+          // the graph view and click-through to nonexistent files.
+          const fragmentMarker = rawLink.match(/[#^]/);
+          const fileLink = fragmentMarker
+            ? rawLink.slice(0, fragmentMarker.index)
+            : rawLink;
+          const fragment = fragmentMarker
+            ? rawLink.slice(fragmentMarker.index)
+            : '';
+
+          // Skip non-markdown attachments (images, PDFs, …).  They
+          // aren't notes — they shouldn't be graph nodes or appear
+          // in the backlinks panel.  Click-through still works
+          // because the host extension resolves the wikilink target
+          // independently; the indexing layer is what we're filtering
+          // here.
+          const ext = path.extname(fileLink);
+          if (ext && !this.config.markdownFileExtensions.includes(ext)) {
+            continue;
           }
 
-          // console.log("find link token: ", token, parentToken);
+          // Resolve to a notebook-relative file path (the index key)
+          // and reattach the fragment for the URL embedded in the
+          // token content (so the renderer's `<a href>` still
+          // navigates to the right heading / block).
+          const resolvedFile = resolveLink(fileLink);
+          const resolvedFull = resolvedFile + fragment;
+          if (this.config.useGitHubStylePipedLink) {
+            token.content = `${text} | ${addFileProtocol(resolvedFull)}`;
+          } else {
+            token.content = `${addFileProtocol(resolvedFull)} | ${text}`;
+          }
+
           results.push({
             elementId: token.attrGet('id') || '',
             text,
-            link, // resolveLink(link),
-            parentToken,
-            token,
+            link: resolvedFile, // referenceMap key — bare file path
+            html: this.renderReferenceHtml(parentToken, token),
+            sourceLine: this.referenceSourceLine(parentToken, token),
+            kind: 'wikilink',
           });
         } else if (token.type === 'tag') {
+          // Tags are notebook-global metadata: don't synthesise a fake
+          // file path the way wikilinks do.  link='' here; the caller
+          // routes by kind into the tagReferenceMap.
           const text = token.content.trim();
-          const link = token.content.trim();
-          // console.log("find link token: ", token, parentToken);
           results.push({
             elementId: token.attrGet('id') || '',
             text,
-            link: resolveLink(link),
-            parentToken,
-            token,
+            link: '',
+            html: this.renderReferenceHtml(parentToken, token),
+            sourceLine: this.referenceSourceLine(parentToken, token),
+            kind: 'tag',
           });
         } else if (
           token.type === 'link_open' &&
@@ -602,10 +762,14 @@ export class Notebook {
           if (token.attrs?.length && token.attrs[0][0] === 'href') {
             let link = decodeURI(token.attrs[0][1]);
             const text = tokens[i + 1].content.trim();
+            // Accept any of the configured markdownFileExtensions, not
+            // just literal `.md` — a notebook using `.markdown` /
+            // `.mdx` / `.qmd` should still index its own links.
+            const linkExt = path.extname(link).toLowerCase();
             if (
               link.match(/https?:\/\//) ||
               !text.length ||
-              !link.endsWith('.md')
+              !this.config.markdownFileExtensions.includes(linkExt)
             ) {
               // TODO: Ignore more protocols
               continue;
@@ -619,8 +783,9 @@ export class Notebook {
               elementId: token.attrGet('id') || '',
               text,
               link,
-              parentToken,
-              token,
+              html: this.renderReferenceHtml(parentToken, token),
+              sourceLine: this.referenceSourceLine(parentToken, token),
+              kind: 'link',
             });
           }
         } else if (token.children && token.children.length) {
@@ -634,16 +799,26 @@ export class Notebook {
     const mentions: Mentions = {};
     const oldMentions = note.mentions;
 
-    // Remove old references
+    // Remove old file-level references
     for (const filePath in oldMentions) {
       this.referenceMap.deleteReferences(filePath, note.filePath);
     }
+    // Remove old tag references for this note (rebuild from scratch)
+    this.tagReferenceMap.deleteReferencesFrom(note.filePath);
 
-    // Handle new references
+    // Handle new references — dispatch by kind:
+    //   'tag' → tagReferenceMap (global, not path-relative)
+    //   anything else → referenceMap (per-file)
     for (let i = 0; i < references.length; i++) {
-      const { link } = references[i];
+      const ref = references[i];
+      if (ref.kind === 'tag') {
+        this.tagReferenceMap.addReference(ref.text, note.filePath, ref);
+        continue;
+      }
+      const { link } = ref;
+      if (!link) continue;
       mentions[link] = true;
-      this.referenceMap.addReference(link, note.filePath, references[i]);
+      this.referenceMap.addReference(link, note.filePath, ref);
     }
 
     // Add self to reference map to declare the existence of the file itself
@@ -661,6 +836,47 @@ export class Notebook {
     if (!refreshNoteRelations && filePath in this.notes) {
       return this.notes[filePath];
     }
+    const result = await this.loadNoteFromDisk(filePath);
+    if (!result) {
+      return null;
+    }
+    const { note, markdown } = result;
+    if (refreshNoteRelations) {
+      this.notes[note.filePath] = note;
+      this.search.add(note.filePath, note.title, note.config.aliases);
+      // Pass the freshly-loaded markdown straight through so the
+      // processor doesn't re-stat / re-read the same file we just
+      // opened.
+      await this.processNoteMentionsAndMentionedBy(note.filePath, markdown);
+    }
+    return note;
+  }
+
+  /**
+   * Read a note's markdown body, lazily.  Always reads from disk and
+   * runs the same front-matter normalisation as `getNote` — the body
+   * is intentionally not cached on `Note`, so this is the canonical
+   * way to fetch it.
+   *
+   * Returns `null` for files that aren't markdown (extension not in
+   * `markdownFileExtensions`), are missing, or exceed `maxNoteFileSize`.
+   */
+  public async getNoteMarkdown(filePath: string): Promise<string | null> {
+    filePath = this.resolveNoteRelativePath(filePath);
+    const result = await this.loadNoteFromDisk(filePath);
+    return result?.markdown ?? null;
+  }
+
+  /**
+   * Read a note from disk.  Returns the parsed `Note` struct
+   * (metadata only — body lives on disk) alongside the
+   * front-matter-normalised `markdown` body.  No caching — the caller
+   * decides whether to stash the note into `this.notes`.
+   */
+  private async loadNoteFromDisk(
+    filePath: string,
+  ): Promise<{ note: Note; markdown: string } | null> {
+    filePath = this.resolveNoteRelativePath(filePath);
     const absFilePath = this.resolveNoteAbsolutePath(filePath);
     let stats: FileSystemStats;
     try {
@@ -669,89 +885,101 @@ export class Notebook {
       return null;
     }
     if (
-      stats.isFile() &&
-      this.config.markdownFileExtensions.includes(path.extname(filePath))
+      !stats.isFile() ||
+      !this.config.markdownFileExtensions.includes(path.extname(filePath))
     ) {
-      let markdown = (await this.fs.readFile(absFilePath)) as string;
-
-      // Read the noteConfig, which is like <!-- note {...} --> at the end of the markdown file
-      const noteConfig: NoteConfig = {
-        createdAt: new Date(stats.ctimeMs),
-        modifiedAt: new Date(stats.mtimeMs),
-        aliases: [],
-      };
-
-      try {
-        const data = matter(markdown);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const frontMatter: any = Object.assign({}, data.data);
-
-        // New note config design in beta 3
-        if (data.data['created']) {
-          noteConfig.createdAt = new Date(data.data['created'] as string);
-          delete frontMatter['created'];
-        }
-        if (data.data['modified']) {
-          noteConfig.modifiedAt = new Date(data.data['modified'] as string);
-          delete frontMatter['modified'];
-        }
-        if (data.data['pinned']) {
-          noteConfig.pinned = data.data['pinned'] as boolean;
-          delete frontMatter['pinned'];
-        }
-        if (data.data['favorited']) {
-          noteConfig.favorited = data.data['favorited'] as boolean;
-          delete frontMatter['favorited'];
-        }
-        if (data.data['icon']) {
-          noteConfig.icon = data.data['icon'] as string;
-          delete frontMatter['icon'];
-        }
-        if (data.data['aliases']) {
-          const aliases = (data.data['aliases'] || []) as string[] | string;
-          if (typeof aliases === 'string') {
-            noteConfig.aliases = aliases.split(',').map((x) => x.trim());
-          } else {
-            noteConfig.aliases = aliases;
-          }
-          delete frontMatter['aliases'];
-        }
-
-        // markdown = matter.stringify(data.content, frontMatter); // <= NOTE: I think gray-matter has bug. Although I delete "note" section from front-matter, it still includes it.
-        markdown = matterStringify(data.content, frontMatter);
-      } catch {
-        // Do nothing
-        markdown =
-          "Please fix front-matter. (👈 Don't forget to delete this line)\n\n" +
-          markdown;
-      }
-
-      let oldMentions: Mentions = {};
-      const oldNote = this.notes[filePath];
-      if (oldNote) {
-        oldMentions = oldNote.mentions;
-      }
-
-      // Create note
-      const note: Note = {
-        notebookPath: this.notebookPath,
-        filePath: path.relative(this.notebookPath.fsPath, absFilePath),
-        title: path.basename(absFilePath).replace(/\.md$/, ''),
-        markdown,
-        config: noteConfig,
-        mentions: oldMentions,
-      };
-
-      if (refreshNoteRelations) {
-        this.notes[note.filePath] = note;
-        this.search.add(note.filePath, note.title, note.config.aliases);
-        await this.processNoteMentionsAndMentionedBy(note.filePath);
-      }
-
-      return note;
-    } else {
       return null;
     }
+    // Skip oversized files so a checked-in 50 MB log/data dump
+    // with a `.md` extension can't pin its full content (plus a
+    // markdown-it token tree several × that size) in memory.
+    // The caller can still open the file via wikilink click —
+    // it's just not held by the in-memory index.
+    const sizeLimit = this.config.maxNoteFileSize ?? 0;
+    if (sizeLimit > 0 && stats.size > sizeLimit) {
+      return null;
+    }
+    let markdown = (await this.fs.readFile(absFilePath)) as string;
+
+    // Read the noteConfig, which is like <!-- note {...} --> at the end of the markdown file
+    const noteConfig: NoteConfig = {
+      createdAt: new Date(stats.ctimeMs),
+      modifiedAt: new Date(stats.mtimeMs),
+      aliases: [],
+    };
+
+    try {
+      const data = matter(markdown);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const frontMatter: any = Object.assign({}, data.data);
+
+      // New note config design in beta 3
+      if (data.data['created']) {
+        noteConfig.createdAt = new Date(data.data['created'] as string);
+        delete frontMatter['created'];
+      }
+      if (data.data['modified']) {
+        noteConfig.modifiedAt = new Date(data.data['modified'] as string);
+        delete frontMatter['modified'];
+      }
+      if (data.data['pinned']) {
+        noteConfig.pinned = data.data['pinned'] as boolean;
+        delete frontMatter['pinned'];
+      }
+      if (data.data['favorited']) {
+        noteConfig.favorited = data.data['favorited'] as boolean;
+        delete frontMatter['favorited'];
+      }
+      if (data.data['icon']) {
+        noteConfig.icon = data.data['icon'] as string;
+        delete frontMatter['icon'];
+      }
+      if (data.data['aliases']) {
+        const aliases = (data.data['aliases'] || []) as string[] | string;
+        if (typeof aliases === 'string') {
+          noteConfig.aliases = aliases.split(',').map((x) => x.trim());
+        } else {
+          noteConfig.aliases = aliases;
+        }
+        delete frontMatter['aliases'];
+      }
+
+      // markdown = matter.stringify(data.content, frontMatter); // <= NOTE: I think gray-matter has bug. Although I delete "note" section from front-matter, it still includes it.
+      markdown = matterStringify(data.content, frontMatter);
+    } catch {
+      // Do nothing
+      markdown =
+        "Please fix front-matter. (👈 Don't forget to delete this line)\n\n" +
+        markdown;
+    }
+
+    let oldMentions: Mentions = {};
+    const oldNote = this.notes[filePath];
+    if (oldNote) {
+      oldMentions = oldNote.mentions;
+    }
+
+    // Strip whichever configured markdown extension the file uses,
+    // not just literal `.md` — a notebook configured with `.markdown`
+    // / `.mdx` / `.qmd` / etc. should produce titles like `readme`,
+    // not `readme.markdown`.  The title flows into the search index
+    // and the Backlinks panel label, so using the bare basename
+    // matters for UX in non-`.md` notebooks.
+    const baseExt = path.extname(absFilePath);
+    const title = this.config.markdownFileExtensions.includes(baseExt)
+      ? path.basename(absFilePath, baseExt)
+      : path.basename(absFilePath);
+
+    return {
+      note: {
+        notebookPath: this.notebookPath,
+        filePath: path.relative(this.notebookPath.fsPath, absFilePath),
+        title,
+        config: noteConfig,
+        mentions: oldMentions,
+      },
+      markdown,
+    };
   }
 
   public async refreshNotesIfNotLoaded({
@@ -787,30 +1015,127 @@ export class Notebook {
   }
 
   public async refreshNotes(args: RefreshNotesArgs): Promise<Notes> {
-    const { refreshRelations = true } = args;
-    if (refreshRelations) {
-      this.notes = {};
-      this.referenceMap = new ReferenceMap();
-      this.search = new Search();
-    }
-    await this._refreshNotesInternal({ ...args, refreshRelations: false });
-    if (refreshRelations) {
-      for (const filePath in this.notes) {
-        await this.processNoteMentionsAndMentionedBy(filePath);
+    return this.refreshNotesMutex.runExclusive(async () => {
+      const { refreshRelations = true } = args;
+      if (refreshRelations) {
+        this.notes = {};
+        this.referenceMap = new ReferenceMap();
+        this.tagReferenceMap = new TagReferenceMap();
+        this.search = new Search();
+        this.processedMtimes.clear();
       }
-    }
-    return this.notes;
+      await this._refreshNotesInternal({
+        ...args,
+        refreshRelations,
+      });
+      return this.notes;
+    });
   }
 
-  private async _refreshNotesInternal({
-    dir = './',
-    includeSubdirectories = false,
-    gitignoreStack = [],
-  }: RefreshNotesInternalArgs): Promise<void> {
-    const dirAbsPath = path.resolve(this.notebookPath.fsPath, dir);
+  /**
+   * Incremental version of `refreshNotes`: instead of wiping the
+   * indices and rebuilding from scratch, walk the workspace and only
+   * re-process files whose on-disk mtime has advanced past the value
+   * recorded in `processedMtimes` (set during the most recent full
+   * refresh or prior incremental refresh).  Newly-added files are
+   * processed; cached entries that no longer exist on disk are
+   * removed (their reference / tag entries cleaned up).
+   *
+   * Designed to be cheap to call from a file-system watcher.  The
+   * directory walk still has to stat every file under `dir`, but the
+   * O(N) markdown re-tokenisation is skipped for unchanged files.
+   *
+   * Shares the `refreshNotesMutex` with `refreshNotes` so the two
+   * can't race against each other.
+   */
+  public async refreshNotesIncremental(args: RefreshNotesArgs): Promise<Notes> {
+    return this.refreshNotesMutex.runExclusive(async () => {
+      const { dir = './', includeSubdirectories = false } = args;
+      const onDisk = new Map<string, number>();
+      await this._collectOnDiskMtimes(dir, includeSubdirectories, [], onDisk);
 
-    // Normalize to a forward-slash path relative to the notebook root
-    // (POSIX separators required by the `ignore` package).
+      // (1) Removals: cached files no longer on disk.
+      const toRemove: string[] = [];
+      for (const fp of Object.keys(this.notes)) {
+        if (!onDisk.has(fp)) toRemove.push(fp);
+      }
+      for (const fp of toRemove) {
+        await this.removeNoteRelations(fp);
+        this.search.remove(fp);
+        this.processedMtimes.delete(fp);
+      }
+
+      // (2) Additions + changes.  An entry is processed if:
+      //   - it's not in the mtimes map (new file, or first time this
+      //     incremental run sees it); OR
+      //   - the on-disk mtime is strictly newer than the last stamp.
+      // Strict `>` matches what most fs watchers signal (granularity
+      // is at least 1 ms on Linux/Darwin; we don't need fudge here).
+      const toProcess: string[] = [];
+      for (const [fp, mtime] of onDisk) {
+        const stamped = this.processedMtimes.get(fp);
+        if (stamped === undefined || mtime > stamped) {
+          toProcess.push(fp);
+        }
+      }
+
+      for (const fp of toProcess) {
+        const result = await this.loadNoteFromDisk(fp);
+        if (!result) continue;
+        const { note, markdown } = result;
+        const wasNew = !(note.filePath in this.notes);
+        this.notes[note.filePath] = note;
+        if (wasNew) {
+          this.search.add(note.filePath, note.title, note.config.aliases);
+        }
+        // Pass the freshly-loaded markdown straight through — saves a
+        // second disk read inside processNoteMentionsAndMentionedBy.
+        await this.processNoteMentionsAndMentionedBy(note.filePath, markdown);
+        // Stamp using the on-disk mtime captured during the walk so
+        // it matches what `_collectOnDiskMtimes` will see on the next
+        // call (both already floored).  Defensive lookup: if
+        // `loadNoteFromDisk` ever normalises filePath differently
+        // than `_collectOnDiskMtimes` (e.g. path-separator drift on
+        // Windows), the mtime won't be in the map — better to skip
+        // the stamp than poison `processedMtimes` with NaN/undefined.
+        const stampedMtime = onDisk.get(note.filePath);
+        if (stampedMtime !== undefined) {
+          this.processedMtimes.set(note.filePath, stampedMtime);
+        }
+      }
+
+      return this.notes;
+    });
+  }
+
+  /**
+   * Recursively walk `dir` (relative to the notebook root), respecting
+   * .gitignore at each level, and invoke `onFile(absPath, relPath, stats)`
+   * for every regular file encountered.  `relPath` is forward-slash,
+   * notebook-root-relative — the form `referenceMap` and friends use
+   * as keys.
+   *
+   * Built-in skips: `node_modules`, `.git`, and anything matched by
+   * a .gitignore in the current stack.  Directories are descended
+   * into iff `includeSubdirectories` is true.
+   *
+   * Both `_refreshNotesInternal` (full rebuild) and
+   * `_collectOnDiskMtimes` (incremental refresh) drive their work
+   * through this helper so the gitignore semantics are defined in
+   * exactly one place.  Used to be duplicated; please don't reintroduce
+   * the duplication when adding new walk-driven features.
+   */
+  private async _walkNotebookDir(
+    dir: string,
+    includeSubdirectories: boolean,
+    gitignoreStack: Array<{ ig: Ignore; base: string }>,
+    onFile: (args: {
+      absPath: string;
+      relPath: string;
+      stats: FileSystemStats;
+    }) => Promise<void>,
+  ): Promise<void> {
+    const dirAbsPath = path.resolve(this.notebookPath.fsPath, dir);
     const normalizedDir = path
       .relative(this.notebookPath.fsPath, dirAbsPath)
       .replace(/\\/g, '/');
@@ -851,13 +1176,12 @@ export class Notebook {
       files = await this.fs.readdir(dirAbsPath);
     } catch (error) {
       console.error(error);
-      files = [];
+      return;
     }
+
     const subdirPromises: Promise<void>[] = [];
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-
+    for (const file of files) {
       // Always skip .git and node_modules regardless of .gitignore.
       if (file.match(/^(node_modules|\.git)$/)) {
         continue;
@@ -868,36 +1192,100 @@ export class Notebook {
         .relative(this.notebookPath.fsPath, absFilePath)
         .replace(/\\/g, '/');
 
-      // Respect .gitignore rules.
       if (currentStack.length > 0 && isIgnoredByGitignore(relFromNotebook)) {
         continue;
       }
 
-      const note = await this.getNote(
-        path.relative(this.notebookPath.fsPath, absFilePath),
-      );
-      if (note) {
-        this.notes[note.filePath] = note;
-        this.search.add(note.filePath, note.title, note.config.aliases);
-      }
-
-      let stats;
+      let stats: FileSystemStats;
       try {
         stats = await this.fs.stat(absFilePath);
       } catch (error) {
         console.error(error);
+        continue;
       }
-      if (stats && stats.isDirectory() && includeSubdirectories) {
+
+      if (stats.isFile()) {
+        await onFile({
+          absPath: absFilePath,
+          relPath: relFromNotebook,
+          stats,
+        });
+      } else if (stats.isDirectory() && includeSubdirectories) {
         subdirPromises.push(
-          this._refreshNotesInternal({
-            dir: path.relative(this.notebookPath.fsPath, absFilePath),
+          this._walkNotebookDir(
+            relFromNotebook,
             includeSubdirectories,
-            gitignoreStack: currentStack,
-          }),
+            currentStack,
+            onFile,
+          ),
         );
       }
     }
     await Promise.all(subdirPromises);
+  }
+
+  /**
+   * Recursively stat all files under `dir` and write each markdown
+   * file's notebook-relative path → mtimeMs into `out`.  Files too
+   * large (`maxNoteFileSize`) or with a non-markdown extension are
+   * excluded — the same gates `loadNoteFromDisk` applies — so the
+   * incremental refresh never tries to process something that the
+   * loader would reject.
+   */
+  private async _collectOnDiskMtimes(
+    dir: string,
+    includeSubdirectories: boolean,
+    gitignoreStack: Array<{ ig: Ignore; base: string }>,
+    out: Map<string, number>,
+  ): Promise<void> {
+    const sizeLimit = this.config.maxNoteFileSize ?? 0;
+    await this._walkNotebookDir(
+      dir,
+      includeSubdirectories,
+      gitignoreStack,
+      async ({ relPath, stats }) => {
+        const ext = path.extname(relPath);
+        if (
+          this.config.markdownFileExtensions.includes(ext) &&
+          (sizeLimit <= 0 || stats.size <= sizeLimit)
+        ) {
+          // Floor: see comment in `refreshNotes` stamping path.
+          out.set(relPath, Math.floor(stats.mtimeMs));
+        }
+      },
+    );
+  }
+
+  private async _refreshNotesInternal({
+    dir = './',
+    includeSubdirectories = false,
+    gitignoreStack = [],
+    refreshRelations = true,
+  }: RefreshNotesInternalArgs): Promise<void> {
+    await this._walkNotebookDir(
+      dir,
+      includeSubdirectories,
+      gitignoreStack,
+      async ({ relPath, stats }) => {
+        // `loadNoteFromDisk` applies the markdownFileExtensions /
+        // maxNoteFileSize gates; non-markdown and oversized files
+        // come back null and are skipped.  Body lives in the local
+        // `markdown` here, never enters `this.notes`.
+        const result = await this.loadNoteFromDisk(relPath);
+        if (!result) return;
+        const { note, markdown } = result;
+        this.notes[note.filePath] = note;
+        this.search.add(note.filePath, note.title, note.config.aliases);
+        if (refreshRelations) {
+          // Single pass — extract mentions / tags off the markdown we
+          // just read, before moving on to the next file.  Used to be
+          // a separate post-walk loop in `refreshNotes`; folding it
+          // here means the body never has to be re-fetched.
+          await this.processNoteMentionsAndMentionedBy(note.filePath, markdown);
+          this.processedMtimes.set(note.filePath, Math.floor(stats.mtimeMs));
+        }
+      },
+    );
   }
 
   /*
@@ -942,6 +1330,8 @@ export class Notebook {
     if (!note) {
       return;
     }
+    // Drop any tag references this note contributed.
+    this.tagReferenceMap.deleteReferencesFrom(note.filePath);
     const mentions = note.mentions;
     for (const filePath in mentions) {
       this.referenceMap.deleteReferences(filePath, note.filePath);
@@ -1027,7 +1417,12 @@ export class Notebook {
    * @param content content is string like "Test", "test.md | Test"
    * @returns
    */
-  public processWikilink(content: string): { text: string; link: string } {
+  public processWikilink(content: string): {
+    text: string;
+    link: string;
+    hash?: string;
+    blockRef?: string;
+  } {
     const splits = content.split('|');
     let link: string;
     let text: string;
@@ -1044,12 +1439,22 @@ export class Notebook {
       }
     }
 
-    // parse hash from link
+    // parse hash and block reference from link
+    // Support: [[note#heading]], [[note^block-id]], [[note#heading^block-id]]
     const hashIndex = link.lastIndexOf('#');
+    const blockRefIndex = link.lastIndexOf('^');
     let hash = '';
-    if (hashIndex >= 0) {
+    let blockRef = '';
+    if (hashIndex >= 0 && blockRefIndex >= 0 && blockRefIndex > hashIndex) {
+      hash = link.slice(hashIndex, blockRefIndex);
+      blockRef = link.slice(blockRefIndex);
+      link = link.slice(0, hashIndex);
+    } else if (hashIndex >= 0) {
       hash = link.slice(hashIndex);
       link = link.slice(0, hashIndex);
+    } else if (blockRefIndex >= 0) {
+      blockRef = link.slice(blockRefIndex);
+      link = link.slice(0, blockRefIndex);
     }
 
     // transform file name if needed
@@ -1078,7 +1483,10 @@ export class Notebook {
     if (hash) {
       link += hash;
     }
+    if (blockRef) {
+      link += blockRef;
+    }
 
-    return { link, text };
+    return { link, text, hash, blockRef };
   }
 }

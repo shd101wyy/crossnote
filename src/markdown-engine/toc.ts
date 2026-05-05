@@ -183,7 +183,11 @@ export function generateSidebarToCHTML(
     while (i < slice.length) {
       const heading = slice[i];
       const content = heading.content.trim();
-      const headingHtml = md.render(content);
+      // Use renderInline so that heading content like "1. Topic" is not
+      // interpreted as an ordered-list block (which would wrap the link in
+      // <ol><li> and insert large vertical margins between TOC entries).
+      // See vscode-markdown-preview-enhanced #2276 and #2277.
+      const headingHtml = md.renderInline(content);
       const headingId = heading.id || headingIdGenerator.generateId(content);
       const level = heading.level - smallestLevel;
 

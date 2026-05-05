@@ -155,6 +155,98 @@
       }
     }
   }
+
+  // Inline #tag styling (Obsidian-like).
+  //
+  // Tags render as <a class="tag" href="tag://…"> so the webview click
+  // handler can route them.  The selectors below cover both forms
+  // (anchor + legacy span) and explicitly reset per-theme anchor
+  // decorations (underline, text-shadow, box-shadow used by themes
+  // like medium/atom-dark) so the pill shape is consistent everywhere.
+  //
+  // Background + foreground prefer VS Code badge variables when
+  // available, otherwise fall back to neutral grey rgba that works on
+  // both light and dark theme backgrounds.
+  a.tag,
+  a.tag:link,
+  a.tag:visited,
+  a.tag:active,
+  span.tag {
+    display: inline-block;
+    background-color: var(--vscode-badge-background, rgba(127, 127, 127, 0.18));
+    color: var(--vscode-badge-foreground, currentColor);
+    border-radius: 2em;
+    font-size: 0.85em;
+    font-weight: 500;
+    padding: 0.05em 0.55em;
+    line-height: 1.5;
+    white-space: nowrap;
+    text-decoration: none;
+    text-shadow: none;
+    box-shadow: none;
+    transition:
+      background-color 0.12s ease,
+      opacity 0.12s ease;
+  }
+
+  a.tag {
+    cursor: pointer;
+  }
+
+  // Hover/focus: subtle darken/highlight that works in any theme,
+  // including VS Code where the badge variable is fixed.  Using opacity
+  // avoids needing a separate "hover" colour per theme.
+  a.tag:hover,
+  a.tag:focus {
+    background-color: var(--vscode-badge-background, rgba(127, 127, 127, 0.32));
+    color: var(--vscode-badge-foreground, currentColor);
+    opacity: 0.85;
+    text-decoration: none;
+    outline: none;
+  }
+
+  // Embedded wikilink note content
+  // Reuses blockquote theme variables for a consistent inset look.
+  .wikilink-embed-content {
+    border-left: 3px solid
+      var(--vscode-textBlockQuote-border, rgba(128, 128, 128, 0.3));
+    background: var(
+      --vscode-textBlockQuote-background,
+      rgba(128, 128, 128, 0.05)
+    );
+    margin: 0.5em 0;
+    padding: 0.5em 0.75em;
+    border-radius: 0 3px 3px 0;
+
+    &.wikilink-embed-error {
+      border-left-color: var(--vscode-errorForeground, #cf222e);
+      color: var(--vscode-errorForeground, #cf222e);
+      font-style: italic;
+      opacity: 0.8;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      &:first-child {
+        margin-top: 0.25em;
+      }
+    }
+
+    // Nested embeds get progressively tighter
+    .wikilink-embed-content {
+      margin: 0.25em 0;
+      padding: 0.25em 0.5em;
+    }
+  }
+
+  // Block reference ID markers (hidden by default)
+  .block-id {
+    display: none;
+  }
 }
 
 .scrollbar-style {

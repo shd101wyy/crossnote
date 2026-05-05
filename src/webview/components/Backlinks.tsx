@@ -162,9 +162,7 @@ export default function Backlinks() {
                 <ul className="list-disc">
                   {referenceHtmls.map((html, index) => {
                     const reference = references[index];
-                    const line = (reference.parentToken?.map ??
-                      reference.token?.map ??
-                      [])[0];
+                    const line = reference.sourceLine;
                     if (!note.notebookPath || !note.filePath) {
                       return;
                     }

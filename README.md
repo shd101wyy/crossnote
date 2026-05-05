@@ -143,6 +143,20 @@ const config = {
   // Please check http://criticmarkup.com/users-guide.php for more information.
   enableCriticMarkupSyntax: false
 
+  // Enable Obsidian-style #tag syntax in body text.
+  // Renders `#tag-name` (and nested `#parent/child`) as clickable
+  // pill-shaped anchors that emit a `clickTag` postMessage when clicked,
+  // so the host extension can route to a tag-specific search/backlinks
+  // panel.  Tags inside code spans, fenced code blocks, URL fragments,
+  // and `{...}` block-attribute spans are skipped.
+  enableTagSyntax: true,
+
+  // When true, the right-click context menu in the preview inherits the
+  // VS Code theme (colours, font, border) instead of using the default
+  // Contexify dark/light theme.  Only takes effect when running inside
+  // a VS Code webview (the rule is gated on body.vscode-* classes).
+  useVSCodeThemeForContextMenu: false,
+
   // Front matter rendering option
   frontMatterRenderingOption: 'none', // 'none' | 'table' | 'code block'
 
@@ -297,6 +311,16 @@ const config = {
 
   // Always show backlinks in the preview.
   alwaysShowBacklinksInPreview: false,
+
+  // Maximum size (in bytes) of a markdown file that crossnote will
+  // load into the in-memory note index.  Files larger than this are
+  // skipped during `refreshNotes` so a checked-in 50 MB log / data
+  // dump with a `.md` extension can't pin its full content (plus a
+  // markdown-it token tree several × that size) in memory.  Files
+  // above the cap are still openable by wikilink click — they're
+  // just not indexed for autocomplete, backlinks, or the tag panel.
+  // Set to 0 to disable the cap entirely.
+  maxNoteFileSize: 5_242_880, // 5 MiB
 }
 ```
 

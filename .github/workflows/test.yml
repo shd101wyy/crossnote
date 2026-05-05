@@ -31,6 +31,14 @@ jobs:
           cache: pnpm
           node-version-file: .tool-versions
 
+      - name: Install pandoc
+        # The wikilink-embed and colon-fence test suites spawn `pandoc`
+        # to exercise the markdown_yo / pandoc transformer paths.  The
+        # ubuntu-latest runner doesn't ship pandoc, so install it here
+        # before tests run — otherwise those suites fail with
+        # `Error: spawn pandoc ENOENT`.
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
       - name: Install dependencies
         run: pnpm install
 

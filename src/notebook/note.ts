@@ -31,10 +31,11 @@ export interface Note {
    * Note title.
    */
   title: string;
-  /**
-   * Note content.
-   */
-  markdown: string;
+  // The note body lives on disk, not in this struct.  Use
+  // `Notebook.getNoteMarkdown(filePath)` to fetch it on demand.  The
+  // in-memory `Notebook.notes` cache holds metadata (title, aliases,
+  // config) and the reference graph; the body would dominate cache
+  // RSS for prose-heavy notebooks, so we read it lazily instead.
   /**
    * Note config.
    */
