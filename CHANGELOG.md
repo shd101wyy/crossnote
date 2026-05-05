@@ -4,6 +4,16 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.24] - 2026-05-05
+
+### Bug fixes
+
+- Fix math formulas not rendering inside HTML blocks (e.g. `$a^2+b^2=c^2$` inside `<table><tr><td>…</td></tr></table>`). Markdown-it treats a top-level HTML block as verbatim content, so the inline math rule never saw the formula. The math plugin now also hooks `md.renderer.rules.html_block` and post-processes the rendered HTML for math delimiters, skipping content inside `<code>`, `<pre>`, `<script>`, and `<style>` tags so embedded code samples that legitimately contain `$x$` literals aren't rewritten. Inline HTML wrappers (`<span>$x$</span>`) already worked because markdown-it's inline parser splits around the tag — this fix only touches the block path. Fixes [vscode-mpe#2280](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2280).
+
+### Internal
+
+- Added 9 new math-rendering tests in `test/math.test.ts` covering: inline / block math, the vscode-mpe#2280 reproducer (table + `<td>$x$</td>`), block math inside `<div>`, multiple formulas in one HTML block, code/pre skip behaviour, `mathRenderingOption: 'None'` no-op, unmatched delimiter handling, and the inline-HTML-wrapper path that previously worked.
+
 ## [0.9.23] - 2026-05-04
 
 ### New features
