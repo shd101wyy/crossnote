@@ -148,3 +148,126 @@ describe('Math rendering', () => {
     expect(html).toContain('<span>');
   });
 });
+
+describe('Math rendering with MathJax', () => {
+  let notebook: Notebook;
+
+  beforeAll(async () => {
+    notebook = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {
+        markdownParser: 'markdown-it',
+        mathRenderingOption: 'MathJax',
+      },
+    });
+  });
+
+  it('emits a `mathjax-exps` span for inline math in a paragraph', () => {
+    // Sanity check that MathJax mode goes through the same parseMath
+    // helper that the html_block path also uses.  MathJax is
+    // client-side rendered, so the server output is just a
+    // placeholder span/div the client-side script picks up later.
+    const html = notebook.renderMarkdown('Energy is $E=mc^2$ here.', {
+      isForPreview: true,
+    });
+    expect(html).toContain('mathjax-exps');
+    expect(html).toContain('<span class="mathjax-exps">');
+  });
+
+  it('emits a `mathjax-exps` div for block math inside an HTML block', () => {
+    // The vscode-mpe#2280 fix should produce MathJax placeholders
+    // (not KaTeX HTML) when the renderer is configured for MathJax.
+    // Note: MathJax placeholders intentionally KEEP the `$$…$$`
+    // delimiters in their inner text — that's how the client-side
+    // MathJax script discovers and renders the formula.
+    const md = ['<div class="proof">', '$$', 'E = mc^2', '$$', '</div>'].join(
+      '\n',
+    );
+    const html = notebook.renderMarkdown(md, { isForPreview: true });
+    // Block math in display mode → div, not span.
+    expect(html).toMatch(/<div class="mathjax-exps">/);
+    // The placeholder div wraps the original (escaped) source — the
+    // outer `<div class="proof">` remains around it.  Confirms the
+    // post-process didn't drop or duplicate the wrapper HTML.
+    expect(html).toContain('class="proof"');
+    // Newlines inside the formula get collapsed to spaces (per
+    // parseMath).  Confirms the placeholder's inner text contains
+    // the formula body.
+    expect(html).toMatch(/E = mc\^2/);
+  });
+
+  it('emits `mathjax-exps` spans for inline math inside an HTML <table>', () => {
+    // Same vscode-mpe#2280 reproducer, MathJax mode this time.
+    const md = [
+      '<table>',
+      '    <tr>',
+      '        <td>$a^2+b^2=c^2$</td>',
+      '    </tr>',
+      '</table>',
+    ].join('\n');
+    const html = notebook.renderMarkdown(md, { isForPreview: true });
+    // Span (inline) not div (block) — `$…$` is the inline form.
+    expect(html).toMatch(/<span class="mathjax-exps">/);
+    // The original `<td>$a^2+b^2=c^2$</td>` got rewritten into
+    // `<td><span class="mathjax-exps">$a^2+b^2=c^2$</span></td>`.
+    // The delimiters STAY in the placeholder because MathJax reads
+    // them client-side; assert that shape directly.
+    expect(html).toMatch(
+      /<td><span class="mathjax-exps">\$a\^2\+b\^2=c\^2\$<\/span><\/td>/,
+    );
+    expect(html).toContain('<table>');
+  });
+});
+
+describe('Math rendering with custom delimiters', () => {
+  // The fix iterates `mathBlockDelimiters` / `mathInlineDelimiters`
+  // from notebook config (same source the inline rule reads), so
+  // any user-configured delimiter pair should work — not just the
+  // default `$…$` / `$$…$$`.  Spot-check `\(…\)` (inline) and
+  // `\[…\]` (block) since they're the other shape Pandoc / LaTeX
+  // users commonly configure.
+  let notebook: Notebook;
+
+  beforeAll(async () => {
+    notebook = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {
+        markdownParser: 'markdown-it',
+        mathInlineDelimiters: [['\\(', '\\)']],
+        mathBlockDelimiters: [['\\[', '\\]']],
+      },
+    });
+  });
+
+  it('renders `\\(…\\)` inline math inside an HTML <table>', () => {
+    const md = [
+      '<table>',
+      '    <tr>',
+      '        <td>\\(a^2+b^2=c^2\\)</td>',
+      '    </tr>',
+      '</table>',
+    ].join('\n');
+    const html = notebook.renderMarkdown(md, { isForPreview: true });
+    expect(html).toContain('class="katex"');
+    expect(html).not.toContain('\\(a^2+b^2=c^2\\)');
+    // Inline mode → no display wrapper.
+    expect(html).not.toContain('katex-display');
+  });
+
+  it('renders `\\[…\\]` block math inside an HTML <div>', () => {
+    const md = ['<div>', '\\[', 'E = mc^2', '\\]', '</div>'].join('\n');
+    const html = notebook.renderMarkdown(md, { isForPreview: true });
+    expect(html).toContain('katex-display');
+    expect(html).not.toContain('\\[\nE = mc^2\n\\]');
+  });
+
+  it('does NOT match the default `$…$` when custom delimiters are configured', () => {
+    // If the config only declares `\(…\)` / `\[…\]`, a literal `$x$`
+    // in HTML should pass through verbatim — the custom-delimiter
+    // path shouldn't accidentally fall back to defaults.
+    const md = '<div>price: $5 to $10</div>';
+    const html = notebook.renderMarkdown(md, { isForPreview: true });
+    expect(html).toContain('$5 to $10');
+    expect(html).not.toContain('class="katex"');
+  });
+});
