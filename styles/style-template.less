@@ -167,11 +167,14 @@
   // Background + foreground prefer VS Code badge variables when
   // available, otherwise fall back to neutral grey rgba that works on
   // both light and dark theme backgrounds.
+  // The :not(.token) guard prevents the tag pill styling from
+  // overriding Prism syntax-highlighted XML/HTML `<span class="token tag">`
+  // elements inside code blocks (vscode-mpe#2295).
   a.tag,
   a.tag:link,
   a.tag:visited,
   a.tag:active,
-  span.tag {
+  span.tag:not(.token) {
     display: inline-block;
     background-color: var(--vscode-badge-background, rgba(127, 127, 127, 0.18));
     color: var(--vscode-badge-foreground, currentColor);
