@@ -4,6 +4,77 @@ import { Notebook } from '../notebook';
 import parseMath from '../renderers/parse-math';
 
 export default (md: MarkdownIt, notebook: Notebook) => {
+  // ── Block-level math ────────────────────────────────────────────
+  // markdown-it's block parser runs *before* the inline parser.
+  // Without a block-level rule, multi-line `$$…$$` content (e.g.
+  // matrices containing `=` on its own line) is split into a Setext
+  // heading + a dangling paragraph by the `lheading` rule.  We insert
+  // a rule before `lheading` that consumes `$$` blocks early,
+  // preventing Setext / paragraph splitting.
+  md.block.ruler.before(
+    'lheading',
+    'math_block',
+    (state, startLine, endLine, silent) => {
+      if (notebook.config.mathRenderingOption === 'None') {
+        return false;
+      }
+      const pos = state.bMarks[startLine] + state.tShift[startLine];
+      const { mathBlockDelimiters: blockDelimiters } = notebook.config;
+
+      let openTag: string | null = null;
+      let closeTag: string | null = null;
+      for (const [open, close] of blockDelimiters) {
+        if (state.src.slice(pos, pos + open.length) === open) {
+          openTag = open;
+          closeTag = close;
+          break;
+        }
+      }
+      if (!openTag || !closeTag) {
+        return false;
+      }
+
+      // Scan forward in state.src for the closing delimiter.
+      let scanPos = pos + openTag.length;
+      let closingPos = -1;
+      while (scanPos < state.src.length) {
+        if (state.src.startsWith(closeTag, scanPos)) {
+          closingPos = scanPos;
+          break;
+        }
+        if (state.src[scanPos] === '\\') {
+          scanPos += 1;
+        }
+        scanPos += 1;
+      }
+      if (closingPos < 0) {
+        return false;
+      }
+
+      // Determine which line the closing delimiter ends on so we can
+      // advance state.line past the whole block.
+      const closeEnd = closingPos + closeTag.length;
+      let nextLine = startLine;
+      while (nextLine < endLine && state.bMarks[nextLine] <= closeEnd) {
+        nextLine++;
+      }
+
+      if (silent) {
+        return true;
+      }
+
+      const content = state.src.slice(pos + openTag.length, closingPos).trim();
+
+      const token = state.push('math_block', 'div', 0);
+      token.content = content;
+      token.meta = { openTag, closeTag };
+      token.map = [startLine, nextLine];
+
+      state.line = nextLine;
+      return true;
+    },
+  );
+
   md.inline.ruler.before('escape', 'math', (state, silent) => {
     if (notebook.config.mathRenderingOption === 'None') {
       return false;
@@ -80,6 +151,20 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       closeTag: tokens[idx].meta.closeTag,
       renderingOption: notebook.config.mathRenderingOption,
       displayMode: tokens[idx].meta.displayMode,
+      katexConfig: notebook.config.katexConfig,
+    });
+  };
+
+  // Render math_block tokens (produced by the block-level rule).
+  // These are always display-mode math.
+  md.renderer.rules.math_block = (tokens, idx) => {
+    const content: string = tokens[idx].content ?? '';
+    return parseMath({
+      content,
+      openTag: tokens[idx].meta.openTag,
+      closeTag: tokens[idx].meta.closeTag,
+      renderingOption: notebook.config.mathRenderingOption,
+      displayMode: true,
       katexConfig: notebook.config.katexConfig,
     });
   };
