@@ -132,6 +132,8 @@ export type WikiLinkTargetFileNameChangeCase =
   | 'lowerCase'
   | 'upperCase';
 
+export type WikiLinkResolution = 'shortest' | 'relative' | 'absolute';
+
 export interface NotebookConfig {
   /**
    * The files of extensions to be included in the notebook
@@ -245,6 +247,22 @@ export interface NotebookConfig {
    * @default true
    */
   enableWikiLinkSyntax: boolean;
+
+  /**
+   * Controls how bare-filename wiki links (e.g. `[[Note]]`) are
+   * resolved to a file path.
+   *
+   * - `'relative'` — resolve relative to the current note's directory
+   * - `'shortest'` — search all notes by filename, preferring the
+   *    shortest unique path
+   * - `'absolute'` — resolve from the notebook root
+   *
+   * Links starting with `/` always resolve from the notebook root,
+   * regardless of this setting.
+   *
+   * @default 'relative'
+   */
+  wikiLinkResolution: WikiLinkResolution;
 
   /**
    * The file extension for the link in wikilink if the link does not have an extension.
@@ -647,6 +665,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     breakOnSingleNewLine: true,
     enableTypographer: false,
     enableWikiLinkSyntax: true,
+    wikiLinkResolution: 'relative',
     wikiLinkTargetFileExtension: '.md',
     wikiLinkTargetFileNameChangeCase: 'none',
     enableLinkify: true,
