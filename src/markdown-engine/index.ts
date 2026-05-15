@@ -369,7 +369,7 @@ export class MarkdownEngine {
       scripts += `<script type="text/javascript"> window.MathJax = (${JSON.stringify(
         mathJaxConfig,
       )}); </script>`;
-      scripts += `<script type="text/javascript" async src="${this.notebook.config.mathjaxV3ScriptSrc}" charset="UTF-8"></script>`;
+      scripts += `<script type="text/javascript" defer src="${this.notebook.config.mathjaxScriptSrc}" charset="UTF-8"></script>`;
     }
 
     // reveal.js
@@ -974,8 +974,8 @@ window["initRevealPresentation"] = async function() {
         <script type="text/javascript">
           window.MathJax = (${JSON.stringify(mathJaxConfig)});
         </script>
-        <script type="text/javascript" async src="${
-          this.notebook.config.mathjaxV3ScriptSrc
+        <script type="text/javascript" defer src="${
+          this.notebook.config.mathjaxScriptSrc
         }" charset="UTF-8"></script>
         `;
       } else {
@@ -983,8 +983,8 @@ window["initRevealPresentation"] = async function() {
         <script type="text/javascript">
           window.MathJax = (${JSON.stringify(mathJaxConfig)});
         </script>
-        <script type="text/javascript" async src="${
-          this.notebook.config.mathjaxV3ScriptSrc
+        <script type="text/javascript" defer src="${
+          this.notebook.config.mathjaxScriptSrc
         }"></script>
         `;
       }

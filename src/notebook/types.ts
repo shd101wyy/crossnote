@@ -336,11 +336,11 @@ export interface NotebookConfig {
    */
   mathRenderingOnlineService: string;
   /**
-   * The script source for MathJax v3.
+   * The script source for MathJax.
    *
-   * @default `https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js`
+   * @default `https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js`
    */
-  mathjaxV3ScriptSrc: string;
+  mathjaxScriptSrc: string;
   /**
    * The code block theme.
    *
@@ -660,8 +660,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     mathInlineDelimiters: [['$', '$']],
     mathBlockDelimiters: [['$$', '$$']],
     mathRenderingOnlineService: 'https://latex.codecogs.com/gif.latex',
-    mathjaxV3ScriptSrc:
-      'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js',
+    mathjaxScriptSrc: 'https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js',
     codeBlockTheme: 'auto.css',
     previewTheme: 'github-light.css',
     revealjsTheme: 'white.css',
