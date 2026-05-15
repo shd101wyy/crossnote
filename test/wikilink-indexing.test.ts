@@ -187,3 +187,161 @@ describe('wikilink indexing', () => {
     expect(nb.notes['plain.md'].title).toBe('plain');
   });
 });
+
+describe('wikilink resolution modes', () => {
+  let notebookPath: string;
+
+  beforeEach(async () => {
+    notebookPath = await fs.mkdtemp(
+      path.join(os.tmpdir(), 'crossnote-wikilink-resolution-'),
+    );
+  });
+
+  afterEach(async () => {
+    await fs.rm(notebookPath, { recursive: true, force: true });
+  });
+
+  async function writeNote(name: string, body: string) {
+    const fullPath = path.join(notebookPath, name);
+    await fs.mkdir(path.dirname(fullPath), { recursive: true });
+    await fs.writeFile(fullPath, body);
+  }
+
+  async function loaded(
+    config: Record<string, unknown> = {},
+  ): Promise<Notebook> {
+    const nb = await Notebook.init({
+      notebookPath,
+      config: { markdownParser: 'markdown-it', ...config },
+    });
+    await nb.refreshNotes({ dir: '.', includeSubdirectories: true });
+    return nb;
+  }
+
+  describe('resolveWikilink', () => {
+    it('resolves a unique bare filename in shortest mode', async () => {
+      await writeNote('concepts/SCADA.md', '# SCADA');
+      await writeNote('summaries/project.md', '# Project');
+      await writeNote('notes/root.md', '[[SCADA]]');
+
+      const nb = await loaded({ wikiLinkResolution: 'shortest' });
+
+      expect(nb.resolveWikilink('SCADA', 'notes/root.md')).toBe(
+        'concepts/SCADA.md',
+      );
+    });
+
+    it('prefers shortest path when duplicate filenames exist', async () => {
+      await writeNote('SCADA.md', '# Top-level');
+      await writeNote('concepts/SCADA.md', '# Nested');
+      await writeNote('notes/root.md', '[[SCADA]]');
+
+      const nb = await loaded({ wikiLinkResolution: 'shortest' });
+
+      // Root-level SCADA.md (depth 1) is shorter than
+      // concepts/SCADA.md (depth 2).
+      expect(nb.resolveWikilink('SCADA', 'notes/root.md')).toBe('SCADA.md');
+    });
+
+    it('prefers note in same directory when shortest paths are tied', async () => {
+      await writeNote('a/Note.md', '# A');
+      await writeNote('b/Note.md', '# B');
+      await writeNote('a/current.md', '[[Note]]');
+
+      const nb = await loaded({ wikiLinkResolution: 'shortest' });
+
+      // Both are depth 2.  current.md is in a/, so a/Note.md wins.
+      expect(nb.resolveWikilink('Note', 'a/current.md')).toBe('a/Note.md');
+    });
+
+    it('falls back to alphabetical when tied and neither is in same dir', async () => {
+      await writeNote('a/Note.md', '# A');
+      await writeNote('b/Note.md', '# B');
+      await writeNote('c/root.md', '[[Note]]');
+
+      const nb = await loaded({ wikiLinkResolution: 'shortest' });
+
+      // Both depth 2, neither in c/.  a/ sorts before b/.
+      expect(nb.resolveWikilink('Note', 'c/root.md')).toBe('a/Note.md');
+    });
+
+    it('falls back to relative when no match found in shortest mode', async () => {
+      await writeNote('concepts/SCADA.md', '# SCADA');
+      await writeNote('notes/root.md', '[[Nonexistent]]');
+
+      const nb = await loaded({ wikiLinkResolution: 'shortest' });
+
+      // No note named 'Nonexistent.md' — fall back to relative.
+      expect(nb.resolveWikilink('Nonexistent', 'notes/root.md')).toBe(
+        'notes/Nonexistent.md',
+      );
+    });
+
+    it('resolves from notebook root in absolute mode', async () => {
+      await writeNote('sub/Note.md', '# Note');
+      await writeNote('sub/deep/root.md', '[[Note]]');
+
+      const nb = await loaded({ wikiLinkResolution: 'absolute' });
+
+      // Absolute mode resolves from the notebook root.  Bare
+      // `Note` → `Note.md`, not `sub/deep/Note.md` and not
+      // `sub/Note.md` (which would require a directory prefix).
+      expect(nb.resolveWikilink('Note', 'sub/deep/root.md')).toBe('Note.md');
+    });
+
+    it('resolves relative to current dir in relative mode', async () => {
+      await writeNote('sub/Note.md', '# Note');
+      await writeNote('sub/deep/root.md', '[[Note]]');
+
+      const nb = await loaded({ wikiLinkResolution: 'relative' });
+
+      // Relative from sub/deep/ → Note.md doesn't exist there.
+      expect(nb.resolveWikilink('Note', 'sub/deep/root.md')).toBe(
+        'sub/deep/Note.md',
+      );
+    });
+
+    it('resolves /-prefixed links from root regardless of mode', async () => {
+      await writeNote('concepts/SCADA.md', '# SCADA');
+      await writeNote('notes/root.md', '[[/concepts/SCADA]]');
+
+      for (const mode of ['shortest', 'relative', 'absolute'] as const) {
+        const nb = await loaded({ wikiLinkResolution: mode });
+        expect(nb.resolveWikilink('/concepts/SCADA', 'notes/root.md')).toBe(
+          'concepts/SCADA.md',
+        );
+      }
+    });
+
+    it('appends the configured file extension when missing', async () => {
+      await writeNote('concepts/SCADA.md', '# SCADA');
+      await writeNote('notes/root.md', '[[SCADA]]');
+
+      const nb = await loaded({
+        wikiLinkResolution: 'shortest',
+        wikiLinkTargetFileExtension: '.md',
+      });
+
+      expect(nb.resolveWikilink('SCADA', 'notes/root.md')).toBe(
+        'concepts/SCADA.md',
+      );
+    });
+  });
+
+  describe('referenceMap with shortest mode', () => {
+    it('indexes [[filename]] pointing to a note in another directory', async () => {
+      await writeNote('concepts/SCADA.md', '# SCADA');
+      await writeNote('summaries/project.md', 'See [[SCADA]].');
+
+      const nb = await loaded({ wikiLinkResolution: 'shortest' });
+
+      // The referenceMap key should be the resolved path, not a
+      // phantom relative path from the referrer's directory.
+      expect(nb.referenceMap.map['concepts/SCADA.md']).toBeDefined();
+      expect(
+        nb.referenceMap.map['concepts/SCADA.md']['summaries/project.md'],
+      ).toHaveLength(1);
+      expect(nb.referenceMap.map['summaries/SCADA.md']).toBeUndefined();
+    });
+  });
+});

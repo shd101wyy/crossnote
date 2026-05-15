@@ -643,34 +643,12 @@ export class Notebook {
     const tokens = this.md.parse(markdown, {});
 
     /**
-     * Change the link to path relative to the notebook directory
-     * @param link
-     * @returns
+     * Resolve a bare file link (no fragment) to a notebook-relative
+     * path.  Delegates to the public resolveWikilink so the
+     * transformer can use the same logic.
      */
     const resolveLink = (link: string) => {
-      // If the link has no file extension, apply the configured
-      // wikilink default (`.md` by default, but configurable so a
-      // notebook using `.markdown` or another extension keeps its
-      // own convention).  Don't blindly tack `.md` onto links that
-      // already have ANY extension — that's how `note.markdown` or
-      // `image.jpg` used to become `note.markdown.md` / `image.jpg.md`.
-      if (!path.extname(link)) {
-        link = link + this.config.wikiLinkTargetFileExtension;
-      }
-      if (link.startsWith('/')) {
-        return path.relative(
-          this.notebookPath.fsPath,
-          path.join(this.notebookPath.fsPath, '.' + link),
-        );
-      } else {
-        return path.relative(
-          this.notebookPath.fsPath,
-          path.join(
-            path.dirname(path.join(this.notebookPath.fsPath, note.filePath)),
-            link,
-          ),
-        );
-      }
+      return this.resolveWikilink(link, note.filePath);
     };
 
     const addFileProtocol = (link: string) => {
@@ -1488,5 +1466,71 @@ export class Notebook {
     }
 
     return { link, text, hash, blockRef };
+  }
+
+  /**
+   * Resolve a wiki link file path to a notebook-root-relative path.
+   * Used by both index-time mention tracking and render-time embed
+   * resolution so both paths agree on link resolution.
+   *
+   * @param link — the file portion of the link (after
+   *   processWikilink, without fragment/hash/block-id)
+   * @param currentNoteFilePath — the notebook-relative path of the
+   *   note containing this link
+   * @returns notebook-root-relative file path
+   */
+  public resolveWikilink(link: string, currentNoteFilePath: string): string {
+    if (!path.extname(link)) {
+      link = link + this.config.wikiLinkTargetFileExtension;
+    }
+    if (link.startsWith('/')) {
+      return path.relative(
+        this.notebookPath.fsPath,
+        path.join(this.notebookPath.fsPath, '.' + link),
+      );
+    }
+
+    const mode = this.config.wikiLinkResolution;
+
+    if (mode === 'absolute') {
+      return path.relative(
+        this.notebookPath.fsPath,
+        path.join(this.notebookPath.fsPath, link),
+      );
+    }
+
+    if (mode === 'shortest' && !link.includes('/')) {
+      const basename = path.basename(link);
+      const candidates = Object.keys(this.notes).filter(
+        (notePath) => path.basename(notePath) === basename,
+      );
+      if (candidates.length === 1) {
+        return candidates[0];
+      }
+      if (candidates.length > 1) {
+        candidates.sort(
+          (a, b) =>
+            a.split(path.sep).length - b.split(path.sep).length ||
+            a.localeCompare(b),
+        );
+        const best = candidates[0];
+        const bestDepth = best.split(path.sep).length;
+        const shortest = candidates.filter(
+          (c) => c.split(path.sep).length === bestDepth,
+        );
+        const noteDir = path.dirname(currentNoteFilePath) + path.sep;
+        const inDir = shortest.find((c) => c.startsWith(noteDir));
+        return inDir || shortest[0];
+      }
+    }
+
+    // Relative to current note's directory (default).
+    return path.relative(
+      this.notebookPath.fsPath,
+      path.join(
+        path.dirname(path.join(this.notebookPath.fsPath, currentNoteFilePath)),
+        link,
+      ),
+    );
   }
 }

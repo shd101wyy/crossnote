@@ -751,7 +751,23 @@ export async function transformMarkdown(
         } else if (filePath.startsWith('/')) {
           absoluteFilePath = path.resolve(projectDirectoryPath, '.' + filePath);
         } else {
-          absoluteFilePath = path.resolve(fileDirectoryPath, filePath);
+          // Use the notebook's wikilink resolution so shortest-path
+          // and absolute modes are honoured consistently with index-time
+          // resolution.  Build a notebook-relative path from the
+          // current file's directory so resolveWikilink can use it for
+          // the shortest-mode same-directory tiebreaker.
+          const currentRelativeDir = path.relative(
+            projectDirectoryPath,
+            fileDirectoryPath,
+          );
+          const currentRelativePath = currentRelativeDir
+            ? currentRelativeDir + '/_.md'
+            : '_.md';
+          const resolved = notebook.resolveWikilink(
+            filePath,
+            currentRelativePath,
+          );
+          absoluteFilePath = path.resolve(projectDirectoryPath, resolved);
         }
         let fileHash = '';
         const hashIndex = absoluteFilePath.lastIndexOf('#');
