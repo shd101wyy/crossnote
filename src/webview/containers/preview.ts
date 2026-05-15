@@ -417,7 +417,6 @@ const PreviewContainer = createContainer(() => {
         }
 
         window['MathJax'].typesetClear(); // Don't pass element here!!!
-        window['MathJax'].startup.document.state(0);
         window['MathJax'].texReset();
         window['MathJax']
           .typesetPromise([hiddenPreviewElement.current])

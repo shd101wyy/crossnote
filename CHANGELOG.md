@@ -4,6 +4,19 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Breaking changes
+
+- Rename `mathjaxV3ScriptSrc` to `mathjaxScriptSrc`. The default MathJax script source now loads MathJax 4 (`https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js`) instead of MathJax 3. Users who have a custom `mathjaxV3ScriptSrc` in their `.crossnote/config.js` must rename the key. The MathJax v4 configuration API is backward-compatible with v3 configurations.
+
+### New features
+
+- **MathJax v4 support** — Upgrade the default MathJax CDN URL from `mathjax@3` to `mathjax@4`. The script loading attribute is changed from `async` to `defer` (per MathJax v4 recommendation). The `MathJax.startup.document.state(0)` call is removed from the client-side typesetting pipeline — `MathJax.typesetPromise()` already resets state internally. Fixes [vscode-mpe#2298](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2298).
+- **Block-level `$$` math parsing** — Add a `math_block` block rule (before markdown-it's `lheading` Setext parser) to prevent multi-line `$$…$$` blocks from being split by Setext heading detection. Previously, a `$$` block containing `=` on its own line (e.g. matrix multiplication `\end{pmatrix} = \begin{pmatrix}`) would be split into an `<h1>` heading and a dangling paragraph. The new block rule consumes the full `$$…$$` block before the Setext or paragraph parsers see it. Works for both KaTeX and MathJax renderers, and respects user-configured `mathBlockDelimiters`.
+
+### Bug fixes
+
+- Fix multi-line `$$` math blocks (matrices, aligned equations, etc.) being split by markdown-it's Setext heading parser when the block contains `=` on its own line.
+
 ## [0.9.24] - 2026-05-05
 
 ### Bug fixes

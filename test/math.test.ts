@@ -41,6 +41,29 @@ describe('Math rendering', () => {
     expect(html).toContain('katex-display');
   });
 
+  it('renders multi-line `$$` block with `=` on its own line via block rule (KaTeX)', () => {
+    // The block-level `math_block` rule should also work when KaTeX
+    // is the renderer — it must prevent Setext heading splitting
+    // and let KaTeX render the math.
+    const md = [
+      '$$',
+      '\\begin{pmatrix}',
+      'a & b \\\\',
+      'c & d',
+      '\\end{pmatrix}',
+      '=',
+      '\\begin{pmatrix}',
+      'e & f \\\\',
+      'g & h',
+      '\\end{pmatrix}',
+      '$$',
+    ].join('\n');
+    const html = notebook.renderMarkdown(md, { isForPreview: true });
+    expect(html).toContain('class="katex-display"');
+    expect(html).not.toContain('pmatrix="true"');
+    expect(html).not.toContain('<h1');
+  });
+
   // --- Regression: vscode-mpe#2280 ---
 
   it('renders `$x$` inside an HTML <table> block (vscode-mpe#2280)', () => {
@@ -216,6 +239,63 @@ describe('Math rendering with MathJax', () => {
       /<td><span class="mathjax-exps">\$a\^2\+b\^2=c\^2\$<\/span><\/td>/,
     );
     expect(html).toContain('<table>');
+  });
+
+  it('renders multi-line `$$` block with `=` on its own line (matrix with Setext-safe block rule)', () => {
+    // The block-level `math_block` rule (inserted before
+    // markdown-it's `lheading` Setext parser) must prevent the `=`
+    // from splitting the `$$…$$` block into an `<h1>` heading +
+    // dangling paragraph.
+    const md = [
+      '$$',
+      '\\begin{pmatrix}',
+      'a & b \\\\',
+      'c & d',
+      '\\end{pmatrix}',
+      '=',
+      '\\begin{pmatrix}',
+      'e & f \\\\',
+      'g & h',
+      '\\end{pmatrix}',
+      '$$',
+    ].join('\n');
+    const html = notebook.renderMarkdown(md, { isForPreview: true });
+    // Must be a single mathjax-exps div, not split by Setext
+    // heading parsing.
+    expect(html).toMatch(/<div class="mathjax-exps">/);
+    expect(html).not.toContain('pmatrix="true"');
+    // The content — including `=` — is preserved inside the
+    // placeholder.
+    expect(html).toMatch(
+      /\\begin\{pmatrix\}.*\\end\{pmatrix\} = \\begin\{pmatrix\}/s,
+    );
+  });
+
+  it('renders multi-line `$$` block without `=` (no regression)', () => {
+    // A plain multiline `$$…$$` should still produce a single
+    // mathjax-exps div.  The block rule handles this as a normal
+    // path.
+    const md = [
+      '$$',
+      '\\int_{-\\infty}^{\\infty}',
+      'e^{-x^2} \\, dx = \\sqrt{\\pi}',
+      '$$',
+    ].join('\n');
+    const html = notebook.renderMarkdown(md, { isForPreview: true });
+    expect(html).toMatch(/<div class="mathjax-exps">/);
+    expect(html).not.toContain('<h1');
+    expect(html).toContain('\\int');
+  });
+
+  it('preserves inline `$…$` when a `$$` block starts on the next line', () => {
+    // Inline math must still work even when a block-math delimiter
+    // appears on a separate line.  The block rule consumes `$$`
+    // starting a line; the inline rule handles `$…$` within a
+    // paragraph.
+    const md = ['Some text $x^2$ here.', '', '$$', 'E = mc^2', '$$'].join('\n');
+    const html = notebook.renderMarkdown(md, { isForPreview: true });
+    expect(html).toContain('<span class="mathjax-exps">');
+    expect(html).toContain('<div class="mathjax-exps">');
   });
 });
 
