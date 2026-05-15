@@ -29,6 +29,7 @@
 
 import MarkdownIt from 'markdown-it';
 import { renderCodeBlockToken } from './code-fences';
+import { parseBlockInfo } from '../lib/block-info/parse-block-info';
 
 /**
  * Info strings that should be treated as code/diagram fences instead of
@@ -52,110 +53,6 @@ export const COLON_FENCE_CODE_LANGUAGES = new Set([
   'd2',
   'tikz',
 ]);
-
-/**
- * Extract the first whitespace-delimited word from the info string.  The
- * info string may have additional attributes (e.g. `mermaid {theme=dark}`)
- * that we do not want to feed into the language lookup.
- */
-function infoLanguage(info: string): string {
-  // Pandoc-style fenced-div attributes: `{.class1 .class2 #id key=value}`
-  // Extract the first class name as the language.
-  const pandocMatch = info.match(/^\s*\{([^}]*)\}\s*$/);
-  if (pandocMatch) {
-    const inner = pandocMatch[1].trim();
-    const firstClassMatch = inner.match(/\.([^\s.]+)/);
-    const firstNonDot = inner.match(/^\s*([^\s.{#]+)/);
-    return (firstClassMatch?.[1] ?? firstNonDot?.[1] ?? '').toLowerCase();
-  }
-  const match = info.match(/^\s*([^\s{]+)/);
-  return match ? match[1].toLowerCase() : '';
-}
-
-/**
- * Parse Pandoc-style fenced-div attributes from an info string.
- * Supports both plain `name` and `{.class1 .class2 #id key=value}` formats.
- * Returns an object with `classes`, `id`, and `attrs`.
- */
-export function parsePandocAttributes(info: string): {
-  classes: string[];
-  id: string;
-  attrs: Record<string, string>;
-} {
-  const classes: string[] = [];
-  let id = '';
-  const attrs: Record<string, string> = {};
-
-  const trimmed = info.trim();
-  // Plain name before `{...}` (e.g. `note {.warning}` or just `note`)
-  const braceIdx = trimmed.indexOf('{');
-  const plainName = (
-    braceIdx >= 0 ? trimmed.slice(0, braceIdx) : trimmed
-  ).trim();
-  if (plainName) {
-    classes.push(plainName.toLowerCase());
-  }
-
-  // Parse `{...}` block
-  const braceMatch = trimmed.match(/\{([^}]*)\}/);
-  if (braceMatch) {
-    const inner = braceMatch[1].trim();
-    // Process tokens: .class, #id, key=value, key="value"
-    const tokens =
-      inner.match(/\.[^\s.]+|#\S+|"[^"]*"|'[^']*'|[^\s"']+/g) ?? [];
-    for (const tok of tokens) {
-      if (tok.startsWith('.') && tok.length > 1) {
-        classes.push(tok.slice(1));
-      } else if (tok.startsWith('#')) {
-        id = tok.slice(1);
-      } else if (tok.includes('=')) {
-        const eqIdx = tok.indexOf('=');
-        const key = tok.slice(0, eqIdx);
-        let val = tok.slice(eqIdx + 1);
-        if (
-          (val.startsWith('"') && val.endsWith('"')) ||
-          (val.startsWith("'") && val.endsWith("'"))
-        ) {
-          val = val.slice(1, -1);
-        }
-        attrs[key] = val;
-      }
-    }
-  }
-
-  return { classes, id, attrs };
-}
-
-export default (md: MarkdownIt) => {
-  // Block rule: parse :::type ... ::: fences
-  md.block.ruler.before('fence', 'colon_fence', colonFenceRule, {
-    alt: ['paragraph', 'reference', 'blockquote', 'list'],
-  });
-
-  // Code-block path: reuse the same renderer as backtick fences so the
-  // existing render-enhancer pipeline picks the block up.
-  md.renderer.rules['colon_fence'] = renderCodeBlockToken;
-
-  // Fenced-div path: emit <div class="…" id="…" …> … </div>.
-  // Supports both plain `:::name` (class="name") and Pandoc-style
-  // `::: {.class1 .class2 #id key=value}` attribute syntax.
-  md.renderer.rules['colon_div_open'] = (tokens, idx) => {
-    const attrs = parsePandocAttributes(tokens[idx].info);
-    const classStr = attrs.classes.length
-      ? ` class="${md.utils.escapeHtml(attrs.classes.join(' '))}"`
-      : '';
-    const idStr = attrs.id ? ` id="${md.utils.escapeHtml(attrs.id)}"` : '';
-    const sourceLine = tokens[idx].attrGet('data-source-line');
-    const sourceLineAttr = sourceLine
-      ? ` data-source-line="${sourceLine}"`
-      : '';
-    const customAttrs = Object.entries(attrs.attrs)
-      .map(([k, v]) => ` ${md.utils.escapeHtml(k)}="${md.utils.escapeHtml(v)}"`)
-      .join('');
-    return `<div${classStr}${idStr}${sourceLineAttr}${customAttrs}>\n`;
-  };
-  md.renderer.rules['colon_div_close'] = () => `</div>\n`;
-};
 
 const COLON = 0x3a; // ':'
 
@@ -235,7 +132,7 @@ function colonFenceRule(
     break;
   }
 
-  const language = infoLanguage(info);
+  const language = parseBlockInfo(info).language;
   const isCodeFence = COLON_FENCE_CODE_LANGUAGES.has(language);
 
   if (isCodeFence) {
@@ -299,3 +196,44 @@ function parseColonFenceAttributes(info: string): { dataSourceLine?: string } {
   const match = info.match(/data-source-line=["']?(\d+)["']?/);
   return match ? { dataSourceLine: match[1] } : {};
 }
+
+export default (md: MarkdownIt) => {
+  // Block rule: parse :::type ... ::: fences
+  md.block.ruler.before('fence', 'colon_fence', colonFenceRule, {
+    alt: ['paragraph', 'reference', 'blockquote', 'list'],
+  });
+
+  // Code-block path: reuse the same renderer as backtick fences so the
+  // existing render-enhancer pipeline picks the block up.
+  md.renderer.rules['colon_fence'] = renderCodeBlockToken;
+
+  // Fenced-div path: emit <div class="…" id="…" …> … </div>.
+  // Supports both plain `:::name` (class="name") and Pandoc-style
+  // `::: {.class1 .class2 #id key=value}` attribute syntax.
+  md.renderer.rules['colon_div_open'] = (tokens, idx) => {
+    const blockInfo = parseBlockInfo(tokens[idx].info);
+    const classes = (blockInfo.attributes['class'] ?? blockInfo.language)
+      .toString()
+      .split(/\s+/)
+      .filter(Boolean);
+    const classStr = classes.length
+      ? ` class="${md.utils.escapeHtml(classes.join(' '))}"`
+      : '';
+    const idStr = blockInfo.attributes['id']
+      ? ` id="${md.utils.escapeHtml(blockInfo.attributes['id'].toString())}"`
+      : '';
+    const sourceLine = tokens[idx].attrGet('data-source-line');
+    const sourceLineAttr = sourceLine
+      ? ` data-source-line="${sourceLine}"`
+      : '';
+    const customAttrs = Object.entries(blockInfo.attributes)
+      .filter(([k]) => k !== 'class' && k !== 'id')
+      .map(
+        ([k, v]) =>
+          ` ${md.utils.escapeHtml(k)}="${md.utils.escapeHtml(v.toString())}"`,
+      )
+      .join('');
+    return `<div${classStr}${idStr}${sourceLineAttr}${customAttrs}>\n`;
+  };
+  md.renderer.rules['colon_div_close'] = () => `</div>\n`;
+};

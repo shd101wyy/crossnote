@@ -14,10 +14,8 @@ import computeChecksum from '../lib/compute-checksum';
 import { Notebook } from '../notebook';
 import { MarkdownParser } from '../notebook/types';
 import * as PDF from '../tools/pdf';
-import {
-  COLON_FENCE_CODE_LANGUAGES,
-  parsePandocAttributes,
-} from '../custom-markdown-it-features/colon-fenced-code-blocks';
+import { COLON_FENCE_CODE_LANGUAGES } from '../custom-markdown-it-features/colon-fenced-code-blocks';
+import { parseBlockInfo } from '../lib/block-info/parse-block-info';
 import { CustomSubjects } from './custom-subjects';
 import HeadingIdGenerator from './heading-id-generator';
 import { HeadingData } from './toc';
@@ -342,12 +340,21 @@ export async function transformMarkdown(
           if (markdownParser !== 'markdown-it' && !isCodeLang) {
             // Pandoc / markdown_yo fenced-div path — rewrite as HTML so the
             // non-markdown-it parsers don't print `:::name` literally.
-            const attrs = parsePandocAttributes(afterColons);
-            const classStr = attrs.classes.length
-              ? ` class="${attrs.classes.join(' ')}"`
+            const blockInfo = parseBlockInfo(afterColons);
+            const classes = (
+              blockInfo.attributes['class'] ?? blockInfo.language
+            )
+              .toString()
+              .split(/\s+/)
+              .filter(Boolean);
+            const classStr = classes.length
+              ? ` class="${classes.join(' ')}"`
               : '';
-            const idStr = attrs.id ? ` id="${attrs.id}"` : '';
-            const customAttrs = Object.entries(attrs.attrs)
+            const idStr = blockInfo.attributes['id']
+              ? ` id="${blockInfo.attributes['id']}"`
+              : '';
+            const customAttrs = Object.entries(blockInfo.attributes)
+              .filter(([k]) => k !== 'class' && k !== 'id')
               .map(([k, v]) => ` ${k}="${v}"`)
               .join('');
             const sourceLineAttr = canCreateAnchor()
