@@ -147,3 +147,69 @@ describe('::: fenced div (markdown_yo transformer rewrite)', () => {
     expect(html).not.toContain(':::vertical');
   });
 });
+
+describe('::: fenced div with Pandoc attributes (markdown-it)', () => {
+  let notebook: Notebook;
+  beforeAll(async () => {
+    notebook = await makeNotebook('markdown-it');
+  });
+
+  it('renders ::: {.test} as <div class="test">', async () => {
+    const html = await renderWith(
+      notebook,
+      '::: {.test}\nThis is a test.\n:::',
+    );
+    expect(html).toMatch(/<div class="test"/);
+    expect(html).toContain('This is a test.');
+  });
+
+  it('renders ::: {.test .vertical} as <div class="test vertical">', async () => {
+    const html = await renderWith(
+      notebook,
+      '::: {.test .vertical}\nThis is vertical text.\n:::',
+    );
+    expect(html).toMatch(/<div class="test vertical"/);
+    expect(html).toContain('This is vertical text.');
+  });
+
+  it('renders ::: {.test #myid} as <div class="test" id="myid">', async () => {
+    const html = await renderWith(notebook, '::: {.test #myid}\nContent.\n:::');
+    expect(html).toMatch(/<div class="test" id="myid"/);
+  });
+
+  it('renders ::: note {.warning} as <div class="note warning">', async () => {
+    const html = await renderWith(
+      notebook,
+      '::: note {.warning}\nHeads up.\n:::',
+    );
+    expect(html).toMatch(/<div class="note warning"/);
+  });
+});
+
+describe('::: fenced div with Pandoc attributes (pandoc)', () => {
+  let notebook: Notebook;
+  beforeAll(async () => {
+    notebook = await makeNotebook('pandoc');
+  });
+
+  it('rewrites ::: {.test} to <div class="test">', async () => {
+    const html = await renderWith(
+      notebook,
+      '::: {.test}\nThis is a test.\n:::',
+      'colon-fence-pandoc-attrs.md',
+    );
+    expect(html).toMatch(/<div class="test"/);
+    expect(html).not.toContain(':::test');
+    expect(html).not.toContain(':::{');
+  });
+
+  it('rewrites ::: {.test .vertical} to <div class="test vertical">', async () => {
+    const html = await renderWith(
+      notebook,
+      '::: {.test .vertical}\nVertical content.\n:::',
+      'colon-fence-pandoc-attrs2.md',
+    );
+    expect(html).toMatch(/<div class="test vertical"/);
+    expect(html).not.toContain(':::test');
+  });
+});

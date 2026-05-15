@@ -18,6 +18,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 - Fix multi-line `$$` math blocks (matrices, aligned equations, etc.) being split by markdown-it's Setext heading parser when the block contains `=` on its own line.
 - Fix `#tag` CSS pill styling overriding Prism syntax highlighting for XML/HTML tags in code blocks. The `.markdown-preview span.tag` selector now uses `span.tag:not(.token)` so it no longer matches `<span class="token tag">` elements inside `<code>` blocks. Fixes [vscode-mpe#2295](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2295).
+- Fix Pandoc-style fenced div attributes (`::: {.class1 .class2 #id}`) not being parsed. The colon fence parser and transformer now properly extract classes, ids, and key=value attributes from `{...}` blocks so `::: {.test .vertical}` renders as `<div class="test vertical">` instead of raw `:::`. Fixes [vscode-mpe#2275](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2275).
 
 ## [0.9.24] - 2026-05-05
 

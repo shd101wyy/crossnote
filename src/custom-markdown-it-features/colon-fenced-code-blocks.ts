@@ -59,8 +59,71 @@ export const COLON_FENCE_CODE_LANGUAGES = new Set([
  * that we do not want to feed into the language lookup.
  */
 function infoLanguage(info: string): string {
+  // Pandoc-style fenced-div attributes: `{.class1 .class2 #id key=value}`
+  // Extract the first class name as the language.
+  const pandocMatch = info.match(/^\s*\{([^}]*)\}\s*$/);
+  if (pandocMatch) {
+    const inner = pandocMatch[1].trim();
+    const firstClassMatch = inner.match(/\.([^\s.]+)/);
+    const firstNonDot = inner.match(/^\s*([^\s.{#]+)/);
+    return (firstClassMatch?.[1] ?? firstNonDot?.[1] ?? '').toLowerCase();
+  }
   const match = info.match(/^\s*([^\s{]+)/);
   return match ? match[1].toLowerCase() : '';
+}
+
+/**
+ * Parse Pandoc-style fenced-div attributes from an info string.
+ * Supports both plain `name` and `{.class1 .class2 #id key=value}` formats.
+ * Returns an object with `classes`, `id`, and `attrs`.
+ */
+export function parsePandocAttributes(info: string): {
+  classes: string[];
+  id: string;
+  attrs: Record<string, string>;
+} {
+  const classes: string[] = [];
+  let id = '';
+  const attrs: Record<string, string> = {};
+
+  const trimmed = info.trim();
+  // Plain name before `{...}` (e.g. `note {.warning}` or just `note`)
+  const braceIdx = trimmed.indexOf('{');
+  const plainName = (
+    braceIdx >= 0 ? trimmed.slice(0, braceIdx) : trimmed
+  ).trim();
+  if (plainName) {
+    classes.push(plainName.toLowerCase());
+  }
+
+  // Parse `{...}` block
+  const braceMatch = trimmed.match(/\{([^}]*)\}/);
+  if (braceMatch) {
+    const inner = braceMatch[1].trim();
+    // Process tokens: .class, #id, key=value, key="value"
+    const tokens =
+      inner.match(/\.[^\s.]+|#\S+|"[^"]*"|'[^']*'|[^\s"']+/g) ?? [];
+    for (const tok of tokens) {
+      if (tok.startsWith('.') && tok.length > 1) {
+        classes.push(tok.slice(1));
+      } else if (tok.startsWith('#')) {
+        id = tok.slice(1);
+      } else if (tok.includes('=')) {
+        const eqIdx = tok.indexOf('=');
+        const key = tok.slice(0, eqIdx);
+        let val = tok.slice(eqIdx + 1);
+        if (
+          (val.startsWith('"') && val.endsWith('"')) ||
+          (val.startsWith("'") && val.endsWith("'"))
+        ) {
+          val = val.slice(1, -1);
+        }
+        attrs[key] = val;
+      }
+    }
+  }
+
+  return { classes, id, attrs };
 }
 
 export default (md: MarkdownIt) => {
@@ -73,17 +136,23 @@ export default (md: MarkdownIt) => {
   // existing render-enhancer pipeline picks the block up.
   md.renderer.rules['colon_fence'] = renderCodeBlockToken;
 
-  // Fenced-div path: emit <div class="<lang>"> ... </div>.  The class
-  // name is the first whitespace-delimited word of the info string; any
-  // trailing `{data-source-line="…"}` injected by the transformer is
-  // pulled out as a real HTML attribute below.
+  // Fenced-div path: emit <div class="…" id="…" …> … </div>.
+  // Supports both plain `:::name` (class="name") and Pandoc-style
+  // `::: {.class1 .class2 #id key=value}` attribute syntax.
   md.renderer.rules['colon_div_open'] = (tokens, idx) => {
-    const cls = infoLanguage(tokens[idx].info);
+    const attrs = parsePandocAttributes(tokens[idx].info);
+    const classStr = attrs.classes.length
+      ? ` class="${md.utils.escapeHtml(attrs.classes.join(' '))}"`
+      : '';
+    const idStr = attrs.id ? ` id="${md.utils.escapeHtml(attrs.id)}"` : '';
     const sourceLine = tokens[idx].attrGet('data-source-line');
     const sourceLineAttr = sourceLine
       ? ` data-source-line="${sourceLine}"`
       : '';
-    return `<div class="${md.utils.escapeHtml(cls)}"${sourceLineAttr}>\n`;
+    const customAttrs = Object.entries(attrs.attrs)
+      .map(([k, v]) => ` ${md.utils.escapeHtml(k)}="${md.utils.escapeHtml(v)}"`)
+      .join('');
+    return `<div${classStr}${idStr}${sourceLineAttr}${customAttrs}>\n`;
   };
   md.renderer.rules['colon_div_close'] = () => `</div>\n`;
 };
