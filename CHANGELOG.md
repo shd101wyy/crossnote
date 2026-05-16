@@ -20,6 +20,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - Fix `#tag` CSS pill styling overriding Prism syntax highlighting for XML/HTML tags in code blocks. The `.markdown-preview span.tag` selector now uses `span.tag:not(.token)` so it no longer matches `<span class="token tag">` elements inside `<code>` blocks. Fixes [vscode-mpe#2295](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2295).
 - Fix Pandoc-style fenced div attributes (`::: {.class1 .class2 #id}`) not being parsed. The colon fence parser and transformer now properly extract classes, ids, and key=value attributes from `{...}` blocks so `::: {.test .vertical}` renders as `<div class="test vertical">` instead of raw `:::`. Fixes [vscode-mpe#2275](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2275).
 
+### Performance
+
+- **Parallel mermaid rendering with client-side cache** — Fix the `forEach(async)` fire-and-forget bug that caused mermaid rendering promises to be silently lost. Parse all mermaid diagrams in parallel (`Promise.all`) instead of sequential `for` loop. Add a client-side SVG cache keyed by source code so unchanged diagrams are not re-parsed or re-rendered on preview refresh. Add a 30-second per-diagram timeout to prevent a single malformed or extremely large diagram from hanging the entire preview.
+
 ## [0.9.24] - 2026-05-05
 
 ### Bug fixes

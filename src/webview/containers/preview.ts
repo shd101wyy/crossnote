@@ -95,6 +95,8 @@ const PreviewContainer = createContainer(() => {
   const previewScrollDelay = useRef<number>(0);
   const scrollMap = useRef<number[] | null>(null);
   const wavedromCache = useRef<Record<string, string>>({});
+  const mermaidCache = useRef<Record<string, string>>({});
+  const MERMAID_TIMEOUT_MS = 30_000;
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
   // Set to true during each animation tick scroll so scrollPreview can skip it.
   // requestAnimationFrame fires after scroll events, so resetting there works.
@@ -537,46 +539,79 @@ const PreviewContainer = createContainer(() => {
       return;
     }
     const mermaid = window['mermaid']; // window.mermaid doesn't work, has to be written as window['mermaid']
-    const mermaidGraphs =
-      previewElement.current.querySelectorAll('div.mermaid');
+    const mermaidGraphs = Array.from(
+      previewElement.current.querySelectorAll('div.mermaid'),
+    );
 
-    const validMermaidGraphs: HTMLElement[] = [];
-    for (let i = 0; i < mermaidGraphs.length; i++) {
-      const mermaidGraph = mermaidGraphs[i] as HTMLElement;
-      try {
-        await mermaid.parse((mermaidGraph.textContent ?? '').trim());
-        validMermaidGraphs.push(mermaidGraph);
-      } catch (error) {
-        mermaidGraph.innerHTML = `<pre class="language-text"><code>${escape(
-          String(error),
-        )}</code></pre>`;
-      }
+    if (!mermaidGraphs.length) {
+      return;
     }
 
-    if (!validMermaidGraphs.length) {
-      return;
-    } else {
-      validMermaidGraphs.forEach(async (mermaidGraph, offset) => {
-        const svgId = 'svg-mermaid-' + Date.now() + '-' + offset;
+    // Phase 1: parse all diagrams in parallel, collecting valid nodes.
+    const parseResults = await Promise.all(
+      mermaidGraphs.map(async (mermaidGraph) => {
         const code = (mermaidGraph.textContent ?? '').trim();
+        if (!code) {
+          return null;
+        }
+        // Cache hit: reuse previously rendered SVG (skip parse + render).
+        if (code in mermaidCache.current) {
+          mermaidGraph.innerHTML = mermaidCache.current[code];
+          return null;
+        }
         try {
-          const { svg } = await mermaid.render(svgId, code);
-          // Mermaid output is from a trusted library, not user HTML.
-          // DOMPurify strips foreignObject (SVG disallowed list) which
-          // mermaid uses for text labels, so we skip sanitization here.
-          mermaidGraph.innerHTML = svg;
+          await mermaid.parse(code);
+          return { node: mermaidGraph, code };
+        } catch (error) {
+          mermaidGraph.innerHTML = `<pre class="language-text"><code>${escape(
+            String(error),
+          )}</code></pre>`;
+          return null;
+        }
+      }),
+    );
+
+    const validNodes = parseResults.filter(
+      (r): r is { node: HTMLElement; code: string } => r !== null,
+    );
+    if (!validNodes.length) {
+      return;
+    }
+
+    // Phase 2: render all valid diagrams in parallel with timeouts.
+    const newCache: Record<string, string> = {};
+    await Promise.all(
+      validNodes.map(async ({ node, code }, offset) => {
+        const svgId = 'mermaid-' + Date.now() + '-' + offset;
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Mermaid rendering timed out')),
+            MERMAID_TIMEOUT_MS,
+          ),
+        );
+        try {
+          const { svg } = await Promise.race([
+            mermaid.render(svgId, code),
+            timeout,
+          ]);
+          node.innerHTML = svg;
+          newCache[code] = svg;
         } catch (error) {
           const noiseElement = document.getElementById('d' + svgId);
           if (noiseElement) {
             noiseElement.style.display = 'none';
           }
-          mermaidGraph.innerHTML = `<pre class="language-text"><code>${escape(
+          node.innerHTML = `<pre class="language-text"><code>${escape(
             String(error),
           )}</code></pre>`;
         }
-      });
-      return;
-    }
+      }),
+    );
+
+    // Merge newly rendered entries into the cache without evicting
+    // entries for diagrams that may still be in the DOM from a
+    // previous refresh.
+    Object.assign(mermaidCache.current, newCache);
   }, []);
 
   const runCodeChunk = useCallback(
