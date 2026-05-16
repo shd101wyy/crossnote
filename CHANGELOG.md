@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.25] - 2026-05-16
+
 ### Breaking changes
 
 - Rename `mathjaxV3ScriptSrc` to `mathjaxScriptSrc`. The default MathJax script source now loads MathJax 4 (`https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js`) instead of MathJax 3. Users who have a custom `mathjaxV3ScriptSrc` in their `.crossnote/config.js` must rename the key. The MathJax v4 configuration API is backward-compatible with v3 configurations.
@@ -24,6 +26,11 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 - **Parallel mermaid rendering with client-side cache** — Fix the `forEach(async)` fire-and-forget bug that caused mermaid rendering promises to be silently lost. Parse all mermaid diagrams in parallel (`Promise.all`) instead of sequential `for` loop. Add a client-side SVG cache keyed by source code so unchanged diagrams are not re-parsed or re-rendered on preview refresh. Add a 30-second per-diagram timeout to prevent a single malformed or extremely large diagram from hanging the entire preview.
 - Fix PlantUML server rendering returning raw binary image data in the output when the server responds with `Content-Type: image/*` instead of SVG text. The renderer now detects image responses and converts them to base64 `<img>` data URIs instead of treating binary data as text. Fixes [#416](https://github.com/shd101wyy/crossnote/issues/416).
+
+### Updates
+
+- Update `mermaid` version to the latest `11.15.0`.
+- Update `katex` version to the latest `0.16.47`.
 
 ## [0.9.24] - 2026-05-05
 
