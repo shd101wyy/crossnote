@@ -1,11 +1,11 @@
 // tslint:disable no-var-requires member-ordering
 
+import type { Cheerio, CheerioAPI } from 'cheerio';
 import * as cheerio from 'cheerio';
-import type { CheerioAPI, Cheerio } from 'cheerio';
-import type { Element, AnyNode } from 'domhandler';
 import { execFile } from 'child_process';
 import { copy } from 'copy-anything';
 import CryptoJS from 'crypto-js';
+import type { AnyNode, Element } from 'domhandler';
 import * as fs from 'fs';
 import { escape } from 'html-escaper';
 import * as path from 'path';
@@ -1030,7 +1030,7 @@ window["initRevealPresentation"] = async function() {
           ),
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.14.0/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.15.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">
