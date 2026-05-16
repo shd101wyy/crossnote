@@ -1057,6 +1057,13 @@ export class Notebook {
         }
       }
 
+      const pendingInc: {
+        notePath: string;
+        markdown: string;
+        mtime: number;
+        wasNew: boolean;
+      }[] = [];
+
       for (const fp of toProcess) {
         const result = await this.loadNoteFromDisk(fp);
         if (!result) continue;
@@ -1066,19 +1073,19 @@ export class Notebook {
         if (wasNew) {
           this.search.add(note.filePath, note.title, note.config.aliases);
         }
-        // Pass the freshly-loaded markdown straight through — saves a
-        // second disk read inside processNoteMentionsAndMentionedBy.
-        await this.processNoteMentionsAndMentionedBy(note.filePath, markdown);
-        // Stamp using the on-disk mtime captured during the walk so
-        // it matches what `_collectOnDiskMtimes` will see on the next
-        // call (both already floored).  Defensive lookup: if
-        // `loadNoteFromDisk` ever normalises filePath differently
-        // than `_collectOnDiskMtimes` (e.g. path-separator drift on
-        // Windows), the mtime won't be in the map — better to skip
-        // the stamp than poison `processedMtimes` with NaN/undefined.
         const stampedMtime = onDisk.get(note.filePath);
-        if (stampedMtime !== undefined) {
-          this.processedMtimes.set(note.filePath, stampedMtime);
+        pendingInc.push({
+          notePath: note.filePath,
+          markdown,
+          mtime: stampedMtime ?? Math.floor(Date.now() / 1000),
+          wasNew,
+        });
+      }
+
+      for (const { notePath, markdown, mtime } of pendingInc) {
+        await this.processNoteMentionsAndMentionedBy(notePath, markdown);
+        if (mtime !== undefined) {
+          this.processedMtimes.set(notePath, mtime);
         }
       }
 
@@ -1240,30 +1247,34 @@ export class Notebook {
     gitignoreStack = [],
     refreshRelations = true,
   }: RefreshNotesInternalArgs): Promise<void> {
+    const pending: { notePath: string; markdown: string; mtime: number }[] = [];
+
     await this._walkNotebookDir(
       dir,
       includeSubdirectories,
       gitignoreStack,
       async ({ relPath, stats }) => {
-        // `loadNoteFromDisk` applies the markdownFileExtensions /
-        // maxNoteFileSize gates; non-markdown and oversized files
-        // come back null and are skipped.  Body lives in the local
-        // `markdown` here, never enters `this.notes`.
         const result = await this.loadNoteFromDisk(relPath);
         if (!result) return;
         const { note, markdown } = result;
         this.notes[note.filePath] = note;
         this.search.add(note.filePath, note.title, note.config.aliases);
         if (refreshRelations) {
-          // Single pass — extract mentions / tags off the markdown we
-          // just read, before moving on to the next file.  Used to be
-          // a separate post-walk loop in `refreshNotes`; folding it
-          // here means the body never has to be re-fetched.
-          await this.processNoteMentionsAndMentionedBy(note.filePath, markdown);
-          this.processedMtimes.set(note.filePath, Math.floor(stats.mtimeMs));
+          pending.push({
+            notePath: note.filePath,
+            markdown,
+            mtime: Math.floor(stats.mtimeMs),
+          });
         }
       },
     );
+
+    // Second pass: process mentions/tags after all notes are loaded,
+    // so shortest-path wiki link resolution can see the full index.
+    for (const { notePath, markdown, mtime } of pending) {
+      await this.processNoteMentionsAndMentionedBy(notePath, markdown);
+      this.processedMtimes.set(notePath, mtime);
+    }
   }
 
   /*

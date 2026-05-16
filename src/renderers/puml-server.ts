@@ -1,6 +1,27 @@
 import fetch from 'cross-fetch';
 import plantumlEncoder from 'plantuml-encoder';
 
+function isImageResponse(res: Response): boolean {
+  const ct = res.headers.get('content-type') ?? '';
+  // SVG is served as image/svg+xml but the body is text that can be
+  // embedded inline — only treat truly binary image types (e.g. PNG,
+  // JPEG, GIF) as images that need base64 conversion.  (#416)
+  return ct.startsWith('image/') && !ct.includes('svg');
+}
+
+async function responseToSvg(res: Response): Promise<string> {
+  if (isImageResponse(res)) {
+    // The server returned binary image data (e.g. PNG) instead of SVG
+    // text.  Convert it to a base64 data URI and wrap in an <img> tag
+    // so the consumer can embed it inline.  (#416)
+    const contentType = res.headers.get('content-type') ?? 'image/png';
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const base64 = buffer.toString('base64');
+    return `<img src="data:${contentType};base64,${base64}" />`;
+  }
+  return res.text();
+}
+
 export default class PlantUMLServerTask {
   private serverURL: string;
 
@@ -14,18 +35,14 @@ export default class PlantUMLServerTask {
       // so we fallback to encode the content and send it as a GET request.
       const encoded = plantumlEncoder.encode(content);
       return fetch(`http://www.plantuml.com/plantuml/svg/${encoded}`).then(
-        (res) => res.text(),
+        responseToSvg,
       );
     } else {
-      // const contentStream = new Readable();
-      // contentStream.setEncoding('utf-8');
-      // contentStream.push(content);
-      // contentStream.push(null); // Mark end of stream
       return fetch(this.serverURL, {
         method: 'POST',
         body: content,
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-      }).then((res) => res.text());
+      }).then(responseToSvg);
     }
   }
 }

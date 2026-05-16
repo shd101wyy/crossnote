@@ -29,6 +29,7 @@
 
 import MarkdownIt from 'markdown-it';
 import { renderCodeBlockToken } from './code-fences';
+import { parseBlockInfo } from '../lib/block-info/parse-block-info';
 
 /**
  * Info strings that should be treated as code/diagram fences instead of
@@ -52,41 +53,6 @@ export const COLON_FENCE_CODE_LANGUAGES = new Set([
   'd2',
   'tikz',
 ]);
-
-/**
- * Extract the first whitespace-delimited word from the info string.  The
- * info string may have additional attributes (e.g. `mermaid {theme=dark}`)
- * that we do not want to feed into the language lookup.
- */
-function infoLanguage(info: string): string {
-  const match = info.match(/^\s*([^\s{]+)/);
-  return match ? match[1].toLowerCase() : '';
-}
-
-export default (md: MarkdownIt) => {
-  // Block rule: parse :::type ... ::: fences
-  md.block.ruler.before('fence', 'colon_fence', colonFenceRule, {
-    alt: ['paragraph', 'reference', 'blockquote', 'list'],
-  });
-
-  // Code-block path: reuse the same renderer as backtick fences so the
-  // existing render-enhancer pipeline picks the block up.
-  md.renderer.rules['colon_fence'] = renderCodeBlockToken;
-
-  // Fenced-div path: emit <div class="<lang>"> ... </div>.  The class
-  // name is the first whitespace-delimited word of the info string; any
-  // trailing `{data-source-line="…"}` injected by the transformer is
-  // pulled out as a real HTML attribute below.
-  md.renderer.rules['colon_div_open'] = (tokens, idx) => {
-    const cls = infoLanguage(tokens[idx].info);
-    const sourceLine = tokens[idx].attrGet('data-source-line');
-    const sourceLineAttr = sourceLine
-      ? ` data-source-line="${sourceLine}"`
-      : '';
-    return `<div class="${md.utils.escapeHtml(cls)}"${sourceLineAttr}>\n`;
-  };
-  md.renderer.rules['colon_div_close'] = () => `</div>\n`;
-};
 
 const COLON = 0x3a; // ':'
 
@@ -166,7 +132,7 @@ function colonFenceRule(
     break;
   }
 
-  const language = infoLanguage(info);
+  const language = parseBlockInfo(info).language;
   const isCodeFence = COLON_FENCE_CODE_LANGUAGES.has(language);
 
   if (isCodeFence) {
@@ -230,3 +196,44 @@ function parseColonFenceAttributes(info: string): { dataSourceLine?: string } {
   const match = info.match(/data-source-line=["']?(\d+)["']?/);
   return match ? { dataSourceLine: match[1] } : {};
 }
+
+export default (md: MarkdownIt) => {
+  // Block rule: parse :::type ... ::: fences
+  md.block.ruler.before('fence', 'colon_fence', colonFenceRule, {
+    alt: ['paragraph', 'reference', 'blockquote', 'list'],
+  });
+
+  // Code-block path: reuse the same renderer as backtick fences so the
+  // existing render-enhancer pipeline picks the block up.
+  md.renderer.rules['colon_fence'] = renderCodeBlockToken;
+
+  // Fenced-div path: emit <div class="…" id="…" …> … </div>.
+  // Supports both plain `:::name` (class="name") and Pandoc-style
+  // `::: {.class1 .class2 #id key=value}` attribute syntax.
+  md.renderer.rules['colon_div_open'] = (tokens, idx) => {
+    const blockInfo = parseBlockInfo(tokens[idx].info);
+    const classes = (blockInfo.attributes['class'] ?? blockInfo.language)
+      .toString()
+      .split(/\s+/)
+      .filter(Boolean);
+    const classStr = classes.length
+      ? ` class="${md.utils.escapeHtml(classes.join(' '))}"`
+      : '';
+    const idStr = blockInfo.attributes['id']
+      ? ` id="${md.utils.escapeHtml(blockInfo.attributes['id'].toString())}"`
+      : '';
+    const sourceLine = tokens[idx].attrGet('data-source-line');
+    const sourceLineAttr = sourceLine
+      ? ` data-source-line="${sourceLine}"`
+      : '';
+    const customAttrs = Object.entries(blockInfo.attributes)
+      .filter(([k]) => k !== 'class' && k !== 'id')
+      .map(
+        ([k, v]) =>
+          ` ${md.utils.escapeHtml(k)}="${md.utils.escapeHtml(v.toString())}"`,
+      )
+      .join('');
+    return `<div${classStr}${idStr}${sourceLineAttr}${customAttrs}>\n`;
+  };
+  md.renderer.rules['colon_div_close'] = () => `</div>\n`;
+};
