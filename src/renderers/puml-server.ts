@@ -3,7 +3,10 @@ import plantumlEncoder from 'plantuml-encoder';
 
 function isImageResponse(res: Response): boolean {
   const ct = res.headers.get('content-type') ?? '';
-  return ct.startsWith('image/');
+  // SVG is served as image/svg+xml but the body is text that can be
+  // embedded inline — only treat truly binary image types (e.g. PNG,
+  // JPEG, GIF) as images that need base64 conversion.  (#416)
+  return ct.startsWith('image/') && !ct.includes('svg');
 }
 
 async function responseToSvg(res: Response): Promise<string> {
