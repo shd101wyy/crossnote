@@ -23,6 +23,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 ### Performance
 
 - **Parallel mermaid rendering with client-side cache** — Fix the `forEach(async)` fire-and-forget bug that caused mermaid rendering promises to be silently lost. Parse all mermaid diagrams in parallel (`Promise.all`) instead of sequential `for` loop. Add a client-side SVG cache keyed by source code so unchanged diagrams are not re-parsed or re-rendered on preview refresh. Add a 30-second per-diagram timeout to prevent a single malformed or extremely large diagram from hanging the entire preview.
+- Fix PlantUML server rendering returning raw binary image data in the output when the server responds with `Content-Type: image/*` instead of SVG text. The renderer now detects image responses and converts them to base64 `<img>` data URIs instead of treating binary data as text. Fixes [#416](https://github.com/shd101wyy/crossnote/issues/416).
 
 ## [0.9.24] - 2026-05-05
 
