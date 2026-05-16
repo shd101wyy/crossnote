@@ -997,7 +997,7 @@ window["initRevealPresentation"] = async function() {
           ),
         )}">`;
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.45/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.47/dist/katex.min.css">`;
       }
     } else {
       mathStyle = '';
@@ -2018,7 +2018,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig['html'] &&
         (ebookConfig['html'] as Record<string, unknown>)['cdn']
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.45/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.47/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="${utility.toFileURL(
           path.resolve(

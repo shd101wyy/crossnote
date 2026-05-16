@@ -30,6 +30,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 ### Updates
 
 - Update `mermaid` version to the latest `11.15.0`.
+- Update `katex` version to the latest `0.16.47`.
 
 ## [0.9.24] - 2026-05-05
 
