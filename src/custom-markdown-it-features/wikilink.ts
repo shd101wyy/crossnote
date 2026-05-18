@@ -3,6 +3,7 @@
  * [[...]]
  */
 
+import * as path from 'path';
 import MarkdownIt from 'markdown-it';
 import { Notebook } from '../notebook';
 
@@ -71,7 +72,22 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       filePart,
       notebook.currentRenderFilePath,
     );
-    const resolvedLink = resolvedPath + fragment;
+
+    // resolveWikilink returns a notebook-root-relative path (e.g. 'test.md',
+    // 'sub\dir\note.md' on Windows).  The render-enhancer resolved-image-paths.ts
+    // will later call resolveFilePath(href, …, currentFileDir), which treats
+    // any bare relative path as relative to the CURRENT FILE's directory — not
+    // the notebook root.  We must therefore convert notebook-relative →
+    // file-directory-relative so that the final absolute path is correct.
+    const currentFileDir = path
+      .dirname(notebook.currentRenderFilePath)
+      .replace(/\\/g, '/');
+    const resolvedNorm = resolvedPath.replace(/\\/g, '/');
+    // path.posix.relative('.', 'test.md') === 'test.md'  (root-level file, viewed from root)
+    // path.posix.relative('sub/dir', 'test.md') === '../../test.md'  (cross-directory)
+    const fileRelativeHref = path.posix.relative(currentFileDir, resolvedNorm);
+
+    const resolvedLink = fileRelativeHref + fragment;
 
     // When the user provided an alias (`[[…|Display]]`) processWikilink
     // already gave us the alias as `text`.  When they didn't, `text`
