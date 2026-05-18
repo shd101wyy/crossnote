@@ -2843,6 +2843,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         this.notebook.notebookPath.fsPath,
         this.filePath,
       );
+      // For shortest mode, ensure the note index is populated so that
+      // resolveWikilink() can find targets across the whole notebook.
+      // relative and absolute modes compute paths from the link string
+      // directly and never access this.notes.
+      if (this.notebook.config.wikiLinkResolution === 'shortest') {
+        await this.notebook.refreshNotesIfNotLoaded({
+          dir: '.',
+          includeSubdirectories: true,
+        });
+      }
       html = this.notebook.renderMarkdown(outputString, {
         isForPreview: options.isForPreview,
       });

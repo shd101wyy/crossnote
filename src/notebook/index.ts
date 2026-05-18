@@ -1285,7 +1285,7 @@ export class Notebook {
   }
 
   /*
-  // NOTE: This function is hidden for now.  
+  // NOTE: This function is hidden for now.
   public async writeNote(
     filePath: string,
     markdown: string,
@@ -1537,18 +1537,28 @@ export class Notebook {
         return candidates[0];
       }
       if (candidates.length > 1) {
+        // Normalize to forward slashes for cross-platform depth comparison
+        // and same-directory preference (path.sep is '\' on Windows).
+        const normalize = (p: string) => p.replace(/\\/g, '/');
         candidates.sort(
           (a, b) =>
-            a.split(path.sep).length - b.split(path.sep).length ||
+            normalize(a).split('/').length - normalize(b).split('/').length ||
             a.localeCompare(b),
         );
-        const best = candidates[0];
-        const bestDepth = best.split(path.sep).length;
+        const bestDepth = normalize(candidates[0]).split('/').length;
         const shortest = candidates.filter(
-          (c) => c.split(path.sep).length === bestDepth,
+          (c) => normalize(c).split('/').length === bestDepth,
         );
-        const noteDir = path.dirname(currentNoteFilePath) + path.sep;
-        const inDir = shortest.find((c) => c.startsWith(noteDir));
+        const normalizedDir = normalize(path.dirname(currentNoteFilePath));
+        const inDir = shortest.find((c) => {
+          const nc = normalize(c);
+          // When the current note is at the notebook root, prefer root-level
+          // candidates (no '/' in their path).
+          if (normalizedDir === '.') {
+            return !nc.includes('/');
+          }
+          return nc.startsWith(normalizedDir + '/');
+        });
         return inDir || shortest[0];
       }
       // No match found — fall through to relative resolution.
