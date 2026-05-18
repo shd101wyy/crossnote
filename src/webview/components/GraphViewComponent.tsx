@@ -37,6 +37,7 @@ type D3Node = SimulationNodeDatum & GraphViewNode;
 type D3Link = SimulationLinkDatum<D3Node>;
 
 type ViewMode = 'global' | 'local';
+type LinkDirection = 'all' | 'frontlink' | 'backlink';
 
 const MIN_NODE_RADIUS = 5;
 const MAX_NODE_RADIUS = 14;
@@ -118,6 +119,7 @@ export default function GraphViewComponent() {
   const [viewMode, setViewMode] = useState<ViewMode>('global');
   const [localDepth, setLocalDepth] = useState(1);
   const [colorByFolder, setColorByFolder] = useState(false);
+  const [linkDirection, setLinkDirection] = useState<LinkDirection>('all');
 
   // Keep ref in sync so simulation callbacks can read the latest active path
   // without needing to be in the dependency array
@@ -268,8 +270,8 @@ export default function GraphViewComponent() {
   const visibleData = useMemo(() => {
     if (!graphData) return { nodes: [], links: [] };
     if (viewMode === 'local' && activeFilePath) {
-      const nodes = graphData.nodes.filter((n) => localNodeIds.has(n.id));
-      const links = graphData.links.filter((l) => {
+      // First, filter links based on localNodeIds
+      let links = graphData.links.filter((l) => {
         const src =
           typeof l.source === 'string'
             ? l.source
@@ -280,10 +282,48 @@ export default function GraphViewComponent() {
             : (l.target as GraphViewNode).id;
         return localNodeIds.has(src) && localNodeIds.has(tgt);
       });
+
+      // Apply link direction filter in LOCAL mode
+      if (linkDirection !== 'all') {
+        if (linkDirection === 'frontlink') {
+          links = links.filter((l) => {
+            const src =
+              typeof l.source === 'string'
+                ? l.source
+                : (l.source as GraphViewNode).id;
+            return src === activeFilePath;
+          });
+        } else if (linkDirection === 'backlink') {
+          links = links.filter((l) => {
+            const tgt =
+              typeof l.target === 'string'
+                ? l.target
+                : (l.target as GraphViewNode).id;
+            return tgt === activeFilePath;
+          });
+        }
+      }
+
+      // Derive nodes from filtered links, always including activeFilePath
+      const visibleNodeIds = new Set<string>([activeFilePath]);
+      for (const l of links) {
+        const src =
+          typeof l.source === 'string'
+            ? l.source
+            : (l.source as GraphViewNode).id;
+        const tgt =
+          typeof l.target === 'string'
+            ? l.target
+            : (l.target as GraphViewNode).id;
+        visibleNodeIds.add(src);
+        visibleNodeIds.add(tgt);
+      }
+      const nodes = graphData.nodes.filter((n) => visibleNodeIds.has(n.id));
+
       return { nodes, links };
     }
     return { nodes: graphData.nodes, links: graphData.links };
-  }, [graphData, viewMode, activeFilePath, localNodeIds]);
+  }, [graphData, viewMode, activeFilePath, localNodeIds, linkDirection]);
 
   // Search matched node ids
   const searchMatches = useMemo(() => {
@@ -725,6 +765,33 @@ export default function GraphViewComponent() {
             <span className="w-3 text-center font-mono text-base-content/80">
               {localDepth}
             </span>
+          </div>
+        )}
+
+        {/* Link direction filter — only visible in local mode */}
+        {viewMode === 'local' && (
+          <div className="join shrink-0">
+            <button
+              className={`join-item btn btn-xs ${linkDirection === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setLinkDirection('all')}
+              title="Show all links"
+            >
+              All
+            </button>
+            <button
+              className={`join-item btn btn-xs ${linkDirection === 'frontlink' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setLinkDirection('frontlink')}
+              title="Links from current file to others"
+            >
+              Front
+            </button>
+            <button
+              className={`join-item btn btn-xs ${linkDirection === 'backlink' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setLinkDirection('backlink')}
+              title="Links from other files to current"
+            >
+              Back
+            </button>
           </div>
         )}
 
