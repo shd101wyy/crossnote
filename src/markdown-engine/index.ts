@@ -2836,6 +2836,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
     } else {
       // markdown-it or markdown_yo
+      // Set context so the wikilink renderer can call resolveWikilink()
+      // with the correct current-note path, making wikiLinkResolution
+      // actually affect the preview <a href>.
+      this.notebook.currentRenderFilePath = path.relative(
+        this.notebook.notebookPath.fsPath,
+        this.filePath,
+      );
       html = this.notebook.renderMarkdown(outputString, {
         isForPreview: options.isForPreview,
       });

@@ -54,7 +54,24 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       return '';
     }
 
-    const { text, link } = notebook.processWikilink(content);
+    const { text, link, hash, blockRef } = notebook.processWikilink(content);
+
+    // processWikilink appends hash and blockRef to the link string.
+    // Strip them to get the pure file path for resolveWikilink().
+    const fragment = (hash || '') + (blockRef || '');
+    const filePart = fragment
+      ? link.slice(0, link.length - fragment.length)
+      : link;
+
+    // Resolve using the configured wikiLinkResolution mode so that
+    // wikiLinkResolution:'shortest' (and 'absolute') actually affect
+    // the preview <a href>.  (Previously only processWikilink() was
+    // called, which never does path resolution.)
+    const resolvedPath = notebook.resolveWikilink(
+      filePart,
+      notebook.currentRenderFilePath,
+    );
+    const resolvedLink = resolvedPath + fragment;
 
     // When the user provided an alias (`[[…|Display]]`) processWikilink
     // already gave us the alias as `text`.  When they didn't, `text`
@@ -64,7 +81,7 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       ? text
       : formatWikilinkDisplay(text);
 
-    return `<a href="${md.utils.escapeHtml(link)}">${md.utils.escapeHtml(
+    return `<a href="${md.utils.escapeHtml(resolvedLink)}">${md.utils.escapeHtml(
       displayText,
     )}</a>`;
   };
