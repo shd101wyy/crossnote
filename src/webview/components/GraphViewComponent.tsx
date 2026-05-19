@@ -37,7 +37,7 @@ type D3Node = SimulationNodeDatum & GraphViewNode;
 type D3Link = SimulationLinkDatum<D3Node>;
 
 type ViewMode = 'global' | 'local';
-type LinkDirection = 'all' | 'frontlink' | 'backlink';
+type LinkDirection = 'all' | 'direct' | 'frontlink' | 'backlink';
 
 const MIN_NODE_RADIUS = 5;
 const MAX_NODE_RADIUS = 14;
@@ -285,7 +285,19 @@ export default function GraphViewComponent() {
 
       // Apply link direction filter in LOCAL mode
       if (linkDirection !== 'all') {
-        if (linkDirection === 'frontlink') {
+        if (linkDirection === 'direct') {
+          links = links.filter((l) => {
+            const src =
+              typeof l.source === 'string'
+                ? l.source
+                : (l.source as GraphViewNode).id;
+            const tgt =
+              typeof l.target === 'string'
+                ? l.target
+                : (l.target as GraphViewNode).id;
+            return src === activeFilePath || tgt === activeFilePath;
+          });
+        } else if (linkDirection === 'frontlink') {
           links = links.filter((l) => {
             const src =
               typeof l.source === 'string'
@@ -774,9 +786,16 @@ export default function GraphViewComponent() {
             <button
               className={`join-item btn btn-xs ${linkDirection === 'all' ? 'btn-primary' : 'btn-ghost'}`}
               onClick={() => setLinkDirection('all')}
-              title="Show all links"
+              title="Show all links within depth range"
             >
               All
+            </button>
+            <button
+              className={`join-item btn btn-xs ${linkDirection === 'direct' ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setLinkDirection('direct')}
+              title="Links directly connected to current file"
+            >
+              Direct
             </button>
             <button
               className={`join-item btn btn-xs ${linkDirection === 'frontlink' ? 'btn-primary' : 'btn-ghost'}`}
