@@ -2,7 +2,7 @@ import structuredClone from '@ungap/structured-clone';
 import * as child_process from 'child_process';
 import * as path from 'path';
 import Sval from 'sval';
-import * as temp from 'temp';
+import * as temp from './lib/temp';
 import { JsonObject } from 'type-fest';
 import { fileURLToPath } from 'url';
 import * as vm from 'vm';
@@ -18,15 +18,7 @@ if (!('structuredClone' in globalThis)) {
 temp.track();
 
 export function tempOpen(options: temp.AffixOptions): Promise<temp.OpenFile> {
-  return new Promise((resolve, reject) => {
-    temp.open(options, (error, info) => {
-      if (error) {
-        return reject(String(error));
-      } else {
-        return resolve(info);
-      }
-    });
-  });
+  return temp.open(options);
 }
 
 /**
