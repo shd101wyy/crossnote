@@ -189,4 +189,39 @@ describe('Wikilink embed integration', () => {
     expect(html).toContain('Block reference not found');
     expect(html).toContain('wikilink-embed-error');
   });
+
+  it('renders ![[note#Heading]] embed scoped to the heading section', async () => {
+    const markdown =
+      'Before ![[block-ref-note#block-reference-test-note]] end.';
+    const engine = notebook.getNoteMarkdownEngine(
+      path.resolve(__dirname, './markdown/test-files/test-heading-embed.md'),
+    );
+    const { html } = await engine.parseMD(markdown, {
+      useRelativeFilePath: false,
+      isForPreview: true,
+      hideFrontMatter: false,
+    });
+
+    expect(html).toContain('wikilink-embed-content');
+    expect(html).toContain('A paragraph with some content');
+    expect(html).toContain('First list item');
+  });
+
+  it('renders ![[note#^block-id]] embed extracting just the referenced block', async () => {
+    const markdown = 'Before ![[block-ref-note#^first-paragraph]] after.';
+    const engine = notebook.getNoteMarkdownEngine(
+      path.resolve(__dirname, './markdown/test-files/test-hash-block-embed.md'),
+    );
+    const { html } = await engine.parseMD(markdown, {
+      useRelativeFilePath: false,
+      isForPreview: true,
+      hideFrontMatter: false,
+    });
+
+    expect(html).toContain('A paragraph with some content');
+    expect(html).toContain('wikilink-embed-content');
+    expect(html).not.toContain('Another paragraph here');
+    expect(html).not.toContain('Second list item');
+    expect(html).not.toContain('^first-paragraph');
+  });
 });

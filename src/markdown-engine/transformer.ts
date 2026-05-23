@@ -12,6 +12,7 @@ import {
 } from '../lib/block-attributes';
 import computeChecksum from '../lib/compute-checksum';
 import { Notebook } from '../notebook';
+import { findFragmentTargetLine } from '../notebook/note-fragments';
 import { MarkdownParser } from '../notebook/types';
 import * as PDF from '../tools/pdf';
 import { COLON_FENCE_CODE_LANGUAGES } from '../custom-markdown-it-features/colon-fenced-code-blocks';
@@ -959,7 +960,12 @@ export async function transformMarkdown(
                   notSourceFile: true, // <= this is not the sourcefile
                   imageDirectoryPath,
                   notebook,
-                  headingIdGenerator,
+                  // Use a fresh generator per recursive file import.
+                  // Sharing the outer's stateful generator causes the
+                  // same heading text to slug differently on second use
+                  // (e.g. `colours` → `colours-1`), which then breaks
+                  // fragment-to-heading lookup at the slice step.
+                  headingIdGenerator: new HeadingIdGenerator(),
                   fileHash,
                 });
 
@@ -1259,10 +1265,50 @@ export async function transformMarkdown(
 
     if (fileHash) {
       const targetId = fileHash.slice(1);
-      if (targetId) {
-        const targetHeadingIndex = headings.findIndex(
+      if (targetId && targetId.startsWith('^')) {
+        // Block-ID transclusion (`#^block-id`): emit only the paragraph
+        // (contiguous non-blank lines) containing the `^id` marker.
+        const lineIdx = findFragmentTargetLine(inputString, targetId);
+        if (lineIdx >= 0) {
+          const sourceLines = inputString.split('\n');
+          const outputLines = outputString.split('\n');
+          let startIdx = lineIdx;
+          while (startIdx > 0 && sourceLines[startIdx - 1].trim() !== '') {
+            startIdx--;
+          }
+          let endIdx = lineIdx;
+          while (
+            endIdx < sourceLines.length - 1 &&
+            sourceLines[endIdx + 1].trim() !== ''
+          ) {
+            endIdx++;
+          }
+          const paragraph = outputLines.slice(startIdx, endIdx + 1);
+          const relIdx = lineIdx - startIdx;
+          if (relIdx >= 0 && relIdx < paragraph.length) {
+            paragraph[relIdx] = paragraph[relIdx].replace(
+              /\s\^[a-zA-Z0-9_-]+\s*$/,
+              '',
+            );
+          }
+          outputString = paragraph.join('\n');
+        } else {
+          outputString = `<!-- crossnote: block "${targetId}" not found -->`;
+        }
+        headings = [];
+      } else if (targetId) {
+        let targetHeadingIndex = headings.findIndex(
           (heading) => heading.id === targetId,
         );
+        if (targetHeadingIndex < 0) {
+          // Anchor written with non-canonical case/punctuation (e.g.
+          // `#Colours` vs slug `colours`).  Slugify and retry so we
+          // match Obsidian's case-insensitive heading resolution.
+          const slug = new HeadingIdGenerator().generateId(targetId);
+          targetHeadingIndex = headings.findIndex(
+            (heading) => heading.id === slug,
+          );
+        }
         if (targetHeadingIndex >= 0) {
           const startHeading = headings[targetHeadingIndex];
           const startHeadingIndex = targetHeadingIndex;
@@ -1295,6 +1341,11 @@ export async function transformMarkdown(
               .slice(startLineNo - 1)
               .join('\n');
           }
+        } else {
+          // Heading not found: render an error marker rather than
+          // silently falling through and emitting the whole file.
+          outputString = `<!-- crossnote: heading "${targetId}" not found -->`;
+          headings = [];
         }
       }
     }
