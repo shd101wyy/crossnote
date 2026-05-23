@@ -190,7 +190,14 @@ async function resolveEmbed(
     try {
       let markdownContent = content;
 
-      const fragment = blockRef ? `^${blockRef}` : hash ? hash.slice(1) : '';
+      let fragment = blockRef ? `^${blockRef}` : hash ? hash.slice(1) : '';
+      try {
+        // URL-decode so `#Filenaming%20conventions` matches the same
+        // heading as `#Filenaming conventions`.
+        fragment = decodeURIComponent(fragment);
+      } catch {
+        // Leave as-is on malformed encoding.
+      }
 
       if (fragment) {
         const lines = markdownContent.split('\n');

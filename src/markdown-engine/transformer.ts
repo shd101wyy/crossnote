@@ -733,6 +733,14 @@ export async function transformMarkdown(
           const { link } = notebook.processWikilink(wikilinkImportMatch[2]);
           filePath = link;
         }
+        // URL-decode so `my%20origin.md` resolves to `my origin.md` —
+        // standard for markdown links and Obsidian's URI form for
+        // wikilinks / @import targets with spaces in the path.
+        try {
+          filePath = decodeURIComponent(filePath);
+        } catch {
+          // Leave as-is on malformed encoding.
+        }
 
         let config: BlockAttributes = {};
         let configStr = '';
@@ -1264,7 +1272,14 @@ export async function transformMarkdown(
     }
 
     if (fileHash) {
-      const targetId = fileHash.slice(1);
+      // URL-decode so `#Filenaming%20conventions` (Obsidian-encoded
+      // markdown link) matches the same heading as `#Filenaming conventions`.
+      let targetId = fileHash.slice(1);
+      try {
+        targetId = decodeURIComponent(targetId);
+      } catch {
+        // Leave as-is on malformed encoding.
+      }
       if (targetId && targetId.startsWith('^')) {
         // Block-ID transclusion (`#^block-id`): emit only the paragraph
         // (contiguous non-blank lines) containing the `^id` marker.
