@@ -26,6 +26,7 @@ export async function processGraphs(
     codeChunksData,
     graphsCache,
     addOptionsStr,
+    cacheBust = true,
     notebook,
   }: {
     fileDirectoryPath: string;
@@ -36,9 +37,11 @@ export async function processGraphs(
     codeChunksData: { [key: string]: CodeChunkData };
     graphsCache: { [key: string]: string };
     addOptionsStr: boolean;
+    cacheBust?: boolean;
     notebook: Notebook;
   },
 ): Promise<{ outputString: string; imagePaths: string[] }> {
+  const querySuffix = cacheBust === false ? '' : '?' + Math.random();
   const lines = text.split('\n');
   const codes: {
     start: number;
@@ -166,13 +169,10 @@ export async function processGraphs(
     let displayPNGFilePath;
     if (useRelativeFilePath) {
       displayPNGFilePath =
-        path.relative(fileDirectoryPath, pngFilePath) + '?' + Math.random();
+        path.relative(fileDirectoryPath, pngFilePath) + querySuffix;
     } else {
       displayPNGFilePath =
-        '/' +
-        path.relative(projectDirectoryPath, pngFilePath) +
-        '?' +
-        Math.random();
+        '/' + path.relative(projectDirectoryPath, pngFilePath) + querySuffix;
     }
     displayPNGFilePath = displayPNGFilePath.replace(/\\/g, '/'); // fix windows path error.
 
@@ -314,13 +314,12 @@ export async function processGraphs(
         let displayPNGFilePath;
         if (useRelativeFilePath) {
           displayPNGFilePath =
-            path.relative(fileDirectoryPath, pngFilePath) + '?' + Math.random();
+            path.relative(fileDirectoryPath, pngFilePath) + querySuffix;
         } else {
           displayPNGFilePath =
             '/' +
             path.relative(projectDirectoryPath, pngFilePath) +
-            '?' +
-            Math.random();
+            querySuffix;
         }
         clearCodeBlock(lines, start, end);
 

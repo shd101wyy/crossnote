@@ -846,16 +846,16 @@ export async function transformMarkdown(
               ) {
                 imageSrc = filePath;
               } else if (useRelativeFilePath) {
-                imageSrc =
-                  path.relative(fileDirectoryPath, absoluteFilePath) +
-                  '?' +
-                  (timestamp ?? Math.random());
+                imageSrc = path.relative(fileDirectoryPath, absoluteFilePath);
+                if (!forMarkdownExport) {
+                  imageSrc += '?' + (timestamp ?? Math.random());
+                }
               } else {
                 imageSrc =
-                  '/' +
-                  path.relative(projectDirectoryPath, absoluteFilePath) +
-                  '?' +
-                  (timestamp ?? Math.random());
+                  '/' + path.relative(projectDirectoryPath, absoluteFilePath);
+                if (!forMarkdownExport) {
+                  imageSrc += '?' + (timestamp ?? Math.random());
+                }
               }
               // enchodeURI(imageSrc) is wrong. It will cause issue on Windows
               // #414: https://github.com/shd101wyy/markdown-preview-enhanced/issues/414

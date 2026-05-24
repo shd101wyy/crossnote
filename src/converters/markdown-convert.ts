@@ -306,6 +306,7 @@ export async function markdownConvert(
           codeChunksData,
           graphsCache,
           addOptionsStr: false,
+          cacheBust: false,
           notebook,
         }).then(({ outputString }) => {
           outputString = data.frontMatterString + outputString; // put the front-matter back.
