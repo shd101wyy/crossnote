@@ -116,6 +116,13 @@ export class Notebook {
 
   public notes: Notes = {};
   public hasLoadedNotes: boolean = false;
+  /**
+   * The notebook-relative path of the note currently being rendered.
+   * Set by MarkdownEngine.parseMD() before calling renderMarkdown().
+   * Used by the wikilink renderer to call resolveWikilink() with the
+   * correct context.
+   */
+  public currentRenderFilePath: string = '';
   public referenceMap: ReferenceMap = new ReferenceMap();
   /**
    * Global `#tag` index.  Independent of the file system: tags are
@@ -1278,7 +1285,7 @@ export class Notebook {
   }
 
   /*
-  // NOTE: This function is hidden for now.  
+  // NOTE: This function is hidden for now.
   public async writeNote(
     filePath: string,
     markdown: string,
@@ -1510,38 +1517,60 @@ export class Notebook {
       );
     }
 
-    if (mode === 'shortest' && !link.includes('/')) {
-      const basename = path.basename(link);
-      const candidates = Object.keys(this.notes).filter(
-        (notePath) => path.basename(notePath) === basename,
-      );
+    if (mode === 'shortest') {
+      // Normalize to forward slashes for cross-platform comparison.
+      const normalizedLink = link.replace(/\\/g, '/');
+
+      // Suffix-matching: bare filename (no '/') matches any note with that
+      // basename; a partial path (has '/') matches notes whose path ends
+      // with that sub-path.  This lets [[summary/report]] resolve to any
+      // note whose path ends with "summary/report.md", disambiguating
+      // same-named files in different directories.
+      const candidates = Object.keys(this.notes).filter((notePath) => {
+        const normalizedNote = notePath.replace(/\\/g, '/');
+        return (
+          normalizedNote === normalizedLink ||
+          normalizedNote.endsWith('/' + normalizedLink)
+        );
+      });
       if (candidates.length === 1) {
         return candidates[0];
       }
       if (candidates.length > 1) {
+        // Normalize to forward slashes for cross-platform depth comparison
+        // and same-directory preference (path.sep is '\' on Windows).
+        const normalize = (p: string) => p.replace(/\\/g, '/');
         candidates.sort(
           (a, b) =>
-            a.split(path.sep).length - b.split(path.sep).length ||
+            normalize(a).split('/').length - normalize(b).split('/').length ||
             a.localeCompare(b),
         );
-        const best = candidates[0];
-        const bestDepth = best.split(path.sep).length;
+        const bestDepth = normalize(candidates[0]).split('/').length;
         const shortest = candidates.filter(
-          (c) => c.split(path.sep).length === bestDepth,
+          (c) => normalize(c).split('/').length === bestDepth,
         );
-        const noteDir = path.dirname(currentNoteFilePath) + path.sep;
-        const inDir = shortest.find((c) => c.startsWith(noteDir));
+        const normalizedDir = normalize(path.dirname(currentNoteFilePath));
+        const inDir = shortest.find((c) => {
+          const nc = normalize(c);
+          // When the current note is at the notebook root, prefer root-level
+          // candidates (no '/' in their path).
+          if (normalizedDir === '.') {
+            return !nc.includes('/');
+          }
+          return nc.startsWith(normalizedDir + '/');
+        });
         return inDir || shortest[0];
       }
+      // No match found — fall through to relative resolution.
     }
 
     // Relative to current note's directory (default).
-    return path.relative(
-      this.notebookPath.fsPath,
-      path.join(
-        path.dirname(path.join(this.notebookPath.fsPath, currentNoteFilePath)),
-        link,
-      ),
-    );
+    // Guard: when currentNoteFilePath is '' (not set by MarkdownEngine),
+    // path.dirname(notebookPath) would escape above the notebook root.
+    // Treat '' as a virtual file at the notebook root instead.
+    const noteDir = currentNoteFilePath
+      ? path.dirname(path.join(this.notebookPath.fsPath, currentNoteFilePath))
+      : this.notebookPath.fsPath;
+    return path.relative(this.notebookPath.fsPath, path.join(noteDir, link));
   }
 }

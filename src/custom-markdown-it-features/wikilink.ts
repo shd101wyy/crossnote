@@ -3,6 +3,7 @@
  * [[...]]
  */
 
+import * as path from 'path';
 import MarkdownIt from 'markdown-it';
 import { Notebook } from '../notebook';
 
@@ -54,7 +55,39 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       return '';
     }
 
-    const { text, link } = notebook.processWikilink(content);
+    const { text, link, hash, blockRef } = notebook.processWikilink(content);
+
+    // processWikilink appends hash and blockRef to the link string.
+    // Strip them to get the pure file path for resolveWikilink().
+    const fragment = (hash || '') + (blockRef || '');
+    const filePart = fragment
+      ? link.slice(0, link.length - fragment.length)
+      : link;
+
+    // Resolve using the configured wikiLinkResolution mode so that
+    // wikiLinkResolution:'shortest' (and 'absolute') actually affect
+    // the preview <a href>.  (Previously only processWikilink() was
+    // called, which never does path resolution.)
+    const resolvedPath = notebook.resolveWikilink(
+      filePart,
+      notebook.currentRenderFilePath,
+    );
+
+    // resolveWikilink returns a notebook-root-relative path (e.g. 'test.md',
+    // 'sub\dir\note.md' on Windows).  The render-enhancer resolved-image-paths.ts
+    // will later call resolveFilePath(href, …, currentFileDir), which treats
+    // any bare relative path as relative to the CURRENT FILE's directory — not
+    // the notebook root.  We must therefore convert notebook-relative →
+    // file-directory-relative so that the final absolute path is correct.
+    const currentFileDir = path
+      .dirname(notebook.currentRenderFilePath)
+      .replace(/\\/g, '/');
+    const resolvedNorm = resolvedPath.replace(/\\/g, '/');
+    // path.posix.relative('.', 'test.md') === 'test.md'  (root-level file, viewed from root)
+    // path.posix.relative('sub/dir', 'test.md') === '../../test.md'  (cross-directory)
+    const fileRelativeHref = path.posix.relative(currentFileDir, resolvedNorm);
+
+    const resolvedLink = fileRelativeHref + fragment;
 
     // When the user provided an alias (`[[…|Display]]`) processWikilink
     // already gave us the alias as `text`.  When they didn't, `text`
@@ -64,7 +97,7 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       ? text
       : formatWikilinkDisplay(text);
 
-    return `<a href="${md.utils.escapeHtml(link)}">${md.utils.escapeHtml(
+    return `<a href="${md.utils.escapeHtml(resolvedLink)}">${md.utils.escapeHtml(
       displayText,
     )}</a>`;
   };
