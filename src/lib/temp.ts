@@ -13,7 +13,6 @@
 import { closeSync, mkdtempSync, openSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { randomBytes } from 'crypto';
 
 export interface AffixOptions {
   prefix?: string;
@@ -84,7 +83,11 @@ function generatePath(
   marker: 'f-' | 'd-',
 ): string {
   const { prefix, suffix, dir } = normalizeAffixes(affixes);
-  const random = randomBytes(8).toString('hex');
+  // Browser-compatible random hex (no `crypto.randomBytes` dependency).
+  // 32 hex chars ≈ 128 bits of entropy — more than enough for temp-file
+  // uniqueness in single-process use.
+  const random =
+    Math.random().toString(16).slice(2) + Math.random().toString(16).slice(2);
   return join(dir, `${prefix}-${marker}${random}${suffix}`);
 }
 
