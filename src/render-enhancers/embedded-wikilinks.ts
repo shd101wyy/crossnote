@@ -4,6 +4,8 @@ import { escape } from 'html-escaper';
 import * as path from 'path';
 import * as cheerio from 'cheerio';
 import { Notebook } from '../notebook';
+import { findFragmentTargetLine } from '../notebook/note-fragments';
+import HeadingIdGenerator from '../markdown-engine/heading-id-generator';
 
 const MAX_EMBED_DEPTH = 3;
 
@@ -188,34 +190,68 @@ async function resolveEmbed(
     try {
       let markdownContent = content;
 
-      if (hash) {
-        const headingLines = markdownContent.split('\n');
-        let headingLineIndex = -1;
-        for (let i = 0; i < headingLines.length; i++) {
-          const line = headingLines[i];
-          const match = line.match(/^(#{1,7})\s.*\{[^}]*#/);
-          if (match && line.includes(`#${hash.slice(1)}`)) {
-            headingLineIndex = i;
-            break;
-          }
+      let fragment = blockRef ? `^${blockRef}` : hash ? hash.slice(1) : '';
+      try {
+        // URL-decode so `#Filenaming%20conventions` matches the same
+        // heading as `#Filenaming conventions`.
+        fragment = decodeURIComponent(fragment);
+      } catch {
+        // Leave as-is on malformed encoding.
+      }
+
+      if (fragment) {
+        const lines = markdownContent.split('\n');
+        let lineIdx = findFragmentTargetLine(markdownContent, fragment);
+        if (lineIdx < 0 && !fragment.startsWith('^')) {
+          // Obsidian-style anchor (raw heading text, often capitalised).
+          // Retry against the slugified form so `#Colours` matches a
+          // heading whose generated slug is `colours`.
+          const slug = new HeadingIdGenerator().generateId(fragment);
+          lineIdx = findFragmentTargetLine(markdownContent, slug);
         }
-
-        if (headingLineIndex >= 0) {
-          const headingLine = headingLines[headingLineIndex];
-          const headingLevel =
-            (headingLine.match(/^(#{1,7})/) || [])[1]?.length || 1;
-
-          let endLineIndex = headingLines.length;
-          for (let i = headingLineIndex + 1; i < headingLines.length; i++) {
-            const levelMatch = headingLines[i].match(/^(#{1,7})\s/);
-            if (levelMatch && levelMatch[1].length <= headingLevel) {
-              endLineIndex = i;
-              break;
+        if (lineIdx >= 0) {
+          if (fragment.startsWith('^')) {
+            // Block: paragraph (contiguous non-blank lines) containing
+            // the `^id` marker; strip the trailing token from output.
+            let startIdx = lineIdx;
+            while (startIdx > 0 && lines[startIdx - 1].trim() !== '') {
+              startIdx--;
             }
+            let endIdx = lineIdx;
+            while (
+              endIdx < lines.length - 1 &&
+              lines[endIdx + 1].trim() !== ''
+            ) {
+              endIdx++;
+            }
+            const para = lines.slice(startIdx, endIdx + 1);
+            const relIdx = lineIdx - startIdx;
+            para[relIdx] = para[relIdx].replace(/\s\^[a-zA-Z0-9_-]+\s*$/, '');
+            markdownContent = para.join('\n');
+          } else {
+            // Heading: heading line + everything up to next heading at
+            // same or higher level.
+            const levelMatch = lines[lineIdx].match(/^(#{1,6})\s/);
+            const level = levelMatch ? levelMatch[1].length : 1;
+            let endLineIndex = lines.length;
+            for (let i = lineIdx + 1; i < lines.length; i++) {
+              const m = lines[i].match(/^(#{1,6})\s/);
+              if (m && m[1].length <= level) {
+                endLineIndex = i;
+                break;
+              }
+            }
+            markdownContent = lines.slice(lineIdx, endLineIndex).join('\n');
           }
-          markdownContent = headingLines
-            .slice(headingLineIndex, endLineIndex)
-            .join('\n');
+        } else {
+          $placeholder.replaceWith(
+            `<div class="wikilink-embed-content wikilink-embed-error">${
+              fragment.startsWith('^')
+                ? 'Block reference not found'
+                : 'Heading not found'
+            }: ${escape(fragment.replace(/^\^/, ''))}</div>`,
+          );
+          return;
         }
       }
 
@@ -233,26 +269,7 @@ async function resolveEmbed(
 
       let resultHtml = embed$.html();
 
-      if (blockRef) {
-        // Extract just the referenced block from rendered HTML.
-        // Find the span/div with the block ID, then extract its
-        // parent block-level element (p, li, blockquote, etc.)
-        const blockSpan = embed$(`#${blockRef}, [id="${blockRef}"]`).first();
-        if (blockSpan.length) {
-          const parent = blockSpan.parent();
-          if (parent.length) {
-            resultHtml = `<div class="wikilink-embed-content">${cheerioLoadHtml(parent.toString() ?? '')}</div>`;
-          } else {
-            resultHtml = `<div class="wikilink-embed-content">${cheerioLoadHtml(blockSpan.toString() ?? '')}</div>`;
-          }
-        } else {
-          resultHtml = `<div class="wikilink-embed-content wikilink-embed-error">Block reference not found: ${escape(
-            blockRef,
-          )}</div>`;
-        }
-      } else {
-        resultHtml = `<div class="wikilink-embed-content">${resultHtml}</div>`;
-      }
+      resultHtml = `<div class="wikilink-embed-content">${resultHtml}</div>`;
 
       $placeholder.replaceWith(resultHtml);
     } catch (error) {
@@ -272,10 +289,4 @@ async function resolveEmbed(
       )}</code></pre></div>`,
     );
   }
-}
-
-function cheerioLoadHtml(html: string): string {
-  const $ = cheerio.load(`<div>${html}</div>`);
-  const bodyHtml = $('body').html() ?? '';
-  return bodyHtml;
 }
