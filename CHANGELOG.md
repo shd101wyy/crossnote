@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.27] - 2026-05-24
+
 ### Bug fixes
 
 - Fix colon fence `{data-source-line}` attribute injection leaking into `:::` lines inside both backtick and indented code blocks — the transformer now skips colon fence matching when inside a backtick fenced code block or when the `:::` line has leading whitespace (indented code block, 4+ spaces).
