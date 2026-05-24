@@ -327,13 +327,23 @@ export async function transformMarkdown(
       //
       // This section must run before the backtick-fence section so that
       // backtick fences inside a colon block are treated as content.
+      // Also skip colon fence matching when inside a backtick code block
+      // or when the `:::` line has leading whitespace (indented code block
+      // or indented text — the colon fence rule requires no indentation).
+      const inBacktickCodeBlock = !!lastOpeningCodeBlockFence;
       const inColonCodeBlock = colonFenceState === 'code';
       const inColonHtmlDiv = colonFenceState === 'html-div';
+      const leadingSpace = line.match(/^(\s*)/)?.[1]?.length ?? 0;
       const colonFenceMatch = line.match(/^\s*(:{3,})(.*)/);
-      if (colonFenceMatch) {
+      if (colonFenceMatch && leadingSpace === 0) {
         const colonMarker = colonFenceMatch[1];
         const afterColons = colonFenceMatch[2].trim();
-        if (!inColonCodeBlock && !inColonHtmlDiv && afterColons.length > 0) {
+        if (
+          !inBacktickCodeBlock &&
+          !inColonCodeBlock &&
+          !inColonHtmlDiv &&
+          afterColons.length > 0
+        ) {
           // Opening colon fence
           const langMatch = afterColons.match(/^([^\s{]+)/);
           const lang = (langMatch?.[1] ?? '').toLowerCase();
