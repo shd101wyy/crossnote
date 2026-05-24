@@ -110,6 +110,49 @@ describe('::: fenced div (markdown-it)', () => {
     expect(html).not.toMatch(/<div class="my-class"/);
     expect(html).toContain(':::my-class');
   });
+
+  it('does not inject data-source-line into ::: inside a backtick code block', async () => {
+    const html = await renderWith(
+      notebook,
+      [
+        '```markdown',
+        ':::my-class',
+        'Content enclosed in a div element',
+        ':::',
+        '',
+        '::: {#myClass .my-class}',
+        'When using attribute syntax',
+        ':::',
+        '```',
+      ].join('\n'),
+    );
+    // The ::: lines inside the backtick fence should be rendered
+    // verbatim as code content — no colon-fence injection.
+    expect(html).toContain(':::my-class');
+    expect(html).toContain('Content enclosed in a div element');
+    expect(html).not.toContain(':::my-class {data-source-line');
+    expect(html).toMatch(/<pre[^>]*>/);
+  });
+
+  it('does not inject data-source-line into ::: inside an indented code block', async () => {
+    const html = await renderWith(
+      notebook,
+      [
+        '    :::my-class',
+        '    Content enclosed in a div element',
+        '    :::',
+        '',
+        '    ::: {#myClass .my-class}',
+        '    When using attribute syntax',
+        '    :::',
+      ].join('\n'),
+    );
+    // Indented code blocks (4+ spaces) should not trigger colon fence
+    // injection.  The content is rendered as a <pre><code> block.
+    expect(html).not.toContain(':::my-class {data-source-line');
+    expect(html).toContain(':::my-class');
+    expect(html).toMatch(/<pre[^>]*>/);
+  });
 });
 
 describe('::: fenced div (pandoc transformer rewrite)', () => {
