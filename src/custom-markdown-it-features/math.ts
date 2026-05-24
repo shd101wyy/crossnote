@@ -244,8 +244,35 @@ function renderMathInHtml(html: string, notebook: Notebook): string {
     for (const [openTag, closeTag] of blockDelimiters || []) {
       out = replaceDelimited(out, openTag, closeTag, true, notebook);
     }
+    // After block-delimiter replacement the HTML may contain
+    // MathJax placeholders whose inner text still holds `$$…$$`
+    // (the original block delimiters).  Protect those placeholders
+    // from the inline-delimiter pass so `$` scanning doesn't
+    // consume the `$$` inside.
+    const placeholderRe =
+      /<(div|span)\b[^>]*class\s*=\s*"[^"]*\bmathjax-exps\b[^"]*"[^>]*>[\s\S]*?<\/\1>/gi;
+    const segs: string[] = [];
+    const prot: string[] = [];
+    let last = 0;
+    for (
+      let m = placeholderRe.exec(out);
+      m !== null;
+      m = placeholderRe.exec(out)
+    ) {
+      segs.push(out.slice(last, m.index));
+      prot.push(m[0]);
+      last = m.index + m[0].length;
+    }
+    segs.push(out.slice(last));
+    // Only scan the unprotected segments for inline delimiters.
     for (const [openTag, closeTag] of inlineDelimiters || []) {
-      out = replaceDelimited(out, openTag, closeTag, false, notebook);
+      for (let i = 0; i < segs.length; i++) {
+        segs[i] = replaceDelimited(segs[i], openTag, closeTag, false, notebook);
+      }
+    }
+    out = segs[0];
+    for (let i = 0; i < prot.length; i++) {
+      out += prot[i] + segs[i + 1];
     }
     return out;
   };
