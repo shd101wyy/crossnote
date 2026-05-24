@@ -63,8 +63,15 @@ function colonFenceRule(
   endLine: number,
   silent: boolean,
 ): boolean {
-  // Indented 4+ spaces → treat as indented code block, not a fence
-  if (state.tShift[startLine] - state.blkIndent >= 4) return false;
+  // Only recognise a colon fence at the current block's indentation
+  // level with no additional leading spaces.  An indented `:::` is
+  // regular text, not a fence — same as Pandoc's fenced-div spec.
+  if (state.tShift[startLine] - state.blkIndent > 0) return false;
+
+  // Colon fences are a top-level construct — don't recognise them
+  // inside lists or other nested block structures where `:::` should
+  // be treated as literal text.
+  if (state.level > 0) return false;
 
   let pos = state.bMarks[startLine] + state.tShift[startLine];
   const max = state.eMarks[startLine];

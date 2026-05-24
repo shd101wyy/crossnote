@@ -287,6 +287,29 @@ describe('Math rendering with MathJax', () => {
     expect(html).toContain('\\int');
   });
 
+  it('preserves `$$` delimiters in block math inside an HTML <td> with MathJax', () => {
+    // Regression: vscode-mpe#2302 — the html_block post-process
+    // was replacing `$$…$$` with a MathJax placeholder that the
+    // inline `$` scanner subsequently re-scanned and stripped the
+    // `$$` delimiters from, because `$$` starts with `$`.  The
+    // placeholder must include the original delimiters so client-
+    // side MathJax can discover and typeset the formula.
+    const md = [
+      '<table>',
+      '<tr><td>',
+      '$$',
+      '\\textcolor{red}{hello}',
+      '$$',
+      '</td></tr>',
+      '</table>',
+    ].join('\n');
+    const html = notebook.renderMarkdown(md, { isForPreview: true });
+    expect(html).toMatch(/<div class="mathjax-exps">/);
+    expect(html).toContain('$$\\textcolor{red}{hello}$$');
+    expect(html).not.toContain('class="mathjax-exps">\\textcolor');
+    expect(html).toContain('<table>');
+  });
+
   it('preserves inline `$…$` when a `$$` block starts on the next line', () => {
     // Inline math must still work even when a block-math delimiter
     // appears on a separate line.  The block rule consumes `$$`

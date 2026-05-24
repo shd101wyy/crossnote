@@ -4,6 +4,26 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.26] - 2026-05-24
+
+### New features
+
+- **Graph View link direction filter** — Add All/Direct/Front/Back filter buttons in local Graph View mode. "Direct" shows only links connected to the current file, "Front" shows outgoing links, "Back" shows incoming links. ([#434](https://github.com/shd101wyy/crossnote/pull/434), thanks @substitute5)
+
+### Bug fixes
+
+- **Wikilink preview respects `wikiLinkResolution` config** — The markdown-it wikilink renderer now calls `resolveWikilink()` so `shortest` and `absolute` modes actually affect the preview `<a href>`. Also fixes notebook-relative path resolution in preview, empty `currentNoteFilePath` escaping the notebook root, empty note index on first render in `shortest` mode, and Windows path separator tie-breaking. Fixes [#424](https://github.com/shd101wyy/crossnote/issues/424). ([#434](https://github.com/shd101wyy/crossnote/pull/434), thanks @substitute5)
+- **ESM `bit-field/lib/render` import fix** — Add missing `.js` extension so Node ESM resolver no longer throws `ERR_MODULE_NOT_FOUND`. ([#436](https://github.com/shd101wyy/crossnote/pull/436), thanks @dougborg)
+- **`#heading` and `^block-id` transclusion slicing** — Fix `^block-id` transclusion not working in `@import`/markdown-link syntaxes. Fix `#heading` lookup falling through to full-file render on slug/case mismatch. Fix wikilink embed heading-section and block extraction missing auto-generated slugs. Fix recursive imports sharing `HeadingIdGenerator` state. Fix URL-encoded paths (`my%20origin.md`) and fragments (`#Filenaming%20conventions`) not being decoded. ([#438](https://github.com/shd101wyy/crossnote/pull/438), thanks @marcpbailey)
+- Fix markdown export generating image URLs with `?Math.random()` query strings — `processGraphs()` now accepts a `cacheBust` option (default `true`). Markdown-to-markdown export passes `cacheBust: false` so image references like `![](assets/diagram.png)` are clean paths without query strings. Also skip the query string on `@import` image paths when `forMarkdownExport` is true. Fixes [#435](https://github.com/shd101wyy/crossnote/issues/435).
+- Fix MathJax block math (`$$...$$`) inside HTML table cells losing the `$$` delimiters — the `html_block` post-process was replacing `$$...$$` with a MathJax placeholder that the inline `$` scanner subsequently re-scanned, consuming the `$$` delimiters because `$$` starts with `$`. The placeholder is now protected from inline re-scanning. Fixes [vscode-mpe#2302](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2302).
+- Fix colon fences (`:::name`) being recognized when indented or inside list items — colon fences are now only recognized at the current block indentation level with no additional leading spaces and only at the top level (not inside lists/blockquotes). An indented `:::text` is treated as regular text, matching Pandoc's fenced-div behavior. Fixes [vscode-mpe#2275](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2275).
+
+### Improvements
+
+- **Suffix-matching in `shortest` wiki link resolution** — `[[summary/report]]` now resolves to notes whose path ends with that sub-path, disambiguating same-named files in different directories. ([#434](https://github.com/shd101wyy/crossnote/pull/434), thanks @substitute5)
+- **Replace deprecated `temp` package with Node built-ins** — A minimal drop-in `src/lib/temp.ts` using `node:fs/os/crypto` eliminates the `temp` → `rimraf@2` → `glob@7` → `inflight` deprecation chain, removing four deprecation warnings on every install. ([#437](https://github.com/shd101wyy/crossnote/pull/437), thanks @dougborg)
+
 ## [0.9.25] - 2026-05-16
 
 ### Breaking changes

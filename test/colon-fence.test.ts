@@ -95,6 +95,21 @@ describe('::: fenced div (markdown-it)', () => {
     );
     expect(html).toMatch(/<div class="warning"[^>]*data-source-line="\d+"/);
   });
+
+  it('does not recognise an indented ::: as a fence', async () => {
+    const html = await renderWith(notebook, '  :::my-class\n  content\n  :::');
+    expect(html).not.toMatch(/<div class="my-class"/);
+    expect(html).toContain(':::my-class');
+  });
+
+  it('does not recognise a ::: inside a list item as a fence', async () => {
+    const html = await renderWith(
+      notebook,
+      '- list item\n  :::my-class\n  content\n  :::',
+    );
+    expect(html).not.toMatch(/<div class="my-class"/);
+    expect(html).toContain(':::my-class');
+  });
 });
 
 describe('::: fenced div (pandoc transformer rewrite)', () => {
