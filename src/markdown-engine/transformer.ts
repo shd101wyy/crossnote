@@ -4,7 +4,7 @@ import * as less from 'less';
 import * as Papa from 'papaparse';
 import * as path from 'path';
 
-import * as temp from 'temp';
+import * as temp from '../lib/temp';
 import {
   BlockAttributes,
   parseBlockAttributes,

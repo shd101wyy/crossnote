@@ -221,9 +221,6 @@ importers:
       sval:
         specifier: ^0.6.9
         version: 0.6.9
-      temp:
-        specifier: ^0.9.4
-        version: 0.9.4
       twemoji:
         specifier: ^13.1.0
         version: 13.1.1
@@ -357,9 +354,6 @@ importers:
       '@types/react-dom':
         specifier: ^18.2.7
         version: 18.3.7(@types/react@18.3.26)
-      '@types/temp':
-        specifier: ^0.9.4
-        version: 0.9.4
       '@types/uslug':
         specifier: ^1.0.2
         version: 1.0.4
@@ -2045,9 +2039,6 @@ packages:
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
-
-  '@types/temp@0.9.4':
-    resolution: {integrity: sha512-+VfWIwrlept2VBTj7Y2wQnI/Xfscy1u8Pyj/puYwss6V1IblXn1x7S0S9eFh6KyBolgLCm+rUFzhFAbdkR691g==}
 
   '@types/tough-cookie@4.0.5':
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
@@ -5058,11 +5049,6 @@ packages:
   rfdc@1.4.1:
     resolution: {integrity: sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==}
 
-  rimraf@2.6.3:
-    resolution: {integrity: sha512-mwqeW5XsA2qAejG46gYdENaxXjx9onRNCfn7L0duuP4hCuTIi/QO7PDK07KJfp1d+izWPrzEJDcSqBa0OZQriA==}
-    deprecated: Rimraf versions prior to v4 are no longer supported
-    hasBin: true
-
   robust-predicates@3.0.2:
     resolution: {integrity: sha512-IXgzBWvWQwE6PrDI05OvmXUIruQTcoMDzRsOd5CDvHCVLcLHMTSYvOK5Cm46kWqlV3yAbuSpBZdJ5oP5OUoStg==}
 
@@ -5401,10 +5387,6 @@ packages:
 
   teex@1.0.1:
     resolution: {integrity: sha512-eYE6iEI62Ni1H8oIa7KlDU6uQBtqr4Eajni3wX7rpfXD8ysFx8z0+dri+KWEPWpBsxXfxu58x/0jvTVT1ekOSg==}
-
-  temp@0.9.4:
-    resolution: {integrity: sha512-yYrrsWnrXMcdsnu/7YMYAofM1ktpL5By7vZhf15CrXijWWrEYZks5AXBudalfSWJLlnen/QUJUB5aoB0kqZUGA==}
-    engines: {node: '>=6.0.0'}
 
   test-exclude@6.0.0:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
@@ -7752,10 +7734,6 @@ snapshots:
   '@types/sizzle@2.3.10': {}
 
   '@types/stack-utils@2.0.3': {}
-
-  '@types/temp@0.9.4':
-    dependencies:
-      '@types/node': 20.19.24
 
   '@types/tough-cookie@4.0.5': {}
 
@@ -11361,10 +11339,6 @@ snapshots:
 
   rfdc@1.4.1: {}
 
-  rimraf@2.6.3:
-    dependencies:
-      glob: 7.2.3
-
   robust-predicates@3.0.2: {}
 
   roughjs@4.6.6:
@@ -11817,11 +11791,6 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
-
-  temp@0.9.4:
-    dependencies:
-      mkdirp: 0.5.6
-      rimraf: 2.6.3
 
   test-exclude@6.0.0:
     dependencies:
