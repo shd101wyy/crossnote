@@ -64,7 +64,7 @@ declare module 'onml' {
   export function stringify(arr: unknown[]): string;
 }
 
-declare module 'bit-field/lib/render' {
+declare module 'bit-field/lib/render.js' {
   function render(reg: unknown, options: unknown): unknown[];
   export default render;
 }

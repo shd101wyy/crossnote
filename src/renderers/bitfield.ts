@@ -1,7 +1,7 @@
 import { escape } from 'html-escaper';
 import onml from 'onml';
 import { JsonObject } from 'type-fest';
-import render from 'bit-field/lib/render';
+import render from 'bit-field/lib/render.js';
 import { interpretJS } from '../utility';
 
 export async function renderBitfield(code: string, options: JsonObject) {
