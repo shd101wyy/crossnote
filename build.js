@@ -1,6 +1,44 @@
 const { context, build } = require('esbuild');
 const { dependencies, devDependencies } = require('./package.json');
 const { tailwindPlugin } = require('esbuild-plugin-tailwindcss');
+const fs = require('fs');
+
+/**
+ * Node.js builtins that esbuild-plugin-polyfill-node provides *empty*
+ * polyfills for — if any of these are imported by the ESM library
+ * bundle, downstream browser consumers will fail to bundle.
+ */
+const BROWSER_UNSAFE_IMPORTS = ['crypto'];
+
+function verifyEsmForBrowser(esmPath) {
+  const content = fs.readFileSync(esmPath, 'utf8');
+  // Match named imports: `import { X } from "mod"`.  Namespace imports
+  // (`import * as X from "mod"`) are safe because the empty polyfill
+  // exports an empty module, so accessing mod.randomBytes is undefined
+  // at runtime (which the D2 renderer already guards against).
+  const regex = /import\s*\{([^}]*)\}\s*from\s*["']([^"']+)["']/g;
+  let match;
+  const found = new Set();
+  while ((match = regex.exec(content)) !== null) {
+    const mod = match[2];
+    const names = match[1].split(',').map((s) => s.trim());
+    if (BROWSER_UNSAFE_IMPORTS.includes(mod)) {
+      for (const name of names) {
+        if (name && !name.startsWith('//')) {
+          found.add(`${name} from ${mod}`);
+        }
+      }
+    }
+  }
+  if (found.size > 0) {
+    const list = [...found].join(', ');
+    throw new Error(
+      `ESM bundle has named imports from browser-unsafe Node.js builtins: ${list}. ` +
+        'These will cause esbuild-plugin-polyfill-node failures in browser builds. ' +
+        'Replace with browser-compatible alternatives or wrap in an is-browser guard.',
+    );
+  }
+}
 
 /**
  * @type {import('esbuild').BuildOptions}
@@ -104,6 +142,9 @@ async function main() {
 
       // ESM
       await build(esmConfig);
+
+      // Verify the ESM bundle is safe for browser consumers
+      verifyEsmForBrowser('./out/esm/index.mjs');
 
       // Webview
       await build(webviewConfig);

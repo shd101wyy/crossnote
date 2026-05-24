@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.28] - 2026-05-24
+
+### Bug fixes
+
+- Fix ESM build error when bundling for browser — replace `crypto.randomBytes` in `src/lib/temp.ts` with `Math.random()`-based hex generation so the `randomBytes` import from `node:crypto` is no longer present in the ESM output, allowing browser polyfills to resolve cleanly.
+
 ## [0.9.27] - 2026-05-24
 
 ### Bug fixes
