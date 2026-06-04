@@ -103,6 +103,7 @@
     "ignore": "^7.0.5",
     "imagemagick-cli": "^0.5.0",
     "jquery": "^3.7.1",
+    "json5": "^2.2.3",
     "katex": "^0.16.47",
     "less": "^4.2.0",
     "markdown-it": "^14.1.1",

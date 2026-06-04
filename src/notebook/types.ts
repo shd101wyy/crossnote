@@ -620,7 +620,11 @@ export function getDefaultMermaidConfig(): MermaidConfig {
 export function getDefaultMathjaxConfig(): JsonObject {
   return {
     tex: {},
-    options: {},
+    options: {
+      enableAssistiveMml: false,
+      enableMenu: false,
+      enableExplorer: false,
+    },
     loader: {},
   };
 }

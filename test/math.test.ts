@@ -12,6 +12,7 @@
  */
 import * as path from 'path';
 import { Notebook } from '../src/notebook/index';
+import { getDefaultMathjaxConfig } from '../src/notebook/types';
 
 describe('Math rendering', () => {
   let notebook: Notebook;
@@ -372,5 +373,38 @@ describe('Math rendering with custom delimiters', () => {
     const html = notebook.renderMarkdown(md, { isForPreview: true });
     expect(html).toContain('$5 to $10');
     expect(html).not.toContain('class="katex"');
+  });
+});
+
+describe('MathJax config defaults', () => {
+  it('disables assistive MathML for performance', () => {
+    const config = getDefaultMathjaxConfig();
+    const options = config.options as Record<string, unknown>;
+    expect(options.enableAssistiveMml).toBe(false);
+  });
+
+  it('disables the context menu for performance', () => {
+    const config = getDefaultMathjaxConfig();
+    const options = config.options as Record<string, unknown>;
+    expect(options.enableMenu).toBe(false);
+  });
+
+  it('disables the accessibility explorer for performance', () => {
+    const config = getDefaultMathjaxConfig();
+    const options = config.options as Record<string, unknown>;
+    expect(options.enableExplorer).toBe(false);
+  });
+
+  it('preserves tex and loader config sections', () => {
+    const config = getDefaultMathjaxConfig();
+    expect(config.tex).toEqual({});
+    expect(config.loader).toEqual({});
+  });
+
+  it('is a pure object (no shared mutable references)', () => {
+    const a = getDefaultMathjaxConfig();
+    const b = getDefaultMathjaxConfig();
+    expect(a).not.toBe(b);
+    expect(a).toEqual(b);
   });
 });

@@ -1,6 +1,7 @@
 import CryptoJS, { SHA256 } from 'crypto-js';
 import { escape } from 'html-escaper';
 import $ from 'jquery';
+import JSON5 from 'json5';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
@@ -418,8 +419,6 @@ const PreviewContainer = createContainer(() => {
           return resolve();
         }
 
-        window['MathJax'].typesetClear(); // Don't pass element here!!!
-        window['MathJax'].texReset();
         window['MathJax']
           .typesetPromise([hiddenPreviewElement.current])
           .then(() => {
@@ -466,7 +465,7 @@ const PreviewContainer = createContainer(() => {
         }
 
         try {
-          const content = window.eval(`(${text})`);
+          const content = JSON5.parse(text);
           window['WaveDrom'].RenderWaveForm(i, content, 'wavedrom');
           newWavedromCache[text] = el.innerHTML;
         } catch (error) {

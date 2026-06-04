@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Replace `window.eval` with `JSON5.parse` in WaveDrom renderer** — WaveDrom fenced code blocks were parsed using `window.eval()` on untrusted user input, enabling arbitrary JavaScript code execution in the webview context. Replaced with `JSON5.parse()` which safely handles WaveDrom's JSON5-like syntax (unquoted keys, comments, trailing commas, single-quoted strings) without executing arbitrary code. Fixes the security vulnerability reported in shd101wyy/vscode-markdown-preview-enhanced#2315.
+- **Replace `interpretJS` with `JSON5.parse` in Bitfield renderer** — Bitfield fenced code blocks were parsed using `interpretJS()` which evaluates user input via `vm.runInNewContext`, enabling arbitrary code execution on the server side. Replaced with `JSON5.parse()` since bitfield register definitions are purely data (arrays of objects).
+- **Improve MathJax 4 rendering performance** — Disabled `enableAssistiveMml`, `enableMenu`, and `enableExplorer` in the default MathJax 4 config to reduce per-formula overhead (hidden MathML generation, context menu setup, accessibility explorer). Removed redundant `typesetClear()` and `texReset()` calls before each `typesetPromise()` since the DOM is freshly rebuilt on every render. Addresses shd101wyy/vscode-markdown-preview-enhanced#2312.
+
 ## [0.9.28] - 2026-05-24
 
 ### Bug fixes

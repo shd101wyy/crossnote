@@ -122,6 +122,9 @@ importers:
       jquery:
         specifier: ^3.7.1
         version: 3.7.1
+      json5:
+        specifier: ^2.2.3
+        version: 2.2.3
       katex:
         specifier: ^0.16.47
         version: 0.16.47
