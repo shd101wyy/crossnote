@@ -21,6 +21,14 @@ export function tempOpen(options: temp.AffixOptions): Promise<temp.OpenFile> {
   return temp.open(options);
 }
 
+// Characters that are dangerous in a shell command line (the ImageMagick and
+// mermaid converters build/spawn shell strings), invalid in Windows paths, or
+// otherwise risky: shell metacharacters, quotes, whitespace, the backslash, and
+// any Unicode control/format character (`\p{C}`, e.g. NUL, RTL override).
+// Everything else — including Unicode letters such as CJK or accented Latin —
+// is allowed, so non-English filenames keep working.
+const UNSAFE_IMAGE_FILENAME_CHARS = /[\p{C}\s"'`<>:|?*\\$&;(){}[\]!^%~#]/u;
+
 /**
  * Sanitize a user-supplied diagram `filename` attribute before it is used to
  * build an output image path.
@@ -39,14 +47,6 @@ export function tempOpen(options: temp.AffixOptions): Promise<temp.OpenFile> {
  * convention, it means "relative to the project root" (resolved by the caller),
  * NOT a filesystem-absolute path. The `..` rejection keeps it inside that root.
  */
-// Characters that are dangerous in a shell command line (the ImageMagick and
-// mermaid converters build/spawn shell strings), invalid in Windows paths, or
-// otherwise risky: shell metacharacters, quotes, whitespace, the backslash, and
-// any Unicode control/format character (`\p{C}`, e.g. NUL, RTL override).
-// Everything else — including Unicode letters such as CJK or accented Latin —
-// is allowed, so non-English filenames keep working.
-const UNSAFE_IMAGE_FILENAME_CHARS = /[\p{C}\s"'`<>:|?*\\$&;(){}[\]!^%~#]/u;
-
 export function sanitizeImageFilename(name: string | undefined): string {
   if (!name) {
     return '';
