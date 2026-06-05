@@ -124,7 +124,7 @@ describe('WaveDrom parser security (CVE-2026-wavedrom-eval)', () => {
       expect(() => JSON5.parse('new Function("alert(1)")')).toThrow();
     });
 
-    test('throws on backtick code execution', () => {
+    test('throws on arrow-function IIFE', () => {
       const payload = '(() => { return 1; })()';
       expect(() => JSON5.parse(payload)).toThrow();
     });

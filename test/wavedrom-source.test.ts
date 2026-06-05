@@ -54,6 +54,18 @@ describe('normalizeWavedromSource (shd101wyy/vscode-markdown-preview-enhanced#23
       expect(normalizeWavedromSource('null')).toBeNull();
     });
 
+    it('returns null for a top-level array root', () => {
+      expect(normalizeWavedromSource('[{ name: "clk" }]')).toBeNull();
+    });
+
+    it('returns null rather than silently corrupting non-finite numbers', () => {
+      // JSON5 accepts Infinity/NaN but strict JSON cannot represent them;
+      // drop the diagram instead of emitting `null` for the value.
+      expect(normalizeWavedromSource('{ max: Infinity }')).toBeNull();
+      expect(normalizeWavedromSource('{ min: -Infinity }')).toBeNull();
+      expect(normalizeWavedromSource('{ x: NaN }')).toBeNull();
+    });
+
     it('returns null for empty / whitespace input', () => {
       expect(normalizeWavedromSource('')).toBeNull();
       expect(normalizeWavedromSource('   ')).toBeNull();

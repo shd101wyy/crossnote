@@ -44,9 +44,14 @@ export function toSVGMarkdown(
   },
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const task = spawn(latexEngine, [`"${texFilePath}"`], {
+    // SECURITY: do NOT use `shell: true`. `latexEngine` comes from the
+    // `latex_engine` code-chunk attribute (attacker-controlled markdown), so a
+    // shell would let metacharacters chain extra commands. Spawning without a
+    // shell runs only the named engine and passes the temp path as one literal
+    // argument (the quotes that shell mode needed must be dropped). Code-chunk
+    // execution is additionally gated behind `enableScriptExecution`.
+    const task = spawn(latexEngine, [texFilePath], {
       cwd: path.dirname(texFilePath),
-      shell: true,
     });
 
     const chunks: Buffer[] = [];

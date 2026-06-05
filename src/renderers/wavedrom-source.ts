@@ -30,11 +30,22 @@ export function normalizeWavedromSource(raw: string): string | null {
   try {
     const data = JSON5.parse(raw);
     // WaveDrom roots are objects ({signal:[...]}, {reg:[...]}, {assign:[...]}).
-    // Anything else (bare numbers/strings/null) is not a valid diagram.
-    if (typeof data !== 'object' || data === null) {
+    // Anything else (bare numbers/strings/null, or a top-level array) is not a
+    // valid diagram.
+    if (typeof data !== 'object' || data === null || Array.isArray(data)) {
       return null;
     }
-    return JSON.stringify(data).replace(/</g, '\\u003c');
+    // Re-serialize to strict JSON. JSON5 accepts `Infinity`/`-Infinity`/`NaN`,
+    // but `JSON.stringify` silently coerces them to `null`; throw instead so a
+    // diagram relying on those values is dropped rather than rendered with
+    // corrupted data.
+    const json = JSON.stringify(data, (_key, value) => {
+      if (typeof value === 'number' && !Number.isFinite(value)) {
+        throw new SyntaxError('WaveDrom data contains a non-finite number');
+      }
+      return value;
+    });
+    return json.replace(/</g, '\\u003c');
   } catch {
     return null;
   }
