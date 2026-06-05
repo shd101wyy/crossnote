@@ -4,6 +4,7 @@
  */
 
 import DOMPurify from 'dompurify';
+import { normalizeWavedromSource } from '../../renderers/wavedrom-source';
 
 // Script types used as data containers by diagram renderers (not executable)
 const SAFE_SCRIPT_TYPES = new Set(['wavedrom', 'text/tikz']);
@@ -25,6 +26,20 @@ purify.addHook('uponSanitizeElement', (node, data) => {
     const scriptType = (el.getAttribute?.('type') || '').toLowerCase().trim();
     if (!SAFE_SCRIPT_TYPES.has(scriptType)) {
       el.parentNode?.removeChild(el);
+      return;
+    }
+
+    // WaveDrom data scripts are eval'd by the bundled WaveDrom renderer in
+    // presentation mode. Normalize the body to inert strict JSON so eval can
+    // never execute attacker controlled JavaScript
+    // (shd101wyy/vscode-markdown-preview-enhanced#2315).
+    if (scriptType === 'wavedrom') {
+      const safe = normalizeWavedromSource(el.textContent || '');
+      if (safe === null) {
+        el.parentNode?.removeChild(el);
+      } else {
+        el.textContent = safe;
+      }
     }
   }
 });

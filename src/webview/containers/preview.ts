@@ -419,6 +419,12 @@ const PreviewContainer = createContainer(() => {
           return resolve();
         }
 
+        // Clear MathJax's internal list of typeset items (it otherwise grows
+        // unbounded across re-renders, leaking the detached nodes from the
+        // freshly rebuilt hidden preview) and reset the equation numbering so
+        // numbered equations don't drift on every edit.
+        window['MathJax'].typesetClear(); // Don't pass element here!!!
+        window['MathJax'].texReset();
         window['MathJax']
           .typesetPromise([hiddenPreviewElement.current])
           .then(() => {
@@ -469,7 +475,7 @@ const PreviewContainer = createContainer(() => {
           window['WaveDrom'].RenderWaveForm(i, content, 'wavedrom');
           newWavedromCache[text] = el.innerHTML;
         } catch (error) {
-          el.innerText = 'Failed to eval WaveDrom code. ' + error;
+          el.innerText = 'Failed to render WaveDrom code. ' + error;
         }
       }
 

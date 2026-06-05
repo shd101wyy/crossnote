@@ -17,3 +17,9 @@ styles/**/*.css
 !styles/markdown-it-callout.css
 !styles/twemoji.css
 docs
+
+# Playwright browser-test artifacts
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache

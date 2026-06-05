@@ -138,6 +138,45 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
       expect(result).toContain('{"signal":[]}');
     });
 
+    it('normalizes JSON5 WaveDrom data scripts to strict JSON', () => {
+      const result = sanitize(
+        `<div class="wavedrom"><script type="WaveDrom">{ signal: [ { name: 'clk', wave: 'p..' }, ], }</script></div>`,
+      );
+      expect(result).toContain('<script type="WaveDrom">');
+      // unquoted keys / single quotes / trailing commas become strict JSON
+      expect(result).toContain('{"signal":[{"name":"clk","wave":"p.."}]}');
+      expect(result).not.toContain("'clk'");
+    });
+
+    it('drops WaveDrom data scripts that contain executable code', () => {
+      const result = sanitize(
+        `<div class="wavedrom"><script type="WaveDrom">(()=>{return globalThis.process})()</script></div>`,
+      );
+      expect(result).not.toContain('<script');
+      expect(result).not.toContain('globalThis');
+    });
+
+    it('drops WaveDrom data scripts with a function-call payload', () => {
+      const result = sanitize(
+        `<div class="wavedrom"><script type="WaveDrom">alert(1)</script></div>`,
+      );
+      expect(result).not.toContain('<script');
+      expect(result).not.toContain('alert(1)');
+    });
+
+    it('escapes a </script> value so it cannot break out after re-serialization', () => {
+      // The raw input uses a JSON escape (<\/script>) so the HTML parser does
+      // NOT treat it as a closing tag; JSON5 decodes it to a literal
+      // "</script>" string value, which JSON.stringify would otherwise emit
+      // raw and break out of the <script> container.
+      const result = sanitize(
+        '<div class="wavedrom"><script type="WaveDrom">{"name":"<\\/script><img src=x onerror=alert(1)>"}</script></div>',
+      );
+      expect(result).toContain('<script type="WaveDrom">');
+      expect(result).not.toContain('</script><img');
+      expect(result).toContain('\\u003c/script>');
+    });
+
     it('preserves TikZ scripts', () => {
       const tikzCode =
         '\\begin{tikzpicture}\\draw (0,0) -- (1,1);\\end{tikzpicture}';

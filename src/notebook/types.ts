@@ -621,9 +621,17 @@ export function getDefaultMathjaxConfig(): JsonObject {
   return {
     tex: {},
     options: {
-      enableAssistiveMml: false,
-      enableMenu: false,
-      enableExplorer: false,
+      // MathJax 4's combined `tex-mml-chtml` component bundles the a11y
+      // speech-rule-engine and runs semantic *enrichment* (speech generation)
+      // on every typeset. That enrichment is ~95% of MathJax 4's per-formula
+      // cost and is the reason a preview with many formulas re-renders slowly
+      // on every edit (shd101wyy/vscode-markdown-preview-enhanced#2312).
+      // Disable it by default to restore MathJax-3-like typeset performance;
+      // users who need screen-reader speech can set this back to `true` in
+      // their `mathjaxConfig`. NOTE: MathJax ignores this flag when it is set
+      // in the config block, so the engine re-applies it onto the live
+      // MathDocument via a `startup.ready` hook (see markdown-engine).
+      enableEnrichment: false,
     },
     loader: {},
   };
