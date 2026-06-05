@@ -36,18 +36,20 @@ export function toSVGMarkdown(
 
     const svgFilePrefix = computeChecksum(pdfFilePath) + '_';
 
-    const task = spawn(
-      'pdf2svg',
-      [
-        `"${pdfFilePath}"`,
-        `"${path.resolve(
-          svgDirectoryPath ?? `/tmp/crossnote_pdf`,
-          svgFilePrefix + '%d.svg',
-        )}"`,
-        'all',
-      ],
-      { shell: true },
-    );
+    // SECURITY: do NOT use `shell: true`. `pdfFilePath` can come from a
+    // markdown `@import "…"` (auto-rendered on preview), so running through a
+    // shell would let metacharacters in the path inject commands. Spawning
+    // without a shell passes each path as a single literal argument (and the
+    // surrounding quotes that shell mode required must be dropped, or they
+    // become part of the filename).
+    const task = spawn('pdf2svg', [
+      pdfFilePath,
+      path.resolve(
+        svgDirectoryPath ?? `/tmp/crossnote_pdf`,
+        svgFilePrefix + '%d.svg',
+      ),
+      'all',
+    ]);
     const chunks: string[] = [];
     task.stdout.on('data', (chunk) => {
       chunks.push(chunk);
