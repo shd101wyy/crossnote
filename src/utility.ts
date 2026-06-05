@@ -30,22 +30,26 @@ export function tempOpen(options: temp.AffixOptions): Promise<temp.OpenFile> {
  * which shell out — ImageMagick via `imagemagick-cli` (uses
  * `child_process.exec`) and `@mermaid-js/mermaid-cli` (spawned with
  * `shell: true`). Shell metacharacters in the name would therefore allow
- * command injection on export. We accept only plain relative file names
- * (optionally inside a subdirectory) drawn from a conservative, shell-safe
- * allowlist and reject path traversal; anything else returns `''` so the
- * caller falls back to its auto-generated name.
+ * command injection on export. We accept only plain relative file names drawn
+ * from a conservative, shell-safe allowlist and reject `..` traversal; anything
+ * else returns `''` so the caller falls back to its auto-generated name.
+ *
+ * A leading `/` is permitted and kept: consistent with MPE's `imageFolderPath`
+ * convention, it means "relative to the project root" (resolved by the caller),
+ * NOT a filesystem-absolute path. The `..` rejection keeps it inside that root.
  */
 export function sanitizeImageFilename(name: string | undefined): string {
   if (!name) {
     return '';
   }
-  // Allowlist: letters, digits, `_`, `-`, `.`, and `/` (for subdirectories).
-  // This excludes every shell metacharacter, whitespace, and quote.
+  // Allowlist: letters, digits, `_`, `-`, `.`, and `/` (for subdirectories and
+  // an optional leading project-root `/`). Excludes every shell metacharacter,
+  // whitespace, and quote.
   if (!/^[A-Za-z0-9_./-]+$/.test(name)) {
     return '';
   }
-  // Refuse absolute paths and path traversal that would escape the image dir.
-  if (name.startsWith('/') || name.split('/').includes('..')) {
+  // Refuse `..` segments so the resolved path can't escape its base directory.
+  if (name.split('/').includes('..')) {
     return '';
   }
   return name;

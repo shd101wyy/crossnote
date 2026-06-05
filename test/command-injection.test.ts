@@ -108,6 +108,14 @@ describe('sanitizeImageFilename (diagram export filename injection)', () => {
     );
   });
 
+  it('accepts a leading-slash project-root path (MPE convention, not absolute)', () => {
+    // `/assets/x.png` means "relative to the project root" — the caller
+    // resolves it against projectDirectoryPath, not the filesystem root.
+    expect(sanitizeImageFilename('/assets/diagram.png')).toBe(
+      '/assets/diagram.png',
+    );
+  });
+
   it('rejects shell metacharacters', () => {
     expect(sanitizeImageFilename('x.png && calc.exe')).toBe('');
     expect(sanitizeImageFilename('x.png; rm -rf /')).toBe('');
@@ -117,10 +125,10 @@ describe('sanitizeImageFilename (diagram export filename injection)', () => {
     expect(sanitizeImageFilename('"quoted".png')).toBe('');
   });
 
-  it('rejects path traversal and absolute paths', () => {
+  it('rejects `..` path traversal (even with a leading slash)', () => {
     expect(sanitizeImageFilename('../../etc/passwd')).toBe('');
-    expect(sanitizeImageFilename('/etc/passwd')).toBe('');
     expect(sanitizeImageFilename('a/../../b.png')).toBe('');
+    expect(sanitizeImageFilename('/../outside.png')).toBe('');
   });
 
   it('returns empty for empty/undefined input (caller falls back to default)', () => {

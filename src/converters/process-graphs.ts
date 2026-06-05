@@ -139,6 +139,17 @@ export async function processGraphs(
     }
   }
 
+  // Resolve a sanitized output image name to an absolute path. A leading `/`
+  // means "relative to the project root" (MPE's imageFolderPath convention),
+  // not a filesystem-absolute path; otherwise it's relative to the image output
+  // directory.
+  function resolveOutputImagePath(name: string): string {
+    if (name.startsWith('/')) {
+      return path.resolve(projectDirectoryPath, '.' + name);
+    }
+    return path.resolve(imageDirectoryPath, name);
+  }
+
   async function convertSVGToPNGFile(
     outFileName: string = '',
     svg: string,
@@ -157,7 +168,7 @@ export async function processGraphs(
       outFileName = imageFilePrefix + imgCount + '.png';
     }
 
-    const pngFilePath = path.resolve(imageDirectoryPath, outFileName);
+    const pngFilePath = resolveOutputImagePath(outFileName);
     if (notebook.config.imageMagickPath) {
       // use `magick`
       await magick.svgElementToPNGFile(
@@ -309,7 +320,7 @@ export async function processGraphs(
         if (!pngFileName) {
           pngFileName = imageFilePrefix + imgCount + '.png';
         }
-        const pngFilePath = path.resolve(imageDirectoryPath, pngFileName);
+        const pngFilePath = resolveOutputImagePath(pngFileName);
         imgCount++;
         await mermaidAPI.mermaidToPNG(
           content,
