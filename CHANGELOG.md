@@ -2,7 +2,7 @@
 
 Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/releases for the more changelog
 
-## [Unreleased]
+## [0.9.29] - 2026-06-05
 
 ### Bug fixes
 
