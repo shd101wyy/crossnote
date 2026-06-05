@@ -246,12 +246,12 @@ The eager in-memory note cache is now slim: it holds metadata (title, aliases, f
 
 ### New features
 
-- Add markdown-it callout feature with styling https://github.com/shd101wyy/crossnote/pull/387 by [@EmmetZ](https://github.com/EmmetZ).
-- Add WebSequenceDiagrams support in `wsd` code blocks https://github.com/shd101wyy/vscode-markdown-preview-enhanced/pull/2228 by [@smhanov](https://github.com/smhanov).
+- Add markdown-it callout feature with styling https://github.com/shd101wyy/crossnote/pull/387 by @EmmetZ.
+- Add WebSequenceDiagrams support in `wsd` code blocks https://github.com/shd101wyy/vscode-markdown-preview-enhanced/pull/2228 by @smhanov.
 
 ### Bug fixes
 
-- Remove the wrapper of custom head in HTML page https://github.com/shd101wyy/crossnote/pull/386 by [@TanShun](https://github.com/TanShun).
+- Remove the wrapper of custom head in HTML page https://github.com/shd101wyy/crossnote/pull/386 by @TanShun.
 
 ### Security
 
