@@ -108,6 +108,16 @@ describe('sanitizeImageFilename (diagram export filename injection)', () => {
     );
   });
 
+  it('accepts non-ASCII (Unicode) filenames', () => {
+    // Unicode letters have no shell meaning; non-English filenames must work.
+    expect(sanitizeImageFilename('图表.png')).toBe('图表.png');
+    expect(sanitizeImageFilename('schéma_électrique.png')).toBe(
+      'schéma_électrique.png',
+    );
+    expect(sanitizeImageFilename('диаграмма.png')).toBe('диаграмма.png');
+    expect(sanitizeImageFilename('assets/図.png')).toBe('assets/図.png');
+  });
+
   it('accepts a leading-slash project-root path (MPE convention, not absolute)', () => {
     // `/assets/x.png` means "relative to the project root" — the caller
     // resolves it against projectDirectoryPath, not the filesystem root.
@@ -123,6 +133,15 @@ describe('sanitizeImageFilename (diagram export filename injection)', () => {
     expect(sanitizeImageFilename('`calc`.png')).toBe('');
     expect(sanitizeImageFilename('a|b.png')).toBe('');
     expect(sanitizeImageFilename('"quoted".png')).toBe('');
+  });
+
+  it('rejects whitespace and control characters', () => {
+    expect(sanitizeImageFilename('my diagram.png')).toBe('');
+    expect(sanitizeImageFilename('a\tb.png')).toBe('');
+    expect(sanitizeImageFilename('a\nb.png')).toBe('');
+    expect(sanitizeImageFilename('a\x00b.png')).toBe('');
+    // Unicode RTL override (filename-spoofing / control) is rejected.
+    expect(sanitizeImageFilename('evil‮gnp.png')).toBe('');
   });
 
   it('rejects `..` path traversal (even with a leading slash)', () => {

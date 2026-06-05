@@ -30,22 +30,28 @@ export function tempOpen(options: temp.AffixOptions): Promise<temp.OpenFile> {
  * which shell out — ImageMagick via `imagemagick-cli` (uses
  * `child_process.exec`) and `@mermaid-js/mermaid-cli` (spawned with
  * `shell: true`). Shell metacharacters in the name would therefore allow
- * command injection on export. We accept only plain relative file names drawn
- * from a conservative, shell-safe allowlist and reject `..` traversal; anything
- * else returns `''` so the caller falls back to its auto-generated name.
+ * command injection on export. We reject names containing shell metacharacters,
+ * whitespace, control characters, or `..` traversal; anything unsafe returns
+ * `''` so the caller falls back to its auto-generated name. Unicode letters
+ * (CJK, accented Latin, …) are allowed — they are not shell-special.
  *
  * A leading `/` is permitted and kept: consistent with MPE's `imageFolderPath`
  * convention, it means "relative to the project root" (resolved by the caller),
  * NOT a filesystem-absolute path. The `..` rejection keeps it inside that root.
  */
+// Characters that are dangerous in a shell command line (the ImageMagick and
+// mermaid converters build/spawn shell strings), invalid in Windows paths, or
+// otherwise risky: shell metacharacters, quotes, whitespace, the backslash, and
+// any Unicode control/format character (`\p{C}`, e.g. NUL, RTL override).
+// Everything else — including Unicode letters such as CJK or accented Latin —
+// is allowed, so non-English filenames keep working.
+const UNSAFE_IMAGE_FILENAME_CHARS = /[\p{C}\s"'`<>:|?*\\$&;(){}[\]!^%~#]/u;
+
 export function sanitizeImageFilename(name: string | undefined): string {
   if (!name) {
     return '';
   }
-  // Allowlist: letters, digits, `_`, `-`, `.`, and `/` (for subdirectories and
-  // an optional leading project-root `/`). Excludes every shell metacharacter,
-  // whitespace, and quote.
-  if (!/^[A-Za-z0-9_./-]+$/.test(name)) {
+  if (UNSAFE_IMAGE_FILENAME_CHARS.test(name)) {
     return '';
   }
   // Refuse `..` segments so the resolved path can't escape its base directory.
