@@ -2,6 +2,13 @@
 
 Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/releases for the more changelog
 
+## [Unreleased]
+
+### Bug fixes
+
+- **Fix heading auto-ID generation for underscore-based italic/bold at string boundaries** — When a heading used underscore-based emphasis at the beginning or end (e.g., `_Toy Story_` or `__Bold Title__`), the generated heading ID would retain the underscores (e.g., `_toy-story_`), which markdown-it would interpret as emphasis markers, splitting the `{#id data-source-line="N"}` attribute block across multiple tokens and leaving it visible in the rendered output. Heading IDs now properly strip underscore emphasis markers at boundaries, restoring correct heading rendering. Fixes [vscode-mpe#2319](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2319).
+- **Fix `@import` / `![[wikilink]]` file resolution when the file path contains `#`** — When a project directory name contains `#` (e.g., `[#11111111]`), the `@import` and wikilink-based file imports would fail because the `#` in the directory name was incorrectly treated as a heading anchor fragment separator during post-resolution path splitting. The `#fragment` is now extracted from the original import syntax before path resolution, so literal `#` characters in directory paths are preserved. Fixes [vscode-mpe#2317](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2317).
+
 ## [0.9.29] - 2026-06-05
 
 ### Bug fixes

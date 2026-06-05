@@ -92,6 +92,22 @@ const testCasesForHeaderIdGenerator: {
     input: 'test __test__ test',
     expected: 'test-test-test-1',
   },
+  {
+    input: '_Toy Story_',
+    expected: 'toy-story',
+  },
+  {
+    input: '__Bold Title__',
+    expected: 'bold-title',
+  },
+  {
+    input: "Pixar's _Toy Story_",
+    expected: 'pixars-toy-story',
+  },
+  {
+    input: '_Toy Story_ (1995)',
+    expected: 'toy-story-1995',
+  },
 ];
 
 describe('header-id-generator', () => {

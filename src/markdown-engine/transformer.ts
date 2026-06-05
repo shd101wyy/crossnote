@@ -732,17 +732,44 @@ export async function transformMarkdown(
       );
       if (importMatch || imageImportMatch || wikilinkImportMatch) {
         let filePath = '';
+
+        // Extract #fragment from the original import path before
+        // decodeURIComponent and path resolution.  If we extract it
+        // later from the resolved absolute path, a literal `#` in a
+        // directory name (e.g. `/notes/[#111]/file.md`) would be
+        // incorrectly treated as a heading anchor fragment, breaking
+        // file resolution.
+        let fileHash = '';
         if (importMatch) {
           outputString += importMatch[1];
           filePath = importMatch[3].trim();
+          const hashIdx = filePath.lastIndexOf('#');
+          if (hashIdx > 0) {
+            fileHash = filePath.substring(hashIdx);
+            filePath = filePath.substring(0, hashIdx);
+          }
         } else if (imageImportMatch) {
           outputString += imageImportMatch[1];
           filePath = imageImportMatch[3].trim().replace(/\s"[^"]*"\s*$/, '');
+          const hashIdx = filePath.lastIndexOf('#');
+          if (hashIdx > 0) {
+            fileHash = filePath.substring(hashIdx);
+            filePath = filePath.substring(0, hashIdx);
+          }
         } else if (wikilinkImportMatch) {
           outputString += wikilinkImportMatch[1];
-          const { link } = notebook.processWikilink(wikilinkImportMatch[2]);
-          filePath = link;
+          const result = notebook.processWikilink(wikilinkImportMatch[2]);
+          // processWikilink re-appends hash and blockRef to its `link`
+          // return value.  Strip them so path resolution only sees the
+          // clean file portion — otherwise a literal `#` might end up
+          // in the resolved path and confuse file loading.
+          fileHash = (result.hash || '') + (result.blockRef || '');
+          const suffix = fileHash;
+          filePath = suffix
+            ? result.link.slice(0, result.link.length - suffix.length)
+            : result.link;
         }
+
         // URL-decode so `my%20origin.md` resolves to `my origin.md` —
         // standard for markdown links and Obsidian's URI form for
         // wikilinks / @import targets with spaces in the path.
@@ -805,12 +832,6 @@ export async function transformMarkdown(
             currentRelativePath,
           );
           absoluteFilePath = path.resolve(projectDirectoryPath, resolved);
-        }
-        let fileHash = '';
-        const hashIndex = absoluteFilePath.lastIndexOf('#');
-        if (hashIndex > 0) {
-          fileHash = absoluteFilePath.substring(hashIndex);
-          absoluteFilePath = absoluteFilePath.substring(0, hashIndex);
         }
 
         const extname = path.extname(absoluteFilePath).toLocaleLowerCase();
