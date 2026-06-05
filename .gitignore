@@ -6,6 +6,7 @@ out
 test.js
 test.mjs
 .direnv
+.codegraph
 tsconfig.tsbuildinfo
 pnpm-debug.log
 .mume
