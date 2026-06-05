@@ -44,6 +44,7 @@ import enhanceWithResolvedImagePaths from '../render-enhancers/resolved-image-pa
 import * as utility from '../utility';
 import { removeFileProtocol } from '../utility';
 import HeadingIdGenerator from './heading-id-generator';
+import { buildMathJaxConfigScript } from './mathjax-config';
 import { sanitizeRenderedHTML } from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
 import { transformMarkdown } from './transformer';
@@ -366,9 +367,9 @@ export class MarkdownEngine {
         startupConfig['elements'] = ['.hidden-preview']; // Only render on this element
       }
 
-      scripts += `<script type="text/javascript"> window.MathJax = (${JSON.stringify(
+      scripts += `<script type="text/javascript"> ${buildMathJaxConfigScript(
         mathJaxConfig,
-      )}); </script>`;
+      )} </script>`;
       scripts += `<script type="text/javascript" defer src="${this.notebook.config.mathjaxScriptSrc}" charset="UTF-8"></script>`;
     }
 
@@ -972,7 +973,7 @@ window["initRevealPresentation"] = async function() {
       if (options.offline) {
         mathStyle = `
         <script type="text/javascript">
-          window.MathJax = (${JSON.stringify(mathJaxConfig)});
+          ${buildMathJaxConfigScript(mathJaxConfig)}
         </script>
         <script type="text/javascript" defer src="${
           this.notebook.config.mathjaxScriptSrc
@@ -981,7 +982,7 @@ window["initRevealPresentation"] = async function() {
       } else {
         mathStyle = `
         <script type="text/javascript">
-          window.MathJax = (${JSON.stringify(mathJaxConfig)});
+          ${buildMathJaxConfigScript(mathJaxConfig)}
         </script>
         <script type="text/javascript" defer src="${
           this.notebook.config.mathjaxScriptSrc

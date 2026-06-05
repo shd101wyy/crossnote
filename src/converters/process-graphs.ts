@@ -13,7 +13,7 @@ import * as magick from '../tools/magick';
 import * as mermaidAPI from '../tools/mermaid';
 import * as sharp from '../tools/sharp';
 import * as wavedromAPI from '../tools/wavedrom';
-import { extractCommandFromBlockInfo } from '../utility';
+import { extractCommandFromBlockInfo, sanitizeImageFilename } from '../utility';
 
 export async function processGraphs(
   text: string,
@@ -139,6 +139,17 @@ export async function processGraphs(
     }
   }
 
+  // Resolve a sanitized output image name to an absolute path. A leading `/`
+  // means "relative to the project root" (MPE's imageFolderPath convention),
+  // not a filesystem-absolute path; otherwise it's relative to the image output
+  // directory.
+  function resolveOutputImagePath(name: string): string {
+    if (name.startsWith('/')) {
+      return path.resolve(projectDirectoryPath, '.' + name);
+    }
+    return path.resolve(imageDirectoryPath, name);
+  }
+
   async function convertSVGToPNGFile(
     outFileName: string = '',
     svg: string,
@@ -150,11 +161,14 @@ export async function processGraphs(
     altName: string,
     optionsStr: string,
   ) {
+    // The filename comes from untrusted markdown and ends up in a converter
+    // that shells out; reject anything but a safe relative name.
+    outFileName = sanitizeImageFilename(outFileName);
     if (!outFileName) {
       outFileName = imageFilePrefix + imgCount + '.png';
     }
 
-    const pngFilePath = path.resolve(imageDirectoryPath, outFileName);
+    const pngFilePath = resolveOutputImagePath(outFileName);
     if (notebook.config.imageMagickPath) {
       // use `magick`
       await magick.svgElementToPNGFile(
@@ -298,11 +312,15 @@ export async function processGraphs(
     } else if (def.match(/^mermaid/)) {
       // mermaid-cli Ver.8.4.8 has a bug, render in png https://github.com/mermaid-js/mermaid/issues/664
       try {
-        let pngFileName = options['filename'] as string | undefined;
+        // `filename` is untrusted markdown and is passed to mermaid-cli, which
+        // is spawned with `shell: true`; reject shell-unsafe names.
+        let pngFileName = sanitizeImageFilename(
+          options['filename'] as string | undefined,
+        );
         if (!pngFileName) {
           pngFileName = imageFilePrefix + imgCount + '.png';
         }
-        const pngFilePath = path.resolve(imageDirectoryPath, pngFileName);
+        const pngFilePath = resolveOutputImagePath(pngFileName);
         imgCount++;
         await mermaidAPI.mermaidToPNG(
           content,

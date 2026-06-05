@@ -2,7 +2,14 @@
 
 Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/releases for the more changelog
 
-## [Unreleased]
+## [0.9.29] - 2026-06-05
+
+### Bug fixes
+
+- **Harden external file/link opening against command injection** — Opening links and files from the preview no longer goes through a shell, and untrusted inputs (the diagram `filename` attribute, imported file paths, and the `latex_engine` code-chunk attribute) are passed as literal arguments or validated before use. This closes a security issue affecting Windows. Thanks to @byte16384 for the responsible disclosure.
+- **Eliminate arbitrary code execution in WaveDrom rendering** — WaveDrom diagrams were parsed by evaluating untrusted markdown content with `eval()`, enabling arbitrary JavaScript execution. This affected every render path: the live preview (`window.eval`), and presentation mode plus HTML export (the bundled `WaveDrom.ProcessAll()`/`eva()` helpers). The live preview now parses with `JSON5.parse()`, and — because a malicious `<script type="WaveDrom">` can also be injected via raw HTML in markdown — the HTML sanitizer now validates and normalizes every WaveDrom data script to inert strict JSON, so no downstream `eval`/`ProcessAll` can execute attacker-controlled code. Fixes the security vulnerability reported in [vscode-mpe#2315](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2315).
+- **Replace `interpretJS` with `JSON5.parse` in Bitfield renderer** — Bitfield fenced code blocks were parsed using `interpretJS()` which evaluates user input via `vm.runInNewContext`, enabling arbitrary code execution on the server side. Replaced with `JSON5.parse()` since bitfield register definitions are purely data (arrays of objects).
+- **Improve MathJax 4 rendering performance** — MathJax 4's combined `tex-mml-chtml` component runs accessibility _semantic enrichment_ (the speech-rule-engine) on every typeset, which dominates per-formula cost and made formula-heavy previews re-render slowly on each edit (measured ~890 ms vs ~42 ms for 127 formulas in Chrome — a ~21× difference). Semantic enrichment is now disabled by default (`options.enableEnrichment: false`), restoring MathJax-3-like performance. Because MathJax ignores this flag when set in the config block, the engine re-applies the configured a11y toggles onto the live `MathDocument` via a `startup.ready` hook; users who need screen-reader speech output can set `enableEnrichment: true` in their `mathjaxConfig`. Addresses [vscode-mpe#2312](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2312).
 
 ## [0.9.28] - 2026-05-24
 
@@ -239,12 +246,12 @@ The eager in-memory note cache is now slim: it holds metadata (title, aliases, f
 
 ### New features
 
-- Add markdown-it callout feature with styling https://github.com/shd101wyy/crossnote/pull/387 by [@EmmetZ](https://github.com/EmmetZ).
-- Add WebSequenceDiagrams support in `wsd` code blocks https://github.com/shd101wyy/vscode-markdown-preview-enhanced/pull/2228 by [@smhanov](https://github.com/smhanov).
+- Add markdown-it callout feature with styling https://github.com/shd101wyy/crossnote/pull/387 by @EmmetZ.
+- Add WebSequenceDiagrams support in `wsd` code blocks https://github.com/shd101wyy/vscode-markdown-preview-enhanced/pull/2228 by @smhanov.
 
 ### Bug fixes
 
-- Remove the wrapper of custom head in HTML page https://github.com/shd101wyy/crossnote/pull/386 by [@TanShun](https://github.com/TanShun).
+- Remove the wrapper of custom head in HTML page https://github.com/shd101wyy/crossnote/pull/386 by @TanShun.
 
 ### Security
 

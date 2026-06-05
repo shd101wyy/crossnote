@@ -11,7 +11,9 @@
  * renderer's output.
  */
 import * as path from 'path';
+import { buildMathJaxConfigScript } from '../src/markdown-engine/mathjax-config';
 import { Notebook } from '../src/notebook/index';
+import { getDefaultMathjaxConfig } from '../src/notebook/types';
 
 describe('Math rendering', () => {
   let notebook: Notebook;
@@ -372,5 +374,59 @@ describe('Math rendering with custom delimiters', () => {
     const html = notebook.renderMarkdown(md, { isForPreview: true });
     expect(html).toContain('$5 to $10');
     expect(html).not.toContain('class="katex"');
+  });
+});
+
+describe('MathJax config defaults', () => {
+  it('disables a11y semantic enrichment for performance (#2312)', () => {
+    // Enrichment (speech-rule-engine) is ~95% of MathJax 4's per-formula
+    // typeset cost; disabling it restores MathJax-3-like preview performance.
+    const config = getDefaultMathjaxConfig();
+    const options = config.options as Record<string, unknown>;
+    expect(options.enableEnrichment).toBe(false);
+  });
+
+  it('preserves tex and loader config sections', () => {
+    const config = getDefaultMathjaxConfig();
+    expect(config.tex).toEqual({});
+    expect(config.loader).toEqual({});
+  });
+
+  it('is a pure object (no shared mutable references)', () => {
+    const a = getDefaultMathjaxConfig();
+    const b = getDefaultMathjaxConfig();
+    expect(a).not.toBe(b);
+    expect(a).toEqual(b);
+  });
+});
+
+describe('buildMathJaxConfigScript (#2312 enrichment override)', () => {
+  it('serializes the config onto window.MathJax', () => {
+    const script = buildMathJaxConfigScript(getDefaultMathjaxConfig());
+    expect(script).toContain('window.MathJax = (');
+    expect(script).toContain('"enableEnrichment":false');
+  });
+
+  it('wraps startup.ready to re-apply a11y toggles onto the live document', () => {
+    const script = buildMathJaxConfigScript(getDefaultMathjaxConfig());
+    // The ready hook must run the default startup and then copy the
+    // configured a11y options onto the built MathDocument (where they
+    // actually take effect — MathJax ignores them in the config block).
+    expect(script).toContain('cfg.startup.ready = function');
+    expect(script).toContain('defaultReady()');
+    expect(script).toContain('doc.options[keys[i]] = wanted[keys[i]]');
+    expect(script).toContain('enableEnrichment');
+  });
+
+  it('preserves a user-provided ready hook', () => {
+    const script = buildMathJaxConfigScript({ options: {} });
+    expect(script).toContain("typeof userReady === 'function'");
+    expect(script).toContain('userReady()');
+  });
+
+  it('produces a syntactically valid script', () => {
+    const script = buildMathJaxConfigScript(getDefaultMathjaxConfig());
+    // Wrap so the bare `window.MathJax = (...)` assignment parses.
+    expect(() => new Function('window', script)).not.toThrow();
   });
 });

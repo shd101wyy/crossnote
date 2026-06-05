@@ -21,6 +21,46 @@ export function tempOpen(options: temp.AffixOptions): Promise<temp.OpenFile> {
   return temp.open(options);
 }
 
+// Characters that are dangerous in a shell command line (the ImageMagick and
+// mermaid converters build/spawn shell strings), invalid in Windows paths, or
+// otherwise risky: shell metacharacters, quotes, whitespace, the backslash, and
+// any Unicode control/format character (`\p{C}`, e.g. NUL, RTL override).
+// Everything else — including Unicode letters such as CJK or accented Latin —
+// is allowed, so non-English filenames keep working.
+const UNSAFE_IMAGE_FILENAME_CHARS = /[\p{C}\s"'`<>:|?*\\$&;(){}[\]!^%~#]/u;
+
+/**
+ * Sanitize a user-supplied diagram `filename` attribute before it is used to
+ * build an output image path.
+ *
+ * The value comes from untrusted markdown (e.g. ```` ```mermaid {filename=…} ````)
+ * and is later joined into an output path that is handed to image converters
+ * which shell out — ImageMagick via `imagemagick-cli` (uses
+ * `child_process.exec`) and `@mermaid-js/mermaid-cli` (spawned with
+ * `shell: true`). Shell metacharacters in the name would therefore allow
+ * command injection on export. We reject names containing shell metacharacters,
+ * whitespace, control characters, or `..` traversal; anything unsafe returns
+ * `''` so the caller falls back to its auto-generated name. Unicode letters
+ * (CJK, accented Latin, …) are allowed — they are not shell-special.
+ *
+ * A leading `/` is permitted and kept: consistent with MPE's `imageFolderPath`
+ * convention, it means "relative to the project root" (resolved by the caller),
+ * NOT a filesystem-absolute path. The `..` rejection keeps it inside that root.
+ */
+export function sanitizeImageFilename(name: string | undefined): string {
+  if (!name) {
+    return '';
+  }
+  if (UNSAFE_IMAGE_FILENAME_CHARS.test(name)) {
+    return '';
+  }
+  // Refuse `..` segments so the resolved path can't escape its base directory.
+  if (name.split('/').includes('..')) {
+    return '';
+  }
+  return name;
+}
+
 /**
  * open html file in browser or open pdf file in reader ... etc
  * @param filePath
@@ -31,13 +71,20 @@ export function openFile(filePath: string) {
       // C:\ like url.
       filePath = 'file:///' + filePath;
     }
-    if (filePath.startsWith('file:///')) {
-      return child_process.execFile('explorer.exe', [filePath]);
-    } else {
-      return child_process.exec(`start ${filePath}`);
-    }
+    // SECURITY: never pass `filePath` through a shell. `filePath` may be an
+    // attacker-controlled href from a clicked preview link, so the previous
+    // `child_process.exec('start ' + filePath)` ran via cmd.exe, where shell
+    // metacharacters injected commands — e.g. a markdown link
+    // `[x](mailto:a%26%20calc.exe)` decodes to `mailto:a& calc.exe` and the
+    // `&` runs `calc.exe` as a second command (one-click RCE on Windows,
+    // reported by @byte16384). `execFile` spawns without a shell, so `&`, `|`,
+    // `&&`, … are passed verbatim as a single argument to `explorer.exe`,
+    // which opens the file/URI via the OS default handler.
+    return child_process.execFile('explorer.exe', [filePath]);
   } else if (process.platform === 'darwin') {
-    child_process.execFile('open', [filePath]);
+    // `--` stops option parsing so a `filePath` starting with `-` can't be
+    // interpreted as a flag. `execFile` already avoids the shell.
+    child_process.execFile('open', ['--', filePath]);
   } else {
     child_process.execFile('xdg-open', [filePath]);
   }

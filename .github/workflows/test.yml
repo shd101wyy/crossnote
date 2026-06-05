@@ -50,3 +50,40 @@ jobs:
 
       - name: Build typedoc
         run: pnpm typedoc
+
+  browser-test:
+    name: Browser tests (MathJax)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install nodejs
+        uses: actions/setup-node@v6
+        with:
+          cache: pnpm
+          node-version-file: .tool-versions
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run browser tests
+        # Real-Chromium tests for the client-side MathJax pipeline: equation
+        # numbering across re-renders and a11y-enrichment performance (#2312).
+        run: pnpm test:browser
+
+      - name: Upload Playwright report on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

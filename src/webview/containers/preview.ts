@@ -1,6 +1,7 @@
 import CryptoJS, { SHA256 } from 'crypto-js';
 import { escape } from 'html-escaper';
 import $ from 'jquery';
+import JSON5 from 'json5';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
@@ -418,6 +419,10 @@ const PreviewContainer = createContainer(() => {
           return resolve();
         }
 
+        // Clear MathJax's internal list of typeset items (it otherwise grows
+        // unbounded across re-renders, leaking the detached nodes from the
+        // freshly rebuilt hidden preview) and reset the equation numbering so
+        // numbered equations don't drift on every edit.
         window['MathJax'].typesetClear(); // Don't pass element here!!!
         window['MathJax'].texReset();
         window['MathJax']
@@ -466,11 +471,11 @@ const PreviewContainer = createContainer(() => {
         }
 
         try {
-          const content = window.eval(`(${text})`);
+          const content = JSON5.parse(text);
           window['WaveDrom'].RenderWaveForm(i, content, 'wavedrom');
           newWavedromCache[text] = el.innerHTML;
         } catch (error) {
-          el.innerText = 'Failed to eval WaveDrom code. ' + error;
+          el.innerText = 'Failed to render WaveDrom code. ' + error;
         }
       }
 

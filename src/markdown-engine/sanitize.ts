@@ -8,6 +8,7 @@
 
 import type { CheerioAPI } from 'cheerio';
 import type { AnyNode, Element } from 'domhandler';
+import { normalizeWavedromSource } from '../renderers/wavedrom-source';
 
 const DANGEROUS_URL_PATTERN =
   /^\s*(javascript|vbscript)\s*:|^\s*data\s*:\s*text\/html/i;
@@ -38,6 +39,20 @@ export function sanitizeRenderedHTML($: CheerioAPI): void {
     const scriptType = (el.attribs?.type || '').toLowerCase().trim();
     if (!SAFE_SCRIPT_TYPES.has(scriptType)) {
       $(el).remove();
+      return;
+    }
+
+    // WaveDrom data scripts are eval'd by the bundled WaveDrom renderer
+    // (ProcessAll/eva) in presentation mode and HTML export. Normalize the
+    // body to inert strict JSON so that eval can never execute attacker
+    // controlled JavaScript (shd101wyy/vscode-markdown-preview-enhanced#2315).
+    if (scriptType === 'wavedrom') {
+      const safe = normalizeWavedromSource($(el).text());
+      if (safe === null) {
+        $(el).remove();
+      } else {
+        $(el).text(safe);
+      }
     }
   });
 
