@@ -12,10 +12,7 @@ describe('@import when directory path contains #', () => {
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hash-in-path-'));
     const dirWithHash = path.join(tmp, '[#11111111]');
     fs.mkdirSync(dirWithHash);
-    fs.writeFileSync(
-      path.join(dirWithHash, '1.md'),
-      '@import "test.csv"\n',
-    );
+    fs.writeFileSync(path.join(dirWithHash, '1.md'), '@import "test.csv"\n');
     fs.writeFileSync(
       path.join(dirWithHash, 'test.csv'),
       'Name,Year,House\nAlice,2020,Red\nBob,2021,Blue\n',
@@ -47,12 +44,8 @@ describe('@import when directory path contains #', () => {
   });
 
   test('@import resolves file with #fragment when directory contains #', async () => {
-    const mdContent =
-      '@import "test.md#section"\n';
-    fs.writeFileSync(
-      path.join(tmp, '[#11111111]', '2.md'),
-      mdContent,
-    );
+    const mdContent = '@import "test.md#section"\n';
+    fs.writeFileSync(path.join(tmp, '[#11111111]', '2.md'), mdContent);
     fs.writeFileSync(
       path.join(tmp, '[#11111111]', 'test.md'),
       '## Section\n\ntest content.\n\n## Other\n\nshould not appear.\n',
@@ -72,10 +65,7 @@ describe('@import when directory path contains #', () => {
 
   test('![[wikilink]] resolves file when directory contains #', async () => {
     const mdContent = '![[test.md]]\n';
-    fs.writeFileSync(
-      path.join(tmp, '[#11111111]', '3.md'),
-      mdContent,
-    );
+    fs.writeFileSync(path.join(tmp, '[#11111111]', '3.md'), mdContent);
     const engine3 = nb.getNoteMarkdownEngine(
       path.join(tmp, '[#11111111]', '3.md'),
     );
