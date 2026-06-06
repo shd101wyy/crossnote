@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.30] - 2026-06-06
+
 ### Security
 
 - **Fix a remote code execution vulnerability in `.crossnote/config.js` and `.crossnote/parser.js` evaluation**. These workspace files are now evaluated inside a [QuickJS](https://github.com/justjake/quickjs-emscripten) WebAssembly sandbox so untrusted code from a repository can no longer reach the host environment. Thanks to @ritikchaddha for reporting the issue.
