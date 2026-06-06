@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as less from 'less';
 import * as path from 'path';
-import { interpretJS } from '../utility';
+import { createSandboxedParserConfig, evalConfigJS } from '../lib/js-sandbox';
 import {
   FileSystemApi,
   NotebookConfig,
@@ -12,6 +12,43 @@ import {
   getDefaultNotebookConfig,
   getDefaultParserConfig,
 } from './types';
+
+/**
+ * Config keys that a workspace-provided `.crossnote/config.js` must NOT be able
+ * to set, because they control code execution or which executables are spawned.
+ * Letting an untrusted repository set these would let it grant itself trust
+ * (`enableScriptExecution`) or point an executable path at an arbitrary binary,
+ * re-introducing the very RCE that sandboxing `config.js` is meant to close.
+ * These settings are only honoured when they come from trusted VS Code
+ * settings, not from the workspace file.
+ */
+const SECURITY_SENSITIVE_CONFIG_KEYS: readonly (keyof NotebookConfig)[] = [
+  'enableScriptExecution',
+  'chromePath',
+  'pandocPath',
+  'imageMagickPath',
+  'markdownYoBinaryPath',
+];
+
+/**
+ * Remove security-sensitive keys from the result of an untrusted
+ * `.crossnote/config.js` and warn if any were present.
+ */
+function stripSensitiveConfigKeys(
+  config: Partial<NotebookConfig>,
+): Partial<NotebookConfig> {
+  const sanitized = { ...config };
+  for (const key of SECURITY_SENSITIVE_CONFIG_KEYS) {
+    if (key in sanitized) {
+      delete sanitized[key];
+      console.warn(
+        `crossnote: ignoring "${key}" set in .crossnote/config.js — this ` +
+          `setting can only be configured via trusted editor settings.`,
+      );
+    }
+  }
+  return sanitized;
+}
 
 /**
  * Load the configs from the given directory path.
@@ -143,23 +180,17 @@ async function getConfigs(
 
   if (await fs.exists(configScriptPath)) {
     try {
-      // HACK: Dyamic import here doesn't work for the VSCode packaged extension.
-      /*
-      const result = isVSCodeWebExtension()
-        ? await import(configScriptPath + `?version=${Date.now()}`)
-        : (() => {
-            delete require.cache[require.resolve(configScriptPath)];
-            return require(configScriptPath);
-          })();
-      */
-      // NOTE: Never mind, the above code doesn't work in VSCode Web extension
-
+      // `config.js` is untrusted code from the workspace. Evaluate it inside the
+      // QuickJS WASM sandbox (see ../lib/js-sandbox) so it cannot reach the host
+      // realm. Only plain data crosses back out.
       const script = await fs.readFile(configScriptPath);
-      const result = interpretJS(script);
+      const result = (await evalConfigJS(script)) as
+        | Partial<NotebookConfig>
+        | undefined;
       if (Object.keys(result ?? {}).length === 0) {
         return await setupDefaultConfigScript();
       }
-      return result;
+      return stripSensitiveConfigKeys(result ?? {});
     } catch (e) {
       console.error(e);
       return {};
@@ -167,34 +198,6 @@ async function getConfigs(
   } else {
     return setupDefaultConfigScript();
   }
-}
-
-/**
- * Wrap user-provided parser hooks so they are called with a null-prototype
- * `this`, preventing prototype-chain escapes (e.g. `this.constructor.constructor`
- * reaching the host Function/process).
- */
-function sanitizeParserConfig(
-  defaultParserConfig: ParserConfig,
-  result: Record<string, unknown> | undefined,
-): ParserConfig {
-  const safeThis = Object.create(null);
-  return {
-    onWillParseMarkdown:
-      typeof result?.onWillParseMarkdown === 'function'
-        ? (md: string) =>
-            (
-              result.onWillParseMarkdown as ParserConfig['onWillParseMarkdown']
-            ).call(safeThis, md)
-        : defaultParserConfig.onWillParseMarkdown,
-    onDidParseMarkdown:
-      typeof result?.onDidParseMarkdown === 'function'
-        ? (html: string) =>
-            (
-              result.onDidParseMarkdown as ParserConfig['onDidParseMarkdown']
-            ).call(safeThis, html)
-        : defaultParserConfig.onDidParseMarkdown,
-  };
 }
 
 async function getParserConfig(
@@ -205,19 +208,11 @@ async function getParserConfig(
   const parserConfigPath = path.join(configPath, './parser.js');
   if (await fs.exists(parserConfigPath)) {
     try {
-      // HACK: Dyamic import here doesn't work for the VSCode packaged extension.
-      /*
-      const result = isVSCodeWebExtension()
-        ? await import(parserConfigPath)
-        : (() => {
-            delete require.cache[require.resolve(parserConfigPath)];
-            return require(parserConfigPath);
-          })();
-      */
-      // NOTE: Never mind, the above code doesn't work in VSCode Web extension
+      // `parser.js` is untrusted code from the workspace. Its hooks run inside
+      // the QuickJS WASM sandbox (see ../lib/js-sandbox); only strings cross the
+      // boundary, so the hooks cannot reach the host realm / Node APIs.
       const script = await fs.readFile(parserConfigPath);
-      const result = interpretJS(script);
-      return sanitizeParserConfig(defaultParserConfig, result);
+      return await createSandboxedParserConfig(script, defaultParserConfig);
     } catch (e) {
       console.error(e);
       return defaultParserConfig;

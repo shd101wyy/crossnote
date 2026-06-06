@@ -1,7 +1,6 @@
 import structuredClone from '@ungap/structured-clone';
 import * as child_process from 'child_process';
 import * as path from 'path';
-import Sval from 'sval';
 import * as temp from './lib/temp';
 import { JsonObject } from 'type-fest';
 import { fileURLToPath } from 'url';
@@ -354,26 +353,6 @@ Function.prototype = globalThis.Function.prototype;
 
 export function isVSCodeWebExtension() {
   return process.env.IS_VSCODE_WEB_EXTENSION === 'true';
-}
-
-/**
- * This function is used to evaluate the config.js and parser.js
- * @param code
- */
-export function interpretJS(code: string) {
-  code = code.trim().replace(/[;,]+$/, '');
-  if (isVSCodeWebExtension()) {
-    const interpreter = new Sval({
-      sandBox: true,
-      ecmaVer: 2019,
-    });
-    interpreter.run(`exports.result = (${code})`);
-    return interpreter.exports.result;
-  } else {
-    const context: Record<string, unknown> = {};
-    vm.runInNewContext(`result = (${code})`, context);
-    return context['result'];
-  }
 }
 
 export function findClosingTagIndex(

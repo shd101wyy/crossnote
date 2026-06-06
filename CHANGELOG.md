@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Security
+
+- **Fix a remote code execution vulnerability in `.crossnote/config.js` and `.crossnote/parser.js` evaluation**. These workspace files are now evaluated inside a [QuickJS](https://github.com/justjake/quickjs-emscripten) WebAssembly sandbox so untrusted code from a repository can no longer reach the host environment. Thanks to @ritikchaddha for reporting the issue.
+
 ### Bug fixes
 
 - **Fix heading auto-ID generation for underscore-based italic/bold** — When a heading used underscore-based emphasis at the beginning or end (e.g., `_Toy Story_` or `__Bold Title__`), the generated heading ID would retain the underscores (e.g., `_toy-story_`), which markdown-it would interpret as emphasis markers, splitting the `{#id data-source-line="N"}` attribute block across multiple tokens and leaving it visible in the rendered output. Heading IDs now strip underscore emphasis markers following CommonMark rules — boundaries include punctuation (`# x _foo bar_! end` → `x-foo-bar-end`), adjacent runs both match (`_a_ _b_` → `a-b`), and intraword underscores are kept (`foo_bar_` → `foo_bar_`) — matching the anchors GitHub generates for the same headings. Additionally, ids embedded in the internal `{#id}` attribute block are now backslash-escaped so that any id still containing `_`/`*` survives inline parsing intact and rendered heading ids always match TOC anchors. Fixes [vscode-mpe#2319](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2319).
