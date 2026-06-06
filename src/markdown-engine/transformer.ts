@@ -635,7 +635,20 @@ export async function transformMarkdown(
           // Add attributes
           let optionsStr = '{';
           if (id) {
-            optionsStr += `#${id} `;
+            // Backslash-escape emphasis markers so an id containing `_`
+            // or `*` (e.g. from a heading like `# x _foo_bar_ y`, where
+            // the underscores are kept because they are not stripped as
+            // emphasis) survives inline parsing intact. Without this,
+            // markdown-it would tokenize `{#x-_foo_bar_-y ...}` into
+            // emphasis tokens, splitting the attribute block and leaving
+            // it visible in the output. The escapes are unescaped during
+            // inline parsing, so the applied id matches the one recorded
+            // in `headings` (used by TOC links). Pandoc parses the
+            // `{#id}` attribute syntax natively, so no escaping there.
+            const escapedId = usePandocParser
+              ? id
+              : id.replace(/([_*])/g, '\\$1');
+            optionsStr += `#${escapedId} `;
           }
           if (classes) {
             optionsStr += '.' + classes.replace(/\s+/g, ' .') + ' ';
@@ -732,6 +745,14 @@ export async function transformMarkdown(
       );
       if (importMatch || imageImportMatch || wikilinkImportMatch) {
         let filePath = '';
+
+        // Extract #fragment from the original import path before
+        // decodeURIComponent and path resolution.  If we extract it
+        // later from the resolved absolute path, a literal `#` in a
+        // directory name (e.g. `/notes/[#111]/file.md`) would be
+        // incorrectly treated as a heading anchor fragment, breaking
+        // file resolution.
+        let fileHash = '';
         if (importMatch) {
           outputString += importMatch[1];
           filePath = importMatch[3].trim();
@@ -740,9 +761,30 @@ export async function transformMarkdown(
           filePath = imageImportMatch[3].trim().replace(/\s"[^"]*"\s*$/, '');
         } else if (wikilinkImportMatch) {
           outputString += wikilinkImportMatch[1];
-          const { link } = notebook.processWikilink(wikilinkImportMatch[2]);
-          filePath = link;
+          const result = notebook.processWikilink(wikilinkImportMatch[2]);
+          // processWikilink re-appends `hash` and `blockRef` (in that
+          // order) to its `link` return value.  Strip them so path
+          // resolution only sees the clean file portion — otherwise a
+          // literal `#` might end up in the resolved path and confuse
+          // file loading.
+          const suffix = (result.hash || '') + (result.blockRef || '');
+          filePath = suffix
+            ? result.link.slice(0, result.link.length - suffix.length)
+            : result.link;
+          // Downstream fragment handling expects a leading `#`
+          // (`fileHash.slice(1)` must yield `^block-id` for block
+          // transclusion), so for the bare `[[note^block]]` form
+          // (blockRef without `#`) prepend it.
+          fileHash = !suffix || suffix.startsWith('#') ? suffix : '#' + suffix;
         }
+        if (importMatch || imageImportMatch) {
+          const hashIdx = filePath.lastIndexOf('#');
+          if (hashIdx > 0) {
+            fileHash = filePath.substring(hashIdx);
+            filePath = filePath.substring(0, hashIdx);
+          }
+        }
+
         // URL-decode so `my%20origin.md` resolves to `my origin.md` —
         // standard for markdown links and Obsidian's URI form for
         // wikilinks / @import targets with spaces in the path.
@@ -805,12 +847,6 @@ export async function transformMarkdown(
             currentRelativePath,
           );
           absoluteFilePath = path.resolve(projectDirectoryPath, resolved);
-        }
-        let fileHash = '';
-        const hashIndex = absoluteFilePath.lastIndexOf('#');
-        if (hashIndex > 0) {
-          fileHash = absoluteFilePath.substring(hashIndex);
-          absoluteFilePath = absoluteFilePath.substring(0, hashIndex);
         }
 
         const extname = path.extname(absoluteFilePath).toLocaleLowerCase();

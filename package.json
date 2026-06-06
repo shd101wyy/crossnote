@@ -1,6 +1,6 @@
 {
   "name": "crossnote",
-  "version": "0.9.29",
+  "version": "0.9.30",
   "description": "A powerful markdown notebook tool",
   "keywords": [
     "markdown"
@@ -68,6 +68,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
+    "@jitl/quickjs-singlefile-cjs-release-sync": "^0.32.0",
     "@mdi/js": "^7.2.96",
     "@mdi/react": "^1.6.1",
     "@monaco-editor/react": "^4.5.2",
@@ -130,6 +131,7 @@
     "plantuml-encoder": "^1.4.0",
     "puppeteer-core": "^24.16.2",
     "qiniu": "^7.9.0",
+    "quickjs-emscripten-core": "^0.32.0",
     "react": "^18.2.0",
     "react-contexify": "^6.0.0",
     "react-dom": "^18.2.0",
@@ -137,7 +139,6 @@
     "sharp": "^0.33.5",
     "simple-icons": "^9.13.0",
     "slash": "^5.1.0",
-    "sval": "^0.6.9",
     "twemoji": "^13.1.0",
     "type-fest": "^4.3.1",
     "unstated-next": "^1.1.0",

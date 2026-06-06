@@ -14,6 +14,9 @@ importers:
       '@heroicons/react':
         specifier: ^2.0.18
         version: 2.2.0(react@18.3.1)
+      '@jitl/quickjs-singlefile-cjs-release-sync':
+        specifier: ^0.32.0
+        version: 0.32.0
       '@mdi/js':
         specifier: ^7.2.96
         version: 7.4.47
@@ -200,6 +203,9 @@ importers:
       qiniu:
         specifier: ^7.9.0
         version: 7.14.0
+      quickjs-emscripten-core:
+        specifier: ^0.32.0
+        version: 0.32.0
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -221,9 +227,6 @@ importers:
       slash:
         specifier: ^5.1.0
         version: 5.1.0
-      sval:
-        specifier: ^0.6.9
-        version: 0.6.9
       twemoji:
         specifier: ^13.1.0
         version: 13.1.1
@@ -1609,6 +1612,12 @@ packages:
     resolution: {integrity: sha512-JHm87k7bA33hpBngtU8h6UBub/fqqA9uXfw+21j5Hmk7ooPHlboRNxHq0JcMtC+n8VJGP1mcfnD3Mk+XKe1oSw==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
+  '@jitl/quickjs-ffi-types@0.32.0':
+    resolution: {integrity: sha512-v9T+GQpmk43VDJ7d72sf0Nexhk+ArvtUihW27dy7lqAl0zBObFKtSBBIm5RBjwIhE8VwsPPm9PNuvPvNqLWUEg==}
+
+  '@jitl/quickjs-singlefile-cjs-release-sync@0.32.0':
+    resolution: {integrity: sha512-NjUUcw26PoeJHND6nmflAH8nIvAJvxJ2qkSPi95wfiBqPim80GtcdWommroiWb8hh1/7fVettEwodAsGt2Mrsg==}
+
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
 
@@ -2164,11 +2173,6 @@ packages:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
-
-  acorn@8.15.0:
-    resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
 
   acorn@8.16.0:
     resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
@@ -4954,6 +4958,9 @@ packages:
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
+  quickjs-emscripten-core@0.32.0:
+    resolution: {integrity: sha512-QFnPfjFey8EqknSrSxe1hZrf1/8z7/6s1QzGOmKo6++02r7QRRX7ZoyNaZh7JuVjWsVW87KnQrbZqnHkOAzUyg==}
+
   react-contexify@6.0.0:
     resolution: {integrity: sha512-jMhz6yZI81Jv3UDj7TXqCkhdkCFEEmvwGCPXsQuA2ZUC8EbCuVQ6Cy8FzKMXa0y454XTDClBN2YFvvmoFlrFkg==}
     peerDependencies:
@@ -5394,9 +5401,6 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
-
-  sval@0.6.9:
-    resolution: {integrity: sha512-IZszs15QLaH+N79oRhczeucVLK4J8iUFRn3jgVwwHJylc5v0cxZDCX3fA/4uj8xxINpGpVgEojSi3DTNzyd8jA==}
 
   sver@1.8.4:
     resolution: {integrity: sha512-71o1zfzyawLfIWBOmw8brleKyvnbn73oVHNCsu51uPMz/HWiKkkXsI31JjHW5zqXEqnPYkIiHd8ZmL7FCimLEA==}
@@ -7276,6 +7280,12 @@ snapshots:
       '@types/yargs': 17.0.34
       chalk: 4.1.2
 
+  '@jitl/quickjs-ffi-types@0.32.0': {}
+
+  '@jitl/quickjs-singlefile-cjs-release-sync@0.32.0':
+    dependencies:
+      '@jitl/quickjs-ffi-types': 0.32.0
+
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -7913,8 +7923,6 @@ snapshots:
   acorn-jsx@5.3.2(acorn@8.16.0):
     dependencies:
       acorn: 8.16.0
-
-  acorn@8.15.0: {}
 
   acorn@8.16.0: {}
 
@@ -11262,6 +11270,10 @@ snapshots:
 
   queue-microtask@1.2.3: {}
 
+  quickjs-emscripten-core@0.32.0:
+    dependencies:
+      '@jitl/quickjs-ffi-types': 0.32.0
+
   react-contexify@6.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       clsx: 1.2.1
@@ -11771,10 +11783,6 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
-
-  sval@0.6.9:
-    dependencies:
-      acorn: 8.15.0
 
   sver@1.8.4:
     optionalDependencies:

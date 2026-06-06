@@ -92,6 +92,57 @@ const testCasesForHeaderIdGenerator: {
     input: 'test __test__ test',
     expected: 'test-test-test-1',
   },
+  {
+    input: '_Toy Story_',
+    expected: 'toy-story',
+  },
+  {
+    input: '__Bold Title__',
+    expected: 'bold-title',
+  },
+  {
+    input: "Pixar's _Toy Story_",
+    expected: 'pixars-toy-story',
+  },
+  {
+    input: '_Toy Story_ (1995)',
+    expected: 'toy-story-1995',
+  },
+  // The cases below mirror GitHub's heading anchors, which are derived
+  // from the *rendered* heading text (emphasis markers stripped).
+  {
+    // Adjacent emphasis runs sharing one space.
+    input: '_a_ _b_',
+    expected: 'a-b',
+  },
+  {
+    // Punctuation can close emphasis (`_foo bar_!` renders as <em>).
+    input: 'x _foo bar_! end',
+    expected: 'x-foo-bar-end',
+  },
+  {
+    // Punctuation can open emphasis too.
+    input: '(_foo_)',
+    expected: 'foo',
+  },
+  {
+    // em + strong.
+    input: '___x___',
+    expected: 'x',
+  },
+  {
+    input: '__bold__ and _italic_',
+    expected: 'bold-and-italic',
+  },
+  {
+    // Intraword underscores are NOT emphasis — kept, as on GitHub.
+    input: 'foo_bar_',
+    expected: 'foo_bar_',
+  },
+  {
+    input: '_foo_bar',
+    expected: '_foo_bar',
+  },
 ];
 
 describe('header-id-generator', () => {

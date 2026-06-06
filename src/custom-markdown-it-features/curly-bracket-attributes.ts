@@ -19,6 +19,7 @@ export default (md: MarkdownIt) => {
           if (!headingInline.children || headingInline.children.length === 0) {
             continue;
           }
+          let matched = false;
           const lastChild =
             headingInline.children[headingInline.children.length - 1];
           if (lastChild.type === 'text') {
@@ -28,6 +29,55 @@ export default (md: MarkdownIt) => {
               lastChild.content = lastChild.content.replace(match[0], '');
               for (const key in attributes) {
                 tokens[i].attrJoin(key, attributes[key]);
+              }
+              matched = true;
+            }
+          }
+
+          // Defense-in-depth: if the {#...} block was split across tokens (e.g.,
+          // underscores inside the block were interpreted as emphasis markers by
+          // markdown-it), join all text children and find the pattern that way.
+          if (!matched) {
+            let combinedText = '';
+            for (let j = 0; j < headingInline.children.length; j++) {
+              if (headingInline.children[j].type === 'text') {
+                combinedText += headingInline.children[j].content;
+              }
+            }
+            const combinedMatch = combinedText.match(/\{([^}]+)\}\s*$/);
+            if (combinedMatch) {
+              const patternStart =
+                combinedText.length - combinedMatch[0].length;
+              let offset = 0;
+              let foundIdx = -1;
+              let posInToken = -1;
+              for (let j = 0; j < headingInline.children.length; j++) {
+                const child = headingInline.children[j];
+                if (child.type === 'text') {
+                  if (
+                    patternStart >= offset &&
+                    patternStart < offset + child.content.length
+                  ) {
+                    foundIdx = j;
+                    posInToken = patternStart - offset;
+                    break;
+                  }
+                  offset += child.content.length;
+                }
+              }
+              if (foundIdx >= 0) {
+                headingInline.children[foundIdx].content =
+                  headingInline.children[foundIdx].content
+                    .slice(0, posInToken)
+                    .trimEnd();
+                headingInline.children.length = foundIdx + 1;
+                headingInline.children = headingInline.children.filter(
+                  (c) => c.type !== 'text' || c.content.length > 0,
+                );
+                const attributes = parseBlockAttributes(combinedMatch[1]);
+                for (const key in attributes) {
+                  tokens[i].attrJoin(key, attributes[key]);
+                }
               }
             }
           }
