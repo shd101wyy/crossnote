@@ -37,7 +37,7 @@ export default (md: MarkdownIt) => {
           // Defense-in-depth: if the {#...} block was split across tokens (e.g.,
           // underscores inside the block were interpreted as emphasis markers by
           // markdown-it), join all text children and find the pattern that way.
-          if (!matched && headingInline.children) {
+          if (!matched) {
             let combinedText = '';
             for (let j = 0; j < headingInline.children.length; j++) {
               if (headingInline.children[j].type === 'text') {
@@ -46,14 +46,18 @@ export default (md: MarkdownIt) => {
             }
             const combinedMatch = combinedText.match(/\{([^}]+)\}\s*$/);
             if (combinedMatch) {
-              const patternStart = combinedText.length - combinedMatch[0].length;
+              const patternStart =
+                combinedText.length - combinedMatch[0].length;
               let offset = 0;
               let foundIdx = -1;
               let posInToken = -1;
               for (let j = 0; j < headingInline.children.length; j++) {
                 const child = headingInline.children[j];
                 if (child.type === 'text') {
-                  if (patternStart >= offset && patternStart < offset + child.content.length) {
+                  if (
+                    patternStart >= offset &&
+                    patternStart < offset + child.content.length
+                  ) {
                     foundIdx = j;
                     posInToken = patternStart - offset;
                     break;

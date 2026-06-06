@@ -207,6 +207,25 @@ describe('Wikilink embed integration', () => {
     expect(html).toContain('First list item');
   });
 
+  it('renders block-level ![[note^block-id]] (alone on a line) extracting just the referenced block', async () => {
+    // A `![[...]]` embed alone on a line goes through the transformer's
+    // line-level import path (not the inline wikilink feature), which
+    // must also handle the bare `^block-id` form without a `#`.
+    const markdown = '![[block-ref-note^first-paragraph]]\n';
+    const engine = notebook.getNoteMarkdownEngine(
+      path.resolve(__dirname, './markdown/test-files/test-block-embed-line.md'),
+    );
+    const { html } = await engine.parseMD(markdown, {
+      useRelativeFilePath: false,
+      isForPreview: true,
+      hideFrontMatter: false,
+    });
+
+    expect(html).toContain('A paragraph with some content');
+    expect(html).not.toContain('Second list item');
+    expect(html).not.toContain('Another paragraph here');
+  });
+
   it('renders ![[note#^block-id]] embed extracting just the referenced block', async () => {
     const markdown = 'Before ![[block-ref-note#^first-paragraph]] after.';
     const engine = notebook.getNoteMarkdownEngine(
