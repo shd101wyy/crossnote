@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.31] - 2026-06-08
+
 ### Bug fixes
 
 - **Fix `^block-id` being incorrectly injected inside `$$...$$` display math blocks** — When a display math block contained a line ending with ` ^<single-char>` (e.g. `a ^n` for superscript), the transformer's `^block-id` regex would match it and inject `<span id="n" class="block-id"></span>`, corrupting the LaTeX before it reached either the KaTeX or MathJax renderer. The transformer now tracks display math block boundaries (using the configured `mathBlockDelimiters`) and passes content inside them through verbatim. Fixes [vscode-mpe#2321](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2321). Reported by @MZMTab.
