@@ -2415,34 +2415,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   private async resolvePathsInHeader(header: string) {
     const $ = cheerio.load(header);
 
-    // script
-    const scripts = $('script');
-    for (let i = 0; i < scripts.length; i++) {
-      const $script = $(scripts[i]);
-      const src = $script.attr('src');
-      // NOTE: We only support src that is relative to the project directory.
-      if (src && !src.match(/^https?:\/\//) && src.startsWith('/')) {
-        // Load the script from the local file system
-        // and set as inline script
-        const scriptPath = path.join(
-          this.notebook.notebookPath.fsPath,
-          '.' + src,
-        );
-        try {
-          const scriptContent = await this.fs.readFile(scriptPath);
-          $script.html(scriptContent);
-          $script.removeAttr('src');
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    }
-
     // Strip all <script> tags — head.html is workspace content that
     // executes before the React app and any CSP/DOMPurify defenses,
     // giving an attacker access to the webview's postMessage API.
     // Users who need custom JavaScript in the preview should use
     // extension-level APIs instead.
+    //
+    // NOTE: This helper is shared by the preview webview and the HTML /
+    // eBook export paths, so scripts in head.html are stripped from
+    // exported documents too — not just the webview that the advisory
+    // (GHSA-mcwg-4j78-qwv3) covers. This is intentional hardening:
+    // exported HTML running attacker-supplied JS is equally undesirable.
     $('script').remove();
 
     // Return only the head content, not the full HTML structure
