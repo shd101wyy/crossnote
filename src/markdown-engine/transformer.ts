@@ -256,6 +256,8 @@ export async function transformMarkdown(
   // <div>/</div> (pandoc / markdown_yo path for non-code names).
   let colonFenceState: null | 'code' | 'html-div' = null;
   let colonFenceMarkerLen = 0;
+  let inMathDisplayBlock = false;
+  let mathBlockCloseTag: string | null = null;
   let codeChunkOffset = 0;
   const slideConfigs: BlockAttributes[] = [];
   const JSAndCssFiles: string[] = [];
@@ -300,7 +302,7 @@ export async function transformMarkdown(
 
     const canCreateAnchor = () => forPreview && !notSourceFile;
 
-    while (i < inputString.length) {
+    mainLoop: while (i < inputString.length) {
       // eslint-disable-next-line prefer-const
       let { line, blockquotePrefix, end } = getLine(i);
       outputString += blockquotePrefix;
@@ -485,6 +487,39 @@ export async function transformMarkdown(
         continue;
       }
       // ========== End: Code Block ==========
+      // ========== Start: Math Display Block ==========
+      // Display-math blocks (e.g. $$…$$, \[…\]) must be treated as
+      // verbatim LaTeX — skip ^block-id and other line transformations.
+      if (notebook.config.mathRenderingOption !== 'None') {
+        const blockDelimiters = notebook.config.mathBlockDelimiters;
+        const trimmed = line.trimStart();
+        if (inMathDisplayBlock) {
+          const closeIdx = trimmed.indexOf(mathBlockCloseTag!);
+          if (closeIdx >= 0) {
+            inMathDisplayBlock = false;
+            mathBlockCloseTag = null;
+          }
+          i = end + 1;
+          lineNo = lineNo + 1;
+          outputString = outputString + line + '\n';
+          continue;
+        }
+
+        for (const [openTag, closeTag] of blockDelimiters) {
+          if (trimmed.startsWith(openTag)) {
+            if (trimmed.indexOf(closeTag, openTag.length) >= 0) {
+              break;
+            }
+            inMathDisplayBlock = true;
+            mathBlockCloseTag = closeTag;
+            i = end + 1;
+            lineNo = lineNo + 1;
+            outputString = outputString + line + '\n';
+            continue mainLoop;
+          }
+        }
+      }
+      // ========== End: Math Display Block ==========
       let headingMatch: RegExpMatchArray | null;
       let taskListItemMatch: RegExpMatchArray | null;
 
