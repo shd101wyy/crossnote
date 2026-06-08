@@ -2437,6 +2437,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         }
       }
     }
+
+    // Strip all <script> tags — head.html is workspace content that
+    // executes before the React app and any CSP/DOMPurify defenses,
+    // giving an attacker access to the webview's postMessage API.
+    // Users who need custom JavaScript in the preview should use
+    // extension-level APIs instead.
+    $('script').remove();
+
     // Return only the head content, not the full HTML structure
     return $('head').html() || header;
   }

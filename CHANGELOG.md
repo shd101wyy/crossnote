@@ -8,6 +8,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 - **Fix `^block-id` being incorrectly injected inside `$$...$$` display math blocks** — When a display math block contained a line ending with ` ^<single-char>` (e.g. `a ^n` for superscript), the transformer's `^block-id` regex would match it and inject `<span id="n" class="block-id"></span>`, corrupting the LaTeX before it reached either the KaTeX or MathJax renderer. The transformer now tracks display math block boundaries (using the configured `mathBlockDelimiters`) and passes content inside them through verbatim. Fixes [vscode-mpe#2321](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2321). Reported by @MZMTab.
 
+### Security
+
+- **Strip `<script>` tags from `.crossnote/head.html` content injected into webview templates** — `.crossnote/head.html` was read raw and injected into the webview's `<head>` without sanitization, executing before the React app and any DOMPurify or CSP defenses. A malicious repository could include scripts in `head.html` that traverse React internals to reach `acquireVsCodeApi()` and send arbitrary messages to the extension host. `resolvePathsInHeader()` now removes all `<script>` tags from the header content before injection. `<style>`, `<meta>`, and `<link>` tags continue to work as before. Fixes [GHSA-mcwg-4j78-qwv3](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/security/advisories/GHSA-mcwg-4j78-qwv3). Thanks to @ritikchaddha for reporting the issue.
+
 ## [0.9.30] - 2026-06-06
 
 ### Security
