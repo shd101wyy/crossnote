@@ -7,6 +7,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 ### Bug fixes
 
 - **Fix `^block-id` being incorrectly injected inside `$$...$$` display math blocks** — When a display math block contained a line ending with ` ^<single-char>` (e.g. `a ^n` for superscript), the transformer's `^block-id` regex would match it and inject `<span id="n" class="block-id"></span>`, corrupting the LaTeX before it reached either the KaTeX or MathJax renderer. The transformer now tracks display math block boundaries (using the configured `mathBlockDelimiters`) and passes content inside them through verbatim. Fixes [vscode-mpe#2321](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2321). Reported by @MZMTab.
+- **Fix invisible scrollbar thumb in dark mode** — The preview scrollbar thumb used a fixed `rgba(150, 150, 150, 0.66)` color that blended into dark backgrounds, making it invisible unless hovered. Now uses VS Code's `--vscode-scrollbarSlider-background` and `--vscode-scrollbarSlider-hoverBackground` CSS variables which adapt to the active color theme, with the original gray as a fallback for non-VSCode contexts. Fixes [vscode-mpe#2322](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2322). Reported by @deviesoft.
 
 ### Security
 
