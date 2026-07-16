@@ -3,6 +3,7 @@ import * as http from 'http';
 import * as path from 'path';
 
 const MATHJAX_DIR = path.resolve(__dirname, '../../node_modules/mathjax');
+const MERMAID_DIR = path.resolve(__dirname, '../../node_modules/mermaid/dist');
 const WAVEDROM_DIR = path.resolve(__dirname, '../../dependencies/wavedrom');
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -38,6 +39,7 @@ export interface TestServer {
 // component loader and WaveDrom's skins resolve their siblings over real HTTP.
 const STATIC_MOUNTS: { prefix: string; root: string }[] = [
   { prefix: '/mathjax/', root: MATHJAX_DIR },
+  { prefix: '/mermaid/', root: MERMAID_DIR },
   { prefix: '/wavedrom/', root: WAVEDROM_DIR },
 ];
 
