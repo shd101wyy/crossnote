@@ -1273,12 +1273,19 @@ export async function transformMarkdown(
       else {
         // Handle ^block-id syntax: strip ^block-id suffix and insert
         // <span id="block-id" class="block-id"></span> for block references.
-        line = line.replace(
-          /(.*?)\s+\^([a-zA-Z0-9_-]+)$/,
-          (_match: string, rest: string, blockId: string) => {
-            return `${rest} <span id="${blockId}" class="block-id"></span>`;
-          },
-        );
+        //
+        // The replace's lazy `(.*?)` head backtracks quadratically in line
+        // length on lines that do NOT match (nearly every line), so gate it
+        // behind a linear-time suffix test.  The guard must accept exactly
+        // the lines the replace regex matches; keep the two in sync.
+        if (/\s\^[a-zA-Z0-9_-]+$/.test(line)) {
+          line = line.replace(
+            /(.*?)\s+\^([a-zA-Z0-9_-]+)$/,
+            (_match: string, rest: string, blockId: string) => {
+              return `${rest} <span id="${blockId}" class="block-id"></span>`;
+            },
+          );
+        }
 
         // Handle #tag syntax: replace #tag-name with <a class="tag">
         // when enableTagSyntax is on.  Only needed for non-markdown-it
