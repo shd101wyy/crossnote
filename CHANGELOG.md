@@ -4,6 +4,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.32] - 2026-08-04
+
+### Features
+
+- **Add a translation toggle to the preview context menu** — The webview now reads an `isShowingTranslation` flag from `WebviewConfig` (passed by the host via `initPreview`'s `<meta data-config>`, so it survives webview reloads) and renders a context-menu item that switches between "Translate" and "Show Original". Clicking it posts `translateDocument` or `restoreOriginal` back to the host, which drives the AI translation feature in the `vscode-markdown-preview-enhanced` extension.
+
 ## [0.9.31] - 2026-06-08
 
 ### Bug fixes

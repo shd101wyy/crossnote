@@ -180,6 +180,11 @@ const PreviewContainer = createContainer(() => {
   const enablePreviewZenMode = useMemo(() => {
     return !!config.enablePreviewZenMode;
   }, [config]);
+  // v2 translation: read from <meta data-config> (host sets it via initPreview).
+  // Survives webview reloads, unlike useState which resets on HTML swap.
+  const isShowingTranslation = useMemo(() => {
+    return !!config.isShowingTranslation;
+  }, [config]);
   const contextMenuId = useMemo(() => {
     return 'crossnote-context-menu';
   }, []);
@@ -1906,6 +1911,7 @@ const PreviewContainer = createContainer(() => {
     isMouseOverPreview,
     isPresentationMode,
     isRefreshingPreview,
+    isShowingTranslation,
     isVSCode,
     isVSCodeWebExtension,
     markdown,
