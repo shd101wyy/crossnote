@@ -22,6 +22,25 @@ export interface D2RenderOptions {
 export const D2_NOT_FOUND = Symbol('D2_NOT_FOUND');
 
 /**
+ * Pick a directory to write the temporary D2 input file into. D2 resolves
+ * relative image/icon paths against the input file's own directory (not the
+ * process cwd), so writing the input beside the source document lets embedded
+ * diagrams reference assets like `icon: ./icons/x.svg`. Falls back to the OS
+ * temp dir when the document directory is missing or not writable.
+ */
+function pickInputDir(fileDirectoryPath?: string): string {
+  if (fileDirectoryPath) {
+    try {
+      fs.accessSync(fileDirectoryPath, fs.constants.W_OK);
+      return fileDirectoryPath;
+    } catch {
+      // not writable — fall back to the OS temp dir below
+    }
+  }
+  return os.tmpdir();
+}
+
+/**
  * Render a D2 diagram source string to SVG by shelling out to the `d2` CLI.
  * Returns `D2_NOT_FOUND` if the binary is not installed, or an HTML error
  * string if d2 is installed but returns an error.
@@ -29,12 +48,18 @@ export const D2_NOT_FOUND = Symbol('D2_NOT_FOUND');
 export async function renderD2(
   code: string,
   opts: D2RenderOptions,
+  fileDirectoryPath?: string,
 ): Promise<string | typeof D2_NOT_FOUND> {
   // Guard: in browser/web environments, crypto.randomBytes is not available.
   if (typeof crypto?.randomBytes !== 'function') return D2_NOT_FOUND;
 
   const id = crypto.randomBytes(8).toString('hex');
-  const tmpIn = path.join(os.tmpdir(), `d2-${id}.d2`);
+  // Input lives beside the source document (when possible) so D2 can resolve
+  // relative image/icon paths; the output SVG can safely stay in the temp dir.
+  const tmpIn = path.join(
+    pickInputDir(fileDirectoryPath),
+    `.crossnote-d2-${id}.d2`,
+  );
   const tmpOut = path.join(os.tmpdir(), `d2-${id}.svg`);
 
   try {

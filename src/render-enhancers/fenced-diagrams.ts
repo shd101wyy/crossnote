@@ -364,12 +364,18 @@ async function renderDiagram({
           // Include resolved render options in the checksum so that changes to
           // global d2 settings (layout/theme/sketch) correctly bust the cache,
           // consistent with how per-fence attributes already do via normalizedInfo.
+          // fileDirectoryPath is included because D2 resolves relative image
+          // paths against it, so identical source in different folders can
+          // produce different output.
           const d2Checksum = computeChecksum(
-            JSON.stringify(normalizedInfo) + code + JSON.stringify(renderOpts),
+            JSON.stringify(normalizedInfo) +
+              code +
+              JSON.stringify(renderOpts) +
+              fileDirectoryPath,
           );
           const d2DiagramInCache: string = graphsCache[d2Checksum];
           if (!d2DiagramInCache) {
-            const result = await renderD2(code, renderOpts);
+            const result = await renderD2(code, renderOpts, fileDirectoryPath);
             if (result !== D2_NOT_FOUND) {
               graphsCache[d2Checksum] = result as string;
               $output = `<div class="d2-diagram">${result}</div>`;
