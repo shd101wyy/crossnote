@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Fix embedded `d2` diagrams failing to render when they reference relative images** — ` ```d2 ` fences using local assets (e.g. `icon: ./icons/x.svg`) rendered blank because `renderD2` wrote its temp input to `os.tmpdir()`, and d2 resolves relative image paths against the input file's own directory. The temp input is now written beside the source document (falling back to the temp dir when it is missing or not writable), and `fileDirectoryPath` is included in the render checksum to avoid cross-folder cache collisions.
+
 ## [0.9.31] - 2026-06-08
 
 ### Bug fixes
