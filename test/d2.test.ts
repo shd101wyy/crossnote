@@ -57,14 +57,34 @@ describe('D2 renderer', () => {
       return;
     }
     // Without a document directory the temp input lands in os.tmpdir(), where
-    // ./icons/x.svg does not exist, so d2 cannot bundle it. Depending on the
-    // error text this surfaces as either D2_NOT_FOUND or an error string, but
-    // the icon must never be inlined.
+    // ./icons/x.svg does not exist, so d2 cannot bundle it. This is a d2 render
+    // error (not a missing binary), so it surfaces as an error string and the
+    // icon must never be inlined.
     const result = await renderD2('x: hi { icon: ./icons/x.svg }', opts);
-    if (result === D2_NOT_FOUND) {
-      expect(result).toBe(D2_NOT_FOUND);
-    } else {
-      expect(result).not.toContain('data:image/svg');
+    expect(result).not.toBe(D2_NOT_FOUND);
+    expect(result).not.toContain('data:image/svg');
+  }, 30000);
+
+  it('returns an error string (not D2_NOT_FOUND) when a referenced image is missing', async () => {
+    if (!d2Available) {
+      console.warn('skipping: d2 binary not installed');
+      return;
+    }
+    // A missing icon/image is a d2 compile error, not a missing binary — it
+    // must surface as a visible error block rather than being swallowed as
+    // D2_NOT_FOUND (which would hide the diagram entirely).
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'crossnote-d2-test-'));
+    try {
+      const result = await renderD2(
+        'x: hi { icon: ./icons/does-not-exist.svg }',
+        opts,
+        dir,
+      );
+      expect(result).not.toBe(D2_NOT_FOUND);
+      expect(typeof result).toBe('string');
+      expect(result as string).toContain('D2 error');
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
     }
   }, 30000);
 });

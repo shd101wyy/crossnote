@@ -177,6 +177,9 @@ async function renderDiagram({
   d2Sketch: boolean;
 }): Promise<void> {
   let $output: string | Cheerio<AnyNode> | null = null;
+  // When true, the original fenced code block is left visible instead of being
+  // hidden by this enhancer (used as a plain-text fallback, e.g. d2 missing).
+  let keepOriginalCodeBlock = false;
 
   const code = $container.text();
   const checksum = computeChecksum(JSON.stringify(normalizedInfo) + code);
@@ -379,8 +382,11 @@ async function renderDiagram({
             if (result !== D2_NOT_FOUND) {
               graphsCache[d2Checksum] = result as string;
               $output = `<div class="d2-diagram">${result}</div>`;
+            } else {
+              // d2 not installed: keep the original fence so it falls through
+              // to the code-block styler and renders as plain text.
+              keepOriginalCodeBlock = true;
             }
-            // D2_NOT_FOUND: leave block as-is (d2 not installed)
           } else {
             $output = `<div class="d2-diagram">${d2DiagramInCache}</div>`;
           }
@@ -454,6 +460,7 @@ async function renderDiagram({
   }
 
   if (
+    !keepOriginalCodeBlock &&
     normalizedInfo.attributes['hide'] !== false &&
     normalizedInfo.attributes['code_block'] !== true
   ) {

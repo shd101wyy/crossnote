@@ -96,12 +96,12 @@ export async function renderD2(
     // such as "is not recognized..." instead of an OS-level ENOENT.
     const msg = err instanceof Error ? err.message : String(err);
     const code = (err as NodeJS.ErrnoException).code;
+    // Only treat a genuinely missing executable as "not found". Matching
+    // broader phrases like "no such file or directory" would misclassify d2's
+    // own image-bundling errors (missing icon/image) as a missing binary.
     const isNotFound =
       code === 'ENOENT' ||
-      /not recognized as an internal or external command/i.test(msg) ||
-      /not found/i.test(msg) ||
-      /cannot find/i.test(msg) ||
-      /No such file or directory/i.test(msg);
+      /not recognized as an internal or external command/i.test(msg);
     if (isNotFound) return D2_NOT_FOUND;
     return `<pre class="language-text"><code>D2 error: ${escape(msg)}</code></pre>`;
   } finally {
