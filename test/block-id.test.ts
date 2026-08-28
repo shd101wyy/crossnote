@@ -7,7 +7,7 @@
  * pins the cases that cannot live in fixture files because editors and
  * git rewrite exactly those bytes (trailing whitespace, CRLF line
  * endings), plus edge cases best expressed on constructed strings.
- * It also holds the performance smoke test for the transform.
+ * It also holds the performance smoke tests for the transform.
  */
 import * as path from 'path';
 import { transformMarkdown } from '../src/markdown-engine/transformer';
@@ -72,16 +72,21 @@ describe('^block-id transform', () => {
 });
 
 describe('^block-id transform performance', () => {
-  // The transform's replace regex has a lazy `(.*?)` head under a `$`
-  // anchor, which backtracks quadratically per NON-matching line, and
-  // real documents consist almost entirely of non-matching lines.  Cost
-  // grows with the sum of squared line lengths, so the slow regime
-  // needs long lines, as in large documents written one sentence per
-  // line.  There is no asserted time bound: a quadratic regression
-  // shows up as this test's reported runtime ballooning.  Measured on
-  // an M-series laptop (Node 26), 2000 lines x ~2128 chars:
-  //   with the linear suffix guard   ~10 ms
-  //   without the guard              ~5.6 s
+  // The block-id replace regex runs on nearly every line, so it must
+  // stay linear-time on lines that do NOT match, which is almost every
+  // line of a real document.  Two backtracking regimes have produced
+  // quadratic blowups here, and each gets a smoke test below:
+  //   1. long prose lines: a lazy `(.*?)` head retried per start offset
+  //      costs the sum of squared line lengths (0.9.31 shipped this);
+  //   2. long whitespace runs: a `\s+\^` suffix attempted from each
+  //      offset inside a run costs the squared run length (an anchored
+  //      `/^(.*?)\s+\^(id)$/` lands here despite fixing regime 1).
+  // There is no asserted time bound: a regression shows up as the
+  // affected test's reported runtime ballooning.  Measured on an
+  // M-series laptop (Node 26), 2000 lines x ~2128 chars per regime:
+  //   linear lookbehind suffix regex   ~10 ms regime 1, ~40 ms regime 2
+  //   regime 1 regression              ~5.6 s
+  //   regime 2 regression              ~14 s
   let notebook: Notebook;
 
   beforeAll(async () => {
@@ -111,6 +116,26 @@ describe('^block-id transform performance', () => {
     });
 
     // Non-matching prose lines must pass through unchanged.
+    expect(outputString.trim()).toEqual(input.trim());
+  });
+
+  it('passes lines ending in long whitespace runs through unchanged', async () => {
+    const line = 'x' + ' '.repeat(2127);
+    const input = Array.from({ length: 2000 }, () => line).join('\n');
+
+    const { outputString } = await transformMarkdown(input, {
+      notebook,
+      forPreview: true,
+      fileDirectoryPath: path.resolve(__dirname, './markdown/test-files'),
+      projectDirectoryPath: path.resolve(__dirname, './markdown/test-files'),
+      filesCache: {},
+      useRelativeFilePath: false,
+      protocolsWhiteListRegExp: /^(https?)/,
+      forJest: true,
+      timestamp: 12345,
+    });
+
+    // Trailing whitespace carries no ^block-id, so it must survive.
     expect(outputString.trim()).toEqual(input.trim());
   });
 });
