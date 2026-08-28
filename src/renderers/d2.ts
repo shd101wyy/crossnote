@@ -22,22 +22,31 @@ export interface D2RenderOptions {
 export const D2_NOT_FOUND = Symbol('D2_NOT_FOUND');
 
 /**
- * Pick a directory to write the temporary D2 input file into. D2 resolves
- * relative image/icon paths against the input file's own directory (not the
- * process cwd), so writing the input beside the source document lets embedded
+ * Write the temporary D2 input file and return its path. Prefer writing beside
+ * the source document so D2 can resolve relative image/icon paths against the
+ * input file's own directory (not the process cwd), which lets embedded
  * diagrams reference assets like `icon: ./icons/x.svg`. Falls back to the OS
- * temp dir when the document directory is missing or not writable.
+ * temp dir when that write fails (document directory missing or not writable).
+ * Writing first and catching failure avoids a TOCTOU false-positive from a
+ * separate `accessSync(W_OK)` pre-check (e.g. root on a read-only mount).
  */
-function pickInputDir(fileDirectoryPath?: string): string {
+async function writeInputFile(
+  fileDirectoryPath: string | undefined,
+  name: string,
+  code: string,
+): Promise<string> {
   if (fileDirectoryPath) {
+    const preferred = path.join(fileDirectoryPath, name);
     try {
-      fs.accessSync(fileDirectoryPath, fs.constants.W_OK);
-      return fileDirectoryPath;
+      await fs.promises.writeFile(preferred, code, 'utf8');
+      return preferred;
     } catch {
-      // not writable — fall back to the OS temp dir below
+      // notebook dir missing or not writable — fall back to the OS temp dir
     }
   }
-  return os.tmpdir();
+  const fallback = path.join(os.tmpdir(), name);
+  await fs.promises.writeFile(fallback, code, 'utf8');
+  return fallback;
 }
 
 /**
@@ -54,22 +63,21 @@ export async function renderD2(
   if (typeof crypto?.randomBytes !== 'function') return D2_NOT_FOUND;
 
   const id = crypto.randomBytes(8).toString('hex');
+  const inputName = `.crossnote-d2-${id}.d2`;
+  const tmpOut = path.join(os.tmpdir(), `d2-${id}.svg`);
   // Input lives beside the source document (when possible) so D2 can resolve
   // relative image/icon paths; the output SVG can safely stay in the temp dir.
-  const tmpIn = path.join(
-    pickInputDir(fileDirectoryPath),
-    `.crossnote-d2-${id}.d2`,
-  );
-  const tmpOut = path.join(os.tmpdir(), `d2-${id}.svg`);
+  let tmpIn: string | undefined;
 
   try {
-    await fs.promises.writeFile(tmpIn, code, 'utf8');
+    tmpIn = await writeInputFile(fileDirectoryPath, inputName, code);
+    const inputPath = tmpIn;
     await new Promise<void>((resolve, reject) => {
       const args = [
         `--theme=${opts.d2Theme}`,
         `--layout=${opts.d2Layout}`,
         ...(opts.d2Sketch ? ['--sketch'] : []),
-        tmpIn,
+        inputPath,
         tmpOut,
       ];
       execFile(
@@ -105,7 +113,9 @@ export async function renderD2(
     if (isNotFound) return D2_NOT_FOUND;
     return `<pre class="language-text"><code>D2 error: ${escape(msg)}</code></pre>`;
   } finally {
-    fs.promises.unlink(tmpIn).catch(() => undefined);
+    if (tmpIn) {
+      fs.promises.unlink(tmpIn).catch(() => undefined);
+    }
     fs.promises.unlink(tmpOut).catch(() => undefined);
   }
 }
