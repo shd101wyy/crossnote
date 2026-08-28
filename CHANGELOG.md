@@ -4,6 +4,13 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Fix slow rendering of documents with long lines.**
+  The `^block-id` transform's cost grew quadratically with line length, so large documents written one sentence per line could take seconds per preview refresh.
+  It now runs in linear time, including on lines ending in long whitespace runs.
+  ([#455](https://github.com/shd101wyy/crossnote/pull/455))
+
 ## [0.9.31] - 2026-06-08
 
 ### Bug fixes
