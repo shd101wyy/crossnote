@@ -3,7 +3,7 @@ import * as child_process from 'child_process';
 import * as path from 'path';
 import * as temp from './lib/temp';
 import { JsonObject } from 'type-fest';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import * as vm from 'vm';
 import * as vscode from 'vscode';
 import * as YAML from 'yaml';
@@ -103,6 +103,11 @@ export function isWSL(): boolean {
 /**
  * Convert a filesystem path to a file:// URL.
  *
+ * The path is percent-encoded (via `pathToFileURL`), so characters like `#`,
+ * `?`, spaces, or non-ASCII bytes in directory or file names survive as URL
+ * path components instead of being parsed as fragment/query separators.
+ * See issue #453.
+ *
  * When `useWSL` is true and the environment is WSL, produces a URL
  * accessible from a Windows browser:
  *   e.g. `/home/user/file.js` → `file:////wsl.localhost/Ubuntu/home/user/file.js`
@@ -114,11 +119,12 @@ export function toFileURL(
   filePath: string,
   { useWSL = false }: { useWSL?: boolean } = {},
 ): string {
+  const url = pathToFileURL(filePath);
   if (useWSL && isWSL()) {
     const distro = process.env['WSL_DISTRO_NAME'];
-    return `file:////wsl.localhost/${distro}${filePath}`;
+    return `file:////wsl.localhost/${distro}${url.pathname}`;
   }
-  return `file:///${filePath}`;
+  return url.href;
 }
 
 /**
@@ -218,7 +224,10 @@ export function addFileProtocol(
     return _externalAddFileProtocolFunction(filePath, vscodePreviewPanel);
   } else {
     if (!filePath.startsWith('file://')) {
-      filePath = 'file:///' + filePath;
+      // Percent-encode so `#`, `?`, spaces, … in the path are not parsed as
+      // URL separators (a `#` in a project directory truncated image URLs;
+      // issue #453). `pathToFileURL` also normalizes Windows backslashes.
+      return pathToFileURL(filePath).href;
     }
     filePath = filePath.replace(/^file:\/+/, 'file:///');
   }
@@ -240,6 +249,14 @@ export function removeFileProtocol(filePath: string): string {
     if (isVSCode) {
       // For vscode urls -> Remove host: `file///C:/a/b/c` -> `C:/a/b/c`
       rest = rest.replace(/^file\/+/, '');
+    }
+
+    // Producers (addFileProtocol / toFileURL) percent-encode characters like
+    // `#` and spaces; decode them back so consumers get a filesystem path.
+    try {
+      rest = decodeURIComponent(rest);
+    } catch {
+      // A literal `%` that is not a valid escape sequence stays as-is.
     }
 
     if (process.platform !== 'win32' && !rest.startsWith('/')) {
