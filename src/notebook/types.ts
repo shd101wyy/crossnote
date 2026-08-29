@@ -589,6 +589,16 @@ export interface NotebookConfig {
   useVSCodeThemeForContextMenu: boolean;
 
   /**
+   * Whether to show the custom context menu in the preview.
+   *
+   * When disabled, right-clicks fall through to the browser's native
+   * context menu (with its usual copy/paste entries).
+   *
+   * @default `true`
+   */
+  enablePreviewContextMenu: boolean;
+
+  /**
    * Whether to always show backlinks in preview.
    */
   alwaysShowBacklinksInPreview: boolean;
@@ -729,6 +739,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     alwaysShowBacklinksInPreview: false,
     maxNoteFileSize: 5 * 1024 * 1024,
     useVSCodeThemeForContextMenu: false,
+    enablePreviewContextMenu: true,
   };
 }
 
