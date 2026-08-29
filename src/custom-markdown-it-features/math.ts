@@ -34,36 +34,60 @@ export default (md: MarkdownIt, notebook: Notebook) => {
         return false;
       }
 
-      // Scan forward in state.src for the closing delimiter.
-      let scanPos = pos + openTag.length;
-      let closingPos = -1;
-      while (scanPos < state.src.length) {
-        if (state.src.startsWith(closeTag, scanPos)) {
-          closingPos = scanPos;
+      // Build the block's logical text line by line. bMarks/tShift/
+      // eMarks are already adjusted for container blocks (blockquote
+      // markers, list indentation), so scanning raw `state.src`
+      // instead would leak `>` / indent prefixes into the math
+      // content (vscode-mpe#2361).
+      let logical = '';
+      for (let line = startLine; line < endLine; line++) {
+        logical +=
+          (line === startLine ? '' : '\n') +
+          state.src.slice(
+            state.bMarks[line] + state.tShift[line],
+            state.eMarks[line],
+          );
+      }
+
+      // Scan for the closing delimiter.
+      const body = logical.slice(openTag.length);
+      let closingIdx = -1;
+      let scanPos = 0;
+      while (scanPos < body.length) {
+        if (body.startsWith(closeTag, scanPos)) {
+          closingIdx = scanPos;
           break;
         }
-        if (state.src[scanPos] === '\\') {
+        if (body[scanPos] === '\\') {
           scanPos += 1;
         }
         scanPos += 1;
       }
-      if (closingPos < 0) {
+      if (closingIdx < 0) {
         return false;
-      }
-
-      // Determine which line the closing delimiter ends on so we can
-      // advance state.line past the whole block.
-      const closeEnd = closingPos + closeTag.length;
-      let nextLine = startLine;
-      while (nextLine < endLine && state.bMarks[nextLine] <= closeEnd) {
-        nextLine++;
       }
 
       if (silent) {
         return true;
       }
 
-      const content = state.src.slice(pos + openTag.length, closingPos).trim();
+      // Map the closing delimiter's end back to a source line so
+      // state.line can advance past the whole block.
+      const consumed = openTag.length + closingIdx + closeTag.length;
+      let cumulative = 0;
+      let nextLine = startLine + 1;
+      for (let line = startLine; line < endLine; line++) {
+        cumulative +=
+          state.eMarks[line] -
+          (state.bMarks[line] + state.tShift[line]) +
+          (line === startLine ? 0 : 1);
+        if (cumulative >= consumed) {
+          nextLine = line + 1;
+          break;
+        }
+      }
+
+      const content = body.slice(0, closingIdx).trim();
 
       const token = state.push('math_block', 'div', 0);
       token.content = content;
