@@ -12,6 +12,7 @@ import { editor as monacoEditor } from 'monaco-editor';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PreviewContainer from '../containers/preview';
+import { t } from '../lib/i18n';
 
 const EDITOR_LINE_HEIGHT = 19;
 const EDITOR_MIN_HEIGHT = EDITOR_LINE_HEIGHT * 3; // 3 lines
@@ -483,7 +484,7 @@ export default function MarkdownEditor() {
             <button
               className="btn btn-primary btn-circle btn-xs mr-1"
               onClick={() => setMarkdownEditorExpanded(false)}
-              title="Collapse"
+              title={t('markdownEditor.collapse')}
             >
               <Icon path={mdiUnfoldLessHorizontal} size={0.6}></Icon>
             </button>
@@ -491,7 +492,7 @@ export default function MarkdownEditor() {
             <button
               className="btn btn-primary btn-circle btn-xs mr-1"
               onClick={() => setMarkdownEditorExpanded(true)}
-              title="Expand"
+              title={t('markdownEditor.expand')}
             >
               <Icon path={mdiUnfoldMoreHorizontal} size={0.6}></Icon>
             </button>
@@ -499,7 +500,7 @@ export default function MarkdownEditor() {
           <button
             className="btn btn-primary btn-circle btn-xs mr-1"
             onClick={saveEditor}
-            title="Save changes"
+            title={t('markdownEditor.save')}
           >
             <Icon path={mdiCheck} size={0.6}></Icon>
           </button>
@@ -510,7 +511,7 @@ export default function MarkdownEditor() {
               event.preventDefault();
               closeEditor();
             }}
-            title="Discard changes"
+            title={t('markdownEditor.discard')}
           >
             <Icon path={mdiClose} size={0.6}></Icon>
           </button>
@@ -588,7 +589,7 @@ export default function MarkdownEditor() {
               <div className="flex flex-col items-center">
                 <div className="loading loading-dots loading-md"></div>
                 <div className="text-base font-normal not-italic">
-                  Loading editor...
+                  {t('markdownEditor.loading')}
                 </div>
               </div>
             </div>

@@ -31,6 +31,7 @@ import {
 import 'react-contexify/ReactContexify.css';
 import './context-menu-vscode.css';
 import PreviewContainer from '../containers/preview';
+import { t } from '../lib/i18n';
 import { copyTextToClipboard } from '../lib/utility';
 
 export default function ContextMenu() {
@@ -301,7 +302,7 @@ export default function ContextMenu() {
             >
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiContentCopy} size={0.8} className="mr-2"></Icon>
-                Copy
+                {t('contextMenu.copy')}
               </span>
             </Item>
             <Separator></Separator>
@@ -310,19 +311,21 @@ export default function ContextMenu() {
         <Item id="open-graph-view" onClick={handleItemClick}>
           <span className="inline-flex flex-row items-center">
             <Icon path={mdiGraph} size={0.8} className="mr-2"></Icon>
-            Open Graph View
+            {t('contextMenu.openGraphView')}
           </span>
         </Item>
         <Separator></Separator>
         {!isVSCodeWebExtension && (
           <>
             <Item id="open-in-browser" onClick={handleItemClick}>
-              <Icon path={mdiOpenInNew} size={0.8} className="mr-2"></Icon> Open
-              in Browser
+              <Icon path={mdiOpenInNew} size={0.8} className="mr-2"></Icon>{' '}
+              {t('contextMenu.openInBrowser')}
             </Item>
             <Item id="translate-document" onClick={handleItemClick}>
               <Icon path={mdiTranslate} size={0.8} className="mr-2"></Icon>
-              {isShowingTranslation ? 'Show Original' : 'Translate'}
+              {isShowingTranslation
+                ? t('contextMenu.showOriginal')
+                : t('contextMenu.translate')}
             </Item>
             <Separator></Separator>
           </>
@@ -336,7 +339,7 @@ export default function ContextMenu() {
                   size={0.8}
                   className="mr-2"
                 ></Icon>
-                Export
+                {t('contextMenu.export')}
               </span>
             }
           >
@@ -346,16 +349,16 @@ export default function ContextMenu() {
               }
             >
               <Item id="export-html-offline" onClick={handleItemClick}>
-                {'HTML (offline)'}
+                {t('contextMenu.exportHtmlOffline')}
               </Item>
               <Item id="export-html-cdn" onClick={handleItemClick}>
-                {'HTML (cdn hosted)'}
+                {t('contextMenu.exportHtmlCdn')}
               </Item>
             </Submenu>
             <Submenu
               label={
                 <span className="inline-flex flex-row items-center">
-                  Chrome (Puppeteer)
+                  {t('contextMenu.exportChrome')}
                 </span>
               }
             >
@@ -371,7 +374,7 @@ export default function ContextMenu() {
             </Submenu>
             <Item id="export-prince" onClick={handleItemClick}>
               <span className="inline-flex flex-row items-center">
-                PDF (Prince)
+                {t('contextMenu.exportPrince')}
               </span>
             </Item>
             <Submenu
@@ -397,7 +400,7 @@ export default function ContextMenu() {
             </Item>
             <Item id="export-markdown" onClick={handleItemClick}>
               <span className="inline-flex flex-row items-center">
-                Save as Markdown
+                {t('contextMenu.saveAsMarkdown')}
               </span>
             </Item>
           </Submenu>
@@ -407,13 +410,15 @@ export default function ContextMenu() {
           label={
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiPencil} size={0.8} className="mr-2"></Icon>
-              Edit Markdown
+              {t('contextMenu.editMarkdown')}
             </span>
           }
         >
           <Item id="open-external-editor" onClick={handleItemClick}>
             <span>
-              {isVSCode ? 'Open VS Code Editor' : 'Open External Editor'}
+              {isVSCode
+                ? t('contextMenu.openVSCodeEditor')
+                : t('contextMenu.openExternalEditor')}
             </span>
           </Item>
           {!isPresentationMode && (
@@ -440,7 +445,7 @@ export default function ContextMenu() {
                 }
               }}
             >
-              <span>Open In-preview Editor </span>
+              <span>{t('contextMenu.openInPreviewEditor')} </span>
             </Item>
           )}
         </Submenu>
@@ -453,7 +458,7 @@ export default function ContextMenu() {
             )}
           >
             <Icon path={mdiSpaOutline} size={0.8} className="mr-2"></Icon>
-            Zen Mode
+            {t('contextMenu.zenMode')}
           </span>
         </Item>
         <Separator></Separator>
@@ -462,7 +467,7 @@ export default function ContextMenu() {
             <Item id="open-image-helper" onClick={handleItemClick}>
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiImageOutline} size={0.8} className="mr-2"></Icon>
-                Image Helper
+                {t('contextMenu.imageHelper')}
               </span>
             </Item>
             <Separator></Separator>
@@ -471,7 +476,7 @@ export default function ContextMenu() {
         <Item id="sync-source" onClick={handleItemClick}>
           <span className="inline-flex flex-row items-center">
             <Icon path={mdiSync} size={0.8} className="mr-2"></Icon>
-            Sync Source
+            {t('contextMenu.syncSource')}
           </span>
         </Item>
         <Separator></Separator>
@@ -479,26 +484,26 @@ export default function ContextMenu() {
           label={
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiMagnify} size={0.8} className="mr-2"></Icon>
-              Zoom ({Math.round(zoomLevel * 100)}%)
+              {t('contextMenu.zoom')} ({Math.round(zoomLevel * 100)}%)
             </span>
           }
         >
           <Item id="zoom-in" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiMagnifyPlus} size={0.8} className="mr-2"></Icon>
-              Zoom In
+              {t('contextMenu.zoomIn')}
             </span>
           </Item>
           <Item id="zoom-out" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiMagnifyMinus} size={0.8} className="mr-2"></Icon>
-              Zoom Out
+              {t('contextMenu.zoomOut')}
             </span>
           </Item>
           <Item id="reset-zoom" onClick={handleItemClick}>
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiMagnify} size={0.8} className="mr-2"></Icon>
-              Reset Zoom
+              {t('contextMenu.resetZoom')}
             </span>
           </Item>
         </Submenu>
@@ -507,7 +512,7 @@ export default function ContextMenu() {
           label={
             <span className="inline-flex flex-row items-center">
               <Icon path={mdiPaletteOutline} size={0.8} className="mr-2"></Icon>
-              Preview Theme
+              {t('contextMenu.previewTheme')}
             </span>
           }
         >
@@ -515,7 +520,7 @@ export default function ContextMenu() {
             label={
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiMoonNew} size={0.8} className="mr-2"></Icon>
-                Light
+                {t('contextMenu.light')}
               </span>
             }
           >
@@ -621,7 +626,7 @@ export default function ContextMenu() {
             label={
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiMoonFull} size={0.8} className="mr-2"></Icon>
-                Dark
+                {t('contextMenu.dark')}
               </span>
             }
           >
@@ -727,7 +732,7 @@ export default function ContextMenu() {
                       : ''
                   }
                 >
-                  VS Code
+                  {t('contextMenu.vscode')}
                 </span>
               </span>
             </Item>
@@ -742,7 +747,7 @@ export default function ContextMenu() {
                     : ''
                 }
               >
-                None
+                {t('contextMenu.none')}
               </span>
             </span>
           </Item>
@@ -755,7 +760,7 @@ export default function ContextMenu() {
                 size={0.8}
                 className="mr-2 invisible"
               ></Icon>
-              Code Block Theme
+              {t('contextMenu.codeBlockTheme')}
             </span>
           }
         >
@@ -763,7 +768,7 @@ export default function ContextMenu() {
             label={
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiMoonNew} size={0.8} className="mr-2"></Icon>
-                Light
+                {t('contextMenu.light')}
               </span>
             }
           >
@@ -897,7 +902,7 @@ export default function ContextMenu() {
             label={
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiMoonFull} size={0.8} className="mr-2"></Icon>
-                Dark
+                {t('contextMenu.dark')}
               </span>
             }
           >
@@ -1096,7 +1101,7 @@ export default function ContextMenu() {
                       : ''
                   }
                 >
-                  VS Code
+                  {t('contextMenu.vscode')}
                 </span>
               </span>
             </Item>
@@ -1111,7 +1116,7 @@ export default function ContextMenu() {
                     : ''
                 }
               >
-                Auto
+                {t('contextMenu.auto')}
               </span>
             </span>
           </Item>
@@ -1124,7 +1129,7 @@ export default function ContextMenu() {
                 size={0.8}
                 className="mr-2 invisible"
               ></Icon>
-              Reveal.js Theme
+              {t('contextMenu.revealjsTheme')}
             </span>
           }
         >
@@ -1132,7 +1137,7 @@ export default function ContextMenu() {
             label={
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiMoonNew} size={0.8} className="mr-2"></Icon>
-                Light
+                {t('contextMenu.light')}
               </span>
             }
           >
@@ -1210,7 +1215,7 @@ export default function ContextMenu() {
             label={
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiMoonFull} size={0.8} className="mr-2"></Icon>
-                Dark
+                {t('contextMenu.dark')}
               </span>
             }
           >
@@ -1285,7 +1290,7 @@ export default function ContextMenu() {
                       : ''
                   }
                 >
-                  VS Code
+                  {t('contextMenu.vscode')}
                 </span>
               </span>
             </Item>
@@ -1300,7 +1305,7 @@ export default function ContextMenu() {
                     : ''
                 }
               >
-                None
+                {t('contextMenu.none')}
               </span>
             </span>
           </Item>
@@ -1314,21 +1319,21 @@ export default function ContextMenu() {
                 size={0.8}
                 className="mr-2"
               ></Icon>
-              About
+              {t('contextMenu.about')}
             </span>
           }
         >
           <Item id="open-documentation" onClick={handleItemClick}>
-            Documentation
+            {t('contextMenu.documentation')}
           </Item>
           <Item id="open-changelog" onClick={handleItemClick}>
-            Change Log
+            {t('contextMenu.changelog')}
           </Item>
           <Item id="open-issues" onClick={handleItemClick}>
-            Feature Requests or Bug Reports
+            {t('contextMenu.featureRequests')}
           </Item>
           <Item id="open-sponsors" onClick={handleItemClick}>
-            Sponsor This Project 😊
+            {t('contextMenu.sponsors')}
           </Item>
         </Submenu>
       </Menu>

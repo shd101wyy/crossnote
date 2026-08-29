@@ -761,6 +761,13 @@ export interface WebviewConfig extends Partial<NotebookConfig> {
   // "Show Original". Passed via <meta data-config> so it survives webview
   // reloads (unlike postMessage, which is lost when the HTML is reset).
   isShowingTranslation?: boolean;
+  /**
+   * UI language for the webview (e.g. `zh-cn`, `pt-br`, `en`), following
+   * `vscode.env.language`. Drives the webview's built-in translations
+   * (`src/webview/locales/`); unknown locales fall back to English.
+   * Passed via <meta data-config> so it survives webview reloads.
+   */
+  locale?: string;
 }
 
 export enum PreviewMode {

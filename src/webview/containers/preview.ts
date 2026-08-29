@@ -7,6 +7,7 @@ import { useContextMenu } from 'react-contexify';
 import { createContainer } from 'unstated-next';
 import { Backlink, WebviewConfig } from '../../notebook';
 import { classifyAnchorClick } from '../lib/anchor-routing';
+import { setLocale } from '../lib/i18n';
 import { sanitizeHtml } from '../lib/sanitize';
 import { isBackgroundColorLight } from '../lib/utility';
 
@@ -174,6 +175,10 @@ const PreviewContainer = createContainer(() => {
         '{}',
     ) as WebviewConfig;
   }, []);
+  // Localize the webview UI before the first render reads any string.
+  // The container initializer runs once per webview load, so this is a
+  // one-time setup, not a per-render effect.
+  setLocale(config.locale);
   const isVSCode = useMemo(() => {
     return !!config.isVSCode;
   }, [config]);
