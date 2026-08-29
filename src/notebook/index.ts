@@ -112,6 +112,18 @@ interface RefreshNotesInternalArgs extends RefreshNotesArgs {
 export class Notebook {
   public notebookPath!: URI;
   public config!: NotebookConfig;
+  /**
+   * Whether user-provided preview scripts may run in the preview webview:
+   * `<script src>` tags in `.crossnote/head.html` and `@import "*.js"`
+   * file imports. Defaults to `false`, which keeps both channels inert.
+   *
+   * SECURITY: deliberately NOT part of `NotebookConfig` — config values
+   * are merged from the repository's `.crossnote/config.js`, which is
+   * untrusted content. Only the host application may set this flag
+   * (e.g. from a user-scoped, application-scope setting); repository
+   * files must never be able to turn it on.
+   */
+  public previewScriptsEnabled: boolean = false;
   public fs!: FileSystemApi;
 
   public notes: Notes = {};
