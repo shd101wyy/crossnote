@@ -84,9 +84,71 @@ export function openFile(filePath: string) {
     // `--` stops option parsing so a `filePath` starting with `-` can't be
     // interpreted as a flag. `execFile` already avoids the shell.
     child_process.execFile('open', ['--', filePath]);
+  } else if (isWSL()) {
+    openFileInWSL(filePath);
   } else {
     child_process.execFile('xdg-open', [filePath]);
   }
+}
+
+/**
+ * Open a file/URL from WSL in the Windows default browser.
+ *
+ * WSL distros have no Linux browser by default — plain Ubuntu images
+ * don't even ship xdg-utils, so `xdg-open` fails with ENOENT and
+ * "Open in Browser" silently does nothing. Try, in order:
+ *
+ * 1. `wslview` (wslu) — the canonical WSL opener; translates paths itself.
+ * 2. `xdg-open` — for WSLg setups that really run a Linux browser
+ *    (NixOS-WSL, for example, ships a patched xdg-open that dispatches
+ *    to Windows handlers).
+ * 3. `wslpath -w` + `explorer.exe` — bare WSL without wslu. Note that
+ *    explorer.exe exits nonzero even on success, so nothing gates on
+ *    its exit code.
+ *
+ * Every spawn uses execFile (no shell) — same security posture as the
+ * win32 branch above: `filePath` may be an attacker-controlled href.
+ */
+function openFileInWSL(filePath: string) {
+  const attempt = (
+    spawn: () => child_process.ChildProcess,
+    fallback?: () => void,
+  ) => {
+    const child = spawn();
+    let settled = false;
+    const tryFallback = () => {
+      if (!settled) {
+        settled = true;
+        fallback?.();
+      }
+    };
+    child.on('error', tryFallback); // ENOENT, permission, ...
+    child.on('exit', (code) => {
+      if (code !== 0) {
+        tryFallback();
+      }
+    });
+  };
+
+  attempt(
+    () => child_process.execFile('wslview', [filePath]),
+    () =>
+      attempt(
+        () => child_process.execFile('xdg-open', [filePath]),
+        () => {
+          child_process.execFile(
+            'wslpath',
+            ['-w', filePath],
+            (error, stdout) => {
+              const windowsPath = stdout.trim();
+              if (!error && windowsPath) {
+                child_process.execFile('explorer.exe', [windowsPath]);
+              }
+            },
+          );
+        },
+      ),
+  );
 }
 
 /**
