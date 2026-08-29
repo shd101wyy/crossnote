@@ -552,6 +552,57 @@ window["initRevealPresentation"] = async function() {
   }
 
   /**
+   * Preview themes that ship in light/dark pairs (atom, github, one,
+   * solarized). Non-paper exports embed both variants so the exported
+   * document follows the reader's system color scheme. Maps each theme
+   * file to its counterpart; themes without an entry have no pair.
+   */
+  private static PreviewThemeColorCounterparts: Record<string, string> = {
+    'atom-light.css': 'atom-dark.css',
+    'atom-dark.css': 'atom-light.css',
+    'github-light.css': 'github-dark.css',
+    'github-dark.css': 'github-light.css',
+    'one-light.css': 'one-dark.css',
+    'one-dark.css': 'one-light.css',
+    'solarized-light.css': 'solarized-dark.css',
+    'solarized-dark.css': 'solarized-light.css',
+  };
+
+  /**
+   * Same idea for code block (prism) themes. Note the github pair is
+   * `github.css` (light) / `github-dark.css`, unlike the preview themes.
+   */
+  private static PrismThemeColorCounterparts: Record<string, string> = {
+    'atom-light.css': 'atom-dark.css',
+    'atom-dark.css': 'atom-light.css',
+    'github.css': 'github-dark.css',
+    'github-dark.css': 'github.css',
+    'one-light.css': 'one-dark.css',
+    'one-dark.css': 'one-light.css',
+    'solarized-light.css': 'solarized-dark.css',
+    'solarized-dark.css': 'solarized-light.css',
+  };
+
+  /**
+   * The dark variant of a paired theme, for non-paper exports: the light
+   * variant applies by default and the dark variant is embedded under
+   * `@media (prefers-color-scheme: dark)` — so the exported document and
+   * GitHub-style `<picture>` images follow the reader's system color
+   * scheme. `counterparts` is one of the maps above; returns null when
+   * the theme has no light/dark pair.
+   */
+  private static darkVariantOf(
+    theme: string,
+    counterparts: Record<string, string>,
+  ): string | null {
+    const counterpart = counterparts[theme];
+    if (!counterpart) {
+      return null;
+    }
+    return theme.endsWith('-dark.css') ? theme : counterpart;
+  }
+
+  /**
    * Automatically pick code block theme for preview.
    */
   private getPrismTheme(
@@ -1300,30 +1351,61 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // prism and preview theme
     let styleCSS = '';
+    // Set for non-paper exports with a paired light/dark theme so the
+    // document (and <picture> elements) follows the reader's system
+    // color scheme.
+    let colorSchemeMeta = '';
+    // Paper output (PDF via Chrome / Prince) keeps the intentional
+    // forced-light page when printBackground is off; screen output
+    // (browser / HTML export) instead respects the configured themes.
+    const forceLightTheme =
+      (options.isForPrint || options.isForPrince) &&
+      !this.notebook.config.printBackground &&
+      !yamlConfig['print_background'];
     try {
       // prism *.css
-      styleCSS +=
-        !this.notebook.config.printBackground &&
-        !yamlConfig['print_background'] &&
-        !yamlConfig['isPresentationMode']
-          ? await this.fs.readFile(
-              path.resolve(
-                utility.getCrossnoteBuildDirectory(),
-                `./styles/prism_theme/github.css`,
-              ),
-            )
-          : await this.fs.readFile(
-              path.resolve(
-                utility.getCrossnoteBuildDirectory(),
-                `./styles/prism_theme/${MarkdownEngine.resolveThemeForExport(
-                  this.getPrismTheme(
-                    yamlConfig['isPresentationMode'] as boolean | undefined,
-                    yamlConfig,
-                  ),
-                  'codeBlock',
-                )}`,
-              ),
-            );
+      if (forceLightTheme && !yamlConfig['isPresentationMode']) {
+        styleCSS += await this.fs.readFile(
+          path.resolve(
+            utility.getCrossnoteBuildDirectory(),
+            `./styles/prism_theme/github.css`,
+          ),
+        );
+      } else {
+        const prismTheme = MarkdownEngine.resolveThemeForExport(
+          this.getPrismTheme(
+            yamlConfig['isPresentationMode'] as boolean | undefined,
+            yamlConfig,
+          ),
+          'codeBlock',
+        );
+        const darkPrismTheme = MarkdownEngine.darkVariantOf(
+          prismTheme,
+          MarkdownEngine.PrismThemeColorCounterparts,
+        );
+        if (darkPrismTheme) {
+          colorSchemeMeta = '<meta name="color-scheme" content="light dark">';
+          styleCSS += await this.fs.readFile(
+            path.resolve(
+              utility.getCrossnoteBuildDirectory(),
+              `./styles/prism_theme/${prismTheme}`,
+            ),
+          );
+          styleCSS += `@media (prefers-color-scheme: dark) {\n${await this.fs.readFile(
+            path.resolve(
+              utility.getCrossnoteBuildDirectory(),
+              `./styles/prism_theme/${darkPrismTheme}`,
+            ),
+          )}\n}\n`;
+        } else {
+          styleCSS += await this.fs.readFile(
+            path.resolve(
+              utility.getCrossnoteBuildDirectory(),
+              `./styles/prism_theme/${prismTheme}`,
+            ),
+          );
+        }
+      }
 
       if (yamlConfig['isPresentationMode']) {
         const presObj2 =
@@ -1350,24 +1432,47 @@ if (typeof(window['Reveal']) !== 'undefined') {
         }
       } else {
         // preview theme
-        styleCSS +=
-          !this.notebook.config.printBackground &&
-          !yamlConfig['print_background']
-            ? await this.fs.readFile(
-                path.resolve(
-                  utility.getCrossnoteBuildDirectory(),
-                  `./styles/preview_theme/github-light.css`,
-                ),
-              )
-            : await this.fs.readFile(
-                path.resolve(
-                  utility.getCrossnoteBuildDirectory(),
-                  `./styles/preview_theme/${MarkdownEngine.resolveThemeForExport(
-                    this.notebook.config.previewTheme,
-                    'preview',
-                  )}`,
-                ),
-              );
+        const previewTheme = MarkdownEngine.resolveThemeForExport(
+          this.notebook.config.previewTheme,
+          'preview',
+        );
+        const darkPreviewTheme = MarkdownEngine.darkVariantOf(
+          previewTheme,
+          MarkdownEngine.PreviewThemeColorCounterparts,
+        );
+        if (forceLightTheme) {
+          styleCSS += await this.fs.readFile(
+            path.resolve(
+              utility.getCrossnoteBuildDirectory(),
+              `./styles/preview_theme/github-light.css`,
+            ),
+          );
+        } else if (darkPreviewTheme) {
+          const lightPreviewTheme =
+            darkPreviewTheme === previewTheme
+              ? MarkdownEngine.PreviewThemeColorCounterparts[previewTheme]
+              : previewTheme;
+          colorSchemeMeta = '<meta name="color-scheme" content="light dark">';
+          styleCSS += await this.fs.readFile(
+            path.resolve(
+              utility.getCrossnoteBuildDirectory(),
+              `./styles/preview_theme/${lightPreviewTheme}`,
+            ),
+          );
+          styleCSS += `@media (prefers-color-scheme: dark) {\n${await this.fs.readFile(
+            path.resolve(
+              utility.getCrossnoteBuildDirectory(),
+              `./styles/preview_theme/${darkPreviewTheme}`,
+            ),
+          )}\n}\n`;
+        } else {
+          styleCSS += await this.fs.readFile(
+            path.resolve(
+              utility.getCrossnoteBuildDirectory(),
+              `./styles/preview_theme/${previewTheme}`,
+            ),
+          );
+        }
       }
 
       // style template
@@ -1474,6 +1579,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       <title>${title}</title>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      ${colorSchemeMeta}
       ${presentationStyle}
       ${mathStyle}
       ${fontAwesomeStyle}

@@ -6,8 +6,9 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### Features
 
+- **Browser/HTML exports follow the reader's system color scheme** — `generateHTMLTemplateForExport` used to hardcode `github-light.css` + `prism_theme/github.css` for every export path whenever `printBackground` was off. That forced-light behavior is now scoped to paper output (Chrome PDF / Prince), while screen output (Open in Browser, HTML export) embeds the configured theme together with its dark counterpart under `@media (prefers-color-scheme: dark)` — plus `<meta name="color-scheme" content="light dark">` so the page background and GitHub-style `<picture>` images resolve correctly on dark-OS readers. Pairing covers every shipped light/dark family (atom, github, one, solarized) for both page and code-block themes; unpaired themes (e.g. `night.css`, `monokai.css`) are embedded as-is. Ported from @TaurusWood's extension-side PR [vscode-mpe#2327](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/pull/2327) ([vscode-mpe#2271](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2271)).
 - **Explicit opt-in channel for user preview scripts (`notebook.previewScriptsEnabled`)** — Host applications can now set `Notebook.previewScriptsEnabled = true` to re-enable custom preview JavaScript that [0.9.31](#0931---2026-06-08) disabled ([#446](https://github.com/shd101wyy/crossnote/issues/446)). When opted in, `<script src="./copy-buttons.js">` tags in `.crossnote/head.html` are kept and rewritten to file URLs, and `@import "*.js"` file imports are emitted again. The channel is file-based and workspace-scoped: inline scripts, URL-scheme sources (`https://`, `file://`, `data:`, …), and paths resolving outside the notebook directory (symlinks included) are always removed. The flag is deliberately **not** part of `NotebookConfig` — `.crossnote/config.js` is untrusted repository content and can never turn it on; only the host (e.g. an application-scope VS Code setting) can. HTML/eBook exports continue to strip all scripts unconditionally.
-- **Add a translation toggle to the preview context menu** — The webview now reads an `isShowingTranslation` flag from `WebviewConfig` (passed by the host via `initPreview`'s `<meta data-config>`, so it survives webview reloads) and renders a context-menu item that switches between "Translate" and "Show Original". Clicking it posts `translateDocument` or `restoreOriginal` back to the host, which drives the AI translation feature in the `vscode-markdown-preview-enhanced` extension.
+- **Add a translation toggle to the preview context menu** — The webview now reads an `isShowingTranslation` flag from `WebviewConfig` (passed by the host via `initPreview`'s `<meta data-config>`, so it survives webview reloads) and renders a context-menu item that switches between "Translate" and "Show Original". Clicking it posts `translateDocument` or `restoreOriginal` back to the host, which drives the AI translation feature in the `vscode-markdown-preview-enhanced` extension ([#459](https://github.com/shd101wyy/crossnote/pull/459) by @loorr).
 
 ### Security
 
@@ -26,7 +27,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - **Fix slow rendering of documents with long lines.**
   The `^block-id` transform's cost grew quadratically with line length, so large documents written one sentence per line could take seconds per preview refresh.
   It now runs in linear time, including on lines ending in long whitespace runs.
-  ([#455](https://github.com/shd101wyy/crossnote/pull/455))
+  ([#455](https://github.com/shd101wyy/crossnote/pull/455) by @zeyutang)
 
 ## [0.9.31] - 2026-06-08
 

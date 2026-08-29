@@ -49,6 +49,7 @@ What the workflow does, in order:
 1. Runs `pnpm check`, `pnpm test`, `pnpm build`
 2. Bumps `package.json` (`npm version <level>`)
 3. Rewrites `CHANGELOG.md`: renames `## [Unreleased]` to `## [X.Y.Z] - <today>` and prepends a fresh empty `## [Unreleased]` section — **write changelog entries under `[Unreleased]` before dispatching a release**
+   - **Crediting contributors**: every entry that references a PR must credit its author (e.g. `([#455](…) by @author)`); for entries that reference an issue report, use `Reported by @author`.
 4. Publishes to npm (`prerelease` bumps go to the `next` dist-tag, never `latest`)
 5. Commits the bump, tags it, pushes to `master` + tag, creates the GitHub Release with the changelog entry
 6. Opens a `release/vX.Y.Z` → `develop` PR, approves it via the `RELEASE_TOKEN` secret, and auto-merges it
