@@ -75,6 +75,12 @@ jobs:
           version: ${{ steps.bump.outputs.new-version }}
           path: CHANGELOG.md
 
+      - name: Publish package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # prerelease versions must not become the npm 'latest' dist-tag
+        run: npm publish $(if [ '${{ inputs.bump }}' = 'prerelease' ]; then echo '--tag next'; fi)
+
       - name: Commit, tag and push
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new-version }}
@@ -85,11 +91,6 @@ jobs:
           git push origin HEAD:master
           git push origin "refs/tags/$NEW_VERSION"
 
-      - name: Publish package
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Create a Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -99,7 +100,8 @@ jobs:
           gh release create "$NEW_VERSION" \
             --title "$NEW_VERSION" \
             --notes "$RELEASE_NOTES" \
-            --target master
+            --target master \
+            $(if [ '${{ inputs.bump }}' = 'prerelease' ]; then echo '--prerelease'; fi)
 
       - name: Open auto-merge PR back to develop
         env:
