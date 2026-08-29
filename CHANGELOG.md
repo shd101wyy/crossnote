@@ -4,8 +4,14 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Updates
+
+- Update `mermaid` to `11.17.2`, including the vendored offline preview bundle (now downloaded from the official jsDelivr dist via `scripts/update-mermaid-bundle.mjs`) and the CDN fallback.
+
 ### Bug fixes
 
+- **Fix `#` in project path breaking image loading in preview** — `file://` URLs were built by string concatenation without percent-encoding, so a `#` in a directory name (e.g. `2026-06-10#1-AI-platform-arch/`) was parsed as a fragment separator by the browser and every image (and `@import`ed script/stylesheet) under it 404'd. `addFileProtocol()` and `toFileURL()` now build URLs via Node's `pathToFileURL()` (also normalizing Windows backslashes), and `removeFileProtocol()` percent-decodes back to a filesystem path so ebook/`@import` file reads keep working. Fixes [#453](https://github.com/shd101wyy/crossnote/issues/453). Reported by @Hubbitus.
+- **Fix `toc: ordered: true` front matter option having no effect** — `generateSidebarToCHTML()` accepted the `ordered` option but never read it, so both the `[TOC]` block and the sidebar TOC always rendered as the default collapsible `<details>` tree. When `toc.ordered: true` is set in the front matter, the TOC now renders as a nested ordered list (`<ol>`/`<li>`) with browser-provided numbering, in both the document body `[TOC]` and the sidebar TOC. Fixes [#451](https://github.com/shd101wyy/crossnote/issues/451). Reported by @KarlYao-SystemDesign.
 - **Fix slow rendering of documents with long lines.**
   The `^block-id` transform's cost grew quadratically with line length, so large documents written one sentence per line could take seconds per preview refresh.
   It now runs in linear time, including on lines ending in long whitespace runs.

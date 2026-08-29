@@ -11,6 +11,7 @@ import {
   stringifyBlockAttributes,
 } from '../lib/block-attributes';
 import computeChecksum from '../lib/compute-checksum';
+import { toFileURL } from '../utility';
 import { Notebook } from '../notebook';
 import { findFragmentTargetLine } from '../notebook/note-fragments';
 import { MarkdownParser } from '../notebook/types';
@@ -1103,7 +1104,7 @@ export async function transformMarkdown(
                     absoluteFilePath,
                   );
                 } else {
-                  sourcePath = 'file:///' + absoluteFilePath;
+                  sourcePath = toFileURL(absoluteFilePath);
                 }
 
                 if (extname === '.js') {
