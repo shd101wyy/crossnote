@@ -13,10 +13,28 @@
 import * as child_process from 'child_process';
 import { openFile, sanitizeImageFilename } from '../src/utility';
 
-jest.mock('child_process', () => ({
-  execFile: jest.fn(),
-  exec: jest.fn(),
-}));
+jest.mock('child_process', () => {
+  const EventEmitter = jest.requireActual('events');
+  // execFile must return a ChildProcess-ish EventEmitter — the WSL branch
+  // attaches error/exit listeners to pick the next opener in the chain.
+  // `wslpath` gets a callback, which we answer with a converted path so
+  // the final explorer.exe hop can be asserted.
+  return {
+    execFile: jest.fn(
+      (
+        cmd: string,
+        _args: unknown[],
+        cb?: (error: unknown, stdout?: string) => void,
+      ) => {
+        if (cmd === 'wslpath') {
+          cb?.(null, '\\\\wsl.localhost\\Ubuntu\\tmp\\crossnote.html\n');
+        }
+        return new EventEmitter();
+      },
+    ),
+    exec: jest.fn(),
+  };
+});
 
 const execFileMock = child_process.execFile as unknown as jest.Mock;
 const execMock = child_process.exec as unknown as jest.Mock;
@@ -36,10 +54,35 @@ function withPlatform(platform: NodeJS.Platform, fn: () => void) {
   }
 }
 
+function withEnv(vars: Record<string, string | undefined>, fn: () => void) {
+  const originals = new Map<string, string | undefined>();
+  for (const [key, value] of Object.entries(vars)) {
+    originals.set(key, process.env[key]);
+    if (value === undefined) {
+      delete process.env[key];
+    } else {
+      process.env[key] = value;
+    }
+  }
+  try {
+    fn();
+  } finally {
+    for (const [key, value] of originals) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  }
+}
+
 describe('openFile never uses a shell (#byte16384 Windows RCE)', () => {
   beforeEach(() => {
-    execFileMock.mockReset();
-    execMock.mockReset();
+    // mockClear, not mockReset: reset would strip the execFile
+    // implementation installed by the jest.mock factory.
+    execFileMock.mockClear();
+    execMock.mockClear();
   });
 
   it('does not call child_process.exec on Windows', () => {
@@ -87,12 +130,47 @@ describe('openFile never uses a shell (#byte16384 Windows RCE)', () => {
     expect(execFileMock).toHaveBeenCalledWith('open', ['--', '-x']);
   });
 
-  it('uses xdg-open (no shell) on Linux', () => {
+  it('uses xdg-open (no shell) on Linux outside WSL', () => {
     withPlatform('linux', () => {
-      openFile('mailto:a& calc');
+      withEnv({ WSL_DISTRO_NAME: undefined }, () => {
+        openFile('mailto:a& calc');
+      });
     });
     expect(execMock).not.toHaveBeenCalled();
     expect(execFileMock).toHaveBeenCalledWith('xdg-open', ['mailto:a& calc']);
+  });
+
+  it('on WSL prefers wslview and never uses a shell', () => {
+    withPlatform('linux', () => {
+      withEnv({ WSL_DISTRO_NAME: 'Ubuntu' }, () => {
+        openFile('mailto:a& calc');
+      });
+    });
+    expect(execMock).not.toHaveBeenCalled();
+    expect(execFileMock).toHaveBeenCalledTimes(1);
+    // The whole string is one argument — no shell, so `&` cannot split a
+    // second command.
+    expect(execFileMock).toHaveBeenCalledWith('wslview', ['mailto:a& calc']);
+  });
+
+  it('on WSL falls back through xdg-open to explorer.exe, args unsplit', () => {
+    withPlatform('linux', () => {
+      withEnv({ WSL_DISTRO_NAME: 'Ubuntu' }, () => {
+        openFile('mailto:a& calc');
+        // The chain is synchronous: emitting a failure immediately
+        // spawns the next opener, so re-read mock.results each step.
+        execFileMock.mock.results[0].value.emit('exit', 1); // wslview → xdg-open
+        execFileMock.mock.results[1].value.emit('exit', 127); // xdg-open → wslpath + explorer.exe
+      });
+    });
+    const calls = execFileMock.mock.calls.map(([cmd, args]) => [cmd, args]);
+    expect(calls).toContainEqual(['wslview', ['mailto:a& calc']]);
+    expect(calls).toContainEqual(['xdg-open', ['mailto:a& calc']]);
+    expect(calls).toContainEqual([
+      'explorer.exe',
+      ['\\\\wsl.localhost\\Ubuntu\\tmp\\crossnote.html'],
+    ]);
+    expect(execMock).not.toHaveBeenCalled();
   });
 });
 

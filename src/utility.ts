@@ -153,13 +153,13 @@ function openFileInWSL(filePath: string) {
 
 /**
  * Detect if running inside WSL (Windows Subsystem for Linux).
+ *
+ * Not memoized on purpose: the env var is read at most a handful of
+ * times per open/export, and tests need to stub `WSL_DISTRO_NAME` to
+ * exercise both branches.
  */
-let _isWSL: boolean | null = null;
 export function isWSL(): boolean {
-  if (_isWSL === null) {
-    _isWSL = !!process.env['WSL_DISTRO_NAME'];
-  }
-  return _isWSL;
+  return !!process.env['WSL_DISTRO_NAME'];
 }
 
 /**
