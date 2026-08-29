@@ -744,6 +744,12 @@ export interface WebviewConfig extends Partial<NotebookConfig> {
   sourceUri?: string;
   cursorLine?: number;
   imageUploader?: ImageUploader;
+  // v2 translation: when true, the preview is showing the translated
+  // markdown (set by the host via initPreview's config). The webview reads
+  // this to toggle the context-menu item between "Translate" and
+  // "Show Original". Passed via <meta data-config> so it survives webview
+  // reloads (unlike postMessage, which is lost when the HTML is reset).
+  isShowingTranslation?: boolean;
 }
 
 export enum PreviewMode {
