@@ -188,9 +188,21 @@ const PreviewContainer = createContainer(() => {
   const contextMenuId = useMemo(() => {
     return 'crossnote-context-menu';
   }, []);
-  const { show: showContextMenu } = useContextMenu({
+  const { show } = useContextMenu({
     id: contextMenuId,
   });
+  // vscode-mpe#2356: when the custom context menu is disabled, let
+  // right-clicks fall through to the browser's native menu (copy/paste
+  // etc.) instead of showing ours.
+  const showContextMenu = useCallback(
+    (params: Parameters<typeof show>[0]) => {
+      if (config.enablePreviewContextMenu === false) {
+        return;
+      }
+      show(params);
+    },
+    [config.enablePreviewContextMenu, show],
+  );
 
   const postMessage = useCallback(
     (command: string, args: unknown[] = []) => {

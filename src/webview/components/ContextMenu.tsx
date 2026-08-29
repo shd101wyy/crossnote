@@ -1,5 +1,6 @@
 import {
   mdiCancel,
+  mdiContentCopy,
   mdiExportVariant,
   mdiGraph,
   mdiImageOutline,
@@ -18,11 +19,19 @@ import {
 } from '@mdi/js';
 import Icon from '@mdi/react';
 import classNames from 'classnames';
-import React, { useCallback } from 'react';
-import { Item, ItemParams, Menu, Separator, Submenu } from 'react-contexify';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  contextMenu,
+  Item,
+  ItemParams,
+  Menu,
+  Separator,
+  Submenu,
+} from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import './context-menu-vscode.css';
 import PreviewContainer from '../containers/preview';
+import { copyTextToClipboard } from '../lib/utility';
 
 export default function ContextMenu() {
   const {
@@ -46,6 +55,28 @@ export default function ContextMenu() {
     resetZoom,
     zoomLevel,
   } = PreviewContainer.useContainer();
+
+  // vscode-mpe#2363: capture the selection as it changes so the Copy
+  // item always copies the text that was selected when the menu opened
+  // (clicking the menu item can blur the selection first).
+  const [selectedText, setSelectedText] = useState('');
+  useEffect(() => {
+    const onSelectionChange = () => {
+      setSelectedText(window.getSelection()?.toString() ?? '');
+    };
+    document.addEventListener('selectionchange', onSelectionChange);
+    // vscode-mpe#2356: Escape closes the menu, matching native menus.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        contextMenu.hideAll();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('selectionchange', onSelectionChange);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, []);
 
   const handleItemClick = useCallback(
     ({ id }: ItemParams<unknown, unknown>) => {
@@ -262,6 +293,20 @@ export default function ContextMenu() {
         }
         className={useNativeMenu ? 'native-vscode-menu' : undefined}
       >
+        {selectedText && (
+          <>
+            <Item
+              id="copy-selection"
+              onClick={() => copyTextToClipboard(selectedText)}
+            >
+              <span className="inline-flex flex-row items-center">
+                <Icon path={mdiContentCopy} size={0.8} className="mr-2"></Icon>
+                Copy
+              </span>
+            </Item>
+            <Separator></Separator>
+          </>
+        )}
         <Item id="open-graph-view" onClick={handleItemClick}>
           <span className="inline-flex flex-row items-center">
             <Icon path={mdiGraph} size={0.8} className="mr-2"></Icon>
