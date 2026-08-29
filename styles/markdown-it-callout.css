@@ -23,6 +23,14 @@
   color: rgb(var(--callout-color));
 }
 
+.callout>.callout-title * {
+  color: inherit;
+}
+
+.callout>.callout-title a {
+  text-decoration: underline;
+}
+
 .callout .callout-title::before {
   position: absolute;
   left: 1.2rem;
