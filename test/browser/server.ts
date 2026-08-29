@@ -29,6 +29,15 @@ export interface TestServer {
 }
 
 /**
+ * Whether `candidate` is `root` itself or located underneath it. The
+ * separator must be part of the check, otherwise a sibling directory that
+ * merely shares a name prefix (`<root>-evil`) passes.
+ */
+export function isPathWithinRoot(root: string, candidate: string): boolean {
+  return candidate === root || candidate.startsWith(root + path.sep);
+}
+
+/**
  * Serve a blank preview page at `/` and the locally installed MathJax 4
  * package under `/mathjax/...` over real HTTP (so the speech-rule-engine's
  * web worker, which won't run from a `file://` origin, works as it does in the
@@ -54,7 +63,7 @@ export async function startServer(): Promise<TestServer> {
       const rel = decodeURIComponent(url.slice(mount.prefix.length));
       // Resolve within the mount root and refuse path traversal.
       const filePath = path.resolve(mount.root, rel);
-      if (!filePath.startsWith(mount.root)) {
+      if (!isPathWithinRoot(mount.root, filePath)) {
         res.writeHead(403);
         res.end('forbidden');
         return;
