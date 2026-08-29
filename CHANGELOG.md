@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Fix `toc: ordered: true` front matter option having no effect** — `generateSidebarToCHTML()` accepted the `ordered` option but never read it, so both the `[TOC]` block and the sidebar TOC always rendered as the default collapsible `<details>` tree. When `toc.ordered: true` is set in the front matter, the TOC now renders as a nested ordered list (`<ol>`/`<li>`) with browser-provided numbering, in both the document body `[TOC]` and the sidebar TOC. Fixes [#451](https://github.com/shd101wyy/crossnote/issues/451). Reported by @KarlYao-SystemDesign.
+
 ## [0.9.31] - 2026-06-08
 
 ### Bug fixes
