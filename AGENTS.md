@@ -79,6 +79,10 @@ This project processes untrusted markdown content that may contain malicious HTM
 3. Add tests in `test/<name>.test.ts`
 4. Document options in CHANGELOG.md under `[Unreleased]`
 
+## Updating Mermaid
+
+`dependencies/mermaid/mermaid.min.js` is mermaid's **official dist bundle downloaded from jsDelivr** (`https://cdn.jsdelivr.net/npm/mermaid@<version>/dist/mermaid.min.js`) — never re-bundle mermaid locally with esbuild. Run `pnpm add mermaid@<version>` then `node scripts/update-mermaid-bundle.mjs`, keep the CDN fallback URL in `src/markdown-engine/index.ts` on the same version, and update `dependencies/README.md` + `CHANGELOG.md`. See "Updating the vendored mermaid bundle" in `dependencies/README.md` for the full checklist.
+
 ## TikZ Renderer Notes
 
 The TikZ renderer (`src/renderers/tikz.ts`) uses `node-tikzjax` which requires:
