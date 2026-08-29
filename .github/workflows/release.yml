@@ -114,14 +114,4 @@ jobs:
             --head "release/v$NEW_VERSION" \
             --title "chore: release v$NEW_VERSION" \
             --body "Automated version bump and changelog update for v$NEW_VERSION."
-
-      # develop requires 1 approving review; the bot can't approve its own PR,
-      # so RELEASE_TOKEN (a PAT of the maintainer) supplies the approval
-      - name: Approve and auto-merge the release PR
-        env:
-          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
-        run: |
-          gh pr review "release/v$NEW_VERSION" --approve \
-            --body "Automated approval for release v$NEW_VERSION."
           gh pr merge "release/v$NEW_VERSION" --auto --merge --delete-branch
