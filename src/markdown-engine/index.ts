@@ -717,6 +717,36 @@ window["initRevealPresentation"] = async function() {
   ) {
     let output = '';
     JSAndCssFiles.forEach((sourcePath) => {
+      // `@import "*.js"` in a note is untrusted content and used to load
+      // arbitrary scripts — including remote https:// URLs — into the
+      // preview webview, where they run before the React app and any
+      // CSP/DOMPurify defenses. Scripts are only emitted when the host
+      // application opted in via `notebook.previewScriptsEnabled`, and
+      // only for files that resolve inside the notebook directory.
+      // Stylesheets keep their original behavior.
+      if (sourcePath.endsWith('.js')) {
+        if (
+          !this.notebook.previewScriptsEnabled ||
+          sourcePath.startsWith('//') ||
+          /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(sourcePath)
+        ) {
+          return;
+        }
+        const resolvedPath =
+          sourcePath[0] === '/'
+            ? path.resolve(this.projectDirectoryPath.fsPath, '.' + sourcePath)
+            : path.resolve(this.fileDirectoryPath, sourcePath);
+        if (!this.isPathInsideProjectDirectory(resolvedPath)) {
+          return;
+        }
+        output += `<script type="text/javascript" src="${utility.addFileProtocol(
+          resolvedPath,
+          vscodePreviewPanel,
+        )}"></script>`;
+        return;
+      }
+
+      // css
       let absoluteFilePath = sourcePath;
       if (sourcePath[0] === '/') {
         absoluteFilePath = utility.addFileProtocol(
@@ -734,15 +764,34 @@ window["initRevealPresentation"] = async function() {
           vscodePreviewPanel,
         );
       }
-
-      if (absoluteFilePath.endsWith('.js')) {
-        output += `<script type="text/javascript" src="${absoluteFilePath}"></script>`;
-      } else {
-        // css
-        output += `<link rel="stylesheet" href="${absoluteFilePath}">`;
-      }
+      output += `<link rel="stylesheet" href="${absoluteFilePath}">`;
     });
     return output;
+  }
+
+  /**
+   * Whether an absolute filesystem path stays inside the notebook
+   * directory. Used to constrain user-provided preview scripts to
+   * workspace-local files — symlinks are resolved so a link inside the
+   * workspace cannot pull in a script from outside it.
+   */
+  private isPathInsideProjectDirectory(filePath: string): boolean {
+    const realpath = (p: string) => {
+      try {
+        return fs.realpathSync(p);
+      } catch {
+        return p;
+      }
+    };
+    const relative = path.relative(
+      realpath(this.projectDirectoryPath.fsPath),
+      realpath(filePath),
+    );
+    return (
+      relative !== '' &&
+      !relative.startsWith('..') &&
+      !path.isAbsolute(relative)
+    );
   }
 
   /**
@@ -859,7 +908,13 @@ window["initRevealPresentation"] = async function() {
           JSAndCssFiles,
           vscodePreviewPanel,
         )}
-        ${await this.resolvePathsInHeader(this.notebook.config.includeInHeader)}
+        ${await this.resolvePathsInHeader(
+          this.notebook.config.includeInHeader,
+          {
+            allowScripts: this.notebook.previewScriptsEnabled,
+            vscodePreviewPanel,
+          },
+        )}
         ${head}
       </head>
       <body class="preview-container ${
@@ -2412,21 +2467,58 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   // FIXME: This function actually doesn't help in the web version.
-  private async resolvePathsInHeader(header: string) {
+  private async resolvePathsInHeader(
+    header: string,
+    {
+      allowScripts = false,
+      vscodePreviewPanel = null as vscode.WebviewPanel | null | undefined,
+    }: {
+      allowScripts?: boolean;
+      vscodePreviewPanel?: vscode.WebviewPanel | null | undefined;
+    } = {},
+  ) {
     const $ = cheerio.load(header);
 
-    // Strip all <script> tags — head.html is workspace content that
-    // executes before the React app and any CSP/DOMPurify defenses,
-    // giving an attacker access to the webview's postMessage API.
-    // Users who need custom JavaScript in the preview should use
-    // extension-level APIs instead.
+    // head.html is workspace content that executes in the preview webview
+    // before the React app and any CSP/DOMPurify defenses, giving an
+    // attacker access to the webview's postMessage API. By default all
+    // <script> tags are removed; <style>, <meta>, and <link> tags are
+    // kept. When the host application explicitly opted in
+    // (`notebook.previewScriptsEnabled`), file-based scripts that resolve
+    // inside the notebook directory are kept and rewritten to file URLs —
+    // inline scripts and URL-scheme sources never run.
     //
     // NOTE: This helper is shared by the preview webview and the HTML /
     // eBook export paths, so scripts in head.html are stripped from
     // exported documents too — not just the webview that the advisory
     // (GHSA-mcwg-4j78-qwv3) covers. This is intentional hardening:
     // exported HTML running attacker-supplied JS is equally undesirable.
-    $('script').remove();
+    if (allowScripts) {
+      $('script').each((_i, element) => {
+        const src = $(element).attr('src');
+        if (
+          !src ||
+          src.startsWith('//') ||
+          /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(src)
+        ) {
+          $(element).remove();
+          return;
+        }
+        const resolvedPath = src.startsWith('/')
+          ? path.resolve(this.projectDirectoryPath.fsPath, '.' + src)
+          : path.resolve(this.fileDirectoryPath, src);
+        if (!this.isPathInsideProjectDirectory(resolvedPath)) {
+          $(element).remove();
+          return;
+        }
+        $(element).attr(
+          'src',
+          utility.addFileProtocol(resolvedPath, vscodePreviewPanel),
+        );
+      });
+    } else {
+      $('script').remove();
+    }
 
     // Return only the head content, not the full HTML structure
     return $('head').html() || header;

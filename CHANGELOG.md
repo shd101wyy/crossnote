@@ -6,7 +6,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### Features
 
+- **Explicit opt-in channel for user preview scripts (`notebook.previewScriptsEnabled`)** — Host applications can now set `Notebook.previewScriptsEnabled = true` to re-enable custom preview JavaScript that [0.9.31](#0931---2026-06-08) disabled ([#446](https://github.com/shd101wyy/crossnote/issues/446)). When opted in, `<script src="./copy-buttons.js">` tags in `.crossnote/head.html` are kept and rewritten to file URLs, and `@import "*.js"` file imports are emitted again. The channel is file-based and workspace-scoped: inline scripts, URL-scheme sources (`https://`, `file://`, `data:`, …), and paths resolving outside the notebook directory (symlinks included) are always removed. The flag is deliberately **not** part of `NotebookConfig` — `.crossnote/config.js` is untrusted repository content and can never turn it on; only the host (e.g. an application-scope VS Code setting) can. HTML/eBook exports continue to strip all scripts unconditionally.
 - **Add a translation toggle to the preview context menu** — The webview now reads an `isShowingTranslation` flag from `WebviewConfig` (passed by the host via `initPreview`'s `<meta data-config>`, so it survives webview reloads) and renders a context-menu item that switches between "Translate" and "Show Original". Clicking it posts `translateDocument` or `restoreOriginal` back to the host, which drives the AI translation feature in the `vscode-markdown-preview-enhanced` extension.
+
+### Security
+
+- **Harden `@import "*.js"` script emission in the preview webview** — `generateJSAndCssFilesForPreview()` used to emit `<script src>` tags for any collected path, including remote `https?://` URLs written in note content (reachable when `enableScriptExecution` was on). Script emission now additionally requires `notebook.previewScriptsEnabled`, rejects URL-scheme and protocol-relative sources, and confines resolved paths to the notebook directory (via `realpath`, so symlinks cannot escape). Stylesheet imports are unaffected.
 
 ### Updates
 
