@@ -584,12 +584,12 @@ window["initRevealPresentation"] = async function() {
   };
 
   /**
-   * Embed a paired light/dark theme for non-paper exports: the light
-   * variant applies by default, the dark variant under
+   * The dark variant of a paired theme, for non-paper exports: the light
+   * variant applies by default and the dark variant is embedded under
    * `@media (prefers-color-scheme: dark)` — so the exported document and
    * GitHub-style `<picture>` images follow the reader's system color
-   * scheme. Returns the concatenated CSS. `counterparts` is one of the
-   * maps above; returns null when the theme has no light/dark pair.
+   * scheme. `counterparts` is one of the maps above; returns null when
+   * the theme has no light/dark pair.
    */
   private static darkVariantOf(
     theme: string,
