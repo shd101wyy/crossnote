@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   publish:
@@ -100,5 +101,15 @@ jobs:
             --notes "$RELEASE_NOTES" \
             --target master
 
-      - name: Sync release commit back to develop
-        run: git push origin HEAD:develop
+      - name: Open auto-merge PR back to develop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
+        run: |
+          git push origin "HEAD:refs/heads/release/v$NEW_VERSION"
+          gh pr create \
+            --base develop \
+            --head "release/v$NEW_VERSION" \
+            --title "chore: release v$NEW_VERSION" \
+            --body "Automated version bump and changelog update for v$NEW_VERSION." \
+          && gh pr merge --auto --merge --delete-branch
