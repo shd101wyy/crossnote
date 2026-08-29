@@ -18,6 +18,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 - **Fix `toc: ordered: true` front matter option having no effect** — `generateSidebarToCHTML()` accepted the `ordered` option but never read it, so both the `[TOC]` block and the sidebar TOC always rendered as the default collapsible `<details>` tree. When `toc.ordered: true` is set in the front matter, the TOC now renders as a nested ordered list (`<ol>`/`<li>`) with browser-provided numbering, in both the document body `[TOC]` and the sidebar TOC. Fixes [#451](https://github.com/shd101wyy/crossnote/issues/451). Reported by @KarlYao-SystemDesign.
 - **Fix embedded `d2` diagrams failing to render when they reference relative images** — ` ```d2 ` fences using local assets (e.g. `icon: ./icons/x.svg`) rendered blank because `renderD2` wrote its temp input to `os.tmpdir()`, and d2 resolves relative image paths against the input file's own directory. The temp input is now written beside the source document (falling back to the temp dir when it is missing or not writable), and `fileDirectoryPath` is included in the render checksum to avoid cross-folder cache collisions.
 - **Fix `d2` image/render errors and a missing `d2` binary both rendering blank** — d2's own "failed to bundle local images … no such file or directory" error was misclassified as a missing binary (the `not found` heuristic was too broad), so a missing icon silently hid the whole diagram; the heuristic is now limited to a genuine `ENOENT`/"not recognized as an internal or external command". Separately, when the `d2` binary is not installed the ` ```d2 ` fence now falls back to a plain-text code block instead of being removed entirely.
+- **Fix slow rendering of documents with long lines.**
+  The `^block-id` transform's cost grew quadratically with line length, so large documents written one sentence per line could take seconds per preview refresh.
+  It now runs in linear time, including on lines ending in long whitespace runs.
+  ([#455](https://github.com/shd101wyy/crossnote/pull/455))
 
 ## [0.9.31] - 2026-06-08
 

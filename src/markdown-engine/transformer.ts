@@ -226,6 +226,18 @@ async function loadFile(
  * Transform markdown string before rendering it to HTML.
  * NOTE: The outputString should have the same number of lines as the inputString for source mapping.
  */
+// Matches a `^block-id` suffix: a whitespace run, a caret, and the id at
+// end of line.  The whole run is part of the match (the replacement
+// collapses it to one space), and its start is located by the lookbehind
+// rather than by a `(.*?)` head.  This regex runs on nearly every line,
+// so it must stay linear-time on lines that do NOT match: the lookbehind
+// rejects interior offsets of a whitespace run in O(1), so each run is
+// scanned once.  A lazy `(.*?)` head backtracks quadratically in line
+// length, and a bare `\s+\^` suffix (even `^`-anchored) quadratically in
+// run length; the perf smoke tests in test/block-id.test.ts pin both
+// regimes.
+const BLOCK_ID_RE = /(?<!\s)\s+\^([a-zA-Z0-9_-]+)$/;
+
 export async function transformMarkdown(
   inputString: string,
   {
@@ -1273,12 +1285,12 @@ export async function transformMarkdown(
       // =========== Start: Normal line ============
       else {
         // Handle ^block-id syntax: strip ^block-id suffix and insert
-        // <span id="block-id" class="block-id"></span> for block references.
+        // <span id="block-id" class="block-id"></span> for block
+        // references.  See BLOCK_ID_RE for the linearity constraint on
+        // this hot path.
         line = line.replace(
-          /(.*?)\s+\^([a-zA-Z0-9_-]+)$/,
-          (_match: string, rest: string, blockId: string) => {
-            return `${rest} <span id="${blockId}" class="block-id"></span>`;
-          },
+          BLOCK_ID_RE,
+          ' <span id="$1" class="block-id"></span>',
         );
 
         // Handle #tag syntax: replace #tag-name with <a class="tag">
