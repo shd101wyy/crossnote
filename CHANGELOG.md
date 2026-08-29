@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Updates
+
+- Update `mermaid` to `11.17.2`, including the vendored offline preview bundle (now downloaded from the official jsDelivr dist via `scripts/update-mermaid-bundle.mjs`) and the CDN fallback.
+
 ## [0.9.31] - 2026-06-08
 
 ### Bug fixes
