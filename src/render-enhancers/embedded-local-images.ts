@@ -27,8 +27,9 @@ export default async function enhance(
       }
       asyncFunctions.push(
         new Promise((resolve) => {
+          // removeFileProtocol already percent-decoded the path.
           notebook.fs
-            .readFile(decodeURI(src), 'base64')
+            .readFile(src, 'base64')
             .then((base64) => {
               // const base64 = new Buffer(data).toString('base64');
               $img.attr(
