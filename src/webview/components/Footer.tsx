@@ -9,6 +9,7 @@ import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
 import readingTime from 'reading-time/lib/reading-time';
 import PreviewContainer from '../containers/preview';
+import { t } from '../lib/i18n';
 import { getElementBackgroundColor } from '../lib/utility';
 
 export default function Footer() {
@@ -71,7 +72,7 @@ export default function Footer() {
         >
           <div
             className="p-1 cursor-pointer hover:text-primary w-5 h-5"
-            title="Open graph view"
+            title={t('footer.openGraphView')}
             onClick={() => {
               postMessage('openGraphView', [sourceUri.current]);
             }}
@@ -83,7 +84,7 @@ export default function Footer() {
               'p-1 cursor-pointer hover:text-primary w-5 h-5',
               showBacklinks ? 'text-primary font-bold' : '',
             )}
-            title="Toggle backlinks"
+            title={t('footer.toggleBacklinks')}
             onClick={() => {
               setShowBacklinks((x) => !x);
             }}
@@ -92,21 +93,21 @@ export default function Footer() {
           </div>
           <div
             className="p-1 cursor-pointer hover:text-primary w-5 h-5"
-            title="Zoom out"
+            title={t('footer.zoomOut')}
             onClick={() => zoomOut()}
           >
             <MagnifyingGlassMinusIcon className="w-5 h-5"></MagnifyingGlassMinusIcon>
           </div>
           <div
             className="p-1 cursor-pointer hover:text-primary w-5 h-5"
-            title="Zoom in"
+            title={t('footer.zoomIn')}
             onClick={() => zoomIn()}
           >
             <MagnifyingGlassPlusIcon className="w-5 h-5"></MagnifyingGlassPlusIcon>
           </div>
           <div
             className="p-1 cursor-pointer hover:text-primary w-5 h-5"
-            title={'Open menu'}
+            title={t('footer.openMenu')}
             onClick={(event) => {
               showContextMenu({
                 event,

@@ -6,6 +6,7 @@ import {
 import classNames from 'classnames';
 import React, { useCallback } from 'react';
 import PreviewContainer from '../containers/preview';
+import { t } from '../lib/i18n';
 
 export function Topbar() {
   const {
@@ -43,14 +44,14 @@ export function Topbar() {
       <div className="flex flex-row justify-end items-center backdrop-blur-xl float-right rounded-md">
         <div
           className="p-2 cursor-pointer hover:text-primary w-5 h-5"
-          title="Back to top"
+          title={t('topbar.backToTop')}
           onClick={backToTop}
         >
           <ChevronUpIcon className="w-5 h-5"></ChevronUpIcon>
         </div>
         <div
           className="p-2 cursor-pointer hover:text-primary w-5 h-5"
-          title="Refresh the preview"
+          title={t('topbar.refreshPreview')}
           onClick={refreshPreview}
         >
           <ArrowPathIcon className="w-5 h-5"></ArrowPathIcon>
@@ -61,7 +62,7 @@ export function Topbar() {
             showSidebarToc ? 'text-primary font-bold' : '',
           )}
           onClick={clickSidebarTocButton}
-          title={'Toggle table of contents'}
+          title={t('topbar.toggleToc')}
         >
           <ListBulletIcon className="w-5 h-5"></ListBulletIcon>
         </div>

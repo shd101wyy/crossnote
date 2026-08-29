@@ -13,6 +13,7 @@ import { toBlob } from 'html-to-image';
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PreviewContainer from '../containers/preview';
+import { t } from '../lib/i18n';
 import { copyBlobToClipboard, copyTextToClipboard } from '../lib/utility';
 
 export default function FloatingActions() {
@@ -170,7 +171,7 @@ export default function FloatingActions() {
                 <div className={classNames('ml-1 flex')}>
                   <button
                     className="btn btn-primary btn-circle btn-xs"
-                    title={'Export as png and copy to clipboard'}
+                    title={t('floatingActions.exportPng')}
                     onClick={exportAsPng}
                   >
                     <Icon path={mdiImage} size={0.6}></Icon>
@@ -186,7 +187,7 @@ export default function FloatingActions() {
               >
                 <button
                   className="btn btn-primary btn-circle btn-xs"
-                  title={'Copy the part of markdown'}
+                  title={t('floatingActions.copyMarkdown')}
                   onClick={copyMarkdownToClipboard}
                 >
                   <Icon path={mdiContentCopy} size={0.6}></Icon>
@@ -195,7 +196,7 @@ export default function FloatingActions() {
               <div className="ml-1 flex">
                 <button
                   className="btn btn-primary btn-circle btn-xs"
-                  title={'Edit the part of markdown'}
+                  title={t('floatingActions.editMarkdown')}
                   onClick={() =>
                     setHighlightElementBeingEdited(highlightElement)
                   }

@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { ImageUploader } from '../../notebook';
 import PreviewContainer from '../containers/preview';
+import { t } from '../lib/i18n';
 
 export default function ImageHelper() {
   const {
@@ -106,7 +107,9 @@ export default function ImageHelper() {
       <div className="modal-box">
         <div>
           <div className="mt-3 text-center sm:mt-5">
-            <h3 className="text-base font-semibold leading-6">Image helper</h3>
+            <h3 className="text-base font-semibold leading-6">
+              {t('imageHelper.title')}
+            </h3>
             <div className="mt-2 text-left">
               <div>
                 <label
@@ -118,7 +121,7 @@ export default function ImageHelper() {
                 <div className="mt-2">
                   <input
                     type="text"
-                    placeholder="Enter image URL here, then press 'Enter' to insert."
+                    placeholder={t('imageHelper.urlPlaceholder')}
                     onKeyDown={urlEditorOnKeyDown}
                     className="block w-full rounded-md border-0 px-1.5 py-1.5  shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset  sm:text-sm sm:leading-6"
                     ref={urlEditor}
@@ -144,7 +147,7 @@ export default function ImageHelper() {
                     imagePasterInput.current?.click();
                   }}
                 >
-                  <div className="text-sm">Click me to browse image file</div>
+                  <div className="text-sm">{t('imageHelper.browseFile')}</div>
                   <input
                     type="file"
                     className="hidden"
@@ -170,7 +173,7 @@ export default function ImageHelper() {
                 <div className="divider">OR</div>
               </div>
               <div className="">
-                <label className="text-sm">Upload</label>
+                <label className="text-sm">{t('imageHelper.upload')}</label>
                 <div
                   className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-800 p-4 rounded-md mt-2 cursor-pointer"
                   onDrop={dropFilesToUpload}
@@ -179,7 +182,7 @@ export default function ImageHelper() {
                     imageUploaderInput.current?.click();
                   }}
                 >
-                  <div className="text-sm">Click me to browse image file</div>
+                  <div className="text-sm">{t('imageHelper.browseFile')}</div>
                   <input
                     type="file"
                     multiple={true}
@@ -202,7 +205,7 @@ export default function ImageHelper() {
                   />
                 </div>
                 <div className="mt-2 text-sm">
-                  <span>use</span>
+                  <span>{t('imageHelper.use')}</span>
                   <select
                     value={imageUploader}
                     onChange={(event) => {

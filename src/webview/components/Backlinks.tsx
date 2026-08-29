@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { URI, Utils } from 'vscode-uri';
 import { Backlink } from '../../notebook';
 import PreviewContainer from '../containers/preview';
+import { t } from '../lib/i18n';
 import { sanitizeHtml } from '../lib/sanitize';
 import { BacklinksOrderDirection, BacklinksOrderRecord } from '../lib/types';
 
@@ -95,7 +96,7 @@ export default function Backlinks() {
       <hr></hr>
       <div className="flex flex-row items-center justify-between mb-4">
         {isLoadingBacklinks ? (
-          <strong>Backlinks</strong>
+          <strong>{t('backlinks.title')}</strong>
         ) : (
           <>
             <strong>
@@ -112,7 +113,7 @@ export default function Backlinks() {
             >
               <div
                 className="p-2 cursor-pointer hover:text-primary"
-                title='Toggle "Always show backlinks in preview"'
+                title={t('backlinks.toggleAlwaysShow')}
                 onClick={() => {
                   postMessage('toggleAlwaysShowBacklinksInPreview', [
                     sourceUri.current,
@@ -130,7 +131,7 @@ export default function Backlinks() {
               <div
                 className="p-2 cursor-pointer hover:text-primary"
                 onClick={() => refreshBacklinks(true)}
-                title="Refresh backlinks"
+                title={t('backlinks.refresh')}
               >
                 <ArrowPathIcon className="w-5 h-5"></ArrowPathIcon>
               </div>
@@ -139,7 +140,7 @@ export default function Backlinks() {
         )}
       </div>
       {isLoadingBacklinks ? (
-        <div className="loading">Loading...</div>
+        <div className="loading">{t('backlinks.loading')}</div>
       ) : (
         <div>
           {backlinks.map(({ note, referenceHtmls, references }) => {
