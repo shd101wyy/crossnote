@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Features
+
+- **Add a translation toggle to the preview context menu** — The webview now reads an `isShowingTranslation` flag from `WebviewConfig` (passed by the host via `initPreview`'s `<meta data-config>`, so it survives webview reloads) and renders a context-menu item that switches between "Translate" and "Show Original". Clicking it posts `translateDocument` or `restoreOriginal` back to the host, which drives the AI translation feature in the `vscode-markdown-preview-enhanced` extension.
+
 ### Updates
 
 - Update `mermaid` to `11.17.2`, including the vendored offline preview bundle (now downloaded from the official jsDelivr dist via `scripts/update-mermaid-bundle.mjs`) and the CDN fallback.

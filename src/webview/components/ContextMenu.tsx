@@ -14,6 +14,7 @@ import {
   mdiPencil,
   mdiSpaOutline,
   mdiSync,
+  mdiTranslate,
 } from '@mdi/js';
 import Icon from '@mdi/react';
 import classNames from 'classnames';
@@ -29,6 +30,7 @@ export default function ContextMenu() {
     contextMenuId,
     isVSCode,
     isVSCodeWebExtension,
+    isShowingTranslation,
     highlightElementBeingEdited,
     postMessage,
     previewSyncSource,
@@ -54,6 +56,16 @@ export default function ContextMenu() {
         }
         case 'open-in-browser': {
           postMessage('openInBrowser', [sourceUri.current]);
+          break;
+        }
+        case 'translate-document': {
+          // v2 toggle: if already showing the translation, switch back to
+          // the original; otherwise start a new translation.
+          if (isShowingTranslation) {
+            postMessage('restoreOriginal', [sourceUri.current]);
+          } else {
+            postMessage('translateDocument', [sourceUri.current]);
+          }
           break;
         }
         case 'export-html-offline': {
@@ -226,6 +238,7 @@ export default function ContextMenu() {
       }
     },
     [
+      isShowingTranslation,
       postMessage,
       previewSyncSource,
       resetZoom,
@@ -261,6 +274,10 @@ export default function ContextMenu() {
             <Item id="open-in-browser" onClick={handleItemClick}>
               <Icon path={mdiOpenInNew} size={0.8} className="mr-2"></Icon> Open
               in Browser
+            </Item>
+            <Item id="translate-document" onClick={handleItemClick}>
+              <Icon path={mdiTranslate} size={0.8} className="mr-2"></Icon>
+              {isShowingTranslation ? 'Show Original' : 'Translate'}
             </Item>
             <Separator></Separator>
           </>
