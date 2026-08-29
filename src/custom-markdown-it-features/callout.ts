@@ -110,9 +110,15 @@ export default (md: MarkdownIt) => {
             match[2] === '+' ? 'open' : match[2] === '-' ? 'closed' : null;
           title = match[3] || '';
 
-          // remove the callout marker and "\n" from the inline token's children
+          // Remove the complete marker/title line, which may span several
+          // inline tokens when the title contains Markdown formatting.
+          const titleEnd = textToken.children?.findIndex(
+            (child) => child.type === 'softbreak' || child.type === 'hardbreak',
+          );
           textToken.children =
-            textToken.children?.filter((_, i) => i > 1) || null;
+            titleEnd === undefined || titleEnd === -1
+              ? null
+              : textToken.children?.slice(titleEnd + 1) || null;
 
           const remainingChildren = textToken.children;
           const isEmptyParagraph =
@@ -148,13 +154,13 @@ export default (md: MarkdownIt) => {
       if (foldable) {
         const openAttr = foldable === 'open' ? ' open' : '';
         let html = `<details class="callout" data-callout="${calloutType}"${openAttr}>\n`;
-        html += `<summary class="callout-title">${md.utils.escapeHtml(displayTitle)}</summary>\n`;
+        html += `<summary class="callout-title">${md.renderInline(displayTitle, env)}</summary>\n`;
         return html;
       }
 
       let html = `<div class="callout" data-callout="${calloutType}">\n`;
       if (displayTitle) {
-        html += `<div class="callout-title">${md.utils.escapeHtml(displayTitle)}</div>\n`;
+        html += `<div class="callout-title">${md.renderInline(displayTitle, env)}</div>\n`;
       }
       return html;
     } else {

@@ -114,6 +114,13 @@ body {
           border: none;
         }
 
+        // Ordered TOC (front matter `toc: ordered: true`): nesting comes
+        // from the <ol> structure and numbers from list markers.
+        ol.md-toc-ol {
+          margin: 0;
+          padding-left: 1.6em;
+        }
+
         summary.md-toc-link-wrapper {
           cursor: pointer;
           list-style-position: outside;
