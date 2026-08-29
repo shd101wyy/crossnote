@@ -25,7 +25,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v5
         with:
-          # full history so we can push a release commit to master and develop
+          # full history so we can push the release branch and tag
           fetch-depth: 0
 
       - name: Install pnpm
@@ -93,14 +93,18 @@ jobs:
         # prerelease versions must not become the npm 'latest' dist-tag
         run: npm publish $(if [ '${{ inputs.bump }}' = 'prerelease' ]; then echo '--tag next'; fi)
 
-      - name: Commit, tag and push
+      - name: Commit, tag and push the release branch
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new-version }}
         run: |
           git add package.json CHANGELOG.md
           git commit -m "$NEW_VERSION"
           git tag "$NEW_VERSION"
-          git push origin HEAD:master
+          # master is branch-protected and slated for deprecation — the
+          # release commit lives on release/v<version> and merges back to
+          # develop via the PR below, so a direct push to master is both
+          # rejected (GH006) and unnecessary.
+          git push origin "HEAD:refs/heads/release/v$NEW_VERSION"
           git push origin "refs/tags/$NEW_VERSION"
 
       - name: Create a Release
@@ -109,10 +113,12 @@ jobs:
           NEW_VERSION: ${{ steps.bump.outputs.new-version }}
           RELEASE_NOTES: ${{ steps.changelog_reader.outputs.changes }}
         run: |
+          # The tag already points at the release commit, so no --target
+          # is needed (the old --target master push was part of the
+          # master flow this workflow no longer uses).
           gh release create "$NEW_VERSION" \
             --title "$NEW_VERSION" \
             --notes "$RELEASE_NOTES" \
-            --target master \
             $(if [ '${{ inputs.bump }}' = 'prerelease' ]; then echo '--prerelease'; fi)
 
       - name: Open auto-merge PR back to develop
@@ -120,7 +126,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEW_VERSION: ${{ steps.bump.outputs.new-version }}
         run: |
-          git push origin "HEAD:refs/heads/release/v$NEW_VERSION"
           gh pr create \
             --base develop \
             --head "release/v$NEW_VERSION" \
