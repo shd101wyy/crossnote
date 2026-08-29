@@ -57,6 +57,15 @@ jobs:
           NEW_VERSION=$(npm version ${{ inputs.bump }} --no-git-tag-version)
           echo "new-version=${NEW_VERSION#v}" >> "$GITHUB_OUTPUT"
 
+      - name: Update CHANGELOG.md
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
+        run: |
+          TODAY=$(date +%F)
+          # rename [Unreleased] to the new version and prepend a fresh [Unreleased] section
+          perl -0pi -e "s/^## \[Unreleased\]\n/## [Unreleased]\n\n## [$ENV{NEW_VERSION}] - $ENV{TODAY}\n/m" CHANGELOG.md
+          grep -q "## \[$NEW_VERSION\] - $TODAY" CHANGELOG.md
+
       - name: Get Changelog Entry
         id: changelog_reader
         uses: mindsers/changelog-reader-action@v2.0.0
@@ -69,7 +78,7 @@ jobs:
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new-version }}
         run: |
-          git add package.json
+          git add package.json CHANGELOG.md
           git commit -m "$NEW_VERSION"
           git tag "$NEW_VERSION"
           git push origin HEAD:master
