@@ -1031,7 +1031,7 @@ window["initRevealPresentation"] = async function() {
           ),
         )}" charset="UTF-8"></script>`;
       } else {
-        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.15.0/dist/mermaid.min.js"></script>`;
+        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.17.2/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript += `<script type="module">

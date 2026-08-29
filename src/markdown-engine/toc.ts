@@ -172,48 +172,76 @@ export function generateSidebarToCHTML(
   }
 
   /**
-   * Recursively build TOC HTML from a slice of headings.
-   * Each heading "owns" all subsequent headings with a strictly higher level,
-   * up to the next heading at the same or lower level.
-   * Headings with children are wrapped in <details open> for collapsibility.
+   * Recursively group headings: each heading "owns" all subsequent headings
+   * with a strictly higher level, up to the next heading at the same or
+   * lower level.
    */
-  const buildToc = (slice: HeadingData[]): string => {
-    let html = '';
+  const groupHeadings = (
+    slice: HeadingData[],
+  ): { heading: HeadingData; children: HeadingData[] }[] => {
+    const groups: { heading: HeadingData; children: HeadingData[] }[] = [];
     let i = 0;
     while (i < slice.length) {
-      const heading = slice[i];
-      const content = heading.content.trim();
-      // Use renderInline so that heading content like "1. Topic" is not
-      // interpreted as an ordered-list block (which would wrap the link in
-      // <ol><li> and insert large vertical margins between TOC entries).
-      // See vscode-markdown-preview-enhanced #2276 and #2277.
-      const headingHtml = md.renderInline(content);
-      const headingId = heading.id || headingIdGenerator.generateId(content);
-      const level = heading.level - smallestLevel;
-
-      // Collect children: all subsequent headings with higher level
       let j = i + 1;
-      while (j < slice.length && slice[j].level > heading.level) {
+      while (j < slice.length && slice[j].level > slice[i].level) {
         j++;
       }
-      const children = slice.slice(i + 1, j);
+      groups.push({ heading: slice[i], children: slice.slice(i + 1, j) });
+      i = j;
+    }
+    return groups;
+  };
 
+  const renderLink = (heading: HeadingData): string => {
+    const content = heading.content.trim();
+    // Use renderInline so that heading content like "1. Topic" is not
+    // interpreted as an ordered-list block (which would wrap the link in
+    // <ol><li> and insert large vertical margins between TOC entries).
+    // See vscode-markdown-preview-enhanced #2276 and #2277.
+    const headingHtml = md.renderInline(content);
+    const headingId = heading.id || headingIdGenerator.generateId(content);
+    return `<a href="#${headingId}" class="md-toc-link">${headingHtml}</a>`;
+  };
+
+  if (opt.ordered) {
+    // Ordered TOC: nested <ol>/<li> so the browser numbers entries
+    // (front matter `toc: ordered: true`). See issue #451.
+    const buildOrderedList = (slice: HeadingData[]): string => {
+      let html = '<ol class="md-toc-ol">\n';
+      for (const { heading, children } of groupHeadings(slice)) {
+        html += `<li class="md-toc-link-wrapper">${renderLink(heading)}`;
+        if (children.length > 0) {
+          html += `\n${buildOrderedList(children)}`;
+        }
+        html += '</li>\n';
+      }
+      return `${html}</ol>\n`;
+    };
+    return `<div class="md-toc md-toc-ordered">\n${buildOrderedList(headings)}</div>\n`;
+  }
+
+  /**
+   * Collapsible tree TOC: headings with children are wrapped in
+   * <details open> for collapsibility.
+   */
+  const buildDetailsTree = (slice: HeadingData[]): string => {
+    let html = '';
+    for (const { heading, children } of groupHeadings(slice)) {
+      const level = heading.level - smallestLevel;
       if (children.length > 0) {
         html += `<details open class="md-toc-details">
 <summary class="md-toc-link-wrapper" data-level="${level}">
-  <a href="#${headingId}" class="md-toc-link">${headingHtml}</a>
+  ${renderLink(heading)}
 </summary>
-${buildToc(children)}</details>\n`;
+${buildDetailsTree(children)}</details>\n`;
       } else {
         html += `<div class="md-toc-link-wrapper" data-level="${level}">
-  <a href="#${headingId}" class="md-toc-link">${headingHtml}</a>
+  ${renderLink(heading)}
 </div>\n`;
       }
-
-      i = j;
     }
     return html;
   };
 
-  return `<div class="md-toc">\n${buildToc(headings)}</div>\n`;
+  return `<div class="md-toc">\n${buildDetailsTree(headings)}</div>\n`;
 }

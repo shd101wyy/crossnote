@@ -4,8 +4,14 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Updates
+
+- Update `mermaid` to `11.17.2`, including the vendored offline preview bundle (now downloaded from the official jsDelivr dist via `scripts/update-mermaid-bundle.mjs`) and the CDN fallback.
+
 ### Bug fixes
 
+- **Fix `#` in project path breaking image loading in preview** — `file://` URLs were built by string concatenation without percent-encoding, so a `#` in a directory name (e.g. `2026-06-10#1-AI-platform-arch/`) was parsed as a fragment separator by the browser and every image (and `@import`ed script/stylesheet) under it 404'd. `addFileProtocol()` and `toFileURL()` now build URLs via Node's `pathToFileURL()` (also normalizing Windows backslashes), and `removeFileProtocol()` percent-decodes back to a filesystem path so ebook/`@import` file reads keep working. Fixes [#453](https://github.com/shd101wyy/crossnote/issues/453). Reported by @Hubbitus.
+- **Fix `toc: ordered: true` front matter option having no effect** — `generateSidebarToCHTML()` accepted the `ordered` option but never read it, so both the `[TOC]` block and the sidebar TOC always rendered as the default collapsible `<details>` tree. When `toc.ordered: true` is set in the front matter, the TOC now renders as a nested ordered list (`<ol>`/`<li>`) with browser-provided numbering, in both the document body `[TOC]` and the sidebar TOC. Fixes [#451](https://github.com/shd101wyy/crossnote/issues/451). Reported by @KarlYao-SystemDesign.
 - **Fix embedded `d2` diagrams failing to render when they reference relative images** — ` ```d2 ` fences using local assets (e.g. `icon: ./icons/x.svg`) rendered blank because `renderD2` wrote its temp input to `os.tmpdir()`, and d2 resolves relative image paths against the input file's own directory. The temp input is now written beside the source document (falling back to the temp dir when it is missing or not writable), and `fileDirectoryPath` is included in the render checksum to avoid cross-folder cache collisions.
 - **Fix `d2` image/render errors and a missing `d2` binary both rendering blank** — d2's own "failed to bundle local images … no such file or directory" error was misclassified as a missing binary (the `not found` heuristic was too broad), so a missing icon silently hid the whole diagram; the heuristic is now limited to a genuine `ENOENT`/"not recognized as an internal or external command". Separately, when the `d2` binary is not installed the ` ```d2 ` fence now falls back to a plain-text code block instead of being removed entirely.
 

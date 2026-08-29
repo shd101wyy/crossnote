@@ -38,6 +38,14 @@ export default tseslint.config(
     },
   },
 
+  // Node.js globals for build scripts
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+
   // Browser + React for webview files (type-aware)
   {
     files: ['src/webview/**/*.{ts,tsx}'],

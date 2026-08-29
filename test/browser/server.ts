@@ -3,6 +3,7 @@ import * as http from 'http';
 import * as path from 'path';
 
 const MATHJAX_DIR = path.resolve(__dirname, '../../node_modules/mathjax');
+const MERMAID_DIR = path.resolve(__dirname, '../../node_modules/mermaid/dist');
 const WAVEDROM_DIR = path.resolve(__dirname, '../../dependencies/wavedrom');
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -29,6 +30,15 @@ export interface TestServer {
 }
 
 /**
+ * Whether `candidate` is `root` itself or located underneath it. The
+ * separator must be part of the check, otherwise a sibling directory that
+ * merely shares a name prefix (`<root>-evil`) passes.
+ */
+export function isPathWithinRoot(root: string, candidate: string): boolean {
+  return candidate === root || candidate.startsWith(root + path.sep);
+}
+
+/**
  * Serve a blank preview page at `/` and the locally installed MathJax 4
  * package under `/mathjax/...` over real HTTP (so the speech-rule-engine's
  * web worker, which won't run from a `file://` origin, works as it does in the
@@ -38,6 +48,7 @@ export interface TestServer {
 // component loader and WaveDrom's skins resolve their siblings over real HTTP.
 const STATIC_MOUNTS: { prefix: string; root: string }[] = [
   { prefix: '/mathjax/', root: MATHJAX_DIR },
+  { prefix: '/mermaid/', root: MERMAID_DIR },
   { prefix: '/wavedrom/', root: WAVEDROM_DIR },
 ];
 
@@ -54,7 +65,7 @@ export async function startServer(): Promise<TestServer> {
       const rel = decodeURIComponent(url.slice(mount.prefix.length));
       // Resolve within the mount root and refuse path traversal.
       const filePath = path.resolve(mount.root, rel);
-      if (!filePath.startsWith(mount.root)) {
+      if (!isPathWithinRoot(mount.root, filePath)) {
         res.writeHead(403);
         res.end('forbidden');
         return;

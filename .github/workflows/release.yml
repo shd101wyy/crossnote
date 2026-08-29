@@ -1,10 +1,22 @@
 name: Publish a package to the npm registry
 
 on:
-  push:
-    branches:
-      - master
-      - develop
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump level"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   publish:
@@ -12,6 +24,9 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v5
+        with:
+          # full history so we can push a release commit to master and develop
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v6
@@ -26,35 +41,87 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Lint and typecheck
+        run: pnpm run check
+
+      - name: Test
+        run: pnpm test
+
       - name: Build
         run: pnpm run build
 
-      - name: Get current package version
-        id: package_version
-        uses: martinbeentjes/npm-get-version-action@v1.1.0
+      - name: Bump version
+        id: bump
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          NEW_VERSION=$(npm version ${{ inputs.bump }} --no-git-tag-version)
+          echo "new-version=${NEW_VERSION#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Update CHANGELOG.md
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
+        run: |
+          TODAY=$(date +%F)
+          # rename [Unreleased] to the new version and prepend a fresh [Unreleased] section
+          perl -0pi -e "s/^## \[Unreleased\]\n/## [Unreleased]\n\n## [$ENV{NEW_VERSION}] - $ENV{TODAY}\n/m" CHANGELOG.md
+          grep -q "## \[$NEW_VERSION\] - $TODAY" CHANGELOG.md
 
       - name: Get Changelog Entry
         id: changelog_reader
         uses: mindsers/changelog-reader-action@v2.0.0
-
         with:
           validation_level: warn
-          version: ${{ steps.package_version.outputs.current-version }}
+          version: ${{ steps.bump.outputs.new-version }}
           path: CHANGELOG.md
 
       - name: Publish package
-        if: github.ref == 'refs/heads/master'
-        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # prerelease versions must not become the npm 'latest' dist-tag
+        run: npm publish $(if [ '${{ inputs.bump }}' = 'prerelease' ]; then echo '--tag next'; fi)
+
+      - name: Commit, tag and push
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
+        run: |
+          git add package.json CHANGELOG.md
+          git commit -m "$NEW_VERSION"
+          git tag "$NEW_VERSION"
+          git push origin HEAD:master
+          git push origin "refs/tags/$NEW_VERSION"
 
       - name: Create a Release
-        if: github.ref == 'refs/heads/master'
-        id: create_release
-        uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.package_version.outputs.current-version}}
-          release_name: ${{ steps.package_version.outputs.current-version}}
-          body: ${{ steps.changelog_reader.outputs.changes }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
+          RELEASE_NOTES: ${{ steps.changelog_reader.outputs.changes }}
+        run: |
+          gh release create "$NEW_VERSION" \
+            --title "$NEW_VERSION" \
+            --notes "$RELEASE_NOTES" \
+            --target master \
+            $(if [ '${{ inputs.bump }}' = 'prerelease' ]; then echo '--prerelease'; fi)
+
+      - name: Open auto-merge PR back to develop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
+        run: |
+          git push origin "HEAD:refs/heads/release/v$NEW_VERSION"
+          gh pr create \
+            --base develop \
+            --head "release/v$NEW_VERSION" \
+            --title "chore: release v$NEW_VERSION" \
+            --body "Automated version bump and changelog update for v$NEW_VERSION."
+
+      # develop requires 1 approving review; the bot can't approve its own PR,
+      # so RELEASE_TOKEN (a PAT of the maintainer) supplies the approval
+      - name: Approve and auto-merge the release PR
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
+        run: |
+          gh pr review "release/v$NEW_VERSION" --approve \
+            --body "Automated approval for release v$NEW_VERSION."
+          gh pr merge "release/v$NEW_VERSION" --auto --merge --delete-branch
