@@ -40,6 +40,30 @@ Crossnote is the core markdown rendering engine behind the **Markdown Preview En
 - Fix: `pnpm fix` (auto-fix ESLint + Prettier)
 - Always run `pnpm check && pnpm test` before committing
 
+## Release Process
+
+Releases are automated via [`.github/workflows/release.yml`](.github/workflows/release.yml), triggered manually (**workflow_dispatch**) with a `bump` level of `patch` / `minor` / `major` / `prerelease`. Do **not** bump `package.json` or cut tags by hand.
+
+What the workflow does, in order:
+
+1. Runs `pnpm check`, `pnpm test`, `pnpm build`
+2. Bumps `package.json` (`npm version <level>`)
+3. Rewrites `CHANGELOG.md`: renames `## [Unreleased]` to `## [X.Y.Z] - <today>` and prepends a fresh empty `## [Unreleased]` section — **write changelog entries under `[Unreleased]` before dispatching a release**
+4. Publishes to npm (`prerelease` bumps go to the `next` dist-tag, never `latest`)
+5. Commits the bump, tags it, pushes to `master` + tag, creates the GitHub Release with the changelog entry
+6. Opens a `release/vX.Y.Z` → `develop` PR, approves it via the `RELEASE_TOKEN` secret, and auto-merges it
+
+### Branch protection on `develop`
+
+- Classic branch protection: requires a PR + **1 approving review** before merging; admins (the maintainer) may merge without waiting via "Merge without waiting for requirements"
+- No force pushes or deletions; conversation resolution required
+- The release PR satisfies the review requirement through the `RELEASE_TOKEN` secret — a fine-grained PAT of the maintainer (Contents + Pull requests: read/write on this repo only). If the token expires, the release PR will stall at the approval step; rotate it and re-run the failed job.
+
+### Notes
+
+- The `Test` workflow does not run on pushes to `master`; releases run their own full check/test/build in the release workflow
+- Workflow pushes use the default `GITHUB_TOKEN`, which does not re-trigger push-based workflows (no recursion)
+
 ## Security Requirements
 
 This project processes untrusted markdown content that may contain malicious HTML. **All HTML output must be sanitized before DOM insertion.**
