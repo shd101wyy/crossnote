@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.32] - 2026-08-29
+
 ### Features
 
 - **i18n for the preview webview UI** — The webview's user-facing widgets (context menu, footer, topbar, backlinks, in-preview markdown editor, image helper, floating actions) are now translated. Hosts pass the UI language via the new `WebviewConfig.locale` field (e.g. from `vscode.env.language`); shipped locales: `en`, `zh-cn`, `zh-tw`, `ja`, `ko`, `es`, `fr`, `nl`, `pt-br`, `tr` — matching vscode-markdown-preview-enhanced's setting localizations. Unknown locales and unknown keys fall back to English (then to the key), so a missing translation can never break the UI. Locale packs live in `src/webview/locales/` and their key parity is enforced by tests. Universal terms (HTML, ePub, Pandoc, theme file names, `VS Code`) stay untranslated.
