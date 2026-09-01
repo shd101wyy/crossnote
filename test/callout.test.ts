@@ -113,4 +113,16 @@ describe('callouts', () => {
     expect(footnotesAt).toBeGreaterThan(calloutEnd);
     expect(html).toMatch(/<p[^>]*>something <a href="#fnref1"/);
   });
+
+  // The title env keeps `references` (only footnotes are dropped), so a
+  // reference-style link in a callout title still resolves to an anchor.
+  it('resolves reference-style links in the callout title', async () => {
+    const { html } = await parse(
+      '> [!note] See [the docs][docs]\n> body\n\n[docs]: https://example.com\n',
+    );
+
+    expect(html).toContain(
+      '<div class="callout-title">See <a href="https://example.com">the docs</a></div>',
+    );
+  });
 });

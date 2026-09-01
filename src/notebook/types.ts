@@ -17,6 +17,13 @@ export type FileSystemStats = {
   size: number;
   isFile: () => boolean;
   isDirectory: () => boolean;
+  /**
+   * Must describe the entry itself (lstat semantics), not the link
+   * target: the note-index walk relies on it to refuse following
+   * symbolic links out of the notebook root. A custom `FileSystemApi`
+   * implementor that always returns `false` silently loses that
+   * containment.
+   */
   isSymbolicLink: () => boolean;
 };
 

@@ -593,6 +593,14 @@ window["initRevealPresentation"] = async function() {
   };
 
   /**
+   * A theme name that is safe to interpolate into an asset path. Reveal.js
+   * presentation themes come from front matter (`presentation.theme`), and
+   * offline exports read the resolved file and inline it into the output —
+   * only a bare `<name>.css` basename is ever allowed through.
+   */
+  private static readonly safeThemeFilename = /^[A-Za-z0-9_-]+\.css$/;
+
+  /**
    * The dark variant of a paired theme, for screen exports with
    * `exportColorScheme: 'auto'`: the light variant applies by default
    * and the dark variant is embedded under
@@ -1065,14 +1073,23 @@ window["initRevealPresentation"] = async function() {
     const offlineStyle = async (rel: string): Promise<string> => {
       const abs = depPath(rel);
       if (embedAssets) {
-        return readOfflineCss(abs);
+        try {
+          return await readOfflineCss(abs);
+        } catch {
+          // Unreadable asset (e.g. a stale or partial build directory) —
+          // fall back to the file:// link instead of failing the export.
+        }
       }
       return `<link rel="stylesheet" href="${fileURL(abs)}">`;
     };
     const offlineScript = async (rel: string): Promise<string> => {
       const abs = depPath(rel);
       if (embedAssets) {
-        return readOfflineJs(abs);
+        try {
+          return await readOfflineJs(abs);
+        } catch {
+          // Same fallback as offlineStyle.
+        }
       }
       return `<script type="text/javascript" src="${fileURL(
         abs,
@@ -1437,13 +1454,21 @@ if (typeof(window['Reveal']) !== 'undefined') {
             this.notebook.config.revealjsTheme,
           'revealjs',
         );
+        // `theme` is front-matter controlled, and offline exports read
+        // the file and inline it into the document — so only a bare
+        // `<name>.css` filename is accepted; a value with separators or
+        // `..` falls back to reveal.js's default theme instead of
+        // reading an arbitrary file.
+        const safeTheme = MarkdownEngine.safeThemeFilename.test(theme)
+          ? theme
+          : 'white.css';
 
         if (options.offline) {
           presentationStyle += await offlineStyle(
-            `./dependencies/reveal/css/theme/${theme}`,
+            `./dependencies/reveal/css/theme/${safeTheme}`,
           );
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/theme/${theme}">`;
+          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/theme/${safeTheme}">`;
         }
       } else {
         // preview theme

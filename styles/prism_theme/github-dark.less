@@ -47,26 +47,19 @@ pre[class*='language-'] {
   color: #c9d1d9;
   background: #343942;
 }
-/* Line highlighting */
-pre[data-line] {
-  position: relative;
-}
 pre[class*='language-'] > code[class*='language-'] {
   position: relative;
   z-index: 1;
 }
+/* Line highlighting — structure and the default band live in
+ * style-template.css; this theme only overrides the band color (custom
+ * property, so no specificity fight with the shared rule). */
+pre[data-line] {
+  --line-highlight-background: #2f2a1e;
+}
 .line-highlight {
-  position: absolute;
-  left: 0;
-  right: 0;
-  padding: inherit 0;
-  margin-top: 1em;
-  background: #2f2a1e;
   box-shadow: inset 5px 0 0 #674c16;
   z-index: 0;
-  pointer-events: none;
-  line-height: inherit;
-  white-space: pre;
 }
 /* Tokens */
 .namespace {

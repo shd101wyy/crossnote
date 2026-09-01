@@ -136,5 +136,54 @@ describe('inline-offline-assets', () => {
       expect(html).not.toContain('does-not-exist');
       expect(html).toContain('.x{background:');
     });
+
+    test('escapes a closing style tag inside the source', async () => {
+      const cssPath = path.join(tmpDir, 'evil.css');
+      fs.writeFileSync(
+        cssPath,
+        '.x{content:"</style><script>alert(1)</script>"}',
+      );
+
+      const html = await readOfflineCss(cssPath);
+
+      expect(html).toContain('<\\/style');
+      expect(html).not.toMatch(/<\/style><script>/);
+    });
+
+    test('drops urls that escape the css file own directory', async () => {
+      const secretPath = path.join(tmpDir, 'secret.woff2');
+      fs.writeFileSync(secretPath, Buffer.from('SECRET'));
+      const fontsDir = path.join(tmpDir, 'fonts');
+      fs.mkdirSync(fontsDir);
+      const cssPath = path.join(fontsDir, 'katex.css');
+      fs.writeFileSync(
+        cssPath,
+        '.x{background:url(../secret.woff2)} .y{background:url(./ok.png)}',
+      );
+
+      const html = await readOfflineCss(cssPath);
+
+      expect(html).not.toContain(Buffer.from('SECRET').toString('base64'));
+    });
+
+    test('resolves urls with a query or fragment suffix', async () => {
+      const fontsDir = path.join(tmpDir, 'fonts');
+      fs.mkdirSync(fontsDir);
+      fs.writeFileSync(
+        path.join(fontsDir, 'KaTeX_Main-Regular.woff2'),
+        Buffer.from('WQ'),
+      );
+      const cssPath = path.join(tmpDir, 'katex.css');
+      fs.writeFileSync(
+        cssPath,
+        '@font-face{src:url(fonts/KaTeX_Main-Regular.woff2?v=1#x) format("woff2")}',
+      );
+
+      const html = await readOfflineCss(cssPath);
+
+      expect(html).toContain(
+        'data:font/woff2;base64,' + Buffer.from('WQ').toString('base64'),
+      );
+    });
   });
 });
