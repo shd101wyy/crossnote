@@ -113,7 +113,19 @@ export type RevealJsTheme =
 
 export type MermaidTheme = 'default' | 'forest' | 'dark' | 'neutral' | 'null';
 
-export type FrontMatterRenderingOption = 'none' | 'table' | 'code';
+/**
+ * How YAML front matter is rendered.  `'table'` lays keys out as
+ * columns (one header row); `'vertical table'` lays out one key/value
+ * pair per row, which stays readable when there are many keys or long
+ * values.  `'code'`/`'code block'` are the same option — hosts pick
+ * the spelling shown in their settings UI.
+ */
+export type FrontMatterRenderingOption =
+  | 'none'
+  | 'table'
+  | 'vertical table'
+  | 'code'
+  | 'code block';
 
 export type WikiLinkTargetFileNameChangeCase =
   | 'none'

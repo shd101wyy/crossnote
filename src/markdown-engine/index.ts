@@ -2644,22 +2644,45 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     this.graphsCache = {};
   }
 
-  private frontMatterToTable(arg: unknown) {
+  /**
+   * Render a parsed front-matter value as HTML table markup.
+   *
+   * `vertical` selects the one-key-per-row layout (`<th>` key cell +
+   * `<td>` value cell per row) instead of the default one-column-per-key
+   * layout, which overflows the preview pane when there are many keys
+   * or long values.
+   */
+  private frontMatterToTable(arg: unknown, vertical: boolean = false) {
     if (arg instanceof Array) {
       let tbody = '<tbody><tr>';
       arg.forEach(
-        (item) => (tbody += `<td>${this.frontMatterToTable(item)}</td>`),
+        (item) =>
+          (tbody += `<td>${this.frontMatterToTable(item, vertical)}</td>`),
       );
       tbody += '</tr></tbody>';
       return `<table>${tbody}</table>`;
     } else if (typeof arg === 'object') {
+      if (vertical) {
+        let tbody = '<tbody>';
+        for (const key in arg) {
+          // eslint-disable-next-line no-prototype-builtins
+          if (arg.hasOwnProperty(key)) {
+            tbody += `<tr><th>${escape(key)}</th><td>${this.frontMatterToTable(
+              (arg as Record<string, unknown>)[key],
+              vertical,
+            )}</td></tr>`;
+          }
+        }
+        tbody += '</tbody>';
+        return `<table>${tbody}</table>`;
+      }
       let thead = '<thead><tr>';
       let tbody = '<tbody><tr>';
       for (const key in arg) {
         // eslint-disable-next-line no-prototype-builtins
         if (arg.hasOwnProperty(key)) {
           thead += `<th>${escape(key)}</th>`;
-          tbody += `<td>${this.frontMatterToTable((arg as Record<string, unknown>)[key])}</td>`;
+          tbody += `<td>${this.frontMatterToTable((arg as Record<string, unknown>)[key], vertical)}</td>`;
         }
       }
       thead += '</tr></thead>';
@@ -2702,13 +2725,19 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         // hide
         return { content: '', table: '', data };
       } else if (
-        (this.notebook.config.frontMatterRenderingOption ?? '')[0] === 't'
+        ['t', 'v'].includes(
+          (this.notebook.config.frontMatterRenderingOption ?? '')[0],
+        )
       ) {
-        // table
-        // to table
+        // 'table' (keys as columns) or 'vertical table' (one key/value
+        // pair per row, which keeps the table inside the preview pane
+        // when there are many keys or long values —
+        // vscode-markdown-preview-enhanced#2371)
+        const vertical =
+          (this.notebook.config.frontMatterRenderingOption ?? '')[0] === 'v';
         let table;
         if (typeof data === 'object') {
-          table = this.frontMatterToTable(data);
+          table = this.frontMatterToTable(data, vertical);
         } else {
           table =
             '<pre class="language-text"><code>Failed to parse YAML.</code></pre>';

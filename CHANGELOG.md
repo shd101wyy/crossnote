@@ -7,6 +7,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 ### Features
 
 - **HTML (offline) export inlines local JS/CSS into a portable single file** — `htmlExport({ offline: true })` used to emit `file://` `<link>` / `<script src>` tags pointing at the host's `crossnote/dependencies/` directory (KaTeX CSS, Mermaid, WaveDrom, Vega, Reveal, Font Awesome). Those paths break when the HTML is copied to another machine. Offline HTML export now inlines those files (and rewrites CSS `url()` font references to `data:` URIs, preferring woff2). Open in Browser / Chrome PDF / Prince still use `file://` so temporary documents are not bloated with mermaid.min.js (~3.5MB). CDN export is unchanged.
+- **`frontMatterRenderingOption: 'vertical table'`** — a second table layout for front matter: instead of one column per key (which overflows the preview pane when there are many keys or long values), the table renders one key/value pair per row, matching the layout VS Code's built-in preview uses. Nested objects recurse vertically; array values stay a single row of cells. The existing `'table'` (one column per key), `'none'` and `'code'`/`'code block'` options are unchanged ([vscode-mpe#2371](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2371) reported by @JaeyeongYang).
 
 ### Security
 
