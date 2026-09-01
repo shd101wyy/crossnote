@@ -20,3 +20,5 @@ src/prism/prism.js
 styles/*.css
 test/markdown/test-files/**
 pnpm-lock.yaml
+.mimosa/**
+.video_agent/**

@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Security
+
+- **Contain the note-index walk to the notebook root** — the walk behind `refreshNotes` / `refreshNotesIncremental` (wikilink resolution, backlinks, tags, graph view) could scan far beyond the workspace: a notebook rooted at a filesystem root (`/`, a Windows drive root — e.g. VS Code opened on `/`, a standalone file directly under it, or an untitled document whose fallback root is the `/.` spelling of `/`) recursively stat'ed and read files across the whole machine, and a symbolic link inside the workspace let the walk escape it entirely (followed links also risk cycles). Filesystem-root notebooks are now refused by all refresh entry points (a one-time warning explains that indexing is skipped), and the walk never follows symbolic links (Obsidian-style containment: link entries are not indexed). Walk-time `readdir`/`stat` failures such as `EACCES`/`EPERM` are also no longer `console.error`'d per directory — they are the normal cost of walking restricted trees, and logging each one is what made the scan visible as 1000+ error entries ([vscode-mpe#2376](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2376) reported by @prawnsalad). `wrapNodeFSAsApi().stat` now reports `isSymbolicLink()` truthfully (lstat first, follow for metadata), matching the VS Code host adapter.
+
 ## [0.9.32] - 2026-08-29
 
 ### Features
