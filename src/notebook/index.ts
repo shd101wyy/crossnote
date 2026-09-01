@@ -129,6 +129,11 @@ export class Notebook {
   public notes: Notes = {};
   public hasLoadedNotes: boolean = false;
   /**
+   * Whether `skipIndexingIfFilesystemRoot` has already warned for this
+   * notebook, so the refusal is logged once per instance.
+   */
+  private filesystemRootWarned: boolean = false;
+  /**
    * The notebook-relative path of the note currently being rendered.
    * Set by MarkdownEngine.parseMD() before calling renderMarkdown().
    * Used by the wikilink renderer to call resolveWikilink() with the
@@ -985,6 +990,8 @@ export class Notebook {
   }: RefreshNotesIfNotLoaded): Promise<Notes> {
     await this.refreshNotesIfNotLoadedMutex.runExclusive(async () => {
       if (!this.hasLoadedNotes) {
+        // A filesystem-root notebook is refused inside refreshNotes;
+        // marking it loaded either way keeps callers from retrying.
         await this.refreshNotes({
           dir,
           includeSubdirectories,
@@ -994,6 +1001,31 @@ export class Notebook {
       }
     });
     return this.notes;
+  }
+
+  /**
+   * True when the notebook is rooted at a filesystem root (`/` on
+   * macOS/Linux, `C:\` on Windows) rather than an actual folder —
+   * including dot-path spellings of it such as `/.`, which hosts can
+   * produce for untitled documents (they resolve to `/`).  Indexing
+   * such a "notebook" would recursively stat and read files across
+   * the whole machine (vscode-markdown-preview-enhanced#2376), so
+   * every refresh entry point refuses to walk it.  Warns once.
+   */
+  private skipIndexingIfFilesystemRoot(): boolean {
+    const resolved = path.resolve(this.notebookPath.fsPath);
+    if (path.parse(resolved).root !== resolved) {
+      return false;
+    }
+    if (!this.filesystemRootWarned) {
+      this.filesystemRootWarned = true;
+      console.warn(
+        `Crossnote: notebook root "${this.notebookPath.fsPath}" is a filesystem root; ` +
+          'skipping note indexing (wikilinks/backlinks/graph will find nothing). ' +
+          'Open a specific folder as the notebook root instead.',
+      );
+    }
+    return true;
   }
 
   /** Try to load a .gitignore file from the given absolute directory path. */
@@ -1013,6 +1045,9 @@ export class Notebook {
 
   public async refreshNotes(args: RefreshNotesArgs): Promise<Notes> {
     return this.refreshNotesMutex.runExclusive(async () => {
+      if (this.skipIndexingIfFilesystemRoot()) {
+        return this.notes;
+      }
       const { refreshRelations = true } = args;
       if (refreshRelations) {
         this.notes = {};
@@ -1047,6 +1082,9 @@ export class Notebook {
    */
   public async refreshNotesIncremental(args: RefreshNotesArgs): Promise<Notes> {
     return this.refreshNotesMutex.runExclusive(async () => {
+      if (this.skipIndexingIfFilesystemRoot()) {
+        return this.notes;
+      }
       const { dir = './', includeSubdirectories = false } = args;
       const onDisk = new Map<string, number>();
       await this._collectOnDiskMtimes(dir, includeSubdirectories, [], onDisk);
@@ -1123,6 +1161,10 @@ export class Notebook {
    * a .gitignore in the current stack.  Directories are descended
    * into iff `includeSubdirectories` is true.
    *
+   * Symbolic links are never followed: a link can point outside the
+   * notebook root (escaping the workspace entirely) or form a cycle,
+   * so entries whose stat reports `isSymbolicLink()` are skipped.
+   *
    * Both `_refreshNotesInternal` (full rebuild) and
    * `_collectOnDiskMtimes` (incremental refresh) drive their work
    * through this helper so the gitignore semantics are defined in
@@ -1178,8 +1220,9 @@ export class Notebook {
     let files: string[];
     try {
       files = await this.fs.readdir(dirAbsPath);
-    } catch (error) {
-      console.error(error);
+    } catch {
+      // Unreadable directory (EACCES/EPERM/...).  A walk of a large or
+      // restricted tree hits these routinely — expected, not an error.
       return;
     }
 
@@ -1203,8 +1246,17 @@ export class Notebook {
       let stats: FileSystemStats;
       try {
         stats = await this.fs.stat(absFilePath);
-      } catch (error) {
-        console.error(error);
+      } catch {
+        // Unstatable entry — same reasoning as the readdir catch above.
+        continue;
+      }
+
+      // Symbolic links can point outside the notebook root (or form
+      // cycles), which would let the index walk escape the workspace
+      // and stat/read files it has no business touching (#2376).
+      // Links are therefore never followed by the walk; the same
+      // Obsidian-style containment the rest of the index assumes.
+      if (stats.isSymbolicLink()) {
         continue;
       }
 

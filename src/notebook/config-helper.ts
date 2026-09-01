@@ -257,6 +257,26 @@ export function wrapNodeFSAsApi(): FileSystemApi {
       return fs.existsSync(_path);
     },
     stat: async (_path: string) => {
+      // lstat first so symlink entries keep reporting
+      // `isSymbolicLink() === true`; the walk uses that to refuse
+      // following links out of the notebook root.  Metadata (size,
+      // mtimes, file/dir type) still comes from the followed target.
+      const lstats = await fsPromises.lstat(_path).catch(() => undefined);
+      if (lstats?.isSymbolicLink()) {
+        const stats = await fsPromises.stat(_path);
+        return {
+          mtimeMs: stats.mtimeMs,
+          ctimeMs: stats.ctimeMs,
+          size: stats.size,
+          isFile: () => stats.isFile(),
+          isDirectory: () => stats.isDirectory(),
+          isSymbolicLink: () => true,
+        };
+      }
+      if (lstats) {
+        return lstats;
+      }
+      // lstat failed (ENOENT etc.) — let stat throw the real error.
       return await fsPromises.stat(_path);
     },
     readdir: async (_path: string) => {

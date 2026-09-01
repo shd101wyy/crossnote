@@ -7,6 +7,8 @@ test.js
 test.mjs
 .direnv
 .codegraph
+.mimosa
+.video_agent
 tsconfig.tsbuildinfo
 pnpm-debug.log
 .mume
