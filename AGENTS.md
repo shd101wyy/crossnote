@@ -35,6 +35,7 @@ Crossnote is the core markdown rendering engine behind the **Markdown Preview En
 ### Build & Lint
 
 - Package manager: **pnpm** (not npm or yarn)
+- Dev environment: **use the nix shell** — `shell.nix` provides node and pnpm. If direnv isn't active, prefix commands with `nix develop -c` (e.g. `nix develop -c pnpm check`). Do **not** fall back to `corepack pnpm` or install global pnpm wrappers; the corepack shim invokes `pnpm` differently and is not the supported path here.
 - Build: `pnpm build` (esbuild + TypeScript declarations)
 - Lint: `pnpm check` (ESLint + Prettier + tsc)
 - Fix: `pnpm fix` (auto-fix ESLint + Prettier)

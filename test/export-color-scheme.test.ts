@@ -68,7 +68,7 @@ function writeFakeBuildDirectory(root: string) {
   files.forEach(([file, content]) => fs.writeFileSync(file, content));
 }
 
-describe('export color scheme (browser / HTML export follows reader scheme)', () => {
+describe('export color scheme (browser / HTML export)', () => {
   track();
 
   const originalBuildDirectory = getCrossnoteBuildDirectory();
@@ -86,7 +86,11 @@ describe('export color scheme (browser / HTML export follows reader scheme)', ()
 
   async function renderExportTemplate(
     config: Partial<NotebookConfig>,
-    options: { isForPrint?: boolean; isForPrince?: boolean },
+    options: {
+      isForPrint?: boolean;
+      isForPrince?: boolean;
+      yamlConfig?: Record<string, unknown>;
+    },
   ): Promise<string> {
     const notebook = await Notebook.init({
       notebookPath: tmpDir,
@@ -102,7 +106,7 @@ describe('export color scheme (browser / HTML export follows reader scheme)', ()
     });
     return engine.generateHTMLTemplateForExport(
       '<p>hello</p>',
-      {},
+      options.yamlConfig ?? {},
       {
         isForPrint: options.isForPrint ?? false,
         isForPrince: options.isForPrince ?? false,
@@ -112,8 +116,32 @@ describe('export color scheme (browser / HTML export follows reader scheme)', ()
     );
   }
 
-  test('non-paper export embeds the light/dark pair (github)', async () => {
+  test('default renders exactly the configured themes on every machine', async () => {
     const html = await renderExportTemplate({}, {});
+
+    expect(html).toContain('/* preview:github-light */');
+    expect(html).toContain('/* prism:github */');
+    expect(html).not.toContain('/* preview:github-dark */');
+    expect(html).not.toContain('/* prism:github-dark */');
+    expect(html).not.toContain('@media (prefers-color-scheme: dark)');
+    expect(html).not.toContain('<meta name="color-scheme"');
+  });
+
+  test('default keeps an explicitly dark configured theme dark', async () => {
+    const html = await renderExportTemplate(
+      { previewTheme: 'github-dark.css', codeBlockTheme: 'github-dark.css' },
+      {},
+    );
+
+    expect(html).toContain('/* preview:github-dark */');
+    expect(html).toContain('/* prism:github-dark */');
+    expect(html).not.toContain('/* preview:github-light */');
+    expect(html).not.toContain('@media (prefers-color-scheme: dark)');
+    expect(html).not.toContain('<meta name="color-scheme"');
+  });
+
+  test('exportColorScheme: auto embeds the light/dark pair (github)', async () => {
+    const html = await renderExportTemplate({ exportColorScheme: 'auto' }, {});
 
     expect(html).toContain('<meta name="color-scheme" content="light dark">');
     expect(html).toContain('/* preview:github-light */');
@@ -131,9 +159,9 @@ describe('export color scheme (browser / HTML export follows reader scheme)', ()
     );
   });
 
-  test('non-paper export pairs every light/dark theme family (solarized)', async () => {
+  test('exportColorScheme: auto pairs every light/dark theme family (solarized)', async () => {
     const html = await renderExportTemplate(
-      { previewTheme: 'solarized-light.css' },
+      { exportColorScheme: 'auto', previewTheme: 'solarized-light.css' },
       {},
     );
 
@@ -145,7 +173,10 @@ describe('export color scheme (browser / HTML export follows reader scheme)', ()
   });
 
   test('themes without a light/dark pair are embedded as-is', async () => {
-    const html = await renderExportTemplate({ previewTheme: 'night.css' }, {});
+    const html = await renderExportTemplate(
+      { exportColorScheme: 'auto', previewTheme: 'night.css' },
+      {},
+    );
 
     expect(html).toContain('/* preview:night */');
     expect(html).toContain('/* prism:darcula */');
@@ -153,8 +184,32 @@ describe('export color scheme (browser / HTML export follows reader scheme)', ()
     expect(html).not.toContain('<meta name="color-scheme"');
   });
 
+  test('front matter html.export_color_scheme overrides the notebook config', async () => {
+    const html = await renderExportTemplate(
+      {},
+      { yamlConfig: { html: { export_color_scheme: 'auto' } } },
+    );
+
+    expect(html).toContain('<meta name="color-scheme" content="light dark">');
+    expect(html).toContain('/* preview:github-light */');
+    expect(html).toContain('/* preview:github-dark */');
+    expect(html).toContain('@media (prefers-color-scheme: dark)');
+
+    const pinnedHtml = await renderExportTemplate(
+      { exportColorScheme: 'auto' },
+      { yamlConfig: { html: { export_color_scheme: 'theme' } } },
+    );
+    expect(pinnedHtml).toContain('/* preview:github-light */');
+    expect(pinnedHtml).not.toContain('/* preview:github-dark */');
+    expect(pinnedHtml).not.toContain('@media (prefers-color-scheme: dark)');
+    expect(pinnedHtml).not.toContain('<meta name="color-scheme"');
+  });
+
   test('paper output (print / prince) keeps the forced light theme', async () => {
-    const html = await renderExportTemplate({}, { isForPrint: true });
+    const html = await renderExportTemplate(
+      { exportColorScheme: 'auto' },
+      { isForPrint: true },
+    );
 
     expect(html).toContain('/* preview:github-light */');
     expect(html).toContain('/* prism:github */');
@@ -163,21 +218,22 @@ describe('export color scheme (browser / HTML export follows reader scheme)', ()
     expect(html).not.toContain('<meta name="color-scheme"');
 
     const princeHtml = await renderExportTemplate(
-      { previewTheme: 'solarized-light.css' },
+      { exportColorScheme: 'auto', previewTheme: 'solarized-light.css' },
       { isForPrince: true },
     );
     expect(princeHtml).toContain('/* preview:github-light */');
     expect(princeHtml).not.toContain('/* preview:solarized-dark */');
   });
 
-  test('printBackground keeps themes for screen output too', async () => {
+  test('printBackground keeps the configured themes for screen output', async () => {
     const html = await renderExportTemplate(
       { printBackground: true, previewTheme: 'github-dark.css' },
       {},
     );
 
-    expect(html).toContain('<meta name="color-scheme" content="light dark">');
-    expect(html).toContain('/* preview:github-light */');
     expect(html).toContain('/* preview:github-dark */');
+    expect(html).not.toContain('/* preview:github-light */');
+    expect(html).not.toContain('@media (prefers-color-scheme: dark)');
+    expect(html).not.toContain('<meta name="color-scheme"');
   });
 });
