@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.33] - 2026-09-01
+
 ### Features
 
 - **HTML (offline) export inlines local JS/CSS into a portable single file** — `htmlExport({ offline: true })` used to emit `file://` `<link>` / `<script src>` tags pointing at the host's `crossnote/dependencies/` directory (KaTeX CSS, Mermaid, WaveDrom, Vega, Reveal, Font Awesome). Those paths break when the HTML is copied to another machine. Offline HTML export now inlines those files (and rewrites CSS `url()` font references to `data:` URIs, preferring woff2). Open in Browser / Chrome PDF / Prince still use `file://` so temporary documents are not bloated with mermaid.min.js (~3.5MB). CDN export is unchanged. An unreadable asset falls back to its `file://` link instead of failing the whole export (a stale build directory no longer breaks offline export); `url()` references with `?query`/`#fragment` suffixes resolve correctly, references escaping the CSS file's own directory are dropped, and inlined CSS escapes `</style` the same way inlined JS escapes `</script`. The reveal.js `presentation.theme` front-matter value is validated to a bare `<name>.css` filename before any file is read — a traversal value falls back to the default theme (`white.css`) rather than inlining an arbitrary file into the export.
