@@ -160,13 +160,17 @@ export default (md: MarkdownIt) => {
       if (foldable) {
         const openAttr = foldable === 'open' ? ' open' : '';
         let html = `<details class="callout" data-callout="${calloutType}"${openAttr}>\n`;
-        html += `<summary class="callout-title">${md.renderInline(displayTitle, env)}</summary>\n`;
+        // NOTE: renderInline must NOT receive the document env — its
+        // parse re-runs core rules, and markdown-it-footnote's
+        // footnote_tail would re-emit the document's footnotes inside
+        // the title (vscode-mpe#2377).
+        html += `<summary class="callout-title">${md.renderInline(displayTitle)}</summary>\n`;
         return html;
       }
 
       let html = `<div class="callout" data-callout="${calloutType}">\n`;
       if (displayTitle) {
-        html += `<div class="callout-title">${md.renderInline(displayTitle, env)}</div>\n`;
+        html += `<div class="callout-title">${md.renderInline(displayTitle)}</div>\n`;
       }
       return html;
     } else {

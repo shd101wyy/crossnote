@@ -12,7 +12,7 @@
 :root {
   --prism-foreground: var(--vscode-editor-foreground, #d4d4d4);
   --prism-background: rgba(255, 255, 255, 0.06);
-  --prism-selection: var(--vscode-editor-selectionBackground, rgba(264,264,264,0.25));
+  --prism-selection: var(--vscode-editor-selectionBackground, rgba(128,128,128,0.25));
   --prism-comment: #6a9955;
   --prism-string: #ce9178;
   --prism-keyword: #569cd6;
@@ -280,6 +280,11 @@ pre[data-line] .line-highlight {
     padding: inherit 0;
     margin-top: 1em;
     background: var(--prism-selection);
+    /* Translucent blend so the band tints the code instead of covering
+     * it — --prism-selection comes from VS Code's selectionBackground,
+     * which is opaque in most themes (vscode-mpe#2378). Engines without
+     * color-mix keep the opaque fallback above. */
+    background: color-mix(in srgb, var(--prism-selection) 35%, transparent);
     pointer-events: none;
     line-height: inherit;
     white-space: pre;

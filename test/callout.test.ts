@@ -91,4 +91,26 @@ describe('callouts', () => {
     expect(html).toMatch(/<p[^>]*>Body text<\/p>/);
     expect(html).not.toContain('Custom Title</div>\n<p');
   });
+
+  // vscode-mpe#2377: the title used to be rendered with
+  // md.renderInline(title, env), whose parse re-runs core rules with the
+  // document env — markdown-it-footnote's footnote_tail then re-emitted
+  // an (empty) footnotes section inside the callout title, duplicated
+  // below the real one at the document bottom.
+  it('does not leak footnotes into the callout title', async () => {
+    const { html } = await parse(
+      '> [!warning]\n> something\n\nhere a foot point[^1]\n[^1]: something\n',
+    );
+
+    expect(html).toContain('<div class="callout-title">Warning</div>');
+    // Exactly one footnotes section, at the document bottom — not one
+    // inside the callout and one after it.
+    expect(html.match(/<section class="footnotes">/g)).toHaveLength(1);
+    expect(html).toMatch(/<\/div>\n<p[^>]*>here a foot point/);
+    // The single footnotes section comes after the callout, not inside it.
+    const calloutEnd = html.indexOf('<p data-source-line');
+    const footnotesAt = html.indexOf('<section class="footnotes">');
+    expect(footnotesAt).toBeGreaterThan(calloutEnd);
+    expect(html).toMatch(/<p[^>]*>something <a href="#fnref1"/);
+  });
 });
