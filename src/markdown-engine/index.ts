@@ -561,9 +561,10 @@ window["initRevealPresentation"] = async function() {
 
   /**
    * Preview themes that ship in light/dark pairs (atom, github, one,
-   * solarized). Non-paper exports embed both variants so the exported
-   * document follows the reader's system color scheme. Maps each theme
-   * file to its counterpart; themes without an entry have no pair.
+   * solarized). Screen exports with `exportColorScheme: 'auto'` embed
+   * both variants so the exported document follows the reader's system
+   * color scheme. Maps each theme file to its counterpart; themes
+   * without an entry have no pair.
    */
   private static PreviewThemeColorCounterparts: Record<string, string> = {
     'atom-light.css': 'atom-dark.css',
@@ -592,8 +593,9 @@ window["initRevealPresentation"] = async function() {
   };
 
   /**
-   * The dark variant of a paired theme, for non-paper exports: the light
-   * variant applies by default and the dark variant is embedded under
+   * The dark variant of a paired theme, for screen exports with
+   * `exportColorScheme: 'auto'`: the light variant applies by default
+   * and the dark variant is embedded under
    * `@media (prefers-color-scheme: dark)` — so the exported document and
    * GitHub-style `<picture>` images follow the reader's system color
    * scheme. `counterparts` is one of the maps above; returns null when
@@ -1349,9 +1351,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
 
     // prism and preview theme
     let styleCSS = '';
-    // Set for non-paper exports with a paired light/dark theme so the
-    // document (and <picture> elements) follows the reader's system
-    // color scheme.
+    // Set for screen exports with `exportColorScheme: 'auto'` and a
+    // paired light/dark theme so the document (and <picture> elements)
+    // follows the reader's system color scheme.
     let colorSchemeMeta = '';
     // Paper output (PDF via Chrome / Prince) keeps the intentional
     // forced-light page when printBackground is off; screen output
@@ -1360,6 +1362,22 @@ if (typeof(window['Reveal']) !== 'undefined') {
       (options.isForPrint || options.isForPrince) &&
       !this.notebook.config.printBackground &&
       !yamlConfig['print_background'];
+    // Screen exports render in the configured themes by default, so the
+    // output looks the same on every machine. Following the reader's
+    // system color scheme is opt-in — via the `exportColorScheme`
+    // notebook config or front matter `html.export_color_scheme` — and
+    // never applies to paper output.
+    const htmlYamlConfig =
+      typeof yamlConfig['html'] === 'object' &&
+      yamlConfig['html'] !== null &&
+      !Array.isArray(yamlConfig['html'])
+        ? (yamlConfig['html'] as Record<string, unknown>)
+        : null;
+    const exportColorScheme =
+      (htmlYamlConfig?.['export_color_scheme'] as string | undefined) ??
+      this.notebook.config.exportColorScheme;
+    const followSystemColorScheme =
+      exportColorScheme === 'auto' && !forceLightTheme;
     try {
       // prism *.css
       if (forceLightTheme && !yamlConfig['isPresentationMode']) {
@@ -1377,10 +1395,12 @@ if (typeof(window['Reveal']) !== 'undefined') {
           ),
           'codeBlock',
         );
-        const darkPrismTheme = MarkdownEngine.darkVariantOf(
-          prismTheme,
-          MarkdownEngine.PrismThemeColorCounterparts,
-        );
+        const darkPrismTheme = followSystemColorScheme
+          ? MarkdownEngine.darkVariantOf(
+              prismTheme,
+              MarkdownEngine.PrismThemeColorCounterparts,
+            )
+          : null;
         if (darkPrismTheme) {
           colorSchemeMeta = '<meta name="color-scheme" content="light dark">';
           styleCSS += await this.fs.readFile(
@@ -1431,10 +1451,12 @@ if (typeof(window['Reveal']) !== 'undefined') {
           this.notebook.config.previewTheme,
           'preview',
         );
-        const darkPreviewTheme = MarkdownEngine.darkVariantOf(
-          previewTheme,
-          MarkdownEngine.PreviewThemeColorCounterparts,
-        );
+        const darkPreviewTheme = followSystemColorScheme
+          ? MarkdownEngine.darkVariantOf(
+              previewTheme,
+              MarkdownEngine.PreviewThemeColorCounterparts,
+            )
+          : null;
         if (forceLightTheme) {
           styleCSS += await this.fs.readFile(
             path.resolve(

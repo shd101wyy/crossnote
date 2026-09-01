@@ -114,6 +114,16 @@ export type RevealJsTheme =
 export type MermaidTheme = 'default' | 'forest' | 'dark' | 'neutral' | 'null';
 
 /**
+ * How browser/HTML exports pick their color scheme.
+ *
+ * - `'theme'` — the export renders in the configured preview/code block
+ *   themes on every machine, regardless of the reader's OS color scheme.
+ * - `'auto'` — paired light/dark themes are embedded so the export
+ *   follows the reader's system color scheme (`prefers-color-scheme`).
+ */
+export type ExportColorScheme = 'theme' | 'auto';
+
+/**
  * How YAML front matter is rendered.  `'table'` lays keys out as
  * columns (one header row); `'vertical table'` lays out one key/value
  * pair per row, which stays readable when there are many keys or long
@@ -383,6 +393,19 @@ export interface NotebookConfig {
    * @default `github-light.css`
    */
   previewTheme: PreviewTheme;
+  /**
+   * How browser/HTML exports pick their color scheme: render in the
+   * configured themes everywhere (`'theme'`), or follow the reader's
+   * system color scheme by embedding light/dark theme pairs (`'auto'`).
+   * Paper output (Chrome PDF / Prince) is not affected and keeps its
+   * forced-light behavior when `printBackground` is off.
+   *
+   * Overridable per document with front matter
+   * `html: { export_color_scheme: auto }`.
+   *
+   * @default `theme`
+   */
+  exportColorScheme: ExportColorScheme;
   /**
    * The reveal.js theme.
    *
@@ -716,6 +739,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     mathjaxScriptSrc: 'https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js',
     codeBlockTheme: 'auto.css',
     previewTheme: 'github-light.css',
+    exportColorScheme: 'theme',
     revealjsTheme: 'white.css',
     mermaidTheme: 'default',
     frontMatterRenderingOption: 'none',
