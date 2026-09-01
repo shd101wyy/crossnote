@@ -80,17 +80,19 @@
 
   // Code block line highlighting ({highlight=...}).
   //
-  // Structural rules shared by every code theme: the wrapper and band
-  // are absolutely positioned over the code lines. Without them the
-  // appended divs render in flow *below* the code block, which is what
-  // every prism theme that only styles colors used to get
-  // (vscode-mpe#2379). Themes override the band color only
-  // (see prism_theme/vue.less, vscode.css, github-dark.less).
+  // The only home of the structural rules: the wrapper and band are
+  // absolutely positioned over the code lines. Without them the appended
+  // divs render in flow *below* the code block, which is what every prism
+  // theme that only styles colors used to get (vscode-mpe#2379). Themes
+  // override the band color by setting --line-highlight-background on
+  // pre[data-line] (see prism_theme/vscode.css, github-dark.less) — a
+  // custom property, so theme rules win without a specificity fight.
   pre[data-line] {
     position: relative;
-    // !important: prism themes set `pre[class*='language-'] { padding: 1em }`
-    // with equal specificity and load after this stylesheet; the 3em left
-    // padding leaves room for the line-number badge.
+    // !important: ebook export loads prism themes after this stylesheet,
+    // and their `pre[class*='language-'] { padding: 1em }` has equal
+    // specificity there; the 3em left padding leaves room for the
+    // line-number badge.
     padding: 1em 0 1em 3em !important;
 
     .line-highlight-wrapper {
@@ -111,10 +113,13 @@
       // Translucent so the band tints the code instead of covering it
       // (vscode-mpe#2378).
       background: hsla(24, 20%, 50%, 0.08);
-      background: linear-gradient(
-        to right,
-        hsla(24, 20%, 50%, 0.1) 70%,
-        hsla(24, 20%, 50%, 0)
+      background: var(
+        --line-highlight-background,
+        linear-gradient(
+          to right,
+          hsla(24, 20%, 50%, 0.1) 70%,
+          hsla(24, 20%, 50%, 0)
+        )
       );
       pointer-events: none;
       line-height: inherit;

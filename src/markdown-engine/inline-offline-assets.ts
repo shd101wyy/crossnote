@@ -42,7 +42,11 @@ export async function readOfflineJs(absPath: string): Promise<string> {
 export async function readOfflineCss(absPath: string): Promise<string> {
   const css = await fs.promises.readFile(absPath, 'utf8');
   const rewritten = rewriteCssUrls(css, path.dirname(absPath));
-  return `<style>\n${rewritten}\n</style>`;
+  // Mirror the `</script` escape in readOfflineJs, so file content can
+  // never close the wrapping tag. `\/` is an identity escape inside CSS
+  // strings, so this cannot change what the stylesheet means.
+  const escaped = rewritten.replace(/<\/style/gi, '<\\/style');
+  return `<style>\n${escaped}\n</style>`;
 }
 
 function rewriteCssUrls(css: string, cssDir: string): string {
@@ -54,7 +58,15 @@ function rewriteCssUrls(css: string, cssDir: string): string {
         return whole;
       }
 
-      const resolved = path.resolve(cssDir, url);
+      // Resolve against the path only — a `?query`/`#fragment` suffix
+      // would defeat the extension lookup and existsSync below. The
+      // resolved target must stay inside the CSS file's own directory;
+      // anything escaping it (`url(../..)`) is dropped like a missing
+      // file.
+      const resolved = path.resolve(cssDir, url.replace(/[?#].*$/, ''));
+      if (resolved !== cssDir && !resolved.startsWith(cssDir + path.sep)) {
+        return '';
+      }
       const ext = path.extname(resolved).toLowerCase();
 
       if (FALLBACK_FONT_EXTS.has(ext)) {

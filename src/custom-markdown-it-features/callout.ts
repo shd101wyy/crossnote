@@ -157,20 +157,29 @@ export default (md: MarkdownIt) => {
       token.meta = { callout: true, type: calloutType, title, calloutTag };
       markCalloutCloseToken(tokens, idx, calloutTag);
       const displayTitle = title || _calloutTitleMap[calloutType];
+      // The title must not render with the document env itself — its
+      // parse re-runs core rules, and markdown-it-footnote's
+      // footnote_tail would re-emit the document's footnotes inside the
+      // title (vscode-mpe#2377). A copy keeps `references` (so
+      // reference-style links in titles resolve) while dropping the
+      // footnotes list; footnote markers in titles render literally.
+      const titleEnv = { ...env, footnotes: undefined };
       if (foldable) {
         const openAttr = foldable === 'open' ? ' open' : '';
         let html = `<details class="callout" data-callout="${calloutType}"${openAttr}>\n`;
-        // NOTE: renderInline must NOT receive the document env — its
-        // parse re-runs core rules, and markdown-it-footnote's
-        // footnote_tail would re-emit the document's footnotes inside
-        // the title (vscode-mpe#2377).
-        html += `<summary class="callout-title">${md.renderInline(displayTitle)}</summary>\n`;
+        html += `<summary class="callout-title">${md.renderInline(
+          displayTitle,
+          titleEnv,
+        )}</summary>\n`;
         return html;
       }
 
       let html = `<div class="callout" data-callout="${calloutType}">\n`;
       if (displayTitle) {
-        html += `<div class="callout-title">${md.renderInline(displayTitle)}</div>\n`;
+        html += `<div class="callout-title">${md.renderInline(
+          displayTitle,
+          titleEnv,
+        )}</div>\n`;
       }
       return html;
     } else {

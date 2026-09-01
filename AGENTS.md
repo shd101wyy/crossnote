@@ -52,7 +52,7 @@ What the workflow does, in order:
 3. Rewrites `CHANGELOG.md`: renames `## [Unreleased]` to `## [X.Y.Z] - <today>` and prepends a fresh empty `## [Unreleased]` section — **write changelog entries under `[Unreleased]` before dispatching a release**
    - **Crediting contributors**: every entry that references a PR must credit its author (e.g. `([#455](…) by @author)`); for entries that reference an issue report, use `Reported by @author`.
 4. Publishes to npm (`prerelease` bumps go to the `next` dist-tag, never `latest`)
-5. Commits the bump, tags it, pushes to `master` + tag, creates the GitHub Release with the changelog entry
+5. Commits the bump, tags it, pushes the `release/vX.Y.Z` branch + tag (no direct push to `master` — it is branch-protected and deprecated), creates the GitHub Release from the tag with the changelog entry
 6. Opens a `release/vX.Y.Z` → `develop` PR, approves it via the `RELEASE_TOKEN` secret, and auto-merges it
 
 ### Branch protection on `develop`
@@ -63,8 +63,7 @@ What the workflow does, in order:
 
 ### Notes
 
-- The `Test` workflow does not run on pushes to `master`; releases run their own full check/test/build in the release workflow
-- Workflow pushes use the default `GITHUB_TOKEN`, which does not re-trigger push-based workflows (no recursion)
+- Releases run their own full check/test/build inside the release workflow; workflow pushes use the default `GITHUB_TOKEN`, which does not re-trigger push-based workflows (no recursion)
 
 ## Security Requirements
 
