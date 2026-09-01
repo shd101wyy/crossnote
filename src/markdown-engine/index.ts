@@ -44,6 +44,7 @@ import enhanceWithResolvedImagePaths from '../render-enhancers/resolved-image-pa
 import * as utility from '../utility';
 import { removeFileProtocol } from '../utility';
 import HeadingIdGenerator from './heading-id-generator';
+import { readOfflineCss, readOfflineJs } from './inline-offline-assets';
 import { buildMathJaxConfigScript } from './mathjax-config';
 import { sanitizeRenderedHTML } from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
@@ -98,6 +99,13 @@ export interface HTMLTemplateOption {
    * whether for offline use
    */
   offline: boolean;
+  /**
+   * Whether to inline local JS/CSS (and CSS `url()` fonts) into the
+   * HTML instead of emitting `file://` links. Used by HTML (offline)
+   * export so the file is portable; Open in Browser / PDF keep
+   * `file://` to avoid bloating temporary documents.
+   */
+  embedOfflineAssets?: boolean;
   /**
    * whether to embed local images as base64
    */
@@ -1049,6 +1057,25 @@ window["initRevealPresentation"] = async function() {
     // Build file:// URLs.  Only translate for WSL when opening in a browser.
     const fileURL = (p: string) =>
       utility.toFileURL(p, { useWSL: !!options.isForBrowser });
+    const embedAssets = !!(options.offline && options.embedOfflineAssets);
+    const depPath = (...parts: string[]) =>
+      path.resolve(utility.getCrossnoteBuildDirectory(), ...parts);
+    const offlineStyle = async (rel: string): Promise<string> => {
+      const abs = depPath(rel);
+      if (embedAssets) {
+        return readOfflineCss(abs);
+      }
+      return `<link rel="stylesheet" href="${fileURL(abs)}">`;
+    };
+    const offlineScript = async (rel: string): Promise<string> => {
+      const abs = depPath(rel);
+      if (embedAssets) {
+        return readOfflineJs(abs);
+      }
+      return `<script type="text/javascript" src="${fileURL(
+        abs,
+      )}" charset="UTF-8"></script>`;
+    };
 
     // get `id` and `class`
     const elementId = (yamlConfig['id'] as string) || '';
@@ -1097,12 +1124,7 @@ window["initRevealPresentation"] = async function() {
       }
     } else if (this.notebook.config.mathRenderingOption === 'KaTeX') {
       if (options.offline) {
-        mathStyle = `<link rel="stylesheet" href="${fileURL(
-          path.resolve(
-            utility.getCrossnoteBuildDirectory(),
-            './dependencies/katex/katex.min.css',
-          ),
-        )}">`;
+        mathStyle = await offlineStyle('./dependencies/katex/katex.min.css');
       } else {
         mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.16.47/dist/katex.min.css">`;
       }
@@ -1114,12 +1136,9 @@ window["initRevealPresentation"] = async function() {
     let fontAwesomeStyle = '';
     if (html.indexOf('<i class="fa') >= 0) {
       if (options.offline) {
-        fontAwesomeStyle = `<link rel="stylesheet" href="${fileURL(
-          path.resolve(
-            utility.getCrossnoteBuildDirectory(),
-            `./dependencies/font-awesome/css/all.min.css`,
-          ),
-        )}">`;
+        fontAwesomeStyle = await offlineStyle(
+          './dependencies/font-awesome/css/all.min.css',
+        );
       } else {
         fontAwesomeStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">`;
       }
@@ -1130,12 +1149,9 @@ window["initRevealPresentation"] = async function() {
     let mermaidInitScript = '';
     if (html.indexOf(' class="mermaid') >= 0) {
       if (options.offline) {
-        mermaidScript = `<script type="text/javascript" src="${fileURL(
-          path.resolve(
-            utility.getCrossnoteBuildDirectory(),
-            './dependencies/mermaid/mermaid.min.js',
-          ),
-        )}" charset="UTF-8"></script>`;
+        mermaidScript = await offlineScript(
+          './dependencies/mermaid/mermaid.min.js',
+        );
       } else {
         mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@11.17.2/dist/mermaid.min.js"></script>`;
       }
@@ -1189,24 +1205,15 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let wavedromInitScript = ``;
     if (html.indexOf(' class="wavedrom') >= 0) {
       if (options.offline) {
-        wavedromScript += `<script type="text/javascript" src="${fileURL(
-          path.resolve(
-            utility.getCrossnoteBuildDirectory(),
-            './dependencies/wavedrom/skins/default.js',
-          ),
-        )}" charset="UTF-8"></script>`;
-        wavedromScript += `<script type="text/javascript" src="${fileURL(
-          path.resolve(
-            utility.getCrossnoteBuildDirectory(),
-            './dependencies/wavedrom/skins/narrow.js',
-          ),
-        )}" charset="UTF-8"></script>`;
-        wavedromScript += `<script type="text/javascript" src="${fileURL(
-          path.resolve(
-            utility.getCrossnoteBuildDirectory(),
-            './dependencies/wavedrom/wavedrom.min.js',
-          ),
-        )}" charset="UTF-8"></script>`;
+        wavedromScript += await offlineScript(
+          './dependencies/wavedrom/skins/default.js',
+        );
+        wavedromScript += await offlineScript(
+          './dependencies/wavedrom/skins/narrow.js',
+        );
+        wavedromScript += await offlineScript(
+          './dependencies/wavedrom/wavedrom.min.js',
+        );
       } else {
         wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/default.js"></script>`;
         wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/narrow.js"></script>`;
@@ -1231,16 +1238,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
       html.indexOf(' class="vega') >= 0 ||
       html.indexOf(' class="vega-lite') >= 0
     ) {
-      dependentLibraryMaterials.forEach(({ key, version }) => {
+      for (const { key, version } of dependentLibraryMaterials) {
         vegaScript += options.offline
-          ? `<script type="text/javascript" src="${fileURL(
-              path.resolve(
-                utility.getCrossnoteBuildDirectory(),
-                `./dependencies/${key}/${key}.min.js`,
-              ),
-            )}" charset="UTF-8"></script>`
+          ? await offlineScript(`./dependencies/${key}/${key}.min.js`)
           : `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
-      });
+      }
 
       vegaInitScript += `<script>
       var vegaEls = document.querySelectorAll('.vega, .vega-lite');
@@ -1271,13 +1273,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
     let presentationInitScript = '';
     if (yamlConfig['isPresentationMode']) {
       if (options.offline) {
-        presentationScript = `
-        <script src='${fileURL(
-          path.resolve(
-            utility.getCrossnoteBuildDirectory(),
-            './dependencies/reveal/js/reveal.js',
-          ),
-        )}'></script>`;
+        presentationScript = await offlineScript(
+          './dependencies/reveal/js/reveal.js',
+        );
       } else {
         presentationScript = `
         <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/reveal.js'></script>`;
@@ -1421,12 +1419,9 @@ if (typeof(window['Reveal']) !== 'undefined') {
         );
 
         if (options.offline) {
-          presentationStyle += `<link rel="stylesheet" href="${fileURL(
-            path.resolve(
-              utility.getCrossnoteBuildDirectory(),
-              `./dependencies/reveal/css/theme/${theme}`,
-            ),
-          )}">`;
+          presentationStyle += await offlineStyle(
+            `./dependencies/reveal/css/theme/${theme}`,
+          );
         } else {
           presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/theme/${theme}">`;
         }
@@ -1708,6 +1703,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       isForPrince: false,
       embedLocalImages,
       offline,
+      embedOfflineAssets: offline,
       embedSVG,
     });
 
