@@ -9,6 +9,7 @@ test.mjs
 .codegraph
 .mimosa
 .video_agent
+.v2c
 tsconfig.tsbuildinfo
 pnpm-debug.log
 .mume
