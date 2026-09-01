@@ -54,7 +54,6 @@ const RESERVED_HOSTNAMES =
   /^(localhost|.*\.localhost|.*\.local|.*\.internal|.*\.home\.arpa)$/i;
 
 function isReservedHost(hostname: string): boolean {
-  // URL#hostname strips the brackets of `[::1]`-style IPv6 literals.
   const host = hostname.toLowerCase();
   if (RESERVED_HOSTNAMES.test(host)) {
     return true;
@@ -126,7 +125,7 @@ export function resolveImgurApiUrl(): string {
   }
   if (!url.hostname || isReservedHost(url.hostname)) {
     throw new Error(
-      'IMGUR_API_URL must not point at a localhost, private, or reserved address',
+      'IMGUR_API_URL must not point at a local, private, or reserved host (localhost, *.local, *.internal, *.home.arpa, or a private/reserved IP address)',
     );
   }
   return url.toString();
