@@ -112,19 +112,25 @@ export default (md: MarkdownIt) => {
 
           // Remove the complete marker/title line, which may span several
           // inline tokens when the title contains Markdown formatting.
-          const titleEnd = textToken.children?.findIndex(
-            (child) => child.type === 'softbreak' || child.type === 'hardbreak',
-          );
+          const titleEnd =
+            textToken.children?.findIndex(
+              (child) =>
+                child.type === 'softbreak' || child.type === 'hardbreak',
+            ) ?? -1;
+          // `children` must never become null: Renderer.render() dispatches
+          // inline tokens without honoring `hidden` (only renderToken checks
+          // it for block tokens), so renderInline(null) would crash with
+          // `Cannot read properties of null (reading 'length')` when the
+          // marker line is its own paragraph (vscode-mpe#2375). An empty
+          // array renders as '' — the same intended hidden output.
           textToken.children =
-            titleEnd === undefined || titleEnd === -1
-              ? null
-              : textToken.children?.slice(titleEnd + 1) || null;
+            titleEnd === -1
+              ? []
+              : (textToken.children?.slice(titleEnd + 1) ?? []);
 
-          const remainingChildren = textToken.children;
           const isEmptyParagraph =
-            !remainingChildren ||
-            remainingChildren.length === 0 ||
-            remainingChildren.every(
+            textToken.children.length === 0 ||
+            textToken.children.every(
               (child) =>
                 child.type === 'softbreak' || child.type === 'hardbreak',
             );
