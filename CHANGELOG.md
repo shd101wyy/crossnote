@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **`deleteNote(path, true)` no longer deletes a file that exists at the path** — the `alreadyDeleted` flag was wired backwards: passing `true` (which Markdown Preview Enhanced's file watcher does for every deletion event) guaranteed the `unlink()` branch ran instead of skipping it. When Git removed and then recreated a Markdown file during a branch checkout, the watcher's delayed deletion notification deleted the freshly recreated replacement — data loss that surfaced as unstaged deletions in `git status`. In the common case where the file really was gone, `unlink()` also rejected with ENOENT before the note's relations and search entry were cleaned up. `deleteNote` now only unlinks when asked to perform the deletion itself (`alreadyDeleted: false` and the file still exists); the internal bookkeeping always runs ([#481](https://github.com/shd101wyy/crossnote/issues/481) reported by @Josh-Cena).
+
 ## [0.9.33] - 2026-09-01
 
 ### Features
