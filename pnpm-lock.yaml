@@ -25,7 +25,7 @@ importers:
         version: 1.6.1
       '@monaco-editor/react':
         specifier: ^4.5.2
-        version: 4.7.0(monaco-editor@0.43.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.7.0(monaco-editor@0.55.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sanity/diff-match-patch':
         specifier: ^3.1.1
         version: 3.2.0
@@ -177,8 +177,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       monaco-editor:
-        specifier: ^0.43.0
-        version: 0.43.0
+        specifier: ^0.55.0
+        version: 0.55.0
       node-tikzjax:
         specifier: ^1.0.5
         version: 1.0.5(tslib@2.8.1)
@@ -3162,6 +3162,9 @@ packages:
     resolution: {integrity: sha512-gYzvtM72ZtxQO0T048kd6HWSbbGCNOUwcnfQ01cqIJ4X2IYKFFHZ5mKvrQETcFXxsRObZulDaKmy//R7TPtsBg==}
     engines: {node: '>=20.19.0'}
 
+  dompurify@3.2.7:
+    resolution: {integrity: sha512-WhL/YuveyGXJaerVlMYGWhvQswa7myDG17P7Vu65EWC05o8vfeNbvNf4d/BOvH99+ZW+LlQsc1GDKMa1vNK6dw==}
+
   dompurify@3.4.13:
     resolution: {integrity: sha512-2vmYIoqjze2d+kakP8S/nS5shfsl587kzwEjcGlTdiksUVgFHnFCsLYDVj/JNqJVOQZGSYBTmuycv0PodwmnMQ==}
 
@@ -4469,6 +4472,11 @@ packages:
   markdown_yo@0.0.5:
     resolution: {integrity: sha512-VKWeIHJ4GZK5CyiZH7QYLF4gvnw7DeOc8Ro4kKNb94JApxZpsNMDtykQqtK4vfINLHvagmNlDSnedG1evePfdQ==}
 
+  marked@14.0.0:
+    resolution: {integrity: sha512-uIj4+faQ+MgHgwUW1l2PsPglZLOLOT1uErt06dAPtx2kjteLAkbsd/0FiYg/MGS+i7ZKLb7w2WClxHkzOOuryQ==}
+    engines: {node: '>= 18'}
+    hasBin: true
+
   marked@16.4.1:
     resolution: {integrity: sha512-ntROs7RaN3EvWfy3EZi14H4YxmT6A5YvywfhO+0pm+cH/dnSQRmdAmoFIc3B9aiwTehyk7pESH4ofyBY+V5hZg==}
     engines: {node: '>= 20'}
@@ -4587,8 +4595,8 @@ packages:
   mockdate@3.0.5:
     resolution: {integrity: sha512-iniQP4rj1FhBdBYS/+eQv7j1tadJ9lJtdzgOpvsOHng/GbcDh2Fhdeq+ZRldrPYdXvCyfFUmFeEwEGXZB5I/AQ==}
 
-  monaco-editor@0.43.0:
-    resolution: {integrity: sha512-cnoqwQi/9fml2Szamv1XbSJieGJ1Dc8tENVMD26Kcfl7xGQWp7OBKMjlwKVGYFJ3/AXJjSOGvcqK7Ry/j9BM1Q==}
+  monaco-editor@0.55.0:
+    resolution: {integrity: sha512-z0wxERYJs9181lmruSC42pD2AEllobxBrDWnOMbKBKWmQnhKn7p3BGvpk+Usahooa0ueCShJkWXE8vXgYvKCIg==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -7684,10 +7692,10 @@ snapshots:
     dependencies:
       state-local: 1.0.7
 
-  '@monaco-editor/react@4.7.0(monaco-editor@0.43.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@monaco-editor/react@4.7.0(monaco-editor@0.55.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@monaco-editor/loader': 1.6.1
-      monaco-editor: 0.43.0
+      monaco-editor: 0.55.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
@@ -9119,6 +9127,10 @@ snapshots:
   domhandler@6.0.1:
     dependencies:
       domelementtype: 3.0.0
+
+  dompurify@3.2.7:
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
 
   dompurify@3.4.13:
     optionalDependencies:
@@ -10873,6 +10885,8 @@ snapshots:
 
   markdown_yo@0.0.5: {}
 
+  marked@14.0.0: {}
+
   marked@16.4.1: {}
 
   math-intrinsics@1.1.0: {}
@@ -11004,7 +11018,10 @@ snapshots:
 
   mockdate@3.0.5: {}
 
-  monaco-editor@0.43.0: {}
+  monaco-editor@0.55.0:
+    dependencies:
+      dompurify: 3.2.7
+      marked: 14.0.0
 
   ms@2.1.3: {}
 

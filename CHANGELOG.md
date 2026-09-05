@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **In-preview editor no longer fetches monaco from a CDN — "Open In-preview Editor" works offline** — Right-clicking the preview and choosing _Edit Markdown → Open In-preview Editor_ mounted the editor shell but loaded the actual monaco editor at runtime from `cdn.jsdelivr.net` (`@monaco-editor/loader`'s default). When that CDN was unreachable — offline, firewalled, or jsdelivr blocked — the editor stayed on "Loading editor..." forever, so the menu item looked like it did nothing ([vscode-mpe#2164](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2164) reported by @CVStratACGrant). The webview now calls `loader.config({ monaco })` with the locally bundled monaco-editor, so the editor opens instantly with zero network requests. monaco-editor is upgraded from 0.43.0 to 0.55.0 (the newest version whose `exports` map still allows the `esm/vs/editor/editor.api.js` import this repo's CommonJS TypeScript resolution requires; 0.56 rewrote its subpaths and would need a repo-wide `moduleResolution` switch).
+
 ## [0.9.33] - 2026-09-01
 
 ### Features

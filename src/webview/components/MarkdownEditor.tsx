@@ -5,14 +5,24 @@ import {
   mdiUnfoldMoreHorizontal,
 } from '@mdi/js';
 import Icon from '@mdi/react';
-import Editor, { OnMount } from '@monaco-editor/react';
+import Editor, { loader, OnMount } from '@monaco-editor/react';
 import classNames from 'classnames';
-import * as Monaco from 'monaco-editor';
-import { editor as monacoEditor } from 'monaco-editor';
+// NOTE: Import from the `editor.api` file instead of the package root.
+// This repo's CommonJS tsconfig module resolution cannot read the `exports`
+// map that recent monaco-editor versions use to expose their root types.
+// Also note: monaco-editor 0.56 rewrote its `exports` subpaths so that this
+// file can no longer be imported directly, which pins us to 0.55 for now.
+import * as Monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PreviewContainer from '../containers/preview';
 import { t } from '../lib/i18n';
+
+// Use the locally bundled monaco-editor instead of the @monaco-editor/loader
+// default, which fetches monaco from cdn.jsdelivr.net at runtime. Fetching
+// from the CDN leaves the editor stuck on "Loading editor..." forever when
+// the user is offline or the CDN is unreachable (vscode-mpe#2164).
+loader.config({ monaco: Monaco });
 
 const EDITOR_LINE_HEIGHT = 19;
 const EDITOR_MIN_HEIGHT = EDITOR_LINE_HEIGHT * 3; // 3 lines
@@ -30,7 +40,7 @@ export default function MarkdownEditor() {
     markdownEditorExpanded,
     setMarkdownEditorExpanded,
   } = PreviewContainer.useContainer();
-  const editorRef = useRef<monacoEditor.IStandaloneCodeEditor | null>(null);
+  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof Monaco | null>(null);
   const isSuggestionWidgetOpened = useRef(false);
   const hasRegisteredMarkdownCompletionItemsProvider = useRef(false);
@@ -148,7 +158,7 @@ export default function MarkdownEditor() {
       editor.revealLines(
         start + 1 + emptyLinesCountAtStart,
         end === start + 1 + emptyLinesCountAtStart ? end + 1 : end,
-        monacoEditor.ScrollType.Immediate,
+        Monaco.editor.ScrollType.Immediate,
       );
     } else {
       // Focus on the editor
@@ -157,7 +167,7 @@ export default function MarkdownEditor() {
       // Navigate to the line
       // NOTE: Timeout is needed here; otherwise it might not scroll for some unknown reason.
       setTimeout(() => {
-        editor.revealLineInCenter(start, monacoEditor.ScrollType.Immediate);
+        editor.revealLineInCenter(start, Monaco.editor.ScrollType.Immediate);
       }, 100);
     }
   }, [
@@ -236,7 +246,7 @@ export default function MarkdownEditor() {
 
     monaco.languages.registerCompletionItemProvider('markdown', {
       provideCompletionItems: function (
-        model: monacoEditor.ITextModel,
+        model: Monaco.editor.ITextModel,
         position: Monaco.Position,
       ) {
         const text = model.getValueInRange({
