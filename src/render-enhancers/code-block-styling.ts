@@ -1,7 +1,8 @@
 import type { Cheerio, CheerioAPI } from 'cheerio';
 import type { AnyNode } from 'domhandler';
 import { escape } from 'html-escaper';
-import { BlockInfo } from '../lib/block-info/index';
+import { BlockInfo } from '../lib/block-info';
+import LruCache from '../lib/lru-cache';
 import { scopeForLanguageName } from '../markdown-engine/extension-helper';
 import defineIeleLanguage from '../prism/iele';
 import defineKLanguage from '../prism/k';
@@ -18,6 +19,37 @@ Prism.hooks.add('wrap', (env: Record<string, unknown>) => {
 // Add K and Iele languages syntax highlighting
 defineKLanguage(Prism);
 defineIeleLanguage(Prism);
+
+/**
+ * Highlighted-HTML cache keyed by `language + code`, so untouched code
+ * blocks are not re-highlighted on every preview update. Oversized
+ * blocks are highlighted but not cached, to bound memory.
+ */
+const HIGHLIGHT_CACHE_MAX_ENTRIES = 200;
+const HIGHLIGHT_CACHE_MAX_SOURCE_LENGTH = 64 * 1024;
+const highlightCache = new LruCache(HIGHLIGHT_CACHE_MAX_ENTRIES);
+
+/**
+ * @returns the highlighted HTML, or `null` if Prism can't highlight the
+ * code (e.g. unsupported language)
+ */
+function highlightWithCache(code: string, language: string): string | null {
+  const key = `${language}\u0000${code}`;
+  const cached = highlightCache.get(key);
+  if (cached !== undefined) {
+    return cached;
+  }
+  let html: string;
+  try {
+    html = Prism.highlight(code, Prism.languages[language], language);
+  } catch {
+    return null;
+  }
+  if (code.length <= HIGHLIGHT_CACHE_MAX_SOURCE_LENGTH) {
+    highlightCache.set(key, html);
+  }
+  return html;
+}
 
 export default async function enhance($: CheerioAPI): Promise<void> {
   // spaced code blocks
@@ -54,13 +86,13 @@ export default async function enhance($: CheerioAPI): Promise<void> {
       code,
     );
 
-    // try use Prism syntax highlighter
-    try {
-      const html = Prism.highlight(code, Prism.languages[language], language);
-      $container.empty().append($(`<code></code>`).html(html));
-    } catch {
-      // ...or regarded as plain text on failure
+    // try use Prism syntax highlighter, ...
+    // ...or regard as plain text on failure
+    const html = highlightWithCache(code, language);
+    if (html === null) {
       $container.empty().append($(`<code></code>`).text(code));
+    } else {
+      $container.empty().append($(`<code></code>`).html(html));
     }
 
     $container.addClass(`language-${language || 'text'}`);

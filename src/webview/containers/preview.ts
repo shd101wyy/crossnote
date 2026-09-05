@@ -134,7 +134,6 @@ const PreviewContainer = createContainer(() => {
   const [isLoadingPreview, setIsLoadingPreview] = useState<boolean>(true);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isMouseOverPreview, setIsMouseOverPreview] = useState<boolean>(false);
-  const [renderedHtml, setRenderedHtml] = useState<string>('');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const isMobile = useMemo(() => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -760,7 +759,6 @@ const PreviewContainer = createContainer(() => {
 
       previewElement.current.innerHTML = hiddenPreviewElement.current.innerHTML;
       hiddenPreviewElement.current.innerHTML = '';
-      setRenderedHtml(previewElement.current.innerHTML);
 
       await Promise.all([renderInteractiveVega(), renderMermaid()]);
 
@@ -1834,7 +1832,6 @@ const PreviewContainer = createContainer(() => {
         document.body.getAttribute('data-html') ?? '',
       );
       document.body.removeAttribute('data-html');
-      setRenderedHtml(previewElement.current.innerHTML);
     }
     if (document.body.hasAttribute('data-markdown')) {
       const markdown = document.body.getAttribute('data-markdown') ?? '';
@@ -1881,7 +1878,11 @@ const PreviewContainer = createContainer(() => {
     config.revealjsTheme,
     config.codeBlockTheme,
     config.globalCss,
-    renderedHtml,
+    // Re-detect the background color after each preview update, since note
+    // content may carry its own styles. `markdown` changes on every update;
+    // do NOT depend on the rendered HTML string here (multi-MB on large
+    // documents).
+    markdown,
   ]);
 
   // NOTE: This is for debugging

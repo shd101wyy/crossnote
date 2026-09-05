@@ -285,6 +285,53 @@ export default function ContextMenu() {
     (isVSCode || isVSCodeWebExtension) &&
     config.useVSCodeThemeForContextMenu !== false;
 
+  const openInPreviewEditor = useCallback(() => {
+    // NOTE: While a render is in flight, the hidden preview also holds a
+    // `.final-line` copy, and in zen mode the rendered one is `display: none`.
+    // Attaching the editor to an invisible element makes this menu item look
+    // broken, so only attach to a visible `.final-line` (vscode-mpe#2164).
+    const previewElement = document.querySelector('[data-for="preview"]');
+    let finalLineElement = Array.from(
+      previewElement?.querySelectorAll<HTMLElement>('.final-line') ?? [],
+    ).find((element) => element.getClientRects().length > 0);
+
+    if (!finalLineElement) {
+      // The render has no visible `.final-line` anchor (e.g. the file has no
+      // source map). Append one at the end of the preview so the editor still
+      // opens instead of doing nothing.
+      if (!previewElement) {
+        return;
+      }
+      finalLineElement = document.createElement('p');
+      // Same classes as the anchor the sourcemap transform emits, so it
+      // gets the regular "End of document" styling.
+      finalLineElement.className = 'empty-line final-line end-of-document';
+      previewElement.appendChild(finalLineElement);
+    }
+
+    if (
+      // A preview update replaces the preview DOM, which detaches the
+      // anchor a previously-opened editor portaled into; scrolling that
+      // dead element would be a silent no-op, so re-open on the fresh
+      // anchor instead.
+      highlightElementBeingEdited?.isConnected &&
+      highlightElementBeingEdited !== finalLineElement
+    ) {
+      highlightElementBeingEdited.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'start', // horizontal
+        block: 'center', // vertical
+      });
+    } else {
+      setMarkdownEditorExpanded(true);
+      setHighlightElementBeingEdited(finalLineElement);
+    }
+  }, [
+    highlightElementBeingEdited,
+    setHighlightElementBeingEdited,
+    setMarkdownEditorExpanded,
+  ]);
+
   return (
     <div data-theme={theme} className="select-none">
       <Menu
@@ -421,30 +468,12 @@ export default function ContextMenu() {
                 : t('contextMenu.openExternalEditor')}
             </span>
           </Item>
-          {!isPresentationMode && (
-            <Item
-              id="open-in-preview-editor"
-              onClick={() => {
-                const finalLineElement = document.querySelector('.final-line');
-                if (finalLineElement) {
-                  if (
-                    highlightElementBeingEdited &&
-                    highlightElementBeingEdited !== finalLineElement
-                  ) {
-                    highlightElementBeingEdited.scrollIntoView({
-                      behavior: 'smooth',
-                      inline: 'start', // horizontal
-                      block: 'center', // vertical
-                    });
-                  } else {
-                    setMarkdownEditorExpanded(true);
-                    setHighlightElementBeingEdited(
-                      finalLineElement as HTMLElement,
-                    );
-                  }
-                }
-              }}
-            >
+          {/* The in-preview editor is unavailable in presentation mode and
+              zen mode (the editor component and its end-of-document anchor
+              are hidden there), so don't offer a menu item that would do
+              nothing. */}
+          {!isPresentationMode && !enablePreviewZenMode && (
+            <Item id="open-in-preview-editor" onClick={openInPreviewEditor}>
               <span>{t('contextMenu.openInPreviewEditor')} </span>
             </Item>
           )}

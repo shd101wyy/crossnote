@@ -5,14 +5,33 @@ import {
   mdiUnfoldMoreHorizontal,
 } from '@mdi/js';
 import Icon from '@mdi/react';
-import Editor, { OnMount } from '@monaco-editor/react';
+import Editor, { loader, OnMount } from '@monaco-editor/react';
 import classNames from 'classnames';
-import * as Monaco from 'monaco-editor';
-import { editor as monacoEditor } from 'monaco-editor';
+// NOTE: The monaco-editor imports are deliberately specific. This repo's
+// CommonJS tsconfig module resolution cannot read the `exports` map that
+// recent monaco-editor versions use to expose their root types, so a root
+// import does not resolve here. Also, `editor.api` alone is a bare editor:
+// `editor.all` registers the editor contributions (suggest widget, find,
+// folding, ...) and the markdown contribution registers the markdown
+// grammar, replacing what the CDN loader used to fetch. The editor only
+// ever edits markdown, so the remaining basic-languages and the
+// css/html/json/typescript language services in `editor.main` are dead
+// weight that we skip.
+// Also note: monaco-editor 0.56 rewrote its `exports` subpaths so that these
+// files can no longer be imported directly, which pins us to 0.55 for now.
+import 'monaco-editor/esm/vs/editor/editor.all.js';
+import 'monaco-editor/esm/vs/basic-languages/markdown/markdown.contribution.js';
+import * as Monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PreviewContainer from '../containers/preview';
 import { t } from '../lib/i18n';
+
+// Use the locally bundled monaco-editor instead of the @monaco-editor/loader
+// default, which fetches monaco from cdn.jsdelivr.net at runtime. Fetching
+// from the CDN leaves the editor stuck on "Loading editor..." forever when
+// the user is offline or the CDN is unreachable (vscode-mpe#2164).
+loader.config({ monaco: Monaco });
 
 const EDITOR_LINE_HEIGHT = 19;
 const EDITOR_MIN_HEIGHT = EDITOR_LINE_HEIGHT * 3; // 3 lines
@@ -30,17 +49,17 @@ export default function MarkdownEditor() {
     markdownEditorExpanded,
     setMarkdownEditorExpanded,
   } = PreviewContainer.useContainer();
-  const editorRef = useRef<monacoEditor.IStandaloneCodeEditor | null>(null);
-  const monacoRef = useRef<typeof Monaco | null>(null);
+  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
+  const lineDecorationsRef =
+    useRef<Monaco.editor.IEditorDecorationsCollection | null>(null);
   const isSuggestionWidgetOpened = useRef(false);
   const hasRegisteredMarkdownCompletionItemsProvider = useRef(false);
   const [isEditorInitialized, setIsEditorInitialized] = useState(false);
   const [showConfirmCloseAlert, setShowConfirmCloseAlert] = useState(false);
   const [editorMinHeight, setEditorMinHeight] = useState(EDITOR_MIN_HEIGHT);
 
-  const handleEditorDidMount: OnMount = useCallback((editor, monaco) => {
+  const handleEditorDidMount: OnMount = useCallback((editor) => {
     editorRef.current = editor;
-    monacoRef.current = monaco;
     setIsEditorInitialized(true);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,14 +86,8 @@ export default function MarkdownEditor() {
 
   // Jump to the line of the highlightElementBeingEdited
   useEffect(() => {
-    const monaco = monacoRef.current;
     const editor = editorRef.current;
-    if (
-      !isEditorInitialized ||
-      !highlightElementBeingEdited ||
-      !editor ||
-      !monaco
-    ) {
+    if (!isEditorInitialized || !highlightElementBeingEdited || !editor) {
       return;
     }
 
@@ -109,9 +122,16 @@ export default function MarkdownEditor() {
       }
 
       // Create line decorations
-      editor.createDecorationsCollection([
+      // NOTE: This effect re-runs after every preview update while the editor
+      // is open, so reuse one decorations collection and replace its content;
+      // `createDecorationsCollection` would accumulate a new collection each
+      // time.
+      if (!lineDecorationsRef.current) {
+        lineDecorationsRef.current = editor.createDecorationsCollection();
+      }
+      lineDecorationsRef.current.set([
         {
-          range: new monaco.Range(
+          range: new Monaco.Range(
             start + 1 + emptyLinesCountAtStart,
             1,
             end,
@@ -129,7 +149,7 @@ export default function MarkdownEditor() {
 
       // Select the lines
       editor.setSelection(
-        new monaco.Range(
+        new Monaco.Range(
           start + 1 + emptyLinesCountAtStart,
           1,
           end,
@@ -148,7 +168,7 @@ export default function MarkdownEditor() {
       editor.revealLines(
         start + 1 + emptyLinesCountAtStart,
         end === start + 1 + emptyLinesCountAtStart ? end + 1 : end,
-        monacoEditor.ScrollType.Immediate,
+        Monaco.editor.ScrollType.Immediate,
       );
     } else {
       // Focus on the editor
@@ -157,14 +177,13 @@ export default function MarkdownEditor() {
       // Navigate to the line
       // NOTE: Timeout is needed here; otherwise it might not scroll for some unknown reason.
       setTimeout(() => {
-        editor.revealLineInCenter(start, monacoEditor.ScrollType.Immediate);
+        editor.revealLineInCenter(start, Monaco.editor.ScrollType.Immediate);
       }, 100);
     }
   }, [
     getHighlightElementLineRange,
     highlightElementBeingEdited,
     editorRef,
-    monacoRef,
     markdown,
     isEditorInitialized,
   ]);
@@ -174,19 +193,18 @@ export default function MarkdownEditor() {
   // - esc to close the editor
   useEffect(() => {
     const editor = editorRef.current;
-    const monaco = monacoRef.current;
-    if (!isEditorInitialized || !editor || !monaco) {
+    if (!isEditorInitialized || !editor) {
       return;
     }
 
     // Bind commands
     /// Save command
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () {
+    editor.addCommand(Monaco.KeyMod.CtrlCmd | Monaco.KeyCode.KeyS, function () {
       saveEditor();
     });
 
     /// Close command
-    editor.addCommand(monaco.KeyCode.Escape, function () {
+    editor.addCommand(Monaco.KeyCode.Escape, function () {
       // Close editor suggestion widget if it is opened
       if (isSuggestionWidgetOpened.current) {
         editor.trigger('keyboard', 'hideSuggestWidget', {});
@@ -206,14 +224,13 @@ export default function MarkdownEditor() {
   // - Heading 1
   useEffect(() => {
     const editor = editorRef.current;
-    const monaco = monacoRef.current;
-    if (!isEditorInitialized || !editor || !monaco) {
+    if (!isEditorInitialized || !editor) {
       return;
     }
 
     // Bind commands
     /// Save command
-    editor.addCommand(monaco.KeyCode.Slash, function () {
+    editor.addCommand(Monaco.KeyCode.Slash, function () {
       // Show list of commands
       // Insert `/` to the editor
       editor.trigger('keyboard', 'type', { text: '/' });
@@ -225,18 +242,16 @@ export default function MarkdownEditor() {
 
   // Register completion items provider
   useEffect(() => {
-    const monaco = monacoRef.current;
     if (
       !isEditorInitialized ||
-      !monaco ||
       hasRegisteredMarkdownCompletionItemsProvider.current
     ) {
       return;
     }
 
-    monaco.languages.registerCompletionItemProvider('markdown', {
+    Monaco.languages.registerCompletionItemProvider('markdown', {
       provideCompletionItems: function (
-        model: monacoEditor.ITextModel,
+        model: Monaco.editor.ITextModel,
         position: Monaco.Position,
       ) {
         const text = model.getValueInRange({
@@ -274,7 +289,7 @@ export default function MarkdownEditor() {
           suggestions: [
             {
               label: 'Header 1',
-              kind: monaco.languages.CompletionItemKind.Event,
+              kind: Monaco.languages.CompletionItemKind.Event,
               insertText: '# ',
               documentation: '# Header 1',
               range: suggestRange,
@@ -282,7 +297,7 @@ export default function MarkdownEditor() {
             },
             {
               label: 'Header 2',
-              kind: monaco.languages.CompletionItemKind.Event,
+              kind: Monaco.languages.CompletionItemKind.Event,
               insertText: '## ',
               documentation: '## Header 2',
               range: suggestRange,
@@ -290,7 +305,7 @@ export default function MarkdownEditor() {
             },
             {
               label: 'Header 3',
-              kind: monaco.languages.CompletionItemKind.Event,
+              kind: Monaco.languages.CompletionItemKind.Event,
               insertText: '### ',
               documentation: '### Header 3',
               range: suggestRange,
@@ -298,7 +313,7 @@ export default function MarkdownEditor() {
             },
             {
               label: 'Header 4',
-              kind: monaco.languages.CompletionItemKind.Event,
+              kind: Monaco.languages.CompletionItemKind.Event,
               insertText: '#### ',
               documentation: '#### Header 4',
               range: suggestRange,
@@ -306,7 +321,7 @@ export default function MarkdownEditor() {
             },
             {
               label: 'Header 5',
-              kind: monaco.languages.CompletionItemKind.Event,
+              kind: Monaco.languages.CompletionItemKind.Event,
               insertText: '#### ',
               documentation: '#### Header 5',
               range: suggestRange,
@@ -314,7 +329,7 @@ export default function MarkdownEditor() {
             },
             {
               label: 'Header 6',
-              kind: monaco.languages.CompletionItemKind.Event,
+              kind: Monaco.languages.CompletionItemKind.Event,
               insertText: '###### ',
               documentation: '###### Header 6',
               range: suggestRange,
@@ -322,7 +337,7 @@ export default function MarkdownEditor() {
             },
             {
               label: 'Blockquote',
-              kind: monaco.languages.CompletionItemKind.Event,
+              kind: Monaco.languages.CompletionItemKind.Event,
               insertText: '> ',
               documentation: '> Blockquote',
               range: suggestRange,
@@ -330,7 +345,7 @@ export default function MarkdownEditor() {
             },
             {
               label: 'Unordered List',
-              kind: monaco.languages.CompletionItemKind.Event,
+              kind: Monaco.languages.CompletionItemKind.Event,
               insertText: '- ',
               documentation: '- Unordered List',
               range: suggestRange,
@@ -338,7 +353,7 @@ export default function MarkdownEditor() {
             },
             {
               label: 'Ordered List',
-              kind: monaco.languages.CompletionItemKind.Event,
+              kind: Monaco.languages.CompletionItemKind.Event,
               insertText: '1. ',
               documentation: '1. Ordered List',
               range: suggestRange,
@@ -346,7 +361,7 @@ export default function MarkdownEditor() {
             },
             {
               label: 'Slide',
-              kind: monaco.languages.CompletionItemKind.Event,
+              kind: Monaco.languages.CompletionItemKind.Event,
               insertText: '<!-- slide --> \n',
               documentation: '<!-- slide -->',
               range: suggestRange,
@@ -457,7 +472,7 @@ export default function MarkdownEditor() {
   useEffect(() => {
     return () => {
       editorRef.current = null;
-      monacoRef.current = null;
+      lineDecorationsRef.current = null;
       isSuggestionWidgetOpened.current = false;
       setIsEditorInitialized(false);
       setMarkdownEditorExpanded(false);
@@ -578,6 +593,10 @@ export default function MarkdownEditor() {
           wordWrap: 'on',
           // lineNumbers: 'off',
           useShadowDOM: true,
+          // The in-preview editor is a small inline editor; the minimap and
+          // the extra scroll area past the last line are just render cost.
+          minimap: { enabled: false },
+          scrollBeyondLastLine: false,
         }}
         theme={theme === 'dark' ? 'vs-dark' : 'light'}
         loading={

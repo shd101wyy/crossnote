@@ -188,6 +188,19 @@ export class Notebook {
    * key is the relative path of the note
    */
   private markdownEngines: { [key: FilePath]: MarkdownEngine } = {};
+  /**
+   * Lazily created markdown-it instance for rendering the sidebar TOC.
+   * `parseMD` needs one on every render, and building the plugin chain is
+   * not cheap. `updateConfig` mutates `this.md.options` in place through
+   * `md.set`, so the instance is rebuilt when the live-updated options
+   * change.
+   */
+  private tocMarkdownIt: MarkdownIt | null = null;
+  private tocMarkdownItOptions: {
+    breaks: boolean;
+    linkify: boolean;
+    typographer: boolean;
+  } | null = null;
 
   private constructor() {}
 
@@ -257,6 +270,34 @@ export class Notebook {
     useMarkdownItTag(md, this);
     useMarkdownItWidget(md, this);
     return md;
+  }
+
+  /**
+   * A markdown-it instance for rendering the sidebar TOC, with source maps
+   * disabled. `parseMD` renders the TOC on every preview update, so the
+   * instance is created lazily and reused until the live-updated markdown-it
+   * options change.
+   */
+  public getTocMarkdownIt(): MarkdownIt {
+    const currentOptions = {
+      breaks: !!this.md.options.breaks,
+      linkify: !!this.md.options.linkify,
+      typographer: !!this.md.options.typographer,
+    };
+    if (
+      !this.tocMarkdownIt ||
+      !this.tocMarkdownItOptions ||
+      currentOptions.breaks !== this.tocMarkdownItOptions.breaks ||
+      currentOptions.linkify !== this.tocMarkdownItOptions.linkify ||
+      currentOptions.typographer !== this.tocMarkdownItOptions.typographer
+    ) {
+      this.tocMarkdownIt = this.initMarkdownIt({
+        ...this.md.options,
+        sourceMap: false,
+      });
+      this.tocMarkdownItOptions = currentOptions;
+    }
+    return this.tocMarkdownIt;
   }
 
   initFs(_fs?: FileSystemApi) {

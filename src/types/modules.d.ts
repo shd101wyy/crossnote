@@ -98,4 +98,9 @@ declare module 'reading-time/lib/reading-time' {
   export default readingTime;
 }
 
+// monaco-editor side-effect modules: they register editor contributions and
+// the markdown grammar but ship no type declarations of their own.
+declare module 'monaco-editor/esm/vs/editor/editor.all.js';
+declare module 'monaco-editor/esm/vs/basic-languages/markdown/markdown.contribution.js';
+
 declare module '*.css' {}
