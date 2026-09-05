@@ -190,10 +190,17 @@ export class Notebook {
   private markdownEngines: { [key: FilePath]: MarkdownEngine } = {};
   /**
    * Lazily created markdown-it instance for rendering the sidebar TOC.
-   * `parseMD` needs one on every render; building the plugin chain is not
-   * cheap, and `this.md.options` never change after construction.
+   * `parseMD` needs one on every render, and building the plugin chain is
+   * not cheap. `updateConfig` mutates `this.md.options` in place through
+   * `md.set`, so the instance is rebuilt when the live-updated options
+   * change.
    */
   private tocMarkdownIt: MarkdownIt | null = null;
+  private tocMarkdownItOptions: {
+    breaks: boolean;
+    linkify: boolean;
+    typographer: boolean;
+  } | null = null;
 
   private constructor() {}
 
@@ -268,16 +275,31 @@ export class Notebook {
   /**
    * A markdown-it instance for rendering the sidebar TOC, with source maps
    * disabled. `parseMD` renders the TOC on every preview update, so the
-   * instance is created lazily once and reused.
+   * instance is created lazily and reused until the live-updated markdown-it
+   * options change.
    */
   public getTocMarkdownIt(): MarkdownIt {
-    if (!this.tocMarkdownIt) {
-      this.tocMarkdownIt = this.initMarkdownIt({
+    let tocMd = this.tocMarkdownIt;
+    const currentOptions = {
+      breaks: !!this.md.options.breaks,
+      linkify: !!this.md.options.linkify,
+      typographer: !!this.md.options.typographer,
+    };
+    if (
+      !tocMd ||
+      !this.tocMarkdownItOptions ||
+      currentOptions.breaks !== this.tocMarkdownItOptions.breaks ||
+      currentOptions.linkify !== this.tocMarkdownItOptions.linkify ||
+      currentOptions.typographer !== this.tocMarkdownItOptions.typographer
+    ) {
+      tocMd = this.initMarkdownIt({
         ...this.md.options,
         sourceMap: false,
       });
+      this.tocMarkdownIt = tocMd;
+      this.tocMarkdownItOptions = currentOptions;
     }
-    return this.tocMarkdownIt;
+    return tocMd;
   }
 
   initFs(_fs?: FileSystemApi) {
