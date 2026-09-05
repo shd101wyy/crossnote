@@ -4,6 +4,11 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Improvements
+
+- **Cheaper preview updates while editing** — Every preview refresh (each debounced keystroke with live update) copied the full rendered HTML into a React state variable, re-rendering the entire webview component tree with a multi-MB string on large documents. The state was write-only — no component ever read it — so it is removed; the post-update light/dark background re-detection now keys off the existing `markdown` state instead.
+- **In-preview editor: stop accumulating line decorations and trim default editor chrome** — The jump-to-line effect re-ran after every preview update while the editor was open and called `createDecorationsCollection` each time, accumulating a new decoration collection per update; it now reuses a single collection and replaces its content. The minimap (pure render cost in a small inline editor) is disabled and the editor no longer scrolls past the last line.
+
 ### Bug fixes
 
 - **In-preview editor no longer fetches monaco from a CDN — "Open In-preview Editor" works offline** — Right-clicking the preview and choosing _Edit Markdown → Open In-preview Editor_ mounted the editor shell but loaded the actual monaco editor at runtime from `cdn.jsdelivr.net` (`@monaco-editor/loader`'s default). When that CDN was unreachable — offline, firewalled, or jsdelivr blocked — the editor stayed on "Loading editor..." forever, so the menu item looked like it did nothing ([vscode-mpe#2164](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2164) reported by @CVStratACGrant). The webview now calls `loader.config({ monaco })` with the locally bundled monaco-editor, so the editor opens instantly with zero network requests. monaco-editor is upgraded from 0.43.0 to 0.55.0 (the newest version whose `exports` map still allows the `esm/vs/editor/editor.api.js` import this repo's CommonJS TypeScript resolution requires; 0.56 rewrote its subpaths and would need a repo-wide `moduleResolution` switch).

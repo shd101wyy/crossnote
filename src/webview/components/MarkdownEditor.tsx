@@ -42,6 +42,8 @@ export default function MarkdownEditor() {
   } = PreviewContainer.useContainer();
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof Monaco | null>(null);
+  const lineDecorationsRef =
+    useRef<Monaco.editor.IEditorDecorationsCollection | null>(null);
   const isSuggestionWidgetOpened = useRef(false);
   const hasRegisteredMarkdownCompletionItemsProvider = useRef(false);
   const [isEditorInitialized, setIsEditorInitialized] = useState(false);
@@ -119,9 +121,16 @@ export default function MarkdownEditor() {
       }
 
       // Create line decorations
-      editor.createDecorationsCollection([
+      // NOTE: This effect re-runs after every preview update while the editor
+      // is open, so reuse one decorations collection and replace its content;
+      // `createDecorationsCollection` would accumulate a new collection each
+      // time.
+      if (!lineDecorationsRef.current) {
+        lineDecorationsRef.current = editor.createDecorationsCollection();
+      }
+      lineDecorationsRef.current.set([
         {
-          range: new monaco.Range(
+          range: new Monaco.Range(
             start + 1 + emptyLinesCountAtStart,
             1,
             end,
@@ -468,6 +477,7 @@ export default function MarkdownEditor() {
     return () => {
       editorRef.current = null;
       monacoRef.current = null;
+      lineDecorationsRef.current = null;
       isSuggestionWidgetOpened.current = false;
       setIsEditorInitialized(false);
       setMarkdownEditorExpanded(false);
@@ -588,6 +598,10 @@ export default function MarkdownEditor() {
           wordWrap: 'on',
           // lineNumbers: 'off',
           useShadowDOM: true,
+          // The in-preview editor is a small inline editor; the minimap and
+          // the extra scroll area past the last line are just render cost.
+          minimap: { enabled: false },
+          scrollBeyondLastLine: false,
         }}
         theme={theme === 'dark' ? 'vs-dark' : 'light'}
         loading={
