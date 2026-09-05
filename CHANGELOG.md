@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.34] - 2026-09-05
+
 ### Improvements
 
 - **Cheaper preview updates while editing** — Every preview refresh (each debounced keystroke with live update) copied the full rendered HTML into a React state variable, re-rendering the entire webview component tree with a multi-MB string on large documents. The state was write-only — no component ever read it — so it is removed; the post-update light/dark background re-detection now keys off the existing `markdown` state instead.
