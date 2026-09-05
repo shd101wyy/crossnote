@@ -1440,13 +1440,23 @@ export class Notebook {
     delete this.notes[note.filePath];
   }
 
+  /**
+   * Delete a note and update the internal note relations and search index.
+   *
+   * @param filePath Note to delete.
+   * @param alreadyDeleted Set to `true` when the caller has already removed
+   *   the file from disk (e.g. a filesystem watcher reacting to a deletion
+   *   event). In that case the file is left untouched — a replacement file
+   *   recreated at the same path (e.g. by a Git checkout) must survive —
+   *   and only the internal bookkeeping is refreshed.
+   */
   public async deleteNote(filePath: string, alreadyDeleted: boolean = false) {
     const absFilePath = this.resolveNoteAbsolutePath(filePath);
-    if (alreadyDeleted || (await this.fs.exists(absFilePath))) {
+    if (!alreadyDeleted && (await this.fs.exists(absFilePath))) {
       await this.fs.unlink(absFilePath);
-      await this.removeNoteRelations(filePath);
-      this.search.remove(filePath);
     }
+    await this.removeNoteRelations(filePath);
+    this.search.remove(filePath);
   }
 
   /**
