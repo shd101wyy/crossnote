@@ -188,6 +188,12 @@ export class Notebook {
    * key is the relative path of the note
    */
   private markdownEngines: { [key: FilePath]: MarkdownEngine } = {};
+  /**
+   * Lazily created markdown-it instance for rendering the sidebar TOC.
+   * `parseMD` needs one on every render; building the plugin chain is not
+   * cheap, and `this.md.options` never change after construction.
+   */
+  private tocMarkdownIt: MarkdownIt | null = null;
 
   private constructor() {}
 
@@ -257,6 +263,21 @@ export class Notebook {
     useMarkdownItTag(md, this);
     useMarkdownItWidget(md, this);
     return md;
+  }
+
+  /**
+   * A markdown-it instance for rendering the sidebar TOC, with source maps
+   * disabled. `parseMD` renders the TOC on every preview update, so the
+   * instance is created lazily once and reused.
+   */
+  public getTocMarkdownIt(): MarkdownIt {
+    if (!this.tocMarkdownIt) {
+      this.tocMarkdownIt = this.initMarkdownIt({
+        ...this.md.options,
+        sourceMap: false,
+      });
+    }
+    return this.tocMarkdownIt;
   }
 
   initFs(_fs?: FileSystemApi) {

@@ -3131,10 +3131,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // Collaposible ToC
     // NOTE: We disable the source map here.
-    const sidebarTocMd = this.notebook.initMarkdownIt({
-      ...this.notebook.md.options,
-      sourceMap: false,
-    });
+    const sidebarTocMd = this.notebook.getTocMarkdownIt();
     this.tocHTML = generateSidebarToCHTML(headings, sidebarTocMd, {
       ordered,
       depthFrom,

@@ -15,6 +15,68 @@ export type ParseMathArgs = {
 };
 
 /**
+ * KaTeX output cache. Documents typically repeat the same formulas on every
+ * preview update, and KaTeX rendering dominates the update cost for
+ * math-heavy notes. The key includes a fingerprint of the KaTeX config, so
+ * config changes miss the cache; entries are bounded for predictable memory.
+ */
+const KATEX_CACHE_MAX_ENTRIES = 1000;
+const KATEX_CACHE_MAX_CONTENT_LENGTH = 16 * 1024;
+const katexCache = new Map<string, string>();
+// Most calls share one config object, so memoize its JSON fingerprint
+// instead of re-stringifying it for every formula.
+let lastKatexConfig: katex.KatexOptions | null = null;
+let lastKatexConfigFingerprint = '';
+
+function getKatexConfigFingerprint(katexConfig: katex.KatexOptions): string {
+  if (katexConfig !== lastKatexConfig) {
+    lastKatexConfig = katexConfig;
+    lastKatexConfigFingerprint = JSON.stringify(katexConfig);
+  }
+  return lastKatexConfigFingerprint;
+}
+
+function renderKatexCached(
+  content: string,
+  displayMode: boolean,
+  katexConfig: katex.KatexOptions,
+): string {
+  const key = `${getKatexConfigFingerprint(katexConfig)}\u0000${displayMode}\u0000${content}`;
+  const cached = katexCache.get(key);
+  if (cached !== undefined) {
+    katexCache.delete(key);
+    katexCache.set(key, cached);
+    return cached;
+  }
+  let html: string;
+  try {
+    html = katex.renderToString(
+      content,
+      Object.assign(
+        {},
+        // NOTE: strucutredClone is necessary here: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1853
+        // it seems like KaTeX will modify the config object,
+        // which will cause `JSON.stringify` in `generateHTMLTemplateForPreview` function in `markdown-engine/index.ts` to fail
+        structuredClone(katexConfig),
+        { displayMode },
+      ),
+    );
+  } catch (error) {
+    return `<span style="color: #ee7f49; font-weight: 500;">${String(error)}</span>`;
+  }
+  if (content.length <= KATEX_CACHE_MAX_CONTENT_LENGTH) {
+    if (katexCache.size >= KATEX_CACHE_MAX_ENTRIES) {
+      const oldest = katexCache.keys().next().value;
+      if (oldest !== undefined) {
+        katexCache.delete(oldest);
+      }
+    }
+    katexCache.set(key, html);
+  }
+  return html;
+}
+
+/**
  *
  * @param content the math expression
  * @param openTag the open tag, eg: '\('
@@ -34,21 +96,7 @@ export default ({
     return '';
   }
   if (renderingOption === 'KaTeX') {
-    try {
-      return katex.renderToString(
-        content,
-        Object.assign(
-          {},
-          // NOTE: strucutredClone is necessary here: https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1853
-          // it seems like KaTeX will modify the config object,
-          // which will cause `JSON.stringify` in `generateHTMLTemplateForPreview` function in `markdown-engine/index.ts` to fail
-          structuredClone(katexConfig),
-          { displayMode },
-        ),
-      );
-    } catch (error) {
-      return `<span style="color: #ee7f49; font-weight: 500;">${String(error)}</span>`;
-    }
+    return renderKatexCached(content, displayMode, katexConfig);
   } else if (renderingOption === 'MathJax') {
     const text = (openTag + content + closeTag).replace(/\n/g, ' ');
     const tag = displayMode ? 'div' : 'span';

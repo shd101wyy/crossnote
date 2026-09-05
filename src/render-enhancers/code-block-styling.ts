@@ -19,6 +19,41 @@ Prism.hooks.add('wrap', (env: Record<string, unknown>) => {
 defineKLanguage(Prism);
 defineIeleLanguage(Prism);
 
+/**
+ * Highlighted-HTML cache keyed by `language + code`, so untouched code
+ * blocks are not re-highlighted on every preview update. Keys are moved to
+ * the end of the map on hit for a simple LRU; the entry count is bounded.
+ */
+const HIGHLIGHT_CACHE_MAX_ENTRIES = 200;
+const HIGHLIGHT_CACHE_MAX_SOURCE_LENGTH = 64 * 1024;
+const highlightCache = new Map<string, string>();
+
+function highlightWithCache(code: string, language: string): string | null {
+  const key = `${language}\u0000${code}`;
+  const cached = highlightCache.get(key);
+  if (cached !== undefined) {
+    highlightCache.delete(key);
+    highlightCache.set(key, cached);
+    return cached;
+  }
+  let html: string;
+  try {
+    html = Prism.highlight(code, Prism.languages[language], language);
+  } catch {
+    return null;
+  }
+  if (code.length <= HIGHLIGHT_CACHE_MAX_SOURCE_LENGTH) {
+    if (highlightCache.size >= HIGHLIGHT_CACHE_MAX_ENTRIES) {
+      const oldest = highlightCache.keys().next().value;
+      if (oldest !== undefined) {
+        highlightCache.delete(oldest);
+      }
+    }
+    highlightCache.set(key, html);
+  }
+  return html;
+}
+
 export default async function enhance($: CheerioAPI): Promise<void> {
   // spaced code blocks
   // this is for pandoc parser
@@ -56,7 +91,10 @@ export default async function enhance($: CheerioAPI): Promise<void> {
 
     // try use Prism syntax highlighter
     try {
-      const html = Prism.highlight(code, Prism.languages[language], language);
+      const html = highlightWithCache(code, language);
+      if (html === null) {
+        throw new Error('prism highlight failed');
+      }
       $container.empty().append($(`<code></code>`).html(html));
     } catch {
       // ...or regarded as plain text on failure
