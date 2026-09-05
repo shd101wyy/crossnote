@@ -303,12 +303,18 @@ export default function ContextMenu() {
         return;
       }
       finalLineElement = document.createElement('p');
-      finalLineElement.className = 'final-line';
+      // Same classes as the anchor the sourcemap transform emits, so it
+      // gets the regular "End of document" styling.
+      finalLineElement.className = 'empty-line final-line end-of-document';
       previewElement.appendChild(finalLineElement);
     }
 
     if (
-      highlightElementBeingEdited &&
+      // A preview update replaces the preview DOM, which detaches the
+      // anchor a previously-opened editor portaled into; scrolling that
+      // dead element would be a silent no-op, so re-open on the fresh
+      // anchor instead.
+      highlightElementBeingEdited?.isConnected &&
       highlightElementBeingEdited !== finalLineElement
     ) {
       highlightElementBeingEdited.scrollIntoView({
@@ -462,7 +468,11 @@ export default function ContextMenu() {
                 : t('contextMenu.openExternalEditor')}
             </span>
           </Item>
-          {!isPresentationMode && (
+          {/* The in-preview editor is unavailable in presentation mode and
+              zen mode (the editor component and its end-of-document anchor
+              are hidden there), so don't offer a menu item that would do
+              nothing. */}
+          {!isPresentationMode && !enablePreviewZenMode && (
             <Item id="open-in-preview-editor" onClick={openInPreviewEditor}>
               <span>{t('contextMenu.openInPreviewEditor')} </span>
             </Item>

@@ -2,6 +2,7 @@ import { escape } from 'html-escaper';
 // https://github.com/KaTeX/KaTeX/blob/main/contrib/mhchem/README.md
 import katex from 'katex';
 import 'katex/contrib/mhchem';
+import LruCache from '../lib/lru-cache';
 import { MathRenderingOption } from '../notebook';
 
 // tslint:disable-next-line interface-over-type-literal
@@ -19,10 +20,11 @@ export type ParseMathArgs = {
  * preview update, and KaTeX rendering dominates the update cost for
  * math-heavy notes. The key includes a fingerprint of the KaTeX config, so
  * config changes miss the cache; entries are bounded for predictable memory.
+ * Oversized formulas are rendered but not cached.
  */
 const KATEX_CACHE_MAX_ENTRIES = 1000;
 const KATEX_CACHE_MAX_CONTENT_LENGTH = 16 * 1024;
-const katexCache = new Map<string, string>();
+const katexCache = new LruCache(KATEX_CACHE_MAX_ENTRIES);
 // Most calls share one config object, so memoize its JSON fingerprint
 // instead of re-stringifying it for every formula.
 let lastKatexConfig: katex.KatexOptions | null = null;
@@ -31,7 +33,15 @@ let lastKatexConfigFingerprint = '';
 function getKatexConfigFingerprint(katexConfig: katex.KatexOptions): string {
   if (katexConfig !== lastKatexConfig) {
     lastKatexConfig = katexConfig;
-    lastKatexConfigFingerprint = JSON.stringify(katexConfig);
+    // Function-valued options (e.g. a custom `trust` callback) are dropped
+    // by plain JSON.stringify, which would collide distinct configs;
+    // stringify them by source instead.
+    lastKatexConfigFingerprint = JSON.stringify(
+      katexConfig,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (_key: string, value: any) =>
+        typeof value === 'function' ? value.toString() : value,
+    );
   }
   return lastKatexConfigFingerprint;
 }
@@ -44,8 +54,6 @@ function renderKatexCached(
   const key = `${getKatexConfigFingerprint(katexConfig)}\u0000${displayMode}\u0000${content}`;
   const cached = katexCache.get(key);
   if (cached !== undefined) {
-    katexCache.delete(key);
-    katexCache.set(key, cached);
     return cached;
   }
   let html: string;
@@ -65,12 +73,6 @@ function renderKatexCached(
     return `<span style="color: #ee7f49; font-weight: 500;">${String(error)}</span>`;
   }
   if (content.length <= KATEX_CACHE_MAX_CONTENT_LENGTH) {
-    if (katexCache.size >= KATEX_CACHE_MAX_ENTRIES) {
-      const oldest = katexCache.keys().next().value;
-      if (oldest !== undefined) {
-        katexCache.delete(oldest);
-      }
-    }
     katexCache.set(key, html);
   }
   return html;

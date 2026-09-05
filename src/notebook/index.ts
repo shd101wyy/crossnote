@@ -279,27 +279,25 @@ export class Notebook {
    * options change.
    */
   public getTocMarkdownIt(): MarkdownIt {
-    let tocMd = this.tocMarkdownIt;
     const currentOptions = {
       breaks: !!this.md.options.breaks,
       linkify: !!this.md.options.linkify,
       typographer: !!this.md.options.typographer,
     };
     if (
-      !tocMd ||
+      !this.tocMarkdownIt ||
       !this.tocMarkdownItOptions ||
       currentOptions.breaks !== this.tocMarkdownItOptions.breaks ||
       currentOptions.linkify !== this.tocMarkdownItOptions.linkify ||
       currentOptions.typographer !== this.tocMarkdownItOptions.typographer
     ) {
-      tocMd = this.initMarkdownIt({
+      this.tocMarkdownIt = this.initMarkdownIt({
         ...this.md.options,
         sourceMap: false,
       });
-      this.tocMarkdownIt = tocMd;
       this.tocMarkdownItOptions = currentOptions;
     }
-    return tocMd;
+    return this.tocMarkdownIt;
   }
 
   initFs(_fs?: FileSystemApi) {
