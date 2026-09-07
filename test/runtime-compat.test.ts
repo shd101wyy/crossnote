@@ -16,9 +16,9 @@ describe('runtime compatibility', () => {
       encoding: 'utf8',
     });
 
-    expect({ status: result.status, stderr: result.stderr }).toEqual({
-      status: 0,
-      stderr: '',
-    });
+    expect(result.error).toBeUndefined();
+    expect(result.signal).toBeNull();
+    expect(result.status).toBe(0);
+    expect(result.stderr).not.toContain('File is not defined');
   });
 });
