@@ -1115,6 +1115,17 @@ const PreviewContainer = createContainer(() => {
                 // leaves the preview entirely.
                 highlightElement.classList.remove('highlight-active');
               });
+              // stopPropagation hides this transition from the preview
+              // root's own mouseout handler, so detect "the pointer left
+              // the preview content" here; the cleanup effect on
+              // isMouseOverPreview then clears the highlight and button.
+              // (The listener is attached to an Element, so its event is
+              // typed as plain Event.)
+              const relatedTarget = (event as MouseEvent)
+                .relatedTarget as Node | null;
+              if (!relatedTarget || !previewElement.contains(relatedTarget)) {
+                setIsMouseOverPreview(false);
+              }
             },
           );
         });
