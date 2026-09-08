@@ -7,6 +7,12 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 ### Bug fixes
 
 - **Keep Crossnote loadable on its supported Node.js 18 runtime** — pin Cheerio to 1.0.0 instead of allowing its prerelease range to resolve to Node.js 20-only releases that fail with `ReferenceError: File is not defined`. The declared minimum is now Node.js 18.17, matching Cheerio's runtime requirement ([#493](https://github.com/shd101wyy/crossnote/issues/493) reported by @qiyu-lu).
+- **The hover "…" action button no longer flashes at the preview's top-right corner while moving the pointer between blocks** — the button is anchored to the hovered block through a class that the un-hover listener stripped a frame before the button unmounted, so for that frame it re-anchored to the preview container. The highlight and the button now stay on the last hovered block until another block is hovered or the pointer leaves the preview, so scanning the document no longer makes the button strobe on and off.
+- **"Open In-preview Editor" stays in the context menu in Zen mode** — the item was hidden there, so users in Zen mode had no discoverable path to the feature. Clicking it in Zen mode now shows a notice explaining that the editor is unavailable until Zen mode is disabled (translated in all supported preview languages). Presentation mode still hides the item, as before.
+
+### Improvements
+
+- **Azerbaijani (az) localization for the preview UI** — the context menu, footer, top bar, backlinks panel, image helper, in-preview editor strings and notices now ship in Azerbaijani (`vscode.env.language: az`), joining the existing ten languages.
 
 ## [0.9.34] - 2026-09-05
 
