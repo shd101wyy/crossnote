@@ -53,6 +53,12 @@ describe('processGraphs cacheBust option', () => {
       notebook,
     });
 
+    // processGraphs embeds a failed conversion as an error block inside the
+    // output markdown instead of throwing, so check for it first — this
+    // surfaces the underlying rasterization error in the assertion output
+    // instead of a bare "Received: undefined" for the missing PNG path.
+    expect(outputString).not.toContain('sharp conversion failure');
+
     const pngPath = imagePaths[0];
     expect(pngPath).toBeTruthy();
     expect(fs.existsSync(pngPath)).toBe(true);
@@ -76,6 +82,8 @@ describe('processGraphs cacheBust option', () => {
       addOptionsStr: false,
       notebook,
     });
+
+    expect(outputString).not.toContain('sharp conversion failure');
 
     const pngPath = imagePaths[0];
     expect(pngPath).toBeTruthy();
