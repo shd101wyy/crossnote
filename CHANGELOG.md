@@ -6,7 +6,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### Improvements
 
-- **Pin development and CI to Node.js 18** — the VS Code extension host runs Node 18, which lacks globals such as `File` that Node-20-only dependency releases require, so a green test run on Node 20+ proves nothing for real users. All GitHub workflows now install Node 18.17.1 from `.tool-versions` (previously Node 20), and the Nix dev shell brings `nodejs_18` via a pinned nixpkgs-24.11 import, since the rolling nixpkgs channel no longer packages EOL Node 18. The pre-commit toolchain moves with it: lint-staged is held to 15.x, the last line that loads on Node 18 (16.x requires Node ≥ 20.17) ([#493](https://github.com/shd101wyy/crossnote/issues/493) reported by @qiyu-lu).
+- **Pin development and CI to Node.js 18** — the VS Code extension host runs Node 18, which lacks globals such as `File` that Node-20-only dependency releases require, so a green test run on Node 20+ proves nothing for real users. All GitHub workflows now install Node 18.17.1 from `.tool-versions` (previously Node 20), and the Nix dev shell brings `nodejs_18` via a pinned nixpkgs-24.11 import, since the rolling nixpkgs channel no longer packages EOL Node 18. The pre-commit toolchain moves with it: lint-staged is held to 15.x, the last line that loads on Node 18 (16.x requires Node ≥ 20.17), and sharp moves to the 0.34.x line — 0.35's prebuilt platform binaries declare Node ≥ 20.9 and get skipped entirely by installs on Node 18, which made graph rasterization fail with `Could not load the "sharp" module` ([#493](https://github.com/shd101wyy/crossnote/issues/493) reported by @qiyu-lu).
 
 ### Bug fixes
 
