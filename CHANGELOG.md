@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Improvements
+
+- **Pin development and CI to Node.js 18** — the VS Code extension host runs Node 18, which lacks globals such as `File` that Node-20-only dependency releases require, so a green test run on Node 20+ proves nothing for real users. All GitHub workflows now install Node 18.17.1 from `.tool-versions` (previously Node 20), and the Nix dev shell brings `nodejs_18` via a pinned nixpkgs-24.11 import, since the rolling nixpkgs channel no longer packages EOL Node 18. The pre-commit toolchain moves with it: lint-staged is held to 15.x, the last line that loads on Node 18 (16.x requires Node ≥ 20.17) ([#493](https://github.com/shd101wyy/crossnote/issues/493) reported by @qiyu-lu).
+
 ### Bug fixes
 
 - **Keep Crossnote loadable on its supported Node.js 18 runtime** — pin Cheerio to 1.0.0 instead of allowing its prerelease range to resolve to Node.js 20-only releases that fail with `ReferenceError: File is not defined`. The declared minimum is now Node.js 18.17, matching Cheerio's runtime requirement ([#493](https://github.com/shd101wyy/crossnote/issues/493) reported by @qiyu-lu).

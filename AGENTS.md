@@ -36,10 +36,29 @@ Crossnote is the core markdown rendering engine behind the **Markdown Preview En
 
 - Package manager: **pnpm** (not npm or yarn)
 - Dev environment: **use the nix shell** — `shell.nix` provides node and pnpm. If direnv isn't active, prefix commands with `nix develop -c` (e.g. `nix develop -c pnpm check`). Do **not** fall back to `corepack pnpm` or install global pnpm wrappers; the corepack shim invokes `pnpm` differently and is not the supported path here.
+- **Node.js is pinned to 18** — the VS Code extension host runs Node 18, which lacks newer globals such as `File`; see [Runtime Support](#runtime-support-nodejs--vs-code) below for the version mapping and the cheerio/engines decisions. The dev shell pins `nodejs_18` via a nixpkgs-24.11 import (the rolling channel dropped Node 18), and all GitHub workflows install the version in [`.tool-versions`](.tool-versions) — keep the two on the same major version. Do not run the suite on Node 20+ and call it green.
 - Build: `pnpm build` (esbuild + TypeScript declarations)
 - Lint: `pnpm check` (ESLint + Prettier + tsc)
 - Fix: `pnpm fix` (auto-fix ESLint + Prettier)
 - Always run `pnpm check && pnpm test` before committing
+
+### Runtime Support (Node.js / VS Code)
+
+The extension host of the VS Code versions Markdown Preview Enhanced supports runs Node 18, and crossnote must stay loadable there. Verified mapping (VS Code `package.json` pinned Electron versions + the Electron releases dataset, checked 2026-09):
+
+| VS Code     | Electron | Extension-host Node      |
+| ----------- | -------- | ------------------------ |
+| ≤ 1.81      | 22.x     | 16.17.1                  |
+| 1.82 – 1.85 | 25.x     | 18.15.0                  |
+| 1.86 – 1.87 | 27.x     | 18.17.1                  |
+| newer       | 28.x+    | ≥ 18.18, later 20.x/22.x |
+
+Decisions made after [#493](https://github.com/shd101wyy/crossnote/issues/493) / [#494](https://github.com/shd101wyy/crossnote/pull/494), each verified on the exact Node runtimes above:
+
+- **cheerio is pinned to exactly `1.0.0`** — never widen it back to a `^` range. It is the newest cheerio that loads on Node 18: 1.1+ pulls undici 7 (requires Node ≥ 20.18) and crashes extension activation with `ReferenceError: File is not defined`. cheerio 1.0.0 was verified working on Node 18.15.0 and 18.17.1, and shipped without activation reports from extension 0.8.20 (2025-03) until the yarn→pnpm migration (extension 0.8.32, 2026-08-31) let the old `^1.0.0-rc.12` range float to 1.2.0.
+- **`1.0.0-rc.12` was considered and rejected** — its only extra reach is Node 16 (VS Code ≤ 1.81), which crossnote has never claimed (`engines.node >= 18`) and which cheerio 1.0.0 itself cannot serve (`ReadableStream is not defined` on Node 16).
+- **The supported `engines.vscode` floor (in vscode-markdown-preview-enhanced) is `^1.82.0`** — the first VS Code whose extension host runs Node 18 (Electron 25 → Node 18.15.0). VS Code 1.82–1.85 sit below cheerio's declared floor (Node 18.17) but are verified working, and the full crossnote test suite passes on Node 18.15.0.
+- Node globals newer than 18 (`File`, …) must not be assumed; `test/runtime-compat.test.ts` guards this. `sharp@0.35` declares Node ≥ 20.9 but was verified working on Node 18.15.0 (SVG→PNG rasterization tested) — do not "fix" the engines warning by downgrading: the first sharp that _declares_ 18.15 support is 0.32.x, which drops two years of libvips security fixes.
 
 ## Release Process
 
