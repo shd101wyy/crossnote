@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Keep Crossnote loadable on its supported Node.js 18 runtime** — pin Cheerio to 1.0.0 instead of allowing its prerelease range to resolve to Node.js 20-only releases that fail with `ReferenceError: File is not defined`. The declared minimum is now Node.js 18.17, matching Cheerio's runtime requirement ([#493](https://github.com/shd101wyy/crossnote/issues/493) reported by @qiyu-lu).
+
 ## [0.9.34] - 2026-09-05
 
 ### Improvements

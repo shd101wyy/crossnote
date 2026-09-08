@@ -78,7 +78,7 @@
     "async-mutex": "^0.4.0",
     "bit-field": "^1.9.0",
     "case-anything": "^2.1.13",
-    "cheerio": "^1.0.0-rc.12",
+    "cheerio": "1.0.0",
     "chrome-paths": "^1.0.1",
     "classnames": "^2.3.2",
     "copy-anything": "^3.0.5",
@@ -222,6 +222,6 @@
   },
   "packageManager": "pnpm@10.23.0",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.17.0"
   }
 }
