@@ -15,6 +15,7 @@
   "contextMenu.openExternalEditor": "Open External Editor",
   "contextMenu.openInPreviewEditor": "Open In-preview Editor",
   "contextMenu.zenMode": "Zen Mode",
+  "contextMenu.inPreviewEditorZenModeNotice": "The in-preview editor is unavailable in Zen Mode. Disable Zen Mode to use it.",
   "contextMenu.imageHelper": "Image Helper",
   "contextMenu.syncSource": "Sync Source",
   "contextMenu.zoom": "Zoom",

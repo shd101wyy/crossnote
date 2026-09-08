@@ -46,6 +46,7 @@ export default function ContextMenu() {
     previewSyncSource,
     setHighlightElementBeingEdited,
     setMarkdownEditorExpanded,
+    setNotice,
     setShowImageHelper,
     sourceUri,
     theme,
@@ -286,6 +287,13 @@ export default function ContextMenu() {
     config.useVSCodeThemeForContextMenu !== false;
 
   const openInPreviewEditor = useCallback(() => {
+    // The editor component is intentionally not rendered in zen mode. Keep
+    // the menu item discoverable everywhere and explain on click instead of
+    // hiding the feature from users who don't know zen mode is the blocker.
+    if (enablePreviewZenMode) {
+      setNotice(t('contextMenu.inPreviewEditorZenModeNotice'));
+      return;
+    }
     // NOTE: While a render is in flight, the hidden preview also holds a
     // `.final-line` copy, and in zen mode the rendered one is `display: none`.
     // Attaching the editor to an invisible element makes this menu item look
@@ -327,9 +335,11 @@ export default function ContextMenu() {
       setHighlightElementBeingEdited(finalLineElement);
     }
   }, [
+    enablePreviewZenMode,
     highlightElementBeingEdited,
     setHighlightElementBeingEdited,
     setMarkdownEditorExpanded,
+    setNotice,
   ]);
 
   return (
@@ -468,11 +478,12 @@ export default function ContextMenu() {
                 : t('contextMenu.openExternalEditor')}
             </span>
           </Item>
-          {/* The in-preview editor is unavailable in presentation mode and
-              zen mode (the editor component and its end-of-document anchor
-              are hidden there), so don't offer a menu item that would do
-              nothing. */}
-          {!isPresentationMode && !enablePreviewZenMode && (
+          {/* The in-preview editor cannot be shown in presentation mode, so
+              the item is not offered there. In zen mode the editor is also
+              intentionally hidden, but the item stays visible — clicking it
+              explains that zen mode needs to be disabled instead of silently
+              doing nothing. */}
+          {!isPresentationMode && (
             <Item id="open-in-preview-editor" onClick={openInPreviewEditor}>
               <span>{t('contextMenu.openInPreviewEditor')} </span>
             </Item>

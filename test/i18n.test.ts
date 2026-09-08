@@ -1,4 +1,5 @@
 import { getLocale, setLocale, t } from '../src/webview/lib/i18n';
+import az from '../src/webview/locales/az.json';
 import en from '../src/webview/locales/en.json';
 import es from '../src/webview/locales/es.json';
 import fr from '../src/webview/locales/fr.json';
@@ -12,6 +13,7 @@ import zhTw from '../src/webview/locales/zh-tw.json';
 
 const LOCALES: Array<[string, Record<string, string>]> = [
   ['en', en as Record<string, string>],
+  ['az', az as Record<string, string>],
   ['zh-cn', zhCn as Record<string, string>],
   ['zh-tw', zhTw as Record<string, string>],
   ['ja', ja as Record<string, string>],
@@ -49,6 +51,10 @@ describe('webview i18n', () => {
 
     setLocale('ja');
     expect(t('contextMenu.copy')).toBe('コピー');
+
+    setLocale('az');
+    expect(t('contextMenu.copy')).toBe('Kopyala');
+    expect(t('contextMenu.zenMode')).toBe('Zen rejimi');
   });
 
   test('setLocale is case-insensitive and rejects unknown locales', () => {

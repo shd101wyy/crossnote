@@ -9,6 +9,7 @@
  * Locale packs live in `src/webview/locales/*.json` — keep every file's
  * key set identical to `en.json` (enforced by test/i18n.test.ts).
  */
+import az from '../locales/az.json';
 import en from '../locales/en.json';
 import es from '../locales/es.json';
 import fr from '../locales/fr.json';
@@ -21,6 +22,7 @@ import zhCn from '../locales/zh-cn.json';
 import zhTw from '../locales/zh-tw.json';
 
 const localePacks: Record<string, Record<string, string>> = {
+  'az': az as Record<string, string>,
   'en': en as Record<string, string>,
   'es': es as Record<string, string>,
   'fr': fr as Record<string, string>,

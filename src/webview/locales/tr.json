@@ -15,6 +15,7 @@
   "contextMenu.openExternalEditor": "Harici düzenleyiciyi aç",
   "contextMenu.openInPreviewEditor": "Önizlemede düzenle",
   "contextMenu.zenMode": "Zen modu",
+  "contextMenu.inPreviewEditorZenModeNotice": "Önizleme içi düzenleyici Zen modunda kullanılamaz. Kullanmak için Zen modunu kapatın.",
   "contextMenu.imageHelper": "Görsel yardımcısı",
   "contextMenu.syncSource": "Kaynağı eşitle",
   "contextMenu.zoom": "Yakınlaştırma",

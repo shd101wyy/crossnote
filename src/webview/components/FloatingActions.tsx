@@ -116,6 +116,22 @@ export default function FloatingActions() {
     }
   }, [showMoreActions, highlightElement]);
 
+  // The portal button is absolutely positioned inside the highlight
+  // element, which `.highlight-line` turns into a positioning context.
+  // Pin the anchor with an inline style for the button's whole lifetime so
+  // that removing the class (hover changes, preview cleanup) can never
+  // re-anchor a still-mounted button to the preview container for a frame.
+  useEffect(() => {
+    if (!highlightElement) {
+      return;
+    }
+    const previousPosition = highlightElement.style.position;
+    highlightElement.style.position = 'relative';
+    return () => {
+      highlightElement.style.position = previousPosition;
+    };
+  }, [highlightElement]);
+
   // Clicking the `.final-line` element will open the editor.
   /*
   // FIXME: close button in MarkdownEditor will not work.

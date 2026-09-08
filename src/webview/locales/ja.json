@@ -15,6 +15,7 @@
   "contextMenu.openExternalEditor": "外部エディターを開く",
   "contextMenu.openInPreviewEditor": "プレビュー内で編集",
   "contextMenu.zenMode": "Zen モード",
+  "contextMenu.inPreviewEditorZenModeNotice": "プレビュー内エディタは Zen モードでは使用できません。使用するには Zen モードを無効にしてください。",
   "contextMenu.imageHelper": "画像ヘルパー",
   "contextMenu.syncSource": "ソースへ同期",
   "contextMenu.zoom": "ズーム",
