@@ -19,11 +19,13 @@ export default function Preview() {
     isPresentationMode,
     isLoadingPreview,
     isRefreshingPreview,
+    notice,
     previewElement,
     setIsMouseOverPreview,
     showContextMenu,
     showBacklinks,
     highlightElementBeingEdited,
+    theme,
   } = PreviewContainer.useContainer();
 
   return (
@@ -31,8 +33,12 @@ export default function Preview() {
       onMouseOver={() => {
         setIsMouseOverPreview(true);
       }}
-      onMouseOut={() => {
-        setIsMouseOverPreview(false);
+      onMouseOut={(event) => {
+        // mouseout also fires when moving between inner elements; only treat
+        // it as leaving the preview when the pointer actually exits it.
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setIsMouseOverPreview(false);
+        }
       }}
       className={classNames(
         'w-full min-h-screen',
@@ -85,6 +91,16 @@ export default function Preview() {
       {/** Markdown Editor */}
       {!enablePreviewZenMode && highlightElementBeingEdited && (
         <MarkdownEditor></MarkdownEditor>
+      )}
+      {/** Transient notice (e.g. why an action is unavailable) */}
+      {notice && (
+        <div
+          className="alert fixed bottom-8 left-1/2 -translate-x-1/2 z-[80] w-auto max-w-[90%] shadow-lg select-none"
+          data-theme={theme}
+          role="status"
+        >
+          <span className="text-base">{notice}</span>
+        </div>
       )}
     </div>
   );

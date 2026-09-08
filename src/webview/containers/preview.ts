@@ -150,6 +150,8 @@ const PreviewContainer = createContainer(() => {
     useState<HTMLElement | null>(null);
   const [markdownEditorExpanded, setMarkdownEditorExpanded] =
     useState<boolean>(false);
+  // Transient in-preview notice (e.g. why an action is unavailable).
+  const [notice, setNotice] = useState<string | undefined>(undefined);
 
   const isPresentationMode = useMemo(() => {
     return document.body.hasAttribute('data-presentation-mode');
@@ -1104,10 +1106,15 @@ const PreviewContainer = createContainer(() => {
             (event) => {
               event.stopPropagation();
               highlightElements.forEach((highlightElement) => {
-                highlightElement.classList.remove('highlight-line');
+                // Keep `highlight-line` here: it is the positioning context
+                // for the floating "..." action button, and stripping it in
+                // the same event that unmounts the button lets the button
+                // re-anchor to the preview container for one frame (it
+                // flashes at the top-right corner). The class is instead
+                // removed when another block is hovered or the pointer
+                // leaves the preview entirely.
                 highlightElement.classList.remove('highlight-active');
               });
-              setHighlightElement(null);
             },
           );
         });
@@ -1911,6 +1918,34 @@ const PreviewContainer = createContainer(() => {
     localStorage.setItem(showSidebarTocStorageKey, showSidebarToc ? '1' : '0');
   }, [showSidebarToc]);
 
+  // The hover highlight now lingers on the last hovered block (so the "..."
+  // action button stays anchored while the pointer crosses gaps between
+  // blocks). Clear it — and the button — once the pointer leaves the
+  // preview entirely.
+  useEffect(() => {
+    if (isMouseOverPreview) {
+      return;
+    }
+    document
+      .querySelectorAll('.highlight-line, .highlight-active')
+      .forEach((element) => {
+        element.classList.remove('highlight-line', 'highlight-active');
+      });
+    setHighlightElement(null);
+  }, [isMouseOverPreview]);
+
+  useEffect(() => {
+    if (notice === undefined) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      setNotice(undefined);
+    }, 4000);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [notice]);
+
   return {
     backlinks,
     backlinksElement,
@@ -1934,6 +1969,7 @@ const PreviewContainer = createContainer(() => {
     isVSCodeWebExtension,
     markdown,
     markdownEditorExpanded,
+    notice,
     postMessage,
     previewElement,
     previewSyncSource,
@@ -1941,6 +1977,7 @@ const PreviewContainer = createContainer(() => {
     setHighlightElementBeingEdited,
     setIsMouseOverPreview,
     setMarkdownEditorExpanded,
+    setNotice,
     setShowBacklinks,
     setShowImageHelper,
     showBacklinks,

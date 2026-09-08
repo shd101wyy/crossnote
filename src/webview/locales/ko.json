@@ -15,6 +15,7 @@
   "contextMenu.openExternalEditor": "외부 편집기 열기",
   "contextMenu.openInPreviewEditor": "미리보기에서 편집",
   "contextMenu.zenMode": "Zen 모드",
+  "contextMenu.inPreviewEditorZenModeNotice": "미리보기 내 편집기는 Zen 모드에서 사용할 수 없습니다. 사용하려면 Zen 모드를 끄세요.",
   "contextMenu.imageHelper": "이미지 도우미",
   "contextMenu.syncSource": "소스 동기화",
   "contextMenu.zoom": "확대/축소",

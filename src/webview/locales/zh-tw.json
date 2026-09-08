@@ -15,6 +15,7 @@
   "contextMenu.openExternalEditor": "開啟外部編輯器",
   "contextMenu.openInPreviewEditor": "在預覽中編輯",
   "contextMenu.zenMode": "禪模式",
+  "contextMenu.inPreviewEditorZenModeNotice": "在預覽中編輯功能在禪模式下不可用。請先關閉禪模式。",
   "contextMenu.imageHelper": "圖片助手",
   "contextMenu.syncSource": "同步原始碼",
   "contextMenu.zoom": "縮放",
