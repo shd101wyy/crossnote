@@ -124,6 +124,23 @@ export class Notebook {
    * files must never be able to turn it on.
    */
   public previewScriptsEnabled: boolean = false;
+  /**
+   * Extra absolute directories that `<script src>` tags in head.html may
+   * resolve into when `previewScriptsEnabled` is on, in addition to the
+   * notebook directory. Hosts use this to let the *global* config
+   * directory's head.html load the scripts sitting next to it — those
+   * files are user-owned (like the global head.html itself), but live
+   * outside every notebook. Defaults to `[]`.
+   *
+   * SECURITY: deliberately NOT part of `NotebookConfig` — config values
+   * are merged from the repository's `.crossnote/config.js`, which is
+   * untrusted content. Only the host application may name a trusted
+   * root, and only from user-scoped settings; repository files must
+   * never be able to point this at a directory they control. Resolution
+   * is still containment-checked per root (realpath, symlinks included),
+   * and the `@import "*.js"` channel stays notebook-directory-only.
+   */
+  public trustedScriptRoots: string[] = [];
   public fs!: FileSystemApi;
 
   public notes: Notes = {};

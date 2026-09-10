@@ -206,6 +206,45 @@ function normalizeMarkdownYoHeadings($: CheerioAPI): void {
   });
 }
 
+/**
+ * Whether an absolute filesystem path stays inside `parentDirectoryPath`.
+ * Symlinks are resolved on both sides, so a link inside a directory
+ * cannot pull in a file from outside it. The parent directory itself
+ * doesn't count — it is a directory, not a loadable file.
+ */
+function isPathInsideDirectory(
+  parentDirectoryPath: string,
+  filePath: string,
+): boolean {
+  const realpath = (p: string) => {
+    try {
+      return fs.realpathSync(p);
+    } catch {
+      return p;
+    }
+  };
+  const relative = path.relative(
+    realpath(parentDirectoryPath),
+    realpath(filePath),
+  );
+  return (
+    relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative)
+  );
+}
+
+/**
+ * Whether `filePath` is an existing regular file. Used to gate script src
+ * resolution: a candidate that isn't a readable file is dropped instead of
+ * being emitted as a broken (or directory) URL.
+ */
+function isExistingFile(filePath: string): boolean {
+  try {
+    return fs.statSync(filePath).isFile();
+  } catch {
+    return false;
+  }
+}
+
 // NOTE: The order of the following matters.
 const dependentLibraryMaterials = [
   { key: 'vega', version: '5.25.0' },
@@ -845,22 +884,7 @@ window["initRevealPresentation"] = async function() {
    * workspace cannot pull in a script from outside it.
    */
   private isPathInsideProjectDirectory(filePath: string): boolean {
-    const realpath = (p: string) => {
-      try {
-        return fs.realpathSync(p);
-      } catch {
-        return p;
-      }
-    };
-    const relative = path.relative(
-      realpath(this.projectDirectoryPath.fsPath),
-      realpath(filePath),
-    );
-    return (
-      relative !== '' &&
-      !relative.startsWith('..') &&
-      !path.isAbsolute(relative)
-    );
+    return isPathInsideDirectory(this.projectDirectoryPath.fsPath, filePath);
   }
 
   /**
@@ -2634,8 +2658,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // <script> tags are removed; <style>, <meta>, and <link> tags are
     // kept. When the host application explicitly opted in
     // (`notebook.previewScriptsEnabled`), file-based scripts that resolve
-    // inside the notebook directory are kept and rewritten to file URLs —
-    // inline scripts and URL-scheme sources never run.
+    // inside the notebook directory — or inside one of the host-named
+    // `notebook.trustedScriptRoots`, so the user-owned *global* head.html
+    // can load the scripts sitting next to it — are kept and rewritten to
+    // file URLs. Inline scripts and URL-scheme sources never run.
     //
     // NOTE: This helper is shared by the preview webview and the HTML /
     // eBook export paths, so scripts in head.html are stripped from
@@ -2643,6 +2669,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // (GHSA-mcwg-4j78-qwv3) covers. This is intentional hardening:
     // exported HTML running attacker-supplied JS is equally undesirable.
     if (allowScripts) {
+      const trustedScriptRoots = this.notebook.trustedScriptRoots;
       $('script').each((_i, element) => {
         const src = $(element).attr('src');
         if (
@@ -2653,10 +2680,27 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           $(element).remove();
           return;
         }
-        const resolvedPath = src.startsWith('/')
-          ? path.resolve(this.projectDirectoryPath.fsPath, '.' + src)
-          : path.resolve(this.fileDirectoryPath, src);
-        if (!this.isPathInsideProjectDirectory(resolvedPath)) {
+        // `/x.js` is notebook-root-relative. A relative src resolves
+        // against the note's directory first, then against each trusted
+        // root; the first candidate that is an existing file inside the
+        // notebook directory or a trusted root wins. Containment is
+        // checked per candidate (realpath, symlinks included), so a src
+        // can never mix one base's path with another base's trust.
+        const candidatePaths = src.startsWith('/')
+          ? [path.resolve(this.projectDirectoryPath.fsPath, '.' + src)]
+          : [
+              path.resolve(this.fileDirectoryPath, src),
+              ...trustedScriptRoots.map((root) => path.resolve(root, src)),
+            ];
+        const resolvedPath = candidatePaths.find(
+          (p) =>
+            isExistingFile(p) &&
+            (this.isPathInsideProjectDirectory(p) ||
+              trustedScriptRoots.some((root) =>
+                isPathInsideDirectory(root, p),
+              )),
+        );
+        if (!resolvedPath) {
           $(element).remove();
           return;
         }
@@ -2669,8 +2713,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       $('script').remove();
     }
 
-    // Return only the head content, not the full HTML structure
-    return $('head').html() || header;
+    // Return only the head content, not the full HTML structure. An
+    // empty result is valid — every tag was stripped — and must not
+    // fall back to the raw header, which would reintroduce exactly the
+    // tags that were removed above (`|| header` used to do this
+    // whenever the head ended up empty).
+    return $('head').html() ?? header;
   }
 
   /**
