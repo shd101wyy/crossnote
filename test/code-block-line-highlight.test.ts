@@ -4,7 +4,7 @@ import * as path from 'path';
 import { Notebook } from '../src/notebook/index';
 
 /**
- * {highlight=...} line-highlight bands (vscode-mpe#2378, #2403, #2404).
+ * {highlight=...} line-highlight bands (vscode-mpe#2378, #2403, #2404, #2409).
  *
  * The bands are absolutely positioned overlays whose color comes from the
  * theme (`--line-highlight-background`, which may be opaque). They stay
@@ -18,6 +18,10 @@ import { Notebook } from '../src/notebook/index';
  *    `pre[class*='language-'] > code[class*='language-']` — inherited from
  *    the upstream prism github-dark theme — never matched crossnote markup
  *    and the bands painted over the text.
+ *
+ * The overlays must also stay out of hit-testing entirely: the wrapper's
+ * box covers the full width of every line preceding a band, so a hit there
+ * used to anchor text selection on its invisible newlines (vscode-mpe#2409).
  */
 describe('code block line highlighting', () => {
   let tmp: string;
@@ -90,5 +94,32 @@ describe('code block line highlighting', () => {
       /> code \{[\s\S]*?position: relative;[\s\S]*?z-index: 1;/,
     );
     expect(codeBlock![1]).toMatch(/\.line-numbers-rows \{[\s\S]*?z-index: 1;/);
+  });
+
+  it('keeps the band overlay transparent to pointer events (vscode-mpe#2409)', () => {
+    const template = fs.readFileSync(
+      path.resolve(__dirname, '../styles/style-template.less'),
+      'utf8',
+    );
+
+    // The wrapper's box spans the full code-block width over the lines
+    // preceding each band, and its only content is the newlines that
+    // push the band down. If the wrapper can be hit, a mousedown over
+    // those lines anchors the selection on its invisible newlines and
+    // the code text cannot be selected. `pointer-events: none` on the
+    // wrapper is inherited by the band, so the whole overlay stays out
+    // of hit-testing in every theme and export path — including the
+    // z-index layering being overridden or absent.
+    const wrapperBlock = template.match(
+      /\.line-highlight-wrapper \{([\s\S]*?)\n {6}\}/,
+    );
+    expect(wrapperBlock).toBeTruthy();
+    expect(wrapperBlock![1]).toMatch(/pointer-events: none;/);
+
+    // The band must not re-declare it — the wrapper's inherited value is
+    // the single source (no prism theme declares a competing value).
+    const bandBlock = template.match(/\.line-highlight \{([\s\S]*?)\n {6}\}/);
+    expect(bandBlock).toBeTruthy();
+    expect(bandBlock![1]).not.toMatch(/pointer-events/);
   });
 });

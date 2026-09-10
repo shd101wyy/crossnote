@@ -118,6 +118,15 @@
       top: 0;
       left: 0;
       background-color: transparent;
+      // The wrapper is structural: its box spans the full width over the
+      // lines preceding the band, and its only content is the newlines
+      // that push the band down. It must never be a hit target — before,
+      // a mousedown on those lines anchored the selection on the
+      // wrapper's invisible newlines, so the code text there could not
+      // be selected at all (vscode-mpe#2409). `pointer-events` is
+      // inherited, so this also covers the band in every theme and
+      // export path.
+      pointer-events: none;
       display: block;
       width: 100%;
     }
@@ -139,7 +148,6 @@
           hsla(24, 20%, 50%, 0)
         )
       );
-      pointer-events: none;
       line-height: inherit;
       white-space: pre;
     }
