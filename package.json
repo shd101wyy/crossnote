@@ -22,7 +22,11 @@
   "main": "out/cjs/index.cjs",
   "module": "out/esm/index.mjs",
   "types": "out/types/src/index.d.ts",
+  "bin": {
+    "crossnote": "bin/crossnote.js"
+  },
   "files": [
+    "bin",
     "docs",
     "out"
   ],

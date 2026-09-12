@@ -811,6 +811,12 @@ export interface WebviewConfig extends Partial<NotebookConfig> {
    * Passed via <meta data-config> so it survives webview reloads.
    */
   locale?: string;
+  /**
+   * Set by the standalone `crossnote serve` HTTP server. The preview runs in
+   * a plain browser iframe (no VS Code host), so the webview hides
+   * host-dependent UI (open-in-browser, exports, image helper, …).
+   */
+  isServerApp?: boolean;
 }
 
 export enum PreviewMode {
