@@ -284,6 +284,11 @@ export default function App() {
       switch (data.command) {
         case 'webviewFinishLoading': {
           touchRecents(file);
+          // The initial data-html is only a first paint — the webview binds
+          // click events (links, task checkboxes) when the first updateHtml
+          // arrives, exactly like the VS Code extension's updateMarkdown call
+          // in its own webviewFinishLoading handler.
+          void sendCommand(file, 'refreshPreview', [file]);
           return;
         }
         case 'clickTagA': {

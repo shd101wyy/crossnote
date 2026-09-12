@@ -323,6 +323,66 @@ export async function startServeServer(
         }
         return;
       }
+      case 'runCodeChunk': {
+        // args: [sourceUri, codeChunkId]
+        const file = assertFileWithinRoot(String(body['file'] ?? ''));
+        const codeChunkId = typeof args[1] === 'string' ? args[1] : null;
+        if (file && codeChunkId) {
+          const engine = notebook.getNoteMarkdownEngine(file);
+          await engine.runCodeChunk(codeChunkId);
+          await renderFile(file, { triggeredBySave: true });
+        }
+        return;
+      }
+      case 'runAllCodeChunks': {
+        const file = assertFileWithinRoot(String(body['file'] ?? ''));
+        if (file) {
+          const engine = notebook.getNoteMarkdownEngine(file);
+          await engine.runCodeChunks();
+          await renderFile(file, { triggeredBySave: true });
+        }
+        return;
+      }
+      case 'cacheCodeChunkResult': {
+        // args: [sourceUri, codeChunkId, result]
+        const file = assertFileWithinRoot(String(body['file'] ?? ''));
+        const codeChunkId = typeof args[1] === 'string' ? args[1] : null;
+        const result = typeof args[2] === 'string' ? args[2] : null;
+        if (file && codeChunkId && result !== null) {
+          const engine = notebook.getNoteMarkdownEngine(file);
+          engine.cacheCodeChunkResult(codeChunkId, result);
+        }
+        return;
+      }
+      case 'clickTaskListCheckbox': {
+        // args: [sourceUri, dataLine] — toggle `[ ]` ↔ `[x]` in the file.
+        const sourceUri = assertFileWithinRoot(String(args[0] ?? ''));
+        const dataLine = typeof args[1] === 'number' ? args[1] : null;
+        if (!sourceUri || !isMarkdownFile(sourceUri) || dataLine === null) {
+          return;
+        }
+        const text = await fs.promises
+          .readFile(sourceUri, 'utf-8')
+          .catch(() => null);
+        if (text === null) {
+          return;
+        }
+        const lines = text.split('\n');
+        const line = lines[dataLine];
+        if (line === undefined) {
+          return;
+        }
+        if (line.includes('[ ]')) {
+          lines[dataLine] = line.replace('[ ]', '[x]');
+        } else if (line.match(/\[[xX]\]/)) {
+          lines[dataLine] = line.replace(/\[[xX]\]/, '[ ]');
+        } else {
+          return;
+        }
+        await fs.promises.writeFile(sourceUri, lines.join('\n'), 'utf-8');
+        await renderFile(sourceUri, { triggeredBySave: true });
+        return;
+      }
       default:
         return;
     }
