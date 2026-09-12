@@ -5,7 +5,12 @@ import { pathToFileURL } from 'url';
 import type * as vscode from 'vscode';
 import { MarkdownEngineOutput, Notebook, utility } from '../index';
 import { NotebookConfig, WebviewConfig } from '../notebook';
-import { loadServerConfig } from './config';
+import {
+  ServerConfigContext,
+  createConfigContext,
+  loadServerConfig,
+  updateServerConfigKey,
+} from './config';
 import {
   encodePathSegments,
   isMarkdownFile,
@@ -164,10 +169,13 @@ export async function startServeServer(
     return pathToFileURL(filePath).href;
   });
 
-  const serverConfig = await loadServerConfig({
+  const configContext: ServerConfigContext = await createConfigContext({
     rootDirectory,
+    vscode: options.vscode,
+    vscodeSettingsPath: options.vscodeSettingsPath,
     globalConfigDirectory: options.globalConfigDirectory,
   });
+  const serverConfig = await loadServerConfig(configContext);
   const notebook = await Notebook.init({
     notebookPath: rootDirectory,
     config: serverConfig as Partial<NotebookConfig>,
@@ -351,6 +359,44 @@ export async function startServeServer(
         if (file && codeChunkId && result !== null) {
           const engine = notebook.getNoteMarkdownEngine(file);
           engine.cacheCodeChunkResult(codeChunkId, result);
+        }
+        return;
+      }
+      case 'setPreviewTheme':
+      case 'setCodeBlockTheme':
+      case 'setRevealjsTheme': {
+        // args: [sourceUri, theme] — persist to the vscode settings or the
+        // global crossnote config, then apply and notify every client.
+        const configKey: string =
+          command === 'setPreviewTheme'
+            ? 'previewTheme'
+            : command === 'setCodeBlockTheme'
+              ? 'codeBlockTheme'
+              : 'revealjsTheme';
+        const theme = typeof args[1] === 'string' ? args[1] : null;
+        if (!theme) {
+          return;
+        }
+        try {
+          const mergedConfig = await updateServerConfigKey(
+            configContext,
+            configKey,
+            theme,
+          );
+          notebook.updateConfig(mergedConfig as Partial<NotebookConfig>);
+          notebook.clearAllNoteMarkdownEngineCaches();
+          // Styles live in each preview page's <head>, so clients reload
+          // their iframes on configChanged — same as the extension's
+          // refreshAllPreviews.
+          sse.broadcast({
+            type: 'configChanged',
+            config: notebook.config,
+          });
+        } catch (error) {
+          console.error(
+            `crossnote serve: failed to persist ${configKey}:`,
+            error,
+          );
         }
         return;
       }

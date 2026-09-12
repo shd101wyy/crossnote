@@ -395,6 +395,15 @@ export default function App() {
         );
       } else if (data.type === 'noteSaved' && data.file) {
         touchRecents(data.file);
+      } else if (data.type === 'configChanged') {
+        // Preview styles live in each iframe page's <head>; a config change
+        // (e.g. switching the preview theme) needs fresh pages. The
+        // webviewFinishLoading → refreshPreview flow rehydrates content.
+        for (const entry of framesRef.current.values()) {
+          entry.jsAndCssFiles = null;
+          entry.lastUpdate = null;
+          entry.reload?.();
+        }
       }
     };
     return () => source.close();
