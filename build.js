@@ -106,12 +106,15 @@ const webviewConfig = {
     './src/webview/preview.tsx',
     './src/webview/backlinks.tsx',
     './src/webview/graph-view.tsx',
+    './src/server-app/server-app.tsx',
   ],
   bundle: true,
   minify: true,
   platform: 'browser',
-  // outfile: './out/webview/index.js',
-  outdir: './out/webview',
+  // Entries live in src/webview and src/server-app; with an explicit outbase
+  // they land at out/webview/preview.js and out/server-app/server-app.js.
+  outbase: './src',
+  outdir: './out',
   loader: {
     '.png': 'dataurl',
     '.woff': 'dataurl',

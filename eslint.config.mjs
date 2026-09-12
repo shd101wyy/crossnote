@@ -48,7 +48,7 @@ export default tseslint.config(
 
   // Browser + React for webview files (type-aware)
   {
-    files: ['src/webview/**/*.{ts,tsx}'],
+    files: ['src/webview/**/*.{ts,tsx}', 'src/server-app/**/*.{ts,tsx}'],
     plugins: {
       react: pluginReact,
       'react-hooks': pluginReactHooks,

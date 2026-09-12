@@ -70,10 +70,34 @@ const PREVIEW_HOST_SHIM = `<script>
     };
     return api;
   };
+  document.addEventListener('keydown', function (event) {
+    var key = event.key.toLowerCase();
+    var action = null;
+    if ((event.metaKey || event.ctrlKey) && !event.altKey && key === 'p') {
+      action = 'open-file-picker';
+    } else if ((event.metaKey || event.ctrlKey) && !event.altKey && key === '\\\\') {
+      action = 'split-pane';
+    } else if (event.altKey && key === 'w') {
+      action = 'close-tab';
+    }
+    if (action) {
+      event.preventDefault();
+      window.parent.postMessage(
+        { command: '__serverAppShortcut', args: [action] },
+        window.location.origin
+      );
+    }
+  }, true);
 })();
 </script>`;
 
-const APP_SHELL_HTML = `<!DOCTYPE html>
+function appShellHTML(serverInfo: {
+  rootDirectory: string;
+  vscode: boolean;
+  url: string;
+}): string {
+  const serialized = JSON.stringify(serverInfo).replace(/</g, '\\u003c');
+  return `<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
@@ -82,10 +106,12 @@ const APP_SHELL_HTML = `<!DOCTYPE html>
     <link rel="stylesheet" href="/assets/server-app/server-app.css">
   </head>
   <body>
+    <script>window.__CROSSNOTE_SERVER__ = ${serialized};</script>
     <div id="root"></div>
     <script src="/assets/server-app/server-app.js"></script>
   </body>
 </html>`;
+}
 
 interface LastRender {
   markdown: string;
@@ -318,7 +344,13 @@ export async function startServeServer(
         (urlPath === '/' || urlPath === '/index.html')
       ) {
         response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-        response.end(APP_SHELL_HTML);
+        response.end(
+          appShellHTML({
+            rootDirectory,
+            vscode: !!options.vscode,
+            url: `http://${request.headers.host ?? `127.0.0.1:${port}`}`,
+          }),
+        );
         return;
       }
 
