@@ -27,10 +27,12 @@ import {
   createPane,
   findPane,
   mapPanes,
+  moveTab,
   openFileInPane,
   resizeSplit,
   splitPane,
 } from './types';
+import type { DropZone } from './components/LayoutView';
 
 interface FrameEntry {
   file: string;
@@ -181,6 +183,80 @@ export default function App() {
     setPickerPaneId(activePaneIdRef.current);
     setPickerOpen(true);
   }, []);
+
+  // ---- tab drag & drop -----------------------------------------------------
+  const [dragActive, setDragActive] = useState(false);
+  const dragInfoRef = useRef<{ paneId: string; tabId: string } | null>(null);
+
+  const clearDrag = useCallback(() => {
+    dragInfoRef.current = null;
+    setDragActive(false);
+  }, []);
+
+  const onTabDragStart = useCallback((paneId: string, tabId: string) => {
+    dragInfoRef.current = { paneId, tabId };
+    setDragActive(true);
+  }, []);
+
+  const onTabDragEnd = useCallback(() => {
+    clearDrag();
+  }, [clearDrag]);
+
+  const onTabDrop = useCallback(
+    (targetPaneId: string, insertionIndex: number) => {
+      const drag = dragInfoRef.current;
+      const current = layoutRef.current;
+      if (!drag || !current) {
+        clearDrag();
+        return;
+      }
+      let index = insertionIndex;
+      if (drag.paneId === targetPaneId) {
+        // The index was computed against the list that still contains the
+        // dragged tab.
+        const targetPane = findPane(current, targetPaneId);
+        const sourceIndex =
+          targetPane?.tabs.findIndex((tab) => tab.id === drag.tabId) ?? -1;
+        if (sourceIndex !== -1 && sourceIndex < insertionIndex) {
+          index -= 1;
+        }
+      }
+      setLayout(moveTab(current, drag.paneId, drag.tabId, targetPaneId, index));
+      setActivePaneId(targetPaneId);
+      clearDrag();
+    },
+    [clearDrag],
+  );
+
+  const onPaneBodyDrop = useCallback(
+    (paneId: string, zone: DropZone) => {
+      const drag = dragInfoRef.current;
+      const current = layoutRef.current;
+      if (!drag || !current) {
+        clearDrag();
+        return;
+      }
+      if (zone === 'center') {
+        setLayout(moveTab(current, drag.paneId, drag.tabId, paneId, null));
+        setActivePaneId(paneId);
+      } else {
+        const direction: 'horizontal' | 'vertical' =
+          zone === 'left' || zone === 'right' ? 'horizontal' : 'vertical';
+        const position: 'before' | 'after' =
+          zone === 'left' || zone === 'top' ? 'before' : 'after';
+        const { layout: split, newPaneId } = splitPane(
+          current,
+          paneId,
+          direction,
+          position,
+        );
+        setLayout(moveTab(split, drag.paneId, drag.tabId, newPaneId, null));
+        setActivePaneId(newPaneId);
+      }
+      clearDrag();
+    },
+    [clearDrag],
+  );
 
   // ---- iframe registry ----------------------------------------------------
   const registerFrame = useCallback(
@@ -442,6 +518,7 @@ export default function App() {
       rootDirectory: serverInfo.rootDirectory,
       vscode: serverInfo.vscode,
       recents,
+      dragActive,
       onFocusPane: (paneId: string) => setActivePaneId(paneId),
       onActivateTab: (paneId: string, tabId: string) => {
         setLayout((current) =>
@@ -472,10 +549,15 @@ export default function App() {
       registerFrame,
       onFrameVisible,
       onFrameFocus,
+      onTabDragStart,
+      onTabDragEnd,
+      onTabDrop,
+      onPaneBodyDrop,
     }),
     [
       activePaneId,
       recents,
+      dragActive,
       serverInfo.rootDirectory,
       serverInfo.vscode,
       openFile,
@@ -483,6 +565,10 @@ export default function App() {
       registerFrame,
       onFrameVisible,
       onFrameFocus,
+      onTabDragStart,
+      onTabDragEnd,
+      onTabDrop,
+      onPaneBodyDrop,
     ],
   );
 

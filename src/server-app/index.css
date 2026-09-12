@@ -560,3 +560,68 @@ button {
 .cn-zen-exit:hover {
   opacity: 1;
 }
+
+/* ---- tab drag & drop ---- */
+.cn-tab-insert {
+  width: 0;
+  align-self: stretch;
+  border-left: 2px solid var(--cn-accent);
+  margin: 4px 0;
+}
+
+.cn-tab.dragging {
+  opacity: 0.4;
+}
+
+/* Covers the pane body while a tab drag is in flight so preview iframes
+ * can't swallow the drag events. */
+.cn-drop-guard {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+}
+
+.cn-drop-hint {
+  position: absolute;
+  background: rgba(149, 194, 88, 0.14);
+  border: 1px solid rgba(149, 194, 88, 0.5);
+  border-radius: 4px;
+  pointer-events: none;
+  transition:
+    top 0.08s ease,
+    left 0.08s ease,
+    right 0.08s ease,
+    bottom 0.08s ease;
+}
+
+.cn-drop-hint-center {
+  inset: 6px;
+}
+
+.cn-drop-hint-left {
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: 42%;
+}
+
+.cn-drop-hint-right {
+  top: 6px;
+  bottom: 6px;
+  right: 6px;
+  width: 42%;
+}
+
+.cn-drop-hint-top {
+  left: 6px;
+  right: 6px;
+  top: 6px;
+  height: 42%;
+}
+
+.cn-drop-hint-bottom {
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  height: 42%;
+}

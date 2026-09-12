@@ -145,6 +145,7 @@ export function splitPane(
   node: LayoutNode,
   paneId: string,
   direction: 'horizontal' | 'vertical',
+  position: 'before' | 'after' = 'after',
 ): { layout: LayoutNode; newPaneId: string } {
   const newPane = createPane();
   // Replace the target pane with a split containing it plus the new pane.
@@ -153,17 +154,67 @@ export function splitPane(
       if (current.id !== paneId) {
         return current;
       }
+      const children =
+        position === 'after' ? [current, newPane] : [newPane, current];
       return {
         kind: 'split',
         id: createId('split'),
         direction,
         sizes: [1, 1],
-        children: [current, newPane],
+        children,
       };
     }
     return { ...current, children: current.children.map(replace) };
   };
   return { layout: replace(node), newPaneId: newPane.id };
+}
+
+/**
+ * Move a tab (keeping its id, so its preview iframe keeps scroll/diagram
+ * state) from one pane to another, optionally at a specific index.
+ */
+export function moveTab(
+  node: LayoutNode,
+  sourcePaneId: string,
+  tabId: string,
+  targetPaneId: string,
+  targetIndex: number | null,
+): LayoutNode {
+  // Remove from the source pane first (same-pane moves need the adjusted
+  // index, so capture the tab and let mapPanes do both edits in order).
+  let movedTab: Tab | null = null;
+  const withoutTab = mapPanes(node, (pane) => {
+    if (pane.id !== sourcePaneId) {
+      return pane;
+    }
+    const tab = pane.tabs.find((candidate) => candidate.id === tabId);
+    if (!tab) {
+      return pane;
+    }
+    movedTab = tab;
+    const tabs = pane.tabs.filter((candidate) => candidate.id !== tabId);
+    let activeTabId = pane.activeTabId;
+    if (activeTabId === tabId) {
+      activeTabId = tabs.length > 0 ? tabs[tabs.length - 1].id : null;
+    }
+    return { ...pane, tabs, activeTabId };
+  });
+  if (!movedTab) {
+    return node;
+  }
+  const tab = movedTab as Tab;
+  return mapPanes(withoutTab, (pane) => {
+    if (pane.id !== targetPaneId) {
+      return pane;
+    }
+    const tabs = [...pane.tabs];
+    const index =
+      targetIndex === null
+        ? tabs.length
+        : Math.max(0, Math.min(targetIndex, tabs.length));
+    tabs.splice(index, 0, tab);
+    return { ...pane, tabs, activeTabId: tab.id };
+  });
 }
 
 /**

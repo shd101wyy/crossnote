@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useContext,
   useRef,
+  useState,
   type ReactNode,
 } from 'react';
 import { LayoutNode, PaneNode, SplitNode } from '../types';
@@ -10,11 +11,15 @@ import PreviewFrame from './PreviewFrame';
 import TabStrip from './TabStrip';
 import Welcome from './Welcome';
 
+export type DropZone = 'left' | 'right' | 'top' | 'bottom' | 'center';
+
 export interface LayoutActions {
   activePaneId: string;
   rootDirectory: string;
   vscode: boolean;
   recents: string[];
+  /** A tab drag is in flight; pane bodies are covered by drop guards. */
+  dragActive: boolean;
   onFocusPane: (paneId: string) => void;
   onActivateTab: (paneId: string, tabId: string) => void;
   onCloseTab: (paneId: string, tabId: string) => void;
@@ -30,6 +35,10 @@ export interface LayoutActions {
   ) => void;
   onFrameVisible: (tabId: string) => void;
   onFrameFocus: (tabId: string) => void;
+  onTabDragStart: (paneId: string, tabId: string) => void;
+  onTabDragEnd: () => void;
+  onTabDrop: (paneId: string, insertionIndex: number) => void;
+  onPaneBodyDrop: (paneId: string, zone: DropZone) => void;
 }
 
 const LayoutActionsContext = createContext<LayoutActions | null>(null);
@@ -80,8 +89,22 @@ function PaneView({ pane }: { pane: PaneNode }): ReactNode {
         onSplit={(direction: 'horizontal' | 'vertical') =>
           actions.onSplitPane(pane.id, direction)
         }
+        onTabDragStart={(tabId: string) =>
+          actions.onTabDragStart(pane.id, tabId)
+        }
+        onTabDragEnd={actions.onTabDragEnd}
+        onTabDrop={(insertionIndex: number) =>
+          actions.onTabDrop(pane.id, insertionIndex)
+        }
       />
       <div className="cn-pane-body">
+        {actions.dragActive && (
+          <PaneDropGuard
+            paneId={pane.id}
+            empty={pane.tabs.length === 0}
+            onDrop={actions.onPaneBodyDrop}
+          />
+        )}
         {pane.tabs.length === 0 ? (
           <Welcome
             rootDirectory={actions.rootDirectory}
@@ -192,6 +215,90 @@ function SplitView({ split }: { split: SplitNode }): ReactNode {
           )}
         </React.Fragment>
       ))}
+    </div>
+  );
+}
+
+const DROP_ZONE_SIZE = 0.3;
+
+function zoneFromPoint(
+  rect: DOMRect,
+  clientX: number,
+  clientY: number,
+): DropZone {
+  const relX = (clientX - rect.left) / rect.width;
+  const relY = (clientY - rect.top) / rect.height;
+  if (relX < DROP_ZONE_SIZE) {
+    return 'left';
+  }
+  if (relX > 1 - DROP_ZONE_SIZE) {
+    return 'right';
+  }
+  if (relY < DROP_ZONE_SIZE) {
+    return 'top';
+  }
+  if (relY > 1 - DROP_ZONE_SIZE) {
+    return 'bottom';
+  }
+  return 'center';
+}
+
+/**
+ * Covers the pane body while a tab is being dragged. HTML5 drag events
+ * don't cross iframe boundaries, so without this layer a preview iframe
+ * would swallow every dragover/drop aimed at its pane.
+ */
+function PaneDropGuard({
+  paneId,
+  empty,
+  onDrop,
+}: {
+  paneId: string;
+  empty: boolean;
+  onDrop: (paneId: string, zone: DropZone) => void;
+}): ReactNode {
+  const guardRef = useRef<HTMLDivElement | null>(null);
+  const [zone, setZone] = useState<DropZone | null>(null);
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    const rect = guardRef.current?.getBoundingClientRect();
+    if (rect) {
+      setZone(zoneFromPoint(rect, event.clientX, event.clientY));
+    }
+  };
+
+  const zoneClass =
+    zone && !empty
+      ? `cn-drop-hint cn-drop-hint-${zone}`
+      : zone === 'center' || (empty && zone)
+        ? 'cn-drop-hint cn-drop-hint-center'
+        : null;
+
+  return (
+    <div
+      ref={guardRef}
+      className="cn-drop-guard"
+      onDragOver={handleDragOver}
+      onDragLeave={(event: React.DragEvent) => {
+        if (!guardRef.current?.contains(event.relatedTarget as Node)) {
+          setZone(null);
+        }
+      }}
+      onDrop={(event: React.DragEvent) => {
+        event.preventDefault();
+        const rect = guardRef.current?.getBoundingClientRect();
+        const droppedZone = rect
+          ? zoneFromPoint(rect, event.clientX, event.clientY)
+          : 'center';
+        setZone(null);
+        // An empty pane can only accept a center drop; edge zones would
+        // split a pane that has nothing to show.
+        onDrop(paneId, empty ? 'center' : droppedZone);
+      }}
+    >
+      {zoneClass && <div className={zoneClass} />}
     </div>
   );
 }
