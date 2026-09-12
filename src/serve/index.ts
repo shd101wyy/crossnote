@@ -480,8 +480,17 @@ export async function startServeServer(
             'crossnote serve: failed to build preview page:',
             error,
           );
-          response.writeHead(500, { 'content-type': 'text/plain' });
-          response.end('failed to render preview');
+          response.writeHead(404, {
+            'content-type': 'text/html; charset=utf-8',
+          });
+          response.end(
+            `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>crossnote</title></head>` +
+              `<body style="font-family: sans-serif; color: #888; padding: 48px; text-align: center;">` +
+              `<h1 style="font-weight: 300;">crossnote</h1>` +
+              `<p>Failed to render <code>${file.replace(/</g, '&lt;')}</code></p>` +
+              `<p style="font-size: 12px; color: #aaa;">${String(error).replace(/</g, '&lt;')}</p>` +
+              `</body></html>`,
+          );
         }
         return;
       }

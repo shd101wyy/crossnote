@@ -9,6 +9,7 @@ export default tseslint.config(
   {
     ignores: [
       'build.js',
+      'bin/crossnote.js',
       'gulpfile.js',
       'tailwind.config.js',
       'eslint.config.mjs',

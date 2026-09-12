@@ -1,0 +1,415 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import { mkdirSync, track } from '../../src/lib/temp';
+import { startServeServer, ServeServer } from '../../src/serve';
+
+jest.mock('less', () => ({
+  render: (
+    _input: string,
+    _options: unknown,
+    callback: (error: unknown, output: { css: string } | undefined) => void,
+  ) => {
+    callback(null, { css: '' });
+  },
+}));
+
+track();
+
+/**
+ * Minimal fake crossnote build directory: the preview template only maps
+ * asset paths to URLs, and /assets serving needs a few real files. This
+ * keeps the tests independent of the compiled out/ artifacts (jest runs
+ * before `pnpm build` in CI).
+ */
+function writeFakeBuildDirectory(root: string): void {
+  const files: Array<[string, string]> = [
+    [path.join(root, 'webview/preview.js'), '// preview webview'],
+    [path.join(root, 'webview/preview.css'), '/* preview css */'],
+    [path.join(root, 'styles/preview.css'), '/* preview base */'],
+    [path.join(root, 'styles/style-template.css'), '/* style-template */'],
+    [
+      path.join(root, 'styles/preview_theme/github-light.css'),
+      '/* preview:github-light */',
+    ],
+    [
+      path.join(root, 'styles/preview_theme/github-dark.css'),
+      '/* preview:github-dark */',
+    ],
+    [path.join(root, 'styles/prism_theme/github.css'), '/* prism:github */'],
+  ];
+  for (const [file, content] of files) {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, content);
+  }
+}
+
+function writeWorkspace(root: string): void {
+  fs.mkdirSync(path.join(root, 'notes'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'node_modules', 'some-pkg'), {
+    recursive: true,
+  });
+  fs.writeFileSync(
+    path.join(root, 'welcome.md'),
+    [
+      '# Welcome',
+      '',
+      '- [ ] a task',
+      '- [x] done task',
+      '',
+      '[other note](./notes/other.md)',
+      '',
+    ].join('\n'),
+  );
+  fs.writeFileSync(path.join(root, 'notes', 'other.md'), '# Other\n');
+  fs.writeFileSync(
+    path.join(root, 'node_modules', 'some-pkg', 'ignored.md'),
+    '# should not be listed\n',
+  );
+  fs.writeFileSync(path.join(root, 'image.png'), 'not really a png');
+}
+
+interface SSEMessage {
+  type: string;
+  file?: string;
+  payload?: Record<string, unknown>;
+}
+
+/**
+ * Subscribe to /api/events and collect messages until `predicate` matches
+ * or the timeout elapses (returns everything collected so far).
+ */
+async function waitForSSE(
+  server: ServeServer,
+  predicate: (message: SSEMessage) => boolean,
+  timeoutMs: number = 5000,
+): Promise<SSEMessage[]> {
+  const controller = new AbortController();
+  const collected: SSEMessage[] = [];
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${server.url}/api/events`, {
+      signal: controller.signal,
+    });
+    expect(response.body).toBeTruthy();
+    const reader = (response.body as ReadableStream<Uint8Array>).getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      buffer += decoder.decode(value, { stream: true });
+      let index: number;
+      while ((index = buffer.indexOf('\n\n')) !== -1) {
+        const chunk = buffer.slice(0, index);
+        buffer = buffer.slice(index + 2);
+        for (const line of chunk.split('\n')) {
+          if (line.startsWith('data: ')) {
+            const message = JSON.parse(line.slice(6)) as SSEMessage;
+            collected.push(message);
+            if (predicate(message)) {
+              controller.abort();
+              return collected;
+            }
+          }
+        }
+      }
+    }
+  } catch {
+    // Timeout / abort — fall through to whatever was collected.
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+  }
+  return collected;
+}
+
+async function postCommand(
+  server: ServeServer,
+  body: Record<string, unknown>,
+): Promise<unknown> {
+  const response = await fetch(`${server.url}/api/command`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return response.json();
+}
+
+describe('crossnote serve', () => {
+  let workspace: string;
+  let buildDirectory: string;
+  let globalConfigDirectory: string;
+  let server: ServeServer;
+
+  beforeAll(async () => {
+    track();
+    workspace = mkdirSync('crossnote-serve-workspace');
+    writeWorkspace(workspace);
+    buildDirectory = mkdirSync('crossnote-serve-build');
+    writeFakeBuildDirectory(buildDirectory);
+    globalConfigDirectory = path.join(
+      mkdirSync('crossnote-serve-global'),
+      'crossnote',
+    );
+    server = await startServeServer({
+      directory: workspace,
+      port: 0,
+      crossnoteBuildDirectory: buildDirectory,
+      globalConfigDirectory,
+    });
+  });
+
+  afterAll(async () => {
+    await server.close();
+  });
+
+  test('serves the app shell with server info', async () => {
+    const response = await fetch(`${server.url}/`);
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('window.__CROSSNOTE_SERVER__');
+    expect(html).toContain(server.rootDirectory);
+    expect(html).toContain('/assets/server-app/server-app.js');
+  });
+
+  test('serves preview pages with the unmodified webview template', async () => {
+    const file = path.join(workspace, 'welcome.md');
+    const response = await fetch(
+      `${server.url}/preview?file=${encodeURIComponent(file)}`,
+    );
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    // config meta + server-app flags (the attribute is HTML-escaped)
+    expect(html).toContain('id="crossnote-data"');
+    expect(html).toContain('isServerApp&quot;:true');
+    expect(html).toContain('sourceUri&quot;:');
+    // assets are mapped to the HTTP mounts
+    expect(html).toContain('src="/assets/webview/preview.js"');
+    expect(html).toContain(
+      'href="/assets/styles/preview_theme/github-light.css"',
+    );
+    // the iframe shim runs before the webview bundle
+    expect(html.indexOf('acquireVsCodeApi')).toBeLessThan(
+      html.indexOf('/assets/webview/preview.js'),
+    );
+    // workspace-relative links resolve through /files
+    expect(html).toContain('/files/notes/other.md');
+    // no <base> — same-document anchors must keep working
+    expect(html).not.toContain('<base');
+  });
+
+  test('rejects previews outside the served root', async () => {
+    const response = await fetch(
+      `${server.url}/preview?file=${encodeURIComponent('/etc/passwd')}`,
+    );
+    expect(response.status).toBe(400);
+  });
+
+  test('returns a friendly page for missing files', async () => {
+    const missing = path.join(workspace, 'nope.md');
+    const response = await fetch(
+      `${server.url}/preview?file=${encodeURIComponent(missing)}`,
+    );
+    expect(response.status).toBe(404);
+    expect(await response.text()).toContain('Failed to render');
+  });
+
+  test('serves build assets and workspace files, blocking traversal', async () => {
+    const asset = await fetch(`${server.url}/assets/webview/preview.js`);
+    expect(asset.status).toBe(200);
+    expect(asset.headers.get('content-type')).toContain('text/javascript');
+
+    const file = await fetch(
+      `${server.url}/files/${encodeURIComponent('notes/other.md')}`,
+    );
+    expect(file.status).toBe(200);
+
+    const traversal = await fetch(
+      `${server.url}/files/${encodeURIComponent('../../../etc/passwd')}`,
+    );
+    expect(traversal.status).toBe(403);
+  });
+
+  test('lists markdown files but skips node_modules', async () => {
+    const response = await fetch(`${server.url}/api/files`);
+    const body = (await response.json()) as {
+      files: { relativePath: string }[];
+    };
+    const paths = body.files.map((file) => file.relativePath);
+    expect(paths).toContain('welcome.md');
+    expect(paths).toContain('notes/other.md');
+    expect(paths.some((p) => p.includes('node_modules'))).toBe(false);
+  });
+
+  test('updateMarkdown writes the file and pushes updateHtml over SSE', async () => {
+    const file = path.join(workspace, 'welcome.md');
+    const newText = '# Edited\n\n- [ ] a task\n';
+    const sseDone = waitForSSE(server, (m) => m.type === 'updateHtml');
+
+    await postCommand(server, {
+      file,
+      command: 'updateMarkdown',
+      args: [file, newText],
+    });
+
+    expect(fs.readFileSync(file, 'utf-8')).toBe(newText);
+    const events = await sseDone;
+    const update = events.find(
+      (m) => m.type === 'updateHtml' && m.file === file,
+    );
+    expect(update).toBeDefined();
+    expect(String(update?.payload?.['markdown'])).toBe(newText);
+    expect(String(update?.payload?.['html'])).toContain('Edited');
+  });
+
+  test('clickTaskListCheckbox toggles the checkbox in the file', async () => {
+    const file = path.join(workspace, 'welcome.md');
+    fs.writeFileSync(file, '# Tasks\n\n- [ ] a task\n');
+
+    await postCommand(server, {
+      file,
+      command: 'clickTaskListCheckbox',
+      // data-source-line 2 is the `- [ ]` line (0-based)
+      args: [file, 2],
+    });
+    expect(fs.readFileSync(file, 'utf-8')).toContain('- [x] a task');
+
+    await postCommand(server, {
+      file,
+      command: 'clickTaskListCheckbox',
+      args: [file, 2],
+    });
+    expect(fs.readFileSync(file, 'utf-8')).toContain('- [ ] a task');
+  });
+
+  test('watcher re-renders externally changed files', async () => {
+    const file = path.join(workspace, 'notes', 'other.md');
+    const sseDone = waitForSSE(
+      server,
+      (m) =>
+        m.type === 'updateHtml' &&
+        m.file === file &&
+        String(m.payload?.['markdown']).includes('watched'),
+      8000,
+    );
+    // Two writes in quick succession also exercise the debounce.
+    fs.writeFileSync(file, '# Other\n\nwatched once\n');
+    fs.writeFileSync(file, '# Other\n\nwatched twice\n');
+    const events = await sseDone;
+    const update = events.filter((m) => m.type === 'updateHtml');
+    expect(update.length).toBeGreaterThan(0);
+    // The final render reflects the last write (out-of-order guard).
+    expect(String(update[update.length - 1]?.payload?.['markdown'])).toContain(
+      'watched twice',
+    );
+  }, 12000);
+
+  test('setPreviewTheme persists to the global config and notifies clients', async () => {
+    const file = path.join(workspace, 'welcome.md');
+    const sseDone = waitForSSE(server, (m) => m.type === 'configChanged');
+
+    await postCommand(server, {
+      file,
+      command: 'setPreviewTheme',
+      args: [file, 'github-dark.css'],
+    });
+
+    const events = await sseDone;
+    expect(events.some((m) => m.type === 'configChanged')).toBe(true);
+
+    const configScript = fs.readFileSync(
+      path.join(globalConfigDirectory, 'config.js'),
+      'utf-8',
+    );
+    expect(configScript).toContain('"previewTheme": "github-dark.css"');
+
+    const response = await fetch(`${server.url}/api/config`);
+    const body = (await response.json()) as {
+      config: { previewTheme: string };
+    };
+    expect(body.config.previewTheme).toBe('github-dark.css');
+  });
+
+  test('drops commands for files outside the root', async () => {
+    const outside = path.join(path.dirname(workspace), 'evil.md');
+    await postCommand(server, {
+      file: outside,
+      command: 'updateMarkdown',
+      args: [outside, 'nope\n'],
+    });
+    expect(fs.existsSync(outside)).toBe(false);
+  });
+});
+
+describe('crossnote serve --vscode', () => {
+  let workspace: string;
+  let settingsPath: string;
+  let server: ServeServer;
+
+  beforeAll(async () => {
+    track();
+    workspace = mkdirSync('crossnote-serve-vscode-workspace');
+    fs.writeFileSync(path.join(workspace, 'note.md'), '# Note\n');
+    const settingsDirectory = mkdirSync('crossnote-serve-vscode-settings');
+    settingsPath = path.join(settingsDirectory, 'settings.json');
+    fs.writeFileSync(
+      settingsPath,
+      [
+        '{',
+        '  // my settings',
+        '  "editor.fontSize": 14,',
+        '  "markdown-preview-enhanced.previewTheme": "github-dark.css",',
+        '  "markdown-preview-enhanced.printBackground": true,',
+        '}',
+      ].join('\n'),
+    );
+    server = await startServeServer({
+      directory: workspace,
+      port: 0,
+      vscode: true,
+      vscodeSettingsPath: settingsPath,
+      crossnoteBuildDirectory: path.dirname(settingsDirectory),
+      globalConfigDirectory: path.join(
+        mkdirSync('crossnote-serve-vscode-global'),
+        'crossnote',
+      ),
+    });
+  });
+
+  afterAll(async () => {
+    await server.close();
+  });
+
+  test('loads config from VS Code settings', async () => {
+    const response = await fetch(`${server.url}/api/config`);
+    const body = (await response.json()) as {
+      config: { previewTheme: string; printBackground: boolean };
+    };
+    expect(body.config.previewTheme).toBe('github-dark.css');
+    expect(body.config.printBackground).toBe(true);
+  });
+
+  test('theme changes edit settings.json surgically, preserving comments', async () => {
+    const file = path.join(workspace, 'note.md');
+    await postCommand(server, {
+      file,
+      command: 'setPreviewTheme',
+      args: [file, 'one-dark.css'],
+    });
+
+    const settings = fs.readFileSync(settingsPath, 'utf-8');
+    expect(settings).toContain('// my settings');
+    expect(settings).toContain('"editor.fontSize": 14,');
+    expect(settings).toContain(
+      '"markdown-preview-enhanced.previewTheme": "one-dark.css"',
+    );
+
+    const response = await fetch(`${server.url}/api/config`);
+    const body = (await response.json()) as {
+      config: { previewTheme: string };
+    };
+    expect(body.config.previewTheme).toBe('one-dark.css');
+  });
+});

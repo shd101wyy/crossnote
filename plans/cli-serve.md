@@ -1,6 +1,6 @@
 # `crossnote serve` — standalone preview server + browser app
 
-Status: **in progress** (updated 2026-09-12)
+Status: **implemented** (updated 2026-09-12; all milestones landed on `feat/serve`)
 
 ## Goal
 
@@ -128,13 +128,13 @@ daisyui + asset loaders reused). State:
 
 ## Milestones
 
-1. **M1** — CLI skeleton, HTTP server, `/preview` end-to-end in a plain browser tab.
-2. **M2** — Server app: welcome page, Ctrl+P picker, tabs, iframes + shim, message bridge,
+1. **M1** — CLI skeleton, HTTP server, `/preview` end-to-end in a plain browser tab ✅.
+2. **M2** — Server app: welcome page, Ctrl+P picker, tabs, iframes + shim, message bridge, ✅
    watcher + SSE live reload. ✅
-3. **M3** — In-preview editor write-back, code chunk run, task checkbox toggle.
-4. **M4** — Config manager + `--vscode`, theme sync, context-menu gating, iframe reload.
-5. **M5** — Split panes, tab drag & drop, zen mode, keyboard shortcuts.
-6. **M6** — Jest tests for server endpoints/watcher/config, build wiring, README +
+3. **M3** — In-preview editor write-back, code chunk run, task checkbox toggle ✅.
+4. **M4** — Config manager + `--vscode`, theme sync, context-menu gating, iframe reload ✅.
+5. **M5** — Split panes, tab drag & drop, zen mode, keyboard shortcuts ✅.
+6. **M6** — Jest tests for server endpoints/watcher/config, build wiring, README + ✅
    CHANGELOG, `pnpm check && pnpm test` green. ✅
 
 ## Deferred (not in this PR)
@@ -143,6 +143,10 @@ daisyui + asset loaders reused). State:
 - Server-side exports (htmlExport/chromeExport via puppeteer) — menu hidden for now.
 - Image helper (paste/upload) — menu hidden for now.
 - Presentation-mode scroll mapping specifics.
+- Noted during browser testing: react-contexify items don't respond to
+  synthetic (untrusted) events, so the in-preview editor couldn't be driven
+  by automation — its save path (`updateMarkdown`) is covered by tests
+  instead.
 
 ## Dev notes
 
