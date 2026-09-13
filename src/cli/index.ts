@@ -22,6 +22,14 @@ Options:
   --vscode-settings <path>
                     Explicit path to the VS Code user settings.json
                     (auto-detected by default).
+  --build-dir <path>
+                    Directory containing webview/, styles/ and dependencies/
+                    (default: the build output next to this CLI bundle). Host
+                    applications that bundle the CLI elsewhere pass their own
+                    copy here.
+  --json            Print one JSON line on stdout when the server is up
+                    ({"event":"listening",...}) instead of the human-readable
+                    block — for hosts that spawn this CLI.
   -h, --help        Show this help.
 
 Examples:
@@ -37,9 +45,11 @@ interface ParsedServeArgs {
   host?: string;
   vscode?: boolean;
   vscodeSettingsPath?: string;
+  buildDirectory?: string;
+  json?: boolean;
 }
 
-function parseServeArgs(argv: string[]): ParsedServeArgs | null {
+export function parseServeArgs(argv: string[]): ParsedServeArgs | null {
   const parsed: ParsedServeArgs = {
     directories: [],
   };
@@ -83,6 +93,21 @@ function parseServeArgs(argv: string[]): ParsedServeArgs | null {
         i += 2;
         break;
       }
+      case '--build-dir': {
+        const value = argv[i + 1];
+        if (!value) {
+          console.error('Missing value for --build-dir');
+          return null;
+        }
+        // Kept raw here; startServeServer resolves it against the cwd.
+        parsed.buildDirectory = value;
+        i += 2;
+        break;
+      }
+      case '--json':
+        parsed.json = true;
+        i += 1;
+        break;
       case '--help':
       case '-h':
         return null;
@@ -125,22 +150,39 @@ async function serve(argv: string[]): Promise<void> {
     vscode: parsed.vscode,
     vscodeSettingsPath: parsed.vscodeSettingsPath,
     // The CLI bundle lives in <package>/out/cli, so the build directory with
-    // webview/, dependencies/ and styles/ is one level up.
-    crossnoteBuildDirectory: path.resolve(__dirname, '../'),
+    // webview/, dependencies/ and styles/ is one level up unless a host that
+    // bundles the CLI elsewhere passes its own copy via --build-dir.
+    crossnoteBuildDirectory:
+      parsed.buildDirectory ?? path.resolve(__dirname, '../'),
   });
 
-  console.log(`crossnote serve`);
-  for (const root of server.rootDirectories) {
-    console.log(`  root:    ${root}`);
+  if (parsed.json) {
+    console.log(
+      JSON.stringify({
+        event: 'listening',
+        url: server.url,
+        port: server.port,
+        host: server.host,
+        rootDirectories: server.rootDirectories,
+        vscode: !!parsed.vscode,
+      }),
+    );
+  } else {
+    console.log(`crossnote serve`);
+    for (const root of server.rootDirectories) {
+      console.log(`  root:    ${root}`);
+    }
+    console.log(
+      `  config: ${parsed.vscode ? 'vscode + global + workspace' : 'global + workspace'}`,
+    );
+    console.log(`  app:     ${server.url}`);
+    console.log(`  (press Ctrl+C to stop)`);
   }
-  console.log(
-    `  config: ${parsed.vscode ? 'vscode + global + workspace' : 'global + workspace'}`,
-  );
-  console.log(`  app:     ${server.url}`);
-  console.log(`  (press Ctrl+C to stop)`);
 
   const shutdown = () => {
-    console.log('\nshutting down…');
+    if (!parsed.json) {
+      console.log('\nshutting down…');
+    }
     void server.close().then(() => process.exit(0));
     setTimeout(() => process.exit(0), 2000).unref();
   };
@@ -148,7 +190,7 @@ async function serve(argv: string[]): Promise<void> {
   process.on('SIGTERM', shutdown);
 }
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
   const [command, ...rest] = process.argv.slice(2);
   switch (command) {
     case 'serve':
@@ -168,7 +210,12 @@ async function main(): Promise<void> {
   }
 }
 
-void main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+// Run only when executed directly (the bundled bin), not on import — the
+// vscode-markdown-preview-enhanced extension bundles this module for its
+// "start crossnote server" command and drives it via argv.
+if (require.main === module) {
+  void main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}
