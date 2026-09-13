@@ -2,10 +2,13 @@ export interface MarkdownFileInfo {
   relativePath: string;
   absolutePath: string;
   mtimeMs: number;
+  /** The served root this file belongs to (multi-root support). */
+  rootPath?: string;
 }
 
 export interface ServerInfo {
-  rootDirectory: string;
+  /** All served roots, in the order they were given. */
+  rootDirectories: string[];
   vscode: boolean;
   url: string;
 }
@@ -19,11 +22,23 @@ declare global {
 export function getServerInfo(): ServerInfo {
   return (
     window.__CROSSNOTE_SERVER__ ?? {
-      rootDirectory: '',
+      rootDirectories: [],
       vscode: false,
       url: window.location.origin,
     }
   );
+}
+
+/** Index of the served root containing `filePath`, or -1. */
+export function rootContaining(
+  rootDirectories: string[],
+  filePath: string,
+): number {
+  const normalized = filePath.replace(/\\/g, '/');
+  return rootDirectories.findIndex((root) => {
+    const cleanRoot = root.replace(/\/+$/, '');
+    return normalized === cleanRoot || normalized.startsWith(cleanRoot + '/');
+  });
 }
 
 export async function fetchFiles(): Promise<MarkdownFileInfo[]> {
@@ -85,17 +100,23 @@ function normalize(absolutePath: string): string {
 /**
  * Resolve an href from a markdown link (as sent by the webview's
  * `clickTagA`, already percent-decoded) to an absolute file path. Absolute
- * hrefs are relative to the served root, like crossnote's own
- * `resolveFilePath`.
+ * hrefs (`/...`) are relative to the root that contains the source file —
+ * matching crossnote's own `resolveFilePath`, which anchors them to the
+ * file's project directory.
  */
 export function resolveHref(
-  rootDirectory: string,
+  rootDirectories: string[],
   sourceFile: string,
   href: string,
 ): string {
   const cleanHref = href.split('#')[0].split('?')[0];
   if (cleanHref.startsWith('/')) {
-    return normalize(rootDirectory + '/' + cleanHref);
+    const sourceRootIndex = rootContaining(rootDirectories, sourceFile);
+    const base =
+      sourceRootIndex === -1
+        ? (rootDirectories[0] ?? '')
+        : rootDirectories[sourceRootIndex];
+    return normalize(base + '/' + cleanHref);
   }
   return normalize(dirname(sourceFile) + '/' + cleanHref);
 }
@@ -106,23 +127,26 @@ export function isMarkdownPath(filePath: string): boolean {
 
 /**
  * URL for a workspace file under the `/files/` mount. The route maps the
- * URL path relative to the served root, so absolute paths are rebased first.
- * Returns null for paths outside the root.
+ * URL path relative to the containing served root; with several roots the
+ * `?root=` hint pins the mount (the server's URL mapper does the same).
+ * Returns null for paths outside every root.
  */
 export function filePathToFilesUrl(
-  rootDirectory: string,
+  rootDirectories: string[],
   absolutePath: string,
 ): string | null {
-  const root = rootDirectory.replace(/\/+$/, '');
-  if (absolutePath !== root && !absolutePath.startsWith(root + '/')) {
+  const rootIndex = rootContaining(rootDirectories, absolutePath);
+  if (rootIndex === -1) {
     return null;
   }
+  const root = rootDirectories[rootIndex].replace(/\/+$/, '');
   const relative = absolutePath.slice(root.length);
   const encoded = relative
     .split('/')
     .map((segment) => encodeURIComponent(segment))
     .join('/');
-  return `/files${encoded}`;
+  const rootHint = rootDirectories.length > 1 ? `?root=${rootIndex}` : '';
+  return `/files${encoded}${rootHint}`;
 }
 
 export interface WebviewCommandMessage {

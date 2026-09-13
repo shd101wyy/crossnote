@@ -625,3 +625,7 @@ button {
   bottom: 6px;
   height: 42%;
 }
+
+.cn-titlebar-count {
+  color: var(--cn-accent);
+}

@@ -18,12 +18,16 @@ import {
   listMarkdownFiles,
 } from './markdown-files';
 import { SSEHub } from './sse';
-import { serveFileFromRoot } from './static';
+import { resolveMountedFile, serveFileFromPath } from './static';
 import { MarkdownWatcher } from './watcher';
 
 export interface ServeOptions {
-  /** Absolute path of the directory to serve. */
-  directory: string;
+  /**
+   * Absolute paths of the directories to serve — like a VS Code multi-root
+   * workspace, each directory keeps its own `.crossnote` config and its own
+   * Notebook, while the global config layer is shared.
+   */
+  directories: string[];
   /** Explicit port; `0` picks a free one. Default `3000`. */
   port?: number;
   /** Default `127.0.0.1`. */
@@ -42,6 +46,9 @@ export interface ServeServer {
   url: string;
   port: number;
   host: string;
+  /** All served roots, in the order they were given. */
+  rootDirectories: string[];
+  /** First served root (single-directory convenience). */
   rootDirectory: string;
   close(): Promise<void>;
 }
@@ -97,7 +104,7 @@ const PREVIEW_HOST_SHIM = `<script>
 </script>`;
 
 function appShellHTML(serverInfo: {
-  rootDirectory: string;
+  rootDirectories: string[];
   vscode: boolean;
   url: string;
 }): string {
@@ -129,19 +136,28 @@ interface LastRender {
 /**
  * Start the crossnote standalone preview server.
  *
- * The server keeps one {@link Notebook} for the served directory and renders
- * markdown through the regular `MarkdownEngine`, exactly like the VS Code
- * extension does. Previews are served at `/preview?file=…` as full webview
- * pages (same React preview, unmodified) and updated live over SSE.
+ * The server keeps one {@link Notebook} per served directory (like a VS Code
+ * multi-root workspace: each folder owns its `.crossnote` config, the global
+ * config layer is shared) and renders markdown through the regular
+ * `MarkdownEngine`, exactly like the VS Code extension does. Previews are
+ * served at `/preview?file=…` as full webview pages (same React preview,
+ * unmodified) and updated live over SSE.
  */
 export async function startServeServer(
   options: ServeOptions,
 ): Promise<ServeServer> {
-  const rootDirectory = path.resolve(options.directory);
-  const rootStat = await fs.promises.stat(rootDirectory);
-  if (!rootStat.isDirectory()) {
-    throw new Error(`Not a directory: ${rootDirectory}`);
+  const rootDirectories: string[] = [];
+  for (const directory of options.directories) {
+    const resolved = path.resolve(directory);
+    const stat = await fs.promises.stat(resolved).catch(() => null);
+    if (!stat?.isDirectory()) {
+      throw new Error(`Not a directory: ${resolved}`);
+    }
+    if (!rootDirectories.includes(resolved)) {
+      rootDirectories.push(resolved);
+    }
   }
+  const rootDirectory = rootDirectories[0];
 
   const buildDirectory = path.resolve(
     options.crossnoteBuildDirectory ?? utility.getCrossnoteBuildDirectory(),
@@ -159,27 +175,52 @@ export async function startServeServer(
         .join('/');
       return `/assets/${encodePathSegments(relativePath)}`;
     }
-    if (isPathWithinRoot(rootDirectory, filePath)) {
-      const relativePath = path
-        .relative(rootDirectory, filePath)
-        .split(path.sep)
-        .join('/');
-      return `/files/${encodePathSegments(relativePath)}`;
+    for (let index = 0; index < rootDirectories.length; index++) {
+      if (isPathWithinRoot(rootDirectories[index], filePath)) {
+        const relativePath = path
+          .relative(rootDirectories[index], filePath)
+          .split(path.sep)
+          .join('/');
+        // With several roots the same relative path may exist in more than
+        // one of them; `?root=` pins the mount for /files resolution.
+        const rootHint = rootDirectories.length > 1 ? `?root=${index}` : '';
+        return `/files/${encodePathSegments(relativePath)}${rootHint}`;
+      }
     }
     return pathToFileURL(filePath).href;
   });
 
-  const configContext: ServerConfigContext = await createConfigContext({
-    rootDirectory,
-    vscode: options.vscode,
-    vscodeSettingsPath: options.vscodeSettingsPath,
-    globalConfigDirectory: options.globalConfigDirectory,
-  });
-  const serverConfig = await loadServerConfig(configContext);
-  const notebook = await Notebook.init({
-    notebookPath: rootDirectory,
-    config: serverConfig as Partial<NotebookConfig>,
-  });
+  // One config context + Notebook per root, sharing the global config layer.
+  const configContexts: ServerConfigContext[] = await Promise.all(
+    rootDirectories.map((root) =>
+      createConfigContext({
+        rootDirectory: root,
+        vscode: options.vscode,
+        vscodeSettingsPath: options.vscodeSettingsPath,
+        globalConfigDirectory: options.globalConfigDirectory,
+      }),
+    ),
+  );
+  const notebooks: Notebook[] = await Promise.all(
+    configContexts.map(async (context) =>
+      Notebook.init({
+        notebookPath: context.rootDirectory,
+        config: (await loadServerConfig(context)) as Partial<NotebookConfig>,
+      }),
+    ),
+  );
+
+  function rootIndexOf(absolutePath: string): number {
+    const resolved = path.resolve(absolutePath);
+    return rootDirectories.findIndex((root) =>
+      isPathWithinRoot(root, resolved),
+    );
+  }
+
+  function notebookForFile(absolutePath: string): Notebook | null {
+    const index = rootIndexOf(absolutePath);
+    return index === -1 ? null : notebooks[index];
+  }
 
   const sse = new SSEHub();
   const renderTokens = new Map<string, number>();
@@ -192,6 +233,10 @@ export async function startServeServer(
     const token = (renderTokens.get(absolutePath) ?? 0) + 1;
     renderTokens.set(absolutePath, token);
     try {
+      const notebook = notebookForFile(absolutePath);
+      if (!notebook) {
+        return;
+      }
       const text = await fs.promises.readFile(absolutePath, 'utf-8');
       const engine = notebook.getNoteMarkdownEngine(absolutePath);
       const output: MarkdownEngineOutput = await engine.parseMD(text, {
@@ -236,6 +281,10 @@ export async function startServeServer(
   }
 
   async function renderPreviewPage(absolutePath: string): Promise<string> {
+    const notebook = notebookForFile(absolutePath);
+    if (!notebook) {
+      throw new Error('file is outside the served directories');
+    }
     const text = await fs.promises.readFile(absolutePath, 'utf-8');
     const engine = notebook.getNoteMarkdownEngine(absolutePath);
     return engine.generateHTMLTemplateForPreview({
@@ -255,12 +304,9 @@ export async function startServeServer(
     });
   }
 
-  function assertFileWithinRoot(absolutePath: string): string | null {
+  function assertFileWithinRoots(absolutePath: string): string | null {
     const resolved = path.resolve(absolutePath);
-    if (!isPathWithinRoot(rootDirectory, resolved)) {
-      return null;
-    }
-    return resolved;
+    return rootIndexOf(resolved) === -1 ? null : resolved;
   }
 
   async function readJSONBody(
@@ -302,7 +348,7 @@ export async function startServeServer(
     switch (command) {
       case 'updateMarkdown': {
         // args: [sourceUri, text]
-        const sourceUri = assertFileWithinRoot(String(args[0] ?? ''));
+        const sourceUri = assertFileWithinRoots(String(args[0] ?? ''));
         const text = typeof args[1] === 'string' ? args[1] : null;
         if (!sourceUri || !isMarkdownFile(sourceUri) || text === null) {
           return;
@@ -325,7 +371,7 @@ export async function startServeServer(
         return;
       }
       case 'refreshPreview': {
-        const file = assertFileWithinRoot(String(body['file'] ?? ''));
+        const file = assertFileWithinRoots(String(body['file'] ?? ''));
         if (file) {
           await renderFile(file);
         }
@@ -333,19 +379,27 @@ export async function startServeServer(
       }
       case 'runCodeChunk': {
         // args: [sourceUri, codeChunkId]
-        const file = assertFileWithinRoot(String(body['file'] ?? ''));
+        const file = assertFileWithinRoots(String(body['file'] ?? ''));
         const codeChunkId = typeof args[1] === 'string' ? args[1] : null;
         if (file && codeChunkId) {
-          const engine = notebook.getNoteMarkdownEngine(file);
+          const fileNotebook = notebookForFile(file);
+          if (!fileNotebook) {
+            return;
+          }
+          const engine = fileNotebook.getNoteMarkdownEngine(file);
           await engine.runCodeChunk(codeChunkId);
           await renderFile(file, { triggeredBySave: true });
         }
         return;
       }
       case 'runAllCodeChunks': {
-        const file = assertFileWithinRoot(String(body['file'] ?? ''));
+        const file = assertFileWithinRoots(String(body['file'] ?? ''));
         if (file) {
-          const engine = notebook.getNoteMarkdownEngine(file);
+          const fileNotebook = notebookForFile(file);
+          if (!fileNotebook) {
+            return;
+          }
+          const engine = fileNotebook.getNoteMarkdownEngine(file);
           await engine.runCodeChunks();
           await renderFile(file, { triggeredBySave: true });
         }
@@ -353,12 +407,14 @@ export async function startServeServer(
       }
       case 'cacheCodeChunkResult': {
         // args: [sourceUri, codeChunkId, result]
-        const file = assertFileWithinRoot(String(body['file'] ?? ''));
+        const file = assertFileWithinRoots(String(body['file'] ?? ''));
         const codeChunkId = typeof args[1] === 'string' ? args[1] : null;
         const result = typeof args[2] === 'string' ? args[2] : null;
         if (file && codeChunkId && result !== null) {
-          const engine = notebook.getNoteMarkdownEngine(file);
-          engine.cacheCodeChunkResult(codeChunkId, result);
+          const fileNotebook = notebookForFile(file);
+          fileNotebook
+            ?.getNoteMarkdownEngine(file)
+            .cacheCodeChunkResult(codeChunkId, result);
         }
         return;
       }
@@ -378,19 +434,25 @@ export async function startServeServer(
           return;
         }
         try {
-          const mergedConfig = await updateServerConfigKey(
-            configContext,
-            configKey,
-            theme,
+          await updateServerConfigKey(configContexts[0], configKey, theme);
+          // The write went to a shared layer (vscode settings or the global
+          // config), so re-merge and apply for every root. A workspace
+          // `.crossnote` override keeps winning where present.
+          await Promise.all(
+            configContexts.map(async (context, index) => {
+              const mergedConfig = (await loadServerConfig(
+                context,
+              )) as Partial<NotebookConfig>;
+              notebooks[index].updateConfig(mergedConfig);
+              notebooks[index].clearAllNoteMarkdownEngineCaches();
+            }),
           );
-          notebook.updateConfig(mergedConfig as Partial<NotebookConfig>);
-          notebook.clearAllNoteMarkdownEngineCaches();
           // Styles live in each preview page's <head>, so clients reload
           // their iframes on configChanged — same as the extension's
           // refreshAllPreviews.
           sse.broadcast({
             type: 'configChanged',
-            config: notebook.config,
+            configs: notebooks.map((notebook) => notebook.config),
           });
         } catch (error) {
           console.error(
@@ -402,7 +464,7 @@ export async function startServeServer(
       }
       case 'clickTaskListCheckbox': {
         // args: [sourceUri, dataLine] — toggle `[ ]` ↔ `[x]` in the file.
-        const sourceUri = assertFileWithinRoot(String(args[0] ?? ''));
+        const sourceUri = assertFileWithinRoots(String(args[0] ?? ''));
         const dataLine = typeof args[1] === 'number' ? args[1] : null;
         if (!sourceUri || !isMarkdownFile(sourceUri) || dataLine === null) {
           return;
@@ -452,7 +514,7 @@ export async function startServeServer(
         response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
         response.end(
           appShellHTML({
-            rootDirectory,
+            rootDirectories,
             vscode: !!options.vscode,
             url: `http://${request.headers.host ?? `127.0.0.1:${port}`}`,
           }),
@@ -461,7 +523,7 @@ export async function startServeServer(
       }
 
       if (request.method === 'GET' && urlPath === '/preview') {
-        const file = assertFileWithinRoot(
+        const file = assertFileWithinRoots(
           requestUrl.searchParams.get('file') ?? '/',
         );
         if (!file || !isMarkdownFile(file)) {
@@ -496,12 +558,40 @@ export async function startServeServer(
       }
 
       if (request.method === 'GET' && urlPath.startsWith('/assets/')) {
-        serveFileFromRoot(response, buildDirectory, '/assets', urlPath);
+        const asset = resolveMountedFile(
+          [buildDirectory],
+          '/assets',
+          urlPath,
+          null,
+        );
+        if (asset) {
+          serveFileFromPath(response, asset);
+        } else {
+          response.writeHead(404, { 'content-type': 'text/plain' });
+          response.end('not found');
+        }
         return;
       }
 
       if (request.method === 'GET' && urlPath.startsWith('/files/')) {
-        serveFileFromRoot(response, rootDirectory, '/files', urlPath);
+        // `?root=` pins the mount when several roots are served (the URL
+        // mapper appends it in multi-root mode); without it every root is
+        // tried in order.
+        const rootParam = requestUrl.searchParams.get('root');
+        const preferredRoot =
+          rootParam === null ? null : parseInt(rootParam, 10);
+        const file = resolveMountedFile(
+          rootDirectories,
+          '/files',
+          urlPath,
+          Number.isInteger(preferredRoot) ? preferredRoot : null,
+        );
+        if (file) {
+          serveFileFromPath(response, file);
+        } else {
+          response.writeHead(404, { 'content-type': 'text/plain' });
+          response.end('not found');
+        }
         return;
       }
 
@@ -511,13 +601,28 @@ export async function startServeServer(
       }
 
       if (request.method === 'GET' && urlPath === '/api/files') {
-        const files = await listMarkdownFiles(rootDirectory);
+        const perRoot = await Promise.all(
+          rootDirectories.map(async (root) => {
+            const files = await listMarkdownFiles(root);
+            return files.map((file) => ({ ...file, rootPath: root }));
+          }),
+        );
+        const files = perRoot
+          .flat()
+          .sort(
+            (a, b) =>
+              a.relativePath.localeCompare(b.relativePath) ||
+              a.rootPath.localeCompare(b.rootPath),
+          );
         sendJSON(response, 200, { files });
         return;
       }
 
       if (request.method === 'GET' && urlPath === '/api/config') {
-        sendJSON(response, 200, { config: notebook.config });
+        sendJSON(response, 200, {
+          config: notebooks[0].config,
+          configs: notebooks.map((notebook) => notebook.config),
+        });
         return;
       }
 
@@ -553,7 +658,10 @@ export async function startServeServer(
   const requestedPort = options.port ?? 3000;
   const port = await listenWithFallback(server, host, requestedPort);
 
-  const watcher = new MarkdownWatcher(rootDirectory, (change) => {
+  const onWatchChange = (change: {
+    absolutePath: string;
+    type: 'changed' | 'deleted';
+  }) => {
     if (change.type === 'deleted') {
       lastRenderByFile.delete(change.absolutePath);
       sse.broadcast({
@@ -563,16 +671,20 @@ export async function startServeServer(
     } else {
       void renderFile(change.absolutePath);
     }
-  });
-  await watcher.start();
+  };
+  const watchers = rootDirectories.map(
+    (root) => new MarkdownWatcher(root, onWatchChange),
+  );
+  await Promise.all(watchers.map((watcher) => watcher.start()));
 
   return {
     url: `http://${host}:${port}`,
     port,
     host,
+    rootDirectories,
     rootDirectory,
     close: async () => {
-      watcher.close();
+      watchers.forEach((watcher) => watcher.close());
       sse.dispose();
       await new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve())),

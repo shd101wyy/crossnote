@@ -36,6 +36,8 @@ export interface MarkdownFileInfo {
   /** Absolute path on disk (used as the tab/preview identity). */
   absolutePath: string;
   mtimeMs: number;
+  /** The served root this file belongs to (set by `/api/files`). */
+  rootPath?: string;
 }
 
 /**

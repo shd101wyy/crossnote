@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { MarkdownFileInfo, fetchFiles } from '../lib/api';
+import { MarkdownFileInfo, basename, fetchFiles } from '../lib/api';
 import { indexFiles, rankFiles } from '../lib/fuzzy';
 
 export interface FilePickerProps {
   open: boolean;
   recents: string[];
+  /** Served roots; with several, entries are prefixed by folder name. */
+  rootDirectories: string[];
   onClose: () => void;
   onOpenFile: (file: string) => void;
 }
@@ -18,6 +20,7 @@ const MAX_RESULTS = 60;
 export default function FilePicker({
   open,
   recents,
+  rootDirectories,
   onClose,
   onOpenFile,
 }: FilePickerProps) {
@@ -49,7 +52,21 @@ export default function FilePicker({
     };
   }, [open]);
 
-  const indexed = useMemo(() => indexFiles(files), [files]);
+  // With several served roots the same filename may exist in more than one
+  // of them — prefix the display (and search) path with the folder name.
+  const multiRoot = rootDirectories.length > 1;
+  const displayFiles = useMemo(
+    () =>
+      files.map((file) => ({
+        absolutePath: file.absolutePath,
+        relativePath: multiRoot
+          ? `${basename(file.rootPath ?? '')}/${file.relativePath}`
+          : file.relativePath,
+      })),
+    [files, multiRoot],
+  );
+
+  const indexed = useMemo(() => indexFiles(displayFiles), [displayFiles]);
 
   const results = useMemo(() => {
     const ranked = rankFiles(query, indexed);
@@ -57,15 +74,20 @@ export default function FilePicker({
       return ranked.slice(0, MAX_RESULTS);
     }
     // Empty query: recents first, then most recently modified.
+    const displayByPath = new Map(
+      displayFiles.map((file) => [file.absolutePath, file]),
+    );
     const recentsSet = new Set(recents);
     const byRecency = [...recents]
-      .map((file) => files.find((candidate) => candidate.absolutePath === file))
-      .filter((file): file is MarkdownFileInfo => !!file);
+      .map((file) => displayByPath.get(file))
+      .filter((file): file is NonNullable<typeof file> => !!file);
     const rest = files
       .filter((file) => !recentsSet.has(file.absolutePath))
-      .sort((a, b) => b.mtimeMs - a.mtimeMs);
+      .sort((a, b) => b.mtimeMs - a.mtimeMs)
+      .map((file) => displayByPath.get(file.absolutePath))
+      .filter((file): file is NonNullable<typeof file> => !!file);
     return [...byRecency, ...rest].slice(0, MAX_RESULTS);
-  }, [query, indexed, files, recents]);
+  }, [query, indexed, displayFiles, files, recents]);
 
   useEffect(() => {
     setSelectedIndex((index) =>

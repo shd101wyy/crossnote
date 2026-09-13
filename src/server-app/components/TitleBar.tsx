@@ -2,13 +2,13 @@ import React from 'react';
 import { basename } from '../lib/api';
 
 export interface TitleBarProps {
-  rootDirectory: string;
+  rootDirectories: string[];
   vscode: boolean;
   onOpenPicker: () => void;
 }
 
 export default function TitleBar({
-  rootDirectory,
+  rootDirectories,
   vscode,
   onOpenPicker,
 }: TitleBarProps) {
@@ -32,8 +32,16 @@ export default function TitleBar({
         <span className="cn-titlebar-sep" aria-hidden="true">
           /
         </span>
-        <span className="cn-titlebar-root" title={rootDirectory}>
-          {basename(rootDirectory) || rootDirectory}
+        <span className="cn-titlebar-root" title={rootDirectories.join('\n')}>
+          {basename(rootDirectories[0] ?? '') ||
+            rootDirectories[0] ||
+            'no folder'}
+          {rootDirectories.length > 1 && (
+            <span className="cn-titlebar-count">
+              {' '}
+              +{rootDirectories.length - 1}
+            </span>
+          )}
         </span>
         {vscode && (
           <span

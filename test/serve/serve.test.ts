@@ -154,7 +154,7 @@ describe('crossnote serve', () => {
       'crossnote',
     );
     server = await startServeServer({
-      directory: workspace,
+      directories: [workspace],
       port: 0,
       crossnoteBuildDirectory: buildDirectory,
       globalConfigDirectory,
@@ -229,7 +229,9 @@ describe('crossnote serve', () => {
     const traversal = await fetch(
       `${server.url}/files/${encodeURIComponent('../../../etc/passwd')}`,
     );
-    expect(traversal.status).toBe(403);
+    // The resolver refuses paths escaping every served root before any
+    // filesystem access, so the request just 404s.
+    expect(traversal.status).toBe(404);
   });
 
   test('lists markdown files but skips node_modules', async () => {
@@ -366,7 +368,7 @@ describe('crossnote serve --vscode', () => {
       ].join('\n'),
     );
     server = await startServeServer({
-      directory: workspace,
+      directories: [workspace],
       port: 0,
       vscode: true,
       vscodeSettingsPath: settingsPath,
@@ -411,5 +413,135 @@ describe('crossnote serve --vscode', () => {
       config: { previewTheme: string };
     };
     expect(body.config.previewTheme).toBe('one-dark.css');
+  });
+});
+
+describe('crossnote serve with multiple directories', () => {
+  let rootA: string;
+  let rootB: string;
+  let server: ServeServer;
+
+  beforeAll(async () => {
+    track();
+    rootA = mkdirSync('crossnote-serve-multi-a');
+    rootB = mkdirSync('crossnote-serve-multi-b');
+    fs.writeFileSync(
+      path.join(rootA, 'from-a.md'),
+      '# From A\n\n![shared](./pic.png)\n',
+    );
+    fs.mkdirSync(path.join(rootA, 'sub'), { recursive: true });
+    fs.writeFileSync(
+      path.join(rootA, 'sub', 'nested.md'),
+      '[sibling](./nested.md)',
+    );
+    fs.writeFileSync(path.join(rootA, 'pic.png'), 'A png');
+    fs.writeFileSync(
+      path.join(rootB, 'from-b.md'),
+      '# From B\n\n![shared](./pic.png)\n',
+    );
+    // Same relative path in both roots — the ?root= hint disambiguates.
+    fs.writeFileSync(path.join(rootB, 'pic.png'), 'B png');
+    const buildDir = mkdirSync('crossnote-serve-multi-build');
+    writeFakeBuildDirectory(buildDir);
+    server = await startServeServer({
+      directories: [rootA, rootB],
+      port: 0,
+      crossnoteBuildDirectory: buildDir,
+      globalConfigDirectory: path.join(
+        mkdirSync('crossnote-serve-multi-global'),
+        'crossnote',
+      ),
+    });
+  });
+
+  afterAll(async () => {
+    await server.close();
+  });
+
+  test('exposes every root and serves the app shell with all of them', async () => {
+    expect(server.rootDirectories).toEqual([rootA, rootB]);
+    const response = await fetch(`${server.url}/`);
+    const html = await response.text();
+    expect(html).toContain(rootA);
+    expect(html).toContain(rootB);
+  });
+
+  test('lists files from all roots with their rootPath', async () => {
+    const response = await fetch(`${server.url}/api/files`);
+    const body = (await response.json()) as {
+      files: {
+        relativePath: string;
+        absolutePath: string;
+        rootPath: string;
+      }[];
+    };
+    const fromA = body.files.find((f) => f.absolutePath.endsWith('from-a.md'));
+    const fromB = body.files.find((f) => f.absolutePath.endsWith('from-b.md'));
+    expect(fromA?.rootPath).toBe(rootA);
+    expect(fromB?.rootPath).toBe(rootB);
+  });
+
+  test('maps workspace files to /files with a root hint', async () => {
+    const file = path.join(rootB, 'from-b.md');
+    const response = await fetch(
+      `${server.url}/preview?file=${encodeURIComponent(file)}`,
+    );
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    // Same relpath exists in both roots — root B's copy must win for this file.
+    expect(html).toContain('/files/pic.png?root=1');
+    // Fetching the hinted URL serves root B's image…
+    const hinted = await fetch(`${server.url}/files/pic.png?root=1`);
+    expect(await hinted.text()).toBe('B png');
+    // …and the unhinted URL falls back to the first root that has it.
+    const fallback = await fetch(`${server.url}/files/pic.png`);
+    expect(await fallback.text()).toBe('A png');
+  });
+
+  test('renders previews from every root with the right notebook', async () => {
+    const fileA = path.join(rootA, 'from-a.md');
+    const fileB = path.join(rootB, 'from-b.md');
+    const htmlA = await (
+      await fetch(`${server.url}/preview?file=${encodeURIComponent(fileA)}`)
+    ).text();
+    const htmlB = await (
+      await fetch(`${server.url}/preview?file=${encodeURIComponent(fileB)}`)
+    ).text();
+    expect(htmlA).toContain('From A');
+    expect(htmlB).toContain('From B');
+    expect(htmlA).toContain('from-a.md');
+    expect(htmlB).toContain('from-b.md');
+  });
+
+  test('updateMarkdown writes into the file\u2019s own root', async () => {
+    const fileB = path.join(rootB, 'from-b.md');
+    await postCommand(server, {
+      file: fileB,
+      command: 'updateMarkdown',
+      args: [fileB, '# From B\n\nedited\n'],
+    });
+    expect(fs.readFileSync(fileB, 'utf-8')).toContain('edited');
+    // Root A untouched.
+    expect(fs.readFileSync(path.join(rootA, 'from-a.md'), 'utf-8')).toContain(
+      'From A',
+    );
+  });
+
+  test('rejects files outside every root', async () => {
+    const outside = path.join(path.dirname(rootA), 'evil.md');
+    const response = await fetch(
+      `${server.url}/preview?file=${encodeURIComponent(outside)}`,
+    );
+    expect(response.status).toBe(400);
+  });
+
+  test('rejects an invalid directory at startup', async () => {
+    await expect(
+      startServeServer({
+        directories: [rootA, path.join(rootB, 'does-not-exist')],
+        port: 0,
+        crossnoteBuildDirectory: rootB,
+      }),
+    ).rejects.toThrow(/Not a directory/);
   });
 });

@@ -137,6 +137,16 @@ daisyui + asset loaders reused). State:
 6. **M6** — Jest tests for server endpoints/watcher/config, build wiring, README + ✅
    CHANGELOG, `pnpm check && pnpm test` green. ✅
 
+## Multi-root support (added after initial implementation)
+
+`crossnote serve dir1 dir2 …` serves several directories like a VS Code
+multi-root workspace: one Notebook (and config context) per root sharing the
+global config layer, one watcher per root, `/api/files` entries tagged with
+`rootPath`, and `/files/<rel>?root=<i>` hints from the URL mapper so the same
+relative path in two roots resolves unambiguously (unhinted requests try
+roots in order). The app shows the folder prefix in the picker and `+N` in
+the title bar; absolute `/…` links resolve against the source file's root.
+
 ## Deferred (not in this PR)
 
 - Graph view tab, backlinks panel data (needs notebook backlink computation wired to SSE).

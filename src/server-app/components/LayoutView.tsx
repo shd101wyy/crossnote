@@ -15,7 +15,7 @@ export type DropZone = 'left' | 'right' | 'top' | 'bottom' | 'center';
 
 export interface LayoutActions {
   activePaneId: string;
-  rootDirectory: string;
+  rootDirectories: string[];
   vscode: boolean;
   recents: string[];
   /** A tab drag is in flight; pane bodies are covered by drop guards. */
@@ -107,7 +107,7 @@ function PaneView({ pane }: { pane: PaneNode }): ReactNode {
         )}
         {pane.tabs.length === 0 ? (
           <Welcome
-            rootDirectory={actions.rootDirectory}
+            rootDirectories={actions.rootDirectories}
             vscode={actions.vscode}
             recents={actions.recents}
             onOpenFile={(file: string) => actions.onOpenFile(pane.id, file)}

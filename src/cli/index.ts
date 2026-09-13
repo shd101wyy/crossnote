@@ -5,11 +5,12 @@ import { startServeServer } from '../serve';
 const USAGE = `crossnote
 
 Usage:
-  crossnote serve [directory] [options]
+  crossnote serve [directory...] [options]
 
 Commands:
   serve        Start an HTTP server that renders markdown previews for the
-               given directory (default: current working directory).
+               given directories (like a VS Code multi-root workspace; the
+               current working directory is used when none is given).
 
 Options:
   --port <n>        Port to listen on (default: 3000, auto-increments when
@@ -26,11 +27,12 @@ Options:
 Examples:
   crossnote serve
   crossnote serve ~/notes --port 8080
+  crossnote serve docs wiki --port 8080
   crossnote serve . --vscode
 `;
 
 interface ParsedServeArgs {
-  directory: string;
+  directories: string[];
   port?: number;
   host?: string;
   vscode?: boolean;
@@ -39,7 +41,7 @@ interface ParsedServeArgs {
 
 function parseServeArgs(argv: string[]): ParsedServeArgs | null {
   const parsed: ParsedServeArgs = {
-    directory: process.cwd(),
+    directories: [],
   };
   let i = 0;
   while (i < argv.length) {
@@ -89,7 +91,7 @@ function parseServeArgs(argv: string[]): ParsedServeArgs | null {
           console.error(`Unknown option: ${arg}`);
           return null;
         }
-        parsed.directory = path.resolve(process.cwd(), arg);
+        parsed.directories.push(path.resolve(process.cwd(), arg));
         i += 1;
         break;
       }
@@ -105,15 +107,19 @@ async function serve(argv: string[]): Promise<void> {
     process.exitCode = 1;
     return;
   }
-  const stat = await fs.promises.stat(parsed.directory).catch(() => null);
-  if (!stat?.isDirectory()) {
-    console.error(`Not a directory: ${parsed.directory}`);
-    process.exitCode = 1;
-    return;
+  const directories =
+    parsed.directories.length > 0 ? parsed.directories : [process.cwd()];
+  for (const directory of directories) {
+    const stat = await fs.promises.stat(directory).catch(() => null);
+    if (!stat?.isDirectory()) {
+      console.error(`Not a directory: ${directory}`);
+      process.exitCode = 1;
+      return;
+    }
   }
 
   const server = await startServeServer({
-    directory: parsed.directory,
+    directories,
     port: parsed.port,
     host: parsed.host,
     vscode: parsed.vscode,
@@ -124,7 +130,9 @@ async function serve(argv: string[]): Promise<void> {
   });
 
   console.log(`crossnote serve`);
-  console.log(`  root:    ${server.rootDirectory}`);
+  for (const root of server.rootDirectories) {
+    console.log(`  root:    ${root}`);
+  }
   console.log(
     `  config: ${parsed.vscode ? 'vscode + global + workspace' : 'global + workspace'}`,
   );

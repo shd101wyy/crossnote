@@ -2,7 +2,7 @@ import React from 'react';
 import { basename, dirname } from '../lib/api';
 
 export interface WelcomeProps {
-  rootDirectory: string;
+  rootDirectories: string[];
   vscode: boolean;
   recents: string[];
   onOpenFile: (file: string) => void;
@@ -14,7 +14,7 @@ const isMac =
   /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
 export default function Welcome({
-  rootDirectory,
+  rootDirectories,
   vscode,
   recents,
   onOpenFile,
@@ -36,8 +36,17 @@ export default function Welcome({
         </svg>
         <h1>crossnote</h1>
         <p className="cn-welcome-sub">
-          Markdown preview server — this workspace is served from
-          <code className="cn-welcome-path"> {rootDirectory} </code>(
+          Markdown preview server —{' '}
+          {rootDirectories.length > 1
+            ? `${rootDirectories.length} folders are served:`
+            : 'this workspace is served from'}
+          {rootDirectories.map((root) => (
+            <span key={root}>
+              {' '}
+              <code className="cn-welcome-path"> {root} </code>
+            </span>
+          ))}
+          (
           {vscode
             ? 'VS Code + global + workspace config'
             : 'global + workspace config'}

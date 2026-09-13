@@ -53,7 +53,7 @@ const EXTERNAL_LINK_URLS: Record<string, string> = {
 
 export default function App() {
   const serverInfo = useMemo<ServerInfo>(() => getServerInfo(), []);
-  const storageKey = `crossnote:serve:${serverInfo.rootDirectory}`;
+  const storageKey = `crossnote:serve:${serverInfo.rootDirectories.join('|')}`;
 
   const [layout, setLayout] = useState<LayoutNode | null>(null);
   const [activePaneId, setActivePaneId] = useState('');
@@ -71,8 +71,9 @@ export default function App() {
   pickerPaneIdRef.current = pickerPaneId;
 
   useEffect(() => {
-    document.title = `crossnote — ${basename(serverInfo.rootDirectory) || 'preview'}`;
-  }, [serverInfo.rootDirectory]);
+    const firstRoot = serverInfo.rootDirectories[0] ?? '';
+    document.title = `crossnote — ${basename(firstRoot) || 'preview'}`;
+  }, [serverInfo.rootDirectories]);
 
   // ---- persisted workspace ----------------------------------------------
   useEffect(() => {
@@ -374,7 +375,7 @@ export default function App() {
             window.open(href, '_blank', 'noopener');
           } else if (href && !href.startsWith('#')) {
             const absolutePath = resolveHref(
-              actions.serverInfo.rootDirectory,
+              actions.serverInfo.rootDirectories,
               file,
               href,
             );
@@ -382,7 +383,7 @@ export default function App() {
               actions.openFile(activePaneIdRef.current, absolutePath);
             } else {
               const url = filePathToFilesUrl(
-                actions.serverInfo.rootDirectory,
+                actions.serverInfo.rootDirectories,
                 absolutePath,
               );
               if (url) {
@@ -515,7 +516,7 @@ export default function App() {
   const layoutActions = useMemo<LayoutActions>(
     () => ({
       activePaneId,
-      rootDirectory: serverInfo.rootDirectory,
+      rootDirectories: serverInfo.rootDirectories,
       vscode: serverInfo.vscode,
       recents,
       dragActive,
@@ -558,7 +559,7 @@ export default function App() {
       activePaneId,
       recents,
       dragActive,
-      serverInfo.rootDirectory,
+      serverInfo.rootDirectories,
       serverInfo.vscode,
       openFile,
       splitPaneAt,
@@ -580,7 +581,7 @@ export default function App() {
     <div className={zenMode ? 'cn-app cn-app-zen' : 'cn-app'}>
       {!zenMode && (
         <TitleBar
-          rootDirectory={serverInfo.rootDirectory}
+          rootDirectories={serverInfo.rootDirectories}
           vscode={serverInfo.vscode}
           onOpenPicker={openPickerForActivePane}
         />
@@ -601,6 +602,7 @@ export default function App() {
       <FilePicker
         open={pickerOpen}
         recents={recents}
+        rootDirectories={serverInfo.rootDirectories}
         onClose={() => setPickerOpen(false)}
         onOpenFile={(file: string) =>
           openFile(pickerPaneIdRef.current || activePaneIdRef.current, file)

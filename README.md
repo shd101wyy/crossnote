@@ -105,15 +105,18 @@ Crossnote ships a small CLI that serves a directory of markdown notes as a
 standalone preview app in your browser:
 
 ```sh
-$ npx crossnote serve [directory]     # directory defaults to the cwd
+$ npx crossnote serve [directory...]  # defaults to the cwd
 $ pnpm crossnote serve ~/notes --port 8080
+$ crossnote serve docs wiki           # multiple folders, like a VS Code multi-root workspace
 $ crossnote serve . --vscode          # reuse VS Code markdown-preview-enhanced settings
 ```
 
 Open the printed URL (default `http://127.0.0.1:3000`) and you get a VS
 Code–like editor layout running the exact same preview as the extension:
 
-- Press `Ctrl/Cmd+P` for the fuzzy file picker.
+- Press `Ctrl/Cmd+P` for the fuzzy file picker. With multiple directories
+  every file keeps its own folder's `.crossnote` config, and picker entries
+  are prefixed with the folder name.
 - Tabs, split panes, and drag & drop (drag a tab onto a pane edge to split
   there, `Ctrl/Cmd+\` splits right, `Alt+W` closes a tab).
 - Files are watched on disk — previews update live as you save, and edits
