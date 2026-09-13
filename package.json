@@ -20,7 +20,8 @@
     },
     "./cli": {
       "types": "./out/types/src/cli/index.d.ts",
-      "require": "./out/cli/index.cjs"
+      "require": "./out/cli/index.cjs",
+      "default": "./out/cli/index.cjs"
     }
   },
   "main": "out/cjs/index.cjs",
