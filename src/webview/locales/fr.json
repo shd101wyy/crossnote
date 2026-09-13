@@ -18,6 +18,7 @@
   "contextMenu.inPreviewEditorZenModeNotice": "L'éditeur dans l'aperçu n'est pas disponible en Mode Zen. Désactivez le Mode Zen pour l'utiliser.",
   "contextMenu.imageHelper": "Assistant d'images",
   "contextMenu.syncSource": "Synchroniser la source",
+  "contextMenu.exportStandaloneWiki": "Exporter en HTML autonome (wiki)",
   "contextMenu.zoom": "Zoom",
   "contextMenu.zoomIn": "Zoom avant",
   "contextMenu.zoomOut": "Zoom arrière",

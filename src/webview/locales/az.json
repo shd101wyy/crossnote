@@ -18,6 +18,7 @@
   "contextMenu.inPreviewEditorZenModeNotice": "Öncədən baxış redaktoru Zen rejimində mövcud deyil. İstifadə etmək üçün Zen rejimini söndürün.",
   "contextMenu.imageHelper": "Şəkil köməkçisi",
   "contextMenu.syncSource": "Mənbəyi sinxronlaşdır",
+  "contextMenu.exportStandaloneWiki": "Standalone HTML (wiki) ixrac et",
   "contextMenu.zoom": "Miqyas",
   "contextMenu.zoomIn": "Yaxınlaşdır",
   "contextMenu.zoomOut": "Uzaqlaşdır",

@@ -1744,39 +1744,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     offline = false,
     runAllCodeChunks = false,
   }: { offline?: boolean; runAllCodeChunks?: boolean } = {}): Promise<string> {
-    const inputString = await this.fs.readFile(this.filePath);
-    let html;
-    let yamlConfig;
-    // eslint-disable-next-line prefer-const
-    ({ html, yamlConfig } = await this.parseMD(inputString, {
-      useRelativeFilePath: true,
-      hideFrontMatter: true,
-      isForPreview: false,
-      runAllCodeChunks,
-    }));
-    const htmlConfig = (yamlConfig['html'] || {}) as Record<string, unknown>;
-    if ('offline' in htmlConfig) {
-      offline = htmlConfig['offline'] as boolean;
-    }
-    const embedLocalImages = !!htmlConfig['embed_local_images']; // <= embedLocalImages is disabled by default.
-
-    let embedSVG = true; // <= embedSvg is enabled by default.
-    if ('embed_svg' in htmlConfig) {
-      embedSVG = htmlConfig['embed_svg'] as boolean;
-    }
-
     let dest = this.filePath;
     const extname = path.extname(dest);
     dest = dest.replace(new RegExp(extname + '$'), '.html');
 
-    html = await this.generateHTMLTemplateForExport(html, yamlConfig, {
-      isForPrint: false,
-      isForPrince: false,
-      embedLocalImages,
-      offline,
-      embedOfflineAssets: offline,
-      embedSVG,
-    });
+    const html = await this.htmlExportDocument({ offline, runAllCodeChunks });
 
     // presentation speaker notes
     // copy dependency files
@@ -1804,6 +1776,58 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     await this.fs.writeFile(dest, html);
     return dest;
+  }
+
+  /**
+   * Render this note as a complete, self-contained HTML document — the exact
+   * document `htmlExport` writes, without touching the filesystem. Local
+   * images/SVGs can be embedded as data URIs so the document works away from
+   * the authoring machine; dependency assets (KaTeX CSS, mermaid, …) follow
+   * `offline`: CDN links when false, inlined files when true.
+   *
+   * Front-matter `html:` keys (`offline`, `embed_local_images`, `embed_svg`)
+   * override the arguments, like in `htmlExport`.
+   */
+  public async htmlExportDocument({
+    offline = false,
+    embedLocalImages = false,
+    embedSVG = true,
+    runAllCodeChunks = false,
+  }: {
+    offline?: boolean;
+    embedLocalImages?: boolean;
+    embedSVG?: boolean;
+    runAllCodeChunks?: boolean;
+  } = {}): Promise<string> {
+    const inputString = await this.fs.readFile(this.filePath);
+    let html;
+    let yamlConfig;
+    // eslint-disable-next-line prefer-const
+    ({ html, yamlConfig } = await this.parseMD(inputString, {
+      useRelativeFilePath: true,
+      hideFrontMatter: true,
+      isForPreview: false,
+      runAllCodeChunks,
+    }));
+    const htmlConfig = (yamlConfig['html'] || {}) as Record<string, unknown>;
+    if ('offline' in htmlConfig) {
+      offline = htmlConfig['offline'] as boolean;
+    }
+    if ('embed_local_images' in htmlConfig) {
+      embedLocalImages = !!htmlConfig['embed_local_images'];
+    }
+    if ('embed_svg' in htmlConfig) {
+      embedSVG = htmlConfig['embed_svg'] as boolean;
+    }
+
+    return this.generateHTMLTemplateForExport(html, yamlConfig, {
+      isForPrint: false,
+      isForPrince: false,
+      embedLocalImages,
+      offline,
+      embedOfflineAssets: offline,
+      embedSVG,
+    });
   }
 
   /**

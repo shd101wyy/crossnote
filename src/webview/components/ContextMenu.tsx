@@ -111,6 +111,10 @@ export default function ContextMenu() {
           postMessage('htmlExport', [sourceUri.current, true]);
           break;
         }
+        case 'export-standalone-wiki': {
+          postMessage('exportStandaloneWiki', [sourceUri.current]);
+          break;
+        }
         case 'export-html-cdn': {
           postMessage('htmlExport', [sourceUri.current, false]);
           break;
@@ -531,6 +535,21 @@ export default function ContextMenu() {
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiSync} size={0.8} className="mr-2"></Icon>
                 {t('contextMenu.syncSource')}
+              </span>
+            </Item>
+            <Separator></Separator>
+          </>
+        )}
+        {!isVSCodeWebExtension && (
+          <>
+            <Item id="export-standalone-wiki" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">
+                <Icon
+                  path={mdiExportVariant}
+                  size={0.8}
+                  className="mr-2"
+                ></Icon>
+                {t('contextMenu.exportStandaloneWiki')}
               </span>
             </Item>
             <Separator></Separator>

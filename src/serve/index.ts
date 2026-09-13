@@ -6,11 +6,11 @@ import type * as vscode from 'vscode';
 import { MarkdownEngineOutput, Notebook, utility } from '../index';
 import { NotebookConfig, WebviewConfig } from '../notebook';
 import {
-  ServerConfigContext,
-  createConfigContext,
+  createNotebooksForDirectories,
   loadServerConfig,
   updateServerConfigKey,
 } from './config';
+import { buildWiki } from '../wiki';
 import {
   encodePathSegments,
   isMarkdownFile,
@@ -39,6 +39,24 @@ class RequestError extends Error {
 }
 
 const MAX_COMMAND_BODY_BYTES = 64 * 1024 * 1024;
+
+/**
+ * Output path for a server-requested wiki export: `crossnote-wiki.html` in
+ * the first served root, with a timestamp suffix when that file already
+ * exists so a re-export can never clobber a previous one.
+ */
+async function nonConflictingWikiPath(rootDirectory: string): Promise<string> {
+  const base = path.join(rootDirectory, 'crossnote-wiki.html');
+  if (!fs.existsSync(base)) {
+    return base;
+  }
+  const stamp = new Date()
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\..+$/, '')
+    .replace('T', '-');
+  return path.join(rootDirectory, `crossnote-wiki-${stamp}.html`);
+}
 
 export interface ServeOptions {
   /**
@@ -157,17 +175,13 @@ function appShellHTML(serverInfo: {
 export async function startServeServer(
   options: ServeOptions,
 ): Promise<ServeServer> {
-  const rootDirectories: string[] = [];
-  for (const directory of options.directories) {
-    const resolved = path.resolve(directory);
-    const stat = await fs.promises.stat(resolved).catch(() => null);
-    if (!stat?.isDirectory()) {
-      throw new Error(`Not a directory: ${resolved}`);
-    }
-    if (!rootDirectories.includes(resolved)) {
-      rootDirectories.push(resolved);
-    }
-  }
+  // One config context + Notebook per root, sharing the global config layer.
+  const { rootDirectories, configContexts, notebooks } =
+    await createNotebooksForDirectories(options.directories, {
+      vscode: options.vscode,
+      vscodeSettingsPath: options.vscodeSettingsPath,
+      globalConfigDirectory: options.globalConfigDirectory,
+    });
   const rootDirectory = rootDirectories[0];
 
   const buildDirectory = path.resolve(
@@ -200,26 +214,6 @@ export async function startServeServer(
     }
     return pathToFileURL(filePath).href;
   });
-
-  // One config context + Notebook per root, sharing the global config layer.
-  const configContexts: ServerConfigContext[] = await Promise.all(
-    rootDirectories.map((root) =>
-      createConfigContext({
-        rootDirectory: root,
-        vscode: options.vscode,
-        vscodeSettingsPath: options.vscodeSettingsPath,
-        globalConfigDirectory: options.globalConfigDirectory,
-      }),
-    ),
-  );
-  const notebooks: Notebook[] = await Promise.all(
-    configContexts.map(async (context) =>
-      Notebook.init({
-        notebookPath: context.rootDirectory,
-        config: (await loadServerConfig(context)) as Partial<NotebookConfig>,
-      }),
-    ),
-  );
 
   function rootIndexOf(absolutePath: string): number {
     const resolved = path.resolve(absolutePath);
@@ -503,6 +497,38 @@ export async function startServeServer(
         }
         await fs.promises.writeFile(sourceUri, lines.join('\n'), 'utf-8');
         await renderFile(sourceUri, { triggeredBySave: true });
+        return;
+      }
+      case 'exportStandaloneWiki': {
+        // Build the read-only single-file wiki for all served roots and
+        // write it into the first root, never overwriting an existing file.
+        try {
+          const result = await buildWiki({
+            directories: rootDirectories,
+            vscode: options.vscode,
+            vscodeSettingsPath: options.vscodeSettingsPath,
+            globalConfigDirectory: options.globalConfigDirectory,
+            crossnoteBuildDirectory: buildDirectory,
+          });
+          const outputFile = await nonConflictingWikiPath(rootDirectory);
+          await fs.promises.writeFile(outputFile, result.html, 'utf-8');
+          const failureNote =
+            result.failures.length > 0
+              ? ` (${result.failures.length} notes failed to render)`
+              : '';
+          sse.broadcast({
+            type: 'notification',
+            level: 'info',
+            message: `Standalone wiki saved to ${outputFile} — ${result.files.length} notes${failureNote}.`,
+          });
+        } catch (error) {
+          console.error('crossnote serve: failed to build wiki:', error);
+          sse.broadcast({
+            type: 'notification',
+            level: 'error',
+            message: `Building the standalone wiki failed: ${String(error)}`,
+          });
+        }
         return;
       }
       default:

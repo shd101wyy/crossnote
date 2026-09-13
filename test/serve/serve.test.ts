@@ -37,6 +37,9 @@ function writeFakeBuildDirectory(root: string): void {
       '/* preview:github-dark */',
     ],
     [path.join(root, 'styles/prism_theme/github.css'), '/* prism:github */'],
+    // Standalone-wiki exports (exportStandaloneWiki command) inline these.
+    [path.join(root, 'wiki-app/wiki-app.js'), '// wiki app'],
+    [path.join(root, 'wiki-app/wiki-app.css'), '/* wiki app css */'],
   ];
   for (const [file, content] of files) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -73,6 +76,8 @@ interface SSEMessage {
   type: string;
   file?: string;
   payload?: Record<string, unknown>;
+  level?: string;
+  message?: string;
 }
 
 /**
@@ -358,6 +363,27 @@ describe('crossnote serve', () => {
       config: { previewTheme: string };
     };
     expect(body.config.previewTheme).toBe('github-dark.css');
+  });
+
+  test('exportStandaloneWiki writes a read-only wiki and notifies clients', async () => {
+    const sseDone = waitForSSE(server, (m) => m.type === 'notification');
+
+    await postCommand(server, {
+      file: path.join(workspace, 'welcome.md'),
+      command: 'exportStandaloneWiki',
+      args: [],
+    });
+
+    const events = await sseDone;
+    const notification = events.find((m) => m.type === 'notification');
+    expect(notification?.message).toContain('crossnote-wiki.html');
+
+    const wiki = fs.readFileSync(
+      path.join(workspace, 'crossnote-wiki.html'),
+      'utf-8',
+    );
+    expect(wiki).toContain('window.__CROSSNOTE_WIKI__');
+    expect(wiki).toContain('welcome');
   });
 
   test('drops commands for files outside the root', async () => {

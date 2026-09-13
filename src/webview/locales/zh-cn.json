@@ -18,6 +18,7 @@
   "contextMenu.inPreviewEditorZenModeNotice": "在预览中编辑功能在禅模式下不可用。请先关闭禅模式。",
   "contextMenu.imageHelper": "图片助手",
   "contextMenu.syncSource": "同步源码",
+  "contextMenu.exportStandaloneWiki": "导出单文件 HTML（wiki）",
   "contextMenu.zoom": "缩放",
   "contextMenu.zoomIn": "放大",
   "contextMenu.zoomOut": "缩小",

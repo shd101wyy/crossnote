@@ -61,6 +61,22 @@ export default function App() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerPaneId, setPickerPaneId] = useState('');
   const [zenMode, setZenMode] = useState(false);
+  const [toast, setToast] = useState<{
+    level: 'info' | 'error';
+    message: string;
+  } | null>(null);
+  const toastTimerRef = useRef<number | undefined>(undefined);
+
+  const showToast = useCallback(
+    (toast: { level: 'info' | 'error'; message: string }) => {
+      setToast(toast);
+      if (toastTimerRef.current !== undefined) {
+        clearTimeout(toastTimerRef.current);
+      }
+      toastTimerRef.current = window.setTimeout(() => setToast(null), 6000);
+    },
+    [],
+  );
 
   const framesRef = useRef<Map<string, FrameEntry>>(new Map());
   const layoutRef = useRef<LayoutNode | null>(null);
@@ -432,6 +448,8 @@ export default function App() {
         type: string;
         file?: string;
         payload?: UpdateHtmlPayload;
+        level?: 'info' | 'error';
+        message?: string;
       };
       try {
         data = JSON.parse(event.data);
@@ -481,10 +499,15 @@ export default function App() {
           entry.lastUpdate = null;
           entry.reload?.();
         }
+      } else if (data.type === 'notification' && data.message) {
+        showToast({
+          level: data.level === 'error' ? 'error' : 'info',
+          message: data.message,
+        });
       }
     };
     return () => source.close();
-  }, [touchRecents]);
+  }, [touchRecents, showToast]);
 
   // ---- global keyboard shortcuts --------------------------------------------
   useEffect(() => {
@@ -599,6 +622,16 @@ export default function App() {
       <main className="cn-main">
         <LayoutView node={layout} actions={layoutActions} />
       </main>
+      {toast && (
+        <div
+          className={
+            toast.level === 'error' ? 'cn-toast cn-toast-error' : 'cn-toast'
+          }
+          role="status"
+        >
+          {toast.message}
+        </div>
+      )}
       <FilePicker
         open={pickerOpen}
         recents={recents}
