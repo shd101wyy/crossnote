@@ -199,4 +199,37 @@ describe('preview scripts gate (@import js and head.html)', () => {
     // styles are unaffected
     expect(html).toContain('.custom { color: red; }');
   });
+
+  test('@import "*.js" stays notebook-directory-only even with trusted roots', async () => {
+    const tmpDir = mkdirSync({ prefix: 'xnote-scripts' });
+    const globalDir = mkdirSync({ prefix: 'xnote-global' });
+    fs.writeFileSync(
+      path.join(globalDir, 'global-helper.js'),
+      'alert("global");',
+    );
+    fs.writeFileSync(path.join(tmpDir, 'test.md'), '# Test');
+
+    const notebook = await Notebook.init({
+      notebookPath: tmpDir,
+      config: {
+        markdownParser: 'markdown-it',
+        markdownYoBinaryPath: '',
+        // @import js/css requires script execution to reach the emission
+        // gate at all (parseMD clears JSAndCssFiles otherwise)
+        enableScriptExecution: true,
+      },
+    });
+    notebook.previewScriptsEnabled = true;
+    notebook.trustedScriptRoots = [globalDir];
+
+    // @import is untrusted note content, unlike the host-passed head.html:
+    // trusted roots intentionally do not widen this channel.
+    const html = await renderPreviewTemplate(
+      notebook,
+      path.join(tmpDir, 'test.md'),
+      '@import "/global-helper.js"\n# Test\n',
+    );
+
+    expect(html).not.toMatch(/<script[^>]*src="[^"]*global-helper\.js"/);
+  });
 });

@@ -47,13 +47,10 @@ pre[class*='language-'] {
   color: #c9d1d9;
   background: #343942;
 }
-pre[class*='language-'] > code[class*='language-'] {
-  position: relative;
-  z-index: 1;
-}
-/* Line highlighting — structure and the default band live in
- * style-template.css; this theme only overrides the band color (custom
- * property, so no specificity fight with the shared rule). */
+/* Line highlighting — structure, layering, and the default band live in
+ * style-template.css, which raises the code above the bands; this theme
+ * only overrides the band color (custom property, so no specificity fight
+ * with the shared rule). */
 pre[data-line] {
   --line-highlight-background: #2f2a1e;
 }

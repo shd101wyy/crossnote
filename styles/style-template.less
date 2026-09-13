@@ -95,11 +95,38 @@
     // line-number badge.
     padding: 1em 0 1em 3em !important;
 
+    // The bands are an UNDERLAY. Positioned elements paint above in-flow
+    // content, so the code (and the line-number gutter) must be raised
+    // above the band: otherwise a translucent band washes out the token
+    // colors (vscode-mpe#2404) and an opaque one hides the lines
+    // entirely (vscode-mpe#2403). `> code` matches both the Prism
+    // output and the plain-text fallback — the code element itself never
+    // carries a `language-` class (only the pre does), so a selector
+    // like `pre[class*='language-'] > code[class*='language-']` never
+    // fires on crossnote markup.
+    > code {
+      position: relative;
+      z-index: 1;
+    }
+
+    .line-numbers-rows {
+      z-index: 1;
+    }
+
     .line-highlight-wrapper {
       position: absolute;
       top: 0;
       left: 0;
       background-color: transparent;
+      // The wrapper is structural: its box spans the full width over the
+      // lines preceding the band, and its only content is the newlines
+      // that push the band down. It must never be a hit target — before,
+      // a mousedown on those lines anchored the selection on the
+      // wrapper's invisible newlines, so the code text there could not
+      // be selected at all (vscode-mpe#2409). `pointer-events` is
+      // inherited, so this also covers the band in every theme and
+      // export path.
+      pointer-events: none;
       display: block;
       width: 100%;
     }
@@ -121,7 +148,6 @@
           hsla(24, 20%, 50%, 0)
         )
       );
-      pointer-events: none;
       line-height: inherit;
       white-space: pre;
     }
