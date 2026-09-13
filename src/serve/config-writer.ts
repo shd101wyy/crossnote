@@ -112,7 +112,12 @@ export async function updateVSCodeSetting(
     `("${MPE_SETTINGS_PREFIX}${key}"\\s*:\\s*)(?:"(?:[^"\\\\]|\\\\.)*"|-?\\d+(?:\\.\\d+)?|true|false|null)`,
   );
   if (entryPattern.test(text)) {
-    text = text.replace(entryPattern, `$1${serialized}`);
+    // Function replacer: `serialized` may contain `$`-sequences that a
+    // replacement string would otherwise interpret as group references.
+    text = text.replace(
+      entryPattern,
+      (_match, prefix: string) => `${prefix}${serialized}`,
+    );
   } else {
     const trimmed = text.replace(/\s+$/, '');
     const lastBrace = trimmed.lastIndexOf('}');

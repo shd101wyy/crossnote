@@ -137,6 +137,14 @@ Options: `--port <n>` (default 3000, auto-increments when busy), `--host`
 (default 127.0.0.1), `--vscode`, `--vscode-settings <path>` (explicit
 settings.json, auto-detected otherwise).
 
+The server is built for local use: it binds to `127.0.0.1` by default and
+only accepts requests whose `Host`/`Origin` name the server itself, so
+websites open in the same browser cannot drive its command endpoint (which
+runs code chunks and writes files) or read its responses via DNS rebinding.
+HTML/SVG/XML files from the served directories are delivered with a
+sandboxing CSP, so a document from an untrusted repository can never execute
+same-origin script against the app.
+
 ## markdown_yo (Experimental)
 
 Crossnote supports an optional high-performance markdown renderer called [markdown_yo](https://github.com/shd101wyy/markdown_yo), written in the [Yo programming language](https://github.com/shd101wyy/Yo) and compiled to WebAssembly. When enabled, it replaces markdown-it for HTML rendering while markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).

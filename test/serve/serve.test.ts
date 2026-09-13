@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as http from 'http';
 import * as path from 'path';
 import { mkdirSync, track } from '../../src/lib/temp';
 import { startServeServer, ServeServer } from '../../src/serve';
@@ -135,6 +136,31 @@ async function postCommand(
     body: JSON.stringify(body),
   });
   return response.json();
+}
+
+/**
+ * Raw HTTP request with arbitrary headers — `fetch` refuses to send the
+ * `Host`/`Origin` headers the request gate needs to be tested against.
+ */
+function rawRequest(
+  port: number,
+  requestPath: string,
+  headers: Record<string, string>,
+  method: 'GET' | 'POST' = 'GET',
+  body: string = '',
+): Promise<http.IncomingMessage> {
+  return new Promise((resolve, reject) => {
+    const request = http.request(
+      { host: '127.0.0.1', port, path: requestPath, headers, method },
+      (response) => {
+        response.resume();
+        response.on('end', () => resolve(response));
+        response.on('error', reject);
+      },
+    );
+    request.on('error', reject);
+    request.end(method === 'POST' ? body : undefined);
+  });
 }
 
 describe('crossnote serve', () => {
@@ -342,6 +368,97 @@ describe('crossnote serve', () => {
       args: [outside, 'nope\n'],
     });
     expect(fs.existsSync(outside)).toBe(false);
+  });
+
+  test('blocks requests with a foreign Host header (DNS rebinding)', async () => {
+    const rebinding = await rawRequest(server.port, '/', {
+      host: `evil.example:${server.port}`,
+    });
+    expect(rebinding.statusCode).toBe(403);
+
+    const own = await rawRequest(server.port, '/', {
+      host: `127.0.0.1:${server.port}`,
+    });
+    expect(own.statusCode).toBe(200);
+
+    const localhost = await rawRequest(server.port, '/', {
+      host: `localhost:${server.port}`,
+    });
+    expect(localhost.statusCode).toBe(200);
+  });
+
+  test('blocks cross-origin POSTs to /api/command (drive-by CSRF)', async () => {
+    const file = path.join(workspace, 'welcome.md');
+    const before = fs.readFileSync(file, 'utf-8');
+    const response = await rawRequest(
+      server.port,
+      '/api/command',
+      {
+        'content-type': 'application/json',
+        'origin': 'http://evil.example',
+      },
+      'POST',
+      JSON.stringify({
+        file,
+        command: 'updateMarkdown',
+        args: [file, 'pwned\n'],
+      }),
+    );
+    expect(response.statusCode).toBe(403);
+    expect(fs.readFileSync(file, 'utf-8')).toBe(before);
+  });
+
+  test('allows command POSTs with a same-origin or absent Origin header', async () => {
+    const file = path.join(workspace, 'welcome.md');
+    const command = JSON.stringify({
+      file,
+      command: 'refreshPreview',
+      args: [],
+    });
+    const headerSets: Array<Record<string, string>> = [
+      { 'content-type': 'application/json', 'origin': server.url },
+      { 'content-type': 'application/json' },
+    ];
+    for (const headers of headerSets) {
+      const response = await rawRequest(
+        server.port,
+        '/api/command',
+        headers,
+        'POST',
+        command,
+      );
+      expect(response.statusCode).toBe(200);
+    }
+  });
+
+  test('rejects malformed command bodies with 400', async () => {
+    const response = await rawRequest(
+      server.port,
+      '/api/command',
+      { 'content-type': 'application/json' },
+      'POST',
+      '{not json',
+    );
+    expect(response.statusCode).toBe(400);
+  });
+
+  test('serves workspace html as a sandboxed document', async () => {
+    fs.writeFileSync(
+      path.join(workspace, 'evil.html'),
+      '<script>window.parent.location = "http://evil.example/"</script>',
+    );
+    const html = await fetch(`${server.url}/files/evil.html`);
+    expect(html.status).toBe(200);
+    expect(html.headers.get('content-security-policy')).toBe('sandbox');
+    expect(html.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(html.headers.get('cross-origin-resource-policy')).toBe(
+      'same-origin',
+    );
+
+    // Plain assets carry the baseline headers but are not sandboxed.
+    const image = await fetch(`${server.url}/files/image.png`);
+    expect(image.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(image.headers.get('content-security-policy')).toBeNull();
   });
 });
 

@@ -18,8 +18,27 @@ import {
   listMarkdownFiles,
 } from './markdown-files';
 import { SSEHub } from './sse';
-import { resolveMountedFile, serveFileFromPath } from './static';
+import {
+  BASE_SECURITY_HEADERS,
+  resolveMountedFile,
+  serveFileFromPath,
+} from './static';
 import { MarkdownWatcher } from './watcher';
+
+/**
+ * Requests reaching the routes with a bad Host/Origin (or a bad body) are
+ * answered with this status instead of the generic 500.
+ */
+class RequestError extends Error {
+  constructor(
+    public readonly statusCode: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+const MAX_COMMAND_BODY_BYTES = 64 * 1024 * 1024;
 
 export interface ServeOptions {
   /**
@@ -125,14 +144,6 @@ function appShellHTML(serverInfo: {
 </html>`;
 }
 
-interface LastRender {
-  markdown: string;
-  html: string;
-  tocHTML: string;
-  jsAndCssFiles: string[];
-  yamlConfig: Record<string, unknown>;
-}
-
 /**
  * Start the crossnote standalone preview server.
  *
@@ -224,7 +235,6 @@ export async function startServeServer(
 
   const sse = new SSEHub();
   const renderTokens = new Map<string, number>();
-  const lastRenderByFile = new Map<string, LastRender>();
 
   async function renderFile(
     absolutePath: string,
@@ -250,13 +260,6 @@ export async function startServeServer(
       if (renderTokens.get(absolutePath) !== token) {
         return;
       }
-      lastRenderByFile.set(absolutePath, {
-        markdown: text,
-        html: output.html,
-        tocHTML: output.tocHTML,
-        jsAndCssFiles: output.JSAndCssFiles,
-        yamlConfig: output.yamlConfig,
-      });
       sse.broadcast({
         type: 'updateHtml',
         file: absolutePath,
@@ -313,14 +316,25 @@ export async function startServeServer(
     request: http.IncomingMessage,
   ): Promise<Record<string, unknown>> {
     const chunks: Buffer[] = [];
+    let length = 0;
     for await (const chunk of request) {
+      length += (chunk as Buffer).length;
+      // `updateMarkdown` posts whole files, so the cap is generous — it only
+      // exists so a runaway request cannot exhaust memory.
+      if (length > MAX_COMMAND_BODY_BYTES) {
+        throw new RequestError(413, 'request body too large');
+      }
       chunks.push(chunk as Buffer);
     }
     const raw = Buffer.concat(chunks).toString('utf-8');
     if (!raw) {
       return {};
     }
-    return JSON.parse(raw) as Record<string, unknown>;
+    try {
+      return JSON.parse(raw) as Record<string, unknown>;
+    } catch {
+      throw new RequestError(400, 'request body is not valid JSON');
+    }
   }
 
   function sendJSON(
@@ -501,6 +515,23 @@ export async function startServeServer(
     response: http.ServerResponse,
   ): Promise<void> => {
     try {
+      // Trust boundary: `/api/command` writes files and runs code chunks, so
+      // requests from anything but this server's own origin must not reach
+      // the routes. `Host` must name this server (blocks DNS rebinding, which
+      // would otherwise make every response readable cross-origin), and
+      // `Origin` — which browsers send on every cross-origin POST — must too
+      // when present (blocks drive-by requests from websites the user visits;
+      // non-browser clients like curl send no Origin and are let through).
+      if (!isAllowedRequestHost(request.headers.host, host, port)) {
+        response.writeHead(403, { 'content-type': 'text/plain' });
+        response.end('forbidden');
+        return;
+      }
+      if (!isAllowedOrigin(request.headers.origin, host, port)) {
+        response.writeHead(403, { 'content-type': 'text/plain' });
+        response.end('forbidden');
+        return;
+      }
       const requestUrl = new URL(
         request.url ?? '/',
         `http://${request.headers.host ?? '127.0.0.1'}`,
@@ -511,7 +542,10 @@ export async function startServeServer(
         request.method === 'GET' &&
         (urlPath === '/' || urlPath === '/index.html')
       ) {
-        response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+        response.writeHead(200, {
+          'content-type': 'text/html; charset=utf-8',
+          ...BASE_SECURITY_HEADERS,
+        });
         response.end(
           appShellHTML({
             rootDirectories,
@@ -535,6 +569,7 @@ export async function startServeServer(
           const html = await renderPreviewPage(file);
           response.writeHead(200, {
             'content-type': 'text/html; charset=utf-8',
+            ...BASE_SECURITY_HEADERS,
           });
           response.end(html);
         } catch (error) {
@@ -642,6 +677,14 @@ export async function startServeServer(
       response.writeHead(404, { 'content-type': 'text/plain' });
       response.end('not found');
     } catch (error) {
+      if (error instanceof RequestError) {
+        if (!response.headersSent) {
+          sendJSON(response, error.statusCode, { error: error.message });
+        } else {
+          response.end();
+        }
+        return;
+      }
       console.error('crossnote serve: request failed:', error);
       if (!response.headersSent) {
         response.writeHead(500, { 'content-type': 'text/plain' });
@@ -663,7 +706,6 @@ export async function startServeServer(
     type: 'changed' | 'deleted';
   }) => {
     if (change.type === 'deleted') {
-      lastRenderByFile.delete(change.absolutePath);
       sse.broadcast({
         type: 'fileDeleted',
         file: change.absolutePath,
@@ -691,6 +733,107 @@ export async function startServeServer(
       );
     },
   };
+}
+
+/**
+ * Parse a `Host` header (or `URL.host`) into its hostname and port. Returns
+ * null for malformed values. IPv6 forms keep their brackets stripped.
+ */
+function parseHostHeader(
+  hostHeader: string,
+): { hostname: string; port: number | null } | null {
+  const value = hostHeader.trim().toLowerCase();
+  if (!value) {
+    return null;
+  }
+  if (value.startsWith('[')) {
+    const end = value.indexOf(']');
+    if (end === -1) {
+      return null;
+    }
+    const hostname = value.slice(1, end);
+    const rest = value.slice(end + 1);
+    if (rest === '') {
+      return { hostname, port: null };
+    }
+    if (!rest.startsWith(':') || !/^\d+$/.test(rest.slice(1))) {
+      return null;
+    }
+    return { hostname, port: parseInt(rest.slice(1), 10) };
+  }
+  const colon = value.lastIndexOf(':');
+  if (colon === -1) {
+    return { hostname: value, port: null };
+  }
+  const portString = value.slice(colon + 1);
+  if (!/^\d+$/.test(portString)) {
+    return null;
+  }
+  return { hostname: value.slice(0, colon), port: parseInt(portString, 10) };
+}
+
+function isIPLiteral(hostname: string): boolean {
+  return /^\d+\.\d+\.\d+\.\d+$/.test(hostname) || hostname.includes(':');
+}
+
+/**
+ * Whether `hostHeader` names this very server: the bind host, a loopback
+ * name, or — when bound to a wildcard address — any IP literal, always on
+ * the bound port. Anything else is a DNS-rebinding attempt or a probe.
+ */
+function isAllowedRequestHost(
+  hostHeader: string | undefined,
+  bindHost: string,
+  port: number,
+): boolean {
+  if (!hostHeader) {
+    return false;
+  }
+  const parsed = parseHostHeader(hostHeader);
+  // An absent port means the HTTP default (the server is always plain HTTP).
+  if (!parsed || (parsed.port ?? 80) !== port) {
+    return false;
+  }
+  if (
+    (bindHost === '0.0.0.0' || bindHost === '::') &&
+    isIPLiteral(parsed.hostname)
+  ) {
+    return true;
+  }
+  const bindHostname = bindHost.replace(/^\[|\]$/g, '').toLowerCase();
+  const hostname = parsed.hostname.toLowerCase();
+  return (
+    hostname === bindHostname ||
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1'
+  );
+}
+
+/**
+ * Whether the request's `Origin` (sent by browsers on cross-origin POSTs)
+ * names this server. Requests without an `Origin` header — curl, tests,
+ * other non-browser clients — are allowed through.
+ */
+function isAllowedOrigin(
+  originHeader: string | undefined,
+  bindHost: string,
+  port: number,
+): boolean {
+  if (originHeader === undefined) {
+    return true;
+  }
+  let origin: URL;
+  try {
+    origin = new URL(originHeader);
+  } catch {
+    return false;
+  }
+  if (origin.protocol !== 'http:') {
+    return false;
+  }
+  // `URL.host` has exactly the `Host`-header shape the check above expects.
+  return isAllowedRequestHost(origin.host, bindHost, port);
 }
 
 function listenWithFallback(

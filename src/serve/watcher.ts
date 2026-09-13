@@ -54,6 +54,14 @@ export class MarkdownWatcher {
           });
         },
       );
+      // An FSWatcher 'error' (root removed, permissions changed) is fatal
+      // unless it is handled — it must not take the whole server down.
+      this.watcher.on('error', (error) => {
+        console.error(
+          `crossnote serve: watcher error on ${this.rootDirectory}:`,
+          error,
+        );
+      });
     } else {
       // Polling fallback for platforms without recursive fs.watch.
       this.knownFiles = new Map(

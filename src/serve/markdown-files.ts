@@ -77,7 +77,12 @@ export async function listMarkdownFiles(
         .relative(rootDirectory, absolutePath)
         .split(path.sep)
         .join('/');
-      if (isIgnored(relativePath)) {
+      // Directories are tested with a trailing slash so `build/`-style
+      // gitignore patterns prune the walk instead of listing its files.
+      if (
+        isIgnored(relativePath) ||
+        (entry.isDirectory() && isIgnored(`${relativePath}/`))
+      ) {
         continue;
       }
       if (entry.isDirectory()) {

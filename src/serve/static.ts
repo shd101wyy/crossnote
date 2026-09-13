@@ -37,6 +37,31 @@ const CONTENT_TYPES: Record<string, string> = {
 };
 
 /**
+ * Served files can be more than passive assets: an `.html`/`.svg`/`.xml`
+ * from a served (possibly untrusted) directory would otherwise load as a
+ * same-origin document with full access to the app's origin — including
+ * `/api/command`. `CSP: sandbox` makes the browser treat such documents as
+ * a unique opaque origin with scripting disabled, without affecting their
+ * use as subresources (images, styles) in previews.
+ */
+const SANDBOXED_DOCUMENT_EXTENSIONS = new Set([
+  '.html',
+  '.htm',
+  '.svg',
+  '.xml',
+]);
+
+/**
+ * Baseline hardening for every served response: no MIME sniffing, and no
+ * cross-origin embedding from websites the user visits (`CORP` also stops
+ * other sites from probing which local files exist via `<img>`/`<script>`).
+ */
+export const BASE_SECURITY_HEADERS: Record<string, string> = {
+  'x-content-type-options': 'nosniff',
+  'cross-origin-resource-policy': 'same-origin',
+};
+
+/**
  * Resolve a mounted URL path (`urlPrefix/...`) to a real file under one of
  * `mountRoots`. When multiple roots are mounted, the same relative path can
  * exist in several of them — `preferredRootIndex` (from the `?root=` query
@@ -89,7 +114,6 @@ export function resolveMountedFile(
 export function serveFileFromPath(
   response: http.ServerResponse,
   filePath: string,
-  cacheControl: string = 'no-cache',
 ): void {
   fs.stat(filePath, (statError, stat) => {
     if (statError || !stat.isFile()) {
@@ -97,15 +121,19 @@ export function serveFileFromPath(
       response.end('not found');
       return;
     }
+    const extension = path.extname(filePath).toLowerCase();
     const contentType: string =
-      CONTENT_TYPES[path.extname(filePath).toLowerCase()] ??
-      'application/octet-stream';
+      CONTENT_TYPES[extension] ?? 'application/octet-stream';
     // Let the browser revalidate on every use so edited files (images,
     // scripts) show fresh content without hard refreshes.
     response.writeHead(200, {
       'content-type': contentType,
       'content-length': stat.size,
-      'cache-control': cacheControl,
+      'cache-control': 'no-cache',
+      ...BASE_SECURITY_HEADERS,
+      ...(SANDBOXED_DOCUMENT_EXTENSIONS.has(extension)
+        ? { 'content-security-policy': 'sandbox' }
+        : {}),
     });
     const stream = fs.createReadStream(filePath);
     stream.on('error', () => {
