@@ -29,16 +29,25 @@ export function getServerInfo(): ServerInfo {
   );
 }
 
+/**
+ * Normalize a server-provided root path: posix separators, no trailing `/`.
+ * Roots arrive from the server as Node paths, so on Windows they carry `\`.
+ */
+function cleanRootPath(root: string): string {
+  return root.replace(/\\/g, '/').replace(/\/+$/, '');
+}
+
 /** Index of the served root containing `filePath`, or -1. */
 export function rootContaining(
   rootDirectories: string[],
   filePath: string,
 ): number {
   const normalized = filePath.replace(/\\/g, '/');
-  return rootDirectories.findIndex((root) => {
-    const cleanRoot = root.replace(/\/+$/, '');
-    return normalized === cleanRoot || normalized.startsWith(cleanRoot + '/');
-  });
+  return rootDirectories.findIndex(
+    (root) =>
+      normalized === cleanRootPath(root) ||
+      normalized.startsWith(cleanRootPath(root) + '/'),
+  );
 }
 
 export async function fetchFiles(): Promise<MarkdownFileInfo[]> {
@@ -94,7 +103,10 @@ function normalize(absolutePath: string): string {
     }
     stack.push(part);
   }
-  return '/' + stack.join('/');
+  // A Windows drive-letter path ('C:/…') must not gain a leading '/', or it
+  // would no longer match the absolute paths the server and file lists use.
+  const joined = stack.join('/');
+  return /^[A-Za-z]:/.test(joined) ? joined : '/' + joined;
 }
 
 /**
@@ -139,8 +151,8 @@ export function filePathToFilesUrl(
   if (rootIndex === -1) {
     return null;
   }
-  const root = rootDirectories[rootIndex].replace(/\/+$/, '');
-  const relative = absolutePath.slice(root.length);
+  const root = cleanRootPath(rootDirectories[rootIndex]);
+  const relative = absolutePath.replace(/\\/g, '/').slice(root.length);
   const encoded = relative
     .split('/')
     .map((segment) => encodeURIComponent(segment))
