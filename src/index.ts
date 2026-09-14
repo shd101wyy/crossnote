@@ -25,3 +25,5 @@ export {
   wrapNodeFSAsApi,
 } from './notebook/config-helper';
 export { HeadingIdGenerator };
+export { buildWiki } from './wiki';
+export type { BuildWikiOptions, BuildWikiResult, WikiFileEntry } from './wiki';

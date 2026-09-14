@@ -629,3 +629,23 @@ button {
 .cn-titlebar-count {
   color: var(--cn-accent);
 }
+
+.cn-toast {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  max-width: 70%;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--cn-border, #d8dee4);
+  background: var(--cn-bg, #ffffff);
+  color: var(--cn-fg, #1f2328);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+}
+
+.cn-toast-error {
+  border-color: #d1242f;
+  color: #d1242f;
+}

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { NotebookConfig } from '../notebook';
+import { Notebook, NotebookConfig } from '../notebook';
 import {
   loadConfigsInDirectory,
   wrapNodeFSAsApi,
@@ -150,4 +150,62 @@ export async function updateServerConfigKey(
     await updateGlobalConfigKey(context.globalConfigDirectory, key, value);
   }
   return loadServerConfig(context);
+}
+
+export interface DirectoryNotebooks {
+  /** Resolved, deduplicated root directories in the order given. */
+  rootDirectories: string[];
+  /** The config context of each root (for later config reloads/writes). */
+  configContexts: ServerConfigContext[];
+  /** One Notebook per root directory, sharing the global config layer. */
+  notebooks: Notebook[];
+}
+
+/**
+ * Shared bootstrap for everything that treats a list of directories like a
+ * VS Code multi-root workspace (`crossnote serve`, `crossnote build-wiki`):
+ * resolve and deduplicate the roots, then create one config context +
+ * Notebook per root (each folder keeps its `.crossnote` config; the global
+ * config layer is shared).
+ */
+export async function createNotebooksForDirectories(
+  directories: string[],
+  options: {
+    vscode?: boolean;
+    vscodeSettingsPath?: string;
+    globalConfigDirectory?: string;
+  } = {},
+): Promise<DirectoryNotebooks> {
+  const rootDirectories: string[] = [];
+  for (const directory of directories) {
+    const resolved = path.resolve(directory);
+    const stat = await fs.promises.stat(resolved).catch(() => null);
+    if (!stat?.isDirectory()) {
+      throw new Error(`Not a directory: ${resolved}`);
+    }
+    if (!rootDirectories.includes(resolved)) {
+      rootDirectories.push(resolved);
+    }
+  }
+
+  const configContexts: ServerConfigContext[] = await Promise.all(
+    rootDirectories.map((root) =>
+      createConfigContext({
+        rootDirectory: root,
+        vscode: options.vscode,
+        vscodeSettingsPath: options.vscodeSettingsPath,
+        globalConfigDirectory: options.globalConfigDirectory,
+      }),
+    ),
+  );
+  const notebooks: Notebook[] = await Promise.all(
+    configContexts.map(async (context) =>
+      Notebook.init({
+        notebookPath: context.rootDirectory,
+        config: (await loadServerConfig(context)) as Partial<NotebookConfig>,
+      }),
+    ),
+  );
+
+  return { rootDirectories, configContexts, notebooks };
 }

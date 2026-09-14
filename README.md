@@ -145,6 +145,39 @@ HTML/SVG/XML files from the served directories are delivered with a
 sandboxing CSP, so a document from an untrusted repository can never execute
 same-origin script against the app.
 
+## CLI: `crossnote build-wiki`
+
+`crossnote build-wiki` packs the directories' markdown notes into a single
+standalone HTML file — a read-only snapshot of the serve experience, like a
+TiddlyWiki: a file list with a fuzzy filter, one note at a time, and note-to-note
+links that keep working inside the file.
+
+```sh
+$ npx crossnote build-wiki [directory...]         # default output ./index.html
+$ crossnote build-wiki ~/notes -o ~/public/wiki.html
+$ crossnote build-wiki docs wiki --vscode         # reuse VS Code settings, too
+```
+
+- Every note is rendered through the regular HTML export pipeline: CDN-hosted
+  assets (KaTeX/MathJax, mermaid, wavedrom, vega, …) load when the reader is
+  online, and local images/SVGs are embedded as data URIs so the file travels
+  on its own (front matter `html: { embed_local_images: false }` opts out).
+- Notes are pre-rendered and shown inside a sandboxed iframe — the wiki has
+  no write channel at all. Task-list checkboxes are disabled, external links
+  open new tabs, and links to notes that are not part of the wiki explain so
+  instead of navigating away.
+- Config resolution is the same as `serve`
+  (`defaults ← VS Code settings with --vscode ← global crossnote config ←
+<directory>/.crossnote`), per directory.
+- The preview context menu (in `serve` and in the VS Code extension) has an
+  "Export standalone HTML (wiki)" item that builds the same file: the server
+  writes it next to the notes as `crossnote-wiki.html` (never overwriting a
+  previous export); the extension asks where to save it.
+
+The file is a full snapshot — for very large note collections (thousands of
+notes with big images) it can get large; the build reports its size and any
+note that failed to render (failures are skipped, not fatal).
+
 ## markdown_yo (Experimental)
 
 Crossnote supports an optional high-performance markdown renderer called [markdown_yo](https://github.com/shd101wyy/markdown_yo), written in the [Yo programming language](https://github.com/shd101wyy/Yo) and compiled to WebAssembly. When enabled, it replaces markdown-it for HTML rendering while markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).

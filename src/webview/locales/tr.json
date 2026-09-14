@@ -18,6 +18,7 @@
   "contextMenu.inPreviewEditorZenModeNotice": "Önizleme içi düzenleyici Zen modunda kullanılamaz. Kullanmak için Zen modunu kapatın.",
   "contextMenu.imageHelper": "Görsel yardımcısı",
   "contextMenu.syncSource": "Kaynağı eşitle",
+  "contextMenu.exportStandaloneWiki": "Bağımsız HTML (wiki) dışa aktar",
   "contextMenu.zoom": "Yakınlaştırma",
   "contextMenu.zoomIn": "Yakınlaştır",
   "contextMenu.zoomOut": "Uzaklaştır",
