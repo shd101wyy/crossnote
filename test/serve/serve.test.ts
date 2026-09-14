@@ -258,6 +258,10 @@ describe('crossnote serve', () => {
     // The resolver refuses paths escaping every served root before any
     // filesystem access, so the request just 404s.
     expect(traversal.status).toBe(404);
+
+    // Malformed percent-encoding must 404, not crash into a 500.
+    const malformed = await fetch(`${server.url}/files/%`);
+    expect(malformed.status).toBe(404);
   });
 
   test('lists markdown files but skips node_modules', async () => {

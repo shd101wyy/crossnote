@@ -76,7 +76,13 @@ export function resolveMountedFile(
   urlPath: string,
   preferredRootIndex: number | null,
 ): string | null {
-  const relativePath = decodeURIComponent(urlPath.slice(urlPrefix.length));
+  let relativePath: string;
+  try {
+    relativePath = decodeURIComponent(urlPath.slice(urlPrefix.length));
+  } catch {
+    // Malformed percent-encoding (e.g. `/files/%`) is just a bad URL.
+    return null;
+  }
   const candidates: number[] = [];
   if (
     preferredRootIndex !== null &&
