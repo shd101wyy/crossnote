@@ -17,12 +17,21 @@
       "types": "./out/types/src/index.d.ts",
       "import": "./out/esm/index.mjs",
       "require": "./out/cjs/index.cjs"
+    },
+    "./cli": {
+      "types": "./out/types/src/cli/index.d.ts",
+      "require": "./out/cli/index.cjs",
+      "default": "./out/cli/index.cjs"
     }
   },
   "main": "out/cjs/index.cjs",
   "module": "out/esm/index.mjs",
   "types": "out/types/src/index.d.ts",
+  "bin": {
+    "crossnote": "bin/crossnote.js"
+  },
   "files": [
+    "bin",
     "docs",
     "out"
   ],

@@ -1,0 +1,631 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * VS Code–like dark chrome for the crossnote server app.
+ * Colors are tuned to the crossnote green accent (#95c258).
+ */
+:root {
+  --cn-bg: #1e1e1e;
+  --cn-titlebar-bg: #323233;
+  --cn-tabstrip-bg: #2d2d2d;
+  --cn-tab-inactive-bg: #2d2d2d;
+  --cn-tab-active-bg: #1e1e1e;
+  --cn-border: #3e3e42;
+  --cn-text: #cccccc;
+  --cn-text-dim: #8b8b8b;
+  --cn-accent: #95c258;
+  --cn-accent-dim: #6fa129;
+  --cn-hover: #37373d;
+  --cn-selected: #04395e;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--cn-bg);
+  color: var(--cn-text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 13px;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---- app frame ---- */
+.cn-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.cn-main {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---- title bar ---- */
+.cn-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 0 8px 0 12px;
+  background: var(--cn-titlebar-bg);
+  border-bottom: 1px solid var(--cn-border);
+  flex: none;
+  user-select: none;
+}
+
+.cn-titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cn-titlebar-title {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.cn-titlebar-sep {
+  color: var(--cn-text-dim);
+}
+
+.cn-titlebar-root {
+  color: var(--cn-text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cn-titlebar-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(149, 194, 88, 0.15);
+  color: var(--cn-accent);
+  border: 1px solid rgba(149, 194, 88, 0.35);
+  white-space: nowrap;
+}
+
+.cn-titlebar-open {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--cn-border);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cn-titlebar-open:hover {
+  background: var(--cn-hover);
+}
+
+/* ---- keyboard hint chips ---- */
+.cn-kbd-group {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  margin-left: 6px;
+}
+
+.cn-kbd-group kbd {
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--cn-border);
+  border-bottom-width: 2px;
+  background: #2d2d2d;
+  color: var(--cn-text-dim);
+}
+
+/* ---- panes & splits ---- */
+.cn-split {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.cn-split-horizontal {
+  flex-direction: row;
+}
+
+.cn-split-vertical {
+  flex-direction: column;
+}
+
+.cn-split-child {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.cn-splitter {
+  flex: none;
+  z-index: 10;
+  background: var(--cn-border);
+}
+
+.cn-splitter-vertical {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.cn-splitter-horizontal {
+  height: 4px;
+  cursor: row-resize;
+}
+
+.cn-splitter:hover,
+.cn-splitter:active {
+  background: var(--cn-accent-dim);
+}
+
+.cn-pane {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: var(--cn-bg);
+  outline: 1px solid transparent;
+}
+
+.cn-pane-active {
+  outline-color: rgba(149, 194, 88, 0.4);
+}
+
+/* ---- tabs ---- */
+.cn-tabstrip {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  background: var(--cn-tabstrip-bg);
+  border-bottom: 1px solid var(--cn-border);
+  flex: none;
+  min-height: 35px;
+  user-select: none;
+}
+
+.cn-tabs {
+  display: flex;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.cn-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.cn-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px 0 10px;
+  min-width: 110px;
+  max-width: 220px;
+  background: var(--cn-tab-inactive-bg);
+  border-right: 1px solid var(--cn-border);
+  color: var(--cn-text-dim);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cn-tab:hover {
+  background: var(--cn-hover);
+}
+
+.cn-tab-active {
+  background: var(--cn-tab-active-bg);
+  color: var(--cn-text);
+  border-top: 1px solid var(--cn-accent);
+  padding-top: 0;
+}
+
+.cn-tab-icon {
+  display: flex;
+  color: var(--cn-accent-dim);
+}
+
+.cn-tab-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12.5px;
+}
+
+.cn-tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.cn-tab:hover .cn-tab-close,
+.cn-tab-active .cn-tab-close {
+  opacity: 1;
+}
+
+.cn-tab-close:hover {
+  background: var(--cn-hover);
+  color: #fff;
+}
+
+.cn-tabstrip-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+}
+
+.cn-iconbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  color: var(--cn-text-dim);
+  cursor: pointer;
+}
+
+.cn-iconbtn:hover {
+  background: var(--cn-hover);
+  color: var(--cn-text);
+}
+
+/* ---- preview frames ---- */
+.cn-pane-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cn-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+
+/* ---- welcome ---- */
+.cn-welcome {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 24px;
+}
+
+.cn-welcome-card {
+  max-width: 560px;
+  text-align: center;
+}
+
+.cn-logo {
+  display: block;
+  margin: 0 auto 12px;
+}
+
+.cn-welcome-card h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: #e8e8e8;
+}
+
+.cn-welcome-sub {
+  color: var(--cn-text-dim);
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+
+.cn-welcome-path {
+  color: var(--cn-accent);
+  background: rgba(149, 194, 88, 0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+.cn-welcome-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  border: 1px solid var(--cn-accent-dim);
+  background: rgba(149, 194, 88, 0.12);
+  color: var(--cn-accent);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cn-welcome-open:hover {
+  background: rgba(149, 194, 88, 0.2);
+}
+
+.cn-welcome-section {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cn-text-dim);
+  margin: 26px 0 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--cn-border);
+  padding-bottom: 6px;
+}
+
+.cn-recent-file {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cn-recent-file:hover {
+  background: var(--cn-hover);
+}
+
+.cn-recent-base {
+  color: var(--cn-text);
+  white-space: nowrap;
+}
+
+.cn-recent-dir {
+  color: var(--cn-text-dim);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
+}
+
+.cn-welcome-shortcuts ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 24px;
+  text-align: left;
+}
+
+.cn-welcome-shortcuts li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--cn-text-dim);
+}
+
+/* ---- file picker ---- */
+.cn-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 10vh;
+}
+
+.cn-picker {
+  width: min(620px, calc(100vw - 48px));
+  background: #252526;
+  border: 1px solid var(--cn-border);
+  border-radius: 8px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cn-picker-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-bottom: 1px solid var(--cn-border);
+  background: #1e1e1e;
+  color: #e8e8e8;
+  font-size: 14px;
+  outline: none;
+}
+
+.cn-picker-input::placeholder {
+  color: var(--cn-text-dim);
+}
+
+.cn-picker-list {
+  max-height: 46vh;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.cn-picker-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--cn-text-dim);
+}
+
+.cn-picker-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.cn-picker-item-selected {
+  background: var(--cn-selected);
+}
+
+.cn-picker-base {
+  color: #e8e8e8;
+  white-space: nowrap;
+}
+
+.cn-picker-dir {
+  color: var(--cn-text-dim);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
+  flex: 1;
+}
+
+.cn-picker-footer {
+  display: flex;
+  gap: 14px;
+  padding: 6px 14px;
+  border-top: 1px solid var(--cn-border);
+  color: var(--cn-text-dim);
+  font-size: 11px;
+}
+
+/* ---- zen mode ---- */
+.cn-app-zen .cn-main {
+  position: relative;
+}
+
+.cn-zen-exit {
+  position: fixed;
+  top: 8px;
+  right: 12px;
+  z-index: 200;
+  padding: 4px 10px;
+  border: 1px solid var(--cn-border);
+  border-radius: 6px;
+  background: rgba(30, 30, 30, 0.85);
+  color: var(--cn-text-dim);
+  cursor: pointer;
+  opacity: 0.25;
+  transition: opacity 0.15s;
+}
+
+.cn-zen-exit:hover {
+  opacity: 1;
+}
+
+/* ---- tab drag & drop ---- */
+.cn-tab-insert {
+  width: 0;
+  align-self: stretch;
+  border-left: 2px solid var(--cn-accent);
+  margin: 4px 0;
+}
+
+.cn-tab.dragging {
+  opacity: 0.4;
+}
+
+/* Covers the pane body while a tab drag is in flight so preview iframes
+ * can't swallow the drag events. */
+.cn-drop-guard {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+}
+
+.cn-drop-hint {
+  position: absolute;
+  background: rgba(149, 194, 88, 0.14);
+  border: 1px solid rgba(149, 194, 88, 0.5);
+  border-radius: 4px;
+  pointer-events: none;
+  transition:
+    top 0.08s ease,
+    left 0.08s ease,
+    right 0.08s ease,
+    bottom 0.08s ease;
+}
+
+.cn-drop-hint-center {
+  inset: 6px;
+}
+
+.cn-drop-hint-left {
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: 42%;
+}
+
+.cn-drop-hint-right {
+  top: 6px;
+  bottom: 6px;
+  right: 6px;
+  width: 42%;
+}
+
+.cn-drop-hint-top {
+  left: 6px;
+  right: 6px;
+  top: 6px;
+  height: 42%;
+}
+
+.cn-drop-hint-bottom {
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  height: 42%;
+}
+
+.cn-titlebar-count {
+  color: var(--cn-accent);
+}

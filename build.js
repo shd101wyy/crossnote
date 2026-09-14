@@ -88,17 +88,33 @@ const esmConfig = {
 /**
  * @type {import('esbuild').BuildOptions}
  */
+const cliConfig = {
+  ...sharedConfig,
+  entryPoints: ['./src/cli/index.ts'],
+  platform: 'node',
+  outfile: './out/cli/index.cjs',
+  target: 'node18',
+  // Keep stack traces and error messages readable for a CLI.
+  minify: false,
+};
+
+/**
+ * @type {import('esbuild').BuildOptions}
+ */
 const webviewConfig = {
   entryPoints: [
     './src/webview/preview.tsx',
     './src/webview/backlinks.tsx',
     './src/webview/graph-view.tsx',
+    './src/server-app/server-app.tsx',
   ],
   bundle: true,
   minify: true,
   platform: 'browser',
-  // outfile: './out/webview/index.js',
-  outdir: './out/webview',
+  // Entries live in src/webview and src/server-app; with an explicit outbase
+  // they land at out/webview/preview.js and out/server-app/server-app.js.
+  outbase: './src',
+  outdir: './out',
   loader: {
     '.png': 'dataurl',
     '.woff': 'dataurl',
@@ -125,6 +141,12 @@ async function main() {
         sourcemap: true,
       });
 
+      // CLI
+      const cliContext = await context({
+        ...cliConfig,
+        sourcemap: true,
+      });
+
       // Webview
       const webviewContext = await context({
         ...webviewConfig,
@@ -134,11 +156,15 @@ async function main() {
       await Promise.all([
         cjsContext.watch(),
         esmContext.watch(),
+        cliContext.watch(),
         webviewContext.watch(),
       ]);
     } else {
       // CommonJS
       await build(cjsConfig);
+
+      // CLI
+      await build(cliConfig);
 
       // ESM
       await build(esmConfig);

@@ -58,6 +58,12 @@ export default function ContextMenu() {
     zoomLevel,
   } = PreviewContainer.useContainer();
 
+  // The standalone `crossnote serve` host has no VS Code around: features
+  // that need one (exports, external editor, image helper, translation,
+  // graph view, source sync) are hidden the same way they are for the web
+  // extension.
+  const isServerApp = !!config.isServerApp;
+
   // vscode-mpe#2363: capture the selection as it changes so the Copy
   // item always copies the text that was selected when the menu opened
   // (clicking the menu item can blur the selection first).
@@ -365,14 +371,18 @@ export default function ContextMenu() {
             <Separator></Separator>
           </>
         )}
-        <Item id="open-graph-view" onClick={handleItemClick}>
-          <span className="inline-flex flex-row items-center">
-            <Icon path={mdiGraph} size={0.8} className="mr-2"></Icon>
-            {t('contextMenu.openGraphView')}
-          </span>
-        </Item>
-        <Separator></Separator>
-        {!isVSCodeWebExtension && (
+        {!isServerApp && (
+          <>
+            <Item id="open-graph-view" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">
+                <Icon path={mdiGraph} size={0.8} className="mr-2"></Icon>
+                {t('contextMenu.openGraphView')}
+              </span>
+            </Item>
+            <Separator></Separator>
+          </>
+        )}
+        {!isVSCodeWebExtension && !isServerApp && (
           <>
             <Item id="open-in-browser" onClick={handleItemClick}>
               <Icon path={mdiOpenInNew} size={0.8} className="mr-2"></Icon>{' '}
@@ -387,7 +397,7 @@ export default function ContextMenu() {
             <Separator></Separator>
           </>
         )}
-        {!isVSCodeWebExtension && (
+        {!isVSCodeWebExtension && !isServerApp && (
           <Submenu
             label={
               <span className="inline-flex flex-row items-center">
@@ -462,7 +472,7 @@ export default function ContextMenu() {
             </Item>
           </Submenu>
         )}
-        {!isVSCodeWebExtension && <Separator></Separator>}
+        {!isVSCodeWebExtension && !isServerApp && <Separator></Separator>}
         <Submenu
           label={
             <span className="inline-flex flex-row items-center">
@@ -471,13 +481,15 @@ export default function ContextMenu() {
             </span>
           }
         >
-          <Item id="open-external-editor" onClick={handleItemClick}>
-            <span>
-              {isVSCode
-                ? t('contextMenu.openVSCodeEditor')
-                : t('contextMenu.openExternalEditor')}
-            </span>
-          </Item>
+          {!isServerApp && (
+            <Item id="open-external-editor" onClick={handleItemClick}>
+              <span>
+                {isVSCode
+                  ? t('contextMenu.openVSCodeEditor')
+                  : t('contextMenu.openExternalEditor')}
+              </span>
+            </Item>
+          )}
           {/* The in-preview editor cannot be shown in presentation mode, so
               the item is not offered there. In zen mode the editor is also
               intentionally hidden, but the item stays visible — clicking it
@@ -502,7 +514,7 @@ export default function ContextMenu() {
           </span>
         </Item>
         <Separator></Separator>
-        {!isVSCodeWebExtension && (
+        {!isVSCodeWebExtension && !isServerApp && (
           <>
             <Item id="open-image-helper" onClick={handleItemClick}>
               <span className="inline-flex flex-row items-center">
@@ -513,13 +525,17 @@ export default function ContextMenu() {
             <Separator></Separator>
           </>
         )}
-        <Item id="sync-source" onClick={handleItemClick}>
-          <span className="inline-flex flex-row items-center">
-            <Icon path={mdiSync} size={0.8} className="mr-2"></Icon>
-            {t('contextMenu.syncSource')}
-          </span>
-        </Item>
-        <Separator></Separator>
+        {!isServerApp && (
+          <>
+            <Item id="sync-source" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">
+                <Icon path={mdiSync} size={0.8} className="mr-2"></Icon>
+                {t('contextMenu.syncSource')}
+              </span>
+            </Item>
+            <Separator></Separator>
+          </>
+        )}
         <Submenu
           label={
             <span className="inline-flex flex-row items-center">

@@ -99,6 +99,52 @@ If your notebook has `.crossnote` directory, then when you run `await Notebook.i
 └── style.less
 ```
 
+## CLI: `crossnote serve`
+
+Crossnote ships a small CLI that serves a directory of markdown notes as a
+standalone preview app in your browser:
+
+```sh
+$ npx crossnote serve [directory...]  # defaults to the cwd
+$ pnpm crossnote serve ~/notes --port 8080
+$ crossnote serve docs wiki           # multiple folders, like a VS Code multi-root workspace
+$ crossnote serve . --vscode          # reuse VS Code markdown-preview-enhanced settings
+```
+
+Open the printed URL (default `http://127.0.0.1:3000`) and you get a VS
+Code–like editor layout running the exact same preview as the extension:
+
+- Press `Ctrl/Cmd+P` for the fuzzy file picker. With multiple directories
+  every file keeps its own folder's `.crossnote` config, and picker entries
+  are prefixed with the folder name.
+- Tabs, split panes, and drag & drop (drag a tab onto a pane edge to split
+  there, `Ctrl/Cmd+\` splits right, `Alt+W` closes a tab).
+- Files are watched on disk — previews update live as you save, and edits
+  from the in-preview editor are written straight back to the file.
+- The preview context menu keeps working; changing the preview/code block
+  theme persists it (see config resolution below). Host-only features such
+  as "Open in Browser" and exports are hidden.
+
+Config resolution mirrors the
+[VS Code extension](https://github.com/shd101wyy/vscode-markdown-preview-enhanced):
+`defaults ← VS Code user settings (only with --vscode) ← global crossnote
+config (~/.crossnote or $XDG_CONFIG_HOME/crossnote) ← <directory>/.crossnote`.
+Theme changes are persisted to VS Code `settings.json` (a comment-preserving
+surgical edit) in `--vscode` mode, and to the global crossnote `config.js`
+otherwise.
+
+Options: `--port <n>` (default 3000, auto-increments when busy), `--host`
+(default 127.0.0.1), `--vscode`, `--vscode-settings <path>` (explicit
+settings.json, auto-detected otherwise).
+
+The server is built for local use: it binds to `127.0.0.1` by default and
+only accepts requests whose `Host`/`Origin` name the server itself, so
+websites open in the same browser cannot drive its command endpoint (which
+runs code chunks and writes files) or read its responses via DNS rebinding.
+HTML/SVG/XML files from the served directories are delivered with a
+sandboxing CSP, so a document from an untrusted repository can never execute
+same-origin script against the app.
+
 ## markdown_yo (Experimental)
 
 Crossnote supports an optional high-performance markdown renderer called [markdown_yo](https://github.com/shd101wyy/markdown_yo), written in the [Yo programming language](https://github.com/shd101wyy/Yo) and compiled to WebAssembly. When enabled, it replaces markdown-it for HTML rendering while markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).
