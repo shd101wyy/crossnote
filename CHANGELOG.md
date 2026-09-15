@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Tests
+
+- **NUL bytes in a document don't truncate the preview** — regression tests for [vscode-mpe#2394](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2394), where a document containing a `\0` byte reportedly rendered only up to that byte. The pipeline was audited end-to-end (file read → front matter → parser → render enhancers → sanitizer → the `data-html` attribute the preview template embeds in `<body>` → the VS Code webview transport) and is NUL-safe: markdown-it's normalize rule — and markdown_yo likewise — replaces `\0` with U+FFFD before tokenization, so no raw NUL reaches the output and everything after the byte keeps rendering. The new tests lock that in for both parsers, for NULs in paragraphs, code blocks, inline code, headings, inline raw HTML and at the document start, and assert the preview template never contains a raw NUL, so a future parser or transformer change cannot silently reintroduce truncation.
+
 ## [0.9.36] - 2026-09-14
 
 ### Features
