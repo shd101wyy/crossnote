@@ -65,3 +65,41 @@ export function copyBlobToClipboard(blob: Blob) {
       console.error(error);
     });
 }
+
+/**
+ * Storage access can throw a SecurityError — e.g. inside the sandboxed
+ * iframes of a standalone wiki file, where the iframe has an opaque origin.
+ * These helpers degrade to "no persistence" instead of crashing the React
+ * tree.
+ */
+export function readLocalStorage(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+export function writeLocalStorage(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage unavailable — persistence is best-effort.
+  }
+}
+
+export function readSessionStorage(key: string): string | null {
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+export function writeSessionStorage(key: string, value: string): void {
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // Storage unavailable — persistence is best-effort.
+  }
+}

@@ -1,56 +1,55 @@
-import * as cheerio from 'cheerio';
 import * as fs from 'fs';
 import * as path from 'path';
+import type * as vscode from 'vscode';
+import type { MarkdownEngineOutput } from '../markdown-engine';
+import type { WebviewConfig } from '../notebook';
+import { previewHostShimScript } from '../serve/preview-host-shim';
+import { createNotebooksForDirectories } from '../serve/config';
+import { isPathWithinRoot, listMarkdownFiles } from '../serve/markdown-files';
 import {
+  addFileProtocol,
   getCrossnoteBuildDirectory,
   setCrossnoteBuildDirectory,
+  useExternalAddFileProtocolFunction,
 } from '../utility';
-import { createNotebooksForDirectories } from '../serve/config';
-import { listMarkdownFiles } from '../serve/markdown-files';
 
 /**
- * Injected into every embedded note document. Makes the document behave
- * inside the wiki shell:
- *
- * - links to other notes of the wiki are relayed to the shell, which swaps
- *   the iframe instead of navigating away;
- * - http(s) links open in a new browser tab (the sandboxed iframe itself is
- *   never navigated away);
- * - task-list checkboxes are click-disabled — the wiki is a read-only
- *   snapshot and there is no file behind the checkbox to update.
- *
- * Runs inside a `sandbox="allow-scripts …"` iframe, so its only outbound
- * channel is `parent.postMessage`.
+ * Token prefix that stands for a shared asset inside the wiki file (see
+ * {@link buildWiki}); resolved to inline `<script>`/`<style>` content by the
+ * shell when a note is opened.
  */
-const WIKI_RELAY_SCRIPT = `(function () {
-  document.addEventListener('click', function (event) {
-    var node = event.target;
-    var anchor = node && node.closest ? node.closest('a') : null;
-    if (!anchor) {
-      if (node && node.classList && node.classList.contains('task-list-item-checkbox')) {
-        event.preventDefault();
-      }
-      return;
-    }
-    var href = anchor.getAttribute('href');
-    if (!href || href.charAt(0) === '#') {
-      return;
-    }
-    if (anchor.target === '_blank') {
-      return;
-    }
-    event.preventDefault();
-    if (/^https?:/i.test(href)) {
-      window.open(anchor.href, '_blank', 'noopener');
-      return;
-    }
-    if (/^(mailto:|tel:)/i.test(href)) {
-      window.location.href = href;
-      return;
-    }
-    parent.postMessage({ command: 'wiki-navigate', href: href }, '*');
-  }, true);
-})();`;
+const ASSET_TOKEN_PREFIX = 'crossnote-wiki-asset:';
+
+/**
+ * Injected right before preview.js in every embedded note document. Wiki
+ * frames run sandboxed (opaque origin), so unlike the serve server's shim
+ * every message must be posted with `'*'` as target origin.
+ */
+const WIKI_PREVIEW_HOST_SHIM = previewHostShimScript("'*'");
+
+const IMAGE_MIME_TYPES: Record<string, string> = {
+  avif: 'image/avif',
+  bmp: 'image/bmp',
+  gif: 'image/gif',
+  ico: 'image/x-icon',
+  jpeg: 'image/jpeg',
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  svg: 'image/svg+xml',
+  webp: 'image/webp',
+};
+
+const SCRIPT_STYLE_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.css']);
+
+/** Extensions whose files are embedded as data URIs (images travel along). */
+function isImagePath(filePath: string): boolean {
+  const extension = path.extname(filePath).toLowerCase().slice(1);
+  return extension in IMAGE_MIME_TYPES;
+}
+
+function toPosixPath(filePath: string): string {
+  return filePath.split(path.sep).join('/');
+}
 
 export interface BuildWikiOptions {
   /**
@@ -84,15 +83,37 @@ export interface WikiFileEntry {
   root: string;
   /** Document title (front-matter title or file basename). */
   title: string;
-  /** The complete, self-contained export document of the note. */
+  /** Modification time of the source note (picker ordering). */
+  mtimeMs: number;
+  /**
+   * The complete preview page document for the note — the exact page the
+   * serve server would render at `/preview?file=…` — with shared assets
+   * referenced as `crossnote-wiki-asset:<id>` tokens.
+   */
   html: string;
+  /**
+   * The `updateHtml` payload the shell replays into the page when it
+   * finishes loading (same message the serve server would broadcast), so
+   * the preview app initializes exactly like in `crossnote serve`.
+   */
+  update: {
+    markdown: string;
+    html: string;
+    tocHTML: string;
+    totalLineCount: number;
+    sourceUri: string;
+    sourceScheme: string;
+    id: string;
+    class: string;
+    jsAndCssFiles: string[];
+  };
 }
 
 export interface BuildWikiResult {
   /** The standalone HTML document. */
   html: string;
   /** Metadata of the embedded notes (without the html payloads). */
-  files: Array<Pick<WikiFileEntry, 'path' | 'root' | 'title'>>;
+  files: Array<Pick<WikiFileEntry, 'path' | 'root' | 'title' | 'mtimeMs'>>;
   rootDirectories: string[];
   /** Notes that failed to render, skipped from the wiki. */
   failures: Array<{ path: string; error: string }>;
@@ -100,14 +121,16 @@ export interface BuildWikiResult {
 
 /**
  * Build a standalone, single-file wiki (a la TiddlyWiki) from a list of
- * directories: every markdown note is rendered into its own self-contained
- * HTML document through the regular HTML export pipeline (CDN asset links,
- * local images/SVGs embedded as data URIs), and the documents are embedded
- * into one shell file with a small client-side app — file list, fuzzy
- * filter, and a sandboxed iframe that shows one note at a time.
+ * directories: every markdown note is rendered as a regular *preview* page
+ * (the same page `crossnote serve` shows, marked `isWiki` so the webview is
+ * read-only), and all pages are embedded into one shell document running the
+ * serve app itself. Shared assets (preview.js, mermaid, themes, …) are
+ * stored once and referenced by tokens that the shell inlines when a note is
+ * opened; local images travel along as data URIs.
  *
- * The result is read-only by construction: notes are pre-rendered and the
- * embedded documents have no write channel back to anything.
+ * The result is read-only by construction: notes are pre-rendered, the
+ * embedded webview config carries `isWiki: true` (hiding editing UI), and
+ * the sandboxed note frames have no write channel back to anything.
  */
 export async function buildWiki(
   options: BuildWikiOptions,
@@ -126,51 +149,153 @@ export async function buildWiki(
     },
   );
 
+  // Token registry: one entry per distinct asset file, filled by the
+  // addFileProtocol mapper while the templates are generated.
+  const assetIds = new Map<string, string>(); // absolute path → token id
+  let assetCounter = 0;
+  const tokenFor = (filePath: string): string => {
+    const resolved = path.resolve(filePath);
+    let id = assetIds.get(resolved);
+    if (id === undefined) {
+      id = String(assetCounter++);
+      assetIds.set(resolved, id);
+    }
+    return `${ASSET_TOKEN_PREFIX}${id}`;
+  };
+
+  const dataUriForImage = (filePath: string): string | null => {
+    try {
+      const extension = path.extname(filePath).toLowerCase().slice(1);
+      const mime = IMAGE_MIME_TYPES[extension];
+      if (!mime) {
+        return null;
+      }
+      const base64 = fs.readFileSync(resolvedPath(filePath)).toString('base64');
+      return `data:${mime};base64,${base64}`;
+    } catch {
+      // Unreadable image — keep a dead reference rather than failing the
+      // whole wiki build.
+      return null;
+    }
+  };
+
+  function resolvedPath(filePath: string): string {
+    return filePath.replace(/\?.+$/, ''); // drop the mapper's cache busters
+  }
+
+  // A truthy panel makes `utility.addFileProtocol` consult the mapper below;
+  // the engine never dereferences the panel. The mapper is global state, so
+  // it is restored afterwards — a host that renders its own previews
+  // concurrently (the serve server) must not start emitting wiki tokens.
+  const dummyPanel = {} as unknown as vscode.WebviewPanel;
+  const restoreMapper = useExternalAddFileProtocolFunction(
+    (filePath: string) => {
+      const cleanPath = resolvedPath(filePath);
+      if (isPathWithinRoot(buildDirectory, cleanPath)) {
+        return tokenFor(cleanPath);
+      }
+      for (const root of rootDirectories) {
+        if (!isPathWithinRoot(root, cleanPath)) {
+          continue;
+        }
+        if (isImagePath(cleanPath)) {
+          // Images must be final in the note HTML itself — the webview's
+          // sanitizer would strip an unknown asset-token scheme.
+          const dataUri = dataUriForImage(cleanPath);
+          if (dataUri) {
+            return dataUri;
+          }
+          return addFileProtocol(cleanPath);
+        }
+        if (
+          SCRIPT_STYLE_EXTENSIONS.has(path.extname(cleanPath).toLowerCase())
+        ) {
+          // Workspace js/css (@import files) — inlined like build assets.
+          return tokenFor(cleanPath);
+        }
+        // Everything else (note links, …) keeps a root-relative path, which
+        // the shell resolves against the wiki payload on click.
+        const relative = path.relative(root, cleanPath);
+        return `/${toPosixPath(relative)}`;
+      }
+      return addFileProtocol(cleanPath);
+    },
+  );
+
   const files: WikiFileEntry[] = [];
   const failures: Array<{ path: string; error: string }> = [];
 
-  for (let rootIndex = 0; rootIndex < rootDirectories.length; rootIndex++) {
-    const root = rootDirectories[rootIndex];
-    const notebook = notebooks[rootIndex];
-    const markdownFiles = await listMarkdownFiles(root);
-    let processedInRoot = 0;
-    for (const file of markdownFiles) {
-      try {
-        const engine = notebook.getNoteMarkdownEngine(file.absolutePath);
-        let html = await engine.htmlExportDocument({
-          offline: false,
-          // A wiki is meant to be shared, so local images/SVGs travel with
-          // it as data URIs (front matter can still turn this off).
-          embedLocalImages: true,
-          embedSVG: true,
-        });
-        let title = path.basename(
-          file.absolutePath,
-          path.extname(file.absolutePath),
-        );
-        const $ = cheerio.load(html);
-        // Same-document fragment anchors keep working; relative note links
-        // are relayed to the shell; external links open new tabs.
-        $('head').prepend(`<script>${WIKI_RELAY_SCRIPT}</script>`);
-        const titleElement = $('title').first().text().trim();
-        if (titleElement) {
-          title = titleElement;
+  try {
+    for (let rootIndex = 0; rootIndex < rootDirectories.length; rootIndex++) {
+      const root = rootDirectories[rootIndex];
+      const notebook = notebooks[rootIndex];
+      const markdownFiles = await listMarkdownFiles(root);
+      let processedInRoot = 0;
+      for (const file of markdownFiles) {
+        try {
+          const text = await fs.promises.readFile(file.absolutePath, 'utf-8');
+          const engine = notebook.getNoteMarkdownEngine(file.absolutePath);
+          const output: MarkdownEngineOutput = await engine.parseMD(text, {
+            isForPreview: true,
+            useRelativeFilePath: false,
+            hideFrontMatter: false,
+            vscodePreviewPanel: dummyPanel,
+          });
+          const html = await engine.generateHTMLTemplateForPreview({
+            inputString: text,
+            parsedOutput: output,
+            vscodePreviewPanel: dummyPanel,
+            config: {
+              sourceUri: file.absolutePath,
+              isVSCode: false,
+              isServerApp: true,
+              isWiki: true,
+            } as WebviewConfig,
+            scripts: WIKI_PREVIEW_HOST_SHIM,
+            // No <base>: same-document `#anchor` links must keep resolving to
+            // the note document itself.
+            head: '',
+          });
+          const yamlConfig = output.yamlConfig as Record<string, unknown>;
+          const title =
+            (typeof yamlConfig['title'] === 'string' &&
+              yamlConfig['title'].trim()) ||
+            path.basename(file.absolutePath, path.extname(file.absolutePath));
+          const mtimeMs = (await fs.promises.stat(file.absolutePath)).mtimeMs;
+          files.push({
+            path: file.absolutePath,
+            root,
+            title,
+            mtimeMs,
+            html,
+            update: {
+              markdown: text,
+              html: output.html,
+              tocHTML: output.tocHTML,
+              totalLineCount: text.split('\n').length,
+              sourceUri: file.absolutePath,
+              sourceScheme: 'file',
+              id: (yamlConfig['id'] as string) || '',
+              class: (yamlConfig['class'] as string) || '',
+              jsAndCssFiles: output.JSAndCssFiles,
+            },
+          });
+        } catch (error) {
+          failures.push({
+            path: file.absolutePath,
+            error: String(error),
+          });
         }
-        html = $.html();
-        files.push({ path: file.absolutePath, root, title, html });
-      } catch (error) {
-        failures.push({
-          path: file.absolutePath,
-          error: String(error),
+        processedInRoot += 1;
+        options.onProgress?.({
+          rendered: processedInRoot,
+          total: markdownFiles.length,
+          root,
         });
       }
-      processedInRoot += 1;
-      options.onProgress?.({
-        rendered: processedInRoot,
-        total: markdownFiles.length,
-        root,
-      });
     }
+  } finally {
+    restoreMapper();
   }
 
   if (files.length === 0) {
@@ -182,35 +307,116 @@ export async function buildWiki(
     );
   }
 
+  const assets: Record<string, string> = {};
+  for (const [filePath, id] of assetIds) {
+    assets[id] =
+      path.extname(filePath).toLowerCase() === '.css'
+        ? await readStylesheetWithInlinedUrls(filePath)
+        : await fs.promises.readFile(filePath, 'utf-8').catch(() => '');
+  }
+
   const html = buildShellHTML({
     rootDirectories,
     files,
+    assets,
     buildDirectory,
   });
 
   return {
     html,
-    files: files.map(({ path, root, title }) => ({ path, root, title })),
+    files: files.map(({ path, root, title, mtimeMs }) => ({
+      path,
+      root,
+      title,
+      mtimeMs,
+    })),
     rootDirectories,
     failures,
   };
 }
 
 /**
- * Assemble the shell document: a small client-side app (inlined from the
- * build directory) plus every note document embedded as a JSON payload.
+ * Read a stylesheet and inline every `url(...)` it references (fonts,
+ * images) as data URIs. Inlined stylesheets have no base URL inside a wiki
+ * note document, so relative references would otherwise break.
+ */
+async function readStylesheetWithInlinedUrls(cssPath: string): Promise<string> {
+  let css: string;
+  try {
+    css = await fs.promises.readFile(cssPath, 'utf-8');
+  } catch {
+    return '';
+  }
+  const directory = path.dirname(cssPath);
+  const cache = new Map<string, string>();
+  return css.replace(
+    /url\(\s*(['"]?)([^'")]+)\1\s*\)/g,
+    (match, _quote: string, ref: string) => {
+      if (
+        ref.startsWith('data:') ||
+        ref.startsWith('#') ||
+        /^[a-z][a-z0-9+.-]*:/i.test(ref) ||
+        ref.startsWith('//')
+      ) {
+        return match;
+      }
+      let dataUri = cache.get(ref);
+      if (dataUri === undefined) {
+        dataUri = '';
+        try {
+          const assetPath = path.resolve(directory, decodeURIComponent(ref));
+          const extension = path.extname(assetPath).toLowerCase().slice(1);
+          const mime =
+            IMAGE_MIME_TYPES[extension] ??
+            (extension === 'woff2'
+              ? 'font/woff2'
+              : extension === 'woff'
+                ? 'font/woff'
+                : extension === 'ttf'
+                  ? 'font/ttf'
+                  : extension === 'otf'
+                    ? 'font/otf'
+                    : extension === 'eot'
+                      ? 'application/vnd.ms-fontobject'
+                      : 'application/octet-stream');
+          const base64 = fs.readFileSync(assetPath).toString('base64');
+          dataUri = `data:${mime};base64,${base64}`;
+        } catch {
+          // Unreadable asset — keep the original (dead) reference.
+        }
+        cache.set(ref, dataUri);
+      }
+      return dataUri ? `url("${dataUri}")` : match;
+    },
+  );
+}
+
+/**
+ * Assemble the shell document: the serve app bundle (inlined from the build
+ * directory) plus every note document and shared asset embedded as one JSON
+ * payload.
  */
 function buildShellHTML({
   rootDirectories,
   files,
+  assets,
   buildDirectory,
 }: {
   rootDirectories: string[];
   files: WikiFileEntry[];
+  assets: Record<string, string>;
   buildDirectory: string;
 }): string {
-  const appScriptPath = path.join(buildDirectory, 'wiki-app', 'wiki-app.js');
-  const appStylePath = path.join(buildDirectory, 'wiki-app', 'wiki-app.css');
+  const appScriptPath = path.join(
+    buildDirectory,
+    'server-app',
+    'server-app.js',
+  );
+  const appStylePath = path.join(
+    buildDirectory,
+    'server-app',
+    'server-app.css',
+  );
   let appScript: string;
   let appStyle: string;
   try {
@@ -218,7 +424,7 @@ function buildShellHTML({
     appStyle = fs.readFileSync(appStylePath, 'utf-8');
   } catch (error) {
     throw new Error(
-      `the wiki app bundle is missing (looked at ${appScriptPath}); rebuild crossnote so out/wiki-app/ exists`,
+      `the server app bundle is missing (looked at ${appScriptPath}); rebuild crossnote so out/server-app/ exists`,
       { cause: error },
     );
   }
@@ -226,6 +432,7 @@ function buildShellHTML({
   // the inlined app, for good measure) becomes a JS unicode escape.
   const payload = JSON.stringify({
     rootDirectories,
+    assets,
     files,
   }).replace(/</g, '\\u003c');
   const safeAppScript = appScript.replace(/<\/script/g, '<\\/script');

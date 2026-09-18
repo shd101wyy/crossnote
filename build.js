@@ -107,14 +107,13 @@ const webviewConfig = {
     './src/webview/backlinks.tsx',
     './src/webview/graph-view.tsx',
     './src/server-app/server-app.tsx',
-    './src/wiki-app/wiki-app.ts',
   ],
   bundle: true,
   minify: true,
   platform: 'browser',
-  // Entries live in src/webview, src/server-app and src/wiki-app; with an
-  // explicit outbase they land at out/webview/preview.js,
-  // out/server-app/server-app.js and out/wiki-app/wiki-app.js.
+  // Entries live in src/webview and src/server-app; with an explicit outbase
+  // they land at out/webview/preview.js and out/server-app/server-app.js.
+  // (The standalone wiki inlines the server-app bundle as its shell.)
   outbase: './src',
   outdir: './out',
   loader: {

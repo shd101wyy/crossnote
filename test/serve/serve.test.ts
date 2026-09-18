@@ -37,9 +37,10 @@ function writeFakeBuildDirectory(root: string): void {
       '/* preview:github-dark */',
     ],
     [path.join(root, 'styles/prism_theme/github.css'), '/* prism:github */'],
-    // Standalone-wiki exports (exportStandaloneWiki command) inline these.
-    [path.join(root, 'wiki-app/wiki-app.js'), '// wiki app'],
-    [path.join(root, 'wiki-app/wiki-app.css'), '/* wiki app css */'],
+    // Standalone-wiki exports (exportStandaloneWiki command) inline the
+    // serve app bundle as the wiki shell.
+    [path.join(root, 'server-app/server-app.js'), '// server app'],
+    [path.join(root, 'server-app/server-app.css'), '/* server app css */'],
   ];
   for (const [file, content] of files) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -388,6 +389,17 @@ describe('crossnote serve', () => {
     );
     expect(wiki).toContain('window.__CROSSNOTE_WIKI__');
     expect(wiki).toContain('welcome');
+
+    // The wiki build swaps the global asset-URL mapper while it renders;
+    // afterwards the server's own preview pages must keep mapping to the
+    // HTTP mounts (no wiki tokens leaked into serve pages).
+    const after = await fetch(
+      `${server.url}/preview?file=${encodeURIComponent(
+        path.join(workspace, 'welcome.md'),
+      )}`,
+    );
+    const afterHtml = await after.text();
+    expect(afterHtml).toContain('src="/assets/webview/preview.js"');
   });
 
   test('drops commands for files outside the root', async () => {

@@ -1,7 +1,11 @@
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PreviewContainer from '../containers/preview';
-import { getElementBackgroundColor } from '../lib/utility';
+import {
+  getElementBackgroundColor,
+  readLocalStorage,
+  writeLocalStorage,
+} from '../lib/utility';
 
 const SIDEBAR_WIDTH_KEY = 'crossnote.sidebarTocWidth';
 const DEFAULT_WIDTH = 280;
@@ -14,7 +18,7 @@ function clampWidth(width: number): number {
 }
 
 function loadWidth(): number {
-  const stored = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+  const stored = readLocalStorage(SIDEBAR_WIDTH_KEY);
   if (stored) {
     const parsed = Number(stored);
     if (Number.isFinite(parsed)) {
@@ -44,7 +48,7 @@ export default function SidebarToc() {
       '--sidebar-toc-width',
       `${width}px`,
     );
-    localStorage.setItem(SIDEBAR_WIDTH_KEY, String(width));
+    writeLocalStorage(SIDEBAR_WIDTH_KEY, String(width));
   }, [width]);
 
   const onMouseDown = useCallback(

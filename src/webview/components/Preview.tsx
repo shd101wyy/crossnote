@@ -25,6 +25,7 @@ export default function Preview() {
     showContextMenu,
     showBacklinks,
     highlightElementBeingEdited,
+    isWiki,
     theme,
   } = PreviewContainer.useContainer();
 
@@ -88,8 +89,8 @@ export default function Preview() {
       <ContextMenu></ContextMenu>
       {/** Floating Actions */}
       {!enablePreviewZenMode && <FloatingActions></FloatingActions>}
-      {/** Markdown Editor */}
-      {!enablePreviewZenMode && highlightElementBeingEdited && (
+      {/** Markdown Editor — never in the read-only wiki */}
+      {!enablePreviewZenMode && !isWiki && highlightElementBeingEdited && (
         <MarkdownEditor></MarkdownEditor>
       )}
       {/** Transient notice (e.g. why an action is unavailable) */}

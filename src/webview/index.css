@@ -5,3 +5,18 @@
 .btn {
   border: none;
 }
+
+/*
+ * Read-only standalone wiki (body gets `wiki-readonly` from the engine when
+ * the webview config has `isWiki: true`). There is no file behind the
+ * preview, so code chunk run buttons are hidden and task-list checkboxes
+ * are inert (preview.ts also makes their click handlers no-ops).
+ */
+body.wiki-readonly .run-btn,
+body.wiki-readonly .run-all-btn {
+  display: none !important;
+}
+
+body.wiki-readonly .task-list-item-checkbox {
+  pointer-events: none;
+}

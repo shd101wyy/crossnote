@@ -18,7 +18,7 @@
   "contextMenu.inPreviewEditorZenModeNotice": "미리보기 내 편집기는 Zen 모드에서 사용할 수 없습니다. 사용하려면 Zen 모드를 끄세요.",
   "contextMenu.imageHelper": "이미지 도우미",
   "contextMenu.syncSource": "소스 동기화",
-  "contextMenu.exportStandaloneWiki": "단독 HTML(wiki) 내보내기",
+  "contextMenu.exportStandaloneWiki": "Wiki",
   "contextMenu.zoom": "확대/축소",
   "contextMenu.zoomIn": "확대",
   "contextMenu.zoomOut": "축소",

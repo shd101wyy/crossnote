@@ -13,9 +13,44 @@ export interface ServerInfo {
   url: string;
 }
 
+/** The `updateHtml` payload the wiki shell replays into a preview frame. */
+export interface WikiNoteUpdate {
+  markdown: string;
+  html: string;
+  tocHTML: string;
+  totalLineCount: number;
+  sourceUri: string;
+  sourceScheme: string;
+  id: string;
+  class: string;
+  jsAndCssFiles?: string[];
+}
+
+export interface WikiFileMeta {
+  path: string;
+  root: string;
+  title: string;
+  mtimeMs: number;
+  /**
+   * The complete preview page document (the exact `/preview` page the serve
+   * app would render), with crossnote build/workspace assets referenced as
+   * `crossnote-wiki-asset:<id>` tokens.
+   */
+  html: string;
+  update: WikiNoteUpdate;
+}
+
+export interface WikiData {
+  rootDirectories: string[];
+  /** Token → asset content: JS/CSS source to inline, or a data URI. */
+  assets: Record<string, string>;
+  files: WikiFileMeta[];
+}
+
 declare global {
   interface Window {
     __CROSSNOTE_SERVER__?: ServerInfo;
+    __CROSSNOTE_WIKI__?: WikiData;
   }
 }
 
@@ -27,6 +62,10 @@ export function getServerInfo(): ServerInfo {
       url: window.location.origin,
     }
   );
+}
+
+export function getWikiData(): WikiData | null {
+  return window.__CROSSNOTE_WIKI__ ?? null;
 }
 
 /**
@@ -115,13 +154,35 @@ function normalize(absolutePath: string): string {
  * hrefs (`/...`) are relative to the root that contains the source file —
  * matching crossnote's own `resolveFilePath`, which anchors them to the
  * file's project directory.
+ *
+ * Hrefs under `/files/` are the serve server's own file-mount URLs (the
+ * preview renders local links as `<a href="/files/…">`): the mount prefix
+ * is undone here, honoring the `?root=` hint the server's URL mapper adds
+ * in multi-root setups.
  */
 export function resolveHref(
   rootDirectories: string[],
   sourceFile: string,
   href: string,
 ): string {
-  const cleanHref = href.split('#')[0].split('?')[0];
+  const [pathAndFragment, query] = href.split('?');
+  const cleanHref = pathAndFragment.split('#')[0];
+  const filesMount = '/files/';
+  if (cleanHref.startsWith(filesMount)) {
+    const rootHint = new URLSearchParams(query ?? '').get('root');
+    const hinted =
+      rootHint !== null ? rootDirectories[parseInt(rootHint, 10)] : undefined;
+    const root =
+      hinted ??
+      rootDirectories.find(
+        (candidate) => rootContaining([candidate], sourceFile) !== -1,
+      ) ??
+      rootDirectories[0] ??
+      '';
+    return normalize(
+      cleanRootPath(root) + '/' + cleanHref.slice(filesMount.length),
+    );
+  }
   if (cleanHref.startsWith('/')) {
     const sourceRootIndex = rootContaining(rootDirectories, sourceFile);
     const base =
@@ -171,15 +232,7 @@ export interface WebviewFinishLoadingArgs {
   systemColorScheme: 'light' | 'dark';
 }
 
-export interface UpdateHtmlPayload {
+/** What the shell sends into a frame to (re)hydrate a preview. */
+export interface UpdateHtmlPayload extends WikiNoteUpdate {
   command?: string;
-  markdown: string;
-  html: string;
-  tocHTML: string;
-  totalLineCount: number;
-  sourceUri: string;
-  sourceScheme: string;
-  id: string;
-  class: string;
-  jsAndCssFiles?: string[];
 }

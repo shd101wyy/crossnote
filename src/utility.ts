@@ -264,13 +264,28 @@ let _externalAddFileProtocolFunction:
   | ((filePath: string, vscodePreviewPanel: vscode.WebviewPanel) => string)
   | null = null;
 
+/**
+ * Install (or, with `null`, clear) the host's asset-URL mapper for preview
+ * templates — see `addFileProtocol`. Returns a restore function that puts
+ * the previously installed mapper back (a no-op if another host replaced it
+ * in the meantime), so a one-shot caller like the wiki builder does not
+ * leak its mapping onto the host's own renders.
+ */
 export function useExternalAddFileProtocolFunction(
-  func: (
-    filePath: string,
-    vscodePreviewPanel?: vscode.WebviewPanel | null,
-  ) => string,
-) {
+  func:
+    | ((
+        filePath: string,
+        vscodePreviewPanel?: vscode.WebviewPanel | null,
+      ) => string)
+    | null,
+): () => void {
+  const previous = _externalAddFileProtocolFunction;
   _externalAddFileProtocolFunction = func;
+  return () => {
+    if (_externalAddFileProtocolFunction === func) {
+      _externalAddFileProtocolFunction = previous;
+    }
+  };
 }
 
 /**

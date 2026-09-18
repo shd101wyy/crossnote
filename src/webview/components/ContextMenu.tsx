@@ -41,6 +41,7 @@ export default function ContextMenu() {
     isVSCode,
     isVSCodeWebExtension,
     isShowingTranslation,
+    isWiki,
     highlightElementBeingEdited,
     postMessage,
     previewSyncSource,
@@ -401,7 +402,7 @@ export default function ContextMenu() {
             <Separator></Separator>
           </>
         )}
-        {!isVSCodeWebExtension && !isServerApp && (
+        {!isVSCodeWebExtension && !isWiki && (
           <Submenu
             label={
               <span className="inline-flex flex-row items-center">
@@ -414,97 +415,115 @@ export default function ContextMenu() {
               </span>
             }
           >
-            <Submenu
-              label={
-                <span className="inline-flex flex-row items-center">HTML</span>
-              }
-            >
-              <Item id="export-html-offline" onClick={handleItemClick}>
-                {t('contextMenu.exportHtmlOffline')}
-              </Item>
-              <Item id="export-html-cdn" onClick={handleItemClick}>
-                {t('contextMenu.exportHtmlCdn')}
-              </Item>
-            </Submenu>
-            <Submenu
-              label={
-                <span className="inline-flex flex-row items-center">
-                  {t('contextMenu.exportChrome')}
-                </span>
-              }
-            >
-              <Item id="export-chrome-pdf" onClick={handleItemClick}>
-                PDF
-              </Item>
-              <Item id="export-chrome-png" onClick={handleItemClick}>
-                PNG
-              </Item>
-              <Item id="export-chrome-jpeg" onClick={handleItemClick}>
-                JPEG
-              </Item>
-            </Submenu>
-            <Item id="export-prince" onClick={handleItemClick}>
-              <span className="inline-flex flex-row items-center">
-                {t('contextMenu.exportPrince')}
-              </span>
-            </Item>
-            <Submenu
-              label={
-                <span className="inline-flex flex-row items-center">eBook</span>
-              }
-            >
-              <Item id="export-ebook-epub" onClick={handleItemClick}>
-                ePub
-              </Item>
-              <Item id="export-ebook-mobi" onClick={handleItemClick}>
-                Mobi
-              </Item>
-              <Item id="export-ebook-pdf" onClick={handleItemClick}>
-                PDF
-              </Item>
-              <Item id="export-ebook-html" onClick={handleItemClick}>
-                HTML
-              </Item>
-            </Submenu>
-            <Item id="export-pandoc" onClick={handleItemClick}>
-              <span className="inline-flex flex-row items-center">Pandoc</span>
-            </Item>
-            <Item id="export-markdown" onClick={handleItemClick}>
-              <span className="inline-flex flex-row items-center">
-                {t('contextMenu.saveAsMarkdown')}
-              </span>
+            {!isServerApp && (
+              <>
+                <Submenu
+                  label={
+                    <span className="inline-flex flex-row items-center">
+                      HTML
+                    </span>
+                  }
+                >
+                  <Item id="export-html-offline" onClick={handleItemClick}>
+                    {t('contextMenu.exportHtmlOffline')}
+                  </Item>
+                  <Item id="export-html-cdn" onClick={handleItemClick}>
+                    {t('contextMenu.exportHtmlCdn')}
+                  </Item>
+                </Submenu>
+                <Submenu
+                  label={
+                    <span className="inline-flex flex-row items-center">
+                      {t('contextMenu.exportChrome')}
+                    </span>
+                  }
+                >
+                  <Item id="export-chrome-pdf" onClick={handleItemClick}>
+                    PDF
+                  </Item>
+                  <Item id="export-chrome-png" onClick={handleItemClick}>
+                    PNG
+                  </Item>
+                  <Item id="export-chrome-jpeg" onClick={handleItemClick}>
+                    JPEG
+                  </Item>
+                </Submenu>
+                <Item id="export-prince" onClick={handleItemClick}>
+                  <span className="inline-flex flex-row items-center">
+                    {t('contextMenu.exportPrince')}
+                  </span>
+                </Item>
+                <Submenu
+                  label={
+                    <span className="inline-flex flex-row items-center">
+                      eBook
+                    </span>
+                  }
+                >
+                  <Item id="export-ebook-epub" onClick={handleItemClick}>
+                    ePub
+                  </Item>
+                  <Item id="export-ebook-mobi" onClick={handleItemClick}>
+                    Mobi
+                  </Item>
+                  <Item id="export-ebook-pdf" onClick={handleItemClick}>
+                    PDF
+                  </Item>
+                  <Item id="export-ebook-html" onClick={handleItemClick}>
+                    HTML
+                  </Item>
+                </Submenu>
+                <Item id="export-pandoc" onClick={handleItemClick}>
+                  <span className="inline-flex flex-row items-center">
+                    Pandoc
+                  </span>
+                </Item>
+                <Item id="export-markdown" onClick={handleItemClick}>
+                  <span className="inline-flex flex-row items-center">
+                    {t('contextMenu.saveAsMarkdown')}
+                  </span>
+                </Item>
+              </>
+            )}
+            {/* The standalone wiki export needs a host process (the VS Code
+              extension or the crossnote serve server); the read-only wiki
+              itself has neither, and this whole submenu is hidden there. */}
+            <Item id="export-standalone-wiki" onClick={handleItemClick}>
+              {t('contextMenu.exportStandaloneWiki')}
             </Item>
           </Submenu>
         )}
-        {!isVSCodeWebExtension && !isServerApp && <Separator></Separator>}
-        <Submenu
-          label={
-            <span className="inline-flex flex-row items-center">
-              <Icon path={mdiPencil} size={0.8} className="mr-2"></Icon>
-              {t('contextMenu.editMarkdown')}
-            </span>
-          }
-        >
-          {!isServerApp && (
-            <Item id="open-external-editor" onClick={handleItemClick}>
-              <span>
-                {isVSCode
-                  ? t('contextMenu.openVSCodeEditor')
-                  : t('contextMenu.openExternalEditor')}
+        {!isVSCodeWebExtension && !isWiki && <Separator></Separator>}
+        {!isWiki && (
+          <Submenu
+            label={
+              <span className="inline-flex flex-row items-center">
+                <Icon path={mdiPencil} size={0.8} className="mr-2"></Icon>
+                {t('contextMenu.editMarkdown')}
               </span>
-            </Item>
-          )}
-          {/* The in-preview editor cannot be shown in presentation mode, so
+            }
+          >
+            {!isServerApp && (
+              <Item id="open-external-editor" onClick={handleItemClick}>
+                <span>
+                  {isVSCode
+                    ? t('contextMenu.openVSCodeEditor')
+                    : t('contextMenu.openExternalEditor')}
+                </span>
+              </Item>
+            )}
+            {/* The in-preview editor cannot be shown in presentation mode, so
               the item is not offered there. In zen mode the editor is also
               intentionally hidden, but the item stays visible — clicking it
               explains that zen mode needs to be disabled instead of silently
               doing nothing. */}
-          {!isPresentationMode && (
-            <Item id="open-in-preview-editor" onClick={openInPreviewEditor}>
-              <span>{t('contextMenu.openInPreviewEditor')} </span>
-            </Item>
-          )}
-        </Submenu>
+            {!isPresentationMode && (
+              <Item id="open-in-preview-editor" onClick={openInPreviewEditor}>
+                <span>{t('contextMenu.openInPreviewEditor')} </span>
+              </Item>
+            )}
+          </Submenu>
+        )}
         <Separator></Separator>
         <Item id="toggle-zen-mode" onClick={handleItemClick}>
           <span
@@ -535,21 +554,6 @@ export default function ContextMenu() {
               <span className="inline-flex flex-row items-center">
                 <Icon path={mdiSync} size={0.8} className="mr-2"></Icon>
                 {t('contextMenu.syncSource')}
-              </span>
-            </Item>
-            <Separator></Separator>
-          </>
-        )}
-        {!isVSCodeWebExtension && (
-          <>
-            <Item id="export-standalone-wiki" onClick={handleItemClick}>
-              <span className="inline-flex flex-row items-center">
-                <Icon
-                  path={mdiExportVariant}
-                  size={0.8}
-                  className="mr-2"
-                ></Icon>
-                {t('contextMenu.exportStandaloneWiki')}
               </span>
             </Item>
             <Separator></Separator>

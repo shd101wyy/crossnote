@@ -9,7 +9,13 @@ import { Backlink, WebviewConfig } from '../../notebook';
 import { classifyAnchorClick } from '../lib/anchor-routing';
 import { setLocale } from '../lib/i18n';
 import { sanitizeHtml } from '../lib/sanitize';
-import { isBackgroundColorLight } from '../lib/utility';
+import {
+  isBackgroundColorLight,
+  readLocalStorage,
+  readSessionStorage,
+  writeLocalStorage,
+  writeSessionStorage,
+} from '../lib/utility';
 
 window['jQuery'] = $;
 window['$'] = $;
@@ -124,7 +130,7 @@ const PreviewContainer = createContainer(() => {
   const backlinksSha = useRef<string>(SHA256(JSON.stringify([])).toString());
   const [showImageHelper, setShowImageHelper] = useState<boolean>(false);
   const [showSidebarToc, setShowSidebarToc] = useState<boolean>(
-    () => localStorage.getItem(showSidebarTocStorageKey) === '1',
+    () => readLocalStorage(showSidebarTocStorageKey) === '1',
   );
 
   const [sidebarTocHtml, setSidebarTocHtml] = useState<string>('');
@@ -182,6 +188,11 @@ const PreviewContainer = createContainer(() => {
   setLocale(config.locale);
   const isVSCode = useMemo(() => {
     return !!config.isVSCode;
+  }, [config]);
+  // Read-only standalone wiki: there is no file behind the preview and no
+  // host to write to, so every mutating action is disabled.
+  const isWiki = useMemo(() => {
+    return !!config.isWiki;
   }, [config]);
   const enablePreviewZenMode = useMemo(() => {
     return !!config.enablePreviewZenMode;
@@ -644,7 +655,7 @@ const PreviewContainer = createContainer(() => {
 
   const runCodeChunk = useCallback(
     (id: string | null) => {
-      if (!config.enableScriptExecution || !id) {
+      if (isWiki || !config.enableScriptExecution || !id) {
         return;
       }
 
@@ -681,11 +692,11 @@ const PreviewContainer = createContainer(() => {
         postMessage('runCodeChunk', [sourceUri.current, id]);
       }
     },
-    [config.enableScriptExecution, postMessage],
+    [config.enableScriptExecution, isWiki, postMessage],
   );
 
   const runAllCodeChunks = useCallback(() => {
-    if (!config.enableScriptExecution || !previewElement.current) {
+    if (isWiki || !config.enableScriptExecution || !previewElement.current) {
       return;
     }
 
@@ -696,7 +707,7 @@ const PreviewContainer = createContainer(() => {
     }
 
     postMessage('runAllCodeChunks', [sourceUri.current]);
-  }, [config.enableScriptExecution, postMessage]);
+  }, [config.enableScriptExecution, isWiki, postMessage]);
 
   const runNearestCodeChunk = useCallback(() => {
     if (!previewElement.current) {
@@ -875,7 +886,7 @@ const PreviewContainer = createContainer(() => {
   const scrollToRevealSourceLine = useCallback(
     (line: number, topRatio = 0.372) => {
       cursorLine.current = line;
-      sessionStorage.setItem(
+      writeSessionStorage(
         `crossnote.cursorLine.${sourceUri.current}`,
         cursorLine.current.toString(),
       );
@@ -993,6 +1004,16 @@ const PreviewContainer = createContainer(() => {
       if (li?.tagName === 'LI') {
         li.classList.add('task-list-item');
 
+        if (isWiki) {
+          // The wiki is a read-only snapshot — there is no file behind the
+          // checkbox to update, so clicks are inert (CSS also disables the
+          // pointer on the checkbox itself).
+          checkbox.onclick = (event) => {
+            event.preventDefault();
+          };
+          continue;
+        }
+
         // bind checkbox click event
         checkbox.onclick = (event) => {
           event.preventDefault();
@@ -1011,7 +1032,7 @@ const PreviewContainer = createContainer(() => {
         };
       }
     }
-  }, [postMessage]);
+  }, [isWiki, postMessage]);
 
   const bindHighlightEvent = useCallback(
     (previewElement: HTMLDivElement) => {
@@ -1638,13 +1659,12 @@ const PreviewContainer = createContainer(() => {
     cursorLine.current =
       config.cursorLine ??
       Number.parseInt(
-        sessionStorage.getItem(`crossnote.cursorLine.${sourceUri.current}`) ??
-          '0',
+        readSessionStorage(`crossnote.cursorLine.${sourceUri.current}`) ?? '0',
       ) ??
       0;
     setZoomLevel(config.zoomLevel ?? 1);
 
-    sessionStorage.setItem(
+    writeSessionStorage(
       `crossnote.cursorLine.${sourceUri.current}`,
       cursorLine.current.toString(),
     );
@@ -1926,7 +1946,7 @@ const PreviewContainer = createContainer(() => {
   }, [highlightElementBeingEdited]);
 
   useEffect(() => {
-    localStorage.setItem(showSidebarTocStorageKey, showSidebarToc ? '1' : '0');
+    writeLocalStorage(showSidebarTocStorageKey, showSidebarToc ? '1' : '0');
   }, [showSidebarToc]);
 
   // The hover highlight now lingers on the last hovered block (so the "..."
@@ -1978,6 +1998,7 @@ const PreviewContainer = createContainer(() => {
     isShowingTranslation,
     isVSCode,
     isVSCodeWebExtension,
+    isWiki,
     markdown,
     markdownEditorExpanded,
     notice,
