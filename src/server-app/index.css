@@ -80,6 +80,11 @@ button {
   min-width: 0;
 }
 
+.cn-titlebar-logo {
+  flex: none;
+  display: block;
+}
+
 .cn-titlebar-title {
   font-weight: 600;
   letter-spacing: 0.02em;

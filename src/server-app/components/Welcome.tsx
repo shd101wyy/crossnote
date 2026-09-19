@@ -1,5 +1,6 @@
 import React from 'react';
 import { basename, dirname } from '../lib/api';
+import logo from '../assets/logo.svg';
 
 export interface WelcomeProps {
   rootDirectories: string[];
@@ -32,16 +33,7 @@ export default function Welcome({
   return (
     <div className="cn-welcome">
       <div className="cn-welcome-card">
-        <svg className="cn-logo" viewBox="0 0 64 64" width="72" height="72">
-          <rect x="4" y="4" width="56" height="56" rx="14" fill="#95c258" />
-          <path
-            d="M40.5 22.5a12.5 12.5 0 1 0 0 19"
-            stroke="#1e1e1e"
-            strokeWidth="6"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </svg>
+        <img className="cn-logo" src={logo} width="72" height="72" alt="" />
         <h1>{isWiki ? 'crossnote wiki' : 'crossnote'}</h1>
         {isWiki ? (
           <p className="cn-welcome-sub">
