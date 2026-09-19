@@ -427,7 +427,7 @@ export default function App() {
         }
       }
     },
-    [wikiIndex],
+    [wikiIndex, frameTargetOrigin],
   );
 
   const onFrameVisible = useCallback(
