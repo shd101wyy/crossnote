@@ -39,6 +39,8 @@ function wikiData(overrides: Partial<WikiData> = {}): WikiData {
   return {
     rootDirectories: ['/vault'],
     assets: {},
+    graph: {},
+    backlinks: {},
     themes: {
       preview: {
         'github-light.css': '/* light */',

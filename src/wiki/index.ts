@@ -1,9 +1,11 @@
+import * as cheerio from 'cheerio';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as vscode from 'vscode';
 import { MarkdownEngine, MarkdownEngineOutput } from '../markdown-engine';
 import type { WebviewConfig } from '../notebook';
 import { previewHostShimScript } from '../serve/preview-host-shim';
+import { constructGraphView } from '../notebook/graph-view';
 import { createNotebooksForDirectories } from '../serve/config';
 import { isPathWithinRoot, listMarkdownFiles } from '../serve/markdown-files';
 import {
@@ -375,14 +377,61 @@ export async function buildWiki(
         ? await readStylesheetWithInlinedUrls(filePath)
         : await fs.promises.readFile(filePath, 'utf-8').catch(() => '');
   }
+  // The graph view page, assembled by the shell from these bundles.
+  assets['graph-view.js'] = await fs.promises
+    .readFile(path.join(buildDirectory, 'webview', 'graph-view.js'), 'utf-8')
+    .catch(() => '');
+  assets['graph-view.css'] = await readStylesheetWithInlinedUrls(
+    path.join(buildDirectory, 'webview', 'graph-view.css'),
+  ).catch(() => '');
 
   const themes = await collectThemeAssets(buildDirectory, notebooks[0]);
+
+  // Graph view + backlinks: both need the note index, so they are computed
+  // here and embedded — the wiki file has no server behind it.
+  const graph: Record<string, WikiGraphPayload> = {};
+  const backlinks: Record<string, WikiBacklinkPayload[]> = {};
+  for (let rootIndex = 0; rootIndex < rootDirectories.length; rootIndex++) {
+    const notebook = notebooks[rootIndex];
+    try {
+      await notebook.refreshNotesIfNotLoaded({
+        dir: '.',
+        includeSubdirectories: true,
+      });
+      graph[rootNames[rootIndex]] = constructGraphView(
+        notebook,
+      ) as WikiGraphPayload;
+    } catch (error) {
+      console.error(
+        `crossnote build-wiki: failed to build graph data for ${rootDirectories[rootIndex]}:`,
+        error,
+      );
+    }
+    for (const file of files) {
+      if (file.root !== rootNames[rootIndex]) {
+        continue;
+      }
+      try {
+        backlinks[file.path] = (
+          (await notebook.getNoteBacklinks(
+            path.join(rootDirectories[rootIndex], ...file.path.split('/')),
+          )) ?? []
+        ).map((backlink) =>
+          scrubBacklinkForWiki(backlink, rootDirectories[rootIndex]),
+        );
+      } catch {
+        backlinks[file.path] = [];
+      }
+    }
+  }
 
   const html = buildShellHTML({
     rootNames,
     files,
     assets,
     themes,
+    graph,
+    backlinks,
     buildDirectory,
   });
 
@@ -404,6 +453,99 @@ export async function buildWiki(
  * stylesheet for the three theme slots, the `auto.css` code-block
  * resolution map, and the theme names the note pages were built with.
  */
+/** Graph view data as embedded in the wiki payload (one per root). */
+export interface WikiGraphPayload {
+  hash: string;
+  nodes: Array<{ id: string; label: string }>;
+  links: Array<{ source: string; target: string }>;
+}
+
+/** A backlink entry, path-scrubbed for the wiki (relative note keys). */
+export interface WikiBacklinkPayload {
+  note: {
+    /** `file:///`-shaped base so the panel links resolve back into the wiki. */
+    notebookPath: { scheme: string; path: string };
+    /** Root-relative note key. */
+    filePath: string;
+    title: string;
+    config?: Record<string, unknown>;
+  };
+  references: Array<Record<string, unknown>>;
+  referenceHtmls: string[];
+}
+
+/**
+ * Strip the exporting machine's absolute paths from a backlink entry:
+ * note paths become root-relative keys, the notebook base becomes
+ * `file:///` (so the panel's `joinPath` links produce `file:///<key>`
+ * hrefs the shell resolves back into the wiki), and the reference snippets'
+ * link hrefs are rewritten the same way.
+ */
+function scrubBacklinkForWiki(
+  backlink: {
+    note?: {
+      notebookPath?: unknown;
+      filePath?: string;
+      title?: string;
+      config?: unknown;
+    };
+    references?: unknown;
+    referenceHtmls?: string[];
+  },
+  rootDirectory: string,
+): WikiBacklinkPayload {
+  return {
+    note: {
+      notebookPath: { scheme: 'file', path: '/' },
+      filePath: (backlink.note?.filePath ?? '').replace(/\\/g, '/'),
+      title: backlink.note?.title ?? '',
+      config: backlink.note?.config as Record<string, unknown> | undefined,
+    },
+    references: (backlink.references ?? []) as Array<Record<string, unknown>>,
+    referenceHtmls: (backlink.referenceHtmls ?? []).map((html) =>
+      scrubWikiHtmlLinks(html, rootDirectory),
+    ),
+  };
+}
+
+/**
+ * Rewrite `href`/`src` values that point into `rootDirectory` (in any of
+ * the encodings the note index produces — raw, forward-slashed or
+ * percent-encoded) into `file:///<root-relative key>` links.
+ */
+function scrubWikiHtmlLinks(html: string, rootDirectory: string): string {
+  try {
+    const $ = cheerio.load(html);
+    $('a[href], img[src]').each((_, element) => {
+      for (const attribute of ['href', 'src']) {
+        const value = $(element).attr(attribute);
+        if (!value) {
+          continue;
+        }
+        let decoded = value;
+        try {
+          decoded = decodeURIComponent(value);
+        } catch {
+          // Keep the raw value.
+        }
+        // The index emits mixed separators (`C:\root/notes\x.md`).
+        const normalized = decoded.replace(/\//g, path.sep);
+        if (!isPathWithinRoot(rootDirectory, normalized)) {
+          continue;
+        }
+        const relative = path
+          .relative(rootDirectory, normalized)
+          .split(path.sep)
+          .join('/');
+        $(element).attr(attribute, `file:///${relative}`);
+      }
+    });
+    return $.html();
+  } catch {
+    return html;
+  }
+}
+
 export interface WikiThemesPayload {
   /** `github-light.css` → stylesheet text. */
   preview: Record<string, string>;
@@ -613,12 +755,16 @@ function buildShellHTML({
   files,
   assets,
   themes,
+  graph,
+  backlinks,
   buildDirectory,
 }: {
   rootNames: string[];
   files: WikiFileEntry[];
   assets: Record<string, string>;
   themes: WikiThemesPayload;
+  graph: Record<string, WikiGraphPayload>;
+  backlinks: Record<string, WikiBacklinkPayload[]>;
   buildDirectory: string;
 }): string {
   const appScriptPath = path.join(
@@ -648,6 +794,8 @@ function buildShellHTML({
     rootDirectories: rootNames,
     assets,
     themes,
+    graph,
+    backlinks,
     files,
   }).replace(/</g, '\\u003c');
   const safeAppScript = appScript.replace(/<\/script/g, '<\\/script');

@@ -155,16 +155,67 @@ check(
   (await frame.locator('body.wiki-readonly').count()) === 1,
 );
 
-// Footer: graph view and backlinks buttons are hidden in the wiki.
+// Footer: the graph view and backlinks buttons are present (both are
+// supported in the wiki — data embedded at build time).
 const footerTitles = await frame
   .locator('.footer [title]')
   .evaluateAll((nodes) => nodes.map((n) => n.getAttribute('title')));
 check(
-  'graph view and backlinks buttons hidden',
-  !footerTitles.includes('Open graph view') &&
-    !footerTitles.includes('Toggle backlinks'),
+  'graph view and backlinks buttons present',
+  footerTitles.includes('Open graph view') &&
+    footerTitles.includes('Toggle backlinks'),
   JSON.stringify(footerTitles),
 );
+
+// Backlinks: toggle in the footer and wait for the panel to resolve with
+// entries (not stuck loading, not empty for a linked note).
+await frame.locator('.footer [title="Toggle backlinks"]').first().click();
+let backlinksResolved = false;
+for (let attempt = 0; attempt < 20 && !backlinksResolved; attempt++) {
+  await page.waitForTimeout(500);
+  backlinksResolved = await frame
+    .locator('.backlinks')
+    .evaluate((panel) => !panel.textContent.includes('Loading') && /Backlinks/.test(panel.textContent))
+    .catch(() => false);
+}
+check('backlinks toggle resolves in the wiki', backlinksResolved);
+
+// Graph view: the footer button opens it as a pane (a new split with a
+// "Graph" tab), rendering the embedded graph data.
+const panesBeforeGraph = await page.locator('.cn-pane').count();
+await frame.locator('.footer [title="Open graph view"]').first().click();
+await page.waitForTimeout(1500);
+const graphTab = page.locator('.cn-tab', { hasText: 'Graph' });
+check(
+  'graph view opens as a pane with a Graph tab',
+  (await graphTab.count()) === 1 &&
+    (await page.locator('.cn-pane').count()) > panesBeforeGraph,
+);
+// The wiki graph frame is sandboxed (opaque origin), so its rendering
+// cannot be inspected from here — assert the embedded data instead: the
+// frame's srcdoc carries the graph payload with real nodes, and the
+// unmodified graph-view bundle. (Painting itself is covered by the serve
+// E2E, which runs the same bundle unsandboxed.)
+let graphWired = false;
+for (let attempt = 0; attempt < 20 && !graphWired; attempt++) {
+  await page.waitForTimeout(500);
+  graphWired = await page
+    .locator('iframe.cn-frame[title^="__crossnote-graph-view__"]')
+    .first()
+    .evaluate((node) => {
+      const srcdoc = node.getAttribute('srcdoc') ?? '';
+      return (
+        srcdoc.includes('__CROSSNOTE_WIKI_GRAPH__') &&
+        /"nodes":\[\{/.test(srcdoc) &&
+        srcdoc.includes('graphViewReady')
+      );
+    })
+    .catch(() => false);
+}
+check('graph view pane wired with embedded data in the wiki', graphWired);
+// Close the graph tab to restore state for the later checks.
+await graphTab.locator('.cn-tab-close').click().catch(() => {});
+await page.waitForTimeout(400);
 
 // Navigate via the wikilink — opens a second tab in the same pane.
 const tabCountBefore = await page.locator('.cn-tab').count();
@@ -187,10 +238,15 @@ if ((await anyLink.count()) > 0) {
 }
 
 // Split into a second pane, then close the empty pane again. Normalize to
-// a single tab first — a split only empties the source pane when the
-// active tab was its only one.
+// a single tab and no stray empty panes first (the graph pane leaves one)
+// — a split only empties the source pane when the active tab was its only
+// one.
 while ((await page.locator('.cn-tab').count()) > 1) {
   await page.keyboard.press('Alt+w');
+  await page.waitForTimeout(400);
+}
+while ((await page.locator('button[title="Close pane"]').count()) > 0) {
+  await page.locator('button[title="Close pane"]').last().click();
   await page.waitForTimeout(400);
 }
 const panesBefore = await page.locator('.cn-pane').count();

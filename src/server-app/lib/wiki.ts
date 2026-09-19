@@ -1,4 +1,5 @@
 import { WikiData, WikiFileMeta, WikiThemesPayload, dirname } from './api';
+import { graphHostShimScript } from '../../serve/graph-host-shim';
 
 /**
  * Assemble the srcdoc of one embedded wiki note at open time.
@@ -295,4 +296,59 @@ export function wikiFileList(data: WikiData): Array<{
     mtimeMs: file.mtimeMs,
     rootPath: file.root,
   }));
+}
+
+/** Asset keys the graph view page needs (stored once in `assets`). */
+export const WIKI_GRAPH_VIEW_ASSETS = [
+  'graph-view.js',
+  'graph-view.css',
+] as const;
+
+/**
+ * Assemble the graph view page for the wiki: the unmodified graph-view
+ * bundle, fed by the graph data embedded in the file (no server), with node
+ * clicks relayed to the shell. The anchor key picks the root's data and the
+ * node highlighted as active.
+ */
+export function assembleWikiGraphDocument(
+  data: WikiData,
+  anchorKey: string,
+): string {
+  const script = data.assets['graph-view.js'] ?? '';
+  const style = data.assets['graph-view.css'] ?? '';
+  const rootName =
+    data.rootDirectories.length > 1
+      ? (anchorKey.split('/')[0] ?? '')
+      : (data.rootDirectories[0] ?? '');
+  const graph = data.graph[rootName] ?? {
+    hash: '',
+    nodes: [],
+    links: [],
+  };
+  const payload = JSON.stringify({
+    data: graph,
+    activeFilePath:
+      anchorKey.includes('/') && data.rootDirectories.length > 1
+        ? anchorKey.slice(anchorKey.indexOf('/') + 1)
+        : anchorKey,
+  }).replace(/</g, '\u003c');
+  const shim = graphHostShimScript({
+    source: 'embedded',
+    embeddedFileExpression: JSON.stringify(anchorKey),
+  });
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>${inlineStyle(style)}</style>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+</style>
+</head>
+<body>
+<script>globalThis.__CROSSNOTE_WIKI_GRAPH__ = ${payload};</script>
+${shim}
+<script>${inlineScript(script)}</script>
+</body>
+</html>`;
 }

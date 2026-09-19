@@ -14,6 +14,7 @@ import {
 } from './config';
 import { buildWiki } from '../wiki';
 import { previewHostShimScript } from './preview-host-shim';
+import { graphHostShimScript } from './graph-host-shim';
 import {
   encodePathSegments,
   isMarkdownFile,
@@ -103,83 +104,15 @@ export interface ServeServer {
 const PREVIEW_HOST_SHIM = previewHostShimScript('window.location.origin');
 
 /**
- * Injected into the standalone graph view page (`/graph-view`). That page is
- * a top-level browser tab, not an iframe of the app, so the shim answers the
- * webview protocol by itself: `graphViewReady` fetches the graph data from
- * this server, `openFile` relays the node click to the app tab that opened
- * the graph (verified there against its window reference), and settings are
- * kept in the page's localStorage.
+ * Injected into the standalone graph view page (`/graph-view`). The page
+ * runs in an iframe pane of the app; the shim feeds it from /api/graph and
+ * relays node clicks to the app, which opens the note in a pane.
  */
-const GRAPH_HOST_SHIM = `<script>
-(function () {
-  if (window.acquireVsCodeApi) { return; }
-  var api = null;
-  var FILE = new URLSearchParams(window.location.search).get('file') || '';
-  window.acquireVsCodeApi = function () {
-    if (api) { return api; }
-    api = {
-      postMessage: function (message) {
-        if (!message || typeof message.command !== 'string') { return; }
-        if (message.command === 'graphViewReady') {
-          fetch('/api/graph?file=' + encodeURIComponent(FILE))
-            .then(function (response) {
-              if (!response.ok) { throw new Error('graph request failed'); }
-              return response.json();
-            })
-            .then(function (payload) {
-              window.postMessage({
-                command: 'graphData',
-                data: payload.data,
-                activeFilePath: payload.activeFilePath,
-              }, '*');
-            })
-            .catch(function () {
-              window.postMessage({
-                command: 'graphData',
-                data: { hash: '', nodes: [], links: [] },
-                activeFilePath: '',
-              }, '*');
-            });
-          return;
-        }
-        if (message.command === 'openFile') {
-          var rel = message.args && message.args[0];
-          if (typeof rel === 'string' && window.opener && !window.opener.closed) {
-            window.opener.postMessage(
-              { command: '__serverAppOpenFile', args: [FILE, rel] },
-              window.location.origin
-            );
-          }
-          return;
-        }
-        if (message.command === 'saveSetting') {
-          var setting = message.args && message.args[0];
-          if (setting && typeof setting.key === 'string') {
-            try {
-              localStorage.setItem(
-                'crossnote.graphView.' + setting.key,
-                JSON.stringify(setting.value === undefined ? null : setting.value)
-              );
-            } catch (error) { /* storage unavailable */ }
-          }
-          return;
-        }
-      },
-      getState: function () {
-        try {
-          return JSON.parse(localStorage.getItem('crossnote.graphView.state') || 'null');
-        } catch (error) { return null; }
-      },
-      setState: function (state) {
-        try {
-          localStorage.setItem('crossnote.graphView.state', JSON.stringify(state));
-        } catch (error) { /* storage unavailable */ }
-      },
-    };
-    return api;
-  };
-})();
-</script>`;
+const GRAPH_HOST_SHIM = graphHostShimScript({
+  source: 'fetch',
+  fileExpression:
+    "new URLSearchParams(window.location.search).get('file') || ''",
+});
 
 function appShellHTML(serverInfo: {
   rootDirectories: string[];

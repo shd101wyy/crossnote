@@ -27,6 +27,8 @@ function writeFakeBuildDirectory(root: string): void {
   const files: Array<[string, string]> = [
     [path.join(root, 'webview/preview.js'), '// preview webview'],
     [path.join(root, 'webview/preview.css'), '/* preview css */'],
+    [path.join(root, 'webview/graph-view.js'), '// graph view webview'],
+    [path.join(root, 'webview/graph-view.css'), '/* graph view css */'],
     [path.join(root, 'styles/preview.css'), '/* preview base */'],
     [path.join(root, 'styles/style-template.css'), '/* style-template */'],
     [
@@ -199,6 +201,31 @@ describe('crossnote build-wiki', () => {
       `data:image/png;base64,${Buffer.from('fake png bytes').toString('base64')}`,
     );
     expect(home.update.html).toContain('href="/notes/other.md"');
+
+    // Graph view data and backlinks are embedded (both need the note index,
+    // which only exists at build time); paths are scrubbed to note keys.
+    expect(Object.keys(payload.graph)).toEqual([path.basename(workspace)]);
+    const graphNodeIds = payload.graph[path.basename(workspace)].nodes.map(
+      (node: { id: string }) => node.id.replace(/\\/g, '/'),
+    );
+    expect(graphNodeIds).toEqual(
+      expect.arrayContaining(['index.md', 'notes/other.md']),
+    );
+    expect(payload.assets['graph-view.js']).toContain('graph view webview');
+    // The notes link to each other → each has exactly one backlink.
+    expect(payload.backlinks['index.md']).toHaveLength(1);
+    expect(payload.backlinks['notes/other.md']).toHaveLength(1);
+    expect(payload.backlinks['index.md'][0].note).toMatchObject({
+      notebookPath: { scheme: 'file', path: '/' },
+      filePath: 'notes/other.md',
+    });
+    // Reference snippet links are scrubbed to file:///<key> hrefs — no
+    // absolute path of the exporting machine anywhere.
+    const referenceHtml = payload.backlinks['index.md'][0].referenceHtmls[0];
+    expect(referenceHtml).toContain('href="file:///index.md"');
+    expect(JSON.stringify(payload.backlinks)).not.toContain(
+      workspace.replace(/\\/g, '/'),
+    );
   });
 
   test('throws when a directory has no markdown notes', async () => {

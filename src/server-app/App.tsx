@@ -8,6 +8,7 @@ import React, {
 import FilePicker from './components/FilePicker';
 import LayoutView, { LayoutActions } from './components/LayoutView';
 import TitleBar from './components/TitleBar';
+import { SHA256 } from 'crypto-js';
 import {
   ServerInfo,
   UpdateHtmlPayload,
@@ -16,12 +17,16 @@ import {
   filePathToFilesUrl,
   getServerInfo,
   getWikiData,
+  graphAnchorFile,
+  graphTabFile,
+  isGraphTab,
   isMarkdownPath,
   resolveHref,
   sendCommand,
 } from './lib/api';
 import {
   assembleWikiDocument,
+  assembleWikiGraphDocument,
   createWikiIndex,
   readWikiThemeSelection,
   resolveWikiHref,
@@ -83,6 +88,20 @@ export default function App() {
     (file: string): string | undefined => {
       if (!wikiData) {
         return undefined;
+      }
+      // The graph view tab assembles its own page (embedded graph data).
+      if (isGraphTab(file)) {
+        const graphKey = `__graph__\n${graphAnchorFile(file)}`;
+        const cachedGraph = wikiDocumentCache.current.get(graphKey);
+        if (cachedGraph !== undefined) {
+          return cachedGraph;
+        }
+        const graphDocument = assembleWikiGraphDocument(
+          wikiData,
+          graphAnchorFile(file),
+        );
+        wikiDocumentCache.current.set(graphKey, graphDocument);
+        return graphDocument;
       }
       const key = `${wikiKeyOf(file)}\n${wikiThemes ? JSON.stringify(wikiThemes) : ''}`;
       const cached = wikiDocumentCache.current.get(key);
@@ -509,14 +528,50 @@ export default function App() {
     );
   }
 
-  // The graph view opens as a separate browser tab; it relays node clicks
-  // back through this window reference.
-  const graphWindowRef = useRef<Window | null>(null);
-  const openGraphView = useCallback((file: string) => {
-    graphWindowRef.current = window.open(
-      `/graph-view?file=${encodeURIComponent(file)}`,
-      'crossnote-graph-view',
+  /**
+   * Open the graph view in a pane beside the active one (like VS Code's
+   * `ViewColumn.Beside`): reuse the pane an existing graph tab lives in,
+   * refreshing it with the new anchor, or split a new pane otherwise.
+   */
+  const openGraphView = useCallback((anchorFile: string) => {
+    const current = layoutRef.current;
+    if (!current) {
+      return;
+    }
+    const graphFile = graphTabFile(anchorFile);
+    // Drop any existing graph tab (any anchor) — its pane is reused below so
+    // the view keeps its position; exactly one graph tab exists at a time.
+    const withoutGraph = mapPanes(current, (pane) => {
+      const tabs = pane.tabs.filter((tab) => !isGraphTab(tab.file));
+      const activeTabId = tabs.some((tab) => tab.id === pane.activeTabId)
+        ? pane.activeTabId
+        : (tabs[tabs.length - 1]?.id ?? null);
+      return { ...pane, tabs, activeTabId };
+    });
+    // Prefer an existing empty pane, else split right of the active pane.
+    const targetPaneId =
+      activePaneIdRef.current &&
+      findPane(withoutGraph, activePaneIdRef.current)?.tabs.length === 0
+        ? activePaneIdRef.current
+        : (listPaneIds(withoutGraph)
+            .map((id) => findPane(withoutGraph, id))
+            .find((pane) => pane && pane.tabs.length === 0)?.id ?? null);
+    if (targetPaneId) {
+      setLayout(openFileInPane(withoutGraph, targetPaneId, graphFile));
+      setActivePaneId(targetPaneId);
+      return;
+    }
+    const anchorPaneId =
+      activePaneIdRef.current && findPane(withoutGraph, activePaneIdRef.current)
+        ? activePaneIdRef.current
+        : (listPaneIds(withoutGraph)[0] ?? '');
+    const { layout: split, newPaneId } = splitPane(
+      withoutGraph,
+      anchorPaneId,
+      'horizontal',
     );
+    setLayout(openFileInPane(split, newPaneId, graphFile));
+    setActivePaneId(newPaneId);
   }, []);
 
   useEffect(() => {
@@ -527,19 +582,30 @@ export default function App() {
       }
       const actions = actionsRef.current;
 
-      // Node click in the graph view tab — same-origin popup, verified by
-      // its window reference (it is not one of the preview iframes).
-      if (
-        data.command === '__serverAppOpenFile' &&
-        event.origin === window.location.origin &&
-        event.source === graphWindowRef.current
-      ) {
-        const sourceFile = String(data.args?.[0] ?? '');
-        const relativePath = String(data.args?.[1] ?? '');
+      // Node click in a graph view frame — verified against the registered
+      // frames (the graph view runs in one of them).
+      if (data.command === '__serverAppOpenFile') {
+        const fromKnownFrame = Array.from(framesRef.current.values()).some(
+          (entry) => entry.iframe?.contentWindow === event.source,
+        );
+        if (!fromKnownFrame) {
+          return;
+        }
+        const anchorFile = String(data.args?.[0] ?? '');
+        const relativePath = String(data.args?.[1] ?? '').replace(/^\/+/, '');
+        if (isWikiTargetRef.current && wikiData) {
+          const noteKey = resolveWikiHref(
+            wikiData,
+            anchorFile,
+            `/${relativePath}`,
+          );
+          actions.openWikiFile(activePaneIdRef.current, noteKey, relativePath);
+          return;
+        }
         const absolutePath = resolveHref(
           actions.serverInfo.rootDirectories,
-          sourceFile,
-          `/${relativePath.replace(/^\/+/, '')}`,
+          anchorFile,
+          `/${relativePath}`,
         );
         if (isMarkdownPath(absolutePath)) {
           actions.openFile(activePaneIdRef.current, absolutePath);
@@ -611,10 +677,12 @@ export default function App() {
             window.open(href, '_blank', 'noopener');
           } else if (href && !href.startsWith('#')) {
             if (isWikiTargetRef.current && wikiData) {
-              // Wiki note paths are relative keys — no /files/ mount, no
-              // absolute paths anywhere in the file.
-              const noteKey = resolveWikiHref(wikiData, file, href);
-              actions.openWikiFile(activePaneIdRef.current, noteKey, href);
+              // Wiki note paths are relative keys. The backlinks panel's
+              // links are `file:///<key>` (from the scrubbed notebookPath);
+              // everything else is wiki-relative.
+              const wikiHref = href.replace(/^file:\/\/\/+/i, '/');
+              const noteKey = resolveWikiHref(wikiData, file, wikiHref);
+              actions.openWikiFile(activePaneIdRef.current, noteKey, wikiHref);
               return;
             }
             const absolutePath = resolveHref(
@@ -637,11 +705,9 @@ export default function App() {
           return;
         }
         case 'openGraphView': {
-          // The serve server hosts the graph view page; the wiki has none
-          // (the button is hidden there).
-          if (!isWikiTargetRef.current) {
-            openGraphView(file);
-          }
+          // Opens a pane beside the active one; both modes support it (the
+          // serve server fetches /api/graph, the wiki reads embedded data).
+          openGraphView(file);
           return;
         }
         case 'setPreviewTheme':
@@ -700,11 +766,32 @@ export default function App() {
           return;
         }
         case 'showBacklinks': {
+          if (isWikiTargetRef.current && wikiData) {
+            // The wiki ships per-note backlinks in the payload — answer the
+            // preview directly, like the extension's postMessageToPreview.
+            const info = args[0] as { backlinksSha?: string } | undefined;
+            const noteKey = wikiKeyOf(file);
+            const backlinks = wikiData.backlinks[noteKey] ?? [];
+            const sha = SHA256(JSON.stringify(backlinks)).toString();
+            const hasUpdate = sha !== info?.backlinksSha;
+            for (const frameEntry of framesRef.current.values()) {
+              if (frameEntry.file === file) {
+                frameEntry.iframe?.contentWindow?.postMessage(
+                  {
+                    command: 'backlinks',
+                    sourceUri: file,
+                    backlinks: hasUpdate ? backlinks : null,
+                    hasUpdate,
+                  },
+                  frameTargetOrigin,
+                );
+              }
+            }
+            return;
+          }
           // Handled server-side (the note index lives there); the result
           // comes back as an `iframeMessage` SSE event below.
-          if (!isWikiTargetRef.current) {
-            void sendCommand(file, data.command, args);
-          }
+          void sendCommand(file, data.command, args);
           return;
         }
         default: {

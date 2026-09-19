@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Tab } from '../types';
-import { basename } from '../lib/api';
+import { basename, isGraphTab } from '../lib/api';
 
 export interface TabStripProps {
   tabs: Tab[];
@@ -104,7 +104,9 @@ export default function TabStrip({
                   />
                 </svg>
               </span>
-              <span className="cn-tab-label">{basename(tab.file)}</span>
+              <span className="cn-tab-label">
+                {isGraphTab(tab.file) ? 'Graph' : basename(tab.file)}
+              </span>
               <button
                 type="button"
                 className="cn-tab-close"

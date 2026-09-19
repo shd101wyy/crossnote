@@ -99,17 +99,23 @@ if (!backlinksResolved) {
 }
 check('backlinks toggle resolves (not stuck loading)', backlinksResolved);
 
-// 3. Graph view: the footer button opens the graph page in a new tab. The
-//    graph is d3-rendered into a <canvas>; the first vault walk can take a
-//    while on large notebooks.
-const graphPopup = page.waitForEvent('popup', { timeout: 20000 });
+// 3. Graph view: the footer button opens the graph in a PANE beside the
+//    active one (like VS Code), not a browser tab. The graph is d3-rendered
+//    into a <canvas>; the first vault walk can take a while on large
+//    notebooks.
+const panesBeforeGraph = await page.locator('.cn-pane').count();
 await frame.locator('.footer [title="Open graph view"]').first().click();
-const popup = await graphPopup;
-await popup.waitForLoadState('domcontentloaded');
-// The simulation draws in requestAnimationFrame ticks — bring the popup to
-// the front so they are not throttled as a background tab.
-await popup.bringToFront();
-const graphReady = await popup
+await page.waitForTimeout(1000);
+const graphTab = page.locator('.cn-tab', { hasText: 'Graph' });
+check(
+  'graph view opens as a pane with a Graph tab',
+  (await graphTab.count()) === 1 &&
+    (await page.locator('.cn-pane').count()) > panesBeforeGraph,
+);
+const graphFrame = page.frameLocator(
+  'iframe.cn-frame[title^="__crossnote-graph-view__"]',
+);
+const graphReady = await graphFrame
   .locator('canvas')
   .first()
   .waitFor({ timeout: 180000 })
@@ -118,7 +124,7 @@ const graphReady = await popup
 // The d3 simulation paints over its first ticks — poll briefly.
 let graphPainted = false;
 for (let attempt = 0; attempt < 10 && graphReady && !graphPainted; attempt++) {
-  graphPainted = await popup
+  graphPainted = await graphFrame
     .locator('canvas')
     .first()
     .evaluate((canvas) => {
@@ -136,38 +142,43 @@ for (let attempt = 0; attempt < 10 && graphReady && !graphPainted; attempt++) {
     })
     .catch(() => false);
   if (!graphPainted) {
-    await popup.waitForTimeout(1000);
+    await page.waitForTimeout(1000);
   }
 }
-const graphStats = await popup
+const graphStats = await graphFrame
   .locator('body')
   .innerText()
   .then((t) => t.match(/\d+ notes? · \d+ links?/)?.[0] ?? null)
   .catch(() => null);
-check(
-  'graph view opens and renders',
-  graphPainted && !!graphStats,
-  `stats=${graphStats}`,
-);
-// A node click relays back to the app tab (opens a note when it hits a
-// node); informational — canvas hit-testing is not deterministic here.
+check('graph view renders in its pane', graphPainted);
+if (graphStats) {
+  results.push(`INFO graph stats: ${graphStats}`);
+}
+// A node click relays back to the app and opens the note in a pane
+// (informational — canvas hit-testing is not deterministic here).
 const tabsBeforeGraphClick = await page.locator('.cn-tab').count();
-await popup
+await graphFrame
   .locator('canvas')
   .first()
   .click({ position: { x: 600, y: 400 } })
   .catch(() => {});
-await page.bringToFront();
 await page.waitForTimeout(1200);
 results.push(
   `INFO graph node click relayed — tabs ${tabsBeforeGraphClick} -> ${await page.locator('.cn-tab').count()}`,
 );
+// Close the graph tab; the later pane checks expect a clean layout.
+await graphTab.locator('.cn-tab-close').click().catch(() => {});
+await page.waitForTimeout(400);
 
-// 4. Empty panes can be closed. Normalize to a single tab first (the relay
-// may have opened one), then split — the source pane empties and offers
-// its close button.
+// 4. Empty panes can be closed. Normalize to a single tab and no stray
+// empty panes first (the graph pane leaves one) — a split only empties the
+// source pane when the active tab was its only one.
 while ((await page.locator('.cn-tab').count()) > 1) {
   await page.keyboard.press('Alt+w');
+  await page.waitForTimeout(400);
+}
+while ((await page.locator('button[title="Close pane"]').count()) > 0) {
+  await page.locator('button[title="Close pane"]').last().click();
   await page.waitForTimeout(400);
 }
 const panesBefore = await page.locator('.cn-pane').count();

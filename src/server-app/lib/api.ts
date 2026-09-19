@@ -54,12 +54,37 @@ export interface WikiThemesPayload {
   build: { preview: string; codeBlock: string; reveal: string };
 }
 
+/** Graph view nodes/links, as produced by crossnote's `constructGraphView`. */
+export interface WikiGraphData {
+  hash: string;
+  nodes: Array<{ id: string; label: string }>;
+  links: Array<{ source: string; target: string }>;
+}
+
+/** A backlink entry, as the preview webview's backlinks panel expects. */
+export interface WikiBacklink {
+  note: {
+    /** `file:///`-shaped so the panel's links resolve back into the wiki. */
+    notebookPath: { scheme: string; path: string };
+    /** Root-relative note key. */
+    filePath: string;
+    title: string;
+    config?: Record<string, unknown>;
+  };
+  references: Array<Record<string, unknown>>;
+  referenceHtmls: string[];
+}
+
 export interface WikiData {
   rootDirectories: string[];
   /** Token → asset content: JS/CSS source to inline, or a data URI. */
   assets: Record<string, string>;
   /** Every available theme stylesheet, for the runtime theme picker. */
   themes: WikiThemesPayload;
+  /** Graph view data per root (single entry: root name → data). */
+  graph: Record<string, WikiGraphData>;
+  /** Backlinks per note key (empty array when a note has none). */
+  backlinks: Record<string, WikiBacklink[]>;
   files: WikiFileMeta[];
 }
 
@@ -241,6 +266,26 @@ export function filePathToFilesUrl(
 export interface WebviewCommandMessage {
   command: string;
   args?: unknown[];
+}
+
+/**
+ * Pseudo-file key identifying the graph view pane tab: the prefix plus the
+ * anchor note (whose neighborhood is highlighted). Exactly one graph tab
+ * exists at a time, like VS Code's single graph view panel.
+ */
+export const GRAPH_VIEW_TAB_PREFIX = '__crossnote-graph-view__:';
+
+export function graphTabFile(anchorFile: string): string {
+  return GRAPH_VIEW_TAB_PREFIX + anchorFile;
+}
+
+export function isGraphTab(file: string): boolean {
+  return file.startsWith(GRAPH_VIEW_TAB_PREFIX);
+}
+
+/** The anchor note of a graph tab (everything after the prefix). */
+export function graphAnchorFile(file: string): string {
+  return file.slice(GRAPH_VIEW_TAB_PREFIX.length);
 }
 
 export interface WebviewFinishLoadingArgs {
