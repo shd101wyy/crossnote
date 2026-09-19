@@ -22,6 +22,7 @@ import {
   isGraphTab,
   isMarkdownPath,
   resolveHref,
+  sameServeFile,
   sendCommand,
 } from './lib/api';
 import {
@@ -239,9 +240,27 @@ export default function App() {
   // ---- pane actions ------------------------------------------------------
   const openFile = useCallback(
     (paneId: string, file: string) => {
-      setLayout((current) =>
-        current ? openFileInPane(current, paneId, file) : current,
-      );
+      setLayout((current) => {
+        if (!current) {
+          return current;
+        }
+        // A tab may already show this file under another spelling (opened
+        // via the picker vs a link) — reuse its key so it activates instead
+        // of duplicating.
+        let existingKey: string | undefined;
+        for (const pane of listPaneIds(current).map((id) =>
+          findPane(current, id),
+        )) {
+          const tab = pane?.tabs.find((candidate) =>
+            sameServeFile(candidate.file, file),
+          );
+          if (tab) {
+            existingKey = tab.file;
+            break;
+          }
+        }
+        return openFileInPane(current, paneId, existingKey ?? file);
+      });
       setActivePaneId(paneId);
       touchRecents(file);
     },
@@ -839,7 +858,10 @@ export default function App() {
       if (data.type === 'updateHtml' && data.file && data.payload) {
         const update = { ...data.payload, command: 'updateHtml' as const };
         for (const entry of framesRef.current.values()) {
-          if (entry.file !== data.file) {
+          // The tab may be keyed by a different spelling of the same file
+          // (native vs posix separators) — match tolerantly, or the update
+          // is dropped and the preview hangs on its loading screen.
+          if (!sameServeFile(entry.file, data.file)) {
             continue;
           }
           const jsAndCssFiles = data.payload?.jsAndCssFiles ?? null;
@@ -869,7 +891,7 @@ export default function App() {
         // every frame showing that file, like the extension's
         // postMessageToPreview.
         for (const entry of framesRef.current.values()) {
-          if (entry.file === data.file) {
+          if (sameServeFile(entry.file, data.file)) {
             entry.iframe?.contentWindow?.postMessage(
               data.iframeMessage,
               window.location.origin,
@@ -879,10 +901,29 @@ export default function App() {
       } else if (data.type === 'fileDeleted' && data.file) {
         const deletedFile = data.file;
         setLayout((current) =>
-          current ? closeFileEverywhere(current, deletedFile) : current,
+          current
+            ? // Tabs may carry a different spelling of the deleted file
+              // (native vs posix separators) — close every spelling.
+              mapPanes(current, (pane) => {
+                const tabs = pane.tabs.filter(
+                  (tab) => !sameServeFile(tab.file, deletedFile),
+                );
+                if (tabs.length === pane.tabs.length) {
+                  return pane;
+                }
+                const activeTabId = tabs.some(
+                  (tab) => tab.id === pane.activeTabId,
+                )
+                  ? pane.activeTabId
+                  : (tabs[tabs.length - 1]?.id ?? null);
+                return { ...pane, tabs, activeTabId };
+              })
+            : current,
         );
         setRecents((previous) =>
-          previous.filter((candidate) => candidate !== deletedFile),
+          previous.filter(
+            (candidate) => !sameServeFile(candidate, deletedFile),
+          ),
         );
       } else if (data.type === 'noteSaved' && data.file) {
         touchRecents(data.file);

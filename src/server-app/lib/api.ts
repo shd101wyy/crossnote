@@ -240,6 +240,22 @@ export function isMarkdownPath(filePath: string): boolean {
 }
 
 /**
+ * Whether two served-file strings denote the same file. Tabs are keyed by
+ * whatever string opened them — `/api/files` and the watcher hand out
+ * native paths (`c:\…\x.md`), while link resolution produces posix-style
+ * ones (`c:/…/x.md`) and the server echoes `path.resolve`d native paths —
+ * so routing must compare tolerantly: separator-insensitive always, and
+ * case-insensitive when both look like Windows drive paths.
+ */
+export function sameServeFile(a: string, b: string): boolean {
+  const normalize = (value: string): string => {
+    const windows = /^[A-Za-z]:[\\/]/.test(value);
+    return (windows ? value.toLowerCase() : value).replace(/\\/g, '/');
+  };
+  return a === b || normalize(a) === normalize(b);
+}
+
+/**
  * URL for a workspace file under the `/files/` mount. The route maps the
  * URL path relative to the containing served root; with several roots the
  * `?root=` hint pins the mount (the server's URL mapper does the same).
