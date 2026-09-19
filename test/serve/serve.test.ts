@@ -230,6 +230,9 @@ describe('crossnote serve', () => {
     expect(html.indexOf('acquireVsCodeApi')).toBeLessThan(
       html.indexOf('/assets/webview/preview.js'),
     );
+    // the shim forwards Esc to exit zen mode while zen is active
+    expect(html).toContain('__serverAppZenMode');
+    expect(html).toContain('exit-zen-mode');
     // workspace-relative links resolve through /files
     expect(html).toContain('/files/notes/other.md');
     // no <base> — same-document anchors must keep working

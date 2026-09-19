@@ -126,6 +126,10 @@ export default function App() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerPaneId, setPickerPaneId] = useState('');
   const [zenMode, setZenMode] = useState(false);
+  // Frames read this to know when Esc should exit zen mode (instead of the
+  // preview's own Esc behavior of toggling the sidebar TOC).
+  const zenModeRef = useRef(false);
+  zenModeRef.current = zenMode;
   const [toast, setToast] = useState<{
     level: 'info' | 'error';
     message: string;
@@ -408,6 +412,11 @@ export default function App() {
               : null),
           jsAndCssFiles: existing?.jsAndCssFiles ?? null,
         });
+        // Tell fresh frames whether zen mode is on, so Esc exits it.
+        iframe.contentWindow?.postMessage(
+          { command: '__serverAppZenMode', enabled: zenModeRef.current },
+          frameTargetOrigin,
+        );
       } else {
         const entry = framesRef.current.get(tabId);
         if (entry && entry.file === file && entry.reload === null) {
@@ -546,6 +555,8 @@ export default function App() {
           actions.closeActiveTab();
         } else if (action === 'split-pane') {
           actions.splitPaneAt(activePaneIdRef.current, 'horizontal');
+        } else if (action === 'exit-zen-mode') {
+          setZenMode(false);
         }
         return;
       }
@@ -808,6 +819,16 @@ export default function App() {
   }, [touchRecents, showToast, wikiData]);
 
   // ---- global keyboard shortcuts --------------------------------------------
+  // Keep the frames' shims in sync with zen mode so Esc exits it everywhere.
+  useEffect(() => {
+    for (const entry of framesRef.current.values()) {
+      entry.iframe?.contentWindow?.postMessage(
+        { command: '__serverAppZenMode', enabled: zenMode },
+        frameTargetOrigin,
+      );
+    }
+  }, [zenMode, frameTargetOrigin]);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey;

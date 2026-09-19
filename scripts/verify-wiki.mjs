@@ -214,6 +214,36 @@ if (closeButtonVisible) {
   );
 }
 
+// Zen mode: Esc exits it, even while focus is inside a preview (where Esc
+// otherwise toggles the sidebar TOC). Toggle zen via the exact message the
+// context menu sends, then press Esc with the frame focused.
+await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('body')
+  .first()
+  .evaluate(() => {
+    globalThis.parent.postMessage(
+      { command: 'togglePreviewZenMode', args: [null] },
+      '*',
+    );
+  });
+await page.waitForTimeout(600);
+check(
+  'zen mode toggles on',
+  (await page.locator('.cn-app-zen').count()) === 1,
+);
+await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('body')
+  .first()
+  .click();
+await page.keyboard.press('Escape');
+await page.waitForTimeout(600);
+check(
+  'Esc inside the preview exits zen mode',
+  (await page.locator('.cn-app-zen').count()) === 0,
+);
+
 // Keyboard: Ctrl+P inside the (sandboxed) frame opens the shell picker.
 // Target the active pane's active tab frame — several may be mounted.
 const activeTabTitle = await page
