@@ -65,11 +65,15 @@ check(
   !/[A-Za-z]:[\\/].*[\\/]/.test(welcomeText),
 );
 
-// Open the file picker via the titlebar button and pick a note with images.
+// Open the file picker via the titlebar button and pick a note (an
+// optional third argv narrows the picker search, e.g. a note with images).
+const pickerQuery = process.argv[3] ?? '';
 await page.click('.cn-titlebar-open');
 await page.waitForSelector('.cn-picker-input', { timeout: 20000 });
-await page.fill('.cn-picker-input', 'MY_STORY');
-await page.waitForTimeout(600);
+if (pickerQuery) {
+  await page.fill('.cn-picker-input', pickerQuery);
+  await page.waitForTimeout(600);
+}
 await page.waitForSelector('.cn-picker-item', { timeout: 20000 });
 const pickerItems = await page.locator('.cn-picker-item').allTextContents();
 check(
@@ -182,7 +186,13 @@ if ((await anyLink.count()) > 0) {
   results.push('SKIP note link navigation (none in first note)');
 }
 
-// Split into a second pane, then close the empty pane again.
+// Split into a second pane, then close the empty pane again. Normalize to
+// a single tab first — a split only empties the source pane when the
+// active tab was its only one.
+while ((await page.locator('.cn-tab').count()) > 1) {
+  await page.keyboard.press('Alt+w');
+  await page.waitForTimeout(400);
+}
 const panesBefore = await page.locator('.cn-pane').count();
 await page.keyboard.press('Control+\\');
 await page.waitForTimeout(700);
@@ -205,7 +215,15 @@ if (closeButtonVisible) {
 }
 
 // Keyboard: Ctrl+P inside the (sandboxed) frame opens the shell picker.
-await frame.locator('body').first().click();
+// Target the active pane's active tab frame — several may be mounted.
+const activeTabTitle = await page
+  .locator('.cn-pane-active .cn-tab-active')
+  .getAttribute('title');
+await page
+  .frameLocator(`.cn-frame[title="${(activeTabTitle ?? '').replace(/"/g, '\\"')}"]`)
+  .locator('body')
+  .first()
+  .click();
 await page.keyboard.press('Control+p');
 await page.waitForTimeout(600);
 check(
