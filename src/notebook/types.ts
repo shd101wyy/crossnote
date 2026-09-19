@@ -817,6 +817,15 @@ export interface WebviewConfig extends Partial<NotebookConfig> {
    * host-dependent UI (open-in-browser, exports, image helper, …).
    */
   isServerApp?: boolean;
+  /**
+   * Set by the standalone wiki (`crossnote build-wiki`). The wiki is a
+   * read-only snapshot served from an embedded payload: like the server app
+   * there is no VS Code host, and additionally there is no write channel at
+   * all — the webview hides editing UI and disables actions that would
+   * modify the (nonexistent) source files (in-preview editor, code chunk
+   * run buttons, task-list checkbox toggles, exports).
+   */
+  isWiki?: boolean;
 }
 
 export enum PreviewMode {

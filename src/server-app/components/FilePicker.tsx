@@ -7,6 +7,11 @@ export interface FilePickerProps {
   recents: string[];
   /** Served roots; with several, entries are prefixed by folder name. */
   rootDirectories: string[];
+  /**
+   * Wiki mode: the file list comes from the embedded payload instead of
+   * `/api/files` (there is no server behind a wiki file).
+   */
+  embeddedFiles?: MarkdownFileInfo[];
   onClose: () => void;
   onOpenFile: (file: string) => void;
 }
@@ -21,11 +26,12 @@ export default function FilePicker({
   open,
   recents,
   rootDirectories,
+  embeddedFiles,
   onClose,
   onOpenFile,
 }: FilePickerProps) {
   const [query, setQuery] = useState('');
-  const [files, setFiles] = useState<MarkdownFileInfo[]>([]);
+  const [fetchedFiles, setFetchedFiles] = useState<MarkdownFileInfo[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -37,20 +43,24 @@ export default function FilePicker({
     setQuery('');
     setSelectedIndex(0);
     let cancelled = false;
-    fetchFiles()
-      .then((result) => {
-        if (!cancelled) {
-          setFiles(result);
-        }
-      })
-      .catch((error: unknown) =>
-        console.error('crossnote serve: failed to list files:', error),
-      );
+    if (!embeddedFiles) {
+      fetchFiles()
+        .then((result) => {
+          if (!cancelled) {
+            setFetchedFiles(result);
+          }
+        })
+        .catch((error: unknown) =>
+          console.error('crossnote serve: failed to list files:', error),
+        );
+    }
     inputRef.current?.focus();
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, embeddedFiles]);
+
+  const files = embeddedFiles ?? fetchedFiles;
 
   // With several served roots the same filename may exist in more than one
   // of them — prefix the display (and search) path with the folder name.

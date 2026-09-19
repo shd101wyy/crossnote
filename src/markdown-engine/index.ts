@@ -901,6 +901,7 @@ window["initRevealPresentation"] = async function() {
     vscodePreviewPanel = null,
     contentSecurityPolicy = '',
     isVSCodeWebExtension,
+    parsedOutput,
   }: {
     inputString?: string;
     body?: string;
@@ -912,8 +913,16 @@ window["initRevealPresentation"] = async function() {
     vscodePreviewPanel: vscode.WebviewPanel | null | undefined;
     contentSecurityPolicy?: string;
     isVSCodeWebExtension?: boolean;
+    /**
+     * Reuse an existing `parseMD` result (rendered with the same preview
+     * options this template would use) instead of parsing `inputString`
+     * again. Callers that need the parsed output anyway — e.g. the wiki
+     * builder, which also ships it as the `updateHtml` payload — avoid the
+     * double render this way.
+     */
+    parsedOutput?: MarkdownEngineOutput;
   }): Promise<string> {
-    if (!inputString) {
+    if (!inputString && !parsedOutput) {
       inputString = await this.fs.readFile(this.filePath);
     }
     let webviewCss = '';
@@ -938,15 +947,14 @@ window["initRevealPresentation"] = async function() {
       body = ``;
     }
 
-    const { yamlConfig, JSAndCssFiles, html } = await this.parseMD(
-      inputString,
-      {
+    const { yamlConfig, JSAndCssFiles, html } =
+      parsedOutput ??
+      (await this.parseMD(inputString, {
         isForPreview: true,
         useRelativeFilePath: false,
         hideFrontMatter: false,
         vscodePreviewPanel,
-      },
-    );
+      }));
     const isPresentationMode = yamlConfig['isPresentationMode'] as boolean;
 
     const htmlTemplate = `<!DOCTYPE html>
@@ -1012,7 +1020,7 @@ window["initRevealPresentation"] = async function() {
       </head>
       <body class="preview-container ${
         isVSCodeWebExtension ? 'vscode-web-extension' : ''
-      }" data-html="${escape(html)}" ${
+      } ${config.isWiki ? 'wiki-readonly' : ''}" data-html="${escape(html)}" ${
         isPresentationMode ? 'data-presentation-mode' : ''
       }>
         ${body}

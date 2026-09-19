@@ -1,8 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { pathToFileURL } from 'url';
 import { mkdirSync, track } from '../../src/lib/temp';
 import { buildWiki } from '../../src/wiki';
 import { parseBuildWikiArgs } from '../../src/cli';
+import { addFileProtocol } from '../../src/utility';
 
 jest.mock('less', () => ({
   render: (
@@ -17,13 +19,14 @@ jest.mock('less', () => ({
 track();
 
 /**
- * Minimal fake crossnote build directory with the files the HTML export
- * template reads, plus fake wiki-app bundles for the shell. Keeps the tests
- * independent of the compiled out/ artifacts (jest runs before `pnpm build`
- * in CI).
+ * Minimal fake crossnote build directory with the files the preview
+ * template and the wiki shell read. Keeps the tests independent of the
+ * compiled out/ artifacts (jest runs before `pnpm build` in CI).
  */
 function writeFakeBuildDirectory(root: string): void {
   const files: Array<[string, string]> = [
+    [path.join(root, 'webview/preview.js'), '// preview webview'],
+    [path.join(root, 'webview/preview.css'), '/* preview css */'],
     [path.join(root, 'styles/preview.css'), '/* preview base */'],
     [path.join(root, 'styles/style-template.css'), '/* style-template */'],
     [
@@ -31,8 +34,8 @@ function writeFakeBuildDirectory(root: string): void {
       '/* preview:github-light */',
     ],
     [path.join(root, 'styles/prism_theme/github.css'), '/* prism:github */'],
-    [path.join(root, 'wiki-app/wiki-app.js'), '// wiki app'],
-    [path.join(root, 'wiki-app/wiki-app.css'), '/* wiki app css */'],
+    [path.join(root, 'server-app/server-app.js'), '// server app'],
+    [path.join(root, 'server-app/server-app.css'), '/* server app css */'],
   ];
   for (const [file, content] of files) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -107,13 +110,41 @@ describe('crossnote build-wiki', () => {
     // note documents nor from titles — or it could close the script element.
     expect(payloadMatch?.[1]).not.toContain('<');
 
-    // Local images are embedded as data URIs so the file is shareable.
-    expect(result.html).toContain('data:image/png;charset=utf-8;base64,');
+    // The shell is the serve app bundle (the wiki is a read-only serve UI).
+    expect(result.html).toContain('// server app');
 
-    // Each embedded document is a complete export document and carries the
-    // read-only relay script.
-    expect(result.html).toContain('wiki-navigate');
-    expect(result.html).toContain('<!DOCTYPE html>');
+    // Local images are embedded as data URIs so the file is shareable —
+    // both in the first-paint data-html and in the updateHtml payload.
+    expect(result.html).toContain('data:image/png;base64,');
+    // JSON.parse resolves the \u003c escapes itself.
+    const payload = JSON.parse(payloadMatch?.[1] ?? 'null');
+    expect(payload.files.length).toBe(2);
+    for (const file of payload.files) {
+      expect(file.html).toContain('data-html=');
+      // Read-only wiki config, carried by the preview page's config meta.
+      expect(file.html).toContain('isWiki&quot;:true');
+      expect(file.html).toContain('wiki-readonly');
+      // The shim must post with '*' — wiki frames have an opaque origin.
+      expect(file.html).toContain("window.parent.postMessage(message, '*')");
+      // The updateHtml payload the shell replays on load.
+      expect(file.update.sourceUri).toBe(file.path);
+      expect(typeof file.update.tocHTML).toBe('string');
+    }
+
+    // Shared build assets are referenced by tokens and stored once.
+    expect(result.html).toContain('crossnote-wiki-asset:');
+    expect(Object.keys(payload.assets).length).toBeGreaterThan(0);
+    expect(JSON.stringify(payload.assets)).toContain('preview webview');
+
+    // The home note carries the image and the note link; the image is
+    // embedded in both the page's data-html and the update payload, and
+    // the link keeps a root-relative href the shell can resolve.
+    const home = payload.files.find(
+      (file: { title: string }) => file.title === 'Wiki Home',
+    );
+    expect(home.html).toContain('data:image/png;base64,');
+    expect(home.update.html).toContain('data:image/png;base64,');
+    expect(home.update.html).toContain('href="/notes/other.md"');
   });
 
   test('throws when a directory has no markdown notes', async () => {
@@ -125,6 +156,19 @@ describe('crossnote build-wiki', () => {
         globalConfigDirectory,
       }),
     ).rejects.toThrow('no markdown notes found');
+  });
+
+  test('restores the host asset-URL mapper after building', async () => {
+    // The mapper is global state shared with hosts that render previews
+    // (the serve server); a finished wiki build must not leak its tokens.
+    await buildWiki({
+      directories: [workspace],
+      crossnoteBuildDirectory: buildDirectory,
+      globalConfigDirectory,
+    });
+    expect(
+      addFileProtocol(path.join(buildDirectory, 'webview/preview.js')),
+    ).toBe(pathToFileURL(path.join(buildDirectory, 'webview/preview.js')).href);
   });
 
   test('reports notes that fail to render and builds without them', async () => {

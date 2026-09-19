@@ -18,7 +18,7 @@
   "contextMenu.inPreviewEditorZenModeNotice": "プレビュー内エディタは Zen モードでは使用できません。使用するには Zen モードを無効にしてください。",
   "contextMenu.imageHelper": "画像ヘルパー",
   "contextMenu.syncSource": "ソースへ同期",
-  "contextMenu.exportStandaloneWiki": "スタンドアロンHTML（wiki）をエクスポート",
+  "contextMenu.exportStandaloneWiki": "Wiki",
   "contextMenu.zoom": "ズーム",
   "contextMenu.zoomIn": "拡大",
   "contextMenu.zoomOut": "縮小",

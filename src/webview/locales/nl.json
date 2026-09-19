@@ -18,7 +18,7 @@
   "contextMenu.inPreviewEditorZenModeNotice": "De editor in de preview is niet beschikbaar in Zen-modus. Schakel Zen-modus uit om hem te gebruiken.",
   "contextMenu.imageHelper": "Afbeeldingshulp",
   "contextMenu.syncSource": "Bron synchroniseren",
-  "contextMenu.exportStandaloneWiki": "Zelfstandige HTML (wiki) exporteren",
+  "contextMenu.exportStandaloneWiki": "Wiki",
   "contextMenu.zoom": "Zoom",
   "contextMenu.zoomIn": "Inzoomen",
   "contextMenu.zoomOut": "Uitzoomen",

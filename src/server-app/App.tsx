@@ -15,10 +15,17 @@ import {
   basename,
   filePathToFilesUrl,
   getServerInfo,
+  getWikiData,
   isMarkdownPath,
   resolveHref,
   sendCommand,
 } from './lib/api';
+import {
+  assembleWikiDocument,
+  createWikiIndex,
+  wikiFileList,
+  wikiKeyOf,
+} from './lib/wiki';
 import {
   LayoutNode,
   PersistedWorkspace,
@@ -52,8 +59,51 @@ const EXTERNAL_LINK_URLS: Record<string, string> = {
 };
 
 export default function App() {
-  const serverInfo = useMemo<ServerInfo>(() => getServerInfo(), []);
-  const storageKey = `crossnote:serve:${serverInfo.rootDirectories.join('|')}`;
+  // Wiki mode: the page carries the whole workspace as an embedded payload
+  // (`crossnote build-wiki`) instead of talking to a serve server. Same UI,
+  // read-only data source.
+  const wikiData = useMemo(() => getWikiData(), []);
+  const wikiIndex = useMemo(
+    () => (wikiData ? createWikiIndex(wikiData) : null),
+    [wikiData],
+  );
+  const wikiDocumentCache = useRef<Map<string, string>>(new Map());
+  const frameDocument = useCallback(
+    (file: string): string | undefined => {
+      if (!wikiData) {
+        return undefined;
+      }
+      const key = wikiKeyOf(file);
+      const cached = wikiDocumentCache.current.get(key);
+      if (cached !== undefined) {
+        return cached;
+      }
+      const entry = wikiIndex?.get(key);
+      if (!entry) {
+        return undefined;
+      }
+      const documentHtml = assembleWikiDocument(wikiData, entry);
+      wikiDocumentCache.current.set(key, documentHtml);
+      return documentHtml;
+    },
+    [wikiData, wikiIndex],
+  );
+
+  const serverInfo = useMemo<ServerInfo>(
+    () =>
+      wikiData
+        ? {
+            rootDirectories: wikiData.rootDirectories,
+            vscode: false,
+            url: '',
+          }
+        : getServerInfo(),
+    [wikiData],
+  );
+  const storageKey = `crossnote:${wikiData ? 'wiki' : 'serve'}:${serverInfo.rootDirectories.join('|')}`;
+  // Wiki frames are sandboxed (opaque origin), so messages to them must use
+  // '*' as target origin; serve frames are same-origin.
+  const frameTargetOrigin = wikiData ? '*' : window.location.origin;
 
   const [layout, setLayout] = useState<LayoutNode | null>(null);
   const [activePaneId, setActivePaneId] = useState('');
@@ -88,8 +138,8 @@ export default function App() {
 
   useEffect(() => {
     const firstRoot = serverInfo.rootDirectories[0] ?? '';
-    document.title = `crossnote — ${basename(firstRoot) || 'preview'}`;
-  }, [serverInfo.rootDirectories]);
+    document.title = `${wikiData ? 'wiki' : 'crossnote'} — ${basename(firstRoot) || 'preview'}`;
+  }, [serverInfo.rootDirectories, wikiData]);
 
   // ---- persisted workspace ----------------------------------------------
   useEffect(() => {
@@ -99,9 +149,24 @@ export default function App() {
       if (raw) {
         const parsed = JSON.parse(raw) as PersistedWorkspace;
         if (parsed.layout) {
-          setLayout(parsed.layout);
+          let restored = parsed.layout;
+          const restoredRecents = parsed.recents ?? [];
+          if (wikiIndex) {
+            // The wiki payload is immutable — drop restored tabs and recents
+            // for notes that didn't make it into this file.
+            restoredRecents.forEach((file) => {
+              if (!wikiIndex.has(wikiKeyOf(file))) {
+                restored = closeFileEverywhere(restored, file);
+              }
+            });
+            setRecents(
+              restoredRecents.filter((file) => wikiIndex.has(wikiKeyOf(file))),
+            );
+          } else {
+            setRecents(restoredRecents);
+          }
+          setLayout(restored);
           setActivePaneId(parsed.activePaneId || initialPane.id);
-          setRecents(parsed.recents ?? []);
           return;
         }
       }
@@ -110,7 +175,7 @@ export default function App() {
     }
     setLayout(initialPane);
     setActivePaneId(initialPane.id);
-  }, [storageKey]);
+  }, [storageKey, wikiIndex]);
 
   useEffect(() => {
     if (!layout) {
@@ -289,7 +354,18 @@ export default function App() {
           file,
           iframe,
           reload,
-          lastUpdate: existing?.lastUpdate ?? null,
+          lastUpdate:
+            existing?.lastUpdate ??
+            // Wiki frames get their content from the embedded payload —
+            // seed it so visibility rehydration works like in serve.
+            (wikiIndex
+              ? (() => {
+                  const note = wikiIndex.get(wikiKeyOf(file));
+                  return note
+                    ? ({ command: 'updateHtml', ...note.update } as const)
+                    : null;
+                })()
+              : null),
           jsAndCssFiles: existing?.jsAndCssFiles ?? null,
         });
       } else {
@@ -302,18 +378,21 @@ export default function App() {
         }
       }
     },
-    [],
+    [wikiIndex],
   );
 
-  const onFrameVisible = useCallback((tabId: string) => {
-    const entry = framesRef.current.get(tabId);
-    if (entry?.iframe?.contentWindow && entry.lastUpdate) {
-      entry.iframe.contentWindow.postMessage(
-        entry.lastUpdate,
-        window.location.origin,
-      );
-    }
-  }, []);
+  const onFrameVisible = useCallback(
+    (tabId: string) => {
+      const entry = framesRef.current.get(tabId);
+      if (entry?.iframe?.contentWindow && entry.lastUpdate) {
+        entry.iframe.contentWindow.postMessage(
+          entry.lastUpdate,
+          frameTargetOrigin,
+        );
+      }
+    },
+    [frameTargetOrigin],
+  );
 
   const onFrameFocus = useCallback((tabId: string) => {
     const current = layoutRef.current;
@@ -332,6 +411,7 @@ export default function App() {
     closeActiveTab,
     splitPaneAt,
     openPickerForActivePane,
+    openWikiFile,
     serverInfo,
   });
   actionsRef.current = {
@@ -339,8 +419,46 @@ export default function App() {
     closeActiveTab,
     splitPaneAt,
     openPickerForActivePane,
+    openWikiFile,
     serverInfo,
   };
+
+  /**
+   * Wiki-mode link target: opens the note if it is part of the payload,
+   * otherwise explains that the file didn't travel with the wiki. Returns
+   * whether the note was opened.
+   */
+  const isWikiTargetRef = useRef(!!wikiData);
+  isWikiTargetRef.current = !!wikiData;
+  function openWikiFile(
+    paneId: string,
+    absolutePath: string,
+    href: string,
+  ): boolean {
+    if (!wikiIndex || !wikiIndex.has(wikiKeyOf(absolutePath))) {
+      showToast({
+        level: 'info',
+        message: isEchoableHref(href)
+          ? `"${href}" is not part of this wiki.`
+          : 'This link’s target is not part of the wiki.',
+      });
+      return false;
+    }
+    openFile(paneId, absolutePath);
+    return true;
+  }
+
+  /**
+   * Embedded data URIs (e.g. a link pointing straight at an image) and asset
+   * tokens are unreadably large — they get a generic message instead.
+   */
+  function isEchoableHref(href: string): boolean {
+    return (
+      href.length <= 200 &&
+      !href.startsWith('data:') &&
+      !href.startsWith('crossnote-wiki-asset:')
+    );
+  }
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
@@ -377,6 +495,27 @@ export default function App() {
       switch (data.command) {
         case 'webviewFinishLoading': {
           touchRecents(file);
+          if (isWikiTargetRef.current) {
+            // No server to ask for a refresh — replay the embedded payload,
+            // exactly like the SSE update the serve app would receive.
+            const note = wikiIndex?.get(wikiKeyOf(file));
+            if (note) {
+              const update: UpdateHtmlPayload & { command: 'updateHtml' } = {
+                command: 'updateHtml',
+                ...note.update,
+              };
+              for (const frameEntry of framesRef.current.values()) {
+                if (frameEntry.file === file) {
+                  frameEntry.lastUpdate = update;
+                  frameEntry.iframe?.contentWindow?.postMessage(
+                    update,
+                    frameTargetOrigin,
+                  );
+                }
+              }
+            }
+            return;
+          }
           // The initial data-html is only a first paint — the webview binds
           // click events (links, task checkboxes) when the first updateHtml
           // arrives, exactly like the VS Code extension's updateMarkdown call
@@ -396,7 +535,18 @@ export default function App() {
               href,
             );
             if (isMarkdownPath(absolutePath)) {
-              actions.openFile(activePaneIdRef.current, absolutePath);
+              if (isWikiTargetRef.current) {
+                actions.openWikiFile(
+                  activePaneIdRef.current,
+                  absolutePath,
+                  href,
+                );
+              } else {
+                actions.openFile(activePaneIdRef.current, absolutePath);
+              }
+            } else if (isWikiTargetRef.current) {
+              // Non-note files have no /files/ server behind a wiki.
+              actions.openWikiFile(activePaneIdRef.current, absolutePath, href);
             } else {
               const url = filePathToFilesUrl(
                 actions.serverInfo.rootDirectories,
@@ -432,16 +582,24 @@ export default function App() {
           return;
         }
         default: {
-          void sendCommand(file, data.command, args);
+          // The wiki has no server to relay commands to — everything the
+          // read-only webview might still send is dropped here.
+          if (!isWikiTargetRef.current) {
+            void sendCommand(file, data.command, args);
+          }
         }
       }
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [touchRecents]);
+  }, [touchRecents, wikiIndex, frameTargetOrigin]);
 
   // ---- server-sent events ---------------------------------------------------
   useEffect(() => {
+    if (wikiData) {
+      // A wiki has no server — content arrives from the embedded payload.
+      return;
+    }
     const source = new EventSource('/api/events');
     source.onmessage = (event: MessageEvent<string>) => {
       let data: {
@@ -507,7 +665,7 @@ export default function App() {
       }
     };
     return () => source.close();
-  }, [touchRecents, showToast]);
+  }, [touchRecents, showToast, wikiData]);
 
   // ---- global keyboard shortcuts --------------------------------------------
   useEffect(() => {
@@ -577,6 +735,9 @@ export default function App() {
       onTabDragEnd,
       onTabDrop,
       onPaneBodyDrop,
+      // Wiki mode only: the frame's document comes from the embedded
+      // payload. In serve mode frames load /preview pages from the server.
+      frameDocument: wikiData ? frameDocument : undefined,
     }),
     [
       activePaneId,
@@ -593,6 +754,8 @@ export default function App() {
       onTabDragEnd,
       onTabDrop,
       onPaneBodyDrop,
+      frameDocument,
+      wikiData,
     ],
   );
 
@@ -636,6 +799,7 @@ export default function App() {
         open={pickerOpen}
         recents={recents}
         rootDirectories={serverInfo.rootDirectories}
+        embeddedFiles={wikiData ? wikiFileList(wikiData) : undefined}
         onClose={() => setPickerOpen(false)}
         onOpenFile={(file: string) =>
           openFile(pickerPaneIdRef.current || activePaneIdRef.current, file)

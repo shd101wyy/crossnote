@@ -39,6 +39,11 @@ export interface LayoutActions {
   onTabDragEnd: () => void;
   onTabDrop: (paneId: string, insertionIndex: number) => void;
   onPaneBodyDrop: (paneId: string, zone: DropZone) => void;
+  /**
+   * Wiki mode: returns the assembled srcdoc for a file (sandboxed frame),
+   * or undefined in serve mode (frames load `/preview?file=…` instead).
+   */
+  frameDocument?: (file: string) => string | undefined;
 }
 
 const LayoutActionsContext = createContext<LayoutActions | null>(null);
@@ -120,6 +125,7 @@ function PaneView({ pane }: { pane: PaneNode }): ReactNode {
               tabId={tab.id}
               file={tab.file}
               visible={pane.activeTabId === tab.id}
+              documentProvider={actions.frameDocument}
               onRegister={actions.registerFrame}
               onBecameVisible={actions.onFrameVisible}
               onFrameFocus={actions.onFrameFocus}
