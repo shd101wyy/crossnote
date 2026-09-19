@@ -266,8 +266,10 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
+  margin-right: -2px;
+  flex: none;
   border: none;
   background: transparent;
   border-radius: 4px;
