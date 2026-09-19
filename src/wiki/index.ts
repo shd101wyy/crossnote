@@ -501,7 +501,15 @@ function scrubBacklinkForWiki(
       title: backlink.note?.title ?? '',
       config: backlink.note?.config as Record<string, unknown> | undefined,
     },
-    references: (backlink.references ?? []) as Array<Record<string, unknown>>,
+    references: (
+      (backlink.references ?? []) as Array<Record<string, unknown>>
+    ).map((reference) => ({
+      ...reference,
+      html:
+        typeof reference['html'] === 'string'
+          ? scrubWikiHtmlLinks(reference['html'], rootDirectory)
+          : reference['html'],
+    })),
     referenceHtmls: (backlink.referenceHtmls ?? []).map((html) =>
       scrubWikiHtmlLinks(html, rootDirectory),
     ),
@@ -509,9 +517,10 @@ function scrubBacklinkForWiki(
 }
 
 /**
- * Rewrite `href`/`src` values that point into `rootDirectory` (in any of
- * the encodings the note index produces — raw, forward-slashed or
- * percent-encoded) into `file:///<root-relative key>` links.
+ * Rewrite `href`/`src` values that point into `rootDirectory` into
+ * `file:///<root-relative key>` links. The note index produces several
+ * spellings — raw absolute paths (windows separators or forward slashes),
+ * percent-encoded variants, and full `file://` URLs — all are recognized.
  */
 function scrubWikiHtmlLinks(html: string, rootDirectory: string): string {
   try {
@@ -527,6 +536,15 @@ function scrubWikiHtmlLinks(html: string, rootDirectory: string): string {
           decoded = decodeURIComponent(value);
         } catch {
           // Keep the raw value.
+        }
+        // `file://` URLs are the index's most common spelling.
+        const fileUrlMatch = decoded.match(/^file:\/\/\/+(.*)$/i);
+        if (fileUrlMatch) {
+          decoded = fileUrlMatch[1];
+          // file:///C:/x vs file:///tmp/x — windows drives keep the colon.
+          if (!/^[A-Za-z]:/.test(decoded)) {
+            decoded = '/' + decoded;
+          }
         }
         // The index emits mixed separators (`C:\root/notes\x.md`).
         const normalized = decoded.replace(/\//g, path.sep);
