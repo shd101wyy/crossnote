@@ -40,10 +40,26 @@ export interface WikiFileMeta {
   update: WikiNoteUpdate;
 }
 
+/** The theme slots the wiki's context-menu picker can switch between. */
+export interface WikiThemesPayload {
+  /** `github-light.css` → stylesheet text. */
+  preview: Record<string, string>;
+  /** `default.css` → stylesheet text (prism). */
+  codeBlock: Record<string, string>;
+  /** `beige.css` → stylesheet text (reveal.js presentation themes). */
+  reveal: Record<string, string>;
+  /** preview theme → code-block theme, for `codeBlock: 'auto.css'`. */
+  codeBlockAuto: Record<string, string>;
+  /** The notebook config the note pages were rendered with. */
+  build: { preview: string; codeBlock: string; reveal: string };
+}
+
 export interface WikiData {
   rootDirectories: string[];
   /** Token → asset content: JS/CSS source to inline, or a data URI. */
   assets: Record<string, string>;
+  /** Every available theme stylesheet, for the runtime theme picker. */
+  themes: WikiThemesPayload;
   files: WikiFileMeta[];
 }
 

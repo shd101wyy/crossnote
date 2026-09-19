@@ -543,7 +543,7 @@ window["initRevealPresentation"] = async function() {
   /**
    * Map preview theme to prism theme.
    */
-  private static AutoPrismThemeMap = {
+  static AutoPrismThemeMap = {
     'atom-dark.css': 'atom-dark.css',
     'atom-light.css': 'atom-light.css',
     'atom-material.css': 'atom-material.css',
@@ -562,7 +562,7 @@ window["initRevealPresentation"] = async function() {
     'vscode.css': 'vscode.css',
   };
 
-  private static AutoPrismThemeMapForPresentation = {
+  static AutoPrismThemeMapForPresentation = {
     'beige.css': 'pen-paper-coffee.css',
     'black.css': 'one-dark.css',
     'blood.css': 'monokai.css',

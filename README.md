@@ -172,7 +172,10 @@ $ crossnote build-wiki docs wiki --vscode         # reuse VS Code settings, too
   hidden or inert, note-to-note links resolve inside the file, external
   links open new tabs, and links to notes that are not part of the wiki
   explain so instead of navigating away. The graph view and backlinks
-  buttons are hidden (they need the note index of a live notebook).
+  buttons are hidden (they need the note index of a live notebook). Themes
+  _can_ be changed from the preview's right-click menu — every stylesheet
+  ships in the file and the selection persists in the browser's
+  localStorage.
 - Config resolution is the same as `serve`
   (`defaults ← VS Code settings with --vscode ← global crossnote config ←
 <directory>/.crossnote`), per directory.

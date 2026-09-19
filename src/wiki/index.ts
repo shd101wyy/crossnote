@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as vscode from 'vscode';
-import type { MarkdownEngineOutput } from '../markdown-engine';
+import { MarkdownEngine, MarkdownEngineOutput } from '../markdown-engine';
 import type { WebviewConfig } from '../notebook';
 import { previewHostShimScript } from '../serve/preview-host-shim';
 import { createNotebooksForDirectories } from '../serve/config';
@@ -19,6 +19,13 @@ import {
  * shell when a note is opened.
  */
 const ASSET_TOKEN_PREFIX = 'crossnote-wiki-asset:';
+
+/**
+ * Semantic tokens for the three theme slots (`preview`, `codeBlock`,
+ * `reveal`) — every theme's stylesheet ships in the payload, and the shell
+ * inlines whichever one the stored theme selection asks for.
+ */
+const THEME_TOKEN_PREFIX = 'crossnote-wiki-theme:';
 
 /**
  * Injected right before preview.js in every embedded note document. Wiki
@@ -225,6 +232,21 @@ export async function buildWiki(
     (filePath: string) => {
       const cleanPath = resolvedPath(filePath);
       if (isPathWithinRoot(buildDirectory, cleanPath)) {
+        // The three theme slots are resolved at open time — the wiki's
+        // context-menu theme picker persists its selection to localStorage —
+        // so they get stable semantic tokens instead of per-file asset ids.
+        const relativeToBuild = toPosixPath(
+          path.relative(buildDirectory, cleanPath),
+        );
+        if (relativeToBuild.startsWith('styles/preview_theme/')) {
+          return `${THEME_TOKEN_PREFIX}preview`;
+        }
+        if (relativeToBuild.startsWith('styles/prism_theme/')) {
+          return `${THEME_TOKEN_PREFIX}codeBlock`;
+        }
+        if (relativeToBuild.startsWith('dependencies/reveal/css/theme/')) {
+          return `${THEME_TOKEN_PREFIX}reveal`;
+        }
         return tokenFor(cleanPath);
       }
       for (const root of rootDirectories) {
@@ -354,10 +376,13 @@ export async function buildWiki(
         : await fs.promises.readFile(filePath, 'utf-8').catch(() => '');
   }
 
+  const themes = await collectThemeAssets(buildDirectory, notebooks[0]);
+
   const html = buildShellHTML({
     rootNames,
     files,
     assets,
+    themes,
     buildDirectory,
   });
 
@@ -371,6 +396,73 @@ export async function buildWiki(
     })),
     rootDirectories,
     failures,
+  };
+}
+
+/**
+ * The shape of the `themes` section of the wiki payload: every available
+ * stylesheet for the three theme slots, the `auto.css` code-block
+ * resolution map, and the theme names the note pages were built with.
+ */
+export interface WikiThemesPayload {
+  /** `github-light.css` → stylesheet text. */
+  preview: Record<string, string>;
+  /** `default.css` → stylesheet text (prism). */
+  codeBlock: Record<string, string>;
+  /** `beige.css` → stylesheet text (reveal.js presentation themes). */
+  reveal: Record<string, string>;
+  /** preview theme → code-block theme, for `codeBlock: 'auto.css'`. */
+  codeBlockAuto: Record<string, string>;
+  /** The notebook config the note pages were rendered with. */
+  build: { preview: string; codeBlock: string; reveal: string };
+}
+
+/**
+ * Read every preview/code-block/reveal theme stylesheet from the build
+ * directory so the wiki's context-menu theme picker can switch between
+ * them at open time, plus the `auto.css` resolution map.
+ */
+async function collectThemeAssets(
+  buildDirectory: string,
+  notebook: {
+    config: {
+      previewTheme: string;
+      codeBlockTheme: string;
+      revealjsTheme: string;
+    };
+  },
+): Promise<WikiThemesPayload> {
+  const readThemeDirectory = async (
+    relativeDirectory: string,
+  ): Promise<Record<string, string>> => {
+    const absoluteDirectory = path.join(
+      buildDirectory,
+      ...relativeDirectory.split('/'),
+    );
+    const entries = await fs.promises
+      .readdir(absoluteDirectory)
+      .catch(() => [] as string[]);
+    const map: Record<string, string> = {};
+    for (const entry of entries) {
+      if (!entry.toLowerCase().endsWith('.css')) {
+        continue;
+      }
+      map[entry] = await readStylesheetWithInlinedUrls(
+        path.join(absoluteDirectory, entry),
+      );
+    }
+    return map;
+  };
+  return {
+    preview: await readThemeDirectory('styles/preview_theme'),
+    codeBlock: await readThemeDirectory('styles/prism_theme'),
+    reveal: await readThemeDirectory('dependencies/reveal/css/theme'),
+    codeBlockAuto: { ...MarkdownEngine.AutoPrismThemeMap },
+    build: {
+      preview: notebook.config.previewTheme,
+      codeBlock: notebook.config.codeBlockTheme,
+      reveal: notebook.config.revealjsTheme,
+    },
   };
 }
 
@@ -520,11 +612,13 @@ function buildShellHTML({
   rootNames,
   files,
   assets,
+  themes,
   buildDirectory,
 }: {
   rootNames: string[];
   files: WikiFileEntry[];
   assets: Record<string, string>;
+  themes: WikiThemesPayload;
   buildDirectory: string;
 }): string {
   const appScriptPath = path.join(
@@ -553,6 +647,7 @@ function buildShellHTML({
   const payload = JSON.stringify({
     rootDirectories: rootNames,
     assets,
+    themes,
     files,
   }).replace(/</g, '\\u003c');
   const safeAppScript = appScript.replace(/<\/script/g, '<\\/script');

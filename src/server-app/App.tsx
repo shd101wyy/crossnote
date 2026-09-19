@@ -23,9 +23,12 @@ import {
 import {
   assembleWikiDocument,
   createWikiIndex,
+  readWikiThemeSelection,
   resolveWikiHref,
   wikiFileList,
   wikiKeyOf,
+  writeWikiThemeSelection,
+  type WikiThemeSelection,
 } from './lib/wiki';
 import {
   LayoutNode,
@@ -70,26 +73,35 @@ export default function App() {
     () => (wikiData ? createWikiIndex(wikiData) : null),
     [wikiData],
   );
+  // The wiki's theme selection (context-menu picker), persisted to
+  // localStorage. `null` = use the themes the file was built with.
+  const [wikiThemes, setWikiThemes] = useState<WikiThemeSelection | null>(() =>
+    wikiData ? readWikiThemeSelection(wikiData, localStorage) : null,
+  );
   const wikiDocumentCache = useRef<Map<string, string>>(new Map());
   const frameDocument = useCallback(
     (file: string): string | undefined => {
       if (!wikiData) {
         return undefined;
       }
-      const key = wikiKeyOf(file);
+      const key = `${wikiKeyOf(file)}\n${wikiThemes ? JSON.stringify(wikiThemes) : ''}`;
       const cached = wikiDocumentCache.current.get(key);
       if (cached !== undefined) {
         return cached;
       }
-      const entry = wikiIndex?.get(key);
+      const entry = wikiIndex?.get(wikiKeyOf(file));
       if (!entry) {
         return undefined;
       }
-      const documentHtml = assembleWikiDocument(wikiData, entry);
+      const documentHtml = assembleWikiDocument(
+        wikiData,
+        entry,
+        wikiThemes ?? undefined,
+      );
       wikiDocumentCache.current.set(key, documentHtml);
       return documentHtml;
     },
-    [wikiData, wikiIndex],
+    [wikiData, wikiIndex, wikiThemes],
   );
 
   const serverInfo = useMemo<ServerInfo>(
@@ -621,6 +633,40 @@ export default function App() {
           }
           return;
         }
+        case 'setPreviewTheme':
+        case 'setCodeBlockTheme':
+        case 'setRevealjsTheme': {
+          // args: [sourceUri, theme]
+          const slot =
+            data.command === 'setPreviewTheme'
+              ? 'preview'
+              : data.command === 'setCodeBlockTheme'
+                ? 'codeBlock'
+                : 'reveal';
+          if (isWikiTargetRef.current && wikiData) {
+            const theme = String(args[1] ?? '');
+            const known =
+              theme === 'auto.css' || theme in wikiData.themes[slot];
+            if (!known) {
+              return;
+            }
+            const next: WikiThemeSelection = {
+              preview: wikiThemes?.preview ?? wikiData.themes.build.preview,
+              codeBlock:
+                wikiThemes?.codeBlock ?? wikiData.themes.build.codeBlock,
+              reveal: wikiThemes?.reveal ?? wikiData.themes.build.reveal,
+              [slot]: theme,
+            };
+            writeWikiThemeSelection(wikiData, localStorage, next);
+            setWikiThemes(next);
+            // The changed frameDocument re-assembles every open tab with the
+            // new stylesheet and re-sets its srcdoc — a reload, exactly the
+            // behavior of the serve server's configChanged.
+            return;
+          }
+          void sendCommand(file, data.command, args);
+          return;
+        }
         case 'togglePreviewZenMode': {
           setZenMode((value) => !value);
           return;
@@ -661,7 +707,14 @@ export default function App() {
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [touchRecents, wikiIndex, wikiData, frameTargetOrigin, openGraphView]);
+  }, [
+    touchRecents,
+    wikiIndex,
+    wikiData,
+    wikiThemes,
+    frameTargetOrigin,
+    openGraphView,
+  ]);
 
   // ---- server-sent events ---------------------------------------------------
   useEffect(() => {

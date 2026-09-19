@@ -168,6 +168,16 @@ describe('crossnote build-wiki', () => {
     expect(Object.keys(payload.assets).length).toBeGreaterThan(0);
     expect(JSON.stringify(payload.assets)).toContain('preview webview');
 
+    // The theme slots use semantic tokens, resolved at open time from the
+    // selection stored in localStorage; every available stylesheet ships in
+    // the payload so the context-menu theme picker works.
+    expect(result.html).toContain('crossnote-wiki-theme:preview');
+    expect(result.html).toContain('crossnote-wiki-theme:codeBlock');
+    expect(Object.keys(payload.themes.preview)).toContain('github-light.css');
+    expect(Object.keys(payload.themes.codeBlock)).toContain('github.css');
+    expect(payload.themes.build.preview).toBe('github-light.css');
+    expect(payload.themes.codeBlockAuto).toBeTruthy();
+
     // The home note carries the images and the note link; images are
     // embedded in both the page's data-html and the update payload, and
     // the link keeps a root-relative href the shell can resolve.

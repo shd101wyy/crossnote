@@ -232,6 +232,93 @@ check(
 );
 await page.keyboard.press('Escape');
 
+// Theme picker: a selection stored in localStorage (what the context menu
+// writes) re-assembles notes with that stylesheet on the next load.
+const wikiStorageKey = await page.evaluate(() => {
+  const roots = globalThis.__CROSSNOTE_WIKI__.rootDirectories;
+  return `crossnote:wiki:themes:${roots.join('|')}`;
+});
+const stored = await page.evaluate((key) => localStorage.getItem(key), wikiStorageKey);
+await page.evaluate(
+  ({ key, value }) => localStorage.setItem(key, value),
+  {
+    key: wikiStorageKey,
+    value: JSON.stringify({
+      preview: 'github-dark.css',
+      codeBlock: 'auto.css',
+      reveal: 'white.css',
+    }),
+  },
+);
+await page.reload();
+await page.waitForSelector('.cn-titlebar', { timeout: 120000 });
+await page.click('.cn-titlebar-open');
+await page.waitForSelector('.cn-picker-item', { timeout: 20000 });
+await page.click('.cn-picker-item >> nth=0');
+await page.waitForSelector('.cn-frame', { timeout: 30000 });
+await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('h1')
+  .first()
+  .waitFor({ timeout: 60000 });
+const themeStyle = await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('style[data-crossnote-theme="preview"]')
+  .first()
+  .textContent()
+  .catch(() => null);
+check(
+  'stored theme selection is applied',
+  !!themeStyle && themeStyle.includes('background-color:#24292e'),
+  (themeStyle ?? '').slice(0, 60),
+);
+
+// Live switch: dispatch the exact message the context menu's theme item
+// sends (from inside the frame, so the app's source check passes) and
+// watch the selection persist and the open tabs re-assemble with it.
+await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('body')
+  .first()
+  .evaluate(() => {
+    globalThis.parent.postMessage(
+      { command: 'setPreviewTheme', args: [null, 'one-dark.css'] },
+      '*',
+    );
+  });
+await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('h1')
+  .first()
+  .waitFor({ timeout: 60000 });
+await page.waitForTimeout(1500);
+const liveStyle = await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('style[data-crossnote-theme="preview"]')
+  .first()
+  .textContent()
+  .catch(() => null);
+const persistedSelection = await page.evaluate(
+  (key) => localStorage.getItem(key),
+  wikiStorageKey,
+);
+check(
+  'context-menu theme switch persists and re-renders',
+  !!liveStyle &&
+    liveStyle.includes('background-color:#272b33') &&
+    !!persistedSelection &&
+    persistedSelection.includes('one-dark.css'),
+  (liveStyle ?? '').slice(0, 60),
+);
+// Restore whatever was stored before the probe (usually nothing).
+await page.evaluate(({ key, value }) => {
+  if (value === null) {
+    localStorage.removeItem(key);
+  } else {
+    localStorage.setItem(key, value);
+  }
+}, { key: wikiStorageKey, value: stored });
+
 const relevantErrors = errors.filter(
   (error) =>
     !/net::ERR|favicon|cdn.jsdelivr|Failed to load resource/.test(error),
