@@ -6,6 +6,7 @@ import {
 import {
   assembleWikiDocument,
   createWikiIndex,
+  resolveWikiHref,
   wikiFileList,
   wikiKeyOf,
 } from '../../src/server-app/lib/wiki';
@@ -13,7 +14,7 @@ import {
 function wikiFile(overrides: Partial<WikiFileMeta> = {}): WikiFileMeta {
   return {
     path: '/vault/note.md',
-    root: '/vault',
+    root: 'vault',
     title: 'note',
     mtimeMs: 1,
     html: '<!DOCTYPE html><html><head></head><body>hi</body></html>',
@@ -22,7 +23,7 @@ function wikiFile(overrides: Partial<WikiFileMeta> = {}): WikiFileMeta {
       html: '<h1>note</h1>',
       tocHTML: '',
       totalLineCount: 1,
-      sourceUri: '/vault/note.md',
+      sourceUri: 'note.md',
       sourceScheme: 'file',
       id: '',
       class: '',
@@ -98,35 +99,84 @@ describe('assembleWikiDocument', () => {
 });
 
 describe('wiki index and file list', () => {
-  test('indexes notes by posix-normalized path', () => {
+  test('indexes notes by posix-normalized key', () => {
     const data = wikiData({
-      files: [wikiFile({ path: 'C:\\vault\\sub\\a.md', root: 'C:\\vault' })],
+      files: [wikiFile({ path: 'sub\\a.md' })],
     });
     const index = createWikiIndex(data);
-    expect(index.has('C:/vault/sub/a.md')).toBe(true);
-    expect(index.has(wikiKeyOf('C:\\vault\\sub\\a.md'))).toBe(true);
-    expect(index.has('C:\\vault\\sub\\a.md')).toBe(false);
+    expect(index.has('sub/a.md')).toBe(true);
+    expect(index.has(wikiKeyOf('sub\\a.md'))).toBe(true);
+    expect(index.has('sub\\a.md')).toBe(false);
   });
 
-  test('lists files relative to their root, root-prefixed when multi-root', () => {
+  test('lists files with root-prefixed keys, bare relative paths when multi-root', () => {
     const single = wikiData({
-      files: [wikiFile({ path: '/vault/sub/a.md' })],
+      files: [wikiFile({ path: 'sub/a.md' })],
     });
-    expect(wikiFileList(single)[0].relativePath).toBe('sub/a.md');
+    expect(wikiFileList(single)[0]).toEqual({
+      absolutePath: 'sub/a.md',
+      relativePath: 'sub/a.md',
+      mtimeMs: 1,
+      rootPath: 'vault',
+    });
 
     const multi = wikiData({
-      rootDirectories: ['/vault', '/other'],
+      rootDirectories: ['vault', 'other'],
       files: [
-        wikiFile({ path: '/vault/sub/a.md' }),
-        wikiFile({ path: '/other/b.md', root: '/other' }),
+        wikiFile({ path: 'vault/sub/a.md' }),
+        wikiFile({ path: 'other/b.md', root: 'other' }),
       ],
     });
     const list = wikiFileList(multi);
-    expect(list.map((file) => file.relativePath)).toEqual([
+    // The picker re-adds the root prefix from rootPath itself.
+    expect(list.map((file) => file.relativePath)).toEqual(['sub/a.md', 'b.md']);
+    expect(list.map((file) => file.rootPath)).toEqual(['vault', 'other']);
+    expect(list.map((file) => file.absolutePath)).toEqual([
       'vault/sub/a.md',
       'other/b.md',
     ]);
-    expect(list.map((file) => file.rootPath)).toEqual(['/vault', '/other']);
+  });
+});
+
+describe('resolveWikiHref', () => {
+  const data = wikiData({
+    files: [
+      wikiFile({ path: 'index.md' }),
+      wikiFile({ path: 'notes/other.md' }),
+    ],
+  });
+
+  test('anchors root-relative and note-relative hrefs', () => {
+    expect(resolveWikiHref(data, 'index.md', '/notes/other.md')).toBe(
+      'notes/other.md',
+    );
+    expect(resolveWikiHref(data, 'notes/other.md', '../index.md')).toBe(
+      'index.md',
+    );
+    expect(resolveWikiHref(data, 'notes/other.md', 'sibling.md')).toBe(
+      'notes/sibling.md',
+    );
+    // Fragments and queries are stripped.
+    expect(resolveWikiHref(data, 'index.md', '/notes/other.md#head')).toBe(
+      'notes/other.md',
+    );
+    expect(resolveWikiHref(data, 'index.md', '')).toBe('');
+  });
+
+  test('re-anchors multi-root keys on the source note’s root', () => {
+    const multi = wikiData({
+      rootDirectories: ['vault', 'other'],
+      files: [
+        wikiFile({ path: 'vault/index.md' }),
+        wikiFile({ path: 'other/index.md', root: 'other' }),
+      ],
+    });
+    expect(resolveWikiHref(multi, 'vault/sub/a.md', '/index.md')).toBe(
+      'vault/index.md',
+    );
+    expect(resolveWikiHref(multi, 'other/sub/a.md', '/index.md')).toBe(
+      'other/index.md',
+    );
   });
 });
 

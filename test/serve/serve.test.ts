@@ -41,6 +41,9 @@ function writeFakeBuildDirectory(root: string): void {
     // serve app bundle as the wiki shell.
     [path.join(root, 'server-app/server-app.js'), '// server app'],
     [path.join(root, 'server-app/server-app.css'), '/* server app css */'],
+    // The standalone graph view page.
+    [path.join(root, 'webview/graph-view.js'), '// graph view webview'],
+    [path.join(root, 'webview/graph-view.css'), '/* graph view css */'],
   ];
   for (const [file, content] of files) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -79,6 +82,7 @@ interface SSEMessage {
   payload?: Record<string, unknown>;
   level?: string;
   message?: string;
+  iframeMessage?: Record<string, unknown>;
 }
 
 /**
@@ -237,6 +241,66 @@ describe('crossnote serve', () => {
       `${server.url}/preview?file=${encodeURIComponent('/etc/passwd')}`,
     );
     expect(response.status).toBe(400);
+  });
+
+  test('serves the standalone graph view page with its shim', async () => {
+    const file = path.join(workspace, 'welcome.md');
+    const response = await fetch(
+      `${server.url}/graph-view?file=${encodeURIComponent(file)}`,
+    );
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('/assets/webview/graph-view.js');
+    // The shim answers graphViewReady by fetching the data itself, and
+    // relays node clicks to the app tab that opened the page.
+    expect(html).toContain('graphViewReady');
+    expect(html).toContain('__serverAppOpenFile');
+    expect(html).toContain('/api/graph');
+    expect(html.indexOf('acquireVsCodeApi')).toBeLessThan(
+      html.indexOf('/assets/webview/graph-view.js'),
+    );
+  });
+
+  test('serves graph data for a file', async () => {
+    const file = path.join(workspace, 'welcome.md');
+    const response = await fetch(
+      `${server.url}/api/graph?file=${encodeURIComponent(file)}`,
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      data: { nodes: Array<{ id: string }>; links: unknown[] };
+      activeFilePath: string;
+    };
+    expect(body.activeFilePath.replace(/\\/g, '/')).toBe('welcome.md');
+    // welcome.md links to notes/other.md — both are graph nodes.
+    expect(body.data.nodes.map((node) => node.id)).toEqual(
+      expect.arrayContaining(['welcome.md', path.join('notes', 'other.md')]),
+    );
+  });
+
+  test('showBacklinks delivers the backlinks into the preview', async () => {
+    const file = path.join(workspace, 'notes', 'other.md');
+    // other.md links back to ../welcome.md → welcome.md has a backlink.
+    const sseDone = waitForSSE(server, (m) => m.type === 'iframeMessage');
+    await postCommand(server, {
+      file,
+      command: 'showBacklinks',
+      args: [
+        {
+          uri: file,
+          forceRefreshingNotes: false,
+          backlinksSha: 'stale-sha',
+        },
+      ],
+    });
+    const events = await sseDone;
+    const delivered = events.find((m) => m.type === 'iframeMessage');
+    expect(delivered?.file).toBe(file);
+    const message = delivered?.iframeMessage as
+      | { command: string; backlinks: Array<{ note: { filePath: string } }> }
+      | undefined;
+    expect(message?.command).toBe('backlinks');
+    expect(message?.backlinks[0]?.note?.filePath).toContain('welcome.md');
   });
 
   test('returns a friendly page for missing files', async () => {

@@ -19,6 +19,7 @@ export default function Footer() {
     isPresentationMode,
     isMouseOverPreview,
     isMobile,
+    isWiki,
     showBacklinks,
     theme,
     markdown,
@@ -70,27 +71,34 @@ export default function Footer() {
             isMobile || isMouseOverPreview ? '' : 'invisible',
           )}
         >
-          <div
-            className="p-1 cursor-pointer hover:text-primary w-5 h-5"
-            title={t('footer.openGraphView')}
-            onClick={() => {
-              postMessage('openGraphView', [sourceUri.current]);
-            }}
-          >
-            <ShareIcon className="w-5 h-5"></ShareIcon>
-          </div>
-          <div
-            className={classNames(
-              'p-1 cursor-pointer hover:text-primary w-5 h-5',
-              showBacklinks ? 'text-primary font-bold' : '',
-            )}
-            title={t('footer.toggleBacklinks')}
-            onClick={() => {
-              setShowBacklinks((x) => !x);
-            }}
-          >
-            <LinkIcon className="w-5 h-5"></LinkIcon>
-          </div>
+          {/* The graph view and backlinks need a host that owns the note
+              index — the read-only wiki has neither, so the buttons are
+              hidden there (the serve server implements both). */}
+          {!isWiki && (
+            <div
+              className="p-1 cursor-pointer hover:text-primary w-5 h-5"
+              title={t('footer.openGraphView')}
+              onClick={() => {
+                postMessage('openGraphView', [sourceUri.current]);
+              }}
+            >
+              <ShareIcon className="w-5 h-5"></ShareIcon>
+            </div>
+          )}
+          {!isWiki && (
+            <div
+              className={classNames(
+                'p-1 cursor-pointer hover:text-primary w-5 h-5',
+                showBacklinks ? 'text-primary font-bold' : '',
+              )}
+              title={t('footer.toggleBacklinks')}
+              onClick={() => {
+                setShowBacklinks((x) => !x);
+              }}
+            >
+              <LinkIcon className="w-5 h-5"></LinkIcon>
+            </div>
+          )}
           <div
             className="p-1 cursor-pointer hover:text-primary w-5 h-5"
             title={t('footer.zoomOut')}

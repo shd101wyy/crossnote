@@ -56,11 +56,17 @@ function writeWorkspace(root: string): void {
       '',
       '![](image.png)',
       '',
+      '![](my%20image.png)',
+      '',
+      '![](https://cdn.example.test/remote.png)',
+      '',
       '[other note](./notes/other.md)',
       '',
     ].join('\n'),
   );
   fs.writeFileSync(path.join(root, 'image.png'), 'not really a png');
+  // Referenced percent-encoded as `my%20image.png`.
+  fs.writeFileSync(path.join(root, 'my image.png'), 'also not a png');
   fs.writeFileSync(
     path.join(root, 'notes', 'other.md'),
     '# Other\n\n[index](../index.md)\n',
@@ -71,6 +77,7 @@ describe('crossnote build-wiki', () => {
   let workspace: string;
   let buildDirectory: string;
   let globalConfigDirectory: string;
+  const fetchMock = jest.fn();
 
   beforeAll(async () => {
     track();
@@ -82,6 +89,20 @@ describe('crossnote build-wiki', () => {
       mkdirSync('crossnote-build-wiki-global'),
       'crossnote',
     );
+    // Remote images are fetched and embedded; a canned image keeps the test
+    // hermetic (one URL succeeds, one fails so its reference is kept).
+    const fakePng = Buffer.from('fake png bytes');
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('404')) {
+        return { ok: false, headers: new Map(), arrayBuffer: async () => [] };
+      }
+      return {
+        ok: true,
+        headers: new Map([['content-type', 'image/png']]),
+        arrayBuffer: async () => fakePng,
+      };
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
   });
 
   test('builds a standalone wiki embedding every note', async () => {
@@ -115,6 +136,7 @@ describe('crossnote build-wiki', () => {
 
     // Local images are embedded as data URIs so the file is shareable —
     // both in the first-paint data-html and in the updateHtml payload.
+    // Percent-encoded srcs resolve against the decoded filename.
     expect(result.html).toContain('data:image/png;base64,');
     // JSON.parse resolves the \u003c escapes itself.
     const payload = JSON.parse(payloadMatch?.[1] ?? 'null');
@@ -131,12 +153,22 @@ describe('crossnote build-wiki', () => {
       expect(typeof file.update.tocHTML).toBe('string');
     }
 
+    // Notes are keyed by root-relative paths — the file must not carry the
+    // absolute paths of the machine it was exported on.
+    expect(payload.rootDirectories).toEqual([path.basename(workspace)]);
+    expect(payload.files.map((file: { path: string }) => file.path)).toEqual([
+      'index.md',
+      'notes/other.md',
+    ]);
+    expect(payloadMatch?.[1]).not.toContain(workspace.replace(/\\/g, '/'));
+    expect(payloadMatch?.[1]).not.toContain(workspace);
+
     // Shared build assets are referenced by tokens and stored once.
     expect(result.html).toContain('crossnote-wiki-asset:');
     expect(Object.keys(payload.assets).length).toBeGreaterThan(0);
     expect(JSON.stringify(payload.assets)).toContain('preview webview');
 
-    // The home note carries the image and the note link; the image is
+    // The home note carries the images and the note link; images are
     // embedded in both the page's data-html and the update payload, and
     // the link keeps a root-relative href the shell can resolve.
     const home = payload.files.find(
@@ -144,6 +176,18 @@ describe('crossnote build-wiki', () => {
     );
     expect(home.html).toContain('data:image/png;base64,');
     expect(home.update.html).toContain('data:image/png;base64,');
+    // Percent-encoded local image resolves via the decoded filename.
+    expect(
+      (home.update.html.match(/data:image\/png;base64,/g) ?? []).length,
+    ).toBeGreaterThanOrEqual(3);
+    // The remote image was fetched and embedded (TiddlyWiki-style).
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://cdn.example.test/remote.png',
+      expect.anything(),
+    );
+    expect(home.update.html).toContain(
+      `data:image/png;base64,${Buffer.from('fake png bytes').toString('base64')}`,
+    );
     expect(home.update.html).toContain('href="/notes/other.md"');
   });
 

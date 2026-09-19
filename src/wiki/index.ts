@@ -77,9 +77,14 @@ export interface BuildWikiOptions {
 }
 
 export interface WikiFileEntry {
-  /** Absolute path of the note. */
+  /**
+   * Identity of the note inside the wiki: its path relative to its root
+   * (posix separators), prefixed with the root's folder name when the wiki
+   * packs several roots. Deliberately not an absolute path — the wiki file
+   * must not carry the exporting machine's directory layout.
+   */
   path: string;
-  /** Absolute path of the served root the note belongs to. */
+  /** Folder name of the served root the note belongs to. */
   root: string;
   /** Document title (front-matter title or file basename). */
   title: string;
@@ -149,6 +154,19 @@ export async function buildWiki(
     },
   );
 
+  // The wiki file is meant to be shared; it carries no absolute paths of
+  // the machine it was exported on. Notes are keyed by their path relative
+  // to their root (prefixed with the root's folder name when several roots
+  // are packed), and the payload lists root names, not root paths.
+  const multiRoot = rootDirectories.length > 1;
+  const rootNames = rootDirectories.map((root) => path.basename(root) || root);
+  const noteKeyFor = (absolutePath: string, rootIndex: number): string => {
+    const relative = toPosixPath(
+      path.relative(rootDirectories[rootIndex], absolutePath),
+    );
+    return multiRoot ? `${rootNames[rootIndex]}/${relative}` : relative;
+  };
+
   // Token registry: one entry per distinct asset file, filled by the
   // addFileProtocol mapper while the templates are generated.
   const assetIds = new Map<string, string>(); // absolute path → token id
@@ -164,19 +182,34 @@ export async function buildWiki(
   };
 
   const dataUriForImage = (filePath: string): string | null => {
-    try {
-      const extension = path.extname(filePath).toLowerCase().slice(1);
-      const mime = IMAGE_MIME_TYPES[extension];
-      if (!mime) {
-        return null;
-      }
-      const base64 = fs.readFileSync(resolvedPath(filePath)).toString('base64');
-      return `data:${mime};base64,${base64}`;
-    } catch {
-      // Unreadable image — keep a dead reference rather than failing the
-      // whole wiki build.
+    const extension = path.extname(filePath).toLowerCase().slice(1);
+    const mime = IMAGE_MIME_TYPES[extension];
+    if (!mime) {
       return null;
     }
+    // Raw HTML may carry percent-encoded srcs (`./my%20image.png`) — try the
+    // literal path first, then the decoded one.
+    const cleanPath = resolvedPath(filePath);
+    const candidates = [cleanPath];
+    try {
+      const decoded = decodeURIComponent(cleanPath);
+      if (decoded !== cleanPath) {
+        candidates.push(decoded);
+      }
+    } catch {
+      // Invalid percent-encoding — the literal path is all we have.
+    }
+    for (const candidate of candidates) {
+      try {
+        const base64 = fs.readFileSync(candidate).toString('base64');
+        return `data:${mime};base64,${base64}`;
+      } catch {
+        // Try the next candidate.
+      }
+    }
+    // Unreadable image — keep a dead reference rather than failing the
+    // whole wiki build.
+    return null;
   };
 
   function resolvedPath(filePath: string): string {
@@ -224,6 +257,10 @@ export async function buildWiki(
 
   const files: WikiFileEntry[] = [];
   const failures: Array<{ path: string; error: string }> = [];
+  // Remote images are fetched once per URL for the whole build — a
+  // TiddlyWiki-style self-contained file: the reader needs no network for
+  // images.
+  const remoteImageCache = new Map<string, string | null>();
 
   try {
     for (let rootIndex = 0; rootIndex < rootDirectories.length; rootIndex++) {
@@ -241,12 +278,14 @@ export async function buildWiki(
             hideFrontMatter: false,
             vscodePreviewPanel: dummyPanel,
           });
+          output.html = await embedRemoteImages(output.html, remoteImageCache);
+          const noteKey = noteKeyFor(file.absolutePath, rootIndex);
           const html = await engine.generateHTMLTemplateForPreview({
             inputString: text,
             parsedOutput: output,
             vscodePreviewPanel: dummyPanel,
             config: {
-              sourceUri: file.absolutePath,
+              sourceUri: noteKey,
               isVSCode: false,
               isServerApp: true,
               isWiki: true,
@@ -263,8 +302,8 @@ export async function buildWiki(
             path.basename(file.absolutePath, path.extname(file.absolutePath));
           const mtimeMs = (await fs.promises.stat(file.absolutePath)).mtimeMs;
           files.push({
-            path: file.absolutePath,
-            root,
+            path: noteKey,
+            root: rootNames[rootIndex],
             title,
             mtimeMs,
             html,
@@ -273,7 +312,7 @@ export async function buildWiki(
               html: output.html,
               tocHTML: output.tocHTML,
               totalLineCount: text.split('\n').length,
-              sourceUri: file.absolutePath,
+              sourceUri: noteKey,
               sourceScheme: 'file',
               id: (yamlConfig['id'] as string) || '',
               class: (yamlConfig['class'] as string) || '',
@@ -316,7 +355,7 @@ export async function buildWiki(
   }
 
   const html = buildShellHTML({
-    rootDirectories,
+    rootNames,
     files,
     assets,
     buildDirectory,
@@ -333,6 +372,86 @@ export async function buildWiki(
     rootDirectories,
     failures,
   };
+}
+
+/** Fetch limit and timeout for embedding remote images. */
+const REMOTE_IMAGE_TIMEOUT_MS = 10_000;
+const REMOTE_IMAGE_MAX_BYTES = 8 * 1024 * 1024;
+
+/**
+ * Replace `<img src="http(s)://…">` references with fetched data URIs so the
+ * wiki renders its images without any network. Best-effort: a URL that
+ * fails, times out or exceeds the size cap keeps its remote reference, and
+ * each URL is fetched at most once per build through `cache` (which also
+ * memoizes failures, `null`).
+ */
+export async function embedRemoteImages(
+  html: string,
+  cache: Map<string, string | null>,
+): Promise<string> {
+  const urls = new Set<string>();
+  for (const match of html.matchAll(/<img[^>]*\ssrc="(https?:[^"]+)"/g)) {
+    urls.add(match[1]);
+  }
+  if (urls.size === 0) {
+    return html;
+  }
+  const replacements = new Map<string, string>();
+  await Promise.all(
+    Array.from(urls).map(async (url) => {
+      let cached = cache.get(url);
+      if (cached === undefined) {
+        cached = await fetchRemoteImage(url);
+        cache.set(url, cached);
+      }
+      if (cached) {
+        replacements.set(url, cached);
+      }
+    }),
+  );
+  if (replacements.size === 0) {
+    return html;
+  }
+  return html.replace(
+    /(<img[^>]*\ssrc=")(https?:[^"]+)(")/g,
+    (match, prefix: string, url: string, suffix: string) =>
+      replacements.has(url)
+        ? `${prefix}${replacements.get(url)}${suffix}`
+        : match,
+  );
+}
+
+async function fetchRemoteImage(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(REMOTE_IMAGE_TIMEOUT_MS),
+      redirect: 'follow',
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const declaredLength = parseInt(
+      response.headers.get('content-length') ?? '',
+      10,
+    );
+    if (
+      Number.isInteger(declaredLength) &&
+      declaredLength > REMOTE_IMAGE_MAX_BYTES
+    ) {
+      return null;
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.length === 0 || buffer.length > REMOTE_IMAGE_MAX_BYTES) {
+      return null;
+    }
+    const mime = (response.headers.get('content-type') ?? '').split(';')[0];
+    if (!mime.startsWith('image/')) {
+      return null;
+    }
+    return `data:${mime};base64,${buffer.toString('base64')}`;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -394,15 +513,16 @@ async function readStylesheetWithInlinedUrls(cssPath: string): Promise<string> {
 /**
  * Assemble the shell document: the serve app bundle (inlined from the build
  * directory) plus every note document and shared asset embedded as one JSON
- * payload.
+ * payload. The payload carries root *names* only — no absolute path of the
+ * machine the wiki was exported on is written into the file.
  */
 function buildShellHTML({
-  rootDirectories,
+  rootNames,
   files,
   assets,
   buildDirectory,
 }: {
-  rootDirectories: string[];
+  rootNames: string[];
   files: WikiFileEntry[];
   assets: Record<string, string>;
   buildDirectory: string;
@@ -431,14 +551,14 @@ function buildShellHTML({
   // Escape `</script>`-breakouts: `<` inside the JSON payload (and inside
   // the inlined app, for good measure) becomes a JS unicode escape.
   const payload = JSON.stringify({
-    rootDirectories,
+    rootDirectories: rootNames,
     assets,
     files,
   }).replace(/</g, '\\u003c');
   const safeAppScript = appScript.replace(/<\/script/g, '<\\/script');
   const safeAppStyle = appStyle.replace(/<\/style/g, '<\\/style');
 
-  const title = `wiki — ${path.basename(rootDirectories[0] ?? '')}`;
+  const title = `wiki — ${rootNames[0] ?? ''}`;
   return `<!DOCTYPE html>
 <html>
 <head>

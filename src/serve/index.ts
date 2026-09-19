@@ -3,8 +3,10 @@ import * as http from 'http';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
 import type * as vscode from 'vscode';
+import { SHA256 } from 'crypto-js';
 import { MarkdownEngineOutput, Notebook, utility } from '../index';
 import { NotebookConfig, WebviewConfig } from '../notebook';
+import { constructGraphView } from '../notebook/graph-view';
 import {
   createNotebooksForDirectories,
   loadServerConfig,
@@ -99,6 +101,85 @@ export interface ServeServer {
  * same-origin with their parent, so the origin is pinned.
  */
 const PREVIEW_HOST_SHIM = previewHostShimScript('window.location.origin');
+
+/**
+ * Injected into the standalone graph view page (`/graph-view`). That page is
+ * a top-level browser tab, not an iframe of the app, so the shim answers the
+ * webview protocol by itself: `graphViewReady` fetches the graph data from
+ * this server, `openFile` relays the node click to the app tab that opened
+ * the graph (verified there against its window reference), and settings are
+ * kept in the page's localStorage.
+ */
+const GRAPH_HOST_SHIM = `<script>
+(function () {
+  if (window.acquireVsCodeApi) { return; }
+  var api = null;
+  var FILE = new URLSearchParams(window.location.search).get('file') || '';
+  window.acquireVsCodeApi = function () {
+    if (api) { return api; }
+    api = {
+      postMessage: function (message) {
+        if (!message || typeof message.command !== 'string') { return; }
+        if (message.command === 'graphViewReady') {
+          fetch('/api/graph?file=' + encodeURIComponent(FILE))
+            .then(function (response) {
+              if (!response.ok) { throw new Error('graph request failed'); }
+              return response.json();
+            })
+            .then(function (payload) {
+              window.postMessage({
+                command: 'graphData',
+                data: payload.data,
+                activeFilePath: payload.activeFilePath,
+              }, '*');
+            })
+            .catch(function () {
+              window.postMessage({
+                command: 'graphData',
+                data: { hash: '', nodes: [], links: [] },
+                activeFilePath: '',
+              }, '*');
+            });
+          return;
+        }
+        if (message.command === 'openFile') {
+          var rel = message.args && message.args[0];
+          if (typeof rel === 'string' && window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+              { command: '__serverAppOpenFile', args: [FILE, rel] },
+              window.location.origin
+            );
+          }
+          return;
+        }
+        if (message.command === 'saveSetting') {
+          var setting = message.args && message.args[0];
+          if (setting && typeof setting.key === 'string') {
+            try {
+              localStorage.setItem(
+                'crossnote.graphView.' + setting.key,
+                JSON.stringify(setting.value === undefined ? null : setting.value)
+              );
+            } catch (error) { /* storage unavailable */ }
+          }
+          return;
+        }
+      },
+      getState: function () {
+        try {
+          return JSON.parse(localStorage.getItem('crossnote.graphView.state') || 'null');
+        } catch (error) { return null; }
+      },
+      setState: function (state) {
+        try {
+          localStorage.setItem('crossnote.graphView.state', JSON.stringify(state));
+        } catch (error) { /* storage unavailable */ }
+      },
+    };
+    return api;
+  };
+})();
+</script>`;
 
 function appShellHTML(serverInfo: {
   rootDirectories: string[];
@@ -459,6 +540,59 @@ export async function startServeServer(
         await renderFile(sourceUri, { triggeredBySave: true });
         return;
       }
+      case 'showBacklinks': {
+        // args: [{ uri, forceRefreshingNotes, backlinksSha }] — compute the
+        // note's backlinks from the note index and deliver the resulting
+        // webview message into the preview, like the extension's
+        // postMessageToPreview.
+        const info = args[0] as
+          | {
+              uri?: string;
+              forceRefreshingNotes?: boolean;
+              backlinksSha?: string;
+            }
+          | undefined;
+        const file = assertFileWithinRoots(String(info?.uri ?? ''));
+        if (!file || !isMarkdownFile(file)) {
+          return;
+        }
+        const fileNotebook = notebookForFile(file);
+        if (!fileNotebook) {
+          return;
+        }
+        try {
+          if (info?.forceRefreshingNotes) {
+            await fileNotebook.refreshNotesIncremental({
+              dir: '.',
+              includeSubdirectories: true,
+            });
+          } else {
+            await fileNotebook.refreshNotesIfNotLoaded({
+              dir: '.',
+              includeSubdirectories: true,
+            });
+          }
+          const backlinks = await fileNotebook.getNoteBacklinks(file);
+          const sha = SHA256(JSON.stringify(backlinks)).toString();
+          const hasUpdate = sha !== info?.backlinksSha;
+          sse.broadcast({
+            type: 'iframeMessage',
+            file,
+            iframeMessage: {
+              command: 'backlinks',
+              sourceUri: file,
+              backlinks: hasUpdate ? backlinks : null,
+              hasUpdate,
+            },
+          });
+        } catch (error) {
+          console.error(
+            `crossnote serve: failed to compute backlinks for ${file}:`,
+            error,
+          );
+        }
+        return;
+      }
       case 'exportStandaloneWiki': {
         // Build the read-only single-file wiki for all served roots and
         // write it into the first root, never overwriting an existing file.
@@ -612,6 +746,75 @@ export async function startServeServer(
         } else {
           response.writeHead(404, { 'content-type': 'text/plain' });
           response.end('not found');
+        }
+        return;
+      }
+
+      if (request.method === 'GET' && urlPath === '/graph-view') {
+        // The standalone graph view — a top-level browser tab running the
+        // unmodified graph-view webview bundle, fed by /api/graph through
+        // the injected shim.
+        const file = assertFileWithinRoots(
+          requestUrl.searchParams.get('file') ?? '/',
+        );
+        if (!file || !isMarkdownFile(file)) {
+          response.writeHead(400, { 'content-type': 'text/plain' });
+          response.end('invalid file');
+          return;
+        }
+        const graphNotebook = notebookForFile(file);
+        if (!graphNotebook) {
+          response.writeHead(404, { 'content-type': 'text/plain' });
+          response.end('not found');
+          return;
+        }
+        try {
+          const engine = graphNotebook.getNoteMarkdownEngine(file);
+          let html = engine.generateHTMLTemplateForGraphView({
+            vscodePreviewPanel: dummyPanel,
+          });
+          html = html.replace(/<script\b/, `${GRAPH_HOST_SHIM}<script`);
+          response.writeHead(200, {
+            'content-type': 'text/html; charset=utf-8',
+            ...BASE_SECURITY_HEADERS,
+          });
+          response.end(html);
+        } catch (error) {
+          console.error('crossnote serve: failed to build graph view:', error);
+          response.writeHead(500, { 'content-type': 'text/plain' });
+          response.end('internal error');
+        }
+        return;
+      }
+
+      if (request.method === 'GET' && urlPath === '/api/graph') {
+        const file = assertFileWithinRoots(
+          requestUrl.searchParams.get('file') ?? '/',
+        );
+        const graphNotebook = file ? notebookForFile(file) : null;
+        if (!file || !graphNotebook) {
+          sendJSON(response, 400, { error: 'invalid file' });
+          return;
+        }
+        try {
+          // First call walks the vault; later ones hit the note cache.
+          await graphNotebook.refreshNotesIfNotLoaded({
+            dir: '.',
+            includeSubdirectories: true,
+          });
+          const data = constructGraphView(graphNotebook);
+          const rootIndex = rootIndexOf(file);
+          const relativePath =
+            rootIndex === -1
+              ? ''
+              : path
+                  .relative(rootDirectories[rootIndex], file)
+                  .split(path.sep)
+                  .join('/');
+          sendJSON(response, 200, { data, activeFilePath: relativePath });
+        } catch (error) {
+          console.error('crossnote serve: failed to build graph data:', error);
+          sendJSON(response, 500, { error: 'failed to build graph data' });
         }
         return;
       }

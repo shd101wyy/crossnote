@@ -60,15 +60,15 @@ export default function TitleBar({
       >
         <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
           <circle
-            cx="7"
-            cy="7"
-            r="4.5"
+            cx="6.5"
+            cy="6.5"
+            r="4"
             stroke="currentColor"
             strokeWidth="1.5"
             fill="none"
           />
           <path
-            d="M10.5 10.5L14 14"
+            d="M9.5 9.5L13.5 13.5"
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"

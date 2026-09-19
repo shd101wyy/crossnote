@@ -5,6 +5,12 @@ export interface WelcomeProps {
   rootDirectories: string[];
   vscode: boolean;
   recents: string[];
+  /**
+   * Wiki mode: set when the app runs from a standalone wiki file. The card
+   * then describes the snapshot instead of a server and never shows the
+   * absolute paths of the machine the wiki was exported on.
+   */
+  wikiNoteCount?: number;
   onOpenFile: (file: string) => void;
   onOpenPicker: () => void;
 }
@@ -17,10 +23,12 @@ export default function Welcome({
   rootDirectories,
   vscode,
   recents,
+  wikiNoteCount,
   onOpenFile,
   onOpenPicker,
 }: WelcomeProps) {
   const modKey = isMac ? '⌘' : 'Ctrl';
+  const isWiki = wikiNoteCount !== undefined;
   return (
     <div className="cn-welcome">
       <div className="cn-welcome-card">
@@ -34,24 +42,42 @@ export default function Welcome({
             fill="none"
           />
         </svg>
-        <h1>crossnote</h1>
-        <p className="cn-welcome-sub">
-          Markdown preview server —{' '}
-          {rootDirectories.length > 1
-            ? `${rootDirectories.length} folders are served:`
-            : 'this workspace is served from'}
-          {rootDirectories.map((root) => (
-            <span key={root}>
-              {' '}
-              <code className="cn-welcome-path"> {root} </code>
-            </span>
-          ))}
-          (
-          {vscode
-            ? 'VS Code + global + workspace config'
-            : 'global + workspace config'}
-          ).
-        </p>
+        <h1>{isWiki ? 'crossnote wiki' : 'crossnote'}</h1>
+        {isWiki ? (
+          <p className="cn-welcome-sub">
+            A read-only snapshot of {wikiNoteCount}{' '}
+            {wikiNoteCount === 1 ? 'note' : 'notes'}
+            {rootDirectories.length > 0 && (
+              <>
+                {' '}
+                from{' '}
+                <code className="cn-welcome-path">
+                  {' '}
+                  {basename(rootDirectories[0])}{' '}
+                </code>
+              </>
+            )}
+            — this file works anywhere, no server needed.
+          </p>
+        ) : (
+          <p className="cn-welcome-sub">
+            Markdown preview server —{' '}
+            {rootDirectories.length > 1
+              ? `${rootDirectories.length} folders are served:`
+              : 'this workspace is served from'}
+            {rootDirectories.map((root) => (
+              <span key={root}>
+                {' '}
+                <code className="cn-welcome-path"> {root} </code>
+              </span>
+            ))}
+            (
+            {vscode
+              ? 'VS Code + global + workspace config'
+              : 'global + workspace config'}
+            ).
+          </p>
+        )}
         <button
           type="button"
           className="cn-welcome-open"

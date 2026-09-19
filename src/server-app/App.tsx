@@ -23,6 +23,7 @@ import {
 import {
   assembleWikiDocument,
   createWikiIndex,
+  resolveWikiHref,
   wikiFileList,
   wikiKeyOf,
 } from './lib/wiki';
@@ -33,9 +34,11 @@ import {
   closeTabInPane,
   createPane,
   findPane,
+  listPaneIds,
   mapPanes,
   moveTab,
   openFileInPane,
+  removePane,
   resizeSplit,
   splitPane,
 } from './types';
@@ -219,6 +222,31 @@ export default function App() {
     if (pane?.activeTabId) {
       setLayout(closeTabInPane(current, pane.id, pane.activeTabId));
     }
+  }, []);
+
+  /** Remove an empty pane (its welcome card) — never the last one. */
+  const closePane = useCallback((paneId: string) => {
+    const current = layoutRef.current;
+    if (!current) {
+      return;
+    }
+    const { layout, removed } = removePane(current, paneId);
+    if (!removed) {
+      return;
+    }
+    setLayout(layout);
+    if (activePaneIdRef.current === paneId) {
+      setActivePaneId(listPaneIds(layout)[0] ?? '');
+    }
+  }, []);
+
+  const canClosePane = useCallback((paneId: string): boolean => {
+    const current = layoutRef.current;
+    return (
+      !!current &&
+      listPaneIds(current).length > 1 &&
+      (findPane(current, paneId)?.tabs.length ?? 1) === 0
+    );
   }, []);
 
   const splitPaneAt = useCallback(
@@ -432,10 +460,10 @@ export default function App() {
   isWikiTargetRef.current = !!wikiData;
   function openWikiFile(
     paneId: string,
-    absolutePath: string,
+    noteKey: string,
     href: string,
   ): boolean {
-    if (!wikiIndex || !wikiIndex.has(wikiKeyOf(absolutePath))) {
+    if (!wikiIndex || !wikiIndex.has(wikiKeyOf(noteKey))) {
       showToast({
         level: 'info',
         message: isEchoableHref(href)
@@ -444,7 +472,7 @@ export default function App() {
       });
       return false;
     }
-    openFile(paneId, absolutePath);
+    openFile(paneId, noteKey);
     return true;
   }
 
@@ -460,6 +488,16 @@ export default function App() {
     );
   }
 
+  // The graph view opens as a separate browser tab; it relays node clicks
+  // back through this window reference.
+  const graphWindowRef = useRef<Window | null>(null);
+  const openGraphView = useCallback((file: string) => {
+    graphWindowRef.current = window.open(
+      `/graph-view?file=${encodeURIComponent(file)}`,
+      'crossnote-graph-view',
+    );
+  }, []);
+
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       const data = event.data as WebviewCommandMessage | undefined;
@@ -467,6 +505,26 @@ export default function App() {
         return;
       }
       const actions = actionsRef.current;
+
+      // Node click in the graph view tab — same-origin popup, verified by
+      // its window reference (it is not one of the preview iframes).
+      if (
+        data.command === '__serverAppOpenFile' &&
+        event.origin === window.location.origin &&
+        event.source === graphWindowRef.current
+      ) {
+        const sourceFile = String(data.args?.[0] ?? '');
+        const relativePath = String(data.args?.[1] ?? '');
+        const absolutePath = resolveHref(
+          actions.serverInfo.rootDirectories,
+          sourceFile,
+          `/${relativePath.replace(/^\/+/, '')}`,
+        );
+        if (isMarkdownPath(absolutePath)) {
+          actions.openFile(activePaneIdRef.current, absolutePath);
+        }
+        return;
+      }
 
       if (data.command === '__serverAppShortcut') {
         const action = Array.isArray(data.args) ? String(data.args[0]) : '';
@@ -529,24 +587,20 @@ export default function App() {
           if (/^(https?:|mailto:|tel:)/i.test(href)) {
             window.open(href, '_blank', 'noopener');
           } else if (href && !href.startsWith('#')) {
+            if (isWikiTargetRef.current && wikiData) {
+              // Wiki note paths are relative keys — no /files/ mount, no
+              // absolute paths anywhere in the file.
+              const noteKey = resolveWikiHref(wikiData, file, href);
+              actions.openWikiFile(activePaneIdRef.current, noteKey, href);
+              return;
+            }
             const absolutePath = resolveHref(
               actions.serverInfo.rootDirectories,
               file,
               href,
             );
             if (isMarkdownPath(absolutePath)) {
-              if (isWikiTargetRef.current) {
-                actions.openWikiFile(
-                  activePaneIdRef.current,
-                  absolutePath,
-                  href,
-                );
-              } else {
-                actions.openFile(activePaneIdRef.current, absolutePath);
-              }
-            } else if (isWikiTargetRef.current) {
-              // Non-note files have no /files/ server behind a wiki.
-              actions.openWikiFile(activePaneIdRef.current, absolutePath, href);
+              actions.openFile(activePaneIdRef.current, absolutePath);
             } else {
               const url = filePathToFilesUrl(
                 actions.serverInfo.rootDirectories,
@@ -556,6 +610,14 @@ export default function App() {
                 window.open(url, '_blank', 'noopener');
               }
             }
+          }
+          return;
+        }
+        case 'openGraphView': {
+          // The serve server hosts the graph view page; the wiki has none
+          // (the button is hidden there).
+          if (!isWikiTargetRef.current) {
+            openGraphView(file);
           }
           return;
         }
@@ -576,9 +638,16 @@ export default function App() {
         case 'revealLine':
         case 'setZoomLevel':
         case 'escPressed':
-        case 'showBacklinks':
         case 'clickTag': {
           // No host-side behavior in the standalone server app (yet).
+          return;
+        }
+        case 'showBacklinks': {
+          // Handled server-side (the note index lives there); the result
+          // comes back as an `iframeMessage` SSE event below.
+          if (!isWikiTargetRef.current) {
+            void sendCommand(file, data.command, args);
+          }
           return;
         }
         default: {
@@ -592,7 +661,7 @@ export default function App() {
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [touchRecents, wikiIndex, frameTargetOrigin]);
+  }, [touchRecents, wikiIndex, wikiData, frameTargetOrigin, openGraphView]);
 
   // ---- server-sent events ---------------------------------------------------
   useEffect(() => {
@@ -608,6 +677,8 @@ export default function App() {
         payload?: UpdateHtmlPayload;
         level?: 'info' | 'error';
         message?: string;
+        /** A webview message (e.g. `backlinks`) to deliver into a frame. */
+        iframeMessage?: Record<string, unknown>;
       };
       try {
         data = JSON.parse(event.data);
@@ -634,6 +705,22 @@ export default function App() {
           } else if (entry.iframe?.contentWindow) {
             entry.iframe.contentWindow.postMessage(
               update,
+              window.location.origin,
+            );
+          }
+        }
+      } else if (
+        data.type === 'iframeMessage' &&
+        data.file &&
+        data.iframeMessage
+      ) {
+        // A host-computed webview message (e.g. backlinks) — deliver it into
+        // every frame showing that file, like the extension's
+        // postMessageToPreview.
+        for (const entry of framesRef.current.values()) {
+          if (entry.file === data.file) {
+            entry.iframe?.contentWindow?.postMessage(
+              data.iframeMessage,
               window.location.origin,
             );
           }
@@ -717,6 +804,8 @@ export default function App() {
           current ? closeTabInPane(current, paneId, tabId) : current,
         );
       },
+      canClosePane,
+      onClosePane: closePane,
       onOpenPicker: (paneId: string) => {
         setPickerPaneId(paneId);
         setPickerOpen(true);
@@ -738,6 +827,7 @@ export default function App() {
       // Wiki mode only: the frame's document comes from the embedded
       // payload. In serve mode frames load /preview pages from the server.
       frameDocument: wikiData ? frameDocument : undefined,
+      wikiNoteCount: wikiData ? wikiData.files.length : undefined,
     }),
     [
       activePaneId,
@@ -747,6 +837,8 @@ export default function App() {
       serverInfo.vscode,
       openFile,
       splitPaneAt,
+      canClosePane,
+      closePane,
       registerFrame,
       onFrameVisible,
       onFrameFocus,

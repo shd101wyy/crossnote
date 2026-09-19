@@ -4,6 +4,16 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Features
+
+- **Graph view and backlinks work in `crossnote serve`** — the preview footer's graph view button now opens the graph view as a browser tab of the serve server: the page runs the unmodified graph-view webview bundle behind an injected shim that fetches the graph from the new `/api/graph` endpoint (first call walks the vault, later ones hit the note cache) and relays node clicks back to the app tab, opening the note there; view settings persist in the page's localStorage. The backlinks toggle computes real backlinks server-side from the note index and delivers them into the preview over a new `iframeMessage` SSE event — no more eternal loading spinner. Both buttons are hidden in the read-only wiki, which has no note index behind it.
+- **Empty panes can be closed** — after splitting, a pane showing only its welcome card had no way to be dismissed. Empty panes now have a close button in their tab strip (`removePane` removes the pane and collapses single-child splits; the last pane stays). The welcome card of a wiki also describes the snapshot ("a read-only snapshot of N notes from <folder name>") instead of a markdown preview server, and shows no absolute paths.
+- **Wiki notes are keyed by root-relative paths** — the standalone wiki file no longer carries the exporting machine's absolute paths anywhere (payload keys, `sourceUri` in the embedded pages' config, recents, tab titles); multi-root keys are prefixed with the root's folder name. The "Open file" buttons also use a search icon instead of the download-style arrow.
+
+### Bug fixes
+
+- **Preview images display again in `crossnote serve` (and load reliably in the wiki)** — the preview app appends a `<base href={sourceUri}>` on load so interactive vega can read local data files, but in the serve server that base pointed at a local filesystem path, hijacking every root-relative URL: preview images resolved to `file:///C:/files/…` and rendered blank although the server served them fine. The base is now only injected in the VS Code webview (the one context where it is meaningful). Wiki image embedding also resolves percent-encoded srcs (`./my%20image.png`) against the decoded filename, and remote `http(s)` images are fetched once per build and embedded as data URIs (10s timeout, 8 MB cap, best-effort — a URL that fails keeps its remote reference), making the wiki a truly self-contained file in the TiddlyWiki sense.
+
 ## [0.9.37] - 2026-09-19
 
 ### Features

@@ -1,4 +1,4 @@
-import { WikiData, WikiFileMeta } from './api';
+import { WikiData, WikiFileMeta, dirname } from './api';
 
 /**
  * Assemble the srcdoc of one embedded wiki note at open time.
@@ -67,6 +67,54 @@ export function createWikiIndex(data: WikiData): Map<string, WikiFileMeta> {
   return new Map(data.files.map((file) => [wikiKeyOf(file.path), file]));
 }
 
+/**
+ * Resolve a clicked href inside the wiki to a note key. Wiki note paths are
+ * root-relative (single root) or `<root name>/<relative>` (multi-root), and
+ * hrefs are either root-relative (`/notes/x.md`) or relative to the source
+ * note's directory — no absolute paths exist in a wiki file.
+ */
+export function resolveWikiHref(
+  data: WikiData,
+  sourceKey: string,
+  href: string,
+): string {
+  const cleanHref = href.split('#')[0].split('?')[0];
+  if (!cleanHref) {
+    return '';
+  }
+  const multiRoot = data.rootDirectories.length > 1;
+  const anchor = (relative: string): string => {
+    const normalized = normalizePosixPath(relative);
+    if (!multiRoot) {
+      return normalized;
+    }
+    // Multi-root keys are `<root name>/<relative>` by construction, so the
+    // source's root is the key's first segment.
+    const rootName = sourceKey.split('/')[0] ?? '';
+    return rootName ? `${rootName}/${normalized}` : normalized;
+  };
+  if (cleanHref.startsWith('/')) {
+    return anchor(cleanHref.replace(/^\/+/, ''));
+  }
+  return anchor(`${dirname(sourceKey)}/${cleanHref}`);
+}
+
+/** Collapse `.`/`..`/empty segments of a posix-ish path. */
+function normalizePosixPath(input: string): string {
+  const stack: string[] = [];
+  for (const part of input.split('/')) {
+    if (part === '' || part === '.') {
+      continue;
+    }
+    if (part === '..') {
+      stack.pop();
+      continue;
+    }
+    stack.push(part);
+  }
+  return stack.join('/');
+}
+
 /** File-list entries for the quick-open picker, from the embedded payload. */
 export function wikiFileList(data: WikiData): Array<{
   absolutePath: string;
@@ -75,22 +123,15 @@ export function wikiFileList(data: WikiData): Array<{
   rootPath: string;
 }> {
   const multiRoot = data.rootDirectories.length > 1;
-  return data.files.map((file) => {
-    const key = wikiKeyOf(file.path);
-    const rootKey = wikiKeyOf(file.root);
-    const relative = key.startsWith(rootKey)
-      ? key.slice(rootKey.length).replace(/^\//, '')
-      : key;
-    return {
-      absolutePath: file.path,
-      relativePath: multiRoot ? `${rootName(file.root)}/${relative}` : relative,
-      mtimeMs: file.mtimeMs,
-      rootPath: file.root,
-    };
-  });
-}
-
-function rootName(root: string): string {
-  const parts = root.replace(/[\\/]+$/, '').split(/[\\/]/);
-  return parts[parts.length - 1] || root;
+  return data.files.map((file) => ({
+    absolutePath: file.path,
+    // Multi-root keys carry their root-name prefix; the picker re-adds it
+    // from `rootPath`, so hand it the bare relative path.
+    relativePath:
+      multiRoot && file.root && file.path.startsWith(`${file.root}/`)
+        ? file.path.slice(file.root.length + 1)
+        : file.path,
+    mtimeMs: file.mtimeMs,
+    rootPath: file.root,
+  }));
 }
