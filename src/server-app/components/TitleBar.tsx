@@ -1,5 +1,6 @@
 import React from 'react';
 import { basename } from '../lib/api';
+import logo from '../assets/logo.svg';
 
 export interface TitleBarProps {
   rootDirectories: string[];
@@ -18,16 +19,14 @@ export default function TitleBar({
   return (
     <header className="cn-titlebar">
       <div className="cn-titlebar-left">
-        <svg viewBox="0 0 64 64" width="18" height="18" aria-hidden="true">
-          <rect x="4" y="4" width="56" height="56" rx="14" fill="#95c258" />
-          <path
-            d="M40.5 22.5a12.5 12.5 0 1 0 0 19"
-            stroke="#1e1e1e"
-            strokeWidth="6"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </svg>
+        <img
+          className="cn-titlebar-logo"
+          src={logo}
+          width="20"
+          height="20"
+          alt=""
+          aria-hidden="true"
+        />
         <span className="cn-titlebar-title">crossnote</span>
         <span className="cn-titlebar-sep" aria-hidden="true">
           /
@@ -60,15 +59,15 @@ export default function TitleBar({
       >
         <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
           <circle
-            cx="7"
-            cy="7"
-            r="4.5"
+            cx="6.5"
+            cy="6.5"
+            r="4"
             stroke="currentColor"
             strokeWidth="1.5"
             fill="none"
           />
           <path
-            d="M10.5 10.5L14 14"
+            d="M9.5 9.5L13.5 13.5"
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"

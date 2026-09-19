@@ -1,9 +1,11 @@
+import * as cheerio from 'cheerio';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as vscode from 'vscode';
-import type { MarkdownEngineOutput } from '../markdown-engine';
+import { MarkdownEngine, MarkdownEngineOutput } from '../markdown-engine';
 import type { WebviewConfig } from '../notebook';
 import { previewHostShimScript } from '../serve/preview-host-shim';
+import { constructGraphView } from '../notebook/graph-view';
 import { createNotebooksForDirectories } from '../serve/config';
 import { isPathWithinRoot, listMarkdownFiles } from '../serve/markdown-files';
 import {
@@ -19,6 +21,13 @@ import {
  * shell when a note is opened.
  */
 const ASSET_TOKEN_PREFIX = 'crossnote-wiki-asset:';
+
+/**
+ * Semantic tokens for the three theme slots (`preview`, `codeBlock`,
+ * `reveal`) — every theme's stylesheet ships in the payload, and the shell
+ * inlines whichever one the stored theme selection asks for.
+ */
+const THEME_TOKEN_PREFIX = 'crossnote-wiki-theme:';
 
 /**
  * Injected right before preview.js in every embedded note document. Wiki
@@ -77,9 +86,14 @@ export interface BuildWikiOptions {
 }
 
 export interface WikiFileEntry {
-  /** Absolute path of the note. */
+  /**
+   * Identity of the note inside the wiki: its path relative to its root
+   * (posix separators), prefixed with the root's folder name when the wiki
+   * packs several roots. Deliberately not an absolute path — the wiki file
+   * must not carry the exporting machine's directory layout.
+   */
   path: string;
-  /** Absolute path of the served root the note belongs to. */
+  /** Folder name of the served root the note belongs to. */
   root: string;
   /** Document title (front-matter title or file basename). */
   title: string;
@@ -149,6 +163,19 @@ export async function buildWiki(
     },
   );
 
+  // The wiki file is meant to be shared; it carries no absolute paths of
+  // the machine it was exported on. Notes are keyed by their path relative
+  // to their root (prefixed with the root's folder name when several roots
+  // are packed), and the payload lists root names, not root paths.
+  const multiRoot = rootDirectories.length > 1;
+  const rootNames = rootDirectories.map((root) => path.basename(root) || root);
+  const noteKeyFor = (absolutePath: string, rootIndex: number): string => {
+    const relative = toPosixPath(
+      path.relative(rootDirectories[rootIndex], absolutePath),
+    );
+    return multiRoot ? `${rootNames[rootIndex]}/${relative}` : relative;
+  };
+
   // Token registry: one entry per distinct asset file, filled by the
   // addFileProtocol mapper while the templates are generated.
   const assetIds = new Map<string, string>(); // absolute path → token id
@@ -164,19 +191,34 @@ export async function buildWiki(
   };
 
   const dataUriForImage = (filePath: string): string | null => {
-    try {
-      const extension = path.extname(filePath).toLowerCase().slice(1);
-      const mime = IMAGE_MIME_TYPES[extension];
-      if (!mime) {
-        return null;
-      }
-      const base64 = fs.readFileSync(resolvedPath(filePath)).toString('base64');
-      return `data:${mime};base64,${base64}`;
-    } catch {
-      // Unreadable image — keep a dead reference rather than failing the
-      // whole wiki build.
+    const extension = path.extname(filePath).toLowerCase().slice(1);
+    const mime = IMAGE_MIME_TYPES[extension];
+    if (!mime) {
       return null;
     }
+    // Raw HTML may carry percent-encoded srcs (`./my%20image.png`) — try the
+    // literal path first, then the decoded one.
+    const cleanPath = resolvedPath(filePath);
+    const candidates = [cleanPath];
+    try {
+      const decoded = decodeURIComponent(cleanPath);
+      if (decoded !== cleanPath) {
+        candidates.push(decoded);
+      }
+    } catch {
+      // Invalid percent-encoding — the literal path is all we have.
+    }
+    for (const candidate of candidates) {
+      try {
+        const base64 = fs.readFileSync(candidate).toString('base64');
+        return `data:${mime};base64,${base64}`;
+      } catch {
+        // Try the next candidate.
+      }
+    }
+    // Unreadable image — keep a dead reference rather than failing the
+    // whole wiki build.
+    return null;
   };
 
   function resolvedPath(filePath: string): string {
@@ -192,6 +234,21 @@ export async function buildWiki(
     (filePath: string) => {
       const cleanPath = resolvedPath(filePath);
       if (isPathWithinRoot(buildDirectory, cleanPath)) {
+        // The three theme slots are resolved at open time — the wiki's
+        // context-menu theme picker persists its selection to localStorage —
+        // so they get stable semantic tokens instead of per-file asset ids.
+        const relativeToBuild = toPosixPath(
+          path.relative(buildDirectory, cleanPath),
+        );
+        if (relativeToBuild.startsWith('styles/preview_theme/')) {
+          return `${THEME_TOKEN_PREFIX}preview`;
+        }
+        if (relativeToBuild.startsWith('styles/prism_theme/')) {
+          return `${THEME_TOKEN_PREFIX}codeBlock`;
+        }
+        if (relativeToBuild.startsWith('dependencies/reveal/css/theme/')) {
+          return `${THEME_TOKEN_PREFIX}reveal`;
+        }
         return tokenFor(cleanPath);
       }
       for (const root of rootDirectories) {
@@ -224,6 +281,10 @@ export async function buildWiki(
 
   const files: WikiFileEntry[] = [];
   const failures: Array<{ path: string; error: string }> = [];
+  // Remote images are fetched once per URL for the whole build — a
+  // TiddlyWiki-style self-contained file: the reader needs no network for
+  // images.
+  const remoteImageCache = new Map<string, string | null>();
 
   try {
     for (let rootIndex = 0; rootIndex < rootDirectories.length; rootIndex++) {
@@ -241,12 +302,14 @@ export async function buildWiki(
             hideFrontMatter: false,
             vscodePreviewPanel: dummyPanel,
           });
+          output.html = await embedRemoteImages(output.html, remoteImageCache);
+          const noteKey = noteKeyFor(file.absolutePath, rootIndex);
           const html = await engine.generateHTMLTemplateForPreview({
             inputString: text,
             parsedOutput: output,
             vscodePreviewPanel: dummyPanel,
             config: {
-              sourceUri: file.absolutePath,
+              sourceUri: noteKey,
               isVSCode: false,
               isServerApp: true,
               isWiki: true,
@@ -263,8 +326,8 @@ export async function buildWiki(
             path.basename(file.absolutePath, path.extname(file.absolutePath));
           const mtimeMs = (await fs.promises.stat(file.absolutePath)).mtimeMs;
           files.push({
-            path: file.absolutePath,
-            root,
+            path: noteKey,
+            root: rootNames[rootIndex],
             title,
             mtimeMs,
             html,
@@ -273,7 +336,7 @@ export async function buildWiki(
               html: output.html,
               tocHTML: output.tocHTML,
               totalLineCount: text.split('\n').length,
-              sourceUri: file.absolutePath,
+              sourceUri: noteKey,
               sourceScheme: 'file',
               id: (yamlConfig['id'] as string) || '',
               class: (yamlConfig['class'] as string) || '',
@@ -314,11 +377,61 @@ export async function buildWiki(
         ? await readStylesheetWithInlinedUrls(filePath)
         : await fs.promises.readFile(filePath, 'utf-8').catch(() => '');
   }
+  // The graph view page, assembled by the shell from these bundles.
+  assets['graph-view.js'] = await fs.promises
+    .readFile(path.join(buildDirectory, 'webview', 'graph-view.js'), 'utf-8')
+    .catch(() => '');
+  assets['graph-view.css'] = await readStylesheetWithInlinedUrls(
+    path.join(buildDirectory, 'webview', 'graph-view.css'),
+  ).catch(() => '');
+
+  const themes = await collectThemeAssets(buildDirectory, notebooks[0]);
+
+  // Graph view + backlinks: both need the note index, so they are computed
+  // here and embedded — the wiki file has no server behind it.
+  const graph: Record<string, WikiGraphPayload> = {};
+  const backlinks: Record<string, WikiBacklinkPayload[]> = {};
+  for (let rootIndex = 0; rootIndex < rootDirectories.length; rootIndex++) {
+    const notebook = notebooks[rootIndex];
+    try {
+      await notebook.refreshNotesIfNotLoaded({
+        dir: '.',
+        includeSubdirectories: true,
+      });
+      graph[rootNames[rootIndex]] = constructGraphView(
+        notebook,
+      ) as WikiGraphPayload;
+    } catch (error) {
+      console.error(
+        `crossnote build-wiki: failed to build graph data for ${rootDirectories[rootIndex]}:`,
+        error,
+      );
+    }
+    for (const file of files) {
+      if (file.root !== rootNames[rootIndex]) {
+        continue;
+      }
+      try {
+        backlinks[file.path] = (
+          (await notebook.getNoteBacklinks(
+            path.join(rootDirectories[rootIndex], ...file.path.split('/')),
+          )) ?? []
+        ).map((backlink) =>
+          scrubBacklinkForWiki(backlink, rootDirectories[rootIndex]),
+        );
+      } catch {
+        backlinks[file.path] = [];
+      }
+    }
+  }
 
   const html = buildShellHTML({
-    rootDirectories,
+    rootNames,
     files,
     assets,
+    themes,
+    graph,
+    backlinks,
     buildDirectory,
   });
 
@@ -333,6 +446,264 @@ export async function buildWiki(
     rootDirectories,
     failures,
   };
+}
+
+/**
+ * The shape of the `themes` section of the wiki payload: every available
+ * stylesheet for the three theme slots, the `auto.css` code-block
+ * resolution map, and the theme names the note pages were built with.
+ */
+/** Graph view data as embedded in the wiki payload (one per root). */
+export interface WikiGraphPayload {
+  hash: string;
+  nodes: Array<{ id: string; label: string }>;
+  links: Array<{ source: string; target: string }>;
+}
+
+/** A backlink entry, path-scrubbed for the wiki (relative note keys). */
+export interface WikiBacklinkPayload {
+  note: {
+    /** `file:///`-shaped base so the panel links resolve back into the wiki. */
+    notebookPath: { scheme: string; path: string };
+    /** Root-relative note key. */
+    filePath: string;
+    title: string;
+    config?: Record<string, unknown>;
+  };
+  references: Array<Record<string, unknown>>;
+  referenceHtmls: string[];
+}
+
+/**
+ * Strip the exporting machine's absolute paths from a backlink entry:
+ * note paths become root-relative keys, the notebook base becomes
+ * `file:///` (so the panel's `joinPath` links produce `file:///<key>`
+ * hrefs the shell resolves back into the wiki), and the reference snippets'
+ * link hrefs are rewritten the same way.
+ */
+function scrubBacklinkForWiki(
+  backlink: {
+    note?: {
+      notebookPath?: unknown;
+      filePath?: string;
+      title?: string;
+      config?: unknown;
+    };
+    references?: unknown;
+    referenceHtmls?: string[];
+  },
+  rootDirectory: string,
+): WikiBacklinkPayload {
+  return {
+    note: {
+      notebookPath: { scheme: 'file', path: '/' },
+      filePath: (backlink.note?.filePath ?? '').replace(/\\/g, '/'),
+      title: backlink.note?.title ?? '',
+      config: backlink.note?.config as Record<string, unknown> | undefined,
+    },
+    references: (
+      (backlink.references ?? []) as Array<Record<string, unknown>>
+    ).map((reference) => ({
+      ...reference,
+      html:
+        typeof reference['html'] === 'string'
+          ? scrubWikiHtmlLinks(reference['html'], rootDirectory)
+          : reference['html'],
+    })),
+    referenceHtmls: (backlink.referenceHtmls ?? []).map((html) =>
+      scrubWikiHtmlLinks(html, rootDirectory),
+    ),
+  };
+}
+
+/**
+ * Rewrite `href`/`src` values that point into `rootDirectory` into
+ * `file:///<root-relative key>` links. The note index produces several
+ * spellings — raw absolute paths (windows separators or forward slashes),
+ * percent-encoded variants, and full `file://` URLs — all are recognized.
+ */
+function scrubWikiHtmlLinks(html: string, rootDirectory: string): string {
+  try {
+    const $ = cheerio.load(html);
+    $('a[href], img[src]').each((_, element) => {
+      for (const attribute of ['href', 'src']) {
+        const value = $(element).attr(attribute);
+        if (!value) {
+          continue;
+        }
+        let decoded = value;
+        try {
+          decoded = decodeURIComponent(value);
+        } catch {
+          // Keep the raw value.
+        }
+        // `file://` URLs are the index's most common spelling.
+        const fileUrlMatch = decoded.match(/^file:\/\/\/+(.*)$/i);
+        if (fileUrlMatch) {
+          decoded = fileUrlMatch[1];
+          // file:///C:/x vs file:///tmp/x — windows drives keep the colon.
+          if (!/^[A-Za-z]:/.test(decoded)) {
+            decoded = '/' + decoded;
+          }
+        }
+        // The index emits mixed separators (`C:\root/notes\x.md`).
+        const normalized = decoded.replace(/\//g, path.sep);
+        if (!isPathWithinRoot(rootDirectory, normalized)) {
+          continue;
+        }
+        const relative = path
+          .relative(rootDirectory, normalized)
+          .split(path.sep)
+          .join('/');
+        $(element).attr(attribute, `file:///${relative}`);
+      }
+    });
+    return $.html();
+  } catch {
+    return html;
+  }
+}
+
+export interface WikiThemesPayload {
+  /** `github-light.css` → stylesheet text. */
+  preview: Record<string, string>;
+  /** `default.css` → stylesheet text (prism). */
+  codeBlock: Record<string, string>;
+  /** `beige.css` → stylesheet text (reveal.js presentation themes). */
+  reveal: Record<string, string>;
+  /** preview theme → code-block theme, for `codeBlock: 'auto.css'`. */
+  codeBlockAuto: Record<string, string>;
+  /** The notebook config the note pages were rendered with. */
+  build: { preview: string; codeBlock: string; reveal: string };
+}
+
+/**
+ * Read every preview/code-block/reveal theme stylesheet from the build
+ * directory so the wiki's context-menu theme picker can switch between
+ * them at open time, plus the `auto.css` resolution map.
+ */
+async function collectThemeAssets(
+  buildDirectory: string,
+  notebook: {
+    config: {
+      previewTheme: string;
+      codeBlockTheme: string;
+      revealjsTheme: string;
+    };
+  },
+): Promise<WikiThemesPayload> {
+  const readThemeDirectory = async (
+    relativeDirectory: string,
+  ): Promise<Record<string, string>> => {
+    const absoluteDirectory = path.join(
+      buildDirectory,
+      ...relativeDirectory.split('/'),
+    );
+    const entries = await fs.promises
+      .readdir(absoluteDirectory)
+      .catch(() => [] as string[]);
+    const map: Record<string, string> = {};
+    for (const entry of entries) {
+      if (!entry.toLowerCase().endsWith('.css')) {
+        continue;
+      }
+      map[entry] = await readStylesheetWithInlinedUrls(
+        path.join(absoluteDirectory, entry),
+      );
+    }
+    return map;
+  };
+  return {
+    preview: await readThemeDirectory('styles/preview_theme'),
+    codeBlock: await readThemeDirectory('styles/prism_theme'),
+    reveal: await readThemeDirectory('dependencies/reveal/css/theme'),
+    codeBlockAuto: { ...MarkdownEngine.AutoPrismThemeMap },
+    build: {
+      preview: notebook.config.previewTheme,
+      codeBlock: notebook.config.codeBlockTheme,
+      reveal: notebook.config.revealjsTheme,
+    },
+  };
+}
+
+/** Fetch limit and timeout for embedding remote images. */
+const REMOTE_IMAGE_TIMEOUT_MS = 10_000;
+const REMOTE_IMAGE_MAX_BYTES = 8 * 1024 * 1024;
+
+/**
+ * Replace `<img src="http(s)://…">` references with fetched data URIs so the
+ * wiki renders its images without any network. Best-effort: a URL that
+ * fails, times out or exceeds the size cap keeps its remote reference, and
+ * each URL is fetched at most once per build through `cache` (which also
+ * memoizes failures, `null`).
+ */
+export async function embedRemoteImages(
+  html: string,
+  cache: Map<string, string | null>,
+): Promise<string> {
+  const urls = new Set<string>();
+  for (const match of html.matchAll(/<img[^>]*\ssrc="(https?:[^"]+)"/g)) {
+    urls.add(match[1]);
+  }
+  if (urls.size === 0) {
+    return html;
+  }
+  const replacements = new Map<string, string>();
+  await Promise.all(
+    Array.from(urls).map(async (url) => {
+      let cached = cache.get(url);
+      if (cached === undefined) {
+        cached = await fetchRemoteImage(url);
+        cache.set(url, cached);
+      }
+      if (cached) {
+        replacements.set(url, cached);
+      }
+    }),
+  );
+  if (replacements.size === 0) {
+    return html;
+  }
+  return html.replace(
+    /(<img[^>]*\ssrc=")(https?:[^"]+)(")/g,
+    (match, prefix: string, url: string, suffix: string) =>
+      replacements.has(url)
+        ? `${prefix}${replacements.get(url)}${suffix}`
+        : match,
+  );
+}
+
+async function fetchRemoteImage(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(REMOTE_IMAGE_TIMEOUT_MS),
+      redirect: 'follow',
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const declaredLength = parseInt(
+      response.headers.get('content-length') ?? '',
+      10,
+    );
+    if (
+      Number.isInteger(declaredLength) &&
+      declaredLength > REMOTE_IMAGE_MAX_BYTES
+    ) {
+      return null;
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (buffer.length === 0 || buffer.length > REMOTE_IMAGE_MAX_BYTES) {
+      return null;
+    }
+    const mime = (response.headers.get('content-type') ?? '').split(';')[0];
+    if (!mime.startsWith('image/')) {
+      return null;
+    }
+    return `data:${mime};base64,${buffer.toString('base64')}`;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -394,17 +765,24 @@ async function readStylesheetWithInlinedUrls(cssPath: string): Promise<string> {
 /**
  * Assemble the shell document: the serve app bundle (inlined from the build
  * directory) plus every note document and shared asset embedded as one JSON
- * payload.
+ * payload. The payload carries root *names* only — no absolute path of the
+ * machine the wiki was exported on is written into the file.
  */
 function buildShellHTML({
-  rootDirectories,
+  rootNames,
   files,
   assets,
+  themes,
+  graph,
+  backlinks,
   buildDirectory,
 }: {
-  rootDirectories: string[];
+  rootNames: string[];
   files: WikiFileEntry[];
   assets: Record<string, string>;
+  themes: WikiThemesPayload;
+  graph: Record<string, WikiGraphPayload>;
+  backlinks: Record<string, WikiBacklinkPayload[]>;
   buildDirectory: string;
 }): string {
   const appScriptPath = path.join(
@@ -431,14 +809,17 @@ function buildShellHTML({
   // Escape `</script>`-breakouts: `<` inside the JSON payload (and inside
   // the inlined app, for good measure) becomes a JS unicode escape.
   const payload = JSON.stringify({
-    rootDirectories,
+    rootDirectories: rootNames,
     assets,
+    themes,
+    graph,
+    backlinks,
     files,
   }).replace(/</g, '\\u003c');
   const safeAppScript = appScript.replace(/<\/script/g, '<\\/script');
   const safeAppStyle = appStyle.replace(/<\/style/g, '<\\/style');
 
-  const title = `wiki — ${path.basename(rootDirectories[0] ?? '')}`;
+  const title = `wiki — ${rootNames[0] ?? ''}`;
   return `<!DOCTYPE html>
 <html>
 <head>

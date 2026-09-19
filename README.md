@@ -163,17 +163,25 @@ $ crossnote build-wiki docs wiki --vscode         # reuse VS Code settings, too
 - Every note is the exact preview page the serve server renders, shown in a
   sandboxed (`allow-scripts`) iframe: diagrams, math, the sidebar TOC and
   zoom all work. Shared assets (the webview bundle, mermaid, themes, …) are
-  stored once and inlined when a note is opened; local images travel as data
-  URIs so the file works offline (except CDN-hosted math assets, which need
-  the reader to be online).
+  stored once and inlined when a note is opened; local images **and remote
+  `http(s)` images** (fetched once per build, capped at 8 MB with a 10 s
+  timeout, best-effort) are embedded as data URIs, so the file renders
+  offline — CDN-hosted math assets still need the reader to be online.
 - The wiki is read-only by construction — nothing in the file can write
   anywhere. Editing UI, code-chunk run buttons and task-list checkboxes are
   hidden or inert, note-to-note links resolve inside the file, external
   links open new tabs, and links to notes that are not part of the wiki
-  explain so instead of navigating away.
+  explain so instead of navigating away. The graph view opens as a pane
+  beside the active one and backlinks resolve from data embedded at export
+  time — both work offline inside the file. Themes _can_ be changed from
+  the preview's right-click menu — every stylesheet ships in the file and
+  the selection persists in the browser's localStorage.
 - Config resolution is the same as `serve`
   (`defaults ← VS Code settings with --vscode ← global crossnote config ←
 <directory>/.crossnote`), per directory.
+- The exported file carries no absolute paths of the machine it was built
+  on — notes are keyed by root-relative paths (prefixed with the root's
+  folder name when several roots are packed).
 - The preview context menu (in `serve` and in the VS Code extension) has an
   **Export ▸ Wiki** item that builds the same file: the server writes it
   next to the notes as `crossnote-wiki.html` (never overwriting a previous

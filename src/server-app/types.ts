@@ -170,6 +170,46 @@ export function splitPane(
 }
 
 /**
+ * Remove a pane from the layout — the inverse of `splitPane`. Splits that
+ * end up with a single child are collapsed (their sizes die with them). The
+ * last remaining pane is never removed, so a layout always shows one pane.
+ */
+export function removePane(
+  node: LayoutNode,
+  paneId: string,
+): { layout: LayoutNode; removed: boolean } {
+  if (node.kind === 'pane') {
+    return { layout: node, removed: false };
+  }
+  const children: LayoutNode[] = [];
+  for (const child of node.children) {
+    if (child.kind === 'pane' && child.id === paneId) {
+      continue; // drop the pane
+    }
+    const result = removePane(child, paneId);
+    if (result.removed) {
+      if (result.layout.kind === 'split') {
+        children.push(...result.layout.children);
+      } else {
+        children.push(result.layout);
+      }
+      continue;
+    }
+    children.push(child);
+  }
+  if (children.length === node.children.length) {
+    return { layout: node, removed: false }; // pane not in this subtree
+  }
+  if (children.length === 1) {
+    return { layout: children[0], removed: true };
+  }
+  return {
+    layout: { ...node, children, sizes: children.map(() => 1) },
+    removed: true,
+  };
+}
+
+/**
  * Move a tab (keeping its id, so its preview iframe keeps scroll/diagram
  * state) from one pane to another, optionally at a specific index.
  */

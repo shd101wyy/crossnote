@@ -1,12 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { Tab } from '../types';
-import { basename } from '../lib/api';
+import { basename, isGraphTab } from '../lib/api';
 
 export interface TabStripProps {
   tabs: Tab[];
   activeTabId: string | null;
+  /** True for an empty pane that is not the last one — it can be closed. */
+  canClose?: boolean;
   onActivate: (tabId: string) => void;
   onClose: (tabId: string) => void;
+  onClosePane: () => void;
   onOpenPicker: () => void;
   onSplit: (direction: 'horizontal' | 'vertical') => void;
   onTabDragStart: (tabId: string) => void;
@@ -17,8 +20,10 @@ export interface TabStripProps {
 export default function TabStrip({
   tabs,
   activeTabId,
+  canClose,
   onActivate,
   onClose,
+  onClosePane,
   onOpenPicker,
   onSplit,
   onTabDragStart,
@@ -99,7 +104,9 @@ export default function TabStrip({
                   />
                 </svg>
               </span>
-              <span className="cn-tab-label">{basename(tab.file)}</span>
+              <span className="cn-tab-label">
+                {isGraphTab(tab.file) ? 'Graph' : basename(tab.file)}
+              </span>
               <button
                 type="button"
                 className="cn-tab-close"
@@ -109,10 +116,11 @@ export default function TabStrip({
                   onClose(tab.id);
                 }}
               >
-                <svg viewBox="0 0 16 16" width="12" height="12">
+                <svg viewBox="0 0 16 16" width="14" height="14">
                   <path
                     stroke="currentColor"
                     strokeWidth="1.5"
+                    strokeLinecap="round"
                     fill="none"
                     d="M4 4l8 8M12 4l-8 8"
                   />
@@ -131,11 +139,19 @@ export default function TabStrip({
           onClick={onOpenPicker}
         >
           <svg viewBox="0 0 16 16" width="14" height="14">
-            <path
+            <circle
+              cx="6.5"
+              cy="6.5"
+              r="4"
               stroke="currentColor"
               strokeWidth="1.4"
               fill="none"
-              d="M8 2v8M4 6l4 4 4-4M3 13h10"
+            />
+            <path
+              d="M9.5 9.5L13.5 13.5"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
             />
           </svg>
         </button>
@@ -168,6 +184,26 @@ export default function TabStrip({
             />
           </svg>
         </button>
+        {/* An empty pane is just its welcome card — without this button it
+          could never be dismissed again after splitting. */}
+        {tabs.length === 0 && canClose && (
+          <button
+            type="button"
+            className="cn-iconbtn"
+            title="Close pane"
+            onClick={onClosePane}
+          >
+            <svg viewBox="0 0 16 16" width="14" height="14">
+              <path
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                fill="none"
+                d="M4 4l8 8M12 4l-8 8"
+              />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );
