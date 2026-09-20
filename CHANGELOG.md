@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.38] - 2026-09-20
+
 ### Features
 
 - **Graph view follows the shell theme and the focused note** — the graph pane was stuck in light mode outside VS Code (it only sniffed VS Code's vscode-dark body class) and never highlighted the focused note. The shell now pushes its light/dark mode to every frame (`__serverAppShellTheme`, alongside the zen-mode signal), which the graph view applies immediately — including live re-toning when the title-bar toggle flips; outside VS Code it initializes from the OS color scheme until the shell's mode arrives. The active node now follows the focused preview like VS Code's sendActiveFile: whenever the active tab changes, the shell tells each graph pane the focused note's graph-relative path (the last focused note stays highlighted while the graph tab itself is focused). Node ids are also posix-normalized on receipt, so notes in subdirectories match on Windows (ids may carry backslashes there).
