@@ -125,12 +125,44 @@ export async function updateVSCodeSetting(
       text = `{\n  "${MPE_SETTINGS_PREFIX}${key}": ${serialized}\n}\n`;
     } else {
       const head = trimmed.slice(0, lastBrace).replace(/\s+$/, '');
-      const needsComma = head.length > 0 && !head.endsWith('{');
-      text =
-        head +
-        (needsComma ? ',' : '') +
-        `\n  "${MPE_SETTINGS_PREFIX}${key}": ${serialized}\n}\n`;
+      // Where the separator comma goes depends on what precedes the new
+      // entry: appended after a trailing `//` comment it would land inside
+      // the comment (commenting the comma out and leaving the new entry
+      // without a separator), and after `{` or an existing `,` none is
+      // wanted at all. Build the candidates and keep the first one the
+      // lenient parser still accepts.
+      const candidates = [',', '\n,', ''];
+      const insertions = candidates.map(
+        (separator) =>
+          head +
+          separator +
+          `\n  "${MPE_SETTINGS_PREFIX}${key}": ${serialized}\n}\n`,
+      );
+      const valid = insertions.find((candidate) => {
+        try {
+          JSON5.parse(candidate);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+      if (!valid) {
+        throw new Error(
+          `cannot insert "${MPE_SETTINGS_PREFIX}${key}" into ${settingsPath} while keeping it parseable`,
+        );
+      }
+      text = valid;
     }
+  }
+  // Never leave the user's settings.json behind in a state the readers
+  // (this file is JSONC, parsed leniently) cannot load.
+  try {
+    JSON5.parse(text);
+  } catch (error) {
+    throw new Error(
+      `refusing to write settings.json that no longer parses (${settingsPath}): ${error}`,
+      { cause: error },
+    );
   }
   await fs.promises.mkdir(path.dirname(settingsPath), { recursive: true });
   await fs.promises.writeFile(settingsPath, text, 'utf-8');

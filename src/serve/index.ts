@@ -452,6 +452,14 @@ export async function startServeServer(
             `crossnote serve: failed to persist ${configKey}:`,
             error,
           );
+          // The browser user cannot see the server console — surface the
+          // failure as a toast so a blocked write (e.g. an unparseable
+          // settings.json that must not be edited) is not silent.
+          sse.broadcast({
+            type: 'notification',
+            level: 'error',
+            message: `Failed to save "${configKey}": ${error instanceof Error ? error.message : String(error)}`,
+          });
         }
         return;
       }
