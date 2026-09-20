@@ -36,6 +36,7 @@
   "contextMenu.changelog": "変更履歴",
   "contextMenu.featureRequests": "機能リクエスト・バグ報告",
   "contextMenu.sponsors": "このプロジェクトを支援 😊",
+  "close": "閉じる",
   "footer.openGraphView": "グラフビューを開く",
   "footer.toggleBacklinks": "バックリンクの切り替え",
   "footer.zoomOut": "縮小",

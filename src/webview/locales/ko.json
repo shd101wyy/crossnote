@@ -36,6 +36,7 @@
   "contextMenu.changelog": "변경 이력",
   "contextMenu.featureRequests": "기능 요청 및 버그 신고",
   "contextMenu.sponsors": "이 프로젝트 후원 😊",
+  "close": "닫기",
   "footer.openGraphView": "그래프 뷰 열기",
   "footer.toggleBacklinks": "백링크 전환",
   "footer.zoomOut": "축소",
