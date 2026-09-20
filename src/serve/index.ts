@@ -545,6 +545,71 @@ export async function startServeServer(
         }
         return;
       }
+      case 'htmlExport':
+      case 'chromeExport':
+      case 'princeExport':
+      case 'eBookExport':
+      case 'pandocExport':
+      case 'markdownExport': {
+        // args: [sourceUri, param?] — the same engine exporters the
+        // extension runs, executed in the server process; the destination
+        // (computed next to the source file, like every host does) is
+        // reported through the notification SSE event.
+        const sourceUri = assertFileWithinRoots(String(args[0] ?? ''));
+        const param = args[1];
+        if (!sourceUri || !isMarkdownFile(sourceUri)) {
+          return;
+        }
+        const engine =
+          notebookForFile(sourceUri)?.getNoteMarkdownEngine(sourceUri);
+        if (!engine) {
+          return;
+        }
+        try {
+          let dest: string;
+          if (command === 'htmlExport') {
+            dest = await engine.htmlExport({ offline: param === true });
+          } else if (command === 'chromeExport') {
+            dest = await engine.chromeExport({
+              fileType: typeof param === 'string' ? param : 'pdf',
+            });
+          } else if (command === 'princeExport') {
+            dest = await engine.princeExport({});
+            if (dest.endsWith('?print-pdf')) {
+              // Presentation mode: prince cannot print reveal.js slides —
+              // the user has to print the linked page to PDF themselves.
+              sse.broadcast({
+                type: 'notification',
+                level: 'info',
+                message: `Please open the link below in Chrome and print it as PDF: ${dest}`,
+              });
+              return;
+            }
+          } else if (command === 'eBookExport') {
+            dest = await engine.eBookExport({
+              fileType: typeof param === 'string' ? param : 'epub',
+              runAllCodeChunks: false,
+            });
+          } else if (command === 'pandocExport') {
+            dest = await engine.pandocExport({});
+          } else {
+            dest = await engine.markdownExport({});
+          }
+          sse.broadcast({
+            type: 'notification',
+            level: 'info',
+            message: `Exported ${path.basename(sourceUri)} to ${dest}`,
+          });
+        } catch (error) {
+          console.error(`crossnote serve: ${command} failed:`, error);
+          sse.broadcast({
+            type: 'notification',
+            level: 'error',
+            message: `${command} failed: ${error instanceof Error ? error.message : String(error)}`,
+          });
+        }
+        return;
+      }
       case 'exportStandaloneWiki': {
         // Build the read-only single-file wiki for all served roots and
         // write it into the first root, never overwriting an existing file.

@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Features
+
+- **Every export format works in `crossnote serve`** — the preview's Export submenu there offered only "Wiki"; it now carries the full set the VS Code extension has (HTML offline/CDN, Chrome (Puppeteer) PDF/PNG/JPEG, Prince PDF, ePub/Mobi/PDF/HTML eBooks, Pandoc, and save-as-Markdown). The serve server runs the same engine exporters the extension host does and reports the destination through a notification toast (presentation-mode Prince returns the print-it-yourself link, as in the extension). Exporters needing external binaries follow their config as usual — Chrome auto-detects when `chromePath` is empty, and a missing binary surfaces as an error toast. The read-only standalone wiki keeps the submenu hidden (it has no host process).
+
 ### Bug fixes
 
 - **`--vscode` serve no longer corrupts `settings.json` with a trailing `//` comment** — inserting a new `markdown-preview-enhanced.*` key appended its separator comma directly after the last entry, but when that entry is a commented-out setting the comma lands _inside_ the comment: the new key ends up without a separator and the whole file stops parsing. The damage then cascaded silently — the VS Code settings layer failed to load (so the preview fell back to the default light theme and the zen toggle appeared dead) and every later theme/zen change refused to edit the "unparseable" file, so switching themes stopped working entirely. The writer now tries each separator placement and keeps the first whose result still parses (never writing a file the lenient reader cannot load), and a failed persist surfaces as an error toast in the app instead of only in the server console.

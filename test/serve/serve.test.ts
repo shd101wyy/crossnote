@@ -484,6 +484,26 @@ describe('crossnote serve', () => {
     );
   });
 
+  test('htmlExport runs server-side, writes the file and notifies', async () => {
+    const file = path.join(workspace, 'welcome.md');
+    const dest = file.replace(/\.md$/, '.html');
+    fs.rmSync(dest, { force: true });
+    const sseDone = waitForSSE(server, (m) => m.type === 'notification');
+
+    await postCommand(server, {
+      file,
+      command: 'htmlExport',
+      args: [file, true],
+    });
+
+    const events = await sseDone;
+    const notification = events.find((m) => m.type === 'notification');
+    expect(notification?.level).toBe('info');
+    expect(notification?.message).toContain('Exported welcome.md to');
+    expect(fs.existsSync(dest)).toBe(true);
+    fs.rmSync(dest, { force: true });
+  });
+
   test('exportStandaloneWiki writes a read-only wiki and notifies clients', async () => {
     const sseDone = waitForSSE(server, (m) => m.type === 'notification');
 
