@@ -36,6 +36,7 @@ import {
   writeWikiThemeSelection,
   type WikiThemeSelection,
 } from './lib/wiki';
+import { previewThemeMode } from './lib/preview-theme';
 import {
   LayoutNode,
   PersistedWorkspace,
@@ -69,6 +70,9 @@ const EXTERNAL_LINK_URLS: Record<string, string> = {
     'https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues',
   openSponsors: 'https://github.com/sponsors/shd101wyy/',
 };
+
+/** localStorage key of the manual shell light/dark override. */
+const SHELL_THEME_STORAGE_KEY = 'crossnote:shellTheme';
 
 export default function App() {
   // Wiki mode: the page carries the whole workspace as an embedded payload
@@ -150,6 +154,83 @@ export default function App() {
   // preview's own Esc behavior of toggling the sidebar TOC).
   const zenModeRef = useRef(false);
   zenModeRef.current = zenMode;
+
+  // ---- shell light/dark theme --------------------------------------------
+  // The chrome follows the tone of the first workspace's preview theme (the
+  // previews themselves keep their own per-workspace themes); a manual
+  // toggle on the title bar overrides, persisted across sessions. Themes
+  // without an opinion (`none.css`, unknown) fall back to the system
+  // color scheme.
+  const [shellThemeOverride, setShellThemeOverride] = useState<
+    'light' | 'dark' | null
+  >(() => {
+    try {
+      const stored = localStorage.getItem(SHELL_THEME_STORAGE_KEY);
+      return stored === 'light' || stored === 'dark' ? stored : null;
+    } catch {
+      return null;
+    }
+  });
+  const [servePreviewTheme, setServePreviewTheme] = useState<
+    string | undefined
+  >(undefined);
+  const systemTheme = useMemo<'light' | 'dark'>(
+    () =>
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light',
+    [],
+  );
+  const effectivePreviewTheme = wikiData
+    ? (wikiThemes?.preview ?? wikiData.themes.build.preview)
+    : servePreviewTheme;
+  const shellTheme =
+    shellThemeOverride ??
+    previewThemeMode(effectivePreviewTheme) ??
+    systemTheme;
+  useEffect(() => {
+    document.documentElement.classList.toggle(
+      'cn-light',
+      shellTheme === 'light',
+    );
+  }, [shellTheme]);
+  const toggleShellTheme = useCallback(() => {
+    setShellThemeOverride((current) => {
+      const next =
+        (current ?? previewThemeMode(effectivePreviewTheme) ?? systemTheme) ===
+        'light'
+          ? 'dark'
+          : 'light';
+      try {
+        localStorage.setItem(SHELL_THEME_STORAGE_KEY, next);
+      } catch {
+        // Storage unavailable — the toggle still applies for this session.
+      }
+      return next;
+    });
+  }, [effectivePreviewTheme, systemTheme]);
+  // Serve: learn the first workspace's preview theme (the wiki reads it from
+  // its payload) and follow config changes (e.g. the context-menu picker).
+  useEffect(() => {
+    if (wikiData) {
+      return;
+    }
+    let cancelled = false;
+    fetch('/api/config')
+      .then((response) => (response.ok ? response.json() : null))
+      .then((body) => {
+        if (!cancelled && body?.configs?.[0]?.previewTheme) {
+          setServePreviewTheme(String(body.configs[0].previewTheme));
+        }
+      })
+      .catch(() => {
+        // Offline/stale — the system scheme stays in charge.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [wikiData]);
+
   const [toast, setToast] = useState<{
     level: 'info' | 'error';
     message: string;
@@ -849,6 +930,8 @@ export default function App() {
         message?: string;
         /** A webview message (e.g. `backlinks`) to deliver into a frame. */
         iframeMessage?: Record<string, unknown>;
+        /** Per-root notebook configs (`configChanged`). */
+        configs?: Array<{ previewTheme?: string }>;
       };
       try {
         data = JSON.parse(event.data);
@@ -931,6 +1014,9 @@ export default function App() {
         // Preview styles live in each iframe page's <head>; a config change
         // (e.g. switching the preview theme) needs fresh pages. The
         // webviewFinishLoading → refreshPreview flow rehydrates content.
+        if (data.configs?.[0]?.previewTheme) {
+          setServePreviewTheme(String(data.configs[0].previewTheme));
+        }
         for (const entry of framesRef.current.values()) {
           entry.jsAndCssFiles = null;
           entry.lastUpdate = null;
@@ -1063,6 +1149,8 @@ export default function App() {
         <TitleBar
           rootDirectories={serverInfo.rootDirectories}
           vscode={serverInfo.vscode}
+          shellTheme={shellTheme}
+          onToggleShellTheme={toggleShellTheme}
           onOpenPicker={openPickerForActivePane}
         />
       )}
