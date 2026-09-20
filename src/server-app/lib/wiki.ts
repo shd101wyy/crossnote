@@ -45,11 +45,12 @@ export function assembleWikiDocument(
   data: WikiData,
   file: WikiFileMeta,
   themes?: WikiThemeSelection,
+  zenEnabled?: boolean,
 ): string {
   const styles = resolveWikiThemeStyles(data, themes);
   // Quote styles differ across the templates the engine emits (`src="…"` and
   // reveal.js's `src='…'`), so both are handled.
-  return file.html
+  let html = file.html
     .replace(
       /<link\b[^>]*\shref=(['"])crossnote-wiki-theme:(preview|codeBlock|reveal)\1[^>]*>/g,
       (_match, _quote: string, slot: 'preview' | 'codeBlock' | 'reveal') =>
@@ -87,6 +88,16 @@ export function assembleWikiDocument(
       /(&quot;revealjsTheme&quot;:&quot;)[^&]+(&quot;)/g,
       `$1${styles.selection.reveal}$2`,
     );
+  if (zenEnabled !== undefined) {
+    // Same idea as the theme slots: the context-menu "Zen Mode" item flips
+    // the preview's own zen state, so the embedded config must agree with
+    // the stored override when the page re-assembles.
+    html = html.replace(
+      /(&quot;enablePreviewZenMode&quot;:)(?:true|false)/g,
+      `$1${zenEnabled}`,
+    );
+  }
+  return html;
 }
 
 function asset(data: WikiData, id: string): string {
@@ -218,6 +229,45 @@ export function writeWikiThemeSelection(
 
 function wikiThemesStorageKey(data: WikiData): string {
   return `crossnote:wiki:themes:${data.rootDirectories.join('|')}`;
+}
+
+/**
+ * The wiki's stored zen-mode override (`null` = use the value the file was
+ * built with, `WikiData.zenEnabled`). A plain boolean, unlike the theme
+ * selection, so it stays readable when `zenEnabled` is absent (older files).
+ */
+export function readWikiZenOverride(
+  data: WikiData,
+  storage: Pick<Storage, 'getItem'>,
+): boolean | null {
+  try {
+    const raw = storage.getItem(wikiZenStorageKey(data));
+    if (raw === 'true') {
+      return true;
+    }
+    if (raw === 'false') {
+      return false;
+    }
+  } catch {
+    // Storage unavailable — the build-time value applies.
+  }
+  return null;
+}
+
+export function writeWikiZenOverride(
+  data: WikiData,
+  storage: Pick<Storage, 'setItem'>,
+  enabled: boolean,
+): void {
+  try {
+    storage.setItem(wikiZenStorageKey(data), enabled ? 'true' : 'false');
+  } catch {
+    // Storage unavailable (sandboxed/opaque origin) — best effort only.
+  }
+}
+
+function wikiZenStorageKey(data: WikiData): string {
+  return `crossnote:wiki:zen:${data.rootDirectories.join('|')}`;
 }
 
 /** Posix-normalized identity of a note path (the wiki's lookup key). */

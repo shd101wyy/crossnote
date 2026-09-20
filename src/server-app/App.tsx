@@ -31,10 +31,12 @@ import {
   assembleWikiGraphDocument,
   createWikiIndex,
   readWikiThemeSelection,
+  readWikiZenOverride,
   resolveWikiHref,
   wikiFileList,
   wikiKeyOf,
   writeWikiThemeSelection,
+  writeWikiZenOverride,
   type WikiThemeSelection,
 } from './lib/wiki';
 import { previewThemeMode } from './lib/preview-theme';
@@ -90,6 +92,11 @@ export default function App() {
   const [wikiThemes, setWikiThemes] = useState<WikiThemeSelection | null>(() =>
     wikiData ? readWikiThemeSelection(wikiData, localStorage) : null,
   );
+  // The wiki's zen-mode override (context-menu toggle), same storage scheme:
+  // `null` = the value the file was built with (`zenEnabled`, default true).
+  const [wikiZen, setWikiZen] = useState<boolean | null>(() =>
+    wikiData ? readWikiZenOverride(wikiData, localStorage) : null,
+  );
   const wikiDocumentCache = useRef<Map<string, string>>(new Map());
   const frameDocument = useCallback(
     (file: string): string | undefined => {
@@ -110,7 +117,7 @@ export default function App() {
         wikiDocumentCache.current.set(graphKey, graphDocument);
         return graphDocument;
       }
-      const key = `${wikiKeyOf(file)}\n${wikiThemes ? JSON.stringify(wikiThemes) : ''}`;
+      const key = `${wikiKeyOf(file)}\n${wikiThemes ? JSON.stringify(wikiThemes) : ''}\n${wikiZen ?? ''}`;
       const cached = wikiDocumentCache.current.get(key);
       if (cached !== undefined) {
         return cached;
@@ -123,11 +130,12 @@ export default function App() {
         wikiData,
         entry,
         wikiThemes ?? undefined,
+        wikiZen ?? undefined,
       );
       wikiDocumentCache.current.set(key, documentHtml);
       return documentHtml;
     },
-    [wikiData, wikiIndex, wikiThemes],
+    [wikiData, wikiIndex, wikiThemes, wikiZen],
   );
 
   const serverInfo = useMemo<ServerInfo>(
@@ -151,11 +159,6 @@ export default function App() {
   const [recents, setRecents] = useState<string[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerPaneId, setPickerPaneId] = useState('');
-  const [zenMode, setZenMode] = useState(false);
-  // Frames read this to know when Esc should exit zen mode (instead of the
-  // preview's own Esc behavior of toggling the sidebar TOC).
-  const zenModeRef = useRef(false);
-  zenModeRef.current = zenMode;
 
   // ---- shell light/dark theme --------------------------------------------
   // The chrome follows the tone of the first workspace's preview theme (the
@@ -533,13 +536,8 @@ export default function App() {
               : null),
           jsAndCssFiles: existing?.jsAndCssFiles ?? null,
         });
-        // Tell fresh frames whether zen mode is on, so Esc exits it, and
-        // which light/dark mode the chrome runs in (the graph view colors
-        // itself from it).
-        iframe.contentWindow?.postMessage(
-          { command: '__serverAppZenMode', enabled: zenModeRef.current },
-          frameTargetOrigin,
-        );
+        // Tell fresh frames which light/dark mode the chrome runs in (the
+        // graph view colors itself from it).
         iframe.contentWindow?.postMessage(
           { command: '__serverAppShellTheme', theme: shellTheme },
           frameTargetOrigin,
@@ -729,8 +727,6 @@ export default function App() {
           actions.closeActiveTab();
         } else if (action === 'split-pane') {
           actions.splitPaneAt(activePaneIdRef.current, 'horizontal');
-        } else if (action === 'exit-zen-mode') {
-          setZenMode(false);
         }
         return;
       }
@@ -853,7 +849,19 @@ export default function App() {
           return;
         }
         case 'togglePreviewZenMode': {
-          setZenMode((value) => !value);
+          // Zen mode is the preview's own state, not the shell's: the item
+          // flips the notebook config, and the reloaded frames re-render
+          // with (or without) the preview's zen-mode UI.
+          if (isWikiTargetRef.current && wikiData) {
+            const next = !(wikiZen ?? wikiData.zenEnabled ?? true);
+            writeWikiZenOverride(wikiData, localStorage, next);
+            // The changed frameDocument re-assembles every open tab with the
+            // patched config meta and re-sets its srcdoc — a reload, exactly
+            // the theme picker's semantics.
+            setWikiZen(next);
+            return;
+          }
+          void sendCommand(file, data.command, args);
           return;
         }
         case 'openCrossnote':
@@ -919,6 +927,7 @@ export default function App() {
     wikiIndex,
     wikiData,
     wikiThemes,
+    wikiZen,
     frameTargetOrigin,
     openGraphView,
   ]);
@@ -1042,15 +1051,6 @@ export default function App() {
   }, [touchRecents, showToast, wikiData]);
 
   // ---- global keyboard shortcuts --------------------------------------------
-  // Keep the frames' shims in sync with zen mode so Esc exits it everywhere.
-  useEffect(() => {
-    for (const entry of framesRef.current.values()) {
-      entry.iframe?.contentWindow?.postMessage(
-        { command: '__serverAppZenMode', enabled: zenMode },
-        frameTargetOrigin,
-      );
-    }
-  }, [zenMode, frameTargetOrigin]);
 
   // Keep the frames (the graph view colors itself from it) in sync with the
   // shell's light/dark mode.
@@ -1136,17 +1136,13 @@ export default function App() {
       } else if (mod && !event.altKey && key === '\\') {
         event.preventDefault();
         actionsRef.current.splitPaneAt(activePaneIdRef.current, 'horizontal');
-      } else if (event.key === 'Escape') {
-        if (pickerOpen) {
-          setPickerOpen(false);
-        } else if (zenMode) {
-          setZenMode(false);
-        }
+      } else if (event.key === 'Escape' && pickerOpen) {
+        setPickerOpen(false);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [pickerOpen, zenMode]);
+  }, [pickerOpen]);
 
   // ---- layout actions bundle -------------------------------------------------
   const layoutActions = useMemo<LayoutActions>(
@@ -1224,26 +1220,14 @@ export default function App() {
   }
 
   return (
-    <div className={zenMode ? 'cn-app cn-app-zen' : 'cn-app'}>
-      {!zenMode && (
-        <TitleBar
-          rootDirectories={serverInfo.rootDirectories}
-          vscode={serverInfo.vscode}
-          shellTheme={shellTheme}
-          onToggleShellTheme={toggleShellTheme}
-          onOpenPicker={openPickerForActivePane}
-        />
-      )}
-      {zenMode && (
-        <button
-          type="button"
-          className="cn-zen-exit"
-          title="Exit zen mode (Esc)"
-          onClick={() => setZenMode(false)}
-        >
-          Exit zen mode
-        </button>
-      )}
+    <div className="cn-app">
+      <TitleBar
+        rootDirectories={serverInfo.rootDirectories}
+        vscode={serverInfo.vscode}
+        shellTheme={shellTheme}
+        onToggleShellTheme={toggleShellTheme}
+        onOpenPicker={openPickerForActivePane}
+      />
       <main className="cn-main">
         <LayoutView node={layout} actions={layoutActions} />
       </main>

@@ -126,7 +126,7 @@ export default function Welcome({
               <span className="cn-kbd-group">
                 <kbd>Esc</kbd>
               </span>
-              exit zen mode · toggle outline in a note
+              toggle outline in a note
             </li>
           </ul>
         </div>

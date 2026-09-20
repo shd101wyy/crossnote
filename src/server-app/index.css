@@ -28,7 +28,6 @@
   --cn-picker-input-bg: #1e1e1e;
   --cn-picker-text: #e8e8e8;
   --cn-frame-bg: var(--cn-bg);
-  --cn-zen-exit-bg: rgba(30, 30, 30, 0.85);
 }
 
 html.cn-light {
@@ -51,7 +50,6 @@ html.cn-light {
   --cn-picker-input-bg: #ffffff;
   --cn-picker-text: #333333;
   --cn-frame-bg: #ffffff;
-  --cn-zen-exit-bg: rgba(255, 255, 255, 0.92);
 }
 
 html,
@@ -575,30 +573,6 @@ button {
   border-top: 1px solid var(--cn-border);
   color: var(--cn-text-dim);
   font-size: 11px;
-}
-
-/* ---- zen mode ---- */
-.cn-app-zen .cn-main {
-  position: relative;
-}
-
-.cn-zen-exit {
-  position: fixed;
-  top: 8px;
-  right: 12px;
-  z-index: 200;
-  padding: 4px 10px;
-  border: 1px solid var(--cn-border);
-  border-radius: 6px;
-  background: var(--cn-zen-exit-bg);
-  color: var(--cn-text-dim);
-  cursor: pointer;
-  opacity: 0.25;
-  transition: opacity 0.15s;
-}
-
-.cn-zen-exit:hover {
-  opacity: 1;
 }
 
 /* ---- tab drag & drop ---- */

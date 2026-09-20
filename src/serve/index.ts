@@ -402,21 +402,32 @@ export async function startServeServer(
       }
       case 'setPreviewTheme':
       case 'setCodeBlockTheme':
-      case 'setRevealjsTheme': {
-        // args: [sourceUri, theme] — persist to the vscode settings or the
-        // global crossnote config, then apply and notify every client.
+      case 'setRevealjsTheme':
+      case 'togglePreviewZenMode': {
+        // args: [sourceUri, theme] / [sourceUri] — persist to the vscode
+        // settings or the global crossnote config, then apply and notify
+        // every client.
         const configKey: string =
           command === 'setPreviewTheme'
             ? 'previewTheme'
             : command === 'setCodeBlockTheme'
               ? 'codeBlockTheme'
-              : 'revealjsTheme';
-        const theme = typeof args[1] === 'string' ? args[1] : null;
-        if (!theme) {
+              : command === 'setRevealjsTheme'
+                ? 'revealjsTheme'
+                : 'enablePreviewZenMode';
+        // Zen mode is a toggle of the preview's own state (same as the
+        // extension's setting flip); themes carry their new value in args.
+        const value =
+          command === 'togglePreviewZenMode'
+            ? !notebooks[0].config.enablePreviewZenMode
+            : typeof args[1] === 'string'
+              ? args[1]
+              : null;
+        if (value === null) {
           return;
         }
         try {
-          await updateServerConfigKey(configContexts[0], configKey, theme);
+          await updateServerConfigKey(configContexts[0], configKey, value);
           // The write went to a shared layer (vscode settings or the global
           // config), so re-merge and apply for every root. A workspace
           // `.crossnote` override keeps winning where present.
@@ -429,9 +440,9 @@ export async function startServeServer(
               notebooks[index].clearAllNoteMarkdownEngineCaches();
             }),
           );
-          // Styles live in each preview page's <head>, so clients reload
-          // their iframes on configChanged — same as the extension's
-          // refreshAllPreviews.
+          // Both the styles and the embedded config meta live in each
+          // preview page, so clients reload their iframes on configChanged —
+          // same as the extension's refreshAllPreviews.
           sse.broadcast({
             type: 'configChanged',
             configs: notebooks.map((notebook) => notebook.config),

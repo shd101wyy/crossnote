@@ -1408,16 +1408,19 @@ export default function ContextMenu() {
           }
         >
           <Item id="open-crossnote" onClick={handleItemClick}>
+            {/* Trailing logo — matches "Sponsor This Project 😊", whose
+              emoji also trails the label, instead of the leading icons of
+              the action items above. */}
             <span className="inline-flex flex-row items-center">
+              Crossnote
               <img
                 src={logo}
                 width="15"
                 height="15"
                 alt=""
                 aria-hidden="true"
-                className="mr-2"
+                className="ml-2"
               ></img>
-              Crossnote
             </span>
           </Item>
           <Item id="open-documentation" onClick={handleItemClick}>

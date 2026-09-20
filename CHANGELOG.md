@@ -4,6 +4,14 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Zen mode toggles the preview, not the shell** — the context menu's "Zen Mode" item in `crossnote serve` and the standalone wiki hid the app shell's title bar while leaving the preview untouched: the preview's `enablePreviewZenMode` config was never flipped, so the item always left the preview in zen mode and could never turn it off — which also made "Open In-preview Editor" (hidden while zen is on) unusable. The item now flips `enablePreviewZenMode` exactly like the extension's setting toggle: the serve server persists the flipped value and reloads every preview with it (the same `configChanged` reload a theme switch triggers), and a wiki file stores the override in `localStorage` (keyed per wiki, defaulting to the value the file was built with, which now ships in the payload) and re-assembles its open tabs. The shell-level zen mode introduced with it — the hidden title bar, the "Exit zen mode" button, the `__serverAppZenMode` message and its Esc forwarding, and the welcome card's "Esc — exit zen mode" hint — is removed; Esc inside a preview keeps its preview meaning (toggling the outline).
+
+### Improvements
+
+- **`About ▸ Crossnote` shows the logo on the right** — the logo moved from the left of the label to after it, lining up with the trailing 😊 of "Sponsor This Project 😊" below.
+
 ## [0.9.38] - 2026-09-20
 
 ### Features

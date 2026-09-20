@@ -158,6 +158,9 @@ describe('crossnote build-wiki', () => {
     // Notes are keyed by root-relative paths — the file must not carry the
     // absolute paths of the machine it was exported on.
     expect(payload.rootDirectories).toEqual([path.basename(workspace)]);
+    // The build-time zen state ships as the baseline the context-menu
+    // toggle flips (the test workspace leaves it at the config default).
+    expect(payload.zenEnabled).toBe(true);
     expect(payload.files.map((file: { path: string }) => file.path)).toEqual([
       'index.md',
       'notes/other.md',

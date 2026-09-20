@@ -230,9 +230,11 @@ describe('crossnote serve', () => {
     expect(html.indexOf('acquireVsCodeApi')).toBeLessThan(
       html.indexOf('/assets/webview/preview.js'),
     );
-    // the shim forwards Esc to exit zen mode while zen is active
-    expect(html).toContain('__serverAppZenMode');
-    expect(html).toContain('exit-zen-mode');
+    // the shim forwards shell shortcuts (zen mode is the preview's own
+    // state now — Esc is not hijacked, no `__serverAppZenMode` wiring)
+    expect(html).toContain('__serverAppShortcut');
+    expect(html).not.toContain('__serverAppZenMode');
+    expect(html).not.toContain('exit-zen-mode');
     // workspace-relative links resolve through /files
     expect(html).toContain('/files/notes/other.md');
     // no <base> — same-document anchors must keep working
@@ -435,6 +437,51 @@ describe('crossnote serve', () => {
       config: { previewTheme: string };
     };
     expect(body.config.previewTheme).toBe('github-dark.css');
+  });
+
+  test('togglePreviewZenMode flips the preview zen config and notifies clients', async () => {
+    const file = path.join(workspace, 'welcome.md');
+    const readConfig = async (): Promise<{
+      config: { enablePreviewZenMode: boolean };
+    }> => {
+      const response = await fetch(`${server.url}/api/config`);
+      return (await response.json()) as {
+        config: { enablePreviewZenMode: boolean };
+      };
+    };
+    const initial = (await readConfig()).config.enablePreviewZenMode;
+
+    // Toggle twice: the state round-trips and ends where it started, so
+    // later tests keep a clean slate.
+    for (const expected of [!initial, initial]) {
+      const sseDone = waitForSSE(server, (m) => m.type === 'configChanged');
+      await postCommand(server, {
+        file,
+        command: 'togglePreviewZenMode',
+        args: [file],
+      });
+      const events = await sseDone;
+      expect(events.some((m) => m.type === 'configChanged')).toBe(true);
+      expect((await readConfig()).config.enablePreviewZenMode).toBe(expected);
+    }
+
+    const configScript = fs.readFileSync(
+      path.join(globalConfigDirectory, 'config.js'),
+      'utf-8',
+    );
+    expect(configScript).toContain(
+      `"enablePreviewZenMode": ${initial ? 'true' : 'false'}`,
+    );
+
+    // The reloaded preview page carries the flipped config, so the preview
+    // itself re-renders in (or out of) zen mode.
+    const response = await fetch(
+      `${server.url}/preview?file=${encodeURIComponent(file)}`,
+    );
+    const html = await response.text();
+    expect(html).toContain(
+      `enablePreviewZenMode&quot;:${initial ? 'true' : 'false'}`,
+    );
   });
 
   test('exportStandaloneWiki writes a read-only wiki and notifies clients', async () => {
