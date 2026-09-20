@@ -11,6 +11,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 ### Improvements
 
 - **`About ▸ Crossnote` shows the logo on the right** — the logo moved from the left of the label to after it, lining up with the trailing 😊 of "Sponsor This Project 😊" below.
+- **Typedoc on GitHub Pages deploys again, and the README drops `[WIP]`** — the Pages deployment workflow only triggered on pushes to `master`, which has been dormant since 0.9.31 (2026-06) while every release lands on `develop`, so https://shd101wyy.github.io/crossnote/ went months without current API docs. The workflow now deploys on pushes to `develop` too (manual dispatch defaults to `develop`), and the README heading no longer says `[WIP]`.
 
 ## [0.9.38] - 2026-09-20
 
