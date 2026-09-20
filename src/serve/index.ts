@@ -149,6 +149,13 @@ function appShellHTML(serverInfo: {
 export async function startServeServer(
   options: ServeOptions,
 ): Promise<ServeServer> {
+  // A long-running server must not die over a third-party lib leaking a
+  // rejection (puppeteer's launch-failure cleanup does this on Windows:
+  // EBUSY unlinking its temp profile). Same policy as the VS Code
+  // extension host: log it and keep serving.
+  process.on('unhandledRejection', (reason) => {
+    console.error('crossnote serve: unhandled rejection:', reason);
+  });
   // One config context + Notebook per root, sharing the global config layer.
   const { rootDirectories, configContexts, notebooks } =
     await createNotebooksForDirectories(options.directories, {
