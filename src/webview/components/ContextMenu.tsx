@@ -1415,8 +1415,8 @@ export default function ContextMenu() {
               Crossnote
               <img
                 src={logo}
-                width="15"
-                height="15"
+                width="20"
+                height="20"
                 alt=""
                 aria-hidden="true"
                 className="ml-2"
