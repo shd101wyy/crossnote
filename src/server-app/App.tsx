@@ -64,6 +64,7 @@ interface FrameEntry {
 }
 
 const EXTERNAL_LINK_URLS: Record<string, string> = {
+  openCrossnote: 'https://github.com/shd101wyy/crossnote',
   openChangelog:
     'https://github.com/shd101wyy/vscode-markdown-preview-enhanced/releases',
   openDocumentation: 'https://shd101wyy.github.io/markdown-preview-enhanced/',
@@ -855,6 +856,7 @@ export default function App() {
           setZenMode((value) => !value);
           return;
         }
+        case 'openCrossnote':
         case 'openChangelog':
         case 'openDocumentation':
         case 'openIssues':
