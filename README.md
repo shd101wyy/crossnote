@@ -1,4 +1,4 @@
-# Crossnote `[WIP]`
+# Crossnote
 
 Also called as `mume` before.
 

@@ -1976,9 +1976,11 @@ const PreviewContainer = createContainer(() => {
     if (notice === undefined) {
       return;
     }
+    // Long enough to actually read (the zen-mode editor notice explains a
+    // two-step remedy), and the alert's close button dismisses it early.
     const timer = setTimeout(() => {
       setNotice(undefined);
-    }, 4000);
+    }, 10000);
     return () => {
       clearTimeout(timer);
     };

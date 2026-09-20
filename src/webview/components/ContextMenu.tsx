@@ -61,9 +61,10 @@ export default function ContextMenu() {
   } = PreviewContainer.useContainer();
 
   // The standalone `crossnote serve` host has no VS Code around: features
-  // that need one (exports, external editor, image helper, translation,
-  // graph view, source sync) are hidden the same way they are for the web
-  // extension.
+  // that need one (external editor, image helper, translation, source
+  // sync) are hidden the same way they are for the web extension. Exports
+  // are NOT hidden — the serve server runs the same engine exporters the
+  // extension host does.
   const isServerApp = !!config.isServerApp;
 
   // vscode-mpe#2363: capture the selection as it changes so the Copy
@@ -420,79 +421,70 @@ export default function ContextMenu() {
               </span>
             }
           >
-            {!isServerApp && (
-              <>
-                <Submenu
-                  label={
-                    <span className="inline-flex flex-row items-center">
-                      HTML
-                    </span>
-                  }
-                >
-                  <Item id="export-html-offline" onClick={handleItemClick}>
-                    {t('contextMenu.exportHtmlOffline')}
-                  </Item>
-                  <Item id="export-html-cdn" onClick={handleItemClick}>
-                    {t('contextMenu.exportHtmlCdn')}
-                  </Item>
-                </Submenu>
-                <Submenu
-                  label={
-                    <span className="inline-flex flex-row items-center">
-                      {t('contextMenu.exportChrome')}
-                    </span>
-                  }
-                >
-                  <Item id="export-chrome-pdf" onClick={handleItemClick}>
-                    PDF
-                  </Item>
-                  <Item id="export-chrome-png" onClick={handleItemClick}>
-                    PNG
-                  </Item>
-                  <Item id="export-chrome-jpeg" onClick={handleItemClick}>
-                    JPEG
-                  </Item>
-                </Submenu>
-                <Item id="export-prince" onClick={handleItemClick}>
-                  <span className="inline-flex flex-row items-center">
-                    {t('contextMenu.exportPrince')}
-                  </span>
-                </Item>
-                <Submenu
-                  label={
-                    <span className="inline-flex flex-row items-center">
-                      eBook
-                    </span>
-                  }
-                >
-                  <Item id="export-ebook-epub" onClick={handleItemClick}>
-                    ePub
-                  </Item>
-                  <Item id="export-ebook-mobi" onClick={handleItemClick}>
-                    Mobi
-                  </Item>
-                  <Item id="export-ebook-pdf" onClick={handleItemClick}>
-                    PDF
-                  </Item>
-                  <Item id="export-ebook-html" onClick={handleItemClick}>
-                    HTML
-                  </Item>
-                </Submenu>
-                <Item id="export-pandoc" onClick={handleItemClick}>
-                  <span className="inline-flex flex-row items-center">
-                    Pandoc
-                  </span>
-                </Item>
-                <Item id="export-markdown" onClick={handleItemClick}>
-                  <span className="inline-flex flex-row items-center">
-                    {t('contextMenu.saveAsMarkdown')}
-                  </span>
-                </Item>
-              </>
-            )}
-            {/* The standalone wiki export needs a host process (the VS Code
-              extension or the crossnote serve server); the read-only wiki
-              itself has neither, and this whole submenu is hidden there. */}
+            {/* Every export runs in the host process — the extension host
+              or the serve server both run the same engine exporters. Only
+              the read-only wiki has no host, and this whole submenu is
+              hidden there. */}
+            <Submenu
+              label={
+                <span className="inline-flex flex-row items-center">HTML</span>
+              }
+            >
+              <Item id="export-html-offline" onClick={handleItemClick}>
+                {t('contextMenu.exportHtmlOffline')}
+              </Item>
+              <Item id="export-html-cdn" onClick={handleItemClick}>
+                {t('contextMenu.exportHtmlCdn')}
+              </Item>
+            </Submenu>
+            <Submenu
+              label={
+                <span className="inline-flex flex-row items-center">
+                  {t('contextMenu.exportChrome')}
+                </span>
+              }
+            >
+              <Item id="export-chrome-pdf" onClick={handleItemClick}>
+                PDF
+              </Item>
+              <Item id="export-chrome-png" onClick={handleItemClick}>
+                PNG
+              </Item>
+              <Item id="export-chrome-jpeg" onClick={handleItemClick}>
+                JPEG
+              </Item>
+            </Submenu>
+            <Item id="export-prince" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">
+                {t('contextMenu.exportPrince')}
+              </span>
+            </Item>
+            <Submenu
+              label={
+                <span className="inline-flex flex-row items-center">eBook</span>
+              }
+            >
+              <Item id="export-ebook-epub" onClick={handleItemClick}>
+                ePub
+              </Item>
+              <Item id="export-ebook-mobi" onClick={handleItemClick}>
+                Mobi
+              </Item>
+              <Item id="export-ebook-pdf" onClick={handleItemClick}>
+                PDF
+              </Item>
+              <Item id="export-ebook-html" onClick={handleItemClick}>
+                HTML
+              </Item>
+            </Submenu>
+            <Item id="export-pandoc" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">Pandoc</span>
+            </Item>
+            <Item id="export-markdown" onClick={handleItemClick}>
+              <span className="inline-flex flex-row items-center">
+                {t('contextMenu.saveAsMarkdown')}
+              </span>
+            </Item>
             <Item id="export-standalone-wiki" onClick={handleItemClick}>
               {t('contextMenu.exportStandaloneWiki')}
             </Item>
@@ -1408,16 +1400,19 @@ export default function ContextMenu() {
           }
         >
           <Item id="open-crossnote" onClick={handleItemClick}>
+            {/* Trailing logo — matches "Sponsor This Project 😊", whose
+              emoji also trails the label, instead of the leading icons of
+              the action items above. */}
             <span className="inline-flex flex-row items-center">
+              Crossnote
               <img
                 src={logo}
-                width="15"
-                height="15"
+                width="20"
+                height="20"
                 alt=""
                 aria-hidden="true"
-                className="mr-2"
+                className="ml-2"
               ></img>
-              Crossnote
             </span>
           </Item>
           <Item id="open-documentation" onClick={handleItemClick}>

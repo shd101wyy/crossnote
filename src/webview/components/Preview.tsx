@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React from 'react';
 import PreviewContainer from '../containers/preview';
+import { t } from '../lib/i18n';
 import Backlinks from './Backlinks';
 import ContextMenu from './ContextMenu';
 import FloatingActions from './FloatingActions';
@@ -22,6 +23,7 @@ export default function Preview() {
     notice,
     previewElement,
     setIsMouseOverPreview,
+    setNotice,
     showContextMenu,
     showBacklinks,
     highlightElementBeingEdited,
@@ -96,11 +98,19 @@ export default function Preview() {
       {/** Transient notice (e.g. why an action is unavailable) */}
       {notice && (
         <div
-          className="alert fixed bottom-8 left-1/2 -translate-x-1/2 z-[80] w-auto max-w-[90%] shadow-lg select-none"
+          className="alert fixed top-8 left-1/2 -translate-x-1/2 z-[80] w-auto max-w-[90%] shadow-lg select-none flex-row items-center gap-1"
           data-theme={theme}
           role="status"
         >
           <span className="text-base">{notice}</span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs btn-circle"
+            aria-label={t('close')}
+            onClick={() => setNotice(undefined)}
+          >
+            ✕
+          </button>
         </div>
       )}
     </div>

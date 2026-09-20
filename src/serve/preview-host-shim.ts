@@ -33,15 +33,6 @@ export function previewHostShimScript(targetOriginExpression: string): string {
     };
     return api;
   };
-  // The shell tells the frames when zen mode is on: Esc must then exit zen
-  // (the welcome card and the exit button both promise that), instead of the
-  // preview's own Esc behavior of toggling the sidebar TOC.
-  var zenMode = false;
-  window.addEventListener('message', function (event) {
-    if (event.data && event.data.command === '__serverAppZenMode') {
-      zenMode = !!event.data.enabled;
-    }
-  });
   document.addEventListener('keydown', function (event) {
     var key = event.key.toLowerCase();
     var action = null;
@@ -51,8 +42,6 @@ export function previewHostShimScript(targetOriginExpression: string): string {
       action = 'split-pane';
     } else if (event.altKey && key === 'w') {
       action = 'close-tab';
-    } else if (key === 'escape' && zenMode) {
-      action = 'exit-zen-mode';
     }
     if (action) {
       event.preventDefault();

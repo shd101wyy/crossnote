@@ -1958,7 +1958,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       puppeteerConfig['fullPage'] = true; // <= set to fullPage by default
       await page.screenshot(puppeteerConfig);
     }
-    browser.close();
+    // The browser's shutdown can reject (e.g. EBUSY unlinking its temp
+    // profile on Windows); the export itself has already succeeded.
+    browser.close().catch(() => {});
 
     if (openFileAfterGeneration) {
       utility.openFile(dest);

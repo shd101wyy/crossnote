@@ -4,6 +4,22 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Features
+
+- **Every export format works in `crossnote serve`** — the preview's Export submenu there offered only "Wiki"; it now carries the full set the VS Code extension has (HTML offline/CDN, Chrome (Puppeteer) PDF/PNG/JPEG, Prince PDF, ePub/Mobi/PDF/HTML eBooks, Pandoc, and save-as-Markdown). The serve server runs the same engine exporters the extension host does and reports the destination through a notification toast (presentation-mode Prince returns the print-it-yourself link, as in the extension). Exporters needing external binaries follow their config as usual — Chrome auto-detects when `chromePath` is empty, and a missing binary surfaces as an error toast. The read-only standalone wiki keeps the submenu hidden (it has no host process). The server also no longer dies over a third-party library leaking a promise rejection — puppeteer's launch-failure cleanup on Windows does exactly that (EBUSY unlinking its temp profile), so the serve process now logs unhandled rejections and keeps serving, and Chrome's browser shutdown errors after a successful export are swallowed.
+
+### Bug fixes
+
+- **`--vscode` serve no longer corrupts `settings.json` with a trailing `//` comment** — inserting a new `markdown-preview-enhanced.*` key appended its separator comma directly after the last entry, but when that entry is a commented-out setting the comma lands _inside_ the comment: the new key ends up without a separator and the whole file stops parsing. The damage then cascaded silently — the VS Code settings layer failed to load (so the preview fell back to the default light theme and the zen toggle appeared dead) and every later theme/zen change refused to edit the "unparseable" file, so switching themes stopped working entirely. The writer now tries each separator placement and keeps the first whose result still parses (never writing a file the lenient reader cannot load), and a failed persist surfaces as an error toast in the app instead of only in the server console.
+
+- **Zen mode toggles the preview, not the shell** — the context menu's "Zen Mode" item in `crossnote serve` and the standalone wiki hid the app shell's title bar while leaving the preview untouched: the preview's `enablePreviewZenMode` config was never flipped, so the item always left the preview in zen mode and could never turn it off — which also made "Open In-preview Editor" (hidden while zen is on) unusable. The item now flips `enablePreviewZenMode` exactly like the extension's setting toggle: the serve server persists the flipped value and reloads every preview with it (the same `configChanged` reload a theme switch triggers), and a wiki file stores the override in `localStorage` (keyed per wiki, defaulting to the value the file was built with, which now ships in the payload) and re-assembles its open tabs. The shell-level zen mode introduced with it — the hidden title bar, the "Exit zen mode" button, the `__serverAppZenMode` message and its Esc forwarding, and the welcome card's "Esc — exit zen mode" hint — is removed; Esc inside a preview keeps its preview meaning (toggling the outline).
+
+### Improvements
+
+- **The preview notice stays readable** — the transient alert (e.g. "The in-preview editor is unavailable in Zen Mode…") auto-dismissed after 4 s and sat at the bottom of the preview; it now renders at the top, keeps itself on screen for 10 s, and gains a close button for dismissing it early. The close label is localized in all eleven languages.
+- **`About ▸ Crossnote` shows the logo on the right** — the logo moved from the left of the label to after it (now 20px, up from 15px — the menu's other icons render at ~19px), lining up with the trailing 😊 of "Sponsor This Project 😊" below.
+- **Typedoc on GitHub Pages deploys again, and the README drops `[WIP]`** — the Pages deployment workflow only triggered on pushes to `master`, which has been dormant since 0.9.31 (2026-06) while every release lands on `develop`, so https://shd101wyy.github.io/crossnote/ went months without current API docs. The workflow now deploys on pushes to `develop` too (manual dispatch defaults to `develop`), and the README heading no longer says `[WIP]`.
+
 ## [0.9.38] - 2026-09-20
 
 ### Features

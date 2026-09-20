@@ -7,10 +7,12 @@ import {
   assembleWikiDocument,
   createWikiIndex,
   readWikiThemeSelection,
+  readWikiZenOverride,
   resolveWikiHref,
   wikiFileList,
   wikiKeyOf,
   writeWikiThemeSelection,
+  writeWikiZenOverride,
 } from '../../src/server-app/lib/wiki';
 
 function wikiFile(overrides: Partial<WikiFileMeta> = {}): WikiFileMeta {
@@ -166,6 +168,33 @@ describe('assembleWikiDocument', () => {
     expect(unknown).toContain(
       '<style data-crossnote-theme="preview">/* light */</style>',
     );
+  });
+
+  test('a zen override rewrites the config meta, absent leaves it alone', () => {
+    const data = wikiData({
+      files: [
+        wikiFile({
+          html:
+            '<head>' +
+            '<meta id="crossnote-data" data-config="{&quot;enablePreviewZenMode&quot;:true}">' +
+            '</head>',
+        }),
+      ],
+    });
+
+    // No override: the build-time zen state is served as built.
+    expect(assembleWikiDocument(data, data.files[0])).toContain(
+      '&quot;enablePreviewZenMode&quot;:true',
+    );
+
+    // The context-menu toggle rewrites it (the frame reloads re-mounted
+    // with the flipped config, so the preview's zen UI follows).
+    expect(
+      assembleWikiDocument(data, data.files[0], undefined, false),
+    ).toContain('&quot;enablePreviewZenMode&quot;:false');
+    expect(
+      assembleWikiDocument(data, data.files[0], undefined, true),
+    ).toContain('&quot;enablePreviewZenMode&quot;:true');
   });
 
   test('leaves unknown tokens and non-token references untouched', () => {
@@ -330,5 +359,34 @@ describe('wiki theme selection storage', () => {
     // Broken JSON is ignored.
     storage.setItem('crossnote:wiki:themes:/vault', '{');
     expect(readWikiThemeSelection(data, storage)).toBeNull();
+  });
+});
+
+describe('wiki zen override storage', () => {
+  function memoryStorage(): Storage {
+    const map = new Map<string, string>();
+    return {
+      getItem: (key) => (map.has(key) ? (map.get(key) as string) : null),
+      setItem: (key, value) => {
+        map.set(key, value);
+      },
+    } as Storage;
+  }
+
+  test('round-trips the override, ignoring junk values', () => {
+    const storage = memoryStorage();
+    const data = wikiData();
+    expect(readWikiZenOverride(data, storage)).toBeNull();
+
+    writeWikiZenOverride(data, storage, false);
+    expect(readWikiZenOverride(data, storage)).toBe(false);
+
+    writeWikiZenOverride(data, storage, true);
+    expect(readWikiZenOverride(data, storage)).toBe(true);
+
+    // Anything that is not 'true'/'false' (stale or foreign storage)
+    // reads back as no override.
+    storage.setItem('crossnote:wiki:zen:/vault', 'junk');
+    expect(readWikiZenOverride(data, storage)).toBeNull();
   });
 });

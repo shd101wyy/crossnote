@@ -430,6 +430,9 @@ export async function buildWiki(
     files,
     assets,
     themes,
+    // The zen state the notes were built with — the baseline the
+    // context-menu toggle flips (first root anchors, like the themes).
+    zenEnabled: notebooks[0].config.enablePreviewZenMode,
     graph,
     backlinks,
     buildDirectory,
@@ -773,6 +776,7 @@ function buildShellHTML({
   files,
   assets,
   themes,
+  zenEnabled,
   graph,
   backlinks,
   buildDirectory,
@@ -781,6 +785,7 @@ function buildShellHTML({
   files: WikiFileEntry[];
   assets: Record<string, string>;
   themes: WikiThemesPayload;
+  zenEnabled: boolean;
   graph: Record<string, WikiGraphPayload>;
   backlinks: Record<string, WikiBacklinkPayload[]>;
   buildDirectory: string;
@@ -812,6 +817,7 @@ function buildShellHTML({
     rootDirectories: rootNames,
     assets,
     themes,
+    zenEnabled,
     graph,
     backlinks,
     files,

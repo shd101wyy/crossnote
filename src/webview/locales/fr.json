@@ -36,6 +36,7 @@
   "contextMenu.changelog": "Journal des modifications",
   "contextMenu.featureRequests": "Demandes de fonctionnalités ou rapports de bugs",
   "contextMenu.sponsors": "Sponsoriser ce projet 😊",
+  "close": "Fermer",
   "footer.openGraphView": "Ouvrir la vue graphe",
   "footer.toggleBacklinks": "Basculer les rétroliens",
   "footer.zoomOut": "Zoom arrière",

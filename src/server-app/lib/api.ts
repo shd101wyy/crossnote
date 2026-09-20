@@ -81,6 +81,12 @@ export interface WikiData {
   assets: Record<string, string>;
   /** Every available theme stylesheet, for the runtime theme picker. */
   themes: WikiThemesPayload;
+  /**
+   * The preview zen mode the notes were built with — the baseline the
+   * context-menu toggle flips. Absent in files built before it existed
+   * (treated as `true`, the config default).
+   */
+  zenEnabled?: boolean;
   /** Graph view data per root (single entry: root name → data). */
   graph: Record<string, WikiGraphData>;
   /** Backlinks per note key (empty array when a note has none). */

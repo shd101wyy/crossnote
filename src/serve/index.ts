@@ -149,6 +149,13 @@ function appShellHTML(serverInfo: {
 export async function startServeServer(
   options: ServeOptions,
 ): Promise<ServeServer> {
+  // A long-running server must not die over a third-party lib leaking a
+  // rejection (puppeteer's launch-failure cleanup does this on Windows:
+  // EBUSY unlinking its temp profile). Same policy as the VS Code
+  // extension host: log it and keep serving.
+  process.on('unhandledRejection', (reason) => {
+    console.error('crossnote serve: unhandled rejection:', reason);
+  });
   // One config context + Notebook per root, sharing the global config layer.
   const { rootDirectories, configContexts, notebooks } =
     await createNotebooksForDirectories(options.directories, {
@@ -402,21 +409,32 @@ export async function startServeServer(
       }
       case 'setPreviewTheme':
       case 'setCodeBlockTheme':
-      case 'setRevealjsTheme': {
-        // args: [sourceUri, theme] — persist to the vscode settings or the
-        // global crossnote config, then apply and notify every client.
+      case 'setRevealjsTheme':
+      case 'togglePreviewZenMode': {
+        // args: [sourceUri, theme] / [sourceUri] — persist to the vscode
+        // settings or the global crossnote config, then apply and notify
+        // every client.
         const configKey: string =
           command === 'setPreviewTheme'
             ? 'previewTheme'
             : command === 'setCodeBlockTheme'
               ? 'codeBlockTheme'
-              : 'revealjsTheme';
-        const theme = typeof args[1] === 'string' ? args[1] : null;
-        if (!theme) {
+              : command === 'setRevealjsTheme'
+                ? 'revealjsTheme'
+                : 'enablePreviewZenMode';
+        // Zen mode is a toggle of the preview's own state (same as the
+        // extension's setting flip); themes carry their new value in args.
+        const value =
+          command === 'togglePreviewZenMode'
+            ? !notebooks[0].config.enablePreviewZenMode
+            : typeof args[1] === 'string'
+              ? args[1]
+              : null;
+        if (value === null) {
           return;
         }
         try {
-          await updateServerConfigKey(configContexts[0], configKey, theme);
+          await updateServerConfigKey(configContexts[0], configKey, value);
           // The write went to a shared layer (vscode settings or the global
           // config), so re-merge and apply for every root. A workspace
           // `.crossnote` override keeps winning where present.
@@ -429,9 +447,9 @@ export async function startServeServer(
               notebooks[index].clearAllNoteMarkdownEngineCaches();
             }),
           );
-          // Styles live in each preview page's <head>, so clients reload
-          // their iframes on configChanged — same as the extension's
-          // refreshAllPreviews.
+          // Both the styles and the embedded config meta live in each
+          // preview page, so clients reload their iframes on configChanged —
+          // same as the extension's refreshAllPreviews.
           sse.broadcast({
             type: 'configChanged',
             configs: notebooks.map((notebook) => notebook.config),
@@ -441,6 +459,14 @@ export async function startServeServer(
             `crossnote serve: failed to persist ${configKey}:`,
             error,
           );
+          // The browser user cannot see the server console — surface the
+          // failure as a toast so a blocked write (e.g. an unparseable
+          // settings.json that must not be edited) is not silent.
+          sse.broadcast({
+            type: 'notification',
+            level: 'error',
+            message: `Failed to save "${configKey}": ${error instanceof Error ? error.message : String(error)}`,
+          });
         }
         return;
       }
@@ -523,6 +549,71 @@ export async function startServeServer(
             `crossnote serve: failed to compute backlinks for ${file}:`,
             error,
           );
+        }
+        return;
+      }
+      case 'htmlExport':
+      case 'chromeExport':
+      case 'princeExport':
+      case 'eBookExport':
+      case 'pandocExport':
+      case 'markdownExport': {
+        // args: [sourceUri, param?] — the same engine exporters the
+        // extension runs, executed in the server process; the destination
+        // (computed next to the source file, like every host does) is
+        // reported through the notification SSE event.
+        const sourceUri = assertFileWithinRoots(String(args[0] ?? ''));
+        const param = args[1];
+        if (!sourceUri || !isMarkdownFile(sourceUri)) {
+          return;
+        }
+        const engine =
+          notebookForFile(sourceUri)?.getNoteMarkdownEngine(sourceUri);
+        if (!engine) {
+          return;
+        }
+        try {
+          let dest: string;
+          if (command === 'htmlExport') {
+            dest = await engine.htmlExport({ offline: param === true });
+          } else if (command === 'chromeExport') {
+            dest = await engine.chromeExport({
+              fileType: typeof param === 'string' ? param : 'pdf',
+            });
+          } else if (command === 'princeExport') {
+            dest = await engine.princeExport({});
+            if (dest.endsWith('?print-pdf')) {
+              // Presentation mode: prince cannot print reveal.js slides —
+              // the user has to print the linked page to PDF themselves.
+              sse.broadcast({
+                type: 'notification',
+                level: 'info',
+                message: `Please open the link below in Chrome and print it as PDF: ${dest}`,
+              });
+              return;
+            }
+          } else if (command === 'eBookExport') {
+            dest = await engine.eBookExport({
+              fileType: typeof param === 'string' ? param : 'epub',
+              runAllCodeChunks: false,
+            });
+          } else if (command === 'pandocExport') {
+            dest = await engine.pandocExport({});
+          } else {
+            dest = await engine.markdownExport({});
+          }
+          sse.broadcast({
+            type: 'notification',
+            level: 'info',
+            message: `Exported ${path.basename(sourceUri)} to ${dest}`,
+          });
+        } catch (error) {
+          console.error(`crossnote serve: ${command} failed:`, error);
+          sse.broadcast({
+            type: 'notification',
+            level: 'error',
+            message: `${command} failed: ${error instanceof Error ? error.message : String(error)}`,
+          });
         }
         return;
       }
