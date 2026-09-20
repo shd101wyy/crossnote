@@ -8,6 +8,7 @@ import React, {
 import FilePicker from './components/FilePicker';
 import LayoutView, { LayoutActions } from './components/LayoutView';
 import TitleBar from './components/TitleBar';
+import { SHA256 } from 'crypto-js';
 import {
   ServerInfo,
   UpdateHtmlPayload,
@@ -16,16 +17,27 @@ import {
   filePathToFilesUrl,
   getServerInfo,
   getWikiData,
+  graphAnchorFile,
+  graphTabFile,
+  isGraphTab,
   isMarkdownPath,
   resolveHref,
+  rootContaining,
+  sameServeFile,
   sendCommand,
 } from './lib/api';
 import {
   assembleWikiDocument,
+  assembleWikiGraphDocument,
   createWikiIndex,
+  readWikiThemeSelection,
+  resolveWikiHref,
   wikiFileList,
   wikiKeyOf,
+  writeWikiThemeSelection,
+  type WikiThemeSelection,
 } from './lib/wiki';
+import { previewThemeMode } from './lib/preview-theme';
 import {
   LayoutNode,
   PersistedWorkspace,
@@ -33,9 +45,11 @@ import {
   closeTabInPane,
   createPane,
   findPane,
+  listPaneIds,
   mapPanes,
   moveTab,
   openFileInPane,
+  removePane,
   resizeSplit,
   splitPane,
 } from './types';
@@ -50,6 +64,7 @@ interface FrameEntry {
 }
 
 const EXTERNAL_LINK_URLS: Record<string, string> = {
+  openCrossnote: 'https://github.com/shd101wyy/crossnote',
   openChangelog:
     'https://github.com/shd101wyy/vscode-markdown-preview-enhanced/releases',
   openDocumentation: 'https://shd101wyy.github.io/markdown-preview-enhanced/',
@@ -57,6 +72,9 @@ const EXTERNAL_LINK_URLS: Record<string, string> = {
     'https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues',
   openSponsors: 'https://github.com/sponsors/shd101wyy/',
 };
+
+/** localStorage key of the manual shell light/dark override. */
+const SHELL_THEME_STORAGE_KEY = 'crossnote:shellTheme';
 
 export default function App() {
   // Wiki mode: the page carries the whole workspace as an embedded payload
@@ -67,26 +85,49 @@ export default function App() {
     () => (wikiData ? createWikiIndex(wikiData) : null),
     [wikiData],
   );
+  // The wiki's theme selection (context-menu picker), persisted to
+  // localStorage. `null` = use the themes the file was built with.
+  const [wikiThemes, setWikiThemes] = useState<WikiThemeSelection | null>(() =>
+    wikiData ? readWikiThemeSelection(wikiData, localStorage) : null,
+  );
   const wikiDocumentCache = useRef<Map<string, string>>(new Map());
   const frameDocument = useCallback(
     (file: string): string | undefined => {
       if (!wikiData) {
         return undefined;
       }
-      const key = wikiKeyOf(file);
+      // The graph view tab assembles its own page (embedded graph data).
+      if (isGraphTab(file)) {
+        const graphKey = `__graph__\n${graphAnchorFile(file)}`;
+        const cachedGraph = wikiDocumentCache.current.get(graphKey);
+        if (cachedGraph !== undefined) {
+          return cachedGraph;
+        }
+        const graphDocument = assembleWikiGraphDocument(
+          wikiData,
+          graphAnchorFile(file),
+        );
+        wikiDocumentCache.current.set(graphKey, graphDocument);
+        return graphDocument;
+      }
+      const key = `${wikiKeyOf(file)}\n${wikiThemes ? JSON.stringify(wikiThemes) : ''}`;
       const cached = wikiDocumentCache.current.get(key);
       if (cached !== undefined) {
         return cached;
       }
-      const entry = wikiIndex?.get(key);
+      const entry = wikiIndex?.get(wikiKeyOf(file));
       if (!entry) {
         return undefined;
       }
-      const documentHtml = assembleWikiDocument(wikiData, entry);
+      const documentHtml = assembleWikiDocument(
+        wikiData,
+        entry,
+        wikiThemes ?? undefined,
+      );
       wikiDocumentCache.current.set(key, documentHtml);
       return documentHtml;
     },
-    [wikiData, wikiIndex],
+    [wikiData, wikiIndex, wikiThemes],
   );
 
   const serverInfo = useMemo<ServerInfo>(
@@ -111,6 +152,87 @@ export default function App() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerPaneId, setPickerPaneId] = useState('');
   const [zenMode, setZenMode] = useState(false);
+  // Frames read this to know when Esc should exit zen mode (instead of the
+  // preview's own Esc behavior of toggling the sidebar TOC).
+  const zenModeRef = useRef(false);
+  zenModeRef.current = zenMode;
+
+  // ---- shell light/dark theme --------------------------------------------
+  // The chrome follows the tone of the first workspace's preview theme (the
+  // previews themselves keep their own per-workspace themes); a manual
+  // toggle on the title bar overrides, persisted across sessions. Themes
+  // without an opinion (`none.css`, unknown) fall back to the system
+  // color scheme.
+  const [shellThemeOverride, setShellThemeOverride] = useState<
+    'light' | 'dark' | null
+  >(() => {
+    try {
+      const stored = localStorage.getItem(SHELL_THEME_STORAGE_KEY);
+      return stored === 'light' || stored === 'dark' ? stored : null;
+    } catch {
+      return null;
+    }
+  });
+  const [servePreviewTheme, setServePreviewTheme] = useState<
+    string | undefined
+  >(undefined);
+  const systemTheme = useMemo<'light' | 'dark'>(
+    () =>
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light',
+    [],
+  );
+  const effectivePreviewTheme = wikiData
+    ? (wikiThemes?.preview ?? wikiData.themes.build.preview)
+    : servePreviewTheme;
+  const shellTheme =
+    shellThemeOverride ??
+    previewThemeMode(effectivePreviewTheme) ??
+    systemTheme;
+  useEffect(() => {
+    document.documentElement.classList.toggle(
+      'cn-light',
+      shellTheme === 'light',
+    );
+  }, [shellTheme]);
+  const toggleShellTheme = useCallback(() => {
+    setShellThemeOverride((current) => {
+      const next =
+        (current ?? previewThemeMode(effectivePreviewTheme) ?? systemTheme) ===
+        'light'
+          ? 'dark'
+          : 'light';
+      try {
+        localStorage.setItem(SHELL_THEME_STORAGE_KEY, next);
+      } catch {
+        // Storage unavailable — the toggle still applies for this session.
+      }
+      return next;
+    });
+  }, [effectivePreviewTheme, systemTheme]);
+  // Serve: learn the first workspace's preview theme (the wiki reads it from
+  // its payload) and follow config changes (e.g. the context-menu picker).
+  useEffect(() => {
+    if (wikiData) {
+      return;
+    }
+    let cancelled = false;
+    fetch('/api/config')
+      .then((response) => (response.ok ? response.json() : null))
+      .then((body) => {
+        if (!cancelled && body?.configs?.[0]?.previewTheme) {
+          setServePreviewTheme(String(body.configs[0].previewTheme));
+        }
+      })
+      .catch(() => {
+        // Offline/stale — the system scheme stays in charge.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [wikiData]);
+
   const [toast, setToast] = useState<{
     level: 'info' | 'error';
     message: string;
@@ -201,9 +323,27 @@ export default function App() {
   // ---- pane actions ------------------------------------------------------
   const openFile = useCallback(
     (paneId: string, file: string) => {
-      setLayout((current) =>
-        current ? openFileInPane(current, paneId, file) : current,
-      );
+      setLayout((current) => {
+        if (!current) {
+          return current;
+        }
+        // A tab may already show this file under another spelling (opened
+        // via the picker vs a link) — reuse its key so it activates instead
+        // of duplicating.
+        let existingKey: string | undefined;
+        for (const pane of listPaneIds(current).map((id) =>
+          findPane(current, id),
+        )) {
+          const tab = pane?.tabs.find((candidate) =>
+            sameServeFile(candidate.file, file),
+          );
+          if (tab) {
+            existingKey = tab.file;
+            break;
+          }
+        }
+        return openFileInPane(current, paneId, existingKey ?? file);
+      });
       setActivePaneId(paneId);
       touchRecents(file);
     },
@@ -219,6 +359,31 @@ export default function App() {
     if (pane?.activeTabId) {
       setLayout(closeTabInPane(current, pane.id, pane.activeTabId));
     }
+  }, []);
+
+  /** Remove an empty pane (its welcome card) — never the last one. */
+  const closePane = useCallback((paneId: string) => {
+    const current = layoutRef.current;
+    if (!current) {
+      return;
+    }
+    const { layout, removed } = removePane(current, paneId);
+    if (!removed) {
+      return;
+    }
+    setLayout(layout);
+    if (activePaneIdRef.current === paneId) {
+      setActivePaneId(listPaneIds(layout)[0] ?? '');
+    }
+  }, []);
+
+  const canClosePane = useCallback((paneId: string): boolean => {
+    const current = layoutRef.current;
+    return (
+      !!current &&
+      listPaneIds(current).length > 1 &&
+      (findPane(current, paneId)?.tabs.length ?? 1) === 0
+    );
   }, []);
 
   const splitPaneAt = useCallback(
@@ -368,6 +533,17 @@ export default function App() {
               : null),
           jsAndCssFiles: existing?.jsAndCssFiles ?? null,
         });
+        // Tell fresh frames whether zen mode is on, so Esc exits it, and
+        // which light/dark mode the chrome runs in (the graph view colors
+        // itself from it).
+        iframe.contentWindow?.postMessage(
+          { command: '__serverAppZenMode', enabled: zenModeRef.current },
+          frameTargetOrigin,
+        );
+        iframe.contentWindow?.postMessage(
+          { command: '__serverAppShellTheme', theme: shellTheme },
+          frameTargetOrigin,
+        );
       } else {
         const entry = framesRef.current.get(tabId);
         if (entry && entry.file === file && entry.reload === null) {
@@ -378,7 +554,7 @@ export default function App() {
         }
       }
     },
-    [wikiIndex],
+    [wikiIndex, frameTargetOrigin, shellTheme],
   );
 
   const onFrameVisible = useCallback(
@@ -432,10 +608,10 @@ export default function App() {
   isWikiTargetRef.current = !!wikiData;
   function openWikiFile(
     paneId: string,
-    absolutePath: string,
+    noteKey: string,
     href: string,
   ): boolean {
-    if (!wikiIndex || !wikiIndex.has(wikiKeyOf(absolutePath))) {
+    if (!wikiIndex || !wikiIndex.has(wikiKeyOf(noteKey))) {
       showToast({
         level: 'info',
         message: isEchoableHref(href)
@@ -444,7 +620,7 @@ export default function App() {
       });
       return false;
     }
-    openFile(paneId, absolutePath);
+    openFile(paneId, noteKey);
     return true;
   }
 
@@ -460,6 +636,52 @@ export default function App() {
     );
   }
 
+  /**
+   * Open the graph view in a pane beside the active one (like VS Code's
+   * `ViewColumn.Beside`): reuse the pane an existing graph tab lives in,
+   * refreshing it with the new anchor, or split a new pane otherwise.
+   */
+  const openGraphView = useCallback((anchorFile: string) => {
+    const current = layoutRef.current;
+    if (!current) {
+      return;
+    }
+    const graphFile = graphTabFile(anchorFile);
+    // Drop any existing graph tab (any anchor) — its pane is reused below so
+    // the view keeps its position; exactly one graph tab exists at a time.
+    const withoutGraph = mapPanes(current, (pane) => {
+      const tabs = pane.tabs.filter((tab) => !isGraphTab(tab.file));
+      const activeTabId = tabs.some((tab) => tab.id === pane.activeTabId)
+        ? pane.activeTabId
+        : (tabs[tabs.length - 1]?.id ?? null);
+      return { ...pane, tabs, activeTabId };
+    });
+    // Prefer an existing empty pane, else split right of the active pane.
+    const targetPaneId =
+      activePaneIdRef.current &&
+      findPane(withoutGraph, activePaneIdRef.current)?.tabs.length === 0
+        ? activePaneIdRef.current
+        : (listPaneIds(withoutGraph)
+            .map((id) => findPane(withoutGraph, id))
+            .find((pane) => pane && pane.tabs.length === 0)?.id ?? null);
+    if (targetPaneId) {
+      setLayout(openFileInPane(withoutGraph, targetPaneId, graphFile));
+      setActivePaneId(targetPaneId);
+      return;
+    }
+    const anchorPaneId =
+      activePaneIdRef.current && findPane(withoutGraph, activePaneIdRef.current)
+        ? activePaneIdRef.current
+        : (listPaneIds(withoutGraph)[0] ?? '');
+    const { layout: split, newPaneId } = splitPane(
+      withoutGraph,
+      anchorPaneId,
+      'horizontal',
+    );
+    setLayout(openFileInPane(split, newPaneId, graphFile));
+    setActivePaneId(newPaneId);
+  }, []);
+
   useEffect(() => {
     const handler = (event: MessageEvent) => {
       const data = event.data as WebviewCommandMessage | undefined;
@@ -467,6 +689,37 @@ export default function App() {
         return;
       }
       const actions = actionsRef.current;
+
+      // Node click in a graph view frame — verified against the registered
+      // frames (the graph view runs in one of them).
+      if (data.command === '__serverAppOpenFile') {
+        const fromKnownFrame = Array.from(framesRef.current.values()).some(
+          (entry) => entry.iframe?.contentWindow === event.source,
+        );
+        if (!fromKnownFrame) {
+          return;
+        }
+        const anchorFile = String(data.args?.[0] ?? '');
+        const relativePath = String(data.args?.[1] ?? '').replace(/^\/+/, '');
+        if (isWikiTargetRef.current && wikiData) {
+          const noteKey = resolveWikiHref(
+            wikiData,
+            anchorFile,
+            `/${relativePath}`,
+          );
+          actions.openWikiFile(activePaneIdRef.current, noteKey, relativePath);
+          return;
+        }
+        const absolutePath = resolveHref(
+          actions.serverInfo.rootDirectories,
+          anchorFile,
+          `/${relativePath}`,
+        );
+        if (isMarkdownPath(absolutePath)) {
+          actions.openFile(activePaneIdRef.current, absolutePath);
+        }
+        return;
+      }
 
       if (data.command === '__serverAppShortcut') {
         const action = Array.isArray(data.args) ? String(data.args[0]) : '';
@@ -476,6 +729,8 @@ export default function App() {
           actions.closeActiveTab();
         } else if (action === 'split-pane') {
           actions.splitPaneAt(activePaneIdRef.current, 'horizontal');
+        } else if (action === 'exit-zen-mode') {
+          setZenMode(false);
         }
         return;
       }
@@ -529,24 +784,22 @@ export default function App() {
           if (/^(https?:|mailto:|tel:)/i.test(href)) {
             window.open(href, '_blank', 'noopener');
           } else if (href && !href.startsWith('#')) {
+            if (isWikiTargetRef.current && wikiData) {
+              // Wiki note paths are relative keys. The backlinks panel's
+              // links are `file:///<key>` (from the scrubbed notebookPath);
+              // everything else is wiki-relative.
+              const wikiHref = href.replace(/^file:\/\/\/+/i, '/');
+              const noteKey = resolveWikiHref(wikiData, file, wikiHref);
+              actions.openWikiFile(activePaneIdRef.current, noteKey, wikiHref);
+              return;
+            }
             const absolutePath = resolveHref(
               actions.serverInfo.rootDirectories,
               file,
               href,
             );
             if (isMarkdownPath(absolutePath)) {
-              if (isWikiTargetRef.current) {
-                actions.openWikiFile(
-                  activePaneIdRef.current,
-                  absolutePath,
-                  href,
-                );
-              } else {
-                actions.openFile(activePaneIdRef.current, absolutePath);
-              }
-            } else if (isWikiTargetRef.current) {
-              // Non-note files have no /files/ server behind a wiki.
-              actions.openWikiFile(activePaneIdRef.current, absolutePath, href);
+              actions.openFile(activePaneIdRef.current, absolutePath);
             } else {
               const url = filePathToFilesUrl(
                 actions.serverInfo.rootDirectories,
@@ -559,10 +812,51 @@ export default function App() {
           }
           return;
         }
+        case 'openGraphView': {
+          // Opens a pane beside the active one; both modes support it (the
+          // serve server fetches /api/graph, the wiki reads embedded data).
+          openGraphView(file);
+          return;
+        }
+        case 'setPreviewTheme':
+        case 'setCodeBlockTheme':
+        case 'setRevealjsTheme': {
+          // args: [sourceUri, theme]
+          const slot =
+            data.command === 'setPreviewTheme'
+              ? 'preview'
+              : data.command === 'setCodeBlockTheme'
+                ? 'codeBlock'
+                : 'reveal';
+          if (isWikiTargetRef.current && wikiData) {
+            const theme = String(args[1] ?? '');
+            const known =
+              theme === 'auto.css' || theme in wikiData.themes[slot];
+            if (!known) {
+              return;
+            }
+            const next: WikiThemeSelection = {
+              preview: wikiThemes?.preview ?? wikiData.themes.build.preview,
+              codeBlock:
+                wikiThemes?.codeBlock ?? wikiData.themes.build.codeBlock,
+              reveal: wikiThemes?.reveal ?? wikiData.themes.build.reveal,
+              [slot]: theme,
+            };
+            writeWikiThemeSelection(wikiData, localStorage, next);
+            setWikiThemes(next);
+            // The changed frameDocument re-assembles every open tab with the
+            // new stylesheet and re-sets its srcdoc — a reload, exactly the
+            // behavior of the serve server's configChanged.
+            return;
+          }
+          void sendCommand(file, data.command, args);
+          return;
+        }
         case 'togglePreviewZenMode': {
           setZenMode((value) => !value);
           return;
         }
+        case 'openCrossnote':
         case 'openChangelog':
         case 'openDocumentation':
         case 'openIssues':
@@ -576,9 +870,37 @@ export default function App() {
         case 'revealLine':
         case 'setZoomLevel':
         case 'escPressed':
-        case 'showBacklinks':
         case 'clickTag': {
           // No host-side behavior in the standalone server app (yet).
+          return;
+        }
+        case 'showBacklinks': {
+          if (isWikiTargetRef.current && wikiData) {
+            // The wiki ships per-note backlinks in the payload — answer the
+            // preview directly, like the extension's postMessageToPreview.
+            const info = args[0] as { backlinksSha?: string } | undefined;
+            const noteKey = wikiKeyOf(file);
+            const backlinks = wikiData.backlinks[noteKey] ?? [];
+            const sha = SHA256(JSON.stringify(backlinks)).toString();
+            const hasUpdate = sha !== info?.backlinksSha;
+            for (const frameEntry of framesRef.current.values()) {
+              if (frameEntry.file === file) {
+                frameEntry.iframe?.contentWindow?.postMessage(
+                  {
+                    command: 'backlinks',
+                    sourceUri: file,
+                    backlinks: hasUpdate ? backlinks : null,
+                    hasUpdate,
+                  },
+                  frameTargetOrigin,
+                );
+              }
+            }
+            return;
+          }
+          // Handled server-side (the note index lives there); the result
+          // comes back as an `iframeMessage` SSE event below.
+          void sendCommand(file, data.command, args);
           return;
         }
         default: {
@@ -592,7 +914,14 @@ export default function App() {
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, [touchRecents, wikiIndex, frameTargetOrigin]);
+  }, [
+    touchRecents,
+    wikiIndex,
+    wikiData,
+    wikiThemes,
+    frameTargetOrigin,
+    openGraphView,
+  ]);
 
   // ---- server-sent events ---------------------------------------------------
   useEffect(() => {
@@ -608,6 +937,10 @@ export default function App() {
         payload?: UpdateHtmlPayload;
         level?: 'info' | 'error';
         message?: string;
+        /** A webview message (e.g. `backlinks`) to deliver into a frame. */
+        iframeMessage?: Record<string, unknown>;
+        /** Per-root notebook configs (`configChanged`). */
+        configs?: Array<{ previewTheme?: string }>;
       };
       try {
         data = JSON.parse(event.data);
@@ -617,7 +950,10 @@ export default function App() {
       if (data.type === 'updateHtml' && data.file && data.payload) {
         const update = { ...data.payload, command: 'updateHtml' as const };
         for (const entry of framesRef.current.values()) {
-          if (entry.file !== data.file) {
+          // The tab may be keyed by a different spelling of the same file
+          // (native vs posix separators) — match tolerantly, or the update
+          // is dropped and the preview hangs on its loading screen.
+          if (!sameServeFile(entry.file, data.file)) {
             continue;
           }
           const jsAndCssFiles = data.payload?.jsAndCssFiles ?? null;
@@ -638,13 +974,48 @@ export default function App() {
             );
           }
         }
+      } else if (
+        data.type === 'iframeMessage' &&
+        data.file &&
+        data.iframeMessage
+      ) {
+        // A host-computed webview message (e.g. backlinks) — deliver it into
+        // every frame showing that file, like the extension's
+        // postMessageToPreview.
+        for (const entry of framesRef.current.values()) {
+          if (sameServeFile(entry.file, data.file)) {
+            entry.iframe?.contentWindow?.postMessage(
+              data.iframeMessage,
+              window.location.origin,
+            );
+          }
+        }
       } else if (data.type === 'fileDeleted' && data.file) {
         const deletedFile = data.file;
         setLayout((current) =>
-          current ? closeFileEverywhere(current, deletedFile) : current,
+          current
+            ? // Tabs may carry a different spelling of the deleted file
+              // (native vs posix separators) — close every spelling.
+              mapPanes(current, (pane) => {
+                const tabs = pane.tabs.filter(
+                  (tab) => !sameServeFile(tab.file, deletedFile),
+                );
+                if (tabs.length === pane.tabs.length) {
+                  return pane;
+                }
+                const activeTabId = tabs.some(
+                  (tab) => tab.id === pane.activeTabId,
+                )
+                  ? pane.activeTabId
+                  : (tabs[tabs.length - 1]?.id ?? null);
+                return { ...pane, tabs, activeTabId };
+              })
+            : current,
         );
         setRecents((previous) =>
-          previous.filter((candidate) => candidate !== deletedFile),
+          previous.filter(
+            (candidate) => !sameServeFile(candidate, deletedFile),
+          ),
         );
       } else if (data.type === 'noteSaved' && data.file) {
         touchRecents(data.file);
@@ -652,6 +1023,9 @@ export default function App() {
         // Preview styles live in each iframe page's <head>; a config change
         // (e.g. switching the preview theme) needs fresh pages. The
         // webviewFinishLoading → refreshPreview flow rehydrates content.
+        if (data.configs?.[0]?.previewTheme) {
+          setServePreviewTheme(String(data.configs[0].previewTheme));
+        }
         for (const entry of framesRef.current.values()) {
           entry.jsAndCssFiles = null;
           entry.lastUpdate = null;
@@ -668,6 +1042,87 @@ export default function App() {
   }, [touchRecents, showToast, wikiData]);
 
   // ---- global keyboard shortcuts --------------------------------------------
+  // Keep the frames' shims in sync with zen mode so Esc exits it everywhere.
+  useEffect(() => {
+    for (const entry of framesRef.current.values()) {
+      entry.iframe?.contentWindow?.postMessage(
+        { command: '__serverAppZenMode', enabled: zenMode },
+        frameTargetOrigin,
+      );
+    }
+  }, [zenMode, frameTargetOrigin]);
+
+  // Keep the frames (the graph view colors itself from it) in sync with the
+  // shell's light/dark mode.
+  useEffect(() => {
+    for (const entry of framesRef.current.values()) {
+      entry.iframe?.contentWindow?.postMessage(
+        { command: '__serverAppShellTheme', theme: shellTheme },
+        frameTargetOrigin,
+      );
+    }
+  }, [shellTheme, frameTargetOrigin]);
+
+  // The graph view highlights the focused note's node, like VS Code's
+  // sendActiveFile on editor changes. The last non-graph tab stays active
+  // while the graph tab itself is focused.
+  const lastActiveNoteRef = useRef<string | null>(null);
+  const activeNote = useMemo(() => {
+    const pane = layout ? findPane(layout, activePaneId) : null;
+    const tab = pane?.tabs.find(
+      (candidate) => candidate.id === pane.activeTabId,
+    );
+    const file = tab && !isGraphTab(tab.file) ? tab.file : null;
+    if (file) {
+      lastActiveNoteRef.current = file;
+    }
+    return lastActiveNoteRef.current;
+  }, [layout, activePaneId]);
+  useEffect(() => {
+    if (!activeNote) {
+      return;
+    }
+    for (const entry of framesRef.current.values()) {
+      if (!isGraphTab(entry.file)) {
+        continue;
+      }
+      const anchor = graphAnchorFile(entry.file);
+      let relativePath: string | null = null;
+      if (wikiData) {
+        // Wiki note keys are root-relative (multi-root keys carry the root
+        // name as their first segment, as do graph ids).
+        relativePath = activeNote;
+        if (
+          wikiData.rootDirectories.length > 1 &&
+          anchor.includes('/') &&
+          relativePath.includes('/')
+        ) {
+          relativePath = relativePath.slice(relativePath.indexOf('/') + 1);
+        }
+      } else {
+        const rootIndex = rootContaining(
+          actionsRef.current.serverInfo.rootDirectories,
+          anchor,
+        );
+        const root =
+          rootIndex === -1
+            ? null
+            : actionsRef.current.serverInfo.rootDirectories[rootIndex];
+        const rootKey = (root ?? '').replace(/\\/g, '/').replace(/\/+$/, '');
+        const noteKey = activeNote.replace(/\\/g, '/');
+        if (rootKey && (noteKey + '/').startsWith(rootKey + '/')) {
+          relativePath = noteKey.slice(rootKey.length).replace(/^\//, '');
+        }
+      }
+      if (relativePath) {
+        entry.iframe?.contentWindow?.postMessage(
+          { command: 'setActiveFile', filePath: relativePath },
+          frameTargetOrigin,
+        );
+      }
+    }
+  }, [activeNote, wikiData, frameTargetOrigin]);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const mod = event.metaKey || event.ctrlKey;
@@ -717,6 +1172,8 @@ export default function App() {
           current ? closeTabInPane(current, paneId, tabId) : current,
         );
       },
+      canClosePane,
+      onClosePane: closePane,
       onOpenPicker: (paneId: string) => {
         setPickerPaneId(paneId);
         setPickerOpen(true);
@@ -738,6 +1195,7 @@ export default function App() {
       // Wiki mode only: the frame's document comes from the embedded
       // payload. In serve mode frames load /preview pages from the server.
       frameDocument: wikiData ? frameDocument : undefined,
+      wikiNoteCount: wikiData ? wikiData.files.length : undefined,
     }),
     [
       activePaneId,
@@ -747,6 +1205,8 @@ export default function App() {
       serverInfo.vscode,
       openFile,
       splitPaneAt,
+      canClosePane,
+      closePane,
       registerFrame,
       onFrameVisible,
       onFrameFocus,
@@ -769,6 +1229,8 @@ export default function App() {
         <TitleBar
           rootDirectories={serverInfo.rootDirectories}
           vscode={serverInfo.vscode}
+          shellTheme={shellTheme}
+          onToggleShellTheme={toggleShellTheme}
           onOpenPicker={openPickerForActivePane}
         />
       )}

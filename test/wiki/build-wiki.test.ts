@@ -27,6 +27,8 @@ function writeFakeBuildDirectory(root: string): void {
   const files: Array<[string, string]> = [
     [path.join(root, 'webview/preview.js'), '// preview webview'],
     [path.join(root, 'webview/preview.css'), '/* preview css */'],
+    [path.join(root, 'webview/graph-view.js'), '// graph view webview'],
+    [path.join(root, 'webview/graph-view.css'), '/* graph view css */'],
     [path.join(root, 'styles/preview.css'), '/* preview base */'],
     [path.join(root, 'styles/style-template.css'), '/* style-template */'],
     [
@@ -56,11 +58,17 @@ function writeWorkspace(root: string): void {
       '',
       '![](image.png)',
       '',
+      '![](my%20image.png)',
+      '',
+      '![](https://cdn.example.test/remote.png)',
+      '',
       '[other note](./notes/other.md)',
       '',
     ].join('\n'),
   );
   fs.writeFileSync(path.join(root, 'image.png'), 'not really a png');
+  // Referenced percent-encoded as `my%20image.png`.
+  fs.writeFileSync(path.join(root, 'my image.png'), 'also not a png');
   fs.writeFileSync(
     path.join(root, 'notes', 'other.md'),
     '# Other\n\n[index](../index.md)\n',
@@ -71,6 +79,7 @@ describe('crossnote build-wiki', () => {
   let workspace: string;
   let buildDirectory: string;
   let globalConfigDirectory: string;
+  const fetchMock = jest.fn();
 
   beforeAll(async () => {
     track();
@@ -82,6 +91,20 @@ describe('crossnote build-wiki', () => {
       mkdirSync('crossnote-build-wiki-global'),
       'crossnote',
     );
+    // Remote images are fetched and embedded; a canned image keeps the test
+    // hermetic (one URL succeeds, one fails so its reference is kept).
+    const fakePng = Buffer.from('fake png bytes');
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('404')) {
+        return { ok: false, headers: new Map(), arrayBuffer: async () => [] };
+      }
+      return {
+        ok: true,
+        headers: new Map([['content-type', 'image/png']]),
+        arrayBuffer: async () => fakePng,
+      };
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
   });
 
   test('builds a standalone wiki embedding every note', async () => {
@@ -115,6 +138,7 @@ describe('crossnote build-wiki', () => {
 
     // Local images are embedded as data URIs so the file is shareable —
     // both in the first-paint data-html and in the updateHtml payload.
+    // Percent-encoded srcs resolve against the decoded filename.
     expect(result.html).toContain('data:image/png;base64,');
     // JSON.parse resolves the \u003c escapes itself.
     const payload = JSON.parse(payloadMatch?.[1] ?? 'null');
@@ -131,12 +155,32 @@ describe('crossnote build-wiki', () => {
       expect(typeof file.update.tocHTML).toBe('string');
     }
 
+    // Notes are keyed by root-relative paths — the file must not carry the
+    // absolute paths of the machine it was exported on.
+    expect(payload.rootDirectories).toEqual([path.basename(workspace)]);
+    expect(payload.files.map((file: { path: string }) => file.path)).toEqual([
+      'index.md',
+      'notes/other.md',
+    ]);
+    expect(payloadMatch?.[1]).not.toContain(workspace.replace(/\\/g, '/'));
+    expect(payloadMatch?.[1]).not.toContain(workspace);
+
     // Shared build assets are referenced by tokens and stored once.
     expect(result.html).toContain('crossnote-wiki-asset:');
     expect(Object.keys(payload.assets).length).toBeGreaterThan(0);
     expect(JSON.stringify(payload.assets)).toContain('preview webview');
 
-    // The home note carries the image and the note link; the image is
+    // The theme slots use semantic tokens, resolved at open time from the
+    // selection stored in localStorage; every available stylesheet ships in
+    // the payload so the context-menu theme picker works.
+    expect(result.html).toContain('crossnote-wiki-theme:preview');
+    expect(result.html).toContain('crossnote-wiki-theme:codeBlock');
+    expect(Object.keys(payload.themes.preview)).toContain('github-light.css');
+    expect(Object.keys(payload.themes.codeBlock)).toContain('github.css');
+    expect(payload.themes.build.preview).toBe('github-light.css');
+    expect(payload.themes.codeBlockAuto).toBeTruthy();
+
+    // The home note carries the images and the note link; images are
     // embedded in both the page's data-html and the update payload, and
     // the link keeps a root-relative href the shell can resolve.
     const home = payload.files.find(
@@ -144,7 +188,44 @@ describe('crossnote build-wiki', () => {
     );
     expect(home.html).toContain('data:image/png;base64,');
     expect(home.update.html).toContain('data:image/png;base64,');
+    // Percent-encoded local image resolves via the decoded filename.
+    expect(
+      (home.update.html.match(/data:image\/png;base64,/g) ?? []).length,
+    ).toBeGreaterThanOrEqual(3);
+    // The remote image was fetched and embedded (TiddlyWiki-style).
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://cdn.example.test/remote.png',
+      expect.anything(),
+    );
+    expect(home.update.html).toContain(
+      `data:image/png;base64,${Buffer.from('fake png bytes').toString('base64')}`,
+    );
     expect(home.update.html).toContain('href="/notes/other.md"');
+
+    // Graph view data and backlinks are embedded (both need the note index,
+    // which only exists at build time); paths are scrubbed to note keys.
+    expect(Object.keys(payload.graph)).toEqual([path.basename(workspace)]);
+    const graphNodeIds = payload.graph[path.basename(workspace)].nodes.map(
+      (node: { id: string }) => node.id.replace(/\\/g, '/'),
+    );
+    expect(graphNodeIds).toEqual(
+      expect.arrayContaining(['index.md', 'notes/other.md']),
+    );
+    expect(payload.assets['graph-view.js']).toContain('graph view webview');
+    // The notes link to each other → each has exactly one backlink.
+    expect(payload.backlinks['index.md']).toHaveLength(1);
+    expect(payload.backlinks['notes/other.md']).toHaveLength(1);
+    expect(payload.backlinks['index.md'][0].note).toMatchObject({
+      notebookPath: { scheme: 'file', path: '/' },
+      filePath: 'notes/other.md',
+    });
+    // Reference snippet links are scrubbed to file:///<key> hrefs — no
+    // absolute path of the exporting machine anywhere.
+    const referenceHtml = payload.backlinks['index.md'][0].referenceHtmls[0];
+    expect(referenceHtml).toContain('href="file:///index.md"');
+    expect(JSON.stringify(payload.backlinks)).not.toContain(
+      workspace.replace(/\\/g, '/'),
+    );
   });
 
   test('throws when a directory has no markdown notes', async () => {

@@ -1,15 +1,21 @@
 import React from 'react';
 import { basename } from '../lib/api';
+import logo from '../assets/logo.svg';
 
 export interface TitleBarProps {
   rootDirectories: string[];
   vscode: boolean;
+  /** Current shell light/dark mode (drives the toggle's icon). */
+  shellTheme: 'light' | 'dark';
+  onToggleShellTheme: () => void;
   onOpenPicker: () => void;
 }
 
 export default function TitleBar({
   rootDirectories,
   vscode,
+  shellTheme,
+  onToggleShellTheme,
   onOpenPicker,
 }: TitleBarProps) {
   const isMac =
@@ -18,16 +24,14 @@ export default function TitleBar({
   return (
     <header className="cn-titlebar">
       <div className="cn-titlebar-left">
-        <svg viewBox="0 0 64 64" width="18" height="18" aria-hidden="true">
-          <rect x="4" y="4" width="56" height="56" rx="14" fill="#95c258" />
-          <path
-            d="M40.5 22.5a12.5 12.5 0 1 0 0 19"
-            stroke="#1e1e1e"
-            strokeWidth="6"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </svg>
+        <img
+          className="cn-titlebar-logo"
+          src={logo}
+          width="20"
+          height="20"
+          alt=""
+          aria-hidden="true"
+        />
         <span className="cn-titlebar-title">crossnote</span>
         <span className="cn-titlebar-sep" aria-hidden="true">
           /
@@ -52,34 +56,71 @@ export default function TitleBar({
           </span>
         )}
       </div>
-      <button
-        type="button"
-        className="cn-titlebar-open"
-        onClick={onOpenPicker}
-        title={`Open file (${isMac ? '⌘' : 'Ctrl+'}P)`}
-      >
-        <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
-          <circle
-            cx="7"
-            cy="7"
-            r="4.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            fill="none"
-          />
-          <path
-            d="M10.5 10.5L14 14"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
-        Open file
-        <span className="cn-kbd-group">
-          <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd>
-          <kbd>P</kbd>
-        </span>
-      </button>
+      <div className="cn-titlebar-right">
+        <button
+          type="button"
+          className="cn-iconbtn cn-titlebar-theme"
+          onClick={onToggleShellTheme}
+          title={
+            shellTheme === 'light'
+              ? 'Switch to dark theme'
+              : 'Switch to light theme'
+          }
+        >
+          {shellTheme === 'light' ? (
+            // Moon
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path
+                d="M9.5 2.5a5.5 5.5 0 1 0 4 8.5A6 6 0 0 1 9.5 2.5z"
+                fill="currentColor"
+              />
+            </svg>
+          ) : (
+            // Sun
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <circle cx="8" cy="8" r="3.2" fill="currentColor" />
+              <g stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+                <path d="M8 1.2v1.8" />
+                <path d="M8 13v1.8" />
+                <path d="M1.2 8h1.8" />
+                <path d="M13 8h1.8" />
+                <path d="M3.2 3.2l1.3 1.3" />
+                <path d="M11.5 11.5l1.3 1.3" />
+                <path d="M12.8 3.2l-1.3 1.3" />
+                <path d="M4.5 11.5l-1.3 1.3" />
+              </g>
+            </svg>
+          )}
+        </button>
+        <button
+          type="button"
+          className="cn-titlebar-open"
+          onClick={onOpenPicker}
+          title={`Open file (${isMac ? '⌘' : 'Ctrl+'}P)`}
+        >
+          <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+            <circle
+              cx="6.5"
+              cy="6.5"
+              r="4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              fill="none"
+            />
+            <path
+              d="M9.5 9.5L13.5 13.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+          Open file
+          <span className="cn-kbd-group">
+            <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd>
+            <kbd>P</kbd>
+          </span>
+        </button>
+      </div>
     </header>
   );
 }

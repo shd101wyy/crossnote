@@ -70,6 +70,10 @@ export default function Footer() {
             isMobile || isMouseOverPreview ? '' : 'invisible',
           )}
         >
+          {/* The graph view opens as a pane of the app in every standalone
+              host (serve fetches /api/graph; the wiki reads embedded data),
+              and backlinks are computed by the serve server or shipped in
+              the wiki payload. */}
           <div
             className="p-1 cursor-pointer hover:text-primary w-5 h-5"
             title={t('footer.openGraphView')}

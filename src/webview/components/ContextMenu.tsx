@@ -33,6 +33,7 @@ import './context-menu-vscode.css';
 import PreviewContainer from '../containers/preview';
 import { t } from '../lib/i18n';
 import { copyTextToClipboard } from '../lib/utility';
+import logo from '../../server-app/assets/logo.svg';
 
 export default function ContextMenu() {
   const {
@@ -259,6 +260,10 @@ export default function ContextMenu() {
         }
         case 'reset-zoom': {
           resetZoom();
+          break;
+        }
+        case 'open-crossnote': {
+          postMessage('openCrossnote');
           break;
         }
         case 'open-documentation': {
@@ -1402,6 +1407,19 @@ export default function ContextMenu() {
             </span>
           }
         >
+          <Item id="open-crossnote" onClick={handleItemClick}>
+            <span className="inline-flex flex-row items-center">
+              <img
+                src={logo}
+                width="15"
+                height="15"
+                alt=""
+                aria-hidden="true"
+                className="mr-2"
+              ></img>
+              Crossnote
+            </span>
+          </Item>
           <Item id="open-documentation" onClick={handleItemClick}>
             {t('contextMenu.documentation')}
           </Item>

@@ -18,11 +18,16 @@ export interface LayoutActions {
   rootDirectories: string[];
   vscode: boolean;
   recents: string[];
+  /** Wiki mode: number of notes in the embedded payload (drives Welcome). */
+  wikiNoteCount?: number;
   /** A tab drag is in flight; pane bodies are covered by drop guards. */
   dragActive: boolean;
   onFocusPane: (paneId: string) => void;
   onActivateTab: (paneId: string, tabId: string) => void;
   onCloseTab: (paneId: string, tabId: string) => void;
+  /** Whether this (empty) pane can be closed — false for the last pane. */
+  canClosePane: (paneId: string) => boolean;
+  onClosePane: (paneId: string) => void;
   onOpenPicker: (paneId: string) => void;
   onOpenFile: (paneId: string, file: string) => void;
   onSplitPane: (paneId: string, direction: 'horizontal' | 'vertical') => void;
@@ -88,8 +93,10 @@ function PaneView({ pane }: { pane: PaneNode }): ReactNode {
       <TabStrip
         tabs={pane.tabs}
         activeTabId={pane.activeTabId}
+        canClose={actions.canClosePane(pane.id)}
         onActivate={(tabId: string) => actions.onActivateTab(pane.id, tabId)}
         onClose={(tabId: string) => actions.onCloseTab(pane.id, tabId)}
+        onClosePane={() => actions.onClosePane(pane.id)}
         onOpenPicker={() => actions.onOpenPicker(pane.id)}
         onSplit={(direction: 'horizontal' | 'vertical') =>
           actions.onSplitPane(pane.id, direction)
@@ -115,6 +122,7 @@ function PaneView({ pane }: { pane: PaneNode }): ReactNode {
             rootDirectories={actions.rootDirectories}
             vscode={actions.vscode}
             recents={actions.recents}
+            wikiNoteCount={actions.wikiNoteCount}
             onOpenFile={(file: string) => actions.onOpenFile(pane.id, file)}
             onOpenPicker={() => actions.onOpenPicker(pane.id)}
           />

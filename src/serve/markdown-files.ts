@@ -25,9 +25,33 @@ export function encodePathSegments(relativePath: string): string {
  * Whether `candidate` is `root` itself or located underneath it. The
  * separator must be part of the check, otherwise a sibling directory that
  * merely shares a name prefix (`<root>-evil`) passes.
+ *
+ * Windows paths compare case-insensitively: hosts pass roots with whatever
+ * drive-letter case they have (`c:\…` from VS Code's `fsPath`) while the
+ * engine normalizes the other side (`C:\…` through vscode-uri), and a
+ * case-sensitive check silently dropped every workspace file out of the
+ * serve URL mapper — previews rendered dead `file:///` image links.
  */
 export function isPathWithinRoot(root: string, candidate: string): boolean {
-  return candidate === root || candidate.startsWith(root + path.sep);
+  return isPathWithinRootOn(process.platform, root, candidate);
+}
+
+/** Platform-parameterized core of {@link isPathWithinRoot}. */
+export function isPathWithinRootOn(
+  platform: NodeJS.Platform,
+  root: string,
+  candidate: string,
+): boolean {
+  if (platform === 'win32') {
+    const separator = '\\';
+    const lowercaseRoot = root.toLowerCase();
+    const lowercaseCandidate = candidate.toLowerCase();
+    return (
+      lowercaseCandidate === lowercaseRoot ||
+      lowercaseCandidate.startsWith(lowercaseRoot + separator)
+    );
+  }
+  return candidate === root || candidate.startsWith(root + '/');
 }
 
 export interface MarkdownFileInfo {

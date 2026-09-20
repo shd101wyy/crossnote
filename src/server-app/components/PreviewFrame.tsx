@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { graphAnchorFile, isGraphTab } from '../lib/api';
 
 export interface PreviewFrameProps {
   tabId: string;
@@ -98,7 +99,11 @@ export default function PreviewFrame({
   return (
     <iframe
       ref={iframeRef}
-      src={`/preview?file=${encodeURIComponent(file)}&r=${reloadKey}`}
+      src={
+        isGraphTab(file)
+          ? `/graph-view?file=${encodeURIComponent(graphAnchorFile(file))}&r=${reloadKey}`
+          : `/preview?file=${encodeURIComponent(file)}&r=${reloadKey}`
+      }
       title={file}
       className="cn-frame"
       style={{ display: visible ? 'block' : 'none' }}

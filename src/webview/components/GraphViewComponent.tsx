@@ -100,6 +100,26 @@ function getFolderFromPath(nodeId: string): string {
   return parts.length > 1 ? parts[parts.length - 2] : '';
 }
 
+/** Posix-normalize a graph node id / file path (`notes\x.md` → `notes/x.md`). */
+function normalizeGraphPath(value: string): string {
+  return value.replace(/\\/g, '/');
+}
+
+function normalizeGraphData(data: GraphViewData): GraphViewData {
+  return {
+    ...data,
+    nodes: data.nodes.map((node) => ({
+      ...node,
+      id: normalizeGraphPath(node.id),
+    })),
+    links: data.links.map((link) => ({
+      ...link,
+      source: normalizeGraphPath(String(link.source)),
+      target: normalizeGraphPath(String(link.target)),
+    })),
+  };
+}
+
 export default function GraphViewComponent() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -127,13 +147,22 @@ export default function GraphViewComponent() {
     activeFilePathRef.current = activeFilePath;
   }, [activeFilePath]);
 
-  // Detect VS Code theme from body class (set by VS Code itself)
-  const isDarkTheme = useMemo(() => {
-    return (
-      document.body.classList.contains('vscode-dark') ||
-      document.body.classList.contains('vscode-high-contrast')
-    );
-  }, []);
+  // Theme: VS Code sets vscode-* body classes; the serve/wiki shell pushes
+  // `__serverAppShellTheme` (its chrome mode, derived from the preview
+  // theme or the title-bar toggle); before either arrives, follow the OS
+  // color scheme.
+  const isVscodeDark =
+    document.body.classList.contains('vscode-dark') ||
+    document.body.classList.contains('vscode-high-contrast');
+  const [hostTheme, setHostTheme] = useState<'light' | 'dark' | null>(
+    isVscodeDark ? 'dark' : null,
+  );
+  const isDarkTheme = isVscodeDark
+    ? true
+    : (hostTheme ??
+        (window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light')) === 'dark';
 
   const themeColors = useMemo(
     () => buildThemeColors(isDarkTheme),
@@ -685,6 +714,7 @@ export default function GraphViewComponent() {
         filePath?: string;
         viewMode?: ViewMode;
         colorByFolder?: boolean;
+        theme?: 'light' | 'dark';
       };
       if (message.command === 'graphData') {
         if (message.data) {
@@ -697,14 +727,24 @@ export default function GraphViewComponent() {
                 setColorByFolder(message.colorByFolder);
             }
             if (message.activeFilePath != null)
-              setActiveFilePath(message.activeFilePath);
-            return message.data ?? prev;
+              setActiveFilePath(normalizeGraphPath(message.activeFilePath));
+            // Node ids are notebook-relative paths that may carry native
+            // separators (`notes\x.md` on Windows) while active-file paths
+            // arrive posix-style — normalize so the two always match.
+            return message.data ? normalizeGraphData(message.data) : prev;
           });
         } else if (message.activeFilePath != null) {
-          setActiveFilePath(message.activeFilePath);
+          setActiveFilePath(normalizeGraphPath(message.activeFilePath));
         }
       } else if (message.command === 'setActiveFile') {
-        if (message.filePath != null) setActiveFilePath(message.filePath);
+        if (message.filePath != null)
+          setActiveFilePath(normalizeGraphPath(message.filePath));
+      } else if (message.command === '__serverAppShellTheme') {
+        // The serve/wiki shell tells its frames which light/dark mode the
+        // chrome runs in (derived from the preview theme or the title-bar
+        // toggle) — outside VS Code there is no vscode-dark body class to
+        // sniff.
+        if (message.theme != null) setHostTheme(message.theme);
       }
     };
     window.addEventListener('message', handler);
@@ -722,6 +762,7 @@ export default function GraphViewComponent() {
   return (
     <div
       data-theme={daisyTheme}
+      data-active-file={activeFilePath || undefined}
       className="flex flex-col h-screen w-screen bg-base-100 text-base-content"
     >
       {/* Toolbar */}

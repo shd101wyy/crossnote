@@ -1892,12 +1892,19 @@ const PreviewContainer = createContainer(() => {
       initPresentationEvent();
     }
 
-    // make it possible for interactive vega to load local data files
-    const base = document.createElement('base');
-    if (sourceUri.current) {
-      base.href = sourceUri.current;
+    // Make it possible for interactive vega to load local data files. Only
+    // for the VS Code webview, where `sourceUri` is a file the base URL can
+    // meaningfully resolve against. In the serve server and the standalone
+    // wiki a <base> pointing at a local path hijacks every relative and
+    // root-relative URL (preview images became file:///C:/files/… and
+    // broke), so it is skipped there.
+    if (!config.isServerApp && !config.isWiki) {
+      const base = document.createElement('base');
+      if (sourceUri.current) {
+        base.href = sourceUri.current;
+      }
+      document.head.appendChild(base);
     }
-    document.head.appendChild(base);
   }, [config, initPresentationEvent, isPresentationMode, postMessage]);
 
   useEffect(() => {

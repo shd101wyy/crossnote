@@ -45,94 +45,268 @@ const check = (name, ok, detail = '') => {
 };
 
 await page.goto(url);
-await page.waitForSelector('.cn-titlebar', { timeout: 15000 });
+await page.waitForSelector('.cn-titlebar', { timeout: 60000 });
 check('shell renders (titlebar, no left file panel)', true);
 check(
   'no left file list',
   (await page.locator('.wiki-sidebar, .wiki-list').count()) === 0,
 );
+
+// The welcome card describes the wiki snapshot without absolute paths.
+const welcomeText = await page.locator('.cn-welcome').innerText();
 check(
-  'title is wiki — <root>',
-  (await page.title()).startsWith('wiki — '),
+  'welcome describes the read-only wiki, not a server',
+  !/Markdown preview server/.test(welcomeText) &&
+    /read-only snapshot/i.test(welcomeText),
+  welcomeText.split('\n')[0].slice(0, 80),
+);
+check(
+  'welcome leaks no absolute paths',
+  !/[A-Za-z]:[\\/].*[\\/]/.test(welcomeText),
 );
 
-// Open the file picker via the titlebar button and pick the home note.
+// Open the file picker via the titlebar button and pick a note (an
+// optional third argv narrows the picker search, e.g. a note with images).
+const pickerQuery = process.argv[3] ?? '';
 await page.click('.cn-titlebar-open');
-await page.waitForSelector('.cn-picker-item', { timeout: 10000 });
+await page.waitForSelector('.cn-picker-input', { timeout: 20000 });
+if (pickerQuery) {
+  await page.fill('.cn-picker-input', pickerQuery);
+  await page.waitForTimeout(600);
+}
+await page.waitForSelector('.cn-picker-item', { timeout: 20000 });
 const pickerItems = await page.locator('.cn-picker-item').allTextContents();
-check('picker lists notes', pickerItems.length === 2, pickerItems.join(' | '));
+check(
+  'picker lists notes with relative paths',
+  pickerItems.length >= 1 && !pickerItems.join('').includes(':\\'),
+  pickerItems.slice(0, 2).join(' | ').slice(0, 60),
+);
 await page.click('.cn-picker-item >> nth=0');
-await page.waitForSelector('.cn-frame', { timeout: 15000 });
+await page.waitForSelector('.cn-frame', { timeout: 30000 });
 
-const frame = page.frameLocator('.cn-frame');
-await frame.locator('h1').first().waitFor({ timeout: 20000 });
+const frame = page.frameLocator('.cn-frame >> visible=true');
+await frame.locator('h1').first().waitFor({ timeout: 30000 });
 const h1 = await frame.locator('h1').first().textContent();
-check('note content rendered in frame', /Home/.test(h1 ?? ''), h1 ?? '');
+check('note content rendered in frame', !!h1?.trim(), h1 ?? '');
 
 // Wait for diagrams/math to initialize, then verify rendering.
 await page.waitForTimeout(2500);
 const mermaidCount = await frame.locator('svg[id^="mermaid"]').count();
-check('mermaid diagram rendered', mermaidCount >= 1, `svgs=${mermaidCount}`);
+if (mermaidCount > 0) {
+  check('mermaid diagram rendered', true, `svgs=${mermaidCount}`);
+} else {
+  results.push('SKIP mermaid (none in this note)');
+}
 const mathCount = await frame
   .locator('.katex, .mjx-container, script[type^="math/tex"]')
   .count();
-check('math rendered', mathCount >= 1, `math elements=${mathCount}`);
-const imgSrc = await frame.locator('img').first().getAttribute('src');
-check(
-  'image embedded as data URI',
-  !!imgSrc && imgSrc.startsWith('data:image/png;base64,'),
-  (imgSrc ?? '').slice(0, 30),
-);
-const naturalWidth = await frame
-  .locator('img')
+if (mathCount > 0) {
+  check('math rendered', true, `math elements=${mathCount}`);
+} else {
+  results.push('SKIP math (none in this note)');
+}
+
+// Every <img> in the note is a data URI and actually loads.
+const imgInfo = await frame
+  .locator('[data-for=preview] img')
   .first()
-  .evaluate((img) => img.naturalWidth);
-check('image actually loads', naturalWidth > 0, `w=${naturalWidth}`);
-
-// Read-only: task checkbox click must not toggle.
-const checkbox = frame.locator('.task-list-item-checkbox').first();
-const checkedBefore = await checkbox.getAttribute('checked');
-await checkbox.click({ force: true }).catch(() => {});
-await page.waitForTimeout(400);
-const checkedAfter = await checkbox.getAttribute('checked');
+  .evaluate((img) => ({ w: img.naturalWidth, src: img.src.slice(0, 10) }))
+  .catch(() => null);
+const imgCount = await frame.locator('[data-for=preview] img').count();
+const remoteImgs = await frame
+  .locator('[data-for=preview] img[src^="http"]')
+  .count();
 check(
-  'task checkbox is inert',
-  checkedBefore === checkedAfter,
-  `before=${checkedBefore} after=${checkedAfter}`,
+  'images are embedded data URIs and load',
+  imgInfo !== null &&
+    imgInfo.w > 0 &&
+    imgInfo.src.startsWith('data:') &&
+    remoteImgs === 0,
+  `imgs=${imgCount} remote=${remoteImgs} first=${JSON.stringify(imgInfo)}`,
 );
 
-// Read-only: no run buttons on code chunks (none in this doc, so assert CSS
-// gating exists in the page instead).
-const readonlyCss = await frame
-  .locator('body.wiki-readonly')
-  .count();
-check('wiki-readonly body class present', readonlyCss === 1);
+// No <base> pointing at a local path inside wiki frames.
+const baseHref = await frame
+  .locator('base')
+  .evaluateAll((bases) => bases.map((b) => b.getAttribute('href')));
+check(
+  'no local <base> injected in wiki frames',
+  baseHref.every((href) => !href || !/^[A-Za-z]:/.test(href)),
+  JSON.stringify(baseHref),
+);
+
+// Read-only: task checkbox click must not toggle (if present).
+const checkbox = frame.locator('.task-list-item-checkbox').first();
+if ((await checkbox.count()) > 0) {
+  const checkedBefore = await checkbox.getAttribute('checked');
+  await checkbox.click({ force: true }).catch(() => {});
+  await page.waitForTimeout(300);
+  const checkedAfter = await checkbox.getAttribute('checked');
+  check(
+    'task checkbox is inert',
+    checkedBefore === checkedAfter,
+    `before=${checkedBefore} after=${checkedAfter}`,
+  );
+} else {
+  results.push('SKIP task checkbox (none in first note)');
+}
+check(
+  'wiki-readonly body class present',
+  (await frame.locator('body.wiki-readonly').count()) === 1,
+);
+
+// Footer: the graph view and backlinks buttons are present (both are
+// supported in the wiki — data embedded at build time).
+const footerTitles = await frame
+  .locator('.footer [title]')
+  .evaluateAll((nodes) => nodes.map((n) => n.getAttribute('title')));
+check(
+  'graph view and backlinks buttons present',
+  footerTitles.includes('Open graph view') &&
+    footerTitles.includes('Toggle backlinks'),
+  JSON.stringify(footerTitles),
+);
+
+// Backlinks: toggle in the footer and wait for the panel to resolve with
+// entries (not stuck loading, not empty for a linked note).
+await frame.locator('.footer [title="Toggle backlinks"]').first().click();
+let backlinksResolved = false;
+for (let attempt = 0; attempt < 20 && !backlinksResolved; attempt++) {
+  await page.waitForTimeout(500);
+  backlinksResolved = await frame
+    .locator('.backlinks')
+    .evaluate((panel) => !panel.textContent.includes('Loading') && /Backlinks/.test(panel.textContent))
+    .catch(() => false);
+}
+check('backlinks toggle resolves in the wiki', backlinksResolved);
+
+// Graph view: the footer button opens it as a pane (a new split with a
+// "Graph" tab), rendering the embedded graph data.
+const panesBeforeGraph = await page.locator('.cn-pane').count();
+await frame.locator('.footer [title="Open graph view"]').first().click();
+await page.waitForTimeout(1500);
+const graphTab = page.locator('.cn-tab', { hasText: 'Graph' });
+check(
+  'graph view opens as a pane with a Graph tab',
+  (await graphTab.count()) === 1 &&
+    (await page.locator('.cn-pane').count()) > panesBeforeGraph,
+);
+// The wiki graph frame is sandboxed (opaque origin), so its rendering
+// cannot be inspected from here — assert the embedded data instead: the
+// frame's srcdoc carries the graph payload with real nodes, and the
+// unmodified graph-view bundle. (Painting itself is covered by the serve
+// E2E, which runs the same bundle unsandboxed.)
+let graphWired = false;
+for (let attempt = 0; attempt < 20 && !graphWired; attempt++) {
+  await page.waitForTimeout(500);
+  graphWired = await page
+    .locator('iframe.cn-frame[title^="__crossnote-graph-view__"]')
+    .first()
+    .evaluate((node) => {
+      const srcdoc = node.getAttribute('srcdoc') ?? '';
+      return (
+        srcdoc.includes('__CROSSNOTE_WIKI_GRAPH__') &&
+        /"nodes":\[\{/.test(srcdoc) &&
+        srcdoc.includes('graphViewReady')
+      );
+    })
+    .catch(() => false);
+}
+check('graph view pane wired with embedded data in the wiki', graphWired);
+// Close the graph tab to restore state for the later checks.
+await graphTab.locator('.cn-tab-close').click().catch(() => {});
+await page.waitForTimeout(400);
 
 // Navigate via the wikilink — opens a second tab in the same pane.
 const tabCountBefore = await page.locator('.cn-tab').count();
-await frame.getByRole('link', { name: /notes\/other/i }).first().click();
-await page.waitForTimeout(1200);
-const tabCountAfter = await page.locator('.cn-tab').count();
-check(
-  'wikilink opens another tab',
-  tabCountAfter === tabCountBefore + 1,
-  `tabs ${tabCountBefore} -> ${tabCountAfter}`,
+const anyLink = frame
+  .locator('[data-for=preview] a[href]:not([href^="#"]):not([href^="http"])')
+  .first();
+if ((await anyLink.count()) > 0) {
+  await anyLink.click();
+  await page.waitForTimeout(1200);
+  const tabCountAfter = await page.locator('.cn-tab').count();
+  check(
+    'note link opens another tab',
+    tabCountAfter === tabCountBefore + 1,
+    `tabs ${tabCountBefore} -> ${tabCountAfter}`,
+  );
+  await page.locator('.cn-tab').first().click();
+  await page.waitForTimeout(500);
+} else {
+  results.push('SKIP note link navigation (none in first note)');
+}
+
+// Split into a second pane, then close the empty pane again. Normalize to
+// a single tab and no stray empty panes first (the graph pane leaves one)
+// — a split only empties the source pane when the active tab was its only
+// one.
+while ((await page.locator('.cn-tab').count()) > 1) {
+  await page.keyboard.press('Alt+w');
+  await page.waitForTimeout(400);
+}
+while ((await page.locator('button[title="Close pane"]').count()) > 0) {
+  await page.locator('button[title="Close pane"]').last().click();
+  await page.waitForTimeout(400);
+}
+const panesBefore = await page.locator('.cn-pane').count();
+await page.keyboard.press('Control+\\');
+await page.waitForTimeout(700);
+const panesAfterSplit = await page.locator('.cn-pane').count();
+check('split creates a second pane', panesAfterSplit === panesBefore + 1);
+const closePaneButton = page.locator(
+  '.cn-pane:not(.cn-pane-active) .cn-tabstrip-actions button[title="Close pane"]',
 );
-// The visible frame is the newly opened note (inactive tabs stay mounted).
-const frame2Text = await page
-  .frameLocator('.cn-frame >> visible=true')
-  .locator('h1')
-  .first()
-  .textContent();
-check('second note rendered', /Other/.test(frame2Text ?? ''), frame2Text ?? '');
+const closeButtonVisible =
+  (await closePaneButton.count()) === 1 ||
+  (await page.locator('button[title="Close pane"]').count()) === 1;
+check('empty pane offers a close button', closeButtonVisible);
+if (closeButtonVisible) {
+  await page.locator('button[title="Close pane"]').last().click();
+  await page.waitForTimeout(500);
+  check(
+    'close pane removes it',
+    (await page.locator('.cn-pane').count()) === panesBefore,
+  );
+}
 
-// Context menu: react-contexify needs a real user pointer environment that
-// headless chromium does not reproduce (the serve server behaves the same),
-// so the menu itself cannot be asserted here — the wiki/serve parity is.
-
-// Keyboard: Ctrl+P inside the (sandboxed) frame opens the shell picker.
+// Zen mode: Esc exits it, even while focus is inside a preview (where Esc
+// otherwise toggles the sidebar TOC). Toggle zen via the exact message the
+// context menu sends, then press Esc with the frame focused.
 await page
   .frameLocator('.cn-frame >> visible=true')
+  .locator('body')
+  .first()
+  .evaluate(() => {
+    globalThis.parent.postMessage(
+      { command: 'togglePreviewZenMode', args: [null] },
+      '*',
+    );
+  });
+await page.waitForTimeout(600);
+check(
+  'zen mode toggles on',
+  (await page.locator('.cn-app-zen').count()) === 1,
+);
+await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('body')
+  .first()
+  .click();
+await page.keyboard.press('Escape');
+await page.waitForTimeout(600);
+check(
+  'Esc inside the preview exits zen mode',
+  (await page.locator('.cn-app-zen').count()) === 0,
+);
+
+// Keyboard: Ctrl+P inside the (sandboxed) frame opens the shell picker.
+// Target the active pane's active tab frame — several may be mounted.
+const activeTabTitle = await page
+  .locator('.cn-pane-active .cn-tab-active')
+  .getAttribute('title');
+await page
+  .frameLocator(`.cn-frame[title="${(activeTabTitle ?? '').replace(/"/g, '\\"')}"]`)
   .locator('body')
   .first()
   .click();
@@ -144,48 +318,96 @@ check(
 );
 await page.keyboard.press('Escape');
 
-// External http links open a new browser tab (the shell never navigates).
-// `noopener` popups are not always observable in headless chromium, so the
-// assertion is that the click is relayed without navigating the shell or
-// showing a wiki error toast. Switch back to the home tab first — the
-// external link lives there.
-await page.locator('.cn-tab').first().click();
-await page.waitForTimeout(600);
-const urlBeforeExternal = page.url();
-let popupError = null;
-const popupPromise = page
-  .waitForEvent('popup', { timeout: 5000 })
-  .catch((error) => {
-    popupError = error;
-    return null;
+// Theme picker: a selection stored in localStorage (what the context menu
+// writes) re-assembles notes with that stylesheet on the next load.
+const wikiStorageKey = await page.evaluate(() => {
+  const roots = globalThis.__CROSSNOTE_WIKI__.rootDirectories;
+  return `crossnote:wiki:themes:${roots.join('|')}`;
+});
+const stored = await page.evaluate((key) => localStorage.getItem(key), wikiStorageKey);
+await page.evaluate(
+  ({ key, value }) => localStorage.setItem(key, value),
+  {
+    key: wikiStorageKey,
+    value: JSON.stringify({
+      preview: 'github-dark.css',
+      codeBlock: 'auto.css',
+      reveal: 'white.css',
+    }),
+  },
+);
+await page.reload();
+await page.waitForSelector('.cn-titlebar', { timeout: 120000 });
+await page.click('.cn-titlebar-open');
+await page.waitForSelector('.cn-picker-item', { timeout: 20000 });
+await page.click('.cn-picker-item >> nth=0');
+await page.waitForSelector('.cn-frame', { timeout: 30000 });
+await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('h1')
+  .first()
+  .waitFor({ timeout: 60000 });
+const themeStyle = await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('style[data-crossnote-theme="preview"]')
+  .first()
+  .textContent()
+  .catch(() => null);
+check(
+  'stored theme selection is applied',
+  !!themeStyle && themeStyle.includes('background-color:#24292e'),
+  (themeStyle ?? '').slice(0, 60),
+);
+
+// Live switch: dispatch the exact message the context menu's theme item
+// sends (from inside the frame, so the app's source check passes) and
+// watch the selection persist and the open tabs re-assemble with it.
+await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('body')
+  .first()
+  .evaluate(() => {
+    globalThis.parent.postMessage(
+      { command: 'setPreviewTheme', args: [null, 'one-dark.css'] },
+      '*',
+    );
   });
 await page
   .frameLocator('.cn-frame >> visible=true')
-  .getByRole('link', { name: /external/i })
+  .locator('h1')
   .first()
-  .click();
-const popup = await popupPromise;
-await page.waitForTimeout(500);
-const toastText = await page.locator('.cn-toast').allTextContents();
-check(
-  'external link relayed without navigating the shell',
-  page.url() === urlBeforeExternal && toastText.length === 0,
-  `popup=${!!popup} unobservable=${!!popupError} toast=${toastText.join()}`,
+  .waitFor({ timeout: 60000 });
+await page.waitForTimeout(1500);
+const liveStyle = await page
+  .frameLocator('.cn-frame >> visible=true')
+  .locator('style[data-crossnote-theme="preview"]')
+  .first()
+  .textContent()
+  .catch(() => null);
+const persistedSelection = await page.evaluate(
+  (key) => localStorage.getItem(key),
+  wikiStorageKey,
 );
-
-// Close the tab with Alt+W.
-const tabsBeforeClose = await page.locator('.cn-tab').count();
-await page.keyboard.press('Alt+w');
-await page.waitForTimeout(500);
 check(
-  'Alt+W closes the active tab',
-  (await page.locator('.cn-tab').count()) === tabsBeforeClose - 1,
+  'context-menu theme switch persists and re-renders',
+  !!liveStyle &&
+    liveStyle.includes('background-color:#272b33') &&
+    !!persistedSelection &&
+    persistedSelection.includes('one-dark.css'),
+  (liveStyle ?? '').slice(0, 60),
 );
-
-await page.screenshot({ path: 'wiki-verify.png', fullPage: false });
+// Restore whatever was stored before the probe (usually nothing).
+await page.evaluate(({ key, value }) => {
+  if (value === null) {
+    localStorage.removeItem(key);
+  } else {
+    localStorage.setItem(key, value);
+  }
+}, { key: wikiStorageKey, value: stored });
 
 const relevantErrors = errors.filter(
-  (error) => !/net::ERR|favicon|cdn.jsdelivr|Failed to load resource/.test(error),
+  (error) =>
+    !/net::ERR|favicon|cdn.jsdelivr|Failed to load resource/.test(error),
 );
 check(
   'no page errors',

@@ -3,10 +3,13 @@
 @tailwind utilities;
 
 /*
- * VS Code–like dark chrome for the crossnote server app.
- * Colors are tuned to the crossnote green accent (#95c258).
+ * Chrome for the crossnote server app, in a VS Code–like dark palette by
+ * default; `html.cn-light` swaps the variables for a light palette (set by
+ * the app from the preview theme's tone or the top-bar toggle). Colors are
+ * tuned to the crossnote green accent (#95c258).
  */
 :root {
+  color-scheme: dark;
   --cn-bg: #1e1e1e;
   --cn-titlebar-bg: #323233;
   --cn-tabstrip-bg: #2d2d2d;
@@ -19,6 +22,36 @@
   --cn-accent-dim: #6fa129;
   --cn-hover: #37373d;
   --cn-selected: #04395e;
+  --cn-kbd-bg: #2d2d2d;
+  --cn-heading: #e8e8e8;
+  --cn-picker-bg: #252526;
+  --cn-picker-input-bg: #1e1e1e;
+  --cn-picker-text: #e8e8e8;
+  --cn-frame-bg: var(--cn-bg);
+  --cn-zen-exit-bg: rgba(30, 30, 30, 0.85);
+}
+
+html.cn-light {
+  color-scheme: light;
+  --cn-bg: #ffffff;
+  --cn-titlebar-bg: #f2f2f2;
+  --cn-tabstrip-bg: #ececec;
+  --cn-tab-inactive-bg: #ececec;
+  --cn-tab-active-bg: #ffffff;
+  --cn-border: #d6d6d6;
+  --cn-text: #333333;
+  --cn-text-dim: #757575;
+  --cn-accent: #5a8f2c;
+  --cn-accent-dim: #7ab648;
+  --cn-hover: #e4e4e4;
+  --cn-selected: #dcefc8;
+  --cn-kbd-bg: #fafafa;
+  --cn-heading: #2e2e2e;
+  --cn-picker-bg: #ffffff;
+  --cn-picker-input-bg: #ffffff;
+  --cn-picker-text: #333333;
+  --cn-frame-bg: #ffffff;
+  --cn-zen-exit-bg: rgba(255, 255, 255, 0.92);
 }
 
 html,
@@ -80,6 +113,11 @@ button {
   min-width: 0;
 }
 
+.cn-titlebar-logo {
+  flex: none;
+  display: block;
+}
+
 .cn-titlebar-title {
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -138,7 +176,7 @@ button {
   border-radius: 4px;
   border: 1px solid var(--cn-border);
   border-bottom-width: 2px;
-  background: #2d2d2d;
+  background: var(--cn-kbd-bg);
   color: var(--cn-text-dim);
 }
 
@@ -266,8 +304,10 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
+  margin-right: -2px;
+  flex: none;
   border: none;
   background: transparent;
   border-radius: 4px;
@@ -283,7 +323,7 @@ button {
 
 .cn-tab-close:hover {
   background: var(--cn-hover);
-  color: #fff;
+  color: var(--cn-text);
 }
 
 .cn-tabstrip-actions {
@@ -325,7 +365,7 @@ button {
   width: 100%;
   height: 100%;
   border: none;
-  background: #fff;
+  background: var(--cn-frame-bg);
 }
 
 /* ---- welcome ---- */
@@ -354,7 +394,7 @@ button {
   font-size: 28px;
   font-weight: 300;
   letter-spacing: 0.04em;
-  color: #e8e8e8;
+  color: var(--cn-heading);
 }
 
 .cn-welcome-sub {
@@ -462,7 +502,7 @@ button {
 
 .cn-picker {
   width: min(620px, calc(100vw - 48px));
-  background: #252526;
+  background: var(--cn-picker-bg);
   border: 1px solid var(--cn-border);
   border-radius: 8px;
   box-shadow:
@@ -478,8 +518,8 @@ button {
   padding: 12px 14px;
   border: none;
   border-bottom: 1px solid var(--cn-border);
-  background: #1e1e1e;
-  color: #e8e8e8;
+  background: var(--cn-picker-input-bg);
+  color: var(--cn-picker-text);
   font-size: 14px;
   outline: none;
 }
@@ -514,7 +554,7 @@ button {
 }
 
 .cn-picker-base {
-  color: #e8e8e8;
+  color: var(--cn-picker-text);
   white-space: nowrap;
 }
 
@@ -550,7 +590,7 @@ button {
   padding: 4px 10px;
   border: 1px solid var(--cn-border);
   border-radius: 6px;
-  background: rgba(30, 30, 30, 0.85);
+  background: var(--cn-zen-exit-bg);
   color: var(--cn-text-dim);
   cursor: pointer;
   opacity: 0.25;
@@ -648,4 +688,11 @@ button {
 .cn-toast-error {
   border-color: #d1242f;
   color: #d1242f;
+}
+
+/* ---- title bar right group & theme toggle ---- */
+.cn-titlebar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }

@@ -4,6 +4,7 @@ import {
   filePathToFilesUrl,
   resolveHref,
   rootContaining,
+  sameServeFile,
 } from '../../src/server-app/lib/api';
 
 describe('server-app path helpers', () => {
@@ -72,5 +73,51 @@ describe('server-app path helpers', () => {
         filePathToFilesUrl(['C:\\a\\notes'], 'C:/a/notes/img/logo.png'),
       ).toBe('/files/img/logo.png');
     });
+  });
+});
+
+describe('sameServeFile (path spelling tolerance)', () => {
+  const bs = String.fromCharCode(92); // backslash
+  test('matches native and posix spellings of a windows path', () => {
+    expect(
+      sameServeFile(
+        'c:/Users/shd10/Workspace/Yo/docs/en-US/ASYNC_AWAIT.md',
+        'c:' +
+          bs +
+          'Users' +
+          bs +
+          'shd10' +
+          bs +
+          'Workspace' +
+          bs +
+          'Yo' +
+          bs +
+          'docs' +
+          bs +
+          'en-US' +
+          bs +
+          'ASYNC_AWAIT.md',
+      ),
+    ).toBe(true);
+    expect(
+      sameServeFile(
+        'C:' + bs + 'Users' + bs + 'yo' + bs + 'README.md',
+        'c:/users/yo/README.md',
+      ),
+    ).toBe(true);
+    expect(
+      sameServeFile(
+        'c:/users/yo/a.md',
+        'c:' + bs + 'users' + bs + 'yo' + bs + 'b.md',
+      ),
+    ).toBe(false);
+  });
+
+  test('posix paths stay case-sensitive', () => {
+    expect(sameServeFile('/home/yo/a.md', '/home/yo/a.md')).toBe(true);
+    expect(sameServeFile('/home/yo/a.md', '/home/yo/A.md')).toBe(false);
+    expect(
+      sameServeFile('/home/yo/a.md', '/home' + bs + 'yo' + bs + 'a.md'),
+    ).toBe(true);
   });
 });
