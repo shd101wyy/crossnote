@@ -22,6 +22,7 @@ import {
   isGraphTab,
   isMarkdownPath,
   resolveHref,
+  rootContaining,
   sameServeFile,
   sendCommand,
 } from './lib/api';
@@ -531,9 +532,15 @@ export default function App() {
               : null),
           jsAndCssFiles: existing?.jsAndCssFiles ?? null,
         });
-        // Tell fresh frames whether zen mode is on, so Esc exits it.
+        // Tell fresh frames whether zen mode is on, so Esc exits it, and
+        // which light/dark mode the chrome runs in (the graph view colors
+        // itself from it).
         iframe.contentWindow?.postMessage(
           { command: '__serverAppZenMode', enabled: zenModeRef.current },
+          frameTargetOrigin,
+        );
+        iframe.contentWindow?.postMessage(
+          { command: '__serverAppShellTheme', theme: shellTheme },
           frameTargetOrigin,
         );
       } else {
@@ -546,7 +553,7 @@ export default function App() {
         }
       }
     },
-    [wikiIndex, frameTargetOrigin],
+    [wikiIndex, frameTargetOrigin, shellTheme],
   );
 
   const onFrameVisible = useCallback(
@@ -1042,6 +1049,77 @@ export default function App() {
       );
     }
   }, [zenMode, frameTargetOrigin]);
+
+  // Keep the frames (the graph view colors itself from it) in sync with the
+  // shell's light/dark mode.
+  useEffect(() => {
+    for (const entry of framesRef.current.values()) {
+      entry.iframe?.contentWindow?.postMessage(
+        { command: '__serverAppShellTheme', theme: shellTheme },
+        frameTargetOrigin,
+      );
+    }
+  }, [shellTheme, frameTargetOrigin]);
+
+  // The graph view highlights the focused note's node, like VS Code's
+  // sendActiveFile on editor changes. The last non-graph tab stays active
+  // while the graph tab itself is focused.
+  const lastActiveNoteRef = useRef<string | null>(null);
+  const activeNote = useMemo(() => {
+    const pane = layout ? findPane(layout, activePaneId) : null;
+    const tab = pane?.tabs.find(
+      (candidate) => candidate.id === pane.activeTabId,
+    );
+    const file = tab && !isGraphTab(tab.file) ? tab.file : null;
+    if (file) {
+      lastActiveNoteRef.current = file;
+    }
+    return lastActiveNoteRef.current;
+  }, [layout, activePaneId]);
+  useEffect(() => {
+    if (!activeNote) {
+      return;
+    }
+    for (const entry of framesRef.current.values()) {
+      if (!isGraphTab(entry.file)) {
+        continue;
+      }
+      const anchor = graphAnchorFile(entry.file);
+      let relativePath: string | null = null;
+      if (wikiData) {
+        // Wiki note keys are root-relative (multi-root keys carry the root
+        // name as their first segment, as do graph ids).
+        relativePath = activeNote;
+        if (
+          wikiData.rootDirectories.length > 1 &&
+          anchor.includes('/') &&
+          relativePath.includes('/')
+        ) {
+          relativePath = relativePath.slice(relativePath.indexOf('/') + 1);
+        }
+      } else {
+        const rootIndex = rootContaining(
+          actionsRef.current.serverInfo.rootDirectories,
+          anchor,
+        );
+        const root =
+          rootIndex === -1
+            ? null
+            : actionsRef.current.serverInfo.rootDirectories[rootIndex];
+        const rootKey = (root ?? '').replace(/\\/g, '/').replace(/\/+$/, '');
+        const noteKey = activeNote.replace(/\\/g, '/');
+        if (rootKey && (noteKey + '/').startsWith(rootKey + '/')) {
+          relativePath = noteKey.slice(rootKey.length).replace(/^\//, '');
+        }
+      }
+      if (relativePath) {
+        entry.iframe?.contentWindow?.postMessage(
+          { command: 'setActiveFile', filePath: relativePath },
+          frameTargetOrigin,
+        );
+      }
+    }
+  }, [activeNote, wikiData, frameTargetOrigin]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
