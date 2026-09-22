@@ -33,14 +33,19 @@ const UNSAFE_IMAGE_FILENAME_CHARS = /[\p{C}\s"'`<>:|?*\\$&;(){}[\]!^%~#]/u;
  * build an output image path.
  *
  * The value comes from untrusted markdown (e.g. ```` ```mermaid {filename=…} ````)
- * and is later joined into an output path that is handed to image converters
- * which shell out — ImageMagick via `imagemagick-cli` (uses
- * `child_process.exec`) and `@mermaid-js/mermaid-cli` (spawned with
- * `shell: true`). Shell metacharacters in the name would therefore allow
- * command injection on export. We reject names containing shell metacharacters,
- * whitespace, control characters, or `..` traversal; anything unsafe returns
- * `''` so the caller falls back to its auto-generated name. Unicode letters
- * (CJK, accented Latin, …) are allowed — they are not shell-special.
+ * and is later joined into an output path that is handed to image converters.
+ * The mermaid and wavedrom CLIs no longer run through a shell (see
+ * `npxCommand` below), but ImageMagick still does — `imagemagick-cli` builds a
+ * command string and hands it to `child_process.exec` — so a shell
+ * metacharacter in the name would allow command injection on export. We reject
+ * names containing shell metacharacters, whitespace, control characters, or
+ * `..` traversal; anything unsafe returns `''` so the caller falls back to its
+ * auto-generated name. Unicode letters (CJK, accented Latin, …) are allowed —
+ * they are not shell-special.
+ *
+ * This stays in place as defense in depth: it is a blocklist on one input, and
+ * only the *basename* passes through it — the directory part of the output
+ * path (`imageFolderPath`, the project directory) is never checked here.
  *
  * A leading `/` is permitted and kept: consistent with MPE's `imageFolderPath`
  * convention, it means "relative to the project root" (resolved by the caller),
@@ -58,6 +63,24 @@ export function sanitizeImageFilename(name: string | undefined): string {
     return '';
   }
   return name;
+}
+
+/**
+ * The `npx` executable to spawn, for the platform we are running on.
+ *
+ * The diagram CLIs (`@mermaid-js/mermaid-cli`, `wavedrom-cli`) used to be
+ * spawned with `shell: true` purely so that Windows would resolve `npx` to
+ * `npx.cmd` — npm ships `npx` (a shebang script, for git-bash) alongside
+ * `npx.cmd` (the native launcher), and Windows' CreateProcess only finds the
+ * latter. Naming the `.cmd` explicitly buys the same resolution without a
+ * shell, so the surrounding paths are passed as literal arguments.
+ *
+ * Note that `shell: true` also joins argv with plain spaces and performs no
+ * quoting, so it broke any output path containing a space long before it
+ * became an injection concern.
+ */
+export function npxCommand(): string {
+  return process.platform === 'win32' ? 'npx.cmd' : 'npx';
 }
 
 /**

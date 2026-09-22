@@ -5,7 +5,7 @@
 
 import { execFileSync } from 'child_process';
 import * as fs from 'fs';
-import { tempOpen } from '../utility';
+import { npxCommand, tempOpen } from '../utility';
 
 export async function mermaidToPNG(
   mermaidCode: string,
@@ -22,8 +22,14 @@ export async function mermaidToPNG(
     themeName = 'null';
   }
   try {
+    // SECURITY: do NOT use `shell: true` (CVE-2022-45026). `pngFilePath` is
+    // built from the diagram's `filename` attribute — untrusted markdown — and
+    // from the notebook's `imageFolderPath` and project directory, none of
+    // which a shell would treat as inert. Spawning without a shell passes
+    // every path as a single literal argument. Windows resolves `npx` through
+    // `npxCommand()` instead of relying on the shell for it.
     execFileSync(
-      'npx',
+      npxCommand(),
       [
         '-p',
         '@mermaid-js/mermaid-cli',
@@ -36,7 +42,6 @@ export async function mermaidToPNG(
         pngFilePath,
       ],
       {
-        shell: true,
         cwd: projectDirectoryPath,
       },
     );

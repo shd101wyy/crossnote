@@ -5,7 +5,7 @@
 
 import { execFileSync } from 'child_process';
 import * as fs from 'fs';
-import { tempOpen } from '../utility';
+import { npxCommand, tempOpen } from '../utility';
 
 export async function render(
   wavedromCode: string,
@@ -17,9 +17,11 @@ export async function render(
   });
   await fs.writeFileSync(info.fd, wavedromCode);
   try {
+    // SECURITY: do NOT use `shell: true` — same reasoning as
+    // `tools/mermaid.ts`. `projectDirectoryPath` and the temp input path are
+    // passed as literal arguments; Windows resolves `npx` via `npxCommand()`.
     const svg = (
-      await execFileSync('npx', ['wavedrom-cli', '-i', info.path], {
-        shell: true,
+      await execFileSync(npxCommand(), ['wavedrom-cli', '-i', info.path], {
         cwd: projectDirectoryPath,
       })
     ).toString('utf-8');

@@ -9,9 +9,16 @@
  * command separator — one-click RCE on Windows. `openFile` must never use a
  * shell. Likewise the diagram `filename` attribute flows into image converters
  * that shell out, so it must be sanitized.
+ *
+ * The same file also covers the diagram CLI wrappers (CVE-2022-45026): the
+ * mermaid and wavedrom converters must spawn without `shell: true`, so that
+ * the output paths they are handed — built from untrusted markdown and from
+ * the notebook's own directories — reach the CLI as literal arguments.
  */
 import * as child_process from 'child_process';
-import { openFile, sanitizeImageFilename } from '../src/utility';
+import { mermaidToPNG } from '../src/tools/mermaid';
+import { render as wavedromRender } from '../src/tools/wavedrom';
+import { npxCommand, openFile, sanitizeImageFilename } from '../src/utility';
 
 jest.mock('child_process', () => {
   const EventEmitter = jest.requireActual('events');
@@ -20,6 +27,9 @@ jest.mock('child_process', () => {
   // `wslpath` gets a callback, which we answer with a converted path so
   // the final explorer.exe hop can be asserted.
   return {
+    // The diagram CLI wrappers call execFileSync; returning a Buffer keeps
+    // `.toString('utf-8')` working in the wavedrom wrapper.
+    execFileSync: jest.fn(() => Buffer.from('<svg></svg>')),
     execFile: jest.fn(
       (
         cmd: string,
@@ -38,6 +48,7 @@ jest.mock('child_process', () => {
 
 const execFileMock = child_process.execFile as unknown as jest.Mock;
 const execMock = child_process.exec as unknown as jest.Mock;
+const execFileSyncMock = child_process.execFileSync as unknown as jest.Mock;
 
 function withPlatform(platform: NodeJS.Platform, fn: () => void) {
   const original = Object.getOwnPropertyDescriptor(process, 'platform');
@@ -231,5 +242,75 @@ describe('sanitizeImageFilename (diagram export filename injection)', () => {
   it('returns empty for empty/undefined input (caller falls back to default)', () => {
     expect(sanitizeImageFilename(undefined)).toBe('');
     expect(sanitizeImageFilename('')).toBe('');
+  });
+});
+
+describe('diagram CLI wrappers never use a shell (CVE-2022-45026)', () => {
+  // A project directory that is merely awkward, not exotic: a space (which
+  // `shell: true` would split on) plus a shell metacharacter.
+  const PROJECT_DIR = '/tmp/My Notes & Drafts';
+  const MALICIOUS_PNG_PATH = '/tmp/out/$(touch pwned).png';
+
+  beforeEach(() => {
+    execFileSyncMock.mockClear();
+  });
+
+  it('mermaidToPNG does not pass shell: true', async () => {
+    await mermaidToPNG('graph TD; A-->B;', MALICIOUS_PNG_PATH, PROJECT_DIR, '');
+
+    expect(execFileSyncMock).toHaveBeenCalledTimes(1);
+    const [, , options] = execFileSyncMock.mock.calls[0];
+    expect(options.shell).toBeUndefined();
+    expect(options.cwd).toBe(PROJECT_DIR);
+  });
+
+  it('mermaidToPNG passes the output path as a single, unsplit argument', async () => {
+    await mermaidToPNG('graph TD; A-->B;', MALICIOUS_PNG_PATH, PROJECT_DIR, '');
+
+    const [command, args] = execFileSyncMock.mock.calls[0];
+    expect(command).toBe(npxCommand());
+    // The whole path is one argv entry — not split on the space, not expanded
+    // by a shell. `--output` is immediately followed by it.
+    expect(args[args.indexOf('--output') + 1]).toBe(MALICIOUS_PNG_PATH);
+    expect(args).toContain('mmdc');
+    // No argv entry may carry an embedded space-joined command.
+    expect(
+      args.every((arg: string) => !arg.includes('touch pwned).png ')),
+    ).toBe(true);
+  });
+
+  it('mermaidToPNG defaults an empty theme to the literal "null"', async () => {
+    await mermaidToPNG('graph TD; A-->B;', MALICIOUS_PNG_PATH, PROJECT_DIR, '');
+
+    const [, args] = execFileSyncMock.mock.calls[0];
+    expect(args[args.indexOf('--theme') + 1]).toBe('null');
+  });
+
+  it('wavedrom render does not pass shell: true', async () => {
+    await wavedromRender('{signal:[]}', PROJECT_DIR);
+
+    expect(execFileSyncMock).toHaveBeenCalledTimes(1);
+    const [command, args, options] = execFileSyncMock.mock.calls[0];
+    expect(command).toBe(npxCommand());
+    expect(args).toContain('wavedrom-cli');
+    expect(options.shell).toBeUndefined();
+    expect(options.cwd).toBe(PROJECT_DIR);
+  });
+});
+
+describe('npxCommand', () => {
+  it('names npx.cmd on Windows so CreateProcess resolves it without a shell', () => {
+    withPlatform('win32', () => {
+      expect(npxCommand()).toBe('npx.cmd');
+    });
+  });
+
+  it('uses plain npx elsewhere', () => {
+    withPlatform('darwin', () => {
+      expect(npxCommand()).toBe('npx');
+    });
+    withPlatform('linux', () => {
+      expect(npxCommand()).toBe('npx');
+    });
   });
 });

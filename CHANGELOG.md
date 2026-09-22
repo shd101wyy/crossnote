@@ -4,6 +4,14 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Security
+
+- **The mermaid and wavedrom CLI wrappers no longer run through a shell (CVE-2022-45026)** — `tools/mermaid.ts` spawned `@mermaid-js/mermaid-cli` with `shell: true`, so the PNG output path it was handed reached cmd.exe/sh as part of a command line rather than as an argument. That path is built from the diagram's `filename` attribute — untrusted markdown — plus the notebook's `imageFolderPath` and project directory, and only the basename passes `sanitizeImageFilename()`; the directory part was never checked, so a project or image folder whose name contains a shell metacharacter was enough to inject a command on export. `tools/wavedrom.ts` had the identical pattern. Both now spawn without a shell, matching `tools/pdf.ts` and `tools/latex.ts`, which were hardened in [0.9.29](#0929---2026-06-05). Windows still resolves the launcher correctly because the new `npxCommand()` helper names `npx.cmd` explicitly, which is the only thing `shell: true` was providing there ([#274](https://github.com/shd101wyy/crossnote/issues/274) reported by @yuriisanin).
+
+  This also fixes a long-standing non-security failure: `shell: true` joins argv with plain spaces and quotes nothing, so exporting a mermaid or wavedrom diagram from any project whose path contains a space produced a broken command. Those paths are now passed as single literal arguments.
+
+  `tools/magick.ts` still shells out — `imagemagick-cli` builds a command string for `child_process.exec` — so `sanitizeImageFilename()` remains in place as defense in depth.
+
 ## [0.9.39] - 2026-09-20
 
 ### Features
