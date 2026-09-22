@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Local fonts and images in `.crossnote/style.less` load again** — a relative `url(...)` in the user stylesheet (`@font-face { src: url('fonts/MyFont.woff2') }`, `background-image: url(./bg.png)`) never resolved: the compiled CSS is inlined into a `<style>` tag, so the browser resolved those references against the _preview document_ rather than against style.less — inside a VS Code webview that is `vscode-webview://<uuid>/`, where nothing exists. Local fonts silently fell back to the default while remote ones (Google Fonts, any `https://` URL) kept working, which is what made the failure look arbitrary ([vscode-mpe#2424](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2424) reported by @patriknusszer). Relative references are now resolved when style.less is loaded — the last point at which its own directory is known, since a host may concatenate the global and workspace stylesheets into one `globalCss` afterwards — and turned into loadable URLs at render time (`vscode-webview://…` in the preview, `file://…` for exports and `crossnote serve`). Absolute URLs, `url(#fragment)` paint-server references, root-relative `url(/x)`, paths that escape the stylesheet's directory, and references to files that do not exist are all left exactly as they were.
+
 ## [0.9.39] - 2026-09-20
 
 ### Features

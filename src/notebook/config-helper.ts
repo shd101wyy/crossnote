@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as less from 'less';
 import * as path from 'path';
+import { resolveRelativeCssUrls } from '../lib/css-urls';
 import { createSandboxedParserConfig, evalConfigJS } from '../lib/js-sandbox';
 import {
   FileSystemApi,
@@ -127,7 +128,19 @@ async function getGlobalStyles(configPath: string, fs: FileSystemApi) {
         if (error) {
           return resolve(generateErrorMessage(error));
         } else {
-          return resolve(output?.css || '');
+          // Relative `url(...)` references are resolved here, against
+          // style.less's own directory, because that is the last point at
+          // which it is known: the compiled CSS is inlined into a `<style>`
+          // tag (so the browser would resolve it against the preview
+          // document) and a host may concatenate this with another
+          // directory's style.less before it is ever rendered.
+          return resolve(
+            resolveRelativeCssUrls(
+              output?.css || '',
+              path.dirname(globalLessPath),
+              (filePath) => fs.exists(filePath),
+            ),
+          );
         }
       },
     );

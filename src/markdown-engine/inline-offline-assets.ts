@@ -1,8 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { ABSOLUTE_URL, CSS_URL } from '../lib/css-urls';
 
-const ABSOLUTE_URL = /^(data:|https?:|file:|\/\/)/i;
-const CSS_URL = /url\(\s*(['"]?)([^'")]+)\1\s*\)(\s*format\([^)]+\))?/gi;
 const FALLBACK_FONT_EXTS = new Set(['.woff', '.ttf', '.eot', '.otf']);
 
 const MIME_BY_EXT: Record<string, string> = {
