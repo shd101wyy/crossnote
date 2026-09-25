@@ -193,6 +193,16 @@ export async function startServeServer(
         return `/files/${encodePathSegments(relativePath)}${rootHint}`;
       }
     }
+    // `/files/…` and `/assets/…` are this server's own routes, so a
+    // leading-`/` path shaped like one is a root-relative URL from the
+    // user stylesheet, not a filesystem location — the page must resolve
+    // it against the origin. The generic `file://` fallback below would
+    // be refused by the browser (an http page may not load file://
+    // subresources) and silently broke such references when the
+    // style.less url() rewriting landed.
+    if (/^\/(?:files|assets)\//.test(filePath)) {
+      return filePath;
+    }
     return pathToFileURL(filePath).href;
   });
 

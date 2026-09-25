@@ -4,13 +4,17 @@ import * as path from 'path';
 import { mkdirSync, track } from '../../src/lib/temp';
 import { startServeServer, ServeServer } from '../../src/serve';
 
+// less does not run under jest; the compiled CSS is controlled per-test by
+// assigning `mockLessOutput` (none of the other tests set it, so it stays
+// the empty string for them).
+let mockLessOutput = '';
 jest.mock('less', () => ({
   render: (
     _input: string,
     _options: unknown,
     callback: (error: unknown, output: { css: string } | undefined) => void,
   ) => {
-    callback(null, { css: '' });
+    callback(null, { css: mockLessOutput });
   },
 }));
 
@@ -836,5 +840,77 @@ describe('crossnote serve with multiple directories', () => {
         crossnoteBuildDirectory: rootB,
       }),
     ).rejects.toThrow(/Not a directory/);
+  });
+});
+
+describe('crossnote serve style.less url() mapping', () => {
+  // #513 rewrites relative url() in style.less to absolute filesystem
+  // paths at load time and maps them back to loadable URLs at render
+  // time through the serve mapper. Root-relative references (`/files/…`,
+  // `/assets/…`) are this server's own routes: they must reach the page
+  // unchanged so the browser resolves them against the origin — the
+  // generic file:// fallback is refused from an http page and would
+  // silently break them.
+  let workspace: string;
+  let server: ServeServer;
+
+  beforeAll(async () => {
+    track();
+    workspace = mkdirSync('crossnote-serve-css');
+    fs.writeFileSync(path.join(workspace, 'note.md'), '# Note\n');
+    fs.writeFileSync(path.join(workspace, 'image.png'), 'a png');
+    fs.mkdirSync(path.join(workspace, '.crossnote', 'img'), {
+      recursive: true,
+    });
+    fs.writeFileSync(
+      path.join(workspace, '.crossnote', 'img', 'bg.png'),
+      'a png',
+    );
+    // The fixture content is irrelevant — less is mocked — but the file
+    // must exist for the config layer to load it.
+    fs.writeFileSync(
+      path.join(workspace, '.crossnote', 'style.less'),
+      '/* compiled by the mock below */\n',
+    );
+    mockLessOutput = [
+      'a { background-image: url("/files/image.png"); }',
+      'b { background-image: url(img/bg.png); }',
+      'c { src: url(data:font/woff2;base64,AAAA); }',
+    ].join('\n');
+    const buildDir = mkdirSync('crossnote-serve-css-build');
+    writeFakeBuildDirectory(buildDir);
+    server = await startServeServer({
+      directories: [workspace],
+      port: 0,
+      crossnoteBuildDirectory: buildDir,
+      globalConfigDirectory: path.join(
+        mkdirSync('crossnote-serve-css-global'),
+        'crossnote',
+      ),
+    });
+  });
+
+  afterAll(async () => {
+    mockLessOutput = '';
+    await server.close();
+  });
+
+  test('keeps root-relative urls origin-resolvable and maps resolved paths to /files/', async () => {
+    const response = await fetch(
+      `${server.url}/preview?file=${encodeURIComponent(
+        path.join(workspace, 'note.md'),
+      )}`,
+    );
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    // Root-relative: passed through for the browser to resolve against
+    // the origin — not rewritten to a file:// URL the page cannot load.
+    expect(html).toContain('url("/files/image.png")');
+    expect(html).not.toContain('file:///files/');
+    // Relative: resolved against style.less's own directory at load
+    // time, then mapped into the served /files/ mount at render time.
+    expect(html).toContain('url("/files/.crossnote/img/bg.png")');
+    // Data URLs are never touched (still unquoted, exactly as authored).
+    expect(html).toContain('url(data:font/woff2;base64,AAAA)');
   });
 });
