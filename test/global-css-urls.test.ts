@@ -40,6 +40,12 @@ jest.mock('less', () => ({
 
 const exists = (filePath: string) => Promise.resolve(fs.existsSync(filePath));
 
+/**
+ * Mirror of the producer's CSS string escaping, for building expectations:
+ * on Windows every `\` in a path is emitted doubled inside `url("…")`.
+ */
+const cssEscaped = (p: string) => p.replace(/(["\\])/g, '\\$1');
+
 describe('resolveRelativeCssUrls', () => {
   track();
 
@@ -58,7 +64,7 @@ describe('resolveRelativeCssUrls', () => {
       exists,
     );
     expect(out).toContain(
-      `url("${path.join(baseDir, 'fonts', 'MyFont.woff2')}") format('woff2')`,
+      `url("${cssEscaped(path.join(baseDir, 'fonts', 'MyFont.woff2'))}") format('woff2')`,
     );
   });
 
@@ -71,7 +77,7 @@ describe('resolveRelativeCssUrls', () => {
     ]) {
       expect(
         await resolveRelativeCssUrls(`a { src: ${raw}; }`, baseDir, exists),
-      ).toContain(`url("${abs}")`);
+      ).toContain(`url("${cssEscaped(abs)}")`);
     }
   });
 
@@ -114,7 +120,23 @@ describe('resolveRelativeCssUrls', () => {
       baseDir,
       exists,
     );
-    expect(out).toContain(`url("${abs}?v=2")`);
+    expect(out).toContain(`url("${cssEscaped(abs)}?v=2")`);
+  });
+
+  it('normalizes a drive-relative or mixed-separator baseDir (Windows hosts)', async () => {
+    // `crossnote serve`/`build-wiki` round-trip plain `C:\…` paths through
+    // `URI.parse`, which drops the drive letter; forward slashes appear when
+    // a host hands over URL-style paths. `path.resolve(baseDir, …)` re-adds
+    // the drive / flips the separators, so the boundary must be normalized
+    // the same way or every resolution silently fails the containment check.
+    const mixed = baseDir.split(path.sep).join('/');
+    const fontPath = path.join(baseDir, 'fonts', 'MyFont.woff2');
+    const out = await resolveRelativeCssUrls(
+      `a { src: url('fonts/MyFont.woff2'); }`,
+      mixed,
+      exists,
+    );
+    expect(out).toContain(`url("${cssEscaped(fontPath)}")`);
   });
 
   it('rewrites each reference against its own directory, before any merge', async () => {
@@ -135,9 +157,11 @@ describe('resolveRelativeCssUrls', () => {
         exists,
       ));
 
-    expect(merged).toContain(`url("${path.join(other, 'MyFont.woff2')}")`);
     expect(merged).toContain(
-      `url("${path.join(baseDir, 'fonts', 'MyFont.woff2')}")`,
+      `url("${cssEscaped(path.join(other, 'MyFont.woff2'))}")`,
+    );
+    expect(merged).toContain(
+      `url("${cssEscaped(path.join(baseDir, 'fonts', 'MyFont.woff2'))}")`,
     );
   });
 });
@@ -177,6 +201,34 @@ describe('mapAbsoluteCssUrls', () => {
     expect(seen).toEqual(['/abs/x.woff2']);
     expect(out).toContain('url("webview:///abs/x.woff2?v=2")');
   });
+
+  it('undoes the CSS string escapes before mapping, so hosts get real paths', () => {
+    // The stored value went through `escapeCssUrl`: every Windows backslash
+    // is doubled. `Uri.file`/`pathToFileURL` would keep the doubled
+    // separators, so the escapes must be folded back before `toUrl` runs —
+    // while single backslashes a user wrote themselves stay untouched.
+    const realPath = 'C:\\f\\My Font.woff2'; // C:\f\My Font.woff2
+    const seen: string[] = [];
+    const out = mapAbsoluteCssUrls(
+      `a { src: url("${cssEscaped(realPath)}"); }`,
+      (p) => {
+        seen.push(p);
+        return `webview://${p}`;
+      },
+    );
+    expect(seen).toEqual([realPath]);
+    expect(out).toContain(`url("${cssEscaped(`webview://${realPath}`)}")`);
+  });
+
+  it('does not mangle single backslashes it did not escape itself', () => {
+    const seen: string[] = [];
+    mapAbsoluteCssUrls(`a { src: url("C:\\f\\x.woff2"); }`, (p) => {
+      seen.push(p);
+      return 'mapped';
+    });
+    // `C:\f\x.woff2` with single backslashes passes through unchanged.
+    expect(seen).toEqual(['C:\\f\\x.woff2']);
+  });
 });
 
 describe('style.less url() resolution, end to end (vscode-mpe#2424)', () => {
@@ -215,7 +267,9 @@ describe('style.less url() resolution, end to end (vscode-mpe#2424)', () => {
 
   it('stores the font as an absolute path in globalCss', async () => {
     const { notebook, fontPath } = await buildNotebook();
-    expect(notebook.config.globalCss).toContain(`url("${fontPath}")`);
+    expect(notebook.config.globalCss).toContain(
+      `url("${cssEscaped(fontPath)}")`,
+    );
     // The remote font is untouched — it already worked, and still does.
     expect(notebook.config.globalCss).toContain(
       `url('https://fonts.gstatic.com/s/x.woff2')`,

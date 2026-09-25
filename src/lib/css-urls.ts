@@ -44,6 +44,13 @@ export async function resolveRelativeCssUrls(
   baseDir: string,
   exists: (filePath: string) => Promise<boolean>,
 ): Promise<string> {
+  // Normalize the boundary the same way `path.resolve` normalizes the
+  // candidates, or the containment check below misfires whenever `baseDir`
+  // is drive-relative (`\Users\…`) or mixes separators (`C:/x/y`). Windows
+  // hosts produce both: `Notebook.init` round-trips plain `C:\…` paths
+  // through `URI.parse`, which drops the drive letter, so `crossnote serve`
+  // and `build-wiki` hand config code exactly such a base directory.
+  const root = path.resolve(baseDir);
   // String.replace cannot await, so resolve every candidate first and then
   // substitute from the resulting queue, in match order.
   const candidates: string[] = [];
@@ -69,7 +76,7 @@ export async function resolveRelativeCssUrls(
       const resolved = path.resolve(baseDir, filePart);
       // Keep the stylesheet's own directory as the boundary, like
       // `readOfflineCss` does — `url(../../etc/passwd)` is not rewritten.
-      if (resolved !== baseDir && !resolved.startsWith(baseDir + path.sep)) {
+      if (resolved !== root && !resolved.startsWith(root + path.sep)) {
         return null;
       }
       if (!(await exists(resolved))) {
@@ -98,7 +105,15 @@ export async function resolveRelativeCssUrls(
  * This is the render-time half: `resolveRelativeCssUrls` leaves filesystem
  * paths behind, which the preview and each export path then turn into the URL
  * form they can actually load (`vscode-webview://…` inside a VS Code webview,
- * `file://…` everywhere else).
+ * `file://…` everywhere else). The CSS string escapes `escapeCssUrl` added at
+ * load time are undone first, so `toUrl` receives a real filesystem path —
+ * `Uri.file`/`pathToFileURL` would otherwise see doubled separators.
+ *
+ * A leading `/` counts as an absolute path here (on POSIX it is textually
+ * identical to a resolved path), so root-relative references such as
+ * `url(/files/x.woff2)` are mapped too — in `crossnote serve` they resolve
+ * against the served root only if they point at a file inside it, and
+ * otherwise follow the host's `file://` fallback.
  */
 export function mapAbsoluteCssUrls(
   css: string,
@@ -115,7 +130,7 @@ export function mapAbsoluteCssUrls(
       if (!filePart) {
         return whole;
       }
-      return `url("${escapeCssUrl(toUrl(filePart) + suffix)}")${formatPart}`;
+      return `url("${escapeCssUrl(toUrl(unescapeCssUrl(filePart)) + suffix)}")${formatPart}`;
     },
   );
 }
@@ -128,4 +143,13 @@ export function mapAbsoluteCssUrls(
  */
 function escapeCssUrl(value: string): string {
   return value.replace(/(["\\])/g, '\\$1').replace(/\n/g, '');
+}
+
+/**
+ * The exact inverse of `escapeCssUrl` — undo `\\` and `\"` and nothing else,
+ * so a user-authored path that already contains single backslashes is not
+ * mangled (only the escapes we emitted ourselves are folded back).
+ */
+function unescapeCssUrl(value: string): string {
+  return value.replace(/\\(["\\])/g, '$1');
 }
