@@ -59,6 +59,9 @@ importers:
       cross-fetch:
         specifier: ^4.0.0
         version: 4.1.0
+      cross-spawn:
+        specifier: ^7.0.6
+        version: 7.0.6
       crypto-js:
         specifier: ^4.1.1
         version: 4.2.0
@@ -273,6 +276,9 @@ importers:
       '@simbathesailor/use-what-changed':
         specifier: ^2.0.0
         version: 2.0.0(react@18.3.1)
+      '@types/cross-spawn':
+        specifier: ^6.0.6
+        version: 6.0.6
       '@types/crypto-js':
         specifier: ^4.1.1
         version: 4.2.2
@@ -1958,6 +1964,9 @@ packages:
 
   '@types/babel__traverse@7.28.0':
     resolution: {integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==}
+
+  '@types/cross-spawn@6.0.6':
+    resolution: {integrity: sha512-fXRhhUkG4H3TQk5dBhQ7m/JDdSNHKwR2BBia62lhwEIq9xGiQKLxd6LymNhn47SjXhsUEPmxi+PKw2OkW4LLjA==}
 
   '@types/crypto-js@4.2.2':
     resolution: {integrity: sha512-sDOLlVbHhXpAUAL0YHDUUwDZf3iN4Bwi4W6a0W0b+QcAezUbRtH4FVb+9J4h+XFPW7l/gQ9F8qC7P+Ec4k8QVQ==}
@@ -7830,6 +7839,10 @@ snapshots:
   '@types/babel__traverse@7.28.0':
     dependencies:
       '@babel/types': 7.28.5
+
+  '@types/cross-spawn@6.0.6':
+    dependencies:
+      '@types/node': 20.19.24
 
   '@types/crypto-js@4.2.2': {}
 

@@ -9,8 +9,17 @@
  * command separator — one-click RCE on Windows. `openFile` must never use a
  * shell. Likewise the diagram `filename` attribute flows into image converters
  * that shell out, so it must be sanitized.
+ *
+ * The same file also covers the diagram CLI wrappers (CVE-2022-45026): the
+ * mermaid and wavedrom converters spawn `npx` through `cross-spawn` with no
+ * shell of our own, so that the output paths they are handed — built from
+ * untrusted markdown and from the notebook's own directories — reach the CLI
+ * as literal arguments.
  */
 import * as child_process from 'child_process';
+import spawn from 'cross-spawn';
+import { mermaidToPNG } from '../src/tools/mermaid';
+import { render as wavedromRender } from '../src/tools/wavedrom';
 import { openFile, sanitizeImageFilename } from '../src/utility';
 
 jest.mock('child_process', () => {
@@ -36,8 +45,24 @@ jest.mock('child_process', () => {
   };
 });
 
+jest.mock('cross-spawn', () => ({
+  __esModule: true,
+  default: {
+    // The diagram CLI wrappers call `spawn.sync`; a Buffer stdout keeps
+    // `.toString('utf-8')` working in the wavedrom wrapper. The optional
+    // `error`/`null` status let failure tests override the result.
+    sync: jest.fn(
+      (): { status: number | null; stdout: Buffer; error?: Error } => ({
+        status: 0,
+        stdout: Buffer.from('<svg></svg>'),
+      }),
+    ),
+  },
+}));
+
 const execFileMock = child_process.execFile as unknown as jest.Mock;
 const execMock = child_process.exec as unknown as jest.Mock;
+const crossSpawnSyncMock = spawn.sync as unknown as jest.Mock;
 
 function withPlatform(platform: NodeJS.Platform, fn: () => void) {
   const original = Object.getOwnPropertyDescriptor(process, 'platform');
@@ -231,5 +256,76 @@ describe('sanitizeImageFilename (diagram export filename injection)', () => {
   it('returns empty for empty/undefined input (caller falls back to default)', () => {
     expect(sanitizeImageFilename(undefined)).toBe('');
     expect(sanitizeImageFilename('')).toBe('');
+  });
+});
+
+describe('diagram CLI wrappers never use a shell (CVE-2022-45026)', () => {
+  // A project directory that is merely awkward, not exotic: a space (which
+  // `shell: true` would split on) plus a shell metacharacter.
+  const PROJECT_DIR = '/tmp/My Notes & Drafts';
+  const MALICIOUS_PNG_PATH = '/tmp/out/$(touch pwned).png';
+
+  beforeEach(() => {
+    crossSpawnSyncMock.mockClear();
+  });
+
+  it('mermaidToPNG passes every path as a single, unsplit argv entry', async () => {
+    await mermaidToPNG('graph TD; A-->B;', MALICIOUS_PNG_PATH, PROJECT_DIR, '');
+
+    expect(crossSpawnSyncMock).toHaveBeenCalledTimes(1);
+    const [command, args, options] = crossSpawnSyncMock.mock.calls[0];
+    expect(command).toBe('npx');
+    // The whole argv, pinned: the output path is one entry — not split on
+    // spaces, not expanded by a shell — and an empty theme defaults to the
+    // literal "null". No shell option is handed to cross-spawn: on Windows
+    // it routes npx through cmd.exe itself and escapes cmd metacharacters
+    // there (plain spawnSync would throw EINVAL on Node ≥ 18.20.2 —
+    // CVE-2024-27980), elsewhere it is a passthrough to spawnSync.
+    expect(args).toEqual([
+      '-p',
+      '@mermaid-js/mermaid-cli',
+      'mmdc',
+      '--theme',
+      'null',
+      '--input',
+      expect.any(String),
+      '--output',
+      MALICIOUS_PNG_PATH,
+    ]);
+    expect(options.shell).toBeUndefined();
+    expect(options.cwd).toBe(PROJECT_DIR);
+  });
+
+  it('wavedrom render passes the temp input path as one literal argument', async () => {
+    const svg = await wavedromRender('{signal:[]}', PROJECT_DIR);
+
+    expect(svg).toBe('<svg></svg>');
+    expect(crossSpawnSyncMock).toHaveBeenCalledTimes(1);
+    const [command, args, options] = crossSpawnSyncMock.mock.calls[0];
+    expect(command).toBe('npx');
+    expect(args).toEqual(['wavedrom-cli', '-i', expect.any(String)]);
+    expect(options.shell).toBeUndefined();
+    expect(options.cwd).toBe(PROJECT_DIR);
+  });
+
+  it('mermaidToPNG surfaces a nonzero exit as the friendly install error', async () => {
+    crossSpawnSyncMock.mockReturnValueOnce({
+      status: 1,
+      stdout: Buffer.from(''),
+    });
+    await expect(
+      mermaidToPNG('graph TD; A-->B;', MALICIOUS_PNG_PATH, PROJECT_DIR, ''),
+    ).rejects.toThrow(/mermaid CLI is required/);
+  });
+
+  it('wavedrom render surfaces a spawn failure (e.g. npx missing) as the friendly error', async () => {
+    crossSpawnSyncMock.mockReturnValueOnce({
+      error: new Error('spawn npx ENOENT'),
+      status: null,
+      stdout: Buffer.from(''),
+    });
+    await expect(wavedromRender('{signal:[]}', PROJECT_DIR)).rejects.toThrow(
+      /wavedrom CLI is required/,
+    );
   });
 });
