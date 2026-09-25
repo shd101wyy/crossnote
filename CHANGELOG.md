@@ -4,6 +4,11 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Security
+
+- **Refuse to index a notebook rooted at the user's home directory** — the [#2376 containment fix](#0933---2026-09-01) refused filesystem roots (`/`, `C:\`) but not the home directory, and hosts can legitimately produce `~` as a notebook root: vscode-markdown-preview-enhanced resolves a markdown file that lives outside every workspace folder to its parent directory, so a loose file opened directly from `~` made the note-index walk (wikilinks, backlinks, tags, graph) recursively stat and read everything under the home directory. On macOS that walks `~/Library` — Mail, Messages, iCloud data, thousands of TCC-denied paths — producing sustained CPU and a wall of permission errors, the same symptom the original fix closed. Home-directory notebooks are now refused exactly like filesystem-root notebooks (one-time warning, indexing skipped). The comparison is case-insensitive on Windows, where the vscode-uri round-trip lowercases the drive letter (`C:\Users\…` → `c:\Users\…`) and an exact match would silently no-op ([vscode-mpe#2376](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2376) reported by @prawnsalad).
+- **A runaway note-index walk now announces itself** — when a single refresh stats more than 10,000 filesystem entries, crossnote logs one warning naming the notebook root, once per notebook. The original #2376 report had to be diagnosed from 1,200 `EACCES` log lines with nothing pointing at who produced them; this makes the next such report actionable on its own.
+
 ## [0.9.39] - 2026-09-20
 
 ### Features
