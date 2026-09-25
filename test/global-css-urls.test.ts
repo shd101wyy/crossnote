@@ -288,8 +288,10 @@ describe('style.less url() resolution, end to end (vscode-mpe#2424)', () => {
         // The hook only fires when a panel is present, as in the extension.
         vscodePreviewPanel: {} as never,
       });
+      // The mapper receives the real (unescaped) path; the emitted CSS
+      // re-escapes it for the quoted url() string, hence cssEscaped here.
       expect(html).toContain(
-        `https://file%2B.vscode-resource.vscode-cdn.net${fontPath}`,
+        `https://file%2B.vscode-resource.vscode-cdn.net${cssEscaped(fontPath)}`,
       );
       expect(html).not.toContain(`url('fonts/MyFont.woff2')`);
     } finally {
