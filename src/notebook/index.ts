@@ -10,6 +10,7 @@ import MarkdownItMark from 'markdown-it-mark';
 import MarkdownItSub from 'markdown-it-sub';
 import MarkdownItSup from 'markdown-it-sup';
 import Token from 'markdown-it/lib/token';
+import * as os from 'os';
 import * as path from 'path';
 import { URI, Utils } from 'vscode-uri';
 import type { MarkdownRenderer, RenderOptions } from 'markdown_yo';
@@ -67,6 +68,27 @@ const defaultMarkdownItConfig: Partial<ExtendedMarkdownItOptions> = {
   typographer: true, // Enable smartypants and other sweet transforms
   sourceMap: true, // Enable source map
 };
+
+/**
+ * A single note-index refresh that stats more entries than this is almost
+ * certainly walking a root nobody wants indexed (the home directory used
+ * to silently scan `~/Library` — Mail, Messages, iCloud data — on macOS,
+ * vscode-markdown-preview-enhanced#2376).  Warn once, naming the root, so
+ * a user report comes with actionable data.
+ */
+export const OVERSIZED_WALK_WARN_THRESHOLD = 10_000;
+
+/**
+ * Path equality that tolerates the drive-letter case mismatch hosts
+ * produce on Windows (`c:\` from VS Code's fsPath vs `C:\` from
+ * vscode-uri); every other platform compares exactly.
+ */
+function isSamePath(a: string, b: string): boolean {
+  if (process.platform === 'win32') {
+    return a.toLowerCase() === b.toLowerCase();
+  }
+  return a === b;
+}
 
 interface NotebookConstructorArgs {
   /**
@@ -146,10 +168,19 @@ export class Notebook {
   public notes: Notes = {};
   public hasLoadedNotes: boolean = false;
   /**
-   * Whether `skipIndexingIfFilesystemRoot` has already warned for this
+   * Whether `skipIndexingIfRootIsRefused` has already warned for this
    * notebook, so the refusal is logged once per instance.
    */
-  private filesystemRootWarned: boolean = false;
+  private refusedRootWarned: boolean = false;
+  /**
+   * Filesystem entries stat'ed by the note-index walk currently running
+   * (or most recently finished).  Reset by `refreshNotes` /
+   * `refreshNotesIncremental` — both run under `refreshNotesMutex`, so
+   * concurrent walks cannot interleave counts.
+   */
+  private walkedEntriesThisRefresh: number = 0;
+  /** Whether the oversized-walk warning already fired for this notebook. */
+  private oversizedWalkWarned: boolean = false;
   /**
    * The notebook-relative path of the note currently being rendered.
    * Set by MarkdownEngine.parseMD() before calling renderMarkdown().
@@ -1048,8 +1079,9 @@ export class Notebook {
   }: RefreshNotesIfNotLoaded): Promise<Notes> {
     await this.refreshNotesIfNotLoadedMutex.runExclusive(async () => {
       if (!this.hasLoadedNotes) {
-        // A filesystem-root notebook is refused inside refreshNotes;
-        // marking it loaded either way keeps callers from retrying.
+        // A refused-root notebook (filesystem root, home directory) is
+        // refused inside refreshNotes; marking it loaded either way
+        // keeps callers from retrying.
         await this.refreshNotes({
           dir,
           includeSubdirectories,
@@ -1062,23 +1094,36 @@ export class Notebook {
   }
 
   /**
-   * True when the notebook is rooted at a filesystem root (`/` on
-   * macOS/Linux, `C:\` on Windows) rather than an actual folder —
-   * including dot-path spellings of it such as `/.`, which hosts can
-   * produce for untitled documents (they resolve to `/`).  Indexing
-   * such a "notebook" would recursively stat and read files across
-   * the whole machine (vscode-markdown-preview-enhanced#2376), so
-   * every refresh entry point refuses to walk it.  Warns once.
+   * True when the notebook is rooted at a directory the index must
+   * refuse to walk:
+   *
+   * - a filesystem root (`/` on macOS/Linux, `C:\` on Windows),
+   *   including dot-path spellings of it such as `/.`, which hosts can
+   *   produce for untitled documents (they resolve to `/`);
+   * - the user's home directory — hosts that resolve a loose markdown
+   *   file's notebook root to its parent directory produce `~` whenever
+   *   the file sits directly in it, and indexing `~` recursively stats
+   *   and reads files all over it (on macOS `~/Library` alone spans
+   *   Mail, Messages and iCloud data), which is the filesystem scan of
+   *   vscode-markdown-preview-enhanced#2376 all over again.
+   *
+   * Every refresh entry point refuses to walk such a root.  Warns once.
    */
-  private skipIndexingIfFilesystemRoot(): boolean {
+  private skipIndexingIfRootIsRefused(): boolean {
     const resolved = path.resolve(this.notebookPath.fsPath);
-    if (path.parse(resolved).root !== resolved) {
+    let reason: string | undefined;
+    if (path.parse(resolved).root === resolved) {
+      reason = 'a filesystem root';
+    } else if (isSamePath(resolved, path.resolve(os.homedir()))) {
+      reason = 'the home directory';
+    }
+    if (!reason) {
       return false;
     }
-    if (!this.filesystemRootWarned) {
-      this.filesystemRootWarned = true;
+    if (!this.refusedRootWarned) {
+      this.refusedRootWarned = true;
       console.warn(
-        `Crossnote: notebook root "${this.notebookPath.fsPath}" is a filesystem root; ` +
+        `Crossnote: notebook root "${this.notebookPath.fsPath}" is ${reason}; ` +
           'skipping note indexing (wikilinks/backlinks/graph will find nothing). ' +
           'Open a specific folder as the notebook root instead.',
       );
@@ -1103,9 +1148,10 @@ export class Notebook {
 
   public async refreshNotes(args: RefreshNotesArgs): Promise<Notes> {
     return this.refreshNotesMutex.runExclusive(async () => {
-      if (this.skipIndexingIfFilesystemRoot()) {
+      if (this.skipIndexingIfRootIsRefused()) {
         return this.notes;
       }
+      this.walkedEntriesThisRefresh = 0;
       const { refreshRelations = true } = args;
       if (refreshRelations) {
         this.notes = {};
@@ -1140,9 +1186,10 @@ export class Notebook {
    */
   public async refreshNotesIncremental(args: RefreshNotesArgs): Promise<Notes> {
     return this.refreshNotesMutex.runExclusive(async () => {
-      if (this.skipIndexingIfFilesystemRoot()) {
+      if (this.skipIndexingIfRootIsRefused()) {
         return this.notes;
       }
+      this.walkedEntriesThisRefresh = 0;
       const { dir = './', includeSubdirectories = false } = args;
       const onDisk = new Map<string, number>();
       await this._collectOnDiskMtimes(dir, includeSubdirectories, [], onDisk);
@@ -1307,6 +1354,24 @@ export class Notebook {
       } catch {
         // Unstatable entry — same reasoning as the readdir catch above.
         continue;
+      }
+
+      // Observability for runaway walks (#2376 took a guess-the-culprit
+      // session to diagnose): once a single refresh crosses the threshold,
+      // name the root once so a user report is actionable on its own.
+      this.walkedEntriesThisRefresh += 1;
+      if (
+        !this.oversizedWalkWarned &&
+        this.walkedEntriesThisRefresh > OVERSIZED_WALK_WARN_THRESHOLD
+      ) {
+        this.oversizedWalkWarned = true;
+        console.warn(
+          `Crossnote: the note index walk under "${this.notebookPath.fsPath}" ` +
+            `has passed ${OVERSIZED_WALK_WARN_THRESHOLD} filesystem entries — ` +
+            'this notebook root is unusually broad, so wikilink/backlink/graph ' +
+            'indexing may be slow. If this is unexpected, open a smaller ' +
+            'folder as the notebook root.',
+        );
       }
 
       // Symbolic links can point outside the notebook root (or form
