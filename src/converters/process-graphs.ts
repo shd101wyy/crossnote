@@ -312,8 +312,10 @@ export async function processGraphs(
     } else if (def.match(/^mermaid/)) {
       // mermaid-cli Ver.8.4.8 has a bug, render in png https://github.com/mermaid-js/mermaid/issues/664
       try {
-        // `filename` is untrusted markdown and is passed to mermaid-cli, which
-        // is spawned with `shell: true`; reject shell-unsafe names.
+        // `filename` is untrusted markdown and is passed to mermaid-cli;
+        // reject shell-unsafe names. mermaid-cli no longer runs through a
+        // shell, but ImageMagick (the other export converter) still does, so
+        // the two paths keep the same filename rules.
         let pngFileName = sanitizeImageFilename(
           options['filename'] as string | undefined,
         );
