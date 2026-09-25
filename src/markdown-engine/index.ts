@@ -18,6 +18,7 @@ import { ebookConvert } from '../converters/ebook-convert';
 import { markdownConvert } from '../converters/markdown-convert';
 import { pandocConvert } from '../converters/pandoc-convert';
 import { princeConvert } from '../converters/prince-convert';
+import { mapAbsoluteCssUrls } from '../lib/css-urls';
 import { parseBlockAttributes } from '../lib/block-attributes/parseBlockAttributes';
 import { stringifyBlockAttributes } from '../lib/block-attributes/stringifyBlockAttributes';
 import { normalizeBlockInfo } from '../lib/block-info/normalize-block-info';
@@ -810,7 +811,10 @@ window["initRevealPresentation"] = async function() {
     )}">`;
 
     // global styles
-    styles += `<style>${this.notebook.config.globalCss}</style>`;
+    styles += `<style>${this.resolvePathsInStyles(
+      this.notebook.config.globalCss,
+      vscodePreviewPanel,
+    )}</style>`;
 
     return styles;
   }
@@ -1581,7 +1585,11 @@ if (typeof(window['Reveal']) !== 'undefined') {
     }
 
     // global styles
-    const globalStyles = this.notebook.config.globalCss;
+    // No webview here — this is the HTML/print export path, where `file://`
+    // is what the output should carry.
+    const globalStyles = this.resolvePathsInStyles(
+      this.notebook.config.globalCss,
+    );
 
     // sidebar toc
     let sidebarTOC = '';
@@ -2361,7 +2369,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // global styles
     let globalStyles = '';
     try {
-      globalStyles = this.notebook.config.globalCss;
+      globalStyles = this.resolvePathsInStyles(this.notebook.config.globalCss);
     } catch {
       // ignore it
     }
@@ -2671,6 +2679,30 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         );
       }
     }
+  }
+
+  /**
+   * Turn the absolute filesystem paths that `resolveRelativeCssUrls` left in
+   * the user's compiled `style.less` into URLs the current render target can
+   * load — `vscode-webview://…` inside a VS Code webview, `file://…` for every
+   * export path and for `crossnote serve`.
+   *
+   * Without this the preview inlines `<style>` with the paths still raw, and a
+   * relative `@font-face src` (or `background-image`) resolves against the
+   * webview document instead of the stylesheet, so local fonts silently fall
+   * back while remote ones keep working
+   * ([vscode-mpe#2424](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2424)).
+   */
+  private resolvePathsInStyles(
+    css: string,
+    vscodePreviewPanel?: vscode.WebviewPanel | null,
+  ): string {
+    if (!css) {
+      return css;
+    }
+    return mapAbsoluteCssUrls(css, (filePath) =>
+      utility.addFileProtocol(filePath, vscodePreviewPanel),
+    );
   }
 
   // FIXME: This function actually doesn't help in the web version.
