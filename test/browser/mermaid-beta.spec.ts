@@ -29,7 +29,7 @@ test.afterAll(async () => {
   await server?.close();
 });
 
-test('Mermaid 11.16 renders every documented beta diagram family', async ({
+test('Mermaid renders every documented beta diagram family', async ({
   page,
 }) => {
   expect(diagrams.length).toBeGreaterThan(0);
@@ -61,4 +61,37 @@ test('Mermaid 11.16 renders every documented beta diagram family', async ({
   for (const rendered of result.rendered) {
     expect(rendered).toBe(true);
   }
+});
+
+test('Mermaid exposes the API surface the preview scripts call', async ({
+  page,
+}) => {
+  // crossnote drives mermaid through five entry points: `render` is the
+  // webview preview path, `initialize`/`init` come from the preview init
+  // script (the latter for the Reveal.js slide helper), `run` from the
+  // export/presentation path, and `registerExternalDiagrams` registers
+  // ZenUML. A mermaid major bump that renames or drops any of them breaks
+  // the preview at runtime — lock them in here.
+  await page.goto(server.url);
+  await page.addScriptTag({ url: `${server.url}/mermaid/mermaid.min.js` });
+  const api = await page.evaluate(() => {
+    const mermaid = (window as WindowWithMermaid).mermaid as unknown as Record<
+      string,
+      unknown
+    >;
+    return {
+      initialize: typeof mermaid.initialize,
+      init: typeof mermaid.init,
+      run: typeof mermaid.run,
+      render: typeof mermaid.render,
+      registerExternalDiagrams: typeof mermaid.registerExternalDiagrams,
+    };
+  });
+  expect(api).toEqual({
+    initialize: 'function',
+    init: 'function',
+    run: 'function',
+    render: 'function',
+    registerExternalDiagrams: 'function',
+  });
 });

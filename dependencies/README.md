@@ -7,7 +7,7 @@ I managed some of the libraries by myself instead of through npm to reduce the o
   "font-awesome": "6.4.2", // Download from here: https://fontawesome.com/download
   // Fontawesome cheatsheet is available here: https://kapeli.com/cheat_sheets/Font_Awesome.docset/Contents/Resources/Documents/index
   "katex": "v0.16.47", // Only keep the css and fonts files.
-  "mermaid": "11.17.2", // see "Updating the vendored mermaid bundle" below
+  "mermaid": "12.0.0", // see "Updating the vendored mermaid bundle" below
   // https://www.jsdelivr.com/package/npm/mermaid
   "reveal": "4.6.0",
 
@@ -30,7 +30,7 @@ _Attention_: NOTE: We have to disable the `_self = window` line in `prism.js` to
 
 ## Updating the vendored mermaid bundle
 
-`dependencies/mermaid/mermaid.min.js` is mermaid's **official dist build** downloaded from jsDelivr (e.g. <https://cdn.jsdelivr.net/npm/mermaid@11.17.2/dist/mermaid.min.js>). Do **not** re-bundle mermaid locally with esbuild — the committed file must be byte-identical to the CDN file so the `__esbuild_esm_mermaid_nm` IIFE wrapper and the trailing `globalThis["mermaid"] = ...` assignment match what mermaid ships.
+`dependencies/mermaid/mermaid.min.js` is mermaid's **official dist build** downloaded from jsDelivr (e.g. <https://cdn.jsdelivr.net/npm/mermaid@12.0.0/dist/mermaid.min.js>). Do **not** re-bundle mermaid locally with esbuild — the committed file must be byte-identical to the CDN file so the `__esbuild_esm_mermaid_nm` IIFE wrapper and the trailing `globalThis["mermaid"] = ...` assignment match what mermaid ships.
 
 To update mermaid:
 
