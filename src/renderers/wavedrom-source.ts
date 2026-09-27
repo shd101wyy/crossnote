@@ -1,4 +1,5 @@
 import JSON5 from 'json5';
+import { isDangerousUrl, URL_ATTRIBUTES } from '../lib/dangerous-urls';
 
 /**
  * SVG element tags that WaveDrom must never emit from diagram data.
@@ -27,44 +28,115 @@ const DANGEROUS_SVG_TAGS = new Set([
   'set',
 ]);
 
-// Keep in sync with src/markdown-engine/sanitize.ts (duplicated here to
-// avoid a circular import).
-const DANGEROUS_URL_PATTERN =
-  /^\s*(javascript|vbscript)\s*:|^\s*data\s*:\s*text\/html/i;
-
-const URL_ATTRIBUTES = ['href', 'src', 'action', 'formaction', 'xlink:href'];
+/**
+ * A string that could plausibly serve as an XML element name (tested against
+ * the lowercased tag). Arrays `[tag, ...]` whose head passes this are treated
+ * as SVG element descriptions; anything else (`'a->b'`, `'R&W'`, …) is plain
+ * label/data content and is left for WaveDrom's own escaping (`tspan`).
+ */
+const TAG_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9:._-]*$/;
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**
+ * Escape XML-significant characters. WaveDrom's markup library (onml)
+ * stringifies element arrays into SVG *without* escaping attribute names,
+ * attribute values, or text children, so a `"` or `<` arriving through
+ * diagram data can otherwise break out and inject new markup/attributes.
+ * The escaped string is parsed back as XML by the renderer, so benign
+ * content (`a&b`, `say "hi"`) round-trips and renders exactly the same.
+ */
+function escapeXml(s: string): string {
+  return /[&<>"]/.test(s)
+    ? s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+    : s;
+}
+
+/** Escape the attribute name/values of an onml attribute bag. */
+function escapeAttrBag(
+  attrs: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(attrs)) {
+    const escapedKey = /[&<>"]/.test(key) ? escapeXml(key) : key;
+    out[escapedKey] = Array.isArray(val)
+      ? val.map((v) => (typeof v === 'string' ? escapeXml(v) : v))
+      : typeof val === 'string'
+        ? escapeXml(val)
+        : val;
+  }
+  return out;
+}
+
+/**
  * Recursively strip everything from parsed WaveDrom data that could become
- * an event handler, a dangerous URL, or a dangerous SVG element when the
- * client-side WaveDrom renderer turns label arrays into live SVG markup.
+ * an event handler, a dangerous URL, or a dangerous/escapable SVG element
+ * when the client-side WaveDrom renderer turns label arrays into live SVG
+ * markup.
  *
  * Runs before serialization in `normalizeWavedromSource`, so every consumer
  * (preview `RenderWaveForm`, presentation/export `ProcessAll`) only ever
  * sees cleaned data. Safe content is preserved: element arrays with benign
- * tags (e.g. `['image', {href: 'icon.png'}]`) and ordinary data arrays are
+ * tags (e.g. `['image', {href: 'icon.png'}]`) and ordinary label data are
  * untouched.
  */
-function sanitizeWavedromData(value: unknown): unknown {
+function sanitizeWavedromData(value: unknown, parentKey?: string): unknown {
   if (Array.isArray(value)) {
-    const tag = typeof value[0] === 'string' ? value[0].toLowerCase() : null;
+    const rawTag = value[0];
+    const tag = typeof rawTag === 'string' ? rawTag.toLowerCase() : null;
     if (tag !== null && DANGEROUS_SVG_TAGS.has(tag)) {
       // A dangerous element either carries its payload in an attribute
       // object (`['animate', {attributeName: 'href', to: 'javascript:…'}]`)
       // or, for `script`/`handler`, as raw text children (`['script',
-      // 'alert(1)']`). Anything else starting with these tags inside data
-      // arrays (`data: ['set', 'reset']`) keeps plain-string shapes and is
+      // 'alert(1)']`). Anything else starting with these tags inside label
+      // data (`data: ['set', 'reset']`) keeps plain-string shapes and is
       // not affected. Replace with '' — onml appends strings as text, while
       // null/undefined would crash or leak into the markup.
       if (isPlainObject(value[1]) || tag === 'script' || tag === 'handler') {
         return '';
       }
     }
-    return value.map(sanitizeWavedromData);
+
+    const bag = value[1];
+    const isElement =
+      tag !== null && (isPlainObject(bag) || TAG_NAME_PATTERN.test(tag));
+
+    // `data: [...]` holds label strings that WaveDrom renders through tspan
+    // (which escapes them itself); only nested arrays/objects inside it can
+    // become elements. Plain data arrays (edge strings, signal objects, …)
+    // take the same path — their heads are not element names.
+    if (!isElement || parentKey === 'data') {
+      return value.map((v) =>
+        Array.isArray(v) || isPlainObject(v) ? sanitizeWavedromData(v) : v,
+      );
+    }
+
+    // Element description `[tag, attrs?, children...]`: sanitize the
+    // attribute bag (event handlers / dangerous URLs) and XML-escape every
+    // string that onml would append raw. Children start at index 2 when an
+    // attribute bag is present, at index 1 otherwise.
+    const out: unknown[] = [rawTag];
+    let i = 1;
+    if (isPlainObject(bag)) {
+      sanitizeWavedromData(bag);
+      out.push(escapeAttrBag(bag));
+      i = 2;
+    }
+    for (; i < value.length; i++) {
+      const child = value[i];
+      out.push(
+        typeof child === 'string'
+          ? escapeXml(child)
+          : sanitizeWavedromData(child),
+      );
+    }
+    return out;
   }
   if (isPlainObject(value)) {
     for (const key of Object.keys(value)) {
@@ -76,12 +148,12 @@ function sanitizeWavedromData(value: unknown): unknown {
       if (
         URL_ATTRIBUTES.includes(key.toLowerCase()) &&
         typeof attrValue === 'string' &&
-        DANGEROUS_URL_PATTERN.test(attrValue)
+        isDangerousUrl(attrValue)
       ) {
         delete value[key];
         continue;
       }
-      value[key] = sanitizeWavedromData(attrValue);
+      value[key] = sanitizeWavedromData(attrValue, key);
     }
   }
   return value;
@@ -108,8 +180,9 @@ function sanitizeWavedromData(value: unknown): unknown {
  * Valid-but-malicious *data* is additionally scrubbed by
  * `sanitizeWavedromData`: array-valued labels are interpreted by the
  * client-side renderer as SVG element descriptions, so event handler
- * attributes, dangerous URLs, and script-bearing/HTML-embedding elements
- * must be stripped before the data reaches the renderer.
+ * attributes, dangerous URLs, script-bearing/HTML-embedding elements, and
+ * markup-escaping characters must be stripped or escaped before the data
+ * reaches the renderer.
  *
  * The `<` escaping prevents a `</script>` substring inside a string value from
  * breaking out of the surrounding `<script type="WaveDrom">` container (HTML

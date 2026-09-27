@@ -125,12 +125,19 @@ const BENIGN_JSON5 =
  * Array-valued WaveDrom labels are interpreted by the client-side renderer as
  * SVG element descriptions (`tspan.parse` passes non-strings through
  * verbatim), so a label like `['image', {href, onerror}]` wires up a real
- * event handler *after* server-side sanitization has finished. Each payload
- * below must render as inert SVG once sanitized.
+ * event handler *after* server-side sanitization has finished. Onml also
+ * stringifies attribute values and text children without XML escaping, so
+ * quotes/'<' inside label data can break out of the generated markup and
+ * inject new attributes/elements. Each payload below must render as inert
+ * SVG once sanitized.
  */
 const LABEL_INJECTION_PAYLOADS: Record<string, string> = {
   'image onerror (reported PoC)':
     '{signal:[{name:["image",{href:"missing.png",onerror:"window.__pwned=true"}],wave:"01"}]}',
+  'attribute value breakout':
+    '{signal:[{name:["image",{href:"missing.png\\" onerror=\\"window.__pwned=true"}],wave:"01"}]}',
+  'text child markup injection':
+    '{signal:[{name:["text","<image href=\\"missing.png\\" onerror=\\"window.__pwned=true\\"/>"]}]}',
   'script label with text payload':
     '{signal:[{name:["script","window.__pwned=true"],wave:"01"}]}',
   'SMIL animate retargeting href':
@@ -185,6 +192,25 @@ test('UNSANITIZED label injection wires up a live SVG event handler (demonstrate
   // and the handler executes when the missing image fails to load.
   const raw = wavedromBlock(
     LABEL_INJECTION_PAYLOADS['image onerror (reported PoC)'],
+  );
+  const result = await processAll(page, raw);
+  expect(result.onAttrs).toContain('onerror@image');
+  await page.waitForFunction(
+    () => (window as WindowWithWaveDrom).__pwned === true,
+    undefined,
+    { timeout: 5000 },
+  );
+});
+
+test('UNSANITIZED attribute-value breakout injects a live handler (demonstrates the onml gap)', async ({
+  page,
+}) => {
+  // Pre-fix behavior of the escaping gap: onml stringifies attribute values
+  // without XML escaping, so a crafted quote inside any label attribute
+  // breaks out and injects new attributes — the trailing-quote trick leaves
+  // the generated XML well-formed, so the handler really runs.
+  const raw = wavedromBlock(
+    LABEL_INJECTION_PAYLOADS['attribute value breakout'],
   );
   const result = await processAll(page, raw);
   expect(result.onAttrs).toContain('onerror@image');

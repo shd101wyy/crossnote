@@ -179,5 +179,100 @@ describe('normalizeWavedromSource (shd101wyy/vscode-markdown-preview-enhanced#23
         '{"signal":[{"name":["line one","line two"],"wave":"01"}]}',
       );
     });
+
+    describe('escapes markup breakout through onml stringification', () => {
+      // onml (WaveDrom's markup library) stringifies element arrays into SVG
+      // without XML-escaping attribute names, attribute values, or text
+      // children. A quote or '<' arriving through diagram data can therefore
+      // break out of an attribute/element and inject new markup — the
+      // sanitizer must escape those positions itself.
+
+      it('escapes attribute values that would close the attribute and inject new ones', () => {
+        // The value ends without a closing quote on purpose: onml's own
+        // closing quote completes the injected onerror attribute, yielding
+        // well-formed (and live) markup: <text foo="a" onerror="…">
+        const out = normalizeWavedromSource(
+          '{signal:[{name:["text",{x:1,foo:"a\\" onerror=\\"window.__x=1\\" b=\\"c"},"lbl"],wave:"01"}]}',
+        );
+        expect(JSON.parse(out as string).signal[0].name[1].foo).toBe(
+          'a&quot; onerror=&quot;window.__x=1&quot; b=&quot;c',
+        );
+      });
+
+      it('escapes attribute names containing quotes', () => {
+        const out = normalizeWavedromSource(
+          '{signal:[{name:["text",{"a\\" onerror=\\"window.__x=1\\"":1},"l"],wave:"01"}]}',
+        );
+        const name = JSON.parse(out as string).signal[0].name;
+        expect(Object.keys(name[1])[0]).toBe(
+          'a&quot; onerror=&quot;window.__x=1&quot;',
+        );
+      });
+
+      it('escapes text children that would inject whole elements', () => {
+        const out = normalizeWavedromSource(
+          '{signal:[{name:["text","<image href=\\"m.png\\" onerror=\\"window.__x=1\\"/>"]}]}',
+        );
+        expect(JSON.parse(out as string).signal[0].name[1]).toBe(
+          '&lt;image href=&quot;m.png&quot; onerror=&quot;window.__x=1&quot;/&gt;',
+        );
+      });
+
+      it('escapes text children of elements without an attribute bag', () => {
+        const out = normalizeWavedromSource(
+          '{signal:[{name:["text","</text><image href=\\"m.png\\" onerror=\\"window.__x=1\\"/>"]}]}',
+        );
+        expect(JSON.parse(out as string).signal[0].name[1]).not.toContain(
+          '<image',
+        );
+      });
+
+      it('escapes pw wave path data (rendered into an onml path attribute)', () => {
+        const out = normalizeWavedromSource(
+          '{signal:[{name:"a",wave:["pw",{d:"z\\" onerror=\\"window.__x=1\\""}]}]}',
+        );
+        expect(JSON.parse(out as string).signal[0].wave[1].d).toBe(
+          'z&quot; onerror=&quot;window.__x=1&quot;',
+        );
+      });
+
+      it('escapes array-valued attributes (onml joins them with spaces)', () => {
+        const out = normalizeWavedromSource(
+          '{signal:[{name:["text",{class:["a&b","c"]},"l"],wave:"01"}]}',
+        );
+        expect(JSON.parse(out as string).signal[0].name[1].class).toEqual([
+          'a&amp;b',
+          'c',
+        ]);
+      });
+
+      it('escapes & in attribute values so URLs with query strings keep rendering', () => {
+        // Pre-fix, a bare & made the generated SVG ill-formed XML and the
+        // whole diagram failed to parse; escaping fixes that, too.
+        const out = normalizeWavedromSource(
+          '{signal:[{name:["image",{href:"icon.png?x=1&y=2"}],wave:"01"}]}',
+        );
+        expect(JSON.parse(out as string).signal[0].name[1].href).toBe(
+          'icon.png?x=1&amp;y=2',
+        );
+      });
+
+      it('keeps data label strings unmodified (tspan escapes them itself)', () => {
+        const out = normalizeWavedromSource(
+          '{signal:[{name:"ctrl",wave:"01",data:["R&W","a<b"]}]}',
+        );
+        expect(JSON.parse(out as string).signal[0].data).toEqual([
+          'R&W',
+          'a<b',
+        ]);
+      });
+
+      it('keeps plain string names unmodified (tspan escapes them itself)', () => {
+        const out = normalizeWavedromSource(
+          '{signal:[{name:"R&W bus",wave:"01"}]}',
+        );
+        expect(JSON.parse(out as string).signal[0].name).toBe('R&W bus');
+      });
+    });
   });
 });
