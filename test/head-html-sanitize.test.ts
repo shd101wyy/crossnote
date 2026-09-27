@@ -19,6 +19,37 @@ jest.mock('less', () => ({
 describe('head.html script sanitization', () => {
   track();
 
+  /**
+   * Render a preview for a workspace whose .crossnote/head.html is exactly
+   * `headHtml` (byte-for-byte, so "no trailing newline" cases stay faithful
+   * to the advisory PoC).
+   */
+  async function renderWithHeadHtml(headHtml: string): Promise<string> {
+    const tmpDir = mkdirSync({ prefix: 'xnote-head' });
+    const configDir = path.join(tmpDir, '.crossnote');
+    fs.mkdirSync(configDir, { recursive: true });
+    fs.writeFileSync(path.join(configDir, 'head.html'), headHtml);
+    fs.writeFileSync(path.join(tmpDir, 'test.md'), '# Test');
+
+    const notebook = await Notebook.init({
+      notebookPath: tmpDir,
+      config: {
+        markdownParser: 'markdown-it',
+        markdownYoBinaryPath: '',
+      },
+    });
+    const engine = new MarkdownEngine({
+      notebook,
+      filePath: path.join(tmpDir, 'test.md'),
+    });
+    const webviewConfig: WebviewConfig = notebook.config as WebviewConfig;
+    return engine.generateHTMLTemplateForPreview({
+      inputString: '# Test',
+      config: webviewConfig,
+      vscodePreviewPanel: null,
+    });
+  }
+
   test('resolvePathsInHeader strips <script> tags from head.html', async () => {
     const tmpDir = mkdirSync({ prefix: 'xnote-head' });
     const configDir = path.join(tmpDir, '.crossnote');
@@ -108,6 +139,27 @@ describe('head.html script sanitization', () => {
     // The raw head.html text appears (escaped) inside data-config, so
     // assert on tag forms, which cannot occur there.
     expect(html).not.toMatch(/<script[^>]*>\s*alert\(/);
+  });
+
+  test('script-only head.html with no trailing newline is stripped (GHSA-hjgv-rx62-wgjj PoC)', async () => {
+    // Byte-for-byte the advisory's PoC: removing the only tag empties the
+    // head, and the empty string is falsy — the old `|| header` fallback
+    // returned the raw header with the script intact. The newline-free
+    // input matters: a trailing newline keeps a text node in the head,
+    // making the sanitized head truthy even before the fix.
+    const html = await renderWithHeadHtml('<script>window.__x = 1;</script>');
+    expect(html).not.toMatch(/<script[^>]*>window\.__x/);
+  });
+
+  test('comment-leading head.html cannot smuggle scripts either', async () => {
+    // The reporter's "likely also affected" variant, verified: a leading
+    // comment makes the parser route the script to <body>, the head comes
+    // back empty after stripping, and the old fallback shipped the raw
+    // header.
+    const html = await renderWithHeadHtml(
+      '<!-- config --><script>window.__x = 1;</script>',
+    );
+    expect(html).not.toMatch(/<script[^>]*>window\.__x/);
   });
 });
 
