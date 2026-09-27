@@ -88,4 +88,96 @@ describe('normalizeWavedromSource (shd101wyy/vscode-markdown-preview-enhanced#23
       expect(JSON.parse(out as string)).toEqual({ n: 'a<b' });
     });
   });
+
+  describe('scrubs SVG element injection through array-valued labels (XSS bypass of the #2315 fix)', () => {
+    // WaveDrom's tspan.parse() passes non-string labels through verbatim, so
+    // an array like ['image', {href, onerror}] in a `name` is turned into a
+    // real SVG element *by the client-side renderer*, after server-side HTML
+    // sanitization has finished. The data itself must therefore be sanitized
+    // before it reaches the renderer.
+
+    it('strips event handler attributes from label element arrays', () => {
+      const out = normalizeWavedromSource(
+        '{signal:[{name:["image",{href:"missing.png",onerror:"alert(1)"}],wave:"01"}]}',
+      );
+      expect(out).not.toContain('onerror');
+      expect(out).toContain('"href":"missing.png"');
+    });
+
+    it('strips event handler keys from every nested object', () => {
+      const out = normalizeWavedromSource(
+        '{signal:[{name:"clk",wave:"p..",node:{ONCLICK:"alert(1)"}}]}',
+      );
+      expect(out).not.toContain('onclick');
+      expect(out).not.toContain('ONCLICK');
+    });
+
+    it('strips javascript:/vbscript:/data:text/html URLs from attribute objects', () => {
+      const out = normalizeWavedromSource(
+        '{signal:[{name:["a",{href:"javascript:alert(1)"},"x"],wave:"01"}]}',
+      );
+      expect(out).not.toContain('javascript:');
+    });
+
+    it('drops script label elements with text payloads', () => {
+      const out = normalizeWavedromSource(
+        '{signal:[{name:["script","window.__x=1"],wave:"01"}]}',
+      );
+      expect(out).not.toBeNull();
+      expect(JSON.parse(out as string).signal[0].name).not.toContain('script');
+    });
+
+    it('drops script label elements with attribute payloads', () => {
+      const out = normalizeWavedromSource(
+        '{signal:[{name:["script",{src:"data:text/javascript,alert(1)"}],wave:"01"}]}',
+      );
+      expect(out).not.toContain('text/javascript');
+    });
+
+    it('drops SMIL animation elements that can retarget hrefs', () => {
+      const out = normalizeWavedromSource(
+        '{signal:[{name:["a",{},["animate",{attributeName:"href",to:"javascript:alert(1)"}]],wave:"01"}]}',
+      );
+      expect(out).not.toContain('animate');
+      expect(out).not.toContain('javascript:');
+    });
+
+    it('drops foreignObject/iframe HTML-embedding elements', () => {
+      const out = normalizeWavedromSource(
+        '{signal:[{name:["foreignobject",{},["iframe",{srcdoc:"<b>x</b>"}]],wave:"01"}]}',
+      );
+      expect(out).not.toContain('foreignobject');
+      expect(out).not.toContain('srcdoc');
+    });
+
+    it('preserves benign element labels such as images', () => {
+      const out = normalizeWavedromSource(
+        '{signal:[{name:["image",{href:"icon.png"}],wave:"01"}]}',
+      );
+      expect(out).toBe(
+        '{"signal":[{"name":["image",{"href":"icon.png"}],"wave":"01"}]}',
+      );
+    });
+
+    it('does not mistake plain data arrays for element injection', () => {
+      // `data: ["set", "reset"]` are two data labels, not a <set> element:
+      // only the [tag, {attrs}] shape (or script/handler with text) is
+      // dropped.
+      const out = normalizeWavedromSource(
+        '{signal:[{name:"ctrl",wave:"01",data:["set","reset"]}]}',
+      );
+      expect(out).toBe(
+        '{"signal":[{"name":"ctrl","wave":"01","data":["set","reset"]}]}',
+      );
+    });
+
+    it('preserves multi-line string labels', () => {
+      const out = normalizeWavedromSource(
+        '{signal:[{name:["line one","line two"],wave:"01"}]}',
+      );
+      expect(out).toBe(
+        '{"signal":[{"name":["line one","line two"],"wave":"01"}]}',
+      );
+    });
+  });
 });

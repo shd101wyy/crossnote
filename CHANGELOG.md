@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Security
+
+- **WaveDrom diagram labels can no longer inject live SVG event handlers (XSS bypass of the #2315 eval fix)** — the [0.9.29 fix](#0929---2026-06-05) neutralized `eval` by normalizing `<script type="WaveDrom">` bodies to inert strict JSON, but valid-but-malicious _data_ passed through untouched: WaveDrom's `tspan.parse()` hands non-string label values to the renderer verbatim, so an array-valued `name` like `["image", {href: "missing.png", onerror: "alert(1)"}]` is interpreted as an SVG element description. The bundled client-side renderer builds that element (and its event handler) when the document is opened — _after_ server-side HTML sanitization has finished — so opening an exported HTML file executed the handler with code chunks disabled, and a hosted export ran the script in the page's origin. The normalization step now also scrubs the parsed diagram data: `on*` keys and `javascript:`/`vbscript:`/`data:text/html` URLs are stripped from every nested object, and SVG element arrays that execute script, embed an HTML document (`script`, `handler`, `foreignObject`, `iframe`, `embed`, `object`, `applet`), or retarget attributes via SMIL (`animate`, `set`, `animateMotion`, `animateTransform`) are dropped. Safe element labels (e.g. `["image", {href: "icon.png"}]`) and ordinary data arrays (`data: ["set", "reset"]`) render exactly as before, and the fix covers every consumer — preview, presentation mode, and HTML export — since they all read the same sanitized script body. The preview additionally sanitizes the rendered SVG output before inserting it into the DOM (defense in depth, matching the mermaid/tikz rule). Reported by @avrlab233 as a bypass of CVE-2026-11422.
+
 ## [0.9.40] - 2026-09-25
 
 ### Security
