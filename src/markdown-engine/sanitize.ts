@@ -9,16 +9,12 @@
 import type { CheerioAPI } from 'cheerio';
 import type { AnyNode, Element } from 'domhandler';
 import { normalizeWavedromSource } from '../renderers/wavedrom-source';
-
-const DANGEROUS_URL_PATTERN =
-  /^\s*(javascript|vbscript)\s*:|^\s*data\s*:\s*text\/html/i;
+import { isDangerousUrl, URL_ATTRIBUTES } from '../lib/dangerous-urls';
 
 const DANGEROUS_TAGS = ['object', 'embed', 'applet'];
 
 // Script types that are used as data containers (not executable by browsers)
 const SAFE_SCRIPT_TYPES = new Set(['wavedrom', 'text/tikz']);
-
-const URL_ATTRIBUTES = ['href', 'src', 'action', 'formaction', 'xlink:href'];
 
 /**
  * Sanitize rendered HTML in-place using a cheerio instance.
@@ -76,7 +72,7 @@ export function sanitizeRenderedHTML($: CheerioAPI): void {
       // Strip dangerous URL schemes from URL-bearing attributes
       if (
         URL_ATTRIBUTES.includes(attr.toLowerCase()) &&
-        DANGEROUS_URL_PATTERN.test(attribs[attr])
+        isDangerousUrl(attribs[attr])
       ) {
         delete attribs[attr];
       }

@@ -507,7 +507,15 @@ const PreviewContainer = createContainer(() => {
         try {
           const content = JSON5.parse(text);
           window['WaveDrom'].RenderWaveForm(i, content, 'wavedrom');
-          newWavedromCache[text] = el.innerHTML;
+          // The diagram data was sanitized by normalizeWavedromSource before
+          // reaching the DOM, but sanitize the generated SVG as well: the
+          // renderer builds markup from diagram data client-side, after
+          // server-side HTML sanitization has finished. Caching the sanitized
+          // markup also keeps the first render and cache-hit renders
+          // consistent (the cache-hit path below already sanitized).
+          const svg = sanitizeHtml(el.innerHTML);
+          el.innerHTML = svg;
+          newWavedromCache[text] = svg;
         } catch (error) {
           el.innerText = 'Failed to render WaveDrom code. ' + error;
         }

@@ -43,7 +43,9 @@ function sanitize(html: string): string {
  * Load the given body HTML into the page, pull in the vendored WaveDrom
  * scripts (same order the engine emits), and run `WaveDrom.ProcessAll()` —
  * mirroring the presentation/export render path. Returns whether an SVG was
- * produced and whether the `__pwned` execution sentinel was tripped.
+ * produced, whether the `__pwned` execution sentinel was tripped, and a scan
+ * of the resulting DOM for injected event handlers / dangerous SVG elements
+ * (the label-injection XSS vectors).
  */
 async function processAll(page: Page, bodyHtml: string) {
   await page.goto(server.url);
@@ -58,11 +60,53 @@ async function processAll(page: Page, bodyHtml: string) {
   return page.evaluate(() => {
     (window as WindowWithWaveDrom).WaveDrom.ProcessAll();
     const hidden = document.getElementById('hidden')!;
+    const onAttrs: string[] = [];
+    const dangerousTags: string[] = [];
+    hidden.querySelectorAll('*').forEach((el) => {
+      // The WaveDrom data container is input, not rendered output.
+      if (
+        el.tagName.toLowerCase() === 'script' &&
+        (el.getAttribute('type') || '').toLowerCase() === 'wavedrom'
+      ) {
+        return;
+      }
+      Array.from(el.attributes || []).forEach((a) => {
+        if (/^on/i.test(a.name)) {
+          onAttrs.push(`${a.name}@${el.tagName}`);
+        }
+        if (
+          ['href', 'xlink:href', 'src', 'srcdoc'].includes(
+            a.name.toLowerCase(),
+          ) &&
+          /javascript:|data:text\/html/i.test(a.value)
+        ) {
+          onAttrs.push(`${a.name}-url@${el.tagName}`);
+        }
+      });
+      const tag = el.tagName.toLowerCase();
+      if (
+        [
+          'script',
+          'iframe',
+          'foreignobject',
+          'animate',
+          'animatemotion',
+          'animatetransform',
+          'set',
+          'embed',
+          'object',
+        ].includes(tag)
+      ) {
+        dangerousTags.push(tag);
+      }
+    });
     return {
       pwned: (window as WindowWithWaveDrom).__pwned === true,
       svgCount: hidden.querySelectorAll('svg').length,
       hasWavedromScript: hidden.querySelectorAll('script[type="WaveDrom" i]')
         .length,
+      onAttrs,
+      dangerousTags,
     };
   });
 }
@@ -76,6 +120,39 @@ const BENIGN_JSON5 =
   '<div class="wavedrom"><script type="WaveDrom">' +
   "{ signal: [ { name: 'clk', wave: 'p...' }, { name: 'dat', wave: 'x.34' } ] }" +
   '</script></div>';
+
+/**
+ * Array-valued WaveDrom labels are interpreted by the client-side renderer as
+ * SVG element descriptions (`tspan.parse` passes non-strings through
+ * verbatim), so a label like `['image', {href, onerror}]` wires up a real
+ * event handler *after* server-side sanitization has finished. Onml also
+ * stringifies attribute values and text children without XML escaping, so
+ * quotes/'<' inside label data can break out of the generated markup and
+ * inject new attributes/elements. Each payload below must render as inert
+ * SVG once sanitized.
+ */
+const LABEL_INJECTION_PAYLOADS: Record<string, string> = {
+  'image onerror (reported PoC)':
+    '{signal:[{name:["image",{href:"missing.png",onerror:"window.__pwned=true"}],wave:"01"}]}',
+  'attribute value breakout':
+    '{signal:[{name:["image",{href:"missing.png\\" onerror=\\"window.__pwned=true"}],wave:"01"}]}',
+  'text child markup injection':
+    '{signal:[{name:["text","<image href=\\"missing.png\\" onerror=\\"window.__pwned=true\\"/>"]}]}',
+  'script label with text payload':
+    '{signal:[{name:["script","window.__pwned=true"],wave:"01"}]}',
+  'SMIL animate retargeting href':
+    '{signal:[{name:["a",{},["animate",{attributeName:"href",to:"javascript:window.__pwned=true"}]],wave:"01"}]}',
+  'foreignObject embedding an iframe':
+    '{signal:[{name:["foreignobject",{},["iframe",{srcdoc:"<img src=x onerror=window.__pwned=true>"}]],wave:"01"}]}',
+};
+
+function wavedromBlock(source: string): string {
+  return (
+    '<div class="wavedrom"><script type="WaveDrom">' +
+    source +
+    '</script></div>'
+  );
+}
 
 test('UNSANITIZED malicious WaveDrom executes via ProcessAll (demonstrates the vuln)', async ({
   page,
@@ -105,4 +182,83 @@ test('SANITIZED benign WaveDrom still renders an SVG', async ({ page }) => {
   const result = await processAll(page, safe);
   expect(result.pwned).toBe(false);
   expect(result.svgCount).toBeGreaterThan(0);
+});
+
+test('UNSANITIZED label injection wires up a live SVG event handler (demonstrates the bypass)', async ({
+  page,
+}) => {
+  // Pre-fix behavior of the reported XSS: the array-valued `name` becomes a
+  // real <image onerror=...> element in the DOM once ProcessAll renders it,
+  // and the handler executes when the missing image fails to load.
+  const raw = wavedromBlock(
+    LABEL_INJECTION_PAYLOADS['image onerror (reported PoC)'],
+  );
+  const result = await processAll(page, raw);
+  expect(result.onAttrs).toContain('onerror@image');
+  await page.waitForFunction(
+    () => (window as WindowWithWaveDrom).__pwned === true,
+    undefined,
+    { timeout: 5000 },
+  );
+});
+
+test('UNSANITIZED attribute-value breakout injects a live handler (demonstrates the onml gap)', async ({
+  page,
+}) => {
+  // Pre-fix behavior of the escaping gap: onml stringifies attribute values
+  // without XML escaping, so a crafted quote inside any label attribute
+  // breaks out and injects new attributes — the trailing-quote trick leaves
+  // the generated XML well-formed, so the handler really runs.
+  const raw = wavedromBlock(
+    LABEL_INJECTION_PAYLOADS['attribute value breakout'],
+  );
+  const result = await processAll(page, raw);
+  expect(result.onAttrs).toContain('onerror@image');
+  await page.waitForFunction(
+    () => (window as WindowWithWaveDrom).__pwned === true,
+    undefined,
+    { timeout: 5000 },
+  );
+});
+
+test('SANITIZED label injection renders inert SVG (image onerror PoC)', async ({
+  page,
+}) => {
+  const safe = sanitize(
+    wavedromBlock(LABEL_INJECTION_PAYLOADS['image onerror (reported PoC)']),
+  );
+  // The handler attribute is stripped from the data before it is embedded.
+  expect(safe).not.toContain('onerror');
+  const result = await processAll(page, safe);
+  expect(result.pwned).toBe(false);
+  expect(result.onAttrs).toEqual([]);
+  // The diagram (and its benign image label) still renders.
+  expect(result.svgCount).toBeGreaterThan(0);
+});
+
+for (const [name, source] of Object.entries(LABEL_INJECTION_PAYLOADS)) {
+  test(`SANITIZED label injection is inert: ${name}`, async ({ page }) => {
+    const safe = sanitize(wavedromBlock(source));
+    const result = await processAll(page, safe);
+    expect(result.pwned).toBe(false);
+    expect(result.onAttrs).toEqual([]);
+    expect(result.dangerousTags).toEqual([]);
+    expect(result.svgCount).toBeGreaterThan(0);
+  });
+}
+
+test('SANITIZED benign image label keeps rendering an image element', async ({
+  page,
+}) => {
+  const safe = sanitize(
+    wavedromBlock('{signal:[{name:["image",{href:"icon.png"}],wave:"01"}]}'),
+  );
+  expect(safe).toContain('"href":"icon.png"');
+  const result = await processAll(page, safe);
+  expect(result.svgCount).toBeGreaterThan(0);
+  const hasImage = await page.evaluate(() => {
+    const img = document.getElementById('hidden')!.querySelector('svg image');
+    return img !== null && img.getAttribute('href') === 'icon.png';
+  });
+  expect(hasImage).toBe(true);
 });
