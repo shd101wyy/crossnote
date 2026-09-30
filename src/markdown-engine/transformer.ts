@@ -144,13 +144,6 @@ async function downloadFileIfNecessary(filePath: string): Promise<string> {
   return localFilePath;
 }
 
-/**
- *
- * Load file by `filePath`
- * @param filePath
- * @param param1
- * @param filesCache
- */
 async function isFile(notebook: Notebook, filePath: string): Promise<boolean> {
   try {
     return (await notebook.fs.stat(filePath)).isFile();
@@ -159,6 +152,13 @@ async function isFile(notebook: Notebook, filePath: string): Promise<boolean> {
   }
 }
 
+/**
+ *
+ * Load file by `filePath`
+ * @param filePath
+ * @param param1
+ * @param filesCache
+ */
 async function loadFile(
   filePath: string,
   {
@@ -951,8 +951,9 @@ export async function transformMarkdown(
         else if (
           extname.match(/^\.(apng|avif|gif|jpeg|jpg|png|svg|bmp|webp|emf)/) ||
           // NOTE: For example, for github image like: ![Screenshot from 2023-10-15 15-34-27](https://github.com/shd101wyy/crossnote/assets/1908863/ede91390-3cca-4b83-8e30-33027bf0a363)
-          // A local file without an extension is shown as a code block below.
-          (extname === '' && absoluteFilePath === filePath)
+          // A local file without an extension is an image only when written
+          // as `![](...)`; `@import "Caddyfile"` is shown as a code block below.
+          (extname === '' && (absoluteFilePath === filePath || !!imageImportMatch))
         ) {
           if (importMatch || wikilinkImportMatch) {
             // image

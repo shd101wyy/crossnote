@@ -19,6 +19,10 @@ describe('imports without an extension and data URI images', () => {
     fs.writeFileSync(path.join(tmp, 'note.md'), 'Imported note body.\n');
     fs.writeFileSync(path.join(tmp, 'both'), 'plain file body\n');
     fs.writeFileSync(path.join(tmp, 'both.md'), 'markdown file body\n');
+    fs.writeFileSync(
+      path.join(tmp, 'screenshot'),
+      Buffer.from('89504e470d0a1a0a', 'hex'),
+    );
     nb = await Notebook.init({
       notebookPath: tmp,
       config: { markdownParser: 'markdown-it' },
@@ -75,6 +79,12 @@ describe('imports without an extension and data URI images', () => {
   test('an inline SVG data URI image renders', async () => {
     const uri = `data:image/svg+xml;base64,${svg}`;
     expect(await render(`see ![x](${uri}) here\n`)).toContain(`src="${uri}"`);
+  });
+
+  test('![]() of a local image without an extension stays an image', async () => {
+    const html = await render('![shot](screenshot)\n');
+    expect(html).toMatch(/<img[^>]*src="file:[^"]*\/screenshot"/);
+    expect(html).not.toContain('<code');
   });
 
   test('remote images without an extension still render as images', async () => {
