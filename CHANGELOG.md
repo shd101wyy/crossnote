@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Local image and link URLs are no longer double-encoded, and `@import` images load again outside the preview** — since `addFileProtocol()` switched to `pathToFileURL()` ([#468](https://github.com/shd101wyy/crossnote/pull/468)), `resolveFilePath()` fed it link text that was already a URL: markdown-it percent-encodes `![](图.png)` to `%E5%9B%BE.png`, so exports got `%25E5%259B%25BE.png` and the image was missing ([vscode-mpe#2441](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2441) reported by @NarrowWoodBridge); and the `?cache-buster` that `@import "image.png"` appends became part of the file name (`image.png%3F0.55`), which broke imported images in HTML/PDF export and in hosts that map file paths to URLs themselves (such as `crossnote serve`) ([vscode-mpe#2328](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2328) reported by @ahoy123). `resolveFilePath()` now splits the `?query#fragment` off the link, decodes the path once, resolves it, and re-attaches the suffix to the URL the host built, so hosts always receive a real file path. `@import` images now write their path as a URL (`#`, `?`, `%`, spaces and parentheses escaped) instead of only replacing spaces. As a side effect `![](dark.png#gh-dark-mode-only)` and `[x](other.md#section)` keep their fragment instead of having it encoded into the file name.
+
 ## [0.9.41] - 2026-09-27
 
 ### Security

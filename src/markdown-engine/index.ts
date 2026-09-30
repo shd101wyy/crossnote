@@ -2641,6 +2641,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   /**
+   * Resolve a link from the rendered HTML (`src`, `href`, …) to a URL.
+   *
+   * The link is a URL, not a filesystem path: markdown-it has already
+   * percent-encoded it (`图.png` → `%E5%9B%BE.png`), and it may carry a
+   * `?cache-buster` or `#fragment`. The path part is decoded before it is
+   * resolved and the suffix is re-attached afterwards, so the host builds its
+   * URL from a real file path (issues vscode-mpe#2441, vscode-mpe#2328).
    *
    * @param filePath
    * @param relative: whether to use the path relative to filePath or not.
@@ -2657,28 +2664,29 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       filePath[0] === '#'
     ) {
       return filePath;
-    } else if (filePath[0] === '/') {
-      if (relative) {
-        return path.relative(
-          fileDirectoryPath || this.fileDirectoryPath,
-          path.resolve(this.projectDirectoryPath.fsPath, '.' + filePath),
-        );
-      } else {
-        return utility.addFileProtocol(
-          path.resolve(this.projectDirectoryPath.fsPath, '.' + filePath),
-          this.vscodePreviewPanel,
-        );
-      }
-    } else {
-      if (relative) {
-        return filePath;
-      } else {
-        return utility.addFileProtocol(
-          path.resolve(fileDirectoryPath || this.fileDirectoryPath, filePath),
-          this.vscodePreviewPanel,
-        );
-      }
     }
+    if (relative && filePath[0] !== '/') {
+      return filePath;
+    }
+    const { path: linkPath, suffix } = utility.splitUrlReference(filePath);
+    const absolutePath =
+      linkPath[0] === '/'
+        ? path.resolve(this.projectDirectoryPath.fsPath, '.' + linkPath)
+        : path.resolve(fileDirectoryPath || this.fileDirectoryPath, linkPath);
+    if (relative) {
+      return (
+        utility.escapeUrlPath(
+          path.relative(
+            fileDirectoryPath || this.fileDirectoryPath,
+            absolutePath,
+          ),
+        ) + suffix
+      );
+    }
+    return utility.appendUrlSuffix(
+      utility.addFileProtocol(absolutePath, this.vscodePreviewPanel),
+      suffix,
+    );
   }
 
   /**

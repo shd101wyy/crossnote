@@ -318,6 +318,57 @@ export function addFileProtocol(
 }
 
 /**
+ * Split a link written in markdown (`img/a%20b.png?v=2#x`) into the
+ * percent-decoded path it points at and its raw `?query#fragment` suffix, so
+ * the path can be resolved as a file and the suffix re-attached to the URL
+ * built from it.
+ */
+export function splitUrlReference(url: string): {
+  path: string;
+  suffix: string;
+} {
+  const index = url.search(/[?#]/);
+  const rawPath = index === -1 ? url : url.slice(0, index);
+  const suffix = index === -1 ? '' : url.slice(index);
+  try {
+    return { path: decodeURIComponent(rawPath), suffix };
+  } catch {
+    // A literal `%` that is not a valid escape sequence stays as-is.
+    return { path: rawPath, suffix };
+  }
+}
+
+/**
+ * Re-attach a `?query#fragment` suffix from `splitUrlReference` to the URL a
+ * host built for the path. `data:` URLs (inlined images) take no suffix, and
+ * a URL that already has a query (`?root=1`) gets the new one joined with `&`.
+ */
+export function appendUrlSuffix(url: string, suffix: string): string {
+  if (!suffix || url.startsWith('data:')) {
+    return url;
+  }
+  if (suffix[0] === '?' && url.includes('?')) {
+    return `${url}&${suffix.slice(1)}`;
+  }
+  return url + suffix;
+}
+
+/**
+ * Turn a relative filesystem path into a URL path: forward slashes, with the
+ * characters that would end or break the URL (`%`, `#`, `?`, space,
+ * parentheses) percent-encoded. Other characters, including non-ASCII, are
+ * kept readable; markdown-it and browsers encode them as needed.
+ */
+export function escapeUrlPath(filePath: string): string {
+  return filePath
+    .replace(/\\/g, '/')
+    .replace(
+      /[%#? ()]/g,
+      (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase(),
+    );
+}
+
+/**
  * Remove file:// from file path
  * @param filePath
  */
