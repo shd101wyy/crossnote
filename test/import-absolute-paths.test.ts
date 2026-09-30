@@ -98,6 +98,9 @@ describe('importing files by absolute location (vscode-mpe#2349)', () => {
 
   test('a file:// .js import still emits no script, even with scripts enabled', async () => {
     fs.writeFileSync(path.join(notebookDir, 'local.js'), 'window.local = 1;');
+    // @import js reaches the script gate only with script execution on
+    // (parseMD clears JSAndCssFiles otherwise), as in preview-scripts-gate.
+    nb.config.enableScriptExecution = true;
     nb.previewScriptsEnabled = true;
     try {
       const preview = async (markdown: string) => {
@@ -106,6 +109,7 @@ describe('importing files by absolute location (vscode-mpe#2349)', () => {
         return engine.generateHTMLTemplateForPreview({
           inputString: markdown,
           config: nb.config as WebviewConfig,
+          vscodePreviewPanel: null,
         });
       };
       // Control: a notebook-local script is emitted when scripts are enabled.
@@ -117,6 +121,7 @@ describe('importing files by absolute location (vscode-mpe#2349)', () => {
       expect(html).not.toContain('importedTool');
     } finally {
       nb.previewScriptsEnabled = false;
+      nb.config.enableScriptExecution = false;
     }
   });
 });
