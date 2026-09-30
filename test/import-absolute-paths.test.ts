@@ -4,6 +4,7 @@ import * as path from 'path';
 import { pathToFileURL } from 'url';
 import { absoluteImportPath } from '../src/markdown-engine/transformer';
 import { Notebook } from '../src/notebook/index';
+import { WebviewConfig } from '../src/notebook/types';
 
 describe('absoluteImportPath', () => {
   test('Windows drive and UNC paths are used as written', () => {
@@ -95,9 +96,27 @@ describe('importing files by absolute location (vscode-mpe#2349)', () => {
     expect(html).toContain('project root text');
   });
 
-  test('a file:// .js import still emits no script', async () => {
-    const html = await render(`@import "${fileUrl('tool.js')}"\n`);
-    expect(html).not.toContain('<script');
-    expect(html).not.toContain('importedTool');
+  test('a file:// .js import still emits no script, even with scripts enabled', async () => {
+    fs.writeFileSync(path.join(notebookDir, 'local.js'), 'window.local = 1;');
+    nb.previewScriptsEnabled = true;
+    try {
+      const preview = async (markdown: string) => {
+        fs.writeFileSync(path.join(notebookDir, 'a.md'), markdown);
+        const engine = nb.getNoteMarkdownEngine(path.join(notebookDir, 'a.md'));
+        return engine.generateHTMLTemplateForPreview({
+          inputString: markdown,
+          config: nb.config as WebviewConfig,
+        });
+      };
+      // Control: a notebook-local script is emitted when scripts are enabled.
+      expect(await preview('@import "local.js"\n')).toMatch(
+        /<script[^>]*src="[^"]*local\.js"/,
+      );
+      const html = await preview(`@import "${fileUrl('tool.js')}"\n`);
+      expect(html).not.toMatch(/<script[^>]*src="[^"]*tool\.js"/);
+      expect(html).not.toContain('importedTool');
+    } finally {
+      nb.previewScriptsEnabled = false;
+    }
   });
 });
