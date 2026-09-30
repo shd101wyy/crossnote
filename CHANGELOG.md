@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **GitHub-style light/dark `<picture>` images show in the preview, and follow the preview theme** — READMEs mark theme variants with `<picture><source media="(prefers-color-scheme: dark)" srcset="…-dark.svg"><img src="…-light.svg"></picture>`. The preview resolved `<img src>` to a loadable URL but left `srcset` relative, so it resolved against the webview document (`vscode-webview://<uuid>/`): whenever the dark `<source>` matched, the browser committed to it and showed a broken image instead of falling back to the `<img>`. `srcset` on `<img>` and `<source>` is now resolved exactly like `src`, one candidate URL at a time, keeping `1x`/`480w` descriptors; relative-path exports are unchanged. Inside the preview, `prefers-color-scheme` reports the system scheme, which can differ from the preview theme, so a `<source>` whose `media` is exactly a `prefers-color-scheme` query is now matched against the preview's rendered background (the same test that sets `data-preview-theme`) and re-evaluated when the theme changes — as on GitHub, the image follows the page it is drawn on. Other media queries, and exported HTML (see `exportColorScheme`), keep standard browser behavior ([vscode-mpe#2271](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2271) reported by @garysassano).
+
 ## [0.9.41] - 2026-09-27
 
 ### Security
