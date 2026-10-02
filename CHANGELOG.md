@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Features
+
+- **` ```csv ` code blocks render as tables** — a fenced `csv` block is now parsed with papaparse (the same parser `@import "file.csv"` uses) and shown as an HTML table, with the first row as the header. Quoted cells may contain commas, the delimiter is auto-detected (so `;`-separated data works too), and every cell is HTML-escaped. Add `{code_block=true}` to show the CSV source instead, as with the other diagram blocks. A malformed block shows the parse error in place of the table ([vscode-mpe#1534](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1534) reported by @8).
+
 ## [0.9.41] - 2026-09-27
 
 ### Security
