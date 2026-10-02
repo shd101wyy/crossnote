@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Non-ASCII characters in relative image/link paths are no longer percent-encoded twice in export** — markdown-it normalizes link destinations through mdurl, which percent-encodes them once (`./图.png` → `./%E5%9B%BE.png`), but `resolveFilePath` treated that encoded string as a raw filesystem path, so `pathToFileURL` encoded the `%` signs again and exported `<img src="…/%25E5%259B%25BE.png">` — a URL no browser resolves (`ERR_FILE_NOT_FOUND` in HTML/PDF export and `Open in Browser`). Only the relative part of the path was affected, because the document directory half of the URL was a raw path and so was encoded exactly once; ASCII-only destinations escaped unnoticed because re-encoding ASCII is a no-op. Link destinations are now percent-decoded before they are resolved against the filesystem (invalid `%` sequences are kept as-is, and relative renders still emit the encoded URL form browsers expect), which also fixes local-image base64 embedding for such files — `embedded-local-images` decodes the file URL once, which used to leave the filename still encoded — and the eBook cover path round-trip ([vscode-mpe#2441](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2441) reported by @NarrowWoodBridge).
+
 ## [0.9.41] - 2026-09-27
 
 ### Security

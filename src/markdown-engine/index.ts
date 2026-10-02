@@ -2641,6 +2641,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   /**
+   * Resolve a link destination (`img[src]`, `a[href]`) from the rendered
+   * markdown to a URL the render target can load.
+   *
+   * markdown-it normalizes destinations through mdurl, which percent-encodes
+   * non-ASCII characters, spaces, … (`./图.png` → `./%E5%9B%BE.png`). The
+   * branches below that resolve `filePath` as a *filesystem path* decode it
+   * first — otherwise `addFileProtocol`'s `pathToFileURL` would encode the
+   * `%` signs again (`%25E5%259B%25BE.png`) and every exported image/link
+   * with non-ASCII (or space) characters in its relative path would fail to
+   * load ([vscode-mpe#2441](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2441)).
+   * The `relative` branches return the destination as a URL for the browser
+   * to resolve, so they keep the encoded form.
    *
    * @param filePath
    * @param relative: whether to use the path relative to filePath or not.
@@ -2665,7 +2677,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         );
       } else {
         return utility.addFileProtocol(
-          path.resolve(this.projectDirectoryPath.fsPath, '.' + filePath),
+          path.resolve(
+            this.projectDirectoryPath.fsPath,
+            '.' + utility.decodePercentEncodedString(filePath),
+          ),
           this.vscodePreviewPanel,
         );
       }
@@ -2674,7 +2689,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         return filePath;
       } else {
         return utility.addFileProtocol(
-          path.resolve(fileDirectoryPath || this.fileDirectoryPath, filePath),
+          path.resolve(
+            fileDirectoryPath || this.fileDirectoryPath,
+            utility.decodePercentEncodedString(filePath),
+          ),
           this.vscodePreviewPanel,
         );
       }

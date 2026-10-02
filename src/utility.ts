@@ -196,6 +196,23 @@ export function toFileURL(
 }
 
 /**
+ * Percent-decode `s`, keeping it as-is when it contains no valid escape
+ * sequence (a lone `%` makes `decodeURIComponent` throw).
+ *
+ * Producers/consumers of file URLs share this: `removeFileProtocol` decodes
+ * URLs back to paths, and `MarkdownEngine.resolveFilePath` decodes
+ * markdown-it's percent-encoded link destinations (mdurl encodes non-ASCII,
+ * spaces, …) before they are resolved as filesystem paths.
+ */
+export function decodePercentEncodedString(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+}
+
+/**
  * Do nothing and sleep for `ms` milliseconds
  * @param ms
  */
@@ -336,11 +353,8 @@ export function removeFileProtocol(filePath: string): string {
 
     // Producers (addFileProtocol / toFileURL) percent-encode characters like
     // `#` and spaces; decode them back so consumers get a filesystem path.
-    try {
-      rest = decodeURIComponent(rest);
-    } catch {
-      // A literal `%` that is not a valid escape sequence stays as-is.
-    }
+    // A literal `%` that is not a valid escape sequence stays as-is.
+    rest = decodePercentEncodedString(rest);
 
     if (process.platform !== 'win32' && !rest.startsWith('/')) {
       // On Linux platform, add a slash at the front
