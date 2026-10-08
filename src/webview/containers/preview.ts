@@ -8,6 +8,7 @@ import { createContainer } from 'unstated-next';
 import { Backlink, WebviewConfig } from '../../notebook';
 import { classifyAnchorClick } from '../lib/anchor-routing';
 import { setLocale } from '../lib/i18n';
+import { applyColorSchemeToPictures } from '../lib/picture-color-scheme';
 import { sanitizeHtml } from '../lib/sanitize';
 import {
   isBackgroundColorLight,
@@ -780,6 +781,10 @@ const PreviewContainer = createContainer(() => {
 
       previewElement.current.innerHTML = hiddenPreviewElement.current.innerHTML;
       hiddenPreviewElement.current.innerHTML = '';
+      applyColorSchemeToPictures(
+        previewElement.current,
+        isBackgroundColorLight(document.body) ? 'light' : 'dark',
+      );
 
       await Promise.all([renderInteractiveVega(), renderMermaid()]);
 
@@ -1923,6 +1928,10 @@ const PreviewContainer = createContainer(() => {
       // NOTE: Don't set `data-theme` attribute below because it will override all the styles
       document.body.setAttribute(
         'data-preview-theme',
+        isLightTheme ? 'light' : 'dark',
+      );
+      applyColorSchemeToPictures(
+        previewElement.current,
         isLightTheme ? 'light' : 'dark',
       );
     }

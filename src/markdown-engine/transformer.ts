@@ -145,6 +145,14 @@ async function downloadFileIfNecessary(filePath: string): Promise<string> {
   return localFilePath;
 }
 
+async function isFile(notebook: Notebook, filePath: string): Promise<boolean> {
+  try {
+    return (await notebook.fs.stat(filePath)).isFile();
+  } catch {
+    return false;
+  }
+}
+
 /**
  *
  * Load file by `filePath`
@@ -809,9 +817,15 @@ export async function transformMarkdown(
       // ========== End: Task List Checkbox ==========
       // =========== Start: File import ============
       const importMatch = line.match(/^(\s*)@import(\s+)"([^"]+)";?/);
-      const imageImportMatch = line.match(
+      const lineImageMatch = line.match(
         /^(\s*)!\[([^\]]*)\]\(([^)]+)\)(?:{([^}]*)})?(\s*)$/,
       );
+      // A lone `![](data:...)` is an inline image, not a file to import
+      // (vscode-mpe#2241).
+      const imageImportMatch =
+        lineImageMatch && !/^\s*data:/i.test(lineImageMatch[3])
+          ? lineImageMatch
+          : null;
       const wikilinkImportMatch = line.match(
         /^(\s*)!\[\[(.+?)\]\](?:{([^}]*)})?\s*$/,
       );
@@ -904,6 +918,15 @@ export async function transformMarkdown(
           absoluteFilePath = filePath;
         } else if (filePath.startsWith('/')) {
           absoluteFilePath = path.resolve(projectDirectoryPath, '.' + filePath);
+        } else if (
+          !wikilinkImportMatch &&
+          !path.extname(filePath) &&
+          (await isFile(notebook, path.resolve(fileDirectoryPath, filePath)))
+        ) {
+          // `@import "Caddyfile"` names a file that has no extension. Use it as
+          // written instead of letting wikilink resolution append `.md`
+          // (vscode-mpe#2236).
+          absoluteFilePath = path.resolve(fileDirectoryPath, filePath);
         } else {
           // Use the notebook's wikilink resolution so shortest-path
           // and absolute modes are honoured consistently with index-time
@@ -954,7 +977,11 @@ export async function transformMarkdown(
         // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types#common_image_file_types
         else if (
           extname.match(/^\.(apng|avif|gif|jpeg|jpg|png|svg|bmp|webp|emf)/) ||
-          extname === '' // NOTE: For example, for github image like: ![Screenshot from 2023-10-15 15-34-27](https://github.com/shd101wyy/crossnote/assets/1908863/ede91390-3cca-4b83-8e30-33027bf0a363)
+          // NOTE: For example, for github image like: ![Screenshot from 2023-10-15 15-34-27](https://github.com/shd101wyy/crossnote/assets/1908863/ede91390-3cca-4b83-8e30-33027bf0a363)
+          // A local file without an extension is an image only when written
+          // as `![](...)`; `@import "Caddyfile"` is shown as a code block below.
+          (extname === '' &&
+            (absoluteFilePath === filePath || !!imageImportMatch))
         ) {
           if (importMatch || wikilinkImportMatch) {
             // image
