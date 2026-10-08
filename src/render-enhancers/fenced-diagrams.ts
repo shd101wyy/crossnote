@@ -11,6 +11,7 @@ import {
 import { BlockInfo } from '../lib/block-info';
 import computeChecksum from '../lib/compute-checksum';
 import { renderBitfield } from '../renderers/bitfield';
+import { renderCsv } from '../renderers/csv';
 import { D2_NOT_FOUND, renderD2 } from '../renderers/d2';
 import { TIKZ_NOT_AVAILABLE, renderTikz } from '../renderers/tikz';
 import { render as renderPlantuml } from '../renderers/puml';
@@ -52,6 +53,7 @@ const supportedLanguages = [
   'wsd',
   'd2',
   'tikz',
+  'csv',
 ];
 
 /**
@@ -439,6 +441,15 @@ async function renderDiagram({
           $output = `<div ${stringifyBlockAttributes(
             normalizedInfo.attributes,
           )}>${svg}</div>`;
+          break;
+        }
+        case 'csv': {
+          $output = `<div ${stringifyBlockAttributes(
+            ensureClassInAttributes(
+              normalizedInfo.attributes,
+              normalizedInfo.language,
+            ),
+          )}>${renderCsv(code)}</div>`;
           break;
         }
       }

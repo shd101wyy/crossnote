@@ -3,6 +3,7 @@ import { escape } from 'html-escaper';
 import * as less from 'less';
 import * as Papa from 'papaparse';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 import * as temp from '../lib/temp';
 import {
@@ -144,6 +145,14 @@ async function downloadFileIfNecessary(filePath: string): Promise<string> {
   return localFilePath;
 }
 
+async function isFile(notebook: Notebook, filePath: string): Promise<boolean> {
+  try {
+    return (await notebook.fs.stat(filePath)).isFile();
+  } catch {
+    return false;
+  }
+}
+
 /**
  *
  * Load file by `filePath`
@@ -237,6 +246,29 @@ async function loadFile(
 // run length; the perf smoke tests in test/block-id.test.ts pin both
 // regimes.
 const BLOCK_ID_RE = /(?<!\s)\s+\^([a-zA-Z0-9_-]+)$/;
+
+/**
+ * The file an import target names when it is absolute: a `file://` URL, or a
+ * Windows drive or UNC path (`C:/styles/my.less`, `\\server\share\x.less`).
+ * A leading `/` is not included; in an import it means the project root.
+ * Returns `null` for every other target (vscode-mpe#2349).
+ */
+export function absoluteImportPath(
+  target: string,
+  pathImpl: path.PlatformPath = path,
+): string | null {
+  if (/^file:\/\//i.test(target)) {
+    try {
+      return fileURLToPath(target);
+    } catch {
+      return null;
+    }
+  }
+  if (!target.startsWith('/') && pathImpl.isAbsolute(target)) {
+    return target;
+  }
+  return null;
+}
 
 export async function transformMarkdown(
   inputString: string,
@@ -785,9 +817,15 @@ export async function transformMarkdown(
       // ========== End: Task List Checkbox ==========
       // =========== Start: File import ============
       const importMatch = line.match(/^(\s*)@import(\s+)"([^"]+)";?/);
-      const imageImportMatch = line.match(
+      const lineImageMatch = line.match(
         /^(\s*)!\[([^\]]*)\]\(([^)]+)\)(?:{([^}]*)})?(\s*)$/,
       );
+      // A lone `![](data:...)` is an inline image, not a file to import
+      // (vscode-mpe#2241).
+      const imageImportMatch =
+        lineImageMatch && !/^\s*data:/i.test(lineImageMatch[3])
+          ? lineImageMatch
+          : null;
       const wikilinkImportMatch = line.match(
         /^(\s*)!\[\[(.+?)\]\](?:{([^}]*)})?\s*$/,
       );
@@ -870,13 +908,25 @@ export async function transformMarkdown(
         }
 
         let absoluteFilePath: string;
-        if (
+        const absoluteImport = absoluteImportPath(filePath);
+        if (absoluteImport) {
+          absoluteFilePath = absoluteImport;
+        } else if (
           protocolsWhiteListRegExp &&
           filePath.match(protocolsWhiteListRegExp)
         ) {
           absoluteFilePath = filePath;
         } else if (filePath.startsWith('/')) {
           absoluteFilePath = path.resolve(projectDirectoryPath, '.' + filePath);
+        } else if (
+          !wikilinkImportMatch &&
+          !path.extname(filePath) &&
+          (await isFile(notebook, path.resolve(fileDirectoryPath, filePath)))
+        ) {
+          // `@import "Caddyfile"` names a file that has no extension. Use it as
+          // written instead of letting wikilink resolution append `.md`
+          // (vscode-mpe#2236).
+          absoluteFilePath = path.resolve(fileDirectoryPath, filePath);
         } else {
           // Use the notebook's wikilink resolution so shortest-path
           // and absolute modes are honoured consistently with index-time
@@ -927,7 +977,11 @@ export async function transformMarkdown(
         // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types#common_image_file_types
         else if (
           extname.match(/^\.(apng|avif|gif|jpeg|jpg|png|svg|bmp|webp|emf)/) ||
-          extname === '' // NOTE: For example, for github image like: ![Screenshot from 2023-10-15 15-34-27](https://github.com/shd101wyy/crossnote/assets/1908863/ede91390-3cca-4b83-8e30-33027bf0a363)
+          // NOTE: For example, for github image like: ![Screenshot from 2023-10-15 15-34-27](https://github.com/shd101wyy/crossnote/assets/1908863/ede91390-3cca-4b83-8e30-33027bf0a363)
+          // A local file without an extension is an image only when written
+          // as `![](...)`; `@import "Caddyfile"` is shown as a code block below.
+          (extname === '' &&
+            (absoluteFilePath === filePath || !!imageImportMatch))
         ) {
           if (importMatch || wikilinkImportMatch) {
             // image

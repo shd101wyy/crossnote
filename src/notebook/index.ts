@@ -296,6 +296,13 @@ export class Notebook {
   public initMarkdownIt(options?: ExtendedMarkdownItOptions) {
     const md = new MarkdownIt(options ?? defaultMarkdownItConfig);
 
+    // markdown-it only accepts gif/png/jpeg/webp data URIs in links and
+    // images. Raw HTML `<img src="data:image/svg+xml,...">` already renders, so
+    // accept SVG data URIs in `![](...)` too (vscode-mpe#2241).
+    const validateLink = md.validateLink.bind(md);
+    md.validateLink = (url: string) =>
+      validateLink(url) || /^data:image\/svg\+xml[;,]/i.test(url.trim());
+
     // markdown-it extensions
     md.use(MarkdownItFootnote);
     md.use(MarkdownItSub);
