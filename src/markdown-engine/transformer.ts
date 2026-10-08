@@ -3,6 +3,7 @@ import { escape } from 'html-escaper';
 import * as less from 'less';
 import * as Papa from 'papaparse';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 import * as temp from '../lib/temp';
 import {
@@ -245,6 +246,29 @@ async function loadFile(
 // run length; the perf smoke tests in test/block-id.test.ts pin both
 // regimes.
 const BLOCK_ID_RE = /(?<!\s)\s+\^([a-zA-Z0-9_-]+)$/;
+
+/**
+ * The file an import target names when it is absolute: a `file://` URL, or a
+ * Windows drive or UNC path (`C:/styles/my.less`, `\\server\share\x.less`).
+ * A leading `/` is not included; in an import it means the project root.
+ * Returns `null` for every other target (vscode-mpe#2349).
+ */
+export function absoluteImportPath(
+  target: string,
+  pathImpl: path.PlatformPath = path,
+): string | null {
+  if (/^file:\/\//i.test(target)) {
+    try {
+      return fileURLToPath(target);
+    } catch {
+      return null;
+    }
+  }
+  if (!target.startsWith('/') && pathImpl.isAbsolute(target)) {
+    return target;
+  }
+  return null;
+}
 
 export async function transformMarkdown(
   inputString: string,
@@ -884,7 +908,10 @@ export async function transformMarkdown(
         }
 
         let absoluteFilePath: string;
-        if (
+        const absoluteImport = absoluteImportPath(filePath);
+        if (absoluteImport) {
+          absoluteFilePath = absoluteImport;
+        } else if (
           protocolsWhiteListRegExp &&
           filePath.match(protocolsWhiteListRegExp)
         ) {
