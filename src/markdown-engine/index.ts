@@ -208,6 +208,52 @@ function normalizeMarkdownYoHeadings($: CheerioAPI): void {
 }
 
 /**
+ * Whether a `pandoc --version` output names a pandoc that understands
+ * `--math-method`, which pandoc 3.11 introduced to replace the — now
+ * deprecated, but still functional — `--mathjax` and `--katex` flags.
+ * Older pandoc errors out on the new flag ("Unknown option"), so the
+ * flags must be chosen per binary (#529).
+ */
+export function pandocVersionSupportsMathMethod(
+  versionOutput: string,
+): boolean {
+  const match = versionOutput.match(/pandoc(?:\.exe)?\s+(\d+)\.(\d+)/i);
+  if (!match) {
+    return false;
+  }
+  const [major, minor] = [Number(match[1]), Number(match[2])];
+  return major > 3 || (major === 3 && minor >= 11);
+}
+
+/**
+ * Detected `--math-method` support per pandoc binary, so the version probe
+ * (`pandoc --version`) runs once per pandocPath instead of once per render —
+ * `pandocRender` executes on every parse when `markdownParser` is `pandoc`.
+ * The promise is cached (not the boolean) so concurrent parses share one
+ * probe. Any probe failure means "not supported": the deprecated flags work
+ * on every pandoc, so falling back to them can never break a working setup.
+ */
+const PANDOC_MATH_METHOD_SUPPORT = new Map<string, Promise<boolean>>();
+
+function pandocSupportsMathMethod(pandocPath: string): Promise<boolean> {
+  let support = PANDOC_MATH_METHOD_SUPPORT.get(pandocPath);
+  if (!support) {
+    support = new Promise<boolean>((resolve) => {
+      execFile(
+        pandocPath,
+        ['--version'],
+        { timeout: 10_000 },
+        (error, stdout) => {
+          resolve(!error && pandocVersionSupportsMathMethod(String(stdout)));
+        },
+      );
+    });
+    PANDOC_MATH_METHOD_SUPPORT.set(pandocPath, support);
+  }
+  return support;
+}
+
+/**
  * Whether an absolute filesystem path stays inside `parentDirectoryPath`.
  * Symlinks are resolved on both sides, so a link inside a directory
  * cannot pull in a file from outside it. The parent directory itself
@@ -3030,13 +3076,20 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     text: string = '',
     args: string[],
   ): Promise<string> {
+    // pandoc ≥ 3.11 deprecates the bare --mathjax/--katex flags and warns on
+    // stderr — which pandocRender renders as a visible error block above the
+    // document (#529). Use --math-method there; older pandoc rejects the new
+    // flag outright, so keep the legacy spelling when it's unsupported.
+    const mathMethod = await pandocSupportsMathMethod(
+      this.notebook.config.pandocPath,
+    );
     let mathRenderer;
     switch (this.notebook.config.mathRenderingOption) {
       case 'MathJax':
-        mathRenderer = '--mathjax';
+        mathRenderer = mathMethod ? '--math-method=mathjax' : '--mathjax';
         break;
       case 'KaTeX':
-        mathRenderer = '--katex';
+        mathRenderer = mathMethod ? '--math-method=katex' : '--katex';
         break;
       default:
         mathRenderer = '';
