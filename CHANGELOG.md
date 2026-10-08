@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Pandoc math rendering no longer trips the pandoc 3.11 deprecation warning** — pandoc 3.11 deprecated the bare `--mathjax` and `--katex` flags in favour of `--math-method=…`, and crossnote passed the old flags on every pandoc-parser render — worse than a log line, pandocRender turns any stderr into a visible error block above the document, so every preview of a note with MathJax or KaTeX showed `[WARNING] Deprecated: --mathjax…`. The flags are now chosen per pandoc binary: `--math-method=mathjax/katex` when the configured pandoc understands it (probed once per binary), the legacy flags otherwise — older pandoc rejects the new option outright, so an unconditional switch would have broken every pandoc before 3.11. Output is byte-identical between the two spellings; the probe caches its promise so concurrent parses share one `pandoc --version` run ([#529](https://github.com/shd101wyy/crossnote/issues/529) reported by @nredick).
+
 ### Features
 
 - **` ```csv ` code blocks render as tables** — a fenced `csv` block is now parsed with papaparse (the same parser `@import "file.csv"` uses) and shown as an HTML table, with the first row as the header. Quoted cells may contain commas, the delimiter is auto-detected (so `;`-separated data works too), and every cell is HTML-escaped. Add `{code_block=true}` to show the CSV source instead, as with the other diagram blocks. A malformed block shows the parse error in place of the table ([vscode-mpe#1534](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/1534) reported by @8).
