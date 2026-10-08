@@ -116,7 +116,7 @@
     "imagemagick-cli": "^0.5.0",
     "jquery": "^3.7.1",
     "json5": "^2.2.3",
-    "katex": "^0.16.47",
+    "katex": "^0.18.2",
     "less": "^4.2.0",
     "markdown-it": "^14.2.0",
     "markdown-it-abbr": "^1.0.4",
