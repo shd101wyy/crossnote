@@ -12,7 +12,7 @@ import {
   stringifyBlockAttributes,
 } from '../lib/block-attributes';
 import computeChecksum from '../lib/compute-checksum';
-import { toFileURL } from '../utility';
+import { escapeUrlPath, toFileURL } from '../utility';
 import { Notebook } from '../notebook';
 import { findFragmentTargetLine } from '../notebook/note-fragments';
 import { MarkdownParser } from '../notebook/types';
@@ -993,21 +993,23 @@ export async function transformMarkdown(
                 filePath.match(protocolsWhiteListRegExp)
               ) {
                 imageSrc = filePath;
-              } else if (useRelativeFilePath) {
-                imageSrc = path.relative(fileDirectoryPath, absoluteFilePath);
-                if (!forMarkdownExport) {
-                  imageSrc += '?' + (timestamp ?? Math.random());
-                }
               } else {
-                imageSrc =
-                  '/' + path.relative(projectDirectoryPath, absoluteFilePath);
+                // The image link is a URL: escape the characters that would
+                // end or break it (`#`, `?`, `%`, spaces), then add the cache
+                // buster as a real query. Full encodeURI(imageSrc) is wrong on
+                // Windows (#414: https://github.com/shd101wyy/markdown-preview-enhanced/issues/414).
+                imageSrc = useRelativeFilePath
+                  ? escapeUrlPath(
+                      path.relative(fileDirectoryPath, absoluteFilePath),
+                    )
+                  : '/' +
+                    escapeUrlPath(
+                      path.relative(projectDirectoryPath, absoluteFilePath),
+                    );
                 if (!forMarkdownExport) {
                   imageSrc += '?' + (timestamp ?? Math.random());
                 }
               }
-              // enchodeURI(imageSrc) is wrong. It will cause issue on Windows
-              // #414: https://github.com/shd101wyy/markdown-preview-enhanced/issues/414
-              imageSrc = imageSrc.replace(/ /g, '%20').replace(/\\/g, '/');
               filesCache[filePath] = imageSrc;
             }
 
