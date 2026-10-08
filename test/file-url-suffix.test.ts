@@ -117,6 +117,19 @@ describe('local links with encoded paths, queries and fragments', () => {
     );
   });
 
+  test('protocols, data: URLs and anchors are untouched', async () => {
+    // These early returns in resolveFilePath must keep the destination
+    // exactly as mdurl produced it — no decoding, no suffix handling.
+    const html = await render(
+      '![t](https://example.com/%E5%9B%BE.png)\n' +
+        '![d](data:image/png;base64,iVBORw0KGgo=)\n' +
+        '[x](#section)\n',
+    );
+    expect(html).toContain('src="https://example.com/%E5%9B%BE.png"');
+    expect(html).toContain('src="data:image/png;base64,iVBORw0KGgo="');
+    expect(html).toContain('href="#section"');
+  });
+
   test('relative output escapes root-relative links', async () => {
     // A `#` in a link starts a fragment, so the folder name is written escaped.
     const rootRelative =
