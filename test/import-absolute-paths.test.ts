@@ -124,4 +124,27 @@ describe('importing files by absolute location (vscode-mpe#2349)', () => {
       nb.config.enableScriptExecution = false;
     }
   });
+
+  test('a UNC .js import still emits no script, even with scripts enabled', async () => {
+    // A UNC path (\\server\share\tool.js) does not match the URL-scheme
+    // or drive-letter heuristics the .js gate checks explicitly; it must be
+    // rejected by the notebook-containment backstop instead. On non-Windows
+    // platforms absoluteImportPath leaves it to wikilink resolution, and the
+    // containment check drops it the same way, so the guard holds everywhere.
+    nb.config.enableScriptExecution = true;
+    nb.previewScriptsEnabled = true;
+    try {
+      fs.writeFileSync(path.join(notebookDir, 'a.md'), '');
+      const engine = nb.getNoteMarkdownEngine(path.join(notebookDir, 'a.md'));
+      const html = await engine.generateHTMLTemplateForPreview({
+        inputString: `@import "${String.raw`\\server\share\tool.js`}"\n`,
+        config: nb.config as WebviewConfig,
+        vscodePreviewPanel: null,
+      });
+      expect(html).not.toMatch(/<script[^>]*src="[^"]*(tool\.js|share)/);
+    } finally {
+      nb.previewScriptsEnabled = false;
+      nb.config.enableScriptExecution = false;
+    }
+  });
 });
