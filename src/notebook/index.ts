@@ -973,12 +973,18 @@ export class Notebook {
    */
   private async loadNoteFromDisk(
     filePath: string,
+    /**
+     * Stats the caller already holds (the index walk stat'ed the file a
+     * moment ago). Without them — the `getNote`/`getNoteMarkdown` paths —
+     * the file is stat'ed here.
+     */
+    knownStats?: FileSystemStats,
   ): Promise<{ note: Note; markdown: string } | null> {
     filePath = this.resolveNoteRelativePath(filePath);
     const absFilePath = this.resolveNoteAbsolutePath(filePath);
     let stats: FileSystemStats;
     try {
-      stats = await this.fs.stat(absFilePath);
+      stats = knownStats ?? (await this.fs.stat(absFilePath));
     } catch {
       return null;
     }
@@ -1338,85 +1344,108 @@ export class Notebook {
       return;
     }
 
+    // The walk only reports files the note index can use — the same
+    // markdown-extension and `maxNoteFileSize` gates `loadNoteFromDisk`
+    // applies — so entries a large repo has plenty of (sources, build
+    // output, images) are rejected here, after one stat, instead of
+    // round-tripping through the loader (which used to stat them a
+    // second time to reach the same conclusion).
+    const sizeLimit = this.config.maxNoteFileSize ?? 0;
+    const isIndexableMarkdown = (stats: FileSystemStats, name: string) =>
+      stats.isFile() &&
+      this.config.markdownFileExtensions.includes(path.extname(name)) &&
+      (sizeLimit <= 0 || stats.size <= sizeLimit);
+
+    // Entries of one directory are processed concurrently: on a large
+    // notebook the stat + read of each file is latency-bound (Windows
+    // stats run ~2-3 ms apiece), and the walk's wall time used to be the
+    // per-directory sum. Node's libuv thread pool bounds the real
+    // parallelism; `notes` / `pending` mutations are order-independent
+    // (map inserts keyed by path, append-only arrays).
     const subdirPromises: Promise<void>[] = [];
 
-    for (const file of files) {
-      // Always skip .git and node_modules regardless of .gitignore.
-      if (file.match(/^(node_modules|\.git)$/)) {
-        continue;
-      }
+    await Promise.all(
+      files.map(async (file) => {
+        // Always skip .git and node_modules regardless of .gitignore.
+        if (file.match(/^(node_modules|\.git)$/)) {
+          return;
+        }
 
-      const absFilePath = path.resolve(dirAbsPath, file);
-      const relFromNotebook = path
-        .relative(this.notebookPath.fsPath, absFilePath)
-        .replace(/\\/g, '/');
+        const absFilePath = path.resolve(dirAbsPath, file);
+        const relFromNotebook = path
+          .relative(this.notebookPath.fsPath, absFilePath)
+          .replace(/\\/g, '/');
 
-      if (currentStack.length > 0 && isIgnoredByGitignore(relFromNotebook)) {
-        continue;
-      }
+        if (currentStack.length > 0 && isIgnoredByGitignore(relFromNotebook)) {
+          return;
+        }
 
-      let stats: FileSystemStats;
-      try {
-        stats = await this.fs.stat(absFilePath);
-      } catch {
-        // Unstatable entry — same reasoning as the readdir catch above.
-        continue;
-      }
+        let stats: FileSystemStats;
+        try {
+          stats = await this.fs.stat(absFilePath);
+        } catch {
+          // Unstatable entry — same reasoning as the readdir catch above.
+          return;
+        }
 
-      // Observability for runaway walks (#2376 took a guess-the-culprit
-      // session to diagnose): once a single refresh crosses the threshold,
-      // name the root once so a user report is actionable on its own.
-      this.walkedEntriesThisRefresh += 1;
-      if (
-        !this.oversizedWalkWarned &&
-        this.walkedEntriesThisRefresh > OVERSIZED_WALK_WARN_THRESHOLD
-      ) {
-        this.oversizedWalkWarned = true;
-        console.warn(
-          `Crossnote: the note index walk under "${this.notebookPath.fsPath}" ` +
-            `has passed ${OVERSIZED_WALK_WARN_THRESHOLD} filesystem entries — ` +
-            'this notebook root is unusually broad, so wikilink/backlink/graph ' +
-            'indexing may be slow. If this is unexpected, open a smaller ' +
-            'folder as the notebook root.',
-        );
-      }
+        // Observability for runaway walks (#2376 took a guess-the-culprit
+        // session to diagnose): once a single refresh crosses the threshold,
+        // name the root once so a user report is actionable on its own.
+        this.walkedEntriesThisRefresh += 1;
+        if (
+          !this.oversizedWalkWarned &&
+          this.walkedEntriesThisRefresh > OVERSIZED_WALK_WARN_THRESHOLD
+        ) {
+          this.oversizedWalkWarned = true;
+          console.warn(
+            `Crossnote: the note index walk under "${this.notebookPath.fsPath}" ` +
+              `has passed ${OVERSIZED_WALK_WARN_THRESHOLD} filesystem entries — ` +
+              'this notebook root is unusually broad, so wikilink/backlink/graph ' +
+              'indexing may be slow. If this is unexpected, open a smaller ' +
+              'folder as the notebook root.',
+          );
+        }
 
-      // Symbolic links can point outside the notebook root (or form
-      // cycles), which would let the index walk escape the workspace
-      // and stat/read files it has no business touching (#2376).
-      // Links are therefore never followed by the walk; the same
-      // Obsidian-style containment the rest of the index assumes.
-      if (stats.isSymbolicLink()) {
-        continue;
-      }
+        // Symbolic links can point outside the notebook root (or form
+        // cycles), which would let the index walk escape the workspace
+        // and stat/read files it has no business touching (#2376).
+        // Links are therefore never followed by the walk; the same
+        // Obsidian-style containment the rest of the index assumes.
+        if (stats.isSymbolicLink()) {
+          return;
+        }
 
-      if (stats.isFile()) {
-        await onFile({
-          absPath: absFilePath,
-          relPath: relFromNotebook,
-          stats,
-        });
-      } else if (stats.isDirectory() && includeSubdirectories) {
-        subdirPromises.push(
-          this._walkNotebookDir(
-            relFromNotebook,
-            includeSubdirectories,
-            currentStack,
-            onFile,
-          ),
-        );
-      }
-    }
+        if (isIndexableMarkdown(stats, relFromNotebook)) {
+          await onFile({
+            absPath: absFilePath,
+            relPath: relFromNotebook,
+            stats,
+          });
+        } else if (stats.isDirectory() && includeSubdirectories) {
+          subdirPromises.push(
+            this._walkNotebookDir(
+              relFromNotebook,
+              includeSubdirectories,
+              currentStack,
+              onFile,
+            ),
+          );
+        }
+      }),
+    );
+
+    // Directories recurse only after this directory's entries are
+    // dispatched, matching the previous depth-first-with-siblings shape.
     await Promise.all(subdirPromises);
   }
 
   /**
    * Recursively stat all files under `dir` and write each markdown
-   * file's notebook-relative path → mtimeMs into `out`.  Files too
-   * large (`maxNoteFileSize`) or with a non-markdown extension are
-   * excluded — the same gates `loadNoteFromDisk` applies — so the
-   * incremental refresh never tries to process something that the
-   * loader would reject.
+   * file's notebook-relative path → mtimeMs into `out`.  The walk
+   * already excludes files that are too large (`maxNoteFileSize`) or
+   * have a non-markdown extension — the same gates `loadNoteFromDisk`
+   * applies — so the incremental refresh never tries to process
+   * something that the loader would reject.
    */
   private async _collectOnDiskMtimes(
     dir: string,
@@ -1424,20 +1453,16 @@ export class Notebook {
     gitignoreStack: Array<{ ig: Ignore; base: string }>,
     out: Map<string, number>,
   ): Promise<void> {
-    const sizeLimit = this.config.maxNoteFileSize ?? 0;
+    // The walk only reports files the index can process (markdown
+    // extension, within `maxNoteFileSize`), so the mtime can be taken
+    // as-is.
     await this._walkNotebookDir(
       dir,
       includeSubdirectories,
       gitignoreStack,
       async ({ relPath, stats }) => {
-        const ext = path.extname(relPath);
-        if (
-          this.config.markdownFileExtensions.includes(ext) &&
-          (sizeLimit <= 0 || stats.size <= sizeLimit)
-        ) {
-          // Floor: see comment in `refreshNotes` stamping path.
-          out.set(relPath, Math.floor(stats.mtimeMs));
-        }
+        // Floor: see comment in `refreshNotes` stamping path.
+        out.set(relPath, Math.floor(stats.mtimeMs));
       },
     );
   }
@@ -1455,7 +1480,10 @@ export class Notebook {
       includeSubdirectories,
       gitignoreStack,
       async ({ relPath, stats }) => {
-        const result = await this.loadNoteFromDisk(relPath);
+        // The walk already stat'ed the file and verified it passes the
+        // markdown-extension and size gates — hand the stats through so
+        // the loader doesn't stat again.
+        const result = await this.loadNoteFromDisk(relPath, stats);
         if (!result) return;
         const { note, markdown } = result;
         this.notes[note.filePath] = note;
