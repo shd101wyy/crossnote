@@ -47,6 +47,7 @@ import { removeFileProtocol } from '../utility';
 import HeadingIdGenerator from './heading-id-generator';
 import { readOfflineCss, readOfflineJs } from './inline-offline-assets';
 import { buildMathJaxConfigScript } from './mathjax-config';
+import { buildMermaidExportScript } from './mermaid-export';
 import { sanitizeRenderedHTML } from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
 import { transformMarkdown } from './transformer';
@@ -86,6 +87,13 @@ export interface MarkdownEngineOutput {
   JSAndCssFiles: string[];
   // slideConfigs: Array<object>
 }
+
+type MermaidExportWindow = Window & {
+  __crossnoteMermaidExport?: {
+    status: 'pending' | 'complete' | 'error';
+    message?: string;
+  };
+};
 
 export interface HTMLTemplateOption {
   /**
@@ -1257,48 +1265,10 @@ window["initRevealPresentation"] = async function() {
         mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@12.0.0/dist/mermaid.min.js"></script>`;
       }
 
-      mermaidInitScript += `<script type="module">
-// TODO: If ZenUML gets integrated into mermaid in the future,
-//      we can remove the following lines.
-${
-  html.match(/zenuml/i)
-    ? `import zenuml from 'https://${this.notebook.config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
-await mermaid.registerExternalDiagrams([zenuml])`
-    : ``
-}
-
-var MERMAID_CONFIG = (${JSON.stringify(this.notebook.config.mermaidConfig)});
-if (typeof MERMAID_CONFIG !== 'undefined') {
-  MERMAID_CONFIG.startOnLoad = false
-  MERMAID_CONFIG.cloneCssStyles = false
-  MERMAID_CONFIG.theme = "${this.notebook.config.mermaidTheme}"
-}
-
-mermaid.initialize(MERMAID_CONFIG || {})
-if (typeof(window['Reveal']) !== 'undefined') {
-  function mermaidRevealHelper(event) {
-    var currentSlide = event.currentSlide
-    var diagrams = currentSlide.querySelectorAll('div.mermaid')
-    for (var i = 0; i < diagrams.length; i++) {
-      var diagram = diagrams[i]
-      if (!diagram.hasAttribute('data-processed')) {
-        mermaid.init(null, diagram, ()=> {
-          Reveal.slide(event.indexh, event.indexv)
-        })
-      }
-    }
-  }
-  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
-  Reveal.addEventListener('ready', mermaidRevealHelper)
-  await mermaid.run({
-    nodes: document.querySelectorAll('div.mermaid')
-  })
-} else {
-  await mermaid.run({
-    nodes: document.querySelectorAll('div.mermaid')
-  })
-}
-</script>`;
+      mermaidInitScript = `<script type="module">${buildMermaidExportScript(
+        this.notebook.config,
+        /zenuml/i.test(html),
+      )}</script>`;
     }
 
     // wavedrom
@@ -1955,71 +1925,98 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       headless: true,
     });
 
-    const info = await utility.tempOpen({
-      prefix: 'crossnote',
-      suffix: '.html',
-    });
-    fs.writeFileSync(info.fd, html);
+    try {
+      const info = await utility.tempOpen({
+        prefix: 'crossnote',
+        suffix: '.html',
+      });
+      fs.writeFileSync(info.fd, html);
 
-    const page = await browser.newPage();
-    const loadPath =
-      utility.toFileURL(info.path) +
-      (yamlConfig['isPresentationMode'] ? '?print-pdf' : '');
-    await page.goto(loadPath);
+      const page = await browser.newPage();
+      const loadPath =
+        utility.toFileURL(info.path) +
+        (yamlConfig['isPresentationMode'] ? '?print-pdf' : '');
+      await page.goto(loadPath);
 
-    const chromeConfig =
-      yamlConfig['chrome'] &&
-      typeof yamlConfig['chrome'] === 'object' &&
-      !Array.isArray(yamlConfig['chrome'])
-        ? (yamlConfig['chrome'] as Record<string, unknown>)
-        : undefined;
-    const puppeteerConfig2 =
-      yamlConfig['puppeteer'] &&
-      typeof yamlConfig['puppeteer'] === 'object' &&
-      !Array.isArray(yamlConfig['puppeteer'])
-        ? (yamlConfig['puppeteer'] as Record<string, unknown>)
-        : undefined;
-    const puppeteerConfig: Record<string, unknown> = {
-      path: dest,
-      ...(yamlConfig['isPresentationMode']
-        ? {}
-        : { margin: { top: '1cm', bottom: '1cm', left: '1cm', right: '1cm' } }),
-      printBackground: this.notebook.config.printBackground,
-      ...(chromeConfig || puppeteerConfig2 || {}),
-    };
-
-    // wait for timeout
-    let timeout = 0;
-    if (chromeConfig && chromeConfig['timeout']) {
-      timeout = chromeConfig['timeout'] as number;
-    } else if (puppeteerConfig2 && puppeteerConfig2['timeout']) {
-      timeout = puppeteerConfig2['timeout'] as number;
-    }
-    if (timeout && typeof timeout === 'number') {
-      await new Promise((resolve) => setTimeout(resolve, timeout));
-    } else if (
-      this.notebook.config.puppeteerWaitForTimeout &&
-      this.notebook.config.puppeteerWaitForTimeout > 0
-    ) {
-      await new Promise((resolve) =>
-        setTimeout(resolve, this.notebook.config.puppeteerWaitForTimeout),
+      // Mermaid runs asynchronously after load. Its data-processed attribute is
+      // set before rendering, so wait for the export script's completion signal.
+      await page.waitForFunction(
+        () => {
+          const state = (window as MermaidExportWindow)
+            .__crossnoteMermaidExport;
+          return (
+            !document.querySelector('div.mermaid') ||
+            state?.status === 'complete' ||
+            state?.status === 'error'
+          );
+        },
+        { timeout: 30_000 },
       );
-    }
+      const mermaidError = await page.evaluate(() => {
+        const state = (window as MermaidExportWindow).__crossnoteMermaidExport;
+        return state?.status === 'error' ? state.message : undefined;
+      });
+      if (mermaidError !== undefined) {
+        throw new Error('Mermaid rendering failed: ' + mermaidError);
+      }
 
-    if (fileType === 'pdf') {
-      await page.pdf(puppeteerConfig);
-    } else {
-      puppeteerConfig['fullPage'] = true; // <= set to fullPage by default
-      await page.screenshot(puppeteerConfig);
-    }
-    // The browser's shutdown can reject (e.g. EBUSY unlinking its temp
-    // profile on Windows); the export itself has already succeeded.
-    browser.close().catch(() => {});
+      const chromeConfig =
+        yamlConfig['chrome'] &&
+        typeof yamlConfig['chrome'] === 'object' &&
+        !Array.isArray(yamlConfig['chrome'])
+          ? (yamlConfig['chrome'] as Record<string, unknown>)
+          : undefined;
+      const puppeteerConfig2 =
+        yamlConfig['puppeteer'] &&
+        typeof yamlConfig['puppeteer'] === 'object' &&
+        !Array.isArray(yamlConfig['puppeteer'])
+          ? (yamlConfig['puppeteer'] as Record<string, unknown>)
+          : undefined;
+      const puppeteerConfig: Record<string, unknown> = {
+        path: dest,
+        ...(yamlConfig['isPresentationMode']
+          ? {}
+          : {
+              margin: { top: '1cm', bottom: '1cm', left: '1cm', right: '1cm' },
+            }),
+        printBackground: this.notebook.config.printBackground,
+        ...(chromeConfig || puppeteerConfig2 || {}),
+      };
 
-    if (openFileAfterGeneration) {
-      utility.openFile(dest);
+      // wait for timeout
+      let timeout = 0;
+      if (chromeConfig && chromeConfig['timeout']) {
+        timeout = chromeConfig['timeout'] as number;
+      } else if (puppeteerConfig2 && puppeteerConfig2['timeout']) {
+        timeout = puppeteerConfig2['timeout'] as number;
+      }
+      if (timeout && typeof timeout === 'number') {
+        await new Promise((resolve) => setTimeout(resolve, timeout));
+      } else if (
+        this.notebook.config.puppeteerWaitForTimeout &&
+        this.notebook.config.puppeteerWaitForTimeout > 0
+      ) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.notebook.config.puppeteerWaitForTimeout),
+        );
+      }
+
+      if (fileType === 'pdf') {
+        await page.pdf(puppeteerConfig);
+      } else {
+        puppeteerConfig['fullPage'] = true; // <= set to fullPage by default
+        await page.screenshot(puppeteerConfig);
+      }
+
+      if (openFileAfterGeneration) {
+        utility.openFile(dest);
+      }
+      return dest;
+    } finally {
+      // A failed render must also close Chrome. Keep shutdown errors (e.g.
+      // EBUSY unlinking a Windows profile) from replacing the export result.
+      browser.close().catch(() => {});
     }
-    return dest;
   }
 
   /**

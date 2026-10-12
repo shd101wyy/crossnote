@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Chrome PDF, PNG and JPEG exports wait for Mermaid diagrams to finish rendering** — page load can finish while Mermaid is still laying out diagrams, leaving partial SVGs or raw diagram source in the exported file. Export now waits for the asynchronous Mermaid render to finish, reports rendering failures, and closes Chrome on failed exports as well (by @MonsterXia).
+
 ## [0.9.42] - 2026-10-08
 
 ### Bug fixes
