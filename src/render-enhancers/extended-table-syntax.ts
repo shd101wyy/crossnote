@@ -20,6 +20,12 @@ export default async function enhance($: CheerioAPI): Promise<void> {
           const $col = $(col);
           const text = $col.text();
           const html = $col.html();
+          const $children = $col.children();
+          const isBareText =
+            !$children.length ||
+            ($children.length === 1 &&
+              $children.is('p') &&
+              !$children.children().length);
           if (!text.length && !html?.length) {
             // merge to left
             const $prev = $col.prev();
@@ -29,7 +35,7 @@ export default async function enhance($: CheerioAPI): Promise<void> {
               // $prev.attr('colspan', colspan+1)
               // $col.remove()
             }
-          } else if (text.trim() === '^' && $prevRow) {
+          } else if (isBareText && text.trim() === '^' && $prevRow) {
             // merge to top
             const $prev = $($prevRow.children()[j]);
             if ($prev.length) {
@@ -38,7 +44,7 @@ export default async function enhance($: CheerioAPI): Promise<void> {
               // $prev.attr('rowspan', rowspan+1)
               // $col.remove()
             }
-          } else if (text.trim() === '>') {
+          } else if (isBareText && text.trim() === '>') {
             // merge to right
             const $next = $col.next();
             if ($next.length) {
