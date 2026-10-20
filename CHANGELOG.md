@@ -4,6 +4,11 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Features
+
+- **Scroll sync lands on the exact text, not the start of its block** — the preview used to scroll to where the enclosing block starts, so inside a long paragraph or a raw-HTML table (which has no `data-source-line` markers inside it) it drifted from the editor. The webview now matches the visible text around a source position against the rendered text (letters and digits only, with markdown syntax, HTML tags, comments, link destinations and entities dropped from the source) and measures the matched character with `Range.getBoundingClientRect()`. When a host also sends the editor column in `changeTextEditorSelection` (`character`), the preview puts that text at `topRatio` of its height; without it, the block-level scroll map is used as before. Repeated phrases resolve to the match nearest where the scroll map expects the line, and text that cannot be matched (diagrams, generated content) falls back to the scroll map. Scrolling the preview now reports the text at its middle to the host as a `revealSourcePosition` message, in place of `revealLine` (by @theoryshaw; [vscode-mpe#745](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/745)).
+- **Click the preview to reveal the source, and sync selections both ways** — with the new `clickToRevealSource` webview config, clicking text in the preview posts `revealSourcePosition` with the clicked text's source position and its height in the window, and selecting text in the preview posts `selectSourceRange`. Drags, double clicks, modified clicks and clicks on links, buttons, form controls and code-chunk controls keep their own behavior. A `highlightSourceSelection` message from the host highlights the editor's selection in the preview through the CSS Custom Highlight API, which paints without changing the DOM (by @theoryshaw; [vscode-mpe#588](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/588)).
+
 ## [0.9.42] - 2026-10-08
 
 ### Bug fixes

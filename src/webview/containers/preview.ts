@@ -11,6 +11,17 @@ import { setLocale } from '../lib/i18n';
 import { applyColorSchemeToPictures } from '../lib/picture-color-scheme';
 import { sanitizeHtml } from '../lib/sanitize';
 import {
+  buildDomTextIndex,
+  buildSourceTextIndex,
+  domOffsetAt,
+  domOffsetAtBoundary,
+  DomTextIndex,
+  findCorrespondingOffsets,
+  SourceTextIndex,
+  sourceOffsetAt,
+  sourceRangeToOffsets,
+} from '../lib/source-text-map';
+import {
   isBackgroundColorLight,
   readLocalStorage,
   readSessionStorage,
@@ -54,6 +65,91 @@ const BlockElements = {
 
 function isBlockElement(tagName: string) {
   return tagName in BlockElements;
+}
+
+/**
+ * Clicks on these keep their own behavior and never reveal the source.
+ */
+const INTERACTIVE_ELEMENTS =
+  'a, button, input, select, textarea, label, summary, [role="button"], [contenteditable="true"], .run-btn, .run-all-btn, .monaco-editor';
+
+/**
+ * The text node and offset under a viewport point.
+ */
+function caretAtPoint(
+  x: number,
+  y: number,
+): { node: Node; offset: number } | null {
+  const doc = document as Document & {
+    caretPositionFromPoint?: (
+      x: number,
+      y: number,
+    ) => { offsetNode: Node; offset: number } | null;
+    caretRangeFromPoint?: (x: number, y: number) => Range | null;
+  };
+  if (doc.caretPositionFromPoint) {
+    const position = doc.caretPositionFromPoint(x, y);
+    return position
+      ? { node: position.offsetNode, offset: position.offset }
+      : null;
+  }
+  if (doc.caretRangeFromPoint) {
+    const range = doc.caretRangeFromPoint(x, y);
+    return range
+      ? { node: range.startContainer, offset: range.startOffset }
+      : null;
+  }
+  return null;
+}
+
+interface SourceRange {
+  start: { line: number; character: number };
+  end: { line: number; character: number };
+}
+
+const SELECTION_HIGHLIGHT = 'crossnote-source-selection';
+
+/**
+ * The CSS Custom Highlight API, which paints ranges without touching the DOM.
+ */
+function getHighlightApi() {
+  const registry = (
+    window.CSS as unknown as {
+      highlights?: {
+        set(name: string, highlight: unknown): void;
+        delete(name: string): void;
+      };
+    }
+  )?.highlights;
+  const Highlight = (
+    window as unknown as { Highlight?: new (...ranges: Range[]) => unknown }
+  ).Highlight;
+  return registry && Highlight ? { registry, Highlight } : null;
+}
+
+function isSourcePosition(value: unknown): value is SourceRange['start'] {
+  const position = value as SourceRange['start'] | null;
+  return (
+    !!position &&
+    Number.isFinite(position.line) &&
+    Number.isFinite(position.character)
+  );
+}
+
+/**
+ * Viewport rect of the `k`th visible character, or null when it is hidden.
+ */
+function getCharRect(index: DomTextIndex, k: number): DOMRect | null {
+  const node = index.nodes[index.nodeIndices[k]];
+  if (!node || !node.isConnected) {
+    return null;
+  }
+  const range = document.createRange();
+  const offset = index.offsets[k];
+  range.setStart(node, offset);
+  range.setEnd(node, Math.min(offset + 1, node.data.length));
+  const rect = range.getBoundingClientRect();
+  return rect.width || rect.height ? rect : null;
 }
 
 /**
@@ -103,6 +199,30 @@ const PreviewContainer = createContainer(() => {
    */
   const previewScrollDelay = useRef<number>(0);
   const scrollMap = useRef<number[] | null>(null);
+  /**
+   * Visible-text indexes for matching source positions to preview positions.
+   * The DOM one is dropped whenever the preview content changes.
+   */
+  const markdownRef = useRef<string>('');
+  const sourceTextIndex = useRef<{
+    markdown: string;
+    index: SourceTextIndex;
+  } | null>(null);
+  const domTextIndex = useRef<DomTextIndex | null>(null);
+  /**
+   * Last editor position the preview was synced to, as `line:character:ratio`.
+   */
+  const lastSyncedPosition = useRef<string>('');
+  const pointerDownPosition = useRef<{ x: number; y: number } | null>(null);
+  /**
+   * The editor selection highlighted in the preview, and the last preview
+   * selection sent to the editor (as `startLine:startCharacter:…`).
+   */
+  const sourceSelection = useRef<SourceRange | null>(null);
+  const lastSentPreviewSelection = useRef<string>('');
+  const previewSelectionTimer = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const wavedromCache = useRef<Record<string, string>>({});
   const mermaidCache = useRef<Record<string, string>>({});
   const MERMAID_TIMEOUT_MS = 30_000;
@@ -341,6 +461,276 @@ const PreviewContainer = createContainer(() => {
     return newScrollMap; // scrollMap's length == screenLineCount (vscode can't get screenLineCount... sad)
   }, []);
 
+  const getSourceTextIndex = useCallback(() => {
+    const markdown = markdownRef.current;
+    if (sourceTextIndex.current?.markdown !== markdown) {
+      sourceTextIndex.current = {
+        markdown,
+        index: buildSourceTextIndex(markdown),
+      };
+    }
+    return sourceTextIndex.current.index;
+  }, []);
+
+  const getDomTextIndex = useCallback(() => {
+    if (!domTextIndex.current && previewElement.current) {
+      domTextIndex.current = buildDomTextIndex(previewElement.current);
+    }
+    return domTextIndex.current;
+  }, []);
+
+  /**
+   * Document y of the preview element's top, which scrollMap offsets are
+   * relative to.
+   */
+  const getPreviewOrigin = useCallback(() => {
+    if (!previewElement.current) {
+      return 0;
+    }
+    return (
+      previewElement.current.getBoundingClientRect().top + getWindowScrollTop()
+    );
+  }, []);
+
+  /**
+   * The line the block-level scroll map puts at a viewport height.
+   */
+  const getLineAtHeight = useCallback(
+    (y: number) => {
+      const map = buildScrollMap();
+      if (!map) {
+        return 0;
+      }
+      const target = y + getWindowScrollTop() - getPreviewOrigin();
+      let lo = 0;
+      let hi = map.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >>> 1;
+        if (map[mid] <= target) {
+          lo = mid;
+        } else {
+          hi = mid - 1;
+        }
+      }
+      return lo;
+    },
+    [buildScrollMap, getPreviewOrigin],
+  );
+
+  /**
+   * The preview character matching the source text character `offset`, and
+   * its document y, or null when the text around it can't be found. Of
+   * several matches, takes the one nearest to where the block-level scroll
+   * map expects the line.
+   */
+  const matchSourceOffsetInPreview = useCallback(
+    (offset: number) => {
+      const source = getSourceTextIndex();
+      const dom = getDomTextIndex();
+      if (
+        offset < 0 ||
+        offset >= source.text.length ||
+        !dom ||
+        !dom.text.length
+      ) {
+        return null;
+      }
+      const line = source.lines[offset];
+      const candidates = findCorrespondingOffsets(
+        source.text,
+        offset,
+        dom.text,
+      );
+      const map = buildScrollMap();
+      const expected =
+        map && line < map.length ? map[line] + getPreviewOrigin() : null;
+      const scrollTop = getWindowScrollTop();
+      let best: { k: number; y: number } | null = null;
+      let bestDistance = Infinity;
+      for (const candidate of candidates) {
+        const k = Math.min(candidate, dom.text.length - 1);
+        const rect = getCharRect(dom, k);
+        if (!rect) {
+          continue;
+        }
+        const y = rect.top + rect.height / 2 + scrollTop;
+        const distance = expected === null ? 0 : Math.abs(y - expected);
+        if (distance < bestDistance) {
+          best = { k, y };
+          bestDistance = distance;
+        }
+      }
+      // A match screens away from where the line should be is a repeated
+      // phrase, not this line.
+      if (bestDistance > getWindowHeight() * 3) {
+        return null;
+      }
+      return best;
+    },
+    [buildScrollMap, getDomTextIndex, getPreviewOrigin, getSourceTextIndex],
+  );
+
+  /**
+   * The source text character matching the preview character `k`, or null
+   * when the text around it can't be found. Of several matches, takes the one
+   * nearest to the line the block-level scroll map puts at its height.
+   */
+  const matchPreviewOffsetInSource = useCallback(
+    (k: number) => {
+      const dom = getDomTextIndex();
+      if (!dom || k < 0 || k >= dom.text.length) {
+        return null;
+      }
+      const source = getSourceTextIndex();
+      const candidates = findCorrespondingOffsets(dom.text, k, source.text);
+      if (!candidates.length) {
+        return null;
+      }
+      const rect = getCharRect(dom, k);
+      const expectedLine = rect
+        ? getLineAtHeight(rect.top + rect.height / 2)
+        : 0;
+      const last = source.text.length - 1;
+      let best = Math.min(candidates[0], last);
+      for (const candidate of candidates) {
+        const c = Math.min(candidate, last);
+        if (
+          Math.abs(source.lines[c] - expectedLine) <
+          Math.abs(source.lines[best] - expectedLine)
+        ) {
+          best = c;
+        }
+      }
+      return best;
+    },
+    [getDomTextIndex, getLineAtHeight, getSourceTextIndex],
+  );
+
+  /**
+   * Document y of the preview text matching the editor position, or null
+   * when the text around it can't be found.
+   */
+  const findPreviewYForSourcePosition = useCallback(
+    (line: number, character: number) => {
+      if (!markdownRef.current) {
+        return null;
+      }
+      const offset = sourceOffsetAt(getSourceTextIndex(), line, character);
+      return matchSourceOffsetInPreview(offset)?.y ?? null;
+    },
+    [getSourceTextIndex, matchSourceOffsetInPreview],
+  );
+
+  /**
+   * Source position of the preview text under a viewport point, and where
+   * that text sits in the viewport (0 = top, 1 = bottom).
+   */
+  const findSourcePositionAtPoint = useCallback(
+    (x: number, y: number) => {
+      const caret = caretAtPoint(x, y);
+      const dom = getDomTextIndex();
+      if (
+        !caret ||
+        caret.node.nodeType !== Node.TEXT_NODE ||
+        !dom ||
+        !markdownRef.current
+      ) {
+        return null;
+      }
+      const k = domOffsetAt(dom, caret.node, caret.offset);
+      const best = matchPreviewOffsetInSource(k);
+      if (best === null) {
+        return null;
+      }
+      const source = getSourceTextIndex();
+      const rect = getCharRect(dom, k);
+      const screenY = rect ? rect.top + rect.height / 2 : y;
+      return {
+        line: source.lines[best],
+        character: source.columns[best],
+        screenRatio: screenY / getWindowHeight(),
+      };
+    },
+    [getDomTextIndex, getSourceTextIndex, matchPreviewOffsetInSource],
+  );
+
+  /**
+   * Highlights the preview text of the editor selection. An end whose text
+   * can't be found moves inward to the nearest text that can.
+   */
+  const highlightSourceSelection = useCallback(() => {
+    const api = getHighlightApi();
+    if (!api) {
+      return;
+    }
+    api.registry.delete(SELECTION_HIGHLIGHT);
+    const selection = sourceSelection.current;
+    if (!selection || !markdownRef.current) {
+      return;
+    }
+    const offsets = sourceRangeToOffsets(
+      getSourceTextIndex(),
+      selection.start,
+      selection.end,
+    );
+    if (!offsets) {
+      return;
+    }
+    const [firstOffset, lastOffset] = offsets;
+    const STEP = 4;
+    const MAX_INWARD = 64;
+    let first = null;
+    for (
+      let s = firstOffset;
+      !first && s <= Math.min(lastOffset, firstOffset + MAX_INWARD);
+      s += STEP
+    ) {
+      first = matchSourceOffsetInPreview(s);
+    }
+    let last = null;
+    for (
+      let s = lastOffset;
+      !last && s >= Math.max(firstOffset, lastOffset - MAX_INWARD);
+      s -= STEP
+    ) {
+      last = matchSourceOffsetInPreview(s);
+    }
+    const dom = getDomTextIndex();
+    if (!first || !last || !dom || last.k < first.k) {
+      return;
+    }
+    const startNode = dom.nodes[dom.nodeIndices[first.k]];
+    const endNode = dom.nodes[dom.nodeIndices[last.k]];
+    const range = document.createRange();
+    range.setStart(startNode, dom.offsets[first.k]);
+    range.setEnd(
+      endNode,
+      Math.min(dom.offsets[last.k] + 1, endNode.data.length),
+    );
+    api.registry.set(SELECTION_HIGHLIGHT, new api.Highlight(range));
+  }, [getDomTextIndex, getSourceTextIndex, matchSourceOffsetInPreview]);
+
+  /**
+   * Like findSourcePositionAtPoint, but searches around the height `y` for
+   * text, since a single point may fall between paragraphs or table cells.
+   */
+  const findSourcePositionNearHeight = useCallback(
+    (xs: number[], y: number) => {
+      for (let dy = 0; dy <= 96; dy += 16) {
+        for (const sign of dy ? [-1, 1] : [1]) {
+          for (const x of xs) {
+            const position = findSourcePositionAtPoint(x, y + sign * dy);
+            if (position) {
+              return position;
+            }
+          }
+        }
+      }
+      return null;
+    },
+    [findSourcePositionAtPoint],
+  );
+
   const previewSyncSource = useCallback(() => {
     let scrollToLine: number;
 
@@ -353,6 +743,22 @@ const PreviewContainer = createContainer(() => {
       scrollToLine = 0;
 
       return postMessage('revealLine', [sourceUri.current, scrollToLine]);
+    }
+
+    // Align the editor to the text at the middle of the preview.
+    const { left, width } = previewElement.current.getBoundingClientRect();
+    const position = findSourcePositionNearHeight(
+      [left + width * 0.15, left + width * 0.3, left + width * 0.5],
+      getWindowHeight() / 2,
+    );
+    if (position) {
+      return postMessage('revealSourcePosition', [
+        sourceUri.current,
+        position.line,
+        position.character,
+        position.screenRatio,
+        false,
+      ]);
     }
 
     const top = getWindowScrollTop() + getWindowHeight() / 2;
@@ -399,7 +805,7 @@ const PreviewContainer = createContainer(() => {
     // # @editor.getElement().setScrollTop
     // track currnet time to disable onDidChangeScrollTop
     // editorScrollDelay = Date.now() + 100
-  }, [buildScrollMap, postMessage]);
+  }, [buildScrollMap, findSourcePositionNearHeight, postMessage]);
 
   const scrollPreview = useCallback(() => {
     if (!config.scrollSync) {
@@ -896,8 +1302,25 @@ const PreviewContainer = createContainer(() => {
     [buildScrollMap, scrollToPosition],
   );
 
+  /**
+   * Scrolls so the preview text at the editor position sits `topRatio` of
+   * the way down the window, falling back to the block-level scroll map when
+   * that text can't be found.
+   */
+  const scrollSyncToSourcePosition = useCallback(
+    (line: number, character: number, topRatio: number) => {
+      const y = findPreviewYForSourcePosition(line, character);
+      if (y === null) {
+        scrollSyncToLine(line, topRatio);
+      } else {
+        scrollToPosition(Math.max(y - getWindowHeight() * topRatio, 0));
+      }
+    },
+    [findPreviewYForSourcePosition, scrollSyncToLine, scrollToPosition],
+  );
+
   const scrollToRevealSourceLine = useCallback(
-    (line: number, topRatio = 0.372) => {
+    (line: number, topRatio = 0.372, character?: number) => {
       cursorLine.current = line;
       writeSessionStorage(
         `crossnote.cursorLine.${sourceUri.current}`,
@@ -909,11 +1332,18 @@ const PreviewContainer = createContainer(() => {
 
       if (isPresentationMode) {
         scrollSyncToSlide(line);
+      } else if (character !== undefined) {
+        scrollSyncToSourcePosition(line, character, topRatio);
       } else {
         scrollSyncToLine(line, topRatio);
       }
     },
-    [isPresentationMode, scrollSyncToLine, scrollSyncToSlide],
+    [
+      isPresentationMode,
+      scrollSyncToLine,
+      scrollSyncToSlide,
+      scrollSyncToSourcePosition,
+    ],
   );
 
   const bindAnchorElementsClickEvent = useCallback(
@@ -1508,6 +1938,7 @@ const PreviewContainer = createContainer(() => {
         totalLineCount.current = total;
         setSidebarTocHtml(tocHTML);
         setMarkdown(markdown);
+        markdownRef.current = markdown;
         sourceUri.current = uri;
         sourceScheme.current = scheme;
         updateHtml(data.html, data.id, data.class);
@@ -1520,9 +1951,32 @@ const PreviewContainer = createContainer(() => {
         if (isNaN(topRatio)) {
           topRatio = 0.372;
         }
-        if (cursorLine.current !== line) {
-          scrollToRevealSourceLine(line, topRatio);
+        // Hosts that know the editor column send it for text-level sync.
+        const character =
+          typeof data.character === 'number' ? data.character : undefined;
+        if (character === undefined) {
+          if (cursorLine.current !== line) {
+            scrollToRevealSourceLine(line, topRatio);
+          }
+        } else {
+          const position = `${line}:${character}:${topRatio}`;
+          if (data.forced || lastSyncedPosition.current !== position) {
+            lastSyncedPosition.current = position;
+            scrollToRevealSourceLine(line, topRatio, character);
+          }
         }
+      } else if (data.command === 'highlightSourceSelection') {
+        const selection = data.selection as SourceRange | null | undefined;
+        sourceSelection.current =
+          selection &&
+          isSourcePosition(selection.start) &&
+          isSourcePosition(selection.end)
+            ? selection
+            : null;
+        // The editor selection supersedes any selection made in the preview,
+        // which would otherwise linger in gray once the preview loses focus.
+        window.getSelection()?.removeAllRanges();
+        highlightSourceSelection();
       } else if (data.command === 'startParsingMarkdown') {
         /**
          * show refreshingIcon after 1 second
@@ -1578,6 +2032,7 @@ const PreviewContainer = createContainer(() => {
     },
     [
       config.scrollSync,
+      highlightSourceSelection,
       isPresentationMode,
       previewSyncSource,
       refreshBacklinks,
@@ -1716,6 +2171,235 @@ const PreviewContainer = createContainer(() => {
   useEffect(() => {
     setShowBacklinks(!!config.alwaysShowBacklinksInPreview);
   }, [config.alwaysShowBacklinksInPreview]);
+
+  /**
+   * Selecting text in the preview selects the same text in the editor, at
+   * the same height.
+   */
+  const sendPreviewSelectionToSource = useCallback(() => {
+    const element = previewElement.current;
+    const selection = window.getSelection();
+    if (
+      !element ||
+      !selection ||
+      selection.isCollapsed ||
+      !selection.rangeCount ||
+      !markdownRef.current
+    ) {
+      return;
+    }
+    const range = selection.getRangeAt(0);
+    const common = range.commonAncestorContainer;
+    const commonElement =
+      common.nodeType === Node.ELEMENT_NODE
+        ? (common as Element)
+        : common.parentElement;
+    if (
+      !element.contains(common) ||
+      commonElement?.closest('.monaco-editor, input, textarea')
+    ) {
+      return;
+    }
+    const dom = getDomTextIndex();
+    if (!dom) {
+      return;
+    }
+    const first = domOffsetAtBoundary(
+      dom,
+      element,
+      range.startContainer,
+      range.startOffset,
+    );
+    const last =
+      domOffsetAtBoundary(dom, element, range.endContainer, range.endOffset) -
+      1;
+    if (first > last || first >= dom.text.length) {
+      return;
+    }
+    const start = matchPreviewOffsetInSource(first);
+    const end = matchPreviewOffsetInSource(last);
+    if (start === null || end === null || end < start) {
+      return;
+    }
+    const source = getSourceTextIndex();
+    const key = `${start}:${end}`;
+    if (lastSentPreviewSelection.current === key) {
+      return;
+    }
+    lastSentPreviewSelection.current = key;
+
+    // The preview's own selection replaces any highlighted editor selection.
+    sourceSelection.current = null;
+    getHighlightApi()?.registry.delete(SELECTION_HIGHLIGHT);
+
+    const rect = getCharRect(dom, first);
+    const screenRatio = rect
+      ? (rect.top + rect.height / 2) / getWindowHeight()
+      : 0.5;
+    postMessage('selectSourceRange', [
+      sourceUri.current,
+      source.lines[start],
+      source.columns[start],
+      source.lines[end],
+      source.columns[end] + 1,
+      screenRatio,
+    ]);
+  }, [
+    getDomTextIndex,
+    getSourceTextIndex,
+    matchPreviewOffsetInSource,
+    postMessage,
+  ]);
+
+  const onSelectionChange = useCallback(() => {
+    if (!config.clickToRevealSource || !isVSCode || isPresentationMode) {
+      return;
+    }
+    if (previewSelectionTimer.current) {
+      clearTimeout(previewSelectionTimer.current);
+    }
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) {
+      lastSentPreviewSelection.current = '';
+      return;
+    }
+    // Wait for the selection to settle while the mouse is dragging.
+    previewSelectionTimer.current = setTimeout(
+      sendPreviewSelectionToSource,
+      200,
+    );
+  }, [
+    config.clickToRevealSource,
+    isPresentationMode,
+    isVSCode,
+    sendPreviewSelectionToSource,
+  ]);
+
+  useEffect(() => {
+    document.addEventListener('selectionchange', onSelectionChange);
+    return () => {
+      document.removeEventListener('selectionchange', onSelectionChange);
+      if (previewSelectionTimer.current) {
+        clearTimeout(previewSelectionTimer.current);
+      }
+    };
+  }, [onSelectionChange]);
+
+  /**
+   * Clicking the preview reveals the clicked text in the editor, at the same
+   * height. Drags, text selections, double clicks, modified clicks and
+   * clicks on links or controls are left alone.
+   */
+  const onPreviewMouseDown = useCallback((event: MouseEvent) => {
+    pointerDownPosition.current = { x: event.clientX, y: event.clientY };
+  }, []);
+
+  const onPreviewClick = useCallback(
+    (event: MouseEvent) => {
+      const element = previewElement.current;
+      const target = event.target as Element | null;
+      if (
+        !config.clickToRevealSource ||
+        !isVSCode ||
+        isPresentationMode ||
+        !element ||
+        !target ||
+        !element.contains(target) ||
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.detail > 1 ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        target.closest(INTERACTIVE_ELEMENTS)
+      ) {
+        return;
+      }
+      const down = pointerDownPosition.current;
+      if (
+        down &&
+        Math.hypot(event.clientX - down.x, event.clientY - down.y) > 4
+      ) {
+        return;
+      }
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) {
+        return;
+      }
+
+      const position = findSourcePositionAtPoint(event.clientX, event.clientY);
+      if (position) {
+        postMessage('revealSourcePosition', [
+          sourceUri.current,
+          position.line,
+          position.character,
+          position.screenRatio,
+          true,
+        ]);
+        return;
+      }
+      // No matching text (an image, a diagram, empty space): reveal the
+      // start of the clicked block.
+      const block = target.closest('[data-source-line]');
+      const line = block ? getDataSourceLine(block) : null;
+      if (line !== null) {
+        postMessage('revealSourcePosition', [
+          sourceUri.current,
+          line,
+          0,
+          event.clientY / getWindowHeight(),
+          true,
+        ]);
+      }
+    },
+    [
+      config.clickToRevealSource,
+      findSourcePositionAtPoint,
+      isPresentationMode,
+      isVSCode,
+      postMessage,
+    ],
+  );
+
+  useEffect(() => {
+    document.addEventListener('mousedown', onPreviewMouseDown);
+    document.addEventListener('click', onPreviewClick);
+    return () => {
+      document.removeEventListener('mousedown', onPreviewMouseDown);
+      document.removeEventListener('click', onPreviewClick);
+    };
+  }, [onPreviewClick, onPreviewMouseDown]);
+
+  /**
+   * Drop the preview text index whenever the preview content changes, and
+   * re-highlight the editor selection in the new content.
+   */
+  useEffect(() => {
+    const element = previewElement.current;
+    if (!element) {
+      return;
+    }
+    let frame = 0;
+    const observer = new MutationObserver(() => {
+      domTextIndex.current = null;
+      if (sourceSelection.current && !frame) {
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          highlightSourceSelection();
+        });
+      }
+    });
+    observer.observe(element, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [highlightSourceSelection]);
 
   /**
    * Keyboard events
@@ -1887,6 +2571,7 @@ const PreviewContainer = createContainer(() => {
     if (document.body.hasAttribute('data-markdown')) {
       const markdown = document.body.getAttribute('data-markdown') ?? '';
       setMarkdown(markdown);
+      markdownRef.current = markdown;
     }
 
     if (!isPresentationMode) {

@@ -20,3 +20,15 @@ body.wiki-readonly .run-all-btn {
 body.wiki-readonly .task-list-item-checkbox {
   pointer-events: none;
 }
+
+/*
+ * The editor's selection, mirrored into the preview by preview.ts with the
+ * CSS Custom Highlight API. Uses the editor's selection color when the host
+ * provides VS Code theme variables.
+ */
+::highlight(crossnote-source-selection) {
+  background-color: var(
+    --vscode-editor-selectionBackground,
+    rgba(38, 79, 120, 0.45)
+  );
+}
