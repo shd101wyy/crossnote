@@ -1049,11 +1049,6 @@ const PreviewContainer = createContainer(() => {
 
   const bindHighlightEvent = useCallback(
     (previewElement: HTMLDivElement) => {
-      // NOTE: No need to handle this event in zen mode.
-      if (enablePreviewZenMode) {
-        return;
-      }
-
       setHighlightElement(null);
       const sourceLineElements =
         previewElement.querySelectorAll('[data-source-line]');
@@ -1183,6 +1178,13 @@ const PreviewContainer = createContainer(() => {
           continue;
         }
 
+        // Zen mode hides the regular block action menu, but code blocks keep
+        // the dedicated one-click copy action. Skip binding every other
+        // block to avoid paying the hover-tracking cost for hidden UI.
+        if (enablePreviewZenMode && sourceLineElement.tagName !== 'PRE') {
+          continue;
+        }
+
         // Input List item
         /*
       if (
@@ -1254,7 +1256,7 @@ const PreviewContainer = createContainer(() => {
 
         // First [data-source-line] element
         // Bind all elements above it
-        if (i == 0) {
+        if (i == 0 && !enablePreviewZenMode) {
           const highlightElements: (Element | HTMLElement)[] = [];
           let siblingElement =
             sourceLineElementToContainerElementMap.get(
@@ -1275,7 +1277,7 @@ const PreviewContainer = createContainer(() => {
         }
 
         // Check elements between this and the next [data-source-line] element who has the same parent
-        if (i < sourceLineElements.length - 1) {
+        if (i < sourceLineElements.length - 1 && !enablePreviewZenMode) {
           for (let j = i + 1; j < sourceLineElements.length; j++) {
             const nextSourceLineElement = sourceLineElements[j];
             const sourceLineElementContainer =
