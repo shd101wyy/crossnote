@@ -90,7 +90,7 @@ export default function Preview() {
       {/** Context menu */}
       <ContextMenu></ContextMenu>
       {/** Floating Actions */}
-      {!enablePreviewZenMode && <FloatingActions></FloatingActions>}
+      <FloatingActions></FloatingActions>
       {/** Markdown Editor — never in the read-only wiki */}
       {!enablePreviewZenMode && !isWiki && highlightElementBeingEdited && (
         <MarkdownEditor></MarkdownEditor>

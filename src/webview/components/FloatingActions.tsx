@@ -10,14 +10,16 @@ import Icon from '@mdi/react';
 import classNames from 'classnames';
 import * as FileSaver from 'file-saver';
 import { toBlob } from 'html-to-image';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PreviewContainer from '../containers/preview';
+import { getCodeBlockSource } from '../lib/code-block';
 import { t } from '../lib/i18n';
 import { copyBlobToClipboard, copyTextToClipboard } from '../lib/utility';
 
 export default function FloatingActions() {
   const {
+    enablePreviewZenMode,
     highlightElement,
     getHighlightElementLineRange,
     markdown,
@@ -29,10 +31,17 @@ export default function FloatingActions() {
   const [showCopiedMarkdownTooltip, setShowCopiedMarkdownTooltip] = useState<
     string | undefined
   >(undefined);
+  const [showCopiedCodeTooltip, setShowCopiedCodeTooltip] = useState<
+    string | undefined
+  >(undefined);
   const [showCopiedIdTooltip, setShowCopiedIdTooltip] = useState<
     string | undefined
   >(undefined);
   const [isExportingImage, setIsExportingImage] = useState(false);
+  const codeBlockSource = useMemo(
+    () => getCodeBlockSource(highlightElement),
+    [highlightElement],
+  );
 
   const onMouseOver = useCallback(() => {
     const highlightLineElements = document.querySelectorAll('.highlight-line');
@@ -47,8 +56,22 @@ export default function FloatingActions() {
       element.classList.remove('highlight-active');
     });
     setShowCopiedMarkdownTooltip(undefined);
+    setShowCopiedCodeTooltip(undefined);
     setShowCopiedIdTooltip(undefined);
   }, []);
+
+  const copyCodeToClipboard = useCallback(() => {
+    if (!codeBlockSource) {
+      return;
+    }
+
+    copyTextToClipboard(codeBlockSource.textContent ?? '');
+    setShowCopiedCodeTooltip(t('floatingActions.codeCopied'));
+
+    setTimeout(() => {
+      setShowCopiedCodeTooltip(undefined);
+    }, 1000);
+  }, [codeBlockSource]);
 
   const copyMarkdownToClipboard = useCallback(() => {
     if (!highlightElement) {
@@ -150,7 +173,11 @@ export default function FloatingActions() {
   }, [setHighlightElementBeingEdited, highlightElement]);
   */
 
-  if (!highlightElement || !!highlightElementBeingEdited) {
+  if (
+    !highlightElement ||
+    !!highlightElementBeingEdited ||
+    (enablePreviewZenMode && !codeBlockSource)
+  ) {
     return null;
   } else {
     // Put text "hello, world" on top right of the highlightElement
@@ -164,6 +191,24 @@ export default function FloatingActions() {
         onMouseOut={onMouseOut}
       >
         <div className="flex flex-row items-center">
+          {codeBlockSource && (
+            <div
+              className={classNames(
+                'ml-1 flex',
+                showCopiedCodeTooltip ? 'tooltip tooltip-open' : '',
+              )}
+              data-tip={showCopiedCodeTooltip}
+            >
+              <button
+                className="btn btn-primary btn-circle btn-xs"
+                title={t('floatingActions.copyCode')}
+                aria-label={t('floatingActions.copyCode')}
+                onClick={copyCodeToClipboard}
+              >
+                <Icon path={mdiContentCopy} size={0.6}></Icon>
+              </button>
+            </div>
+          )}
           {showMoreActions && (
             <>
               {highlightElement.id && (
@@ -222,18 +267,20 @@ export default function FloatingActions() {
               </div>
             </>
           )}
-          <div className="ml-1 flex">
-            <button
-              className="btn btn-primary btn-circle btn-xs"
-              onClick={() => setShowMoreActions(!showMoreActions)}
-            >
-              {showMoreActions ? (
-                <Icon path={mdiClose} size={0.6}></Icon>
-              ) : (
-                <Icon path={mdiDotsHorizontal} size={0.6}></Icon>
-              )}
-            </button>
-          </div>
+          {!enablePreviewZenMode && (
+            <div className="ml-1 flex">
+              <button
+                className="btn btn-primary btn-circle btn-xs"
+                onClick={() => setShowMoreActions(!showMoreActions)}
+              >
+                {showMoreActions ? (
+                  <Icon path={mdiClose} size={0.6}></Icon>
+                ) : (
+                  <Icon path={mdiDotsHorizontal} size={0.6}></Icon>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>,
       highlightElement,
