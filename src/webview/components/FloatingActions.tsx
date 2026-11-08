@@ -31,9 +31,6 @@ export default function FloatingActions() {
   const [showCopiedMarkdownTooltip, setShowCopiedMarkdownTooltip] = useState<
     string | undefined
   >(undefined);
-  const [showCopiedCodeTooltip, setShowCopiedCodeTooltip] = useState<
-    string | undefined
-  >(undefined);
   const [showCopiedIdTooltip, setShowCopiedIdTooltip] = useState<
     string | undefined
   >(undefined);
@@ -56,7 +53,6 @@ export default function FloatingActions() {
       element.classList.remove('highlight-active');
     });
     setShowCopiedMarkdownTooltip(undefined);
-    setShowCopiedCodeTooltip(undefined);
     setShowCopiedIdTooltip(undefined);
   }, []);
 
@@ -66,11 +62,6 @@ export default function FloatingActions() {
     }
 
     copyTextToClipboard(codeBlockSource.textContent ?? '');
-    setShowCopiedCodeTooltip(t('floatingActions.codeCopied'));
-
-    setTimeout(() => {
-      setShowCopiedCodeTooltip(undefined);
-    }, 1000);
   }, [codeBlockSource]);
 
   const copyMarkdownToClipboard = useCallback(() => {
@@ -192,13 +183,7 @@ export default function FloatingActions() {
       >
         <div className="flex flex-row items-center">
           {codeBlockSource && (
-            <div
-              className={classNames(
-                'ml-1 flex',
-                showCopiedCodeTooltip ? 'tooltip tooltip-open' : '',
-              )}
-              data-tip={showCopiedCodeTooltip}
-            >
+            <div className="ml-1 flex">
               <button
                 className="btn btn-primary btn-circle btn-xs"
                 title={t('floatingActions.copyCode')}
