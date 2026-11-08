@@ -61,7 +61,6 @@
   "imageHelper.use": "使用",
   "floatingActions.exportPng": "导出为 PNG 并复制到剪贴板",
   "floatingActions.copyCode": "复制代码",
-  "floatingActions.codeCopied": "代码已复制！",
   "floatingActions.copyMarkdown": "复制这部分 Markdown",
   "floatingActions.editMarkdown": "编辑这部分 Markdown"
 }

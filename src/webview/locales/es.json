@@ -61,7 +61,6 @@
   "imageHelper.use": "usar",
   "floatingActions.exportPng": "Exportar como PNG y copiar al portapapeles",
   "floatingActions.copyCode": "Copiar código",
-  "floatingActions.codeCopied": "¡Código copiado!",
   "floatingActions.copyMarkdown": "Copiar esta parte del Markdown",
   "floatingActions.editMarkdown": "Editar esta parte del Markdown"
 }

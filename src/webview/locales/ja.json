@@ -61,7 +61,6 @@
   "imageHelper.use": "使用",
   "floatingActions.exportPng": "PNG として書き出し、クリップボードにコピー",
   "floatingActions.copyCode": "コードをコピー",
-  "floatingActions.codeCopied": "コードをコピーしました",
   "floatingActions.copyMarkdown": "この部分の Markdown をコピー",
   "floatingActions.editMarkdown": "この部分の Markdown を編集"
 }
