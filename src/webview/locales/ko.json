@@ -60,6 +60,8 @@
   "imageHelper.upload": "업로드",
   "imageHelper.use": "사용",
   "floatingActions.exportPng": "PNG로 내보내고 클립보드에 복사",
+  "floatingActions.copyCode": "코드 복사",
+  "floatingActions.codeCopied": "코드가 복사되었습니다",
   "floatingActions.copyMarkdown": "이 부분의 Markdown 복사",
   "floatingActions.editMarkdown": "이 부분의 Markdown 편집"
 }

@@ -60,6 +60,8 @@
   "imageHelper.upload": "Yüklə",
   "imageHelper.use": "istifadə et",
   "floatingActions.exportPng": "Png kimi ixrac et və mübadilə buferinə kopyala",
+  "floatingActions.copyCode": "Kodu kopyala",
+  "floatingActions.codeCopied": "Kod kopyalandı!",
   "floatingActions.copyMarkdown": "Markdown hissəsini kopyala",
   "floatingActions.editMarkdown": "Markdown hissəsini redaktə et"
 }

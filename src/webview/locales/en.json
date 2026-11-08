@@ -60,6 +60,8 @@
   "imageHelper.upload": "Upload",
   "imageHelper.use": "use",
   "floatingActions.exportPng": "Export as png and copy to clipboard",
+  "floatingActions.copyCode": "Copy code",
+  "floatingActions.codeCopied": "Code copied!",
   "floatingActions.copyMarkdown": "Copy the part of markdown",
   "floatingActions.editMarkdown": "Edit the part of markdown"
 }

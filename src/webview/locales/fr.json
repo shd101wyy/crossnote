@@ -60,6 +60,8 @@
   "imageHelper.upload": "Téléverser",
   "imageHelper.use": "utiliser",
   "floatingActions.exportPng": "Exporter en PNG et copier dans le presse-papiers",
+  "floatingActions.copyCode": "Copier le code",
+  "floatingActions.codeCopied": "Code copié !",
   "floatingActions.copyMarkdown": "Copier cette partie du Markdown",
   "floatingActions.editMarkdown": "Modifier cette partie du Markdown"
 }

@@ -60,6 +60,8 @@
   "imageHelper.upload": "Uploaden",
   "imageHelper.use": "gebruiken",
   "floatingActions.exportPng": "Als PNG exporteren en naar het klembord kopiëren",
+  "floatingActions.copyCode": "Code kopiëren",
+  "floatingActions.codeCopied": "Code gekopieerd!",
   "floatingActions.copyMarkdown": "Dit deel van de Markdown kopiëren",
   "floatingActions.editMarkdown": "Dit deel van de Markdown bewerken"
 }

@@ -60,6 +60,8 @@
   "imageHelper.upload": "Yükle",
   "imageHelper.use": "kullan",
   "floatingActions.exportPng": "PNG olarak dışa aktar ve panoya kopyala",
+  "floatingActions.copyCode": "Kodu kopyala",
+  "floatingActions.codeCopied": "Kod kopyalandı!",
   "floatingActions.copyMarkdown": "Markdown'ın bu bölümünü kopyala",
   "floatingActions.editMarkdown": "Markdown'ın bu bölümünü düzenle"
 }
