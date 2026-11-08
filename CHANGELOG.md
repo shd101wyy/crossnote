@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Features
+
+- **Copy code blocks with one click** — hovering a fenced code block now shows a dedicated copy button that copies only the rendered source code, without the surrounding Markdown fences or language label. Executable code chunks copy their input source rather than console output, and the action remains available in preview zen mode.
+
 ## [0.9.42] - 2026-10-08
 
 ### Bug fixes
