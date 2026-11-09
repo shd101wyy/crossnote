@@ -1048,15 +1048,15 @@ const PreviewContainer = createContainer(() => {
   }, [isWiki, postMessage]);
 
   const bindHighlightEvent = useCallback(
-    (previewElement: HTMLDivElement) => {
-      // NOTE: No need to handle this event in zen mode.
-      if (enablePreviewZenMode) {
+    (previewElement: HTMLDivElement, allowZenMode: boolean = false) => {
+      if (enablePreviewZenMode && !allowZenMode) {
         return;
       }
 
       setHighlightElement(null);
-      const sourceLineElements =
-        previewElement.querySelectorAll('[data-source-line]');
+      const sourceLineElements = previewElement.querySelectorAll(
+        enablePreviewZenMode ? 'pre[data-source-line]' : '[data-source-line]',
+      );
 
       const highlightElementsThatAddedEventSet = new Set<
         Element | HTMLElement
@@ -1348,7 +1348,7 @@ const PreviewContainer = createContainer(() => {
             Array.from(previewElement.current.getElementsByTagName('a')),
           );
           bindTaskListEvent();
-          bindHighlightEvent(previewElement.current);
+          bindHighlightEvent(previewElement.current, enablePreviewZenMode);
 
           // set id and classes
           previewElement.current.id = id || '';

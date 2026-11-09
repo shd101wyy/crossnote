@@ -24,6 +24,7 @@ export default function FloatingActions() {
     highlightElementBeingEdited,
     setHighlightElementBeingEdited,
     isVSCodeWebExtension,
+    enablePreviewZenMode,
   } = PreviewContainer.useContainer();
   const [showMoreActions, setShowMoreActions] = useState(false);
   const [showCopiedMarkdownTooltip, setShowCopiedMarkdownTooltip] = useState<
@@ -150,10 +151,20 @@ export default function FloatingActions() {
   }, [setHighlightElementBeingEdited, highlightElement]);
   */
 
-  if (!highlightElement || !!highlightElementBeingEdited) {
+  const isCodeBlock =
+    !!highlightElement &&
+    (highlightElement.tagName === 'PRE' ||
+      highlightElement.classList.contains('code-chunk'));
+
+  if (
+    !highlightElement ||
+    !!highlightElementBeingEdited ||
+    (enablePreviewZenMode && !isCodeBlock)
+  ) {
     return null;
-  } else {
-    // Put text "hello, world" on top right of the highlightElement
+  }
+
+  if (enablePreviewZenMode) {
     return createPortal(
       <div
         className={classNames(
@@ -164,74 +175,19 @@ export default function FloatingActions() {
         onMouseOut={onMouseOut}
       >
         <div className="flex flex-row items-center">
-          {showMoreActions && (
-            <>
-              {highlightElement.id && (
-                <div
-                  className={classNames(
-                    'ml-1 flex',
-                    showCopiedIdTooltip ? 'tooltip tooltip-open' : '',
-                  )}
-                  data-tip={showCopiedIdTooltip}
-                >
-                  <button
-                    className="btn btn-primary btn-circle btn-xs"
-                    title={highlightElement.id}
-                    onClick={copyIdToClipboard}
-                  >
-                    <Icon path={mdiIdentifier} size={0.8}></Icon>
-                  </button>
-                </div>
-              )}
-              {!isVSCodeWebExtension && (
-                <div className={classNames('ml-1 flex')}>
-                  <button
-                    className="btn btn-primary btn-circle btn-xs"
-                    title={t('floatingActions.exportPng')}
-                    onClick={exportAsPng}
-                  >
-                    <Icon path={mdiImage} size={0.6}></Icon>
-                  </button>
-                </div>
-              )}
-              <div
-                className={classNames(
-                  'ml-1 flex',
-                  showCopiedMarkdownTooltip ? 'tooltip tooltip-open' : '',
-                )}
-                data-tip={showCopiedMarkdownTooltip}
-              >
-                <button
-                  className="btn btn-primary btn-circle btn-xs"
-                  title={t('floatingActions.copyMarkdown')}
-                  onClick={copyMarkdownToClipboard}
-                >
-                  <Icon path={mdiContentCopy} size={0.6}></Icon>
-                </button>
-              </div>
-              <div className="ml-1 flex">
-                <button
-                  className="btn btn-primary btn-circle btn-xs"
-                  title={t('floatingActions.editMarkdown')}
-                  onClick={() =>
-                    setHighlightElementBeingEdited(highlightElement)
-                  }
-                >
-                  <Icon path={mdiPencil} size={0.6}></Icon>
-                </button>
-              </div>
-            </>
-          )}
-          <div className="ml-1 flex">
+          <div
+            className={classNames(
+              'ml-1 flex',
+              showCopiedMarkdownTooltip ? 'tooltip tooltip-open' : '',
+            )}
+            data-tip={showCopiedMarkdownTooltip}
+          >
             <button
               className="btn btn-primary btn-circle btn-xs"
-              onClick={() => setShowMoreActions(!showMoreActions)}
+              title={t('floatingActions.copyMarkdown')}
+              onClick={copyMarkdownToClipboard}
             >
-              {showMoreActions ? (
-                <Icon path={mdiClose} size={0.6}></Icon>
-              ) : (
-                <Icon path={mdiDotsHorizontal} size={0.6}></Icon>
-              )}
+              <Icon path={mdiContentCopy} size={0.6}></Icon>
             </button>
           </div>
         </div>
@@ -239,4 +195,88 @@ export default function FloatingActions() {
       highlightElement,
     );
   }
+
+  // Put text "hello, world" on top right of the highlightElement
+  return createPortal(
+    <div
+      className={classNames(
+        'absolute top-0 right-0 select-none floating-action flex flex-col items-end z-[60]',
+        isExportingImage ? 'hidden' : '',
+      )}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
+    >
+      <div className="flex flex-row items-center">
+        {showMoreActions && (
+          <>
+            {highlightElement.id && (
+              <div
+                className={classNames(
+                  'ml-1 flex',
+                  showCopiedIdTooltip ? 'tooltip tooltip-open' : '',
+                )}
+                data-tip={showCopiedIdTooltip}
+              >
+                <button
+                  className="btn btn-primary btn-circle btn-xs"
+                  title={highlightElement.id}
+                  onClick={copyIdToClipboard}
+                >
+                  <Icon path={mdiIdentifier} size={0.8}></Icon>
+                </button>
+              </div>
+            )}
+            {!isVSCodeWebExtension && (
+              <div className={classNames('ml-1 flex')}>
+                <button
+                  className="btn btn-primary btn-circle btn-xs"
+                  title={t('floatingActions.exportPng')}
+                  onClick={exportAsPng}
+                >
+                  <Icon path={mdiImage} size={0.6}></Icon>
+                </button>
+              </div>
+            )}
+            <div
+              className={classNames(
+                'ml-1 flex',
+                showCopiedMarkdownTooltip ? 'tooltip tooltip-open' : '',
+              )}
+              data-tip={showCopiedMarkdownTooltip}
+            >
+              <button
+                className="btn btn-primary btn-circle btn-xs"
+                title={t('floatingActions.copyMarkdown')}
+                onClick={copyMarkdownToClipboard}
+              >
+                <Icon path={mdiContentCopy} size={0.6}></Icon>
+              </button>
+            </div>
+            <div className="ml-1 flex">
+              <button
+                className="btn btn-primary btn-circle btn-xs"
+                title={t('floatingActions.editMarkdown')}
+                onClick={() => setHighlightElementBeingEdited(highlightElement)}
+              >
+                <Icon path={mdiPencil} size={0.6}></Icon>
+              </button>
+            </div>
+          </>
+        )}
+        <div className="ml-1 flex">
+          <button
+            className="btn btn-primary btn-circle btn-xs"
+            onClick={() => setShowMoreActions(!showMoreActions)}
+          >
+            {showMoreActions ? (
+              <Icon path={mdiClose} size={0.6}></Icon>
+            ) : (
+              <Icon path={mdiDotsHorizontal} size={0.6}></Icon>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>,
+    highlightElement,
+  );
 }

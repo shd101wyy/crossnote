@@ -77,6 +77,14 @@ describe('code block line highlighting', () => {
     );
   });
 
+  it('keeps source-line metadata on indented code blocks', async () => {
+    const { html } = await parse('    indented code\n');
+    const preTag = html.match(/<pre [^>]*>/)?.[0] ?? '';
+
+    expect(preTag).toContain('data-source-line="1"');
+    expect(preTag).toContain('class="language-text"');
+  });
+
   it('ships the underlay layering rules in style-template.less', () => {
     const template = fs.readFileSync(
       path.resolve(__dirname, '../styles/style-template.less'),

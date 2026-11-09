@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Features
+
+- **Zen mode can copy code blocks** — Hovering a code block in Zen mode now shows a direct Copy action that uses the same Markdown source-range behavior as the existing action in non-Zen mode. Fenced blocks with any language, indented code blocks, and code chunks are supported; inline code and non-code blocks remain unchanged ([#543](https://github.com/shd101wyy/crossnote/issues/543)).
+
 ## [0.9.42] - 2026-10-08
 
 ### Bug fixes
