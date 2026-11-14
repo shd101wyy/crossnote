@@ -11,6 +11,7 @@
  * renderer's output.
  */
 import * as path from 'path';
+import { isDollarMathSpan } from '../src/custom-markdown-it-features/math';
 import { buildMathJaxConfigScript } from '../src/markdown-engine/mathjax-config';
 import { Notebook } from '../src/notebook/index';
 import { getDefaultMathjaxConfig } from '../src/notebook/types';
@@ -153,12 +154,11 @@ describe('Math rendering', () => {
     // verbatim and move on.
     const md = '<div>cost is $5 to $10 (no math here)</div>';
     const html = notebook.renderMarkdown(md, { isForPreview: true });
-    // Either the `$5 to $` pair was matched as math (which would
-    // produce KaTeX output and a literal "10..."), or no math
-    // happened at all.  Either way the renderer should not crash;
-    // we just assert the surrounding HTML survived.
+    // The currency rule leaves both dollar signs as text, and the
+    // surrounding HTML survives.
     expect(html).toContain('<div>');
     expect(html).toContain('</div>');
+    expect(html).not.toContain('class="katex"');
   });
 
   it('handles inline HTML wrappers around math (already-working path)', () => {
@@ -232,8 +232,33 @@ describe('Currency dollar signs', () => {
     ['a number alone', 'the number $5$ is math'],
     ['a decimal alone', 'and $3.14$ too'],
     ['`$$…$$` inline', 'display $$x$$ math'],
+    // Formulas that start with a digit are not amounts.
+    ['a leading coefficient', 'solve $2x$ first'],
+    ['an equation', 'we know $1+1=2$ here'],
+    ['a power', 'the set has $2^n$ elements'],
+    ['a negative exponent', 'error below $10^{-3}$ here'],
+    ['an inequality', 'for $0 \\le x \\le 1$ we have'],
+    ['a fraction', 'half is $1/2$.'],
+    ['a degree sign', 'rotate $90^\\circ$ now'],
+    // A `$` glued to a word still opens a sub- or superscript…
+    ['a chemical formula', 'water is H$_2$O'],
+    ['a unit', '750 pc cm$^{-3}$ with'],
+    ['a glued power', 'that is 2$^{10}$ bytes'],
+    // …and a closer may be followed by a word.
+    ['an ordinal', 'the $i$th row'],
+    ['a plural', 'all $x$s'],
   ])('still renders math: %s', (_name, md) => {
     expect(render(md)).toContain('class="katex"');
+  });
+
+  it('pairs two formulas that start with a digit correctly', () => {
+    const html = render('$2(a+b)$, then $(c)$');
+    expect(html.split('class="katex"').length - 1).toBe(2);
+    expect(html).not.toContain('$');
+  });
+
+  it('treats `$ x $` (spaces inside) as text, as Pandoc does', () => {
+    expect(render('so $ x $ is text')).not.toContain('class="katex"');
   });
 
   it('renders the formula and keeps the price in the same paragraph', () => {
@@ -246,6 +271,28 @@ describe('Currency dollar signs', () => {
     const html = render('R\\$ 10 e $x$');
     expect(html).toContain('class="katex"');
     expect(html).toContain('R$ 10');
+  });
+
+  // The first `$` of `src` opens and the next one closes.
+  const span = (src: string) => {
+    const open = src.indexOf('$');
+    return isDollarMathSpan(src, open, src.indexOf('$', open + 1));
+  };
+
+  it.each<[string, boolean]>([
+    ['$x$', true],
+    ['$2x$', true],
+    ['H$_2$O', true],
+    ['$i$th', true],
+    ['R$ 10 e R$ 20', false],
+    ['$5 a $10', false],
+    ['$ x $', false],
+    // A letter outside the BMP is two UTF-16 code units.
+    ['\u{1D445}$ abc \u{1D445}$, ok', false],
+    // A letter with a decomposed (combining) accent.
+    ['cafe\u0301$x$', false],
+  ])('isDollarMathSpan(%j) is %s', (src, expected) => {
+    expect(span(src)).toBe(expected);
   });
 });
 

@@ -3,45 +3,55 @@ import MarkdownIt from 'markdown-it';
 import { Notebook } from '../notebook';
 import parseMath from '../renderers/parse-math';
 
-const LETTER_OR_DIGIT = /[\p{L}\p{N}]/u;
+// Read as whole code points, so a letter outside the BMP (two UTF-16 units)
+// and a combining accent (`café` decomposed) both count.
+const ENDS_WITH_WORD_CHAR = /[\p{L}\p{M}\p{N}]$/u;
+// What a `$` glued to a word may still open: a TeX sub- or superscript, or
+// a command — `H$_2$O`, `cm$^{-3}$`, `90$\degree$`.
+const TEX_START = /^[\^_\\{]/;
 // Text that reads as an amount right after a `$`: a digit, or a space
 // (including a non-breaking one) and a digit — `$5`, `$ 5`.
 const AMOUNT = /^(?:\d|\s\d)/;
-const NUMBER_ONLY = /^\d+(?:[.,]\d+)*$/;
+// TeX that tells a formula from prose: `$1+1=2$`, `$0 \le x \le 1$`.
+const TEX_CHARS = /[\\^_{}=+\-*/<>]/;
+const SPACE = /\s/;
 
 /**
  * Decide whether the `$` at `open` and the `$` at `close` delimit inline
  * math, or are currency signs that must stay text.
  *
  * Without this, any two dollar signs in a paragraph form a formula, so
- * "R$ 10 … R$11" renders everything between them as math.  A `$` is not a
- * delimiter when:
+ * "R$ 10 … R$11" renders everything between them as math.  The pair is not
+ * math when:
  *
- * - it is glued to a letter or digit — the opener after one (`R$`, `US$`),
- *   the closer before one.  This is the rule of `@vscode/markdown-it-katex`,
- *   VS Code's built-in preview, with Unicode letters and digits;
- * - it is followed by an amount — the opener (`$5 … $10`), unless the span
- *   is only a number (`$5$`, `$3.14$` stay formulas), and the closer
- *   (`$0.204 … US$ 0,0017`).
+ * - the opener is glued to a letter or digit (`R$`, `US$`) — as in
+ *   `@vscode/markdown-it-katex`, VS Code's built-in preview — unless it
+ *   starts a TeX sub- or superscript or command (`H$_2$O`, `cm$^{-3}$`);
+ * - the span is prose about an amount: it starts with one (`$5`, `$ 5`),
+ *   has a space and no TeX (`$5 to $10`); `$5$`, `$2x$` and `$1+1=2$` are
+ *   still formulas;
+ * - the closer follows a space, as in Pandoc (`$ x $`, `$HOME or $PATH`),
+ *   or precedes an amount (`$0.204 … US$ 0,0017`).
  */
 export function isDollarMathSpan(
   src: string,
   open: number,
   close: number,
 ): boolean {
-  const before = src[open - 1];
-  if (before !== undefined && LETTER_OR_DIGIT.test(before)) {
+  if (
+    ENDS_WITH_WORD_CHAR.test(src.slice(Math.max(0, open - 2), open)) &&
+    !TEX_START.test(src.slice(open + 1, open + 2))
+  ) {
     return false;
   }
   const content = src.slice(open + 1, close);
-  if (AMOUNT.test(content) && !NUMBER_ONLY.test(content)) {
+  if (AMOUNT.test(content) && SPACE.test(content) && !TEX_CHARS.test(content)) {
     return false;
   }
-  const after = src.slice(close + 1, close + 3);
-  if (LETTER_OR_DIGIT.test(after.charAt(0)) || AMOUNT.test(after)) {
+  if (SPACE.test(src.charAt(close - 1))) {
     return false;
   }
-  return true;
+  return !AMOUNT.test(src.slice(close + 1, close + 3));
 }
 
 export default (md: MarkdownIt, notebook: Notebook) => {
