@@ -174,6 +174,81 @@ describe('Math rendering', () => {
   });
 });
 
+// Regression: currency dollar signs.  The `$…$` inline rule used to pair
+// any two dollar signs in a paragraph, so "R$ 10 … R$11" rendered the text
+// between them as a formula.  A `$` glued to a letter or digit, or followed
+// by an amount, no longer delimits math — `$5$` alone still does.
+describe('Currency dollar signs', () => {
+  let notebook: Notebook;
+
+  beforeAll(async () => {
+    notebook = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: { markdownParser: 'markdown-it' },
+    });
+  });
+
+  const render = (md: string) =>
+    notebook.renderMarkdown(md, { isForPreview: true });
+
+  it.each([
+    ['a space after the sign', 'depositei R$ 10 mas entrou R$11', 'R$11'],
+    ['U$ amounts', 'custa U$ 1 mas no sistema mostra U$2', 'U$2'],
+    ['bare $ amounts', 'de $5 a $10', '$10'],
+    [
+      'R$ as a unit label',
+      'AMOUNT_CHARGED (R$), AMOUNT_PAID (R$, net of FEE_TOTAL)',
+      'AMOUNT_PAID (R$, net',
+    ],
+    [
+      'a bare amount closed by US$',
+      '"120 VPUs at $0.204" … linear em US$ 0,0017',
+      'US$ 0,0017',
+    ],
+    [
+      'amounts around inline code',
+      'acima de R$10.000 (`LIMIT_CENTS = 1.000.000`) … de R$ 9.999',
+      'R$ 9.999',
+    ],
+    ['a non-breaking space', 'R$\u00a010 e R$\u00a020', 'R$\u00a020'],
+    ['a soft line break', 'R$ 10\ne R$ 20', 'R$ 20'],
+    // Each of the next three is decided by one part of the rule alone.
+    ['an amount opener', 'custa $5 hoje (antes em R$)', '(antes em R$)'],
+    ['shell variables', 'use $HOME ou $PATH', '$PATH'],
+    ['a closer before an amount', 'defina $HOME; custa US$ 5', 'US$ 5'],
+    [
+      'an HTML table',
+      '<table><tr><td>R$ 10</td><td>R$ 20</td></tr></table>',
+      '<td>R$ 20</td>',
+    ],
+  ])('keeps currency as text: %s', (_name, md, kept) => {
+    const html = render(md);
+    expect(html).not.toContain('class="katex"');
+    expect(html).toContain(kept);
+  });
+
+  it.each([
+    ['a formula', 'Energy is $E=mc^2$ here.'],
+    ['a number alone', 'the number $5$ is math'],
+    ['a decimal alone', 'and $3.14$ too'],
+    ['`$$…$$` inline', 'display $$x$$ math'],
+  ])('still renders math: %s', (_name, md) => {
+    expect(render(md)).toContain('class="katex"');
+  });
+
+  it('renders the formula and keeps the price in the same paragraph', () => {
+    const html = render('$x$ custa R$ 10');
+    expect(html).toContain('class="katex"');
+    expect(html).toContain('R$ 10');
+  });
+
+  it('keeps an escaped `\\$` as text next to a formula', () => {
+    const html = render('R\\$ 10 e $x$');
+    expect(html).toContain('class="katex"');
+    expect(html).toContain('R$ 10');
+  });
+});
+
 describe('Math rendering with MathJax', () => {
   let notebook: Notebook;
 
@@ -197,6 +272,13 @@ describe('Math rendering with MathJax', () => {
     });
     expect(html).toContain('mathjax-exps');
     expect(html).toContain('<span class="mathjax-exps">');
+  });
+
+  it('emits no placeholder for currency dollar signs', () => {
+    const html = notebook.renderMarkdown('depositei R$ 10 mas entrou R$11', {
+      isForPreview: true,
+    });
+    expect(html).not.toContain('mathjax-exps');
   });
 
   it('emits a `mathjax-exps` div for block math inside an HTML block', () => {

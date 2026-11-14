@@ -3,6 +3,47 @@ import MarkdownIt from 'markdown-it';
 import { Notebook } from '../notebook';
 import parseMath from '../renderers/parse-math';
 
+const LETTER_OR_DIGIT = /[\p{L}\p{N}]/u;
+// Text that reads as an amount right after a `$`: a digit, or a space
+// (including a non-breaking one) and a digit — `$5`, `$ 5`.
+const AMOUNT = /^(?:\d|\s\d)/;
+const NUMBER_ONLY = /^\d+(?:[.,]\d+)*$/;
+
+/**
+ * Decide whether the `$` at `open` and the `$` at `close` delimit inline
+ * math, or are currency signs that must stay text.
+ *
+ * Without this, any two dollar signs in a paragraph form a formula, so
+ * "R$ 10 … R$11" renders everything between them as math.  A `$` is not a
+ * delimiter when:
+ *
+ * - it is glued to a letter or digit — the opener after one (`R$`, `US$`),
+ *   the closer before one.  This is the rule of `@vscode/markdown-it-katex`,
+ *   VS Code's built-in preview, with Unicode letters and digits;
+ * - it is followed by an amount — the opener (`$5 … $10`), unless the span
+ *   is only a number (`$5$`, `$3.14$` stay formulas), and the closer
+ *   (`$0.204 … US$ 0,0017`).
+ */
+export function isDollarMathSpan(
+  src: string,
+  open: number,
+  close: number,
+): boolean {
+  const before = src[open - 1];
+  if (before !== undefined && LETTER_OR_DIGIT.test(before)) {
+    return false;
+  }
+  const content = src.slice(open + 1, close);
+  if (AMOUNT.test(content) && !NUMBER_ONLY.test(content)) {
+    return false;
+  }
+  const after = src.slice(close + 1, close + 3);
+  if (LETTER_OR_DIGIT.test(after.charAt(0)) || AMOUNT.test(after)) {
+    return false;
+  }
+  return true;
+}
+
 export default (md: MarkdownIt, notebook: Notebook) => {
   // ── Block-level math ────────────────────────────────────────────
   // markdown-it's block parser runs *before* the inline parser.
@@ -149,6 +190,16 @@ export default (md: MarkdownIt, notebook: Notebook) => {
     if (end >= 0) {
       content = state.src.slice(state.pos + openTag.length, end);
     } else {
+      return false;
+    }
+
+    // A currency `$` is text: returning false lets markdown-it emit it
+    // literally and retry from the next `$`.
+    if (
+      openTag === '$' &&
+      closeTag === '$' &&
+      !isDollarMathSpan(state.src, state.pos, end)
+    ) {
       return false;
     }
 
@@ -349,6 +400,16 @@ function replaceDelimited(
       // Unmatched opener — emit literally and move on.
       out += html.slice(i, i + openTag.length);
       i += openTag.length;
+      continue;
+    }
+    // A currency `$` is text, same as in the inline rule.
+    if (
+      openTag === '$' &&
+      closeTag === '$' &&
+      !isDollarMathSpan(html, i, end)
+    ) {
+      out += html[i];
+      i += 1;
       continue;
     }
     const content = html.slice(i + openTag.length, end).trim();
