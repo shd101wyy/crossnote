@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **Currency dollar signs no longer turn the text between them into a formula** — with the default markdown-it parser, the `$…$` inline rule paired any two dollar signs in a paragraph, so `R$ 10 … R$11`, `$5 to $10` or `use $HOME or $PATH` rendered everything between them as math, swallowing inline code and emphasis on the way. A `$…$` pair is no longer math when the opener is glued to a letter or digit (`R$`, `US$`), as in VS Code's built-in preview, unless it starts a TeX sub- or superscript or command — `H$_2$O` and `cm$^{-3}$` still render; when the span reads as prose about an amount — it starts with one, has a space and no TeX (`$5 to $10`), while `$5$`, `$2x$` and `$1+1=2$` still render; or when the closer follows a space, as in Pandoc, or precedes an amount (`$0.204 … US$ 0,0017`). As in Pandoc, `$ x $` with spaces inside is therefore no longer a formula. The same check applies inside HTML blocks such as `<table>`. Unchanged: the pandoc and markdown_yo parsers, the Markdown export, and MathJax's client-side typesetting, which still scans the rendered text of a note that contains math ([#545](https://github.com/shd101wyy/crossnote/pull/545) by @xlordz).
+
 ## [0.9.42] - 2026-10-08
 
 ### Bug fixes
