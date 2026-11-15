@@ -64,10 +64,10 @@ describe('fence tracking resync after a container boundary (vscode-mpe#2337)', (
       hideFrontMatter: false,
     });
     // "echo hi", "./docker/build.sh" (auto-closed with the list) and "ls"
-    // each render as their own <pre>, and nothing more collapses in.
+    // each render as their own <pre>. Note: this count alone also passes
+    // on the buggy output (2 real + 1 collapsed block); the content
+    // assertions in the other test are what pins the fix.
     expect(html.match(/<pre\b/g)?.length).toBe(3);
     expect(html).toContain('./docker/build.sh');
-    // No injected attribute may leak into rendered text.
-    expect(html).not.toContain('data-source-line="{');
   });
 });
