@@ -111,8 +111,12 @@ export interface HTMLTemplateOption {
   /**
    * Whether to inline local JS/CSS (and CSS `url()` fonts) into the
    * HTML instead of emitting `file://` links. Used by HTML (offline)
-   * export so the file is portable; Open in Browser / PDF keep
-   * `file://` to avoid bloating temporary documents.
+   * export so the file is portable, and by Open in Browser, whose temp
+   * document sits outside the build directory's tree — Safari and
+   * Firefox refuse to load cross-tree `file://` subresources, which
+   * left the page unstyled and made KaTeX render twice (the MathML
+   * copy and the unstyled HTML copy both visible). PDF keeps
+   * `file://` links (Chromium loads them, and print docs stay small).
    */
   embedOfflineAssets?: boolean;
   /**
@@ -1753,7 +1757,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       isForPrint: false,
       isForPrince: false,
       offline: true,
-      embedLocalImages: false,
+      // Embed assets and images: the temp document lives outside the
+      // crossnote build directory, and Safari/Firefox block cross-tree
+      // `file://` subresources (vscode-mpe#2452 — KaTeX rendered twice
+      // because its CSS never loaded). Chrome loads them either way.
+      embedOfflineAssets: true,
+      embedLocalImages: true,
       isForBrowser: true,
     });
     const info = await utility.tempOpen({
