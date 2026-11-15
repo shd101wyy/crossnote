@@ -1763,6 +1763,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       // because its CSS never loaded). Chrome loads them either way.
       embedOfflineAssets: true,
       embedLocalImages: true,
+      embedSVG: true,
       isForBrowser: true,
     });
     const info = await utility.tempOpen({
