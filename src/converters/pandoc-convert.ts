@@ -479,6 +479,10 @@ export async function pandocConvert(
     codeChunksData,
     graphsCache,
     addOptionsStr: true,
+    // The cache-busting `?0.5319…` query suffix is a webview device; pandoc
+    // resolves image paths literally, so `assets/x.png?0.53…` is a missing
+    // file and the image is dropped from the output (vscode-mpe#2350).
+    cacheBust: false,
     notebook,
   });
 
