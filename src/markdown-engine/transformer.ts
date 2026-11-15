@@ -512,6 +512,15 @@ export async function transformMarkdown(
             lastOpeningCodeBlockFence = currentCodeBlockFence;
           } else if (
             lastOpeningCodeBlockFence !== null &&
+            // A closing fence carries no info string (CommonMark). Treating
+            // "```bash" as a closer desyncs this tracker from markdown-it
+            // whenever markdown-it auto-closes a fence at a container
+            // boundary (e.g. a list item ends while its fence is open):
+            // every later bare "```" is then misread as an opener, gets
+            // {data-source-line=…} appended — which makes it invalid as a
+            // closer — and everything below collapses into one code block
+            // (vscode-mpe#2337).
+            rest.trim() === '' &&
             currentCodeBlockFence.trim().length ===
               lastOpeningCodeBlockFence.trim().length
           ) {
