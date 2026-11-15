@@ -5,6 +5,7 @@ export function princeConvert(src: string, dest: string): Promise<void> {
     execFile(
       'prince',
       [src, '--javascript', '-o', dest],
+      { windowsHide: true },
       (error: ExecFileException | null) => {
         if (error) {
           let errorMessage = error.toString();

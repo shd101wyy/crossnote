@@ -45,6 +45,9 @@ export async function mermaidToPNG(
       ],
       {
         cwd: projectDirectoryPath,
+        // Without this, the `cmd.exe` wrapper cross-spawn uses on Windows
+        // flashes a console window per diagram (CREATE_NO_WINDOW).
+        windowsHide: true,
         // Match the old `execFileSync` behavior: the CLI's errors stream to
         // our stderr; neither stream is read here.
         stdio: ['ignore', 'ignore', 'inherit'],

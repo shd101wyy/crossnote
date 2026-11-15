@@ -250,7 +250,7 @@ function pandocSupportsMathMethod(pandocPath: string): Promise<boolean> {
       execFile(
         pandocPath,
         ['--version'],
-        { timeout: 10_000 },
+        { timeout: 10_000, windowsHide: true },
         (error, stdout) => {
           resolve(!error && pandocVersionSupportsMathMethod(String(stdout)));
         },
@@ -3153,7 +3153,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         const program = execFile(
           pandocPath,
           args,
-          { cwd: this.fileDirectoryPath, maxBuffer: Infinity },
+          {
+            cwd: this.fileDirectoryPath,
+            maxBuffer: Infinity,
+            windowsHide: true,
+          },
           (error, stdout, stderr) => {
             if (error) {
               return reject(error);

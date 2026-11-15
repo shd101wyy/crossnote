@@ -52,6 +52,7 @@ export function toSVGMarkdown(
     // execution is additionally gated behind `enableScriptExecution`.
     const task = spawn(latexEngine, [texFilePath], {
       cwd: path.dirname(texFilePath),
+      windowsHide: true,
     });
 
     const chunks: Buffer[] = [];

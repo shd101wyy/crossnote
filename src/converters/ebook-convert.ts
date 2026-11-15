@@ -208,7 +208,7 @@ export function ebookConvert(
     // therefore I will create directory first.
     mkdirp(path.dirname(dest))
       .then(() => {
-        execFile('ebook-convert', args, (error2) => {
+        execFile('ebook-convert', args, { windowsHide: true }, (error2) => {
           if (error2) {
             return reject(error2.toString());
           } else {

@@ -23,6 +23,8 @@ export async function render(
     // `spawnSync` cannot launch `npx.cmd` at all).
     const result = spawn.sync('npx', ['wavedrom-cli', '-i', info.path], {
       cwd: projectDirectoryPath,
+      // Hide the `cmd.exe` wrapper window cross-spawn uses on Windows.
+      windowsHide: true,
       // stdout carries the SVG; stderr streams to our console like the old
       // `execFileSync` call did.
       stdio: ['ignore', 'pipe', 'inherit'],

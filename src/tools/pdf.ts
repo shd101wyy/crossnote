@@ -42,14 +42,18 @@ export function toSVGMarkdown(
     // without a shell passes each path as a single literal argument (and the
     // surrounding quotes that shell mode required must be dropped, or they
     // become part of the filename).
-    const task = spawn('pdf2svg', [
-      pdfFilePath,
-      path.resolve(
-        svgDirectoryPath ?? `/tmp/crossnote_pdf`,
-        svgFilePrefix + '%d.svg',
-      ),
-      'all',
-    ]);
+    const task = spawn(
+      'pdf2svg',
+      [
+        pdfFilePath,
+        path.resolve(
+          svgDirectoryPath ?? `/tmp/crossnote_pdf`,
+          svgFilePrefix + '%d.svg',
+        ),
+        'all',
+      ],
+      { windowsHide: true },
+    );
     const chunks: string[] = [];
     task.stdout.on('data', (chunk) => {
       chunks.push(chunk);
