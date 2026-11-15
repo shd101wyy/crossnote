@@ -27,7 +27,7 @@ var MERMAID_CONFIG = (${JSON.stringify(config.mermaidConfig)});
 if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.startOnLoad = false
   MERMAID_CONFIG.cloneCssStyles = false
-  MERMAID_CONFIG.theme = "${config.mermaidTheme}"
+  MERMAID_CONFIG.theme = MERMAID_CONFIG.theme || "${config.mermaidTheme}"
 }
 
 mermaid.initialize(MERMAID_CONFIG || {})

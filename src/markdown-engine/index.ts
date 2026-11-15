@@ -521,7 +521,7 @@ var MERMAID_CONFIG = (${JSON.stringify(this.notebook.config.mermaidConfig)});
 if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.startOnLoad = false
   MERMAID_CONFIG.cloneCssStyles = false
-  MERMAID_CONFIG.theme = "${this.notebook.config.mermaidTheme}"
+  MERMAID_CONFIG.theme = MERMAID_CONFIG.theme || "${this.notebook.config.mermaidTheme}"
 }
 mermaid.initialize(MERMAID_CONFIG || {})
 if (typeof(window['Reveal']) !== 'undefined') {
