@@ -11,6 +11,12 @@ describe('Notebook markdown-yo rendering', () => {
       },
     });
 
+    // The WASM module must actually load — every other markdown-yo
+    // expectation also holds via the silent markdown-it fallback, so a
+    // broken package (e.g. a tarball missing the .wasm file) would
+    // otherwise pass unnoticed.
+    expect(notebook.markdownYoRenderer).not.toBeNull();
+
     expect(notebook.renderMarkdown('"test"', { isForPreview: true })).toContain(
       '&quot;test&quot;',
     );
