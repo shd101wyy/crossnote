@@ -93,10 +93,10 @@ describe('headings with underscore emphasis', () => {
     expect(html.replace(/<[^>]*>/g, '')).not.toContain('{#');
   });
 
-  it('renders emphasis heading correctly with markdown_yo parser too', async () => {
+  it('renders emphasis heading correctly with markdown-yo parser too', async () => {
     const notebookYo = await Notebook.init({
       notebookPath: tmp,
-      config: { markdownParser: 'markdown_yo' },
+      config: { markdownParser: 'markdown-yo' },
     });
     const markdown = '# _Toy Story_\n\n## x _foo_bar_ y\n';
     const filePath = path.join(tmp, 'note-yo.md');

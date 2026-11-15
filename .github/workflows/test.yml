@@ -33,7 +33,7 @@ jobs:
 
       - name: Install pandoc
         # The wikilink-embed and colon-fence test suites spawn `pandoc`
-        # to exercise the markdown_yo / pandoc transformer paths.  The
+        # to exercise the markdown-yo / pandoc transformer paths.  The
         # ubuntu-latest runner doesn't ship pandoc, so install it here
         # before tests run — otherwise those suites fail with
         # `Error: spawn pandoc ENOENT`.

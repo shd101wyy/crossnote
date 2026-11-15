@@ -13,7 +13,7 @@ import Token from 'markdown-it/lib/token';
 import * as os from 'os';
 import * as path from 'path';
 import { URI, Utils } from 'vscode-uri';
-import type { MarkdownRenderer, RenderOptions } from 'markdown_yo';
+import type { MarkdownRenderer, RenderOptions } from '@shd101wyy/markdown-yo';
 import parseMath from '../renderers/parse-math';
 import useMarkdownAdmonition from '../custom-markdown-it-features/admonition';
 import useMarkdownCallout from '../custom-markdown-it-features/callout';
@@ -222,13 +222,13 @@ export class Notebook {
   public md!: MarkdownIt;
 
   /**
-   * Optional markdown_yo WASM renderer.
-   * Used for HTML rendering when `markdownParser === 'markdown_yo'`.
+   * Optional markdown-yo WASM renderer.
+   * Used for HTML rendering when `markdownParser === 'markdown-yo'`.
    */
   public markdownYoRenderer: MarkdownRenderer | null = null;
 
   /**
-   * Tracks in-flight markdown_yo initialization to avoid duplicate loads.
+   * Tracks in-flight markdown-yo initialization to avoid duplicate loads.
    */
   private markdownYoRendererPromise: Promise<void> | null = null;
   /**
@@ -269,7 +269,7 @@ export class Notebook {
     this.initFs(fs);
     await this.initConfig(config);
     this.md = this.initMarkdownIt();
-    if (this.config.markdownParser === 'markdown_yo') {
+    if (this.config.markdownParser === 'markdown-yo') {
       await this.initMarkdownYo();
     }
     this.updateConfig({});
@@ -368,7 +368,7 @@ export class Notebook {
   }
 
   /**
-   * Initialize the markdown_yo WASM renderer.
+   * Initialize the markdown-yo WASM renderer.
    */
   private async initMarkdownYo() {
     if (this.markdownYoRendererPromise) {
@@ -382,16 +382,16 @@ export class Notebook {
 
     this.markdownYoRendererPromise = (async () => {
       try {
-        const { createRenderer } = await import('markdown_yo');
+        const { createRenderer } = await import('@shd101wyy/markdown-yo');
         const renderer = await createRenderer();
 
-        if (this.config.markdownParser === 'markdown_yo') {
+        if (this.config.markdownParser === 'markdown-yo') {
           this.markdownYoRenderer = renderer;
         } else {
           renderer.destroy();
         }
       } catch (error) {
-        console.warn('Failed to load markdown_yo WASM renderer:', error);
+        console.warn('Failed to load markdown-yo WASM renderer:', error);
         this.markdownYoRenderer = null;
       } finally {
         this.markdownYoRendererPromise = null;
@@ -407,7 +407,7 @@ export class Notebook {
   }
 
   /**
-   * Build markdown_yo render options from the current notebook config.
+   * Build markdown-yo render options from the current notebook config.
    */
   public buildMarkdownYoOptions(isForPreview: boolean): RenderOptions {
     const c = this.config;
@@ -434,7 +434,7 @@ export class Notebook {
   }
 
   /**
-   * Convert markdown_yo RenderOptions to CLI flags for the native binary.
+   * Convert markdown-yo RenderOptions to CLI flags for the native binary.
    */
   private buildMarkdownYoBinaryArgs(opts: RenderOptions): string[] {
     const flags: string[] = [];
@@ -462,14 +462,14 @@ export class Notebook {
   }
 
   /**
-   * Render markdown to HTML using markdown_yo (WASM) if available,
+   * Render markdown to HTML using markdown-yo (WASM) if available,
    * otherwise falls back to markdown-it.
    */
   public renderMarkdown(
     markdown: string,
     options?: { isForPreview?: boolean },
   ): string {
-    if (this.config.markdownParser === 'markdown_yo') {
+    if (this.config.markdownParser === 'markdown-yo') {
       const renderOpts = this.buildMarkdownYoOptions(!!options?.isForPreview);
       const binaryPath = this.config.markdownYoBinaryPath;
       let html: string;
@@ -506,7 +506,7 @@ export class Notebook {
   }
 
   /**
-   * Post-process markdown_yo HTML output:
+   * Post-process markdown-yo HTML output:
    * - Render math expressions with KaTeX (when mathRenderingOption is 'KaTeX')
    * - Append file extension to wikilink hrefs
    */
@@ -570,7 +570,7 @@ export class Notebook {
       linkify: !!this.config.enableLinkify,
     });
 
-    if (this.config.markdownParser === 'markdown_yo') {
+    if (this.config.markdownParser === 'markdown-yo') {
       void this.initMarkdownYo();
     } else {
       this.destroyMarkdownYo();

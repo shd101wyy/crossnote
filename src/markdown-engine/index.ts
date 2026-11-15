@@ -133,11 +133,11 @@ export interface HTMLTemplateOption {
 }
 
 /**
- * Normalize code blocks produced by markdown_yo to the data-role="codeBlock"
+ * Normalize code blocks produced by markdown-yo to the data-role="codeBlock"
  * format expected by all render enhancers (code-block-styling, fenced-diagrams,
  * fenced-math, fenced-code-chunks).
  *
- * markdown_yo outputs: <pre><code class="language-xxx">code</code></pre>
+ * markdown-yo outputs: <pre><code class="language-xxx">code</code></pre>
  * Enhancers expect:    <pre data-role="codeBlock" data-info="xxx"
  *                           data-parsed-info="..." data-normalized-info="...">
  *                        code
@@ -165,7 +165,7 @@ function normalizeMarkdownYoCodeBlocks($: CheerioAPI): void {
     const normalizedInfo = normalizeBlockInfo(parsedInfo);
 
     // NOTE: .attr() adds to existing attributes; .html() only replaces inner
-    // content. Any data-source-line set by markdown_yo's native sourceMap
+    // content. Any data-source-line set by markdown-yo's native sourceMap
     // feature is preserved on the <pre> element.
     $pre
       .attr('data-role', 'codeBlock')
@@ -177,10 +177,10 @@ function normalizeMarkdownYoCodeBlocks($: CheerioAPI): void {
 }
 
 /**
- * Normalize headings produced by markdown_yo.
+ * Normalize headings produced by markdown-yo.
  *
  * The transformer appends `{#id .class data-source-line="N"}` to headings for
- * markdown-it's attrs plugin. markdown_yo does not understand this syntax and
+ * markdown-it's attrs plugin. markdown-yo does not understand this syntax and
  * renders it as literal text. Strip the trailing `{...}` block and apply the
  * encoded attributes to the heading element instead.
  */
@@ -3269,7 +3269,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         )}</code></pre>`;
       }
     } else {
-      // markdown-it or markdown_yo
+      // markdown-it or markdown-yo
       // Set context so the wikilink renderer can call resolveWikilink()
       // with the correct current-note path, making wikiLinkResolution
       // actually affect the preview <a href>.
@@ -3336,13 +3336,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
      */
     const $ = cheerio.load(html);
 
-    // markdown_yo outputs standard <pre><code class="language-xxx"> elements.
+    // markdown-yo outputs standard <pre><code class="language-xxx"> elements.
     // Normalize them to the data-role="codeBlock" format expected by all
     // render enhancers (code-block-styling, fenced-diagrams, fenced-math, etc.)
     // Also normalize headings: strip the {#id .class data-source-line="N"}
     // suffix appended by the transformer (markdown-it attrs syntax) and apply
     // those attributes directly to the heading elements.
-    if (this.notebook.config.markdownParser === 'markdown_yo') {
+    if (this.notebook.config.markdownParser === 'markdown-yo') {
       normalizeMarkdownYoCodeBlocks($);
       normalizeMarkdownYoHeadings($);
     }
