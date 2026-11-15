@@ -83,7 +83,7 @@ export async function renderD2(
       execFile(
         opts.d2Path,
         args,
-        { timeout: 30000 },
+        { timeout: 30000, windowsHide: true },
         (err, _stdout, stderr) => {
           if (err) {
             const wrapped = new Error(stderr || err.message) as Error & {

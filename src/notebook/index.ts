@@ -479,6 +479,7 @@ export class Notebook {
           input: markdown,
           encoding: 'utf8',
           maxBuffer: 256 * 1024 * 1024,
+          windowsHide: true,
         });
       } else if (this.markdownYoRenderer) {
         html = this.markdownYoRenderer.render(markdown, renderOpts);
