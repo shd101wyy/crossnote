@@ -6,6 +6,7 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ### Bug fixes
 
+- **Chrome PDF, PNG and JPEG exports wait for Mermaid diagrams to finish rendering** — page load can finish while Mermaid is still laying out diagrams, leaving partial SVGs or raw diagram source in the exported file. Export now waits for the asynchronous Mermaid render to finish, reports rendering failures, and closes Chrome on failed exports as well (by @MonsterXia).
 - **Inline code `^` and `>` in a table cell are no longer taken for merge markers** — with `enableExtendedTableSyntax` on, a cell counted as a rowspan (`^`) or colspan (`>`) marker whenever its text was `^` or `>`, and the text of `` `^` `` or `**>**` is exactly that once the markup is stripped, so the cell vanished and its neighbour gained a span. A cell is now a marker only when it holds bare text, or a single bare-text paragraph (pandoc grid cells). Plain, padded and paragraph-wrapped markers merge as before; a cell that mixes `^` with an element such as `<br>` no longer merges. An escaped `\^` renders as plain `^` and still merges ([#539](https://github.com/shd101wyy/crossnote/pull/539) by @mohsensc; [vscode-mpe#2163](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2163) reported by @Build101Wsy).
 
 ## [0.9.42] - 2026-10-08
