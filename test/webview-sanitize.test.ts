@@ -236,10 +236,24 @@ describe('DOMPurify sanitizeHtml (client-side)', () => {
       const result = sanitize(
         '<svg xmlns="http://www.w3.org/2000/svg">' +
           '<use xlink:href="javascript:alert(1)"></use>' +
-          '<use href="data:text/html,<script>"></use></svg>',
+          '<use href="data:text/html,<script>"></use>' +
+          '<use href="data:image/svg+xml;base64,PHN2Zz4="></use></svg>',
       );
       expect(result).not.toContain('javascript:');
       expect(result).not.toContain('data:text/html');
+      expect(result).not.toContain('data:image/svg+xml');
+    });
+
+    it('strips external <use> references, keeping fragments only', () => {
+      const result = sanitize(
+        '<svg xmlns="http://www.w3.org/2000/svg" ' +
+          'xmlns:xlink="http://www.w3.org/1999/xlink">' +
+          '<use xlink:href="//evil.com/x.svg#y"></use>' +
+          '<use href="https://evil.com/x.svg#y"></use>' +
+          '<use xlink:href="#skin"></use></svg>',
+      );
+      expect(result).not.toContain('evil.com');
+      expect(result).toContain('xlink:href="#skin"');
     });
   });
 });

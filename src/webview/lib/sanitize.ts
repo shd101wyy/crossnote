@@ -49,6 +49,20 @@ purify.addHook('afterSanitizeAttributes', (node) => {
     node.setAttribute('sandbox', '');
     node.removeAttribute('srcdoc');
   }
+  if (node.tagName === 'use') {
+    // <use> may only reference same-document fragments (WaveDrom's only
+    // pattern). External references would pull un-sanitized DOM into the
+    // page from outside, for no legitimate diagram use.
+    const href = node.getAttribute('href');
+    const xlinkHref = node.getAttribute('xlink:href');
+    if (
+      (href !== null && !href.startsWith('#')) ||
+      (xlinkHref !== null && !xlinkHref.startsWith('#'))
+    ) {
+      node.removeAttribute('href');
+      node.removeAttributeNS('http://www.w3.org/1999/xlink', 'href');
+    }
+  }
 });
 
 // DOMPurify's built-in URL allowlist, plus `tag:` for Obsidian-style #tag
