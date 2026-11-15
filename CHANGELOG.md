@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Improvements
+
+- **markdown_yo is now markdown-yo (`@shd101wyy/markdown-yo`)** — the upstream project renamed [markdown_yo](https://github.com/shd101wyy/markdown-yo) to markdown-yo and its npm package moved from `markdown_yo` to `@shd101wyy/markdown-yo`; crossnote now depends on `@shd101wyy/markdown-yo@0.0.27` (up from `markdown_yo@0.0.5`). The renderer API (`createRenderer`, `RenderOptions`) is unchanged and the WASM module still loads on Node 18. **Breaking:** the notebook-config value `markdownParser: 'markdown_yo'` is now `'markdown-yo'` — the old spelling is no longer recognized and rendering silently falls back to markdown-it, so update notebook configs; hosts that expose the setting (such as the VS Code extension's `markdownParser` enum) need the same rename in lockstep. `markdownYoBinaryPath` keeps its name and behavior, and native binaries are now downloaded from [github.com/shd101wyy/markdown-yo/releases](https://github.com/shd101wyy/markdown-yo/releases) ([#546](https://github.com/shd101wyy/crossnote/pull/546) by @shd101wyy).
+
 ### Bug fixes
 
 - **Chrome PDF, PNG and JPEG exports wait for Mermaid diagrams to finish rendering** — page load can finish while Mermaid is still laying out diagrams, leaving partial SVGs or raw diagram source in the exported file. Export now waits for the asynchronous Mermaid render to finish, reports rendering failures, and closes Chrome on failed exports as well (by @MonsterXia).
