@@ -328,7 +328,10 @@ export async function processGraphs(
           content,
           pngFilePath,
           projectDirectoryPath,
-          notebook.config.mermaidTheme,
+          // An explicit mermaidConfig.theme (config script) wins, same as
+          // in the preview init script.
+          (notebook.config.mermaidConfig?.theme as string | undefined) ||
+            notebook.config.mermaidTheme,
         );
 
         let displayPNGFilePath;
