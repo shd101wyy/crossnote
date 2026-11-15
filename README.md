@@ -191,15 +191,15 @@ The file is a full snapshot — for very large note collections (thousands of
 notes with big images) it can get large; the build reports its size and any
 note that failed to render (failures are skipped, not fatal).
 
-## markdown_yo (Experimental)
+## markdown-yo (Experimental)
 
-Crossnote supports an optional high-performance markdown renderer called [markdown_yo](https://github.com/shd101wyy/markdown_yo), written in the [Yo programming language](https://github.com/shd101wyy/Yo) and compiled to WebAssembly. When enabled, it replaces markdown-it for HTML rendering while markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).
+Crossnote supports an optional high-performance markdown renderer called [markdown-yo](https://github.com/shd101wyy/markdown-yo), written in the [Yo programming language](https://github.com/shd101wyy/Yo) and compiled to WebAssembly. When enabled, it replaces markdown-it for HTML rendering while markdown-it is still used for token-based operations (backlink extraction, note mention processing, etc.).
 
-To enable it, set `markdownParser: 'markdown_yo'` in your notebook config.
+To enable it, set `markdownParser: 'markdown-yo'` in your notebook config.
 
 ### Performance
 
-By default, crossnote uses the **WASM** build of markdown_yo. The WASM module is initialized once per notebook and reused for all subsequent renders. The table below shows steady-state render times (WASM module already loaded) measured on an x86_64 Linux machine, compared to the native binary invoked as a subprocess:
+By default, crossnote uses the **WASM** build of markdown-yo. The WASM module is initialized once per notebook and reused for all subsequent renders. The table below shows steady-state render times (WASM module already loaded) measured on an x86_64 Linux machine, compared to the native binary invoked as a subprocess:
 
 | Input Size | markdown-it | WASM (pre-init) | Native binary (spawn) |
 | ---------- | ----------- | --------------- | --------------------- |
@@ -214,20 +214,20 @@ For very large files (≥1 MB), the native binary is ~1.3× faster than WASM bec
 
 ### Native Binary
 
-Pre-built binaries for Linux, macOS, and Windows are available at [github.com/shd101wyy/markdown_yo/releases](https://github.com/shd101wyy/markdown_yo/releases).
+Pre-built binaries for Linux, macOS, and Windows are available at [github.com/shd101wyy/markdown-yo/releases](https://github.com/shd101wyy/markdown-yo/releases).
 
 To use a native binary instead of WASM, set `markdownYoBinaryPath`:
 
 ```yaml
-markdownParser: markdown_yo
-markdownYoBinaryPath: /path/to/markdown_yo
+markdownParser: markdown-yo
+markdownYoBinaryPath: /path/to/markdown-yo
 ```
 
 Supports `$HOME` and `~` variable substitution. The `breakOnSingleNewLine` option is not supported by the native binary CLI and is silently ignored when this path is set.
 
 ### Supported Features
 
-markdown_yo supports CommonMark, GFM tables, strikethrough, and these extensions: subscript, superscript, mark/highlight, math ($..$ / $$..$$), emoji shortcodes, wikilinks, CriticMarkup, abbreviations, definition lists, admonitions, callouts, footnotes, source maps, and line breaks.
+markdown-yo supports CommonMark, GFM tables, strikethrough, and these extensions: subscript, superscript, mark/highlight, math ($..$ / $$..$$), emoji shortcodes, wikilinks, CriticMarkup, abbreviations, definition lists, admonitions, callouts, footnotes, source maps, and line breaks.
 
 ## Development
 

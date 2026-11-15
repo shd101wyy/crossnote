@@ -10,7 +10,7 @@
 import * as path from 'path';
 import { Notebook } from '../src/notebook/index';
 
-async function makeNotebook(parser: 'markdown-it' | 'pandoc' | 'markdown_yo') {
+async function makeNotebook(parser: 'markdown-it' | 'pandoc' | 'markdown-yo') {
   return Notebook.init({
     notebookPath: path.resolve(__dirname, './markdown/test-files'),
     config: {
@@ -187,10 +187,10 @@ describe('::: fenced div (pandoc transformer rewrite)', () => {
   });
 });
 
-describe('::: fenced div (markdown_yo transformer rewrite)', () => {
+describe('::: fenced div (markdown-yo transformer rewrite)', () => {
   let notebook: Notebook;
   beforeAll(async () => {
-    notebook = await makeNotebook('markdown_yo');
+    notebook = await makeNotebook('markdown-yo');
   });
 
   it('rewrites non-code :::name to a <div class="name"> HTML block', async () => {

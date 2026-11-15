@@ -298,7 +298,7 @@ export async function transformMarkdown(
   // null when not inside a `:::name … :::` block; 'code' when the inner
   // content is a code/diagram fence (markdown-it consumes it via the
   // colon_fence plugin); 'html-div' when we rewrote the markers as raw HTML
-  // <div>/</div> (pandoc / markdown_yo path for non-code names).
+  // <div>/</div> (pandoc / markdown-yo path for non-code names).
   let colonFenceState: null | 'code' | 'html-div' = null;
   let colonFenceMarkerLen = 0;
   let inMathDisplayBlock = false;
@@ -361,7 +361,7 @@ export async function transformMarkdown(
       //                              plugin; we just inject {data-source-line}
       //                              for preview sync.
       //   2. :::<other-name>       — Pandoc-style fenced div.  For pandoc /
-      //                              markdown_yo we rewrite the open/close
+      //                              markdown-yo we rewrite the open/close
       //                              markers as raw HTML <div>/</div> so the
       //                              non-markdown-it parsers don't render the
       //                              colons as literal text (#2275).  Blank
@@ -396,7 +396,7 @@ export async function transformMarkdown(
           const lang = (langMatch?.[1] ?? '').toLowerCase();
           const isCodeLang = COLON_FENCE_CODE_LANGUAGES.has(lang);
           if (markdownParser !== 'markdown-it' && !isCodeLang) {
-            // Pandoc / markdown_yo fenced-div path — rewrite as HTML so the
+            // Pandoc / markdown-yo fenced-div path — rewrite as HTML so the
             // non-markdown-it parsers don't print `:::name` literally.
             const blockInfo = parseBlockInfo(afterColons);
             const classes = (

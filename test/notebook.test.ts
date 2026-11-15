@@ -1,15 +1,21 @@
 import * as path from 'path';
 import { Notebook } from '../src/notebook';
 
-describe('Notebook markdown_yo rendering', () => {
-  test('renderMarkdown applies updated config to markdown_yo renders', async () => {
+describe('Notebook markdown-yo rendering', () => {
+  test('renderMarkdown applies updated config to markdown-yo renders', async () => {
     const notebook = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
       config: {
-        markdownParser: 'markdown_yo',
+        markdownParser: 'markdown-yo',
         enableTypographer: false,
       },
     });
+
+    // The WASM module must actually load — every other markdown-yo
+    // expectation also holds via the silent markdown-it fallback, so a
+    // broken package (e.g. a tarball missing the .wasm file) would
+    // otherwise pass unnoticed.
+    expect(notebook.markdownYoRenderer).not.toBeNull();
 
     expect(notebook.renderMarkdown('"test"', { isForPreview: true })).toContain(
       '&quot;test&quot;',
@@ -22,11 +28,11 @@ describe('Notebook markdown_yo rendering', () => {
     );
   });
 
-  test('renderMarkdown falls back to markdown-it when markdown_yo is disabled', async () => {
+  test('renderMarkdown falls back to markdown-it when markdown-yo is disabled', async () => {
     const notebook = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
       config: {
-        markdownParser: 'markdown_yo',
+        markdownParser: 'markdown-yo',
       },
     });
 

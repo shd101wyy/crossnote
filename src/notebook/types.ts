@@ -9,7 +9,7 @@ export type { KatexOptions } from 'katex';
 export type { MermaidConfig } from 'mermaid';
 export const IS_NODE = typeof window === 'undefined';
 
-export type MarkdownParser = 'markdown-it' | 'pandoc' | 'markdown_yo';
+export type MarkdownParser = 'markdown-it' | 'pandoc' | 'markdown-yo';
 
 export type FileSystemStats = {
   mtimeMs: number;
@@ -220,17 +220,17 @@ export interface NotebookConfig {
    *
    * - `'markdown-it'` (default) — built-in markdown-it renderer
    * - `'pandoc'` — render via Pandoc (requires Pandoc installed)
-   * - `'markdown_yo'` — render via markdown_yo (WASM or native binary)
+   * - `'markdown-yo'` — render via markdown-yo (WASM or native binary)
    *
    * @default 'markdown-it'
    */
   markdownParser: MarkdownParser;
 
   /**
-   * Path to the `markdown_yo` native binary.
+   * Path to the `markdown-yo` native binary.
    *
    * When set, crossnote will invoke this binary (via stdin/stdout) instead of
-   * the bundled WASM module when `markdownParser` is `'markdown_yo'`.
+   * the bundled WASM module when `markdownParser` is `'markdown-yo'`.
    *
    * **Performance note:** the native binary is faster for files under ~300 KB
    * (roughly 6× faster than WASM due to lower per-call overhead). For very

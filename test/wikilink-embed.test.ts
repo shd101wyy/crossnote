@@ -31,11 +31,11 @@ describe('Wikilink embed integration', () => {
     expect(html).toContain('wikilink-embed-content');
   });
 
-  it('renders inline ![[markdown-file]] as embedded content with markdown_yo', async () => {
+  it('renders inline ![[markdown-file]] as embedded content with markdown-yo', async () => {
     const notebookYo = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
       config: {
-        markdownParser: 'markdown_yo',
+        markdownParser: 'markdown-yo',
       },
     });
     const markdown = 'Before ![[embedded-note]] after end.';

@@ -177,11 +177,11 @@ describe('Tag syntax', () => {
     expect(html).toContain('#world');
   });
 
-  it('renders #tag via transformer for markdown_yo parser', async () => {
+  it('renders #tag via transformer for markdown-yo parser', async () => {
     const notebookYo = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
       config: {
-        markdownParser: 'markdown_yo',
+        markdownParser: 'markdown-yo',
       },
     });
     const markdown = 'Hello #world tag here';
@@ -233,14 +233,14 @@ describe('Tag syntax', () => {
     expect(html).toContain('href="tag://parent%2Fchild"');
   });
 
-  it('transformer skips #tag inside markdown image alt text (markdown_yo)', async () => {
+  it('transformer skips #tag inside markdown image alt text (markdown-yo)', async () => {
     // Regression: the transformer used to wrap `<a class="tag">` inside
     // `![alt #bug](img.png)` because the regex didn't know about
     // markdown link/image ranges, producing malformed HTML.
     const notebookYo = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
       config: {
-        markdownParser: 'markdown_yo',
+        markdownParser: 'markdown-yo',
       },
     });
     const engine = notebookYo.getNoteMarkdownEngine(
@@ -258,11 +258,11 @@ describe('Tag syntax', () => {
     expect(html).not.toContain('class="tag"');
   });
 
-  it('transformer skips #tag inside markdown link text (markdown_yo)', async () => {
+  it('transformer skips #tag inside markdown link text (markdown-yo)', async () => {
     const notebookYo = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
       config: {
-        markdownParser: 'markdown_yo',
+        markdownParser: 'markdown-yo',
       },
     });
     const engine = notebookYo.getNoteMarkdownEngine(
@@ -276,14 +276,14 @@ describe('Tag syntax', () => {
     expect(html).not.toContain('class="tag"');
   });
 
-  it('transformer skips #id inside {...} block-attributes (markdown_yo)', async () => {
+  it('transformer skips #id inside {...} block-attributes (markdown-yo)', async () => {
     // For non-markdown-it parsers the tag substitution happens in the
     // transformer regex.  Make sure the curly-bracket attribute span
     // injected on every heading is not turned into a tag.
     const notebookYo = await Notebook.init({
       notebookPath: path.resolve(__dirname, './markdown/test-files'),
       config: {
-        markdownParser: 'markdown_yo',
+        markdownParser: 'markdown-yo',
       },
     });
     const engine = notebookYo.getNoteMarkdownEngine(

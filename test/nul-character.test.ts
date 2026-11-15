@@ -5,7 +5,7 @@ import { Notebook } from '../src/notebook/index';
 
 // vscode-mpe#2394 reported that a document containing a NUL (\0) byte
 // rendered only up to that byte. The pipeline is verified to be NUL-safe:
-// markdown-it's normalize rule (and markdown_yo likewise) replaces \0 with
+// markdown-it's normalize rule (and markdown-yo likewise) replaces \0 with
 // U+FFFD before tokenization, so nothing downstream — transformers, render
 // enhancers, the sanitizer, or the `data-html` attribute the preview embeds
 // in `<body>` — ever sees a raw NUL, and content after it keeps rendering.
@@ -80,10 +80,10 @@ describe('documents containing NUL characters', () => {
     expect(template).toContain('tail content');
   });
 
-  it('renders content after a NUL byte with the markdown_yo parser too', async () => {
+  it('renders content after a NUL byte with the markdown-yo parser too', async () => {
     const notebookYo = await Notebook.init({
       notebookPath: tmp,
-      config: { markdownParser: 'markdown_yo' },
+      config: { markdownParser: 'markdown-yo' },
     });
     const filePath = path.join(tmp, 'note-yo.md');
     fs.writeFileSync(filePath, 'before\0after\n\ntail content\n');
