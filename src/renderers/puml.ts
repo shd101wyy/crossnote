@@ -43,21 +43,28 @@ class PlantUMLTask {
   }
 
   private startTask() {
-    this.task = spawn('java', [
-      '-Djava.awt.headless=true',
-      '-Dfile.encoding=UTF-8',
-      '-Dplantuml.include.path=' +
-        [this.fileDirectoryPath /*getExtensionConfigPath()*/].join(
-          path.delimiter,
-        ),
-      '-jar',
-      this.plantumlJarPath,
-      // '-graphvizdot', 'exe'
-      '-pipe',
-      '-tsvg',
-      '-charset',
-      'UTF-8',
-    ]);
+    // Hide the console window `java.exe` would flash on Windows.
+    // `detached: false` keeps it owned by this process, so it still dies
+    // with the extension host.
+    this.task = spawn(
+      'java',
+      [
+        '-Djava.awt.headless=true',
+        '-Dfile.encoding=UTF-8',
+        '-Dplantuml.include.path=' +
+          [this.fileDirectoryPath /*getExtensionConfigPath()*/].join(
+            path.delimiter,
+          ),
+        '-jar',
+        this.plantumlJarPath,
+        // '-graphvizdot', 'exe'
+        '-pipe',
+        '-tsvg',
+        '-charset',
+        'UTF-8',
+      ],
+      { windowsHide: true },
+    );
 
     this.task.stdout.on('data', (chunk) => {
       let data: string = (chunk as Buffer | string).toString();

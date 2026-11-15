@@ -16,7 +16,7 @@ export async function svgElementToPNGFile(
   const args = [info.path, pngFilePath];
   try {
     if (imageMagickPath && imageMagickPath.length) {
-      await execFileSync(imageMagickPath, args);
+      await execFileSync(imageMagickPath, args, { windowsHide: true });
     } else {
       await imagemagickCli.exec(`convert ${args.join(' ')}`);
     }

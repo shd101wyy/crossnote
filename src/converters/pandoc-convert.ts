@@ -490,7 +490,7 @@ export async function pandocConvert(
     const program = execFile(
       notebook.config.pandocPath,
       args,
-      { cwd: fileDirectoryPath },
+      { cwd: fileDirectoryPath, windowsHide: true },
       (error) => {
         /*if (deleteImages) {
         imagePaths.forEach((p)=> fs.unlink(p, (error)=>{}))

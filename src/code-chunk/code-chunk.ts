@@ -133,7 +133,10 @@ except Exception:
   }
 
   return await new Promise<string>((resolve) => {
-    const task = spawn(cmd, args, { cwd: fileDirectoryPath });
+    const task = spawn(cmd, args, {
+      cwd: fileDirectoryPath,
+      windowsHide: true,
+    });
     if (normalizedAttributes['stdin']) {
       task.stdin.write(content); // pass content as stdin
     }
