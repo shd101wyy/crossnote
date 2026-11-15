@@ -10,72 +10,11 @@
 import katex from 'katex';
 import DOMPurify from 'dompurify';
 
-// Re-implement the sanitizer here using the same config as src/webview/lib/sanitize.ts
-// so we can test it in a real DOM environment (jsdom via @jest-environment).
-function createSanitizer() {
-  const purify = DOMPurify(window);
-
-  const SAFE_SCRIPT_TYPES = new Set(['wavedrom', 'text/tikz']);
-
-  purify.addHook(
-    'uponSanitizeElement',
-    (node: Node, data: { tagName: string }) => {
-      if (data.tagName === 'script') {
-        const el = node as Element;
-        const scriptType = (el.getAttribute?.('type') || '')
-          .toLowerCase()
-          .trim();
-        if (!SAFE_SCRIPT_TYPES.has(scriptType)) {
-          el.parentNode?.removeChild(el);
-        }
-      }
-    },
-  );
-
-  purify.addHook('afterSanitizeAttributes', (node: Element) => {
-    if (node.tagName === 'IFRAME') {
-      node.setAttribute('sandbox', '');
-      node.removeAttribute('srcdoc');
-    }
-  });
-
-  // Mirror the ALLOWED_URI_REGEXP in src/webview/lib/sanitize.ts.
-  const ALLOWED_URI_REGEXP =
-    /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|tag):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
-
-  return (html: string): string =>
-    purify.sanitize(html, {
-      ADD_TAGS: [
-        'iframe',
-        'style',
-        'script',
-        'semantics',
-        'annotation',
-        'annotation-xml',
-      ],
-      ADD_ATTR: [
-        'sandbox',
-        'allow',
-        'allowfullscreen',
-        'frameborder',
-        'scrolling',
-        'encoding',
-        'data-source-line',
-        'data-source-lines',
-        'data-id',
-        'data-cmd',
-        'data-code',
-        'data-processed',
-        'data-widget-name',
-        'data-widget-src',
-        'data-widget-attributes',
-        'data-background-image',
-        'data-background-iframe',
-      ],
-      ALLOW_DATA_ATTR: true,
-      ALLOWED_URI_REGEXP,
-    });
-}
+// The real browser-side sanitizer. It runs `DOMPurify(window)` at import
+// time, which resolves against this test file's jsdom environment — so the
+// tests exercise the actual shipped config instead of a copy that can drift
+// (a replicated ADD_TAGS once missed `use` and hid the WaveDrom regression).
+import { sanitizeHtml } from '../src/webview/lib/sanitize';
 
 /**
  * Normalize cosmetic differences that DOMPurify introduces but don't affect
@@ -92,7 +31,7 @@ function normalize(html: string): string {
 }
 
 describe('DOMPurify sanitizeHtml (client-side)', () => {
-  const sanitize = createSanitizer();
+  const sanitize = sanitizeHtml;
 
   describe('KaTeX MathML preservation', () => {
     it('preserves inline KaTeX output', () => {
@@ -263,6 +202,58 @@ describe('DOMPurify sanitizeHtml (client-side)', () => {
       const preserved = sanitize(html);
       expect(preserved).toContain('<semantics>');
       expect(preserved).toContain('<annotation');
+    });
+  });
+
+  describe('regression: DOMPurify strips SVG <use>, emptying WaveDrom diagrams (#518 follow-up)', () => {
+    // WaveDrom draws every waveform mark as a <use xlink:href="#..."> into
+    // the skin's <defs>. The post-render sanitize pass added in #518 fed
+    // the rendered SVG through sanitizeHtml, whose DOMPurify config still
+    // had <use> on the default SVG disallow list — the waves disappeared
+    // and only the text labels were left (vscode-mpe#2463).
+    const renderedWavedrom =
+      '<svg xmlns="http://www.w3.org/2000/svg" ' +
+      'xmlns:xlink="http://www.w3.org/1999/xlink" class="WaveDrom">' +
+      '<defs><g id="wa"><path d="M0,0 h8 v12 h-8 z"/></g></defs>' +
+      '<g><use xlink:href="#wa" transform="translate(0,10)"></use>' +
+      '<use xlink:href="#wa" transform="translate(0,20)"></use>' +
+      '<text>clk</text></g></svg>';
+
+    it('would strip <use> without our config', () => {
+      const purify = DOMPurify(window);
+      expect(purify.sanitize(renderedWavedrom)).not.toContain('<use');
+    });
+
+    it('keeps <use> marks with fragment hrefs', () => {
+      const result = sanitize(renderedWavedrom);
+      expect(result.match(/<use/g)?.length).toBe(2);
+      expect(result).toContain('xlink:href="#wa"');
+      // The referenced skin definition survives too.
+      expect(result).toContain('<g id="wa">');
+    });
+
+    it('still strips dangerous <use> hrefs', () => {
+      const result = sanitize(
+        '<svg xmlns="http://www.w3.org/2000/svg">' +
+          '<use xlink:href="javascript:alert(1)"></use>' +
+          '<use href="data:text/html,<script>"></use>' +
+          '<use href="data:image/svg+xml;base64,PHN2Zz4="></use></svg>',
+      );
+      expect(result).not.toContain('javascript:');
+      expect(result).not.toContain('data:text/html');
+      expect(result).not.toContain('data:image/svg+xml');
+    });
+
+    it('strips external <use> references, keeping fragments only', () => {
+      const result = sanitize(
+        '<svg xmlns="http://www.w3.org/2000/svg" ' +
+          'xmlns:xlink="http://www.w3.org/1999/xlink">' +
+          '<use xlink:href="//evil.com/x.svg#y"></use>' +
+          '<use href="https://evil.com/x.svg#y"></use>' +
+          '<use xlink:href="#skin"></use></svg>',
+      );
+      expect(result).not.toContain('evil.com');
+      expect(result).toContain('xlink:href="#skin"');
     });
   });
 });

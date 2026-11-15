@@ -49,6 +49,20 @@ purify.addHook('afterSanitizeAttributes', (node) => {
     node.setAttribute('sandbox', '');
     node.removeAttribute('srcdoc');
   }
+  if (node.tagName === 'use') {
+    // <use> may only reference same-document fragments (WaveDrom's only
+    // pattern). External references would pull un-sanitized DOM into the
+    // page from outside, for no legitimate diagram use.
+    const href = node.getAttribute('href');
+    const xlinkHref = node.getAttribute('xlink:href');
+    if (
+      (href !== null && !href.startsWith('#')) ||
+      (xlinkHref !== null && !xlinkHref.startsWith('#'))
+    ) {
+      node.removeAttribute('href');
+      node.removeAttributeNS('http://www.w3.org/1999/xlink', 'href');
+    }
+  }
 });
 
 // DOMPurify's built-in URL allowlist, plus `tag:` for Obsidian-style #tag
@@ -67,6 +81,13 @@ export function sanitizeHtml(html: string): string {
       'iframe',
       // SVG style elements used by diagram renderers
       'style',
+      // SVG <use> is on DOMPurify's default SVG disallow list, but
+      // WaveDrom draws every waveform mark as a <use xlink:href="#...">
+      // into the skin's <defs>; without this the waves render as empty
+      // space (only the text labels survive). href values still go
+      // through ALLOWED_URI_REGEXP, so javascript:/data: targets are
+      // stripped.
+      'use',
       // Non-executable data scripts (filtered by uponSanitizeElement hook)
       'script',
       // MathML elements used by KaTeX (DOMPurify 3.4.0+ strips these by default)
