@@ -794,6 +794,11 @@ export interface Backlink {
 
 export interface WebviewConfig extends Partial<NotebookConfig> {
   scrollSync?: boolean;
+  /**
+   * When true, clicking text in the preview reveals that text in the editor,
+   * at the same height, and moves the cursor there.
+   */
+  clickToRevealSource?: boolean;
   zoomLevel?: number;
   sourceUri?: string;
   cursorLine?: number;
