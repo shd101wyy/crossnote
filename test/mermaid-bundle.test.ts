@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from '../src/markdown-engine/mermaid-polyfill';
 
 /**
  * The vendored mermaid bundle was accidentally committed as a 0-byte file
@@ -49,7 +50,10 @@ describe('vendored mermaid bundle', () => {
     // The oldest supported VS Code (1.82) renders webviews with
     // Electron 25 / Chromium 114. The ES2024 APIs below only shipped in
     // Chromium 116–121: a bundle calling any of them parses everywhere
-    // but throws at runtime in older webviews.
+    // but throws at runtime in older webviews — unless the API is
+    // polyfilled ahead of the bundle (MERMAID_LEGACY_WEBVIEW_POLYFILL is
+    // emitted immediately before every mermaid script tag).
+    const polyfilled = new Set(['Object.groupBy (needs Chromium 117)']);
     const chromium116PlusApis: [string, RegExp][] = [
       ['Promise.withResolvers (needs Chromium 119)', /Promise\.withResolvers/],
       ['Object.groupBy (needs Chromium 117)', /Object\.groupBy/],
@@ -57,9 +61,61 @@ describe('vendored mermaid bundle', () => {
       ['Array.fromAsync (needs Chromium 121)', /Array\.fromAsync/],
     ];
     const used = chromium116PlusApis
-      .filter((entry: [string, RegExp]) => entry[1].test(bundle))
+      .filter(
+        (entry: [string, RegExp]) =>
+          entry[1].test(bundle) && !polyfilled.has(entry[0]),
+      )
       .map((entry: [string, RegExp]) => entry[0]);
     expect(used).toEqual([]);
+  });
+
+  test('the legacy-webview polyfill defines Object.groupBy per spec', () => {
+    // Simulate the Chromium 114 webview: no native Object.groupBy. Run the
+    // exact script body that is emitted before the mermaid bundle and
+    // check the grouping semantics chevrotain relies on.
+    const body = MERMAID_LEGACY_WEBVIEW_POLYFILL.replace(
+      /^<script>/,
+      '',
+    ).replace(/<\/script>$/, '');
+    const objectWithGroupBy = Object as unknown as {
+      groupBy?: unknown;
+      create: (proto: null) => Record<string, unknown>;
+    };
+    const saved = objectWithGroupBy.groupBy;
+    delete objectWithGroupBy.groupBy;
+    try {
+       
+      new Function(body)();
+      const grouped = (
+        objectWithGroupBy.groupBy as (
+          items: number[],
+          callbackfn: (item: number, index: number) => string,
+        ) => Record<string, number[]>
+      )([6, 4, 7, 2], (n) => (n % 2 ? 'odd' : 'even'));
+      // Spec: the result has a null prototype.
+      expect(Object.getPrototypeOf(grouped)).toBe(null);
+      expect(Object.keys(grouped).sort()).toEqual(['even', 'odd']);
+      expect(grouped.odd).toEqual([7]);
+      expect(grouped.even).toEqual([6, 4, 2]);
+      // The callback receives the index (spec: (value, index)).
+      const indices: number[] = [];
+      (
+        objectWithGroupBy.groupBy as (
+          items: string[],
+          callbackfn: (item: string, index: number) => string,
+        ) => Record<string, string[]>
+      )(['a', 'b'], (_item, index) => {
+        indices.push(index);
+        return 'all';
+      });
+      expect(indices).toEqual([0, 1]);
+    } finally {
+      if (saved === undefined) {
+        delete objectWithGroupBy.groupBy;
+      } else {
+        objectWithGroupBy.groupBy = saved;
+      }
+    }
   });
 
   test('CDN fallback URL in markdown-engine matches the installed mermaid', () => {

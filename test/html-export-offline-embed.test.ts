@@ -140,6 +140,25 @@ describe('HTML export offline asset embedding', () => {
     expect(html).not.toContain(Buffer.from('WOFF1FONT').toString('base64'));
   });
 
+  test('the Object.groupBy polyfill precedes the mermaid bundle in every mode', async () => {
+    // Mermaid >= 12.1 calls Object.groupBy at parser-init time; the
+    // oldest supported webview (Chromium 114) lacks it, so the shim in
+    // MERMAID_LEGACY_WEBVIEW_POLYFILL must run before the bundle in both
+    // the offline (inlined) and CDN export paths.
+    for (const offline of [true, false]) {
+      const html = await renderExportTemplate(mermaidBody, { offline });
+      const polyfillAt = html.indexOf('if(!Object.groupBy)');
+      expect(polyfillAt).toBeGreaterThanOrEqual(0);
+      // The bundle is either a script src (file:// or CDN, both contain
+      // "mermaid.min.js") or inlined (the fake body's marker).
+      const bundleAt = Math.max(
+        html.indexOf('mermaid.min.js'),
+        html.indexOf('MERMAID_OFFLINE_MARKER'),
+      );
+      expect(bundleAt).toBeGreaterThan(polyfillAt);
+    }
+  });
+
   test('offline without embed still uses file:// (Open in Browser / PDF)', async () => {
     const html = await renderExportTemplate(mermaidBody, {
       offline: true,

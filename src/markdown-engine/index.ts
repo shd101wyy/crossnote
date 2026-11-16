@@ -48,6 +48,7 @@ import HeadingIdGenerator from './heading-id-generator';
 import { readOfflineCss, readOfflineJs } from './inline-offline-assets';
 import { buildMathJaxConfigScript } from './mathjax-config';
 import { buildMermaidExportScript } from './mermaid-export';
+import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
 import { sanitizeRenderedHTML } from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
 import { transformMarkdown } from './transformer';
@@ -399,6 +400,10 @@ export class MarkdownEngine {
     scripts += `<script>var exports = undefined</script>`;
 
     // mermaid
+    // The polyfill must precede the bundle: mermaid ≥ 12.1 calls
+    // Object.groupBy, which the oldest supported webview lacks (see
+    // ./mermaid-polyfill.ts).
+    scripts += MERMAID_LEGACY_WEBVIEW_POLYFILL;
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
         utility.getCrossnoteBuildDirectory(),
@@ -1261,12 +1266,16 @@ window["initRevealPresentation"] = async function() {
     let mermaidScript = '';
     let mermaidInitScript = '';
     if (html.indexOf(' class="mermaid') >= 0) {
+      // The polyfill must precede the bundle in both offline and CDN
+      // modes: mermaid ≥ 12.1 calls Object.groupBy, which the oldest
+      // supported webview lacks (see ./mermaid-polyfill.ts).
+      mermaidScript = MERMAID_LEGACY_WEBVIEW_POLYFILL;
       if (options.offline) {
-        mermaidScript = await offlineScript(
+        mermaidScript += await offlineScript(
           './dependencies/mermaid/mermaid.min.js',
         );
       } else {
-        mermaidScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@12.0.0/dist/mermaid.min.js"></script>`;
+        mermaidScript += `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@12.3.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript = `<script type="module">${buildMermaidExportScript(
