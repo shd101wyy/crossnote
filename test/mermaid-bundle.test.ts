@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from '../src/markdown-engine/mermaid-polyfill';
 
 /**
  * The vendored mermaid bundle was accidentally committed as a 0-byte file
@@ -8,6 +9,34 @@ import * as path from 'path';
  * Guard the invariants that scripts/update-mermaid-bundle.mjs relies on,
  * so an empty or truncated bundle fails CI instead of shipping.
  */
+
+/**
+ * Chromium-116+ APIs that the oldest supported webview (VS Code 1.82 /
+ * Electron 25 / Chromium 114) lacks. An API the bundle uses must not
+ * appear here as a violation unless MERMAID_LEGACY_WEBVIEW_POLYFILL
+ * literally contains its defining assignment (`defines`) — so an API can
+ * only be exempted by shipping a shim that defines it, and removing the
+ * shim re-flagges the API. Behavior of each shim is covered by the
+ * polyfill tests below.
+ */
+interface FloorApi {
+  label: string;
+  usage: RegExp;
+  /** Matches the shim's defining assignment in the polyfill script. */
+  defines?: RegExp;
+}
+
+const FLOOR_APIS: FloorApi[] = [
+  { label: 'Promise.withResolvers', usage: /Promise\.withResolvers/ },
+  {
+    label: 'Object.groupBy',
+    usage: /Object\.groupBy/,
+    defines: /Object\.groupBy\s*=/,
+  },
+  { label: 'Map.groupBy', usage: /Map\.groupBy/ },
+  { label: 'Array.fromAsync', usage: /Array\.fromAsync/ },
+];
+
 describe('vendored mermaid bundle', () => {
   const bundlePath = path.resolve(
     __dirname,
@@ -15,6 +44,10 @@ describe('vendored mermaid bundle', () => {
   );
   const bundle = fs.readFileSync(bundlePath, 'utf8');
   const trimmed = bundle.trimEnd();
+  const polyfillBody = MERMAID_LEGACY_WEBVIEW_POLYFILL.replace(
+    /^<script>/,
+    '',
+  ).replace(/<\/script>$/, '');
 
   test('is not empty or truncated', () => {
     // The official mermaid 12.x IIFE dist is ~5.5 MB (11.x was ~3.5 MB).
@@ -45,21 +78,79 @@ describe('vendored mermaid bundle', () => {
     expect(() => new Function(trimmed)).not.toThrow();
   });
 
-  test('contains no ES2024 runtime APIs newer than the webview floor', () => {
-    // The oldest supported VS Code (1.82) renders webviews with
-    // Electron 25 / Chromium 114. The ES2024 APIs below only shipped in
-    // Chromium 116–121: a bundle calling any of them parses everywhere
-    // but throws at runtime in older webviews.
-    const chromium116PlusApis: [string, RegExp][] = [
-      ['Promise.withResolvers (needs Chromium 119)', /Promise\.withResolvers/],
-      ['Object.groupBy (needs Chromium 117)', /Object\.groupBy/],
-      ['Map.groupBy (needs Chromium 117)', /Map\.groupBy/],
-      ['Array.fromAsync (needs Chromium 121)', /Array\.fromAsync/],
-    ];
-    const used = chromium116PlusApis
-      .filter((entry: [string, RegExp]) => entry[1].test(bundle))
-      .map((entry: [string, RegExp]) => entry[0]);
+  test('contains no ES2024 runtime APIs newer than the webview floor, except polyfilled ones', () => {
+    // A bundle calling a Chromium-116+ API parses everywhere but throws
+    // at runtime in older webviews — unless the API is defined by
+    // MERMAID_LEGACY_WEBVIEW_POLYFILL, which is emitted immediately
+    // before every mermaid script tag.
+    const used = FLOOR_APIS.filter(
+      (api) =>
+        api.usage.test(bundle) &&
+        !(api.defines && api.defines.test(polyfillBody)),
+    ).map((api) => api.label);
     expect(used).toEqual([]);
+  });
+
+  test('the polyfill defines Object.groupBy per spec', () => {
+    // The exact script body that is emitted before the mermaid bundle,
+    // checked for the grouping semantics chevrotain relies on.
+    const objectWithGroupBy = Object as unknown as {
+      groupBy?: unknown;
+    };
+    const saved = objectWithGroupBy.groupBy;
+    delete objectWithGroupBy.groupBy;
+    try {
+      new Function(polyfillBody)();
+      const grouped = (
+        objectWithGroupBy.groupBy as (
+          items: number[],
+          callbackfn: (item: number, index: number) => string,
+        ) => Record<string, number[]>
+      )([6, 4, 7, 2], (n) => (n % 2 ? 'odd' : 'even'));
+      // Spec: the result has a null prototype.
+      expect(Object.getPrototypeOf(grouped)).toBe(null);
+      expect(Object.keys(grouped).sort()).toEqual(['even', 'odd']);
+      expect(grouped.odd).toEqual([7]);
+      expect(grouped.even).toEqual([6, 4, 2]);
+      // The callback receives the index (spec: (value, index)).
+      const indices: number[] = [];
+      (
+        objectWithGroupBy.groupBy as (
+          items: string[],
+          callbackfn: (item: string, index: number) => string,
+        ) => Record<string, string[]>
+      )(['a', 'b'], (_item, index) => {
+        indices.push(index);
+        return 'all';
+      });
+      expect(indices).toEqual([0, 1]);
+    } finally {
+      if (saved === undefined) {
+        delete objectWithGroupBy.groupBy;
+      } else {
+        objectWithGroupBy.groupBy = saved;
+      }
+    }
+  });
+
+  test('the polyfill is emitted before the bundle at the preview load site', () => {
+    // The preview/presentation path (generateScriptsForPreview) emits
+    // consecutive append statements in source order; the export path is
+    // covered end-to-end by test/html-export-offline-embed.test.ts. The
+    // preview path is the first mermaid.min.js reference in the file, so
+    // nothing may load the bundle before the polyfill.
+    const engine = fs.readFileSync(
+      path.resolve(__dirname, '../src/markdown-engine/index.ts'),
+      'utf8',
+    );
+    const previewPolyfillAt = engine.indexOf(
+      'scripts += MERMAID_LEGACY_WEBVIEW_POLYFILL;',
+    );
+    expect(previewPolyfillAt).toBeGreaterThanOrEqual(0);
+    const firstBundleAt = engine.indexOf(
+      './dependencies/mermaid/mermaid.min.js',
+    );
+    expect(firstBundleAt).toBeGreaterThan(previewPolyfillAt);
   });
 
   test('CDN fallback URL in markdown-engine matches the installed mermaid', () => {
