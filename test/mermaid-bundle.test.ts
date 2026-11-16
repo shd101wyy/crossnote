@@ -100,7 +100,6 @@ describe('vendored mermaid bundle', () => {
     const saved = objectWithGroupBy.groupBy;
     delete objectWithGroupBy.groupBy;
     try {
-       
       new Function(polyfillBody)();
       const grouped = (
         objectWithGroupBy.groupBy as (
