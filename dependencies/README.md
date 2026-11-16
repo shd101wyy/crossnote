@@ -38,3 +38,6 @@ To update mermaid:
 2. `node scripts/update-mermaid-bundle.mjs` — downloads the matching official dist bundle from jsDelivr into `dependencies/mermaid/mermaid.min.js` (uses the version installed in `node_modules`; an explicit version can be passed as an argument). Equivalent to manually downloading `https://cdn.jsdelivr.net/npm/mermaid@<version>/dist/mermaid.min.js` and copying it to `dependencies/mermaid/mermaid.min.js`.
 3. Update the mermaid version in the CDN fallback script URL in `src/markdown-engine/index.ts` (`mermaid@<version>/dist/mermaid.min.js`).
 4. Update the version list above and add a `CHANGELOG.md` entry.
+5. Check `test/mermaid-bundle.test.ts` — it fails the bump if the new bundle calls a Chromium-116+ API the oldest supported webview lacks unless `src/markdown-engine/mermaid-polyfill.ts` defines a shim for it.
+
+Note: the `mermaid` npm package itself declares `engines.node >= 22` (recent lines) while crossnote pins Node 18. That is currently harmless — the package is only used for its types (`MermaidConfig`); it is never imported at runtime, and pnpm does not enforce `engines` on install. Do **not** runtime-import `mermaid` from Node code without re-evaluating the Node-18 support floor first.

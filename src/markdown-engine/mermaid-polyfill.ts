@@ -8,6 +8,12 @@
  * notice, so the bundle-level guard test treats the API as a runtime
  * risk on the floor webview regardless.
  *
+ * Scope: the shim accepts arrays only, not the spec's arbitrary
+ * iterables — both call sites in the mermaid bundle (chevrotain's
+ * duplicate-productions analysis) pass plain arrays. A non-array-like
+ * input yields an empty group object rather than the spec's TypeError;
+ * nothing in crossnote's pages can reach the shim with such a value.
+ *
  * The vendored `dependencies/mermaid/mermaid.min.js` must stay
  * byte-identical to the official CDN dist (see `dependencies/README.md`),
  * so the shim is shipped as its own script tag, emitted immediately

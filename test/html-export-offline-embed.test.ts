@@ -143,19 +143,25 @@ describe('HTML export offline asset embedding', () => {
   test('the Object.groupBy polyfill precedes the mermaid bundle in every mode', async () => {
     // Mermaid >= 12.1 calls Object.groupBy at parser-init time; the
     // oldest supported webview (Chromium 114) lacks it, so the shim in
-    // MERMAID_LEGACY_WEBVIEW_POLYFILL must run before the bundle in both
-    // the offline (inlined) and CDN export paths.
-    for (const offline of [true, false]) {
-      const html = await renderExportTemplate(mermaidBody, { offline });
+    // MERMAID_LEGACY_WEBVIEW_POLYFILL must run before the bundle in
+    // every export mode. Each mode is checked per needle — file:// src,
+    // CDN src, and the inlined body — so a stray occurrence of one
+    // needle elsewhere can't mask an ordering violation of another.
+    const modes = [
+      { offline: true }, // file:// script src
+      { offline: true, embedOfflineAssets: true }, // inlined bundle body
+      { offline: false }, // CDN script src
+    ];
+    for (const mode of modes) {
+      const html = await renderExportTemplate(mermaidBody, mode);
       const polyfillAt = html.indexOf('if(!Object.groupBy)');
       expect(polyfillAt).toBeGreaterThanOrEqual(0);
-      // The bundle is either a script src (file:// or CDN, both contain
-      // "mermaid.min.js") or inlined (the fake body's marker).
-      const bundleAt = Math.max(
-        html.indexOf('mermaid.min.js'),
-        html.indexOf('MERMAID_OFFLINE_MARKER'),
-      );
-      expect(bundleAt).toBeGreaterThan(polyfillAt);
+      for (const needle of ['mermaid.min.js', 'MERMAID_OFFLINE_MARKER']) {
+        const at = html.indexOf(needle);
+        if (at >= 0) {
+          expect(at).toBeGreaterThan(polyfillAt);
+        }
+      }
     }
   });
 
