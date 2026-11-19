@@ -68,6 +68,40 @@ describe('Tag syntax', () => {
     expect(html).not.toContain('class="tag"');
   });
 
+  it('does not render tag inside link text', async () => {
+    // IRC / Matrix room links like `[#irssi](https://…)` used to get a tag
+    // anchor nested inside the link, leaving the link without text.
+    const html = notebook.renderMarkdown(
+      'Support: [#irssi](https://irssi.org/support/irc/) on irc.libera.chat.',
+      { isForPreview: true },
+    );
+    expect(html).not.toContain('class="tag"');
+    expect(html).toContain(
+      '<a href="https://irssi.org/support/irc/">#irssi</a>',
+    );
+  });
+
+  it('does not render tag inside reference-style link text', async () => {
+    const html = notebook.renderMarkdown(
+      '[#irssi][irc]\n\n[irc]: https://irssi.org/support/irc/',
+      { isForPreview: true },
+    );
+    expect(html).not.toContain('class="tag"');
+    expect(html).toContain(
+      '<a href="https://irssi.org/support/irc/">#irssi</a>',
+    );
+  });
+
+  it('still renders tags next to a link and inside plain brackets', async () => {
+    const html = notebook.renderMarkdown(
+      'See [the docs](https://example.com/docs) #docs and [#todo] later',
+      { isForPreview: true },
+    );
+    expect(html).toContain('<a href="https://example.com/docs">the docs</a>');
+    expect(html).toContain('data-tag="docs"');
+    expect(html).toContain('data-tag="todo"');
+  });
+
   it('does not render numbers-only #123 as tag', async () => {
     const html = notebook.renderMarkdown('Value is #123 here', {
       isForPreview: true,

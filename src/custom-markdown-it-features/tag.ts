@@ -15,6 +15,14 @@ export default (md: MarkdownIt, notebook: Notebook) => {
       return false;
     }
 
+    // Don't match inside link text: `[#irssi](https://…)` would otherwise
+    // nest a tag anchor inside the link.  markdown-it raises `linkLevel`
+    // while it tokenizes a link label (its own linkify rule checks it the
+    // same way); @types/markdown-it 13 doesn't declare the field.
+    if ((state as typeof state & { linkLevel: number }).linkLevel > 0) {
+      return false;
+    }
+
     // Don't match if preceded by a word character, '/' (URL fragment),
     // '&' (HTML entity), or '?' (query param)
     if (state.pos > 0) {

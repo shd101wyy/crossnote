@@ -128,6 +128,18 @@ describe('global #tag reference index', () => {
     expect(notes['b.md'].title).toBe('b');
   });
 
+  it('treats #word in link text as link text, not a tag', async () => {
+    await writeNote('a.md', 'Next: [#ideas](ideas.md) and #inbox\n');
+    await writeNote('ideas.md', '# Ideas\n');
+    const nb = await makeNotebook();
+
+    expect(nb.getAllTags()).toEqual(['inbox']);
+    // The note link is indexed like any other `[text](note.md)` link.
+    const backlinks = await nb.getNoteBacklinks('ideas.md');
+    expect(backlinks).toHaveLength(1);
+    expect(backlinks[0].note.filePath).toBe('a.md');
+  });
+
   it('getTagBacklinks shape mirrors getNoteBacklinks', async () => {
     await writeNote('a.md', '# A\nFoo #api here.\n');
     const nb = await makeNotebook();
