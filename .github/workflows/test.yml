@@ -53,7 +53,9 @@ jobs:
 
   browser-test:
     name: Browser tests (MathJax)
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest rolled to 26.04, which Playwright 1.60 cannot
+    # `install --with-deps` on ("does not support chromium on ubuntu26.04-x64").
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out code
         uses: actions/checkout@v5
