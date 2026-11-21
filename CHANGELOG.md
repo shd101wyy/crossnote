@@ -4,6 +4,8 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+## [0.9.43] - 2026-11-21
+
 ### Features
 
 - **Scroll sync lands on the exact text, not the start of its block** — the preview used to scroll to where the enclosing block starts, so inside a long paragraph or a raw-HTML table (which has no `data-source-line` markers inside it) it drifted from the editor. The webview now matches the visible text around a source position against the rendered text (letters and digits only, with markdown syntax, HTML tags, comments, link destinations and entities dropped from the source) and measures the matched character with `Range.getBoundingClientRect()`. When a host also sends the editor column in `changeTextEditorSelection` (`character`), the preview puts that text at `topRatio` of its height; without it, the block-level scroll map is used as before. Repeated phrases resolve to the match nearest where the scroll map expects the line, and text that cannot be matched (diagrams, generated content) falls back to the scroll map. Scrolling the preview now reports the text at its middle to the host as a `revealSourcePosition` message, in place of `revealLine` ([#538](https://github.com/shd101wyy/crossnote/pull/538) by @theoryshaw; [vscode-mpe#745](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/745)).
