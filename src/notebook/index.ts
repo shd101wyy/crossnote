@@ -131,6 +131,19 @@ interface RefreshNotesInternalArgs extends RefreshNotesArgs {
   gitignoreStack?: Array<{ ig: Ignore; base: string }>;
 }
 
+/**
+ * `markdownParser` was spelled `'markdown_yo'` before the package was
+ * renamed to `@shd101wyy/markdown-yo` (#546). Configs written against the
+ * old spelling would otherwise silently fall back to markdown-it, so it
+ * stays accepted as a deprecated alias.
+ */
+function normalizeNotebookConfig(config: NotebookConfig): NotebookConfig {
+  if ((config.markdownParser as string) === 'markdown_yo') {
+    return { ...config, markdownParser: 'markdown-yo' };
+  }
+  return config;
+}
+
 export class Notebook {
   public notebookPath!: URI;
   public config!: NotebookConfig;
@@ -286,11 +299,11 @@ export class Notebook {
       path.join(this.notebookPath.fsPath, './.crossnote'),
       this.fs,
     );
-    this.config = {
+    this.config = normalizeNotebookConfig({
       ...getDefaultNotebookConfig(),
       ...extraConfig,
       ...config,
-    };
+    });
   }
 
   public initMarkdownIt(options?: ExtendedMarkdownItOptions) {
@@ -556,10 +569,10 @@ export class Notebook {
   }
 
   public updateConfig(config: Partial<NotebookConfig>) {
-    this.config = {
+    this.config = normalizeNotebookConfig({
       ...this.config,
       ...config,
-    };
+    });
 
     // Interpolate config
     this.interpolateConfig();
