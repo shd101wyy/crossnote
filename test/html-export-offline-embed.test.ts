@@ -77,7 +77,13 @@ describe('HTML export offline asset embedding', () => {
   let tmpDir: string;
 
   beforeAll(() => {
-    tmpDir = mkdirSync({ prefix: 'xnote-html-offline-embed' });
+    // vscode-uri (used for the notebook root) lowercases a Windows drive
+    // letter; normalize the temp dir once so derived expectations agree
+    // (a no-op on POSIX, where paths start with "/").
+    tmpDir = mkdirSync({ prefix: 'xnote-html-offline-embed' }).replace(
+      /^([A-Za-z]):/,
+      (_, d) => d.toLowerCase() + ':',
+    );
     writeFakeBuildDirectory(tmpDir);
     setCrossnoteBuildDirectory(tmpDir);
   });
@@ -262,6 +268,8 @@ describe('HTML export offline asset embedding', () => {
     const dest = await engine.htmlExport({ offline: true });
     const html = fs.readFileSync(dest, 'utf8');
 
+    // The engine returns a vscode-uri-canonical path, which lowercases a
+    // Windows drive letter; match that here (a no-op on POSIX).
     expect(dest).toBe(path.join(tmpDir, 'test.html'));
     expect(html).not.toMatch(/file:\/\//);
     expect(html).toContain('window.MERMAID_OFFLINE_MARKER = true;');

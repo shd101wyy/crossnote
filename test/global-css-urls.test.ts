@@ -235,7 +235,13 @@ describe('style.less url() resolution, end to end (vscode-mpe#2424)', () => {
   track();
 
   async function buildNotebook() {
-    const tmpDir = mkdirSync({ prefix: 'xnote-2424' });
+    // vscode-uri (used for the notebook root) lowercases a Windows drive
+    // letter; normalize the temp dir once so every derived expectation
+    // agrees (a no-op on POSIX, where paths start with "/").
+    const tmpDir = mkdirSync({ prefix: 'xnote-2424' }).replace(
+      /^([A-Za-z]):/,
+      (_, d) => d.toLowerCase() + ':',
+    );
     const configDir = path.join(tmpDir, '.crossnote');
     fs.mkdirSync(path.join(configDir, 'fonts'), { recursive: true });
     fs.writeFileSync(path.join(configDir, 'fonts', 'MyFont.woff2'), 'x');

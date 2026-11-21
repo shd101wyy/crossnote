@@ -53,6 +53,10 @@ describe('local links with encoded paths, queries and fragments', () => {
 
   beforeAll(async () => {
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'file-url-suffix-'));
+    // vscode-uri (used for the notebook root) lowercases a Windows drive
+    // letter; normalize the temp dir once so every derived expectation
+    // agrees (a no-op on POSIX, where paths start with "/").
+    tmp = tmp.replace(/^([A-Za-z]):/, (_, d) => d.toLowerCase() + ':');
     dir = path.join(tmp, 'ws#1 中文');
     fs.mkdirSync(dir);
     for (const name of ['图.png', 'image.png', 'a b.png', 'dark.png']) {

@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **`Notebook.init` no longer drops the drive letter of a native Windows path** — `notebookPath` was always run through `URI.parse`, which reads a native `C:\notes` as scheme `C` with path `\notes`: the drive silently vanishes and the drive-relative remainder only worked while the process cwd happened to share the drive, so `crossnote serve D:\notes` from a `C:` cwd failed (vscode-mpe's editor-side wikilink tests surfaced it). A drive-path `notebookPath` is now parsed with `URI.file` semantics; inputs that already carry a scheme (`file:///…`, `untitled:…`) and POSIX paths parse exactly as before.
+
 ## [0.9.43] - 2026-11-21
 
 ### Features
