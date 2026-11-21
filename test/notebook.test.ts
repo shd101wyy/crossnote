@@ -1,6 +1,40 @@
 import * as path from 'path';
-import { Notebook } from '../src/notebook';
+import { Notebook, parseNotebookPath } from '../src/notebook';
 import { MarkdownParser } from '../src/notebook/types';
+
+describe('Notebook notebookPath parsing', () => {
+  test('a native Windows drive path keeps its drive instead of parsing it as a scheme', () => {
+    // `URI.parse('C:\\notes')` reads `C` as the scheme and drops the drive
+    // from the path; the remainder only works while the process cwd shares
+    // the drive (`crossnote serve D:\notes` from a `C:` cwd breaks).
+    const uri = parseNotebookPath('C:\\notes\\docs');
+    expect(uri.scheme).toBe('file');
+    expect(uri.fsPath.toLowerCase().replace(/\//g, '\\')).toContain(
+      'c:\\notes\\docs',
+    );
+  });
+
+  test('scheme-bearing inputs and POSIX paths parse unchanged', () => {
+    expect(parseNotebookPath('file:///c%3A/notes/docs').scheme).toBe('file');
+    expect(parseNotebookPath('untitled:Untitled-1').scheme).toBe('untitled');
+    // vscode-uri defaults an empty scheme to `file` on Windows only.
+    expect(['', 'file']).toContain(parseNotebookPath('/tmp/notes').scheme);
+    expect(parseNotebookPath('/tmp/notes').path).toBe('/tmp/notes');
+  });
+
+  test('Notebook.init with a native filesystem path keeps the real root', async () => {
+    const notebook = await Notebook.init({
+      notebookPath: path.resolve(__dirname, './markdown/test-files'),
+      config: {},
+    });
+    // On Windows the native spelling is a drive path; the notebook root
+    // must keep the drive (`C:\`, case-insensitively — vscode-uri
+    // lowercases it in fsPath) rather than become drive-relative (`\`).
+    expect(path.parse(notebook.notebookPath.fsPath).root.toLowerCase()).toBe(
+      path.parse(path.resolve(__dirname)).root.toLowerCase(),
+    );
+  });
+});
 
 describe('Notebook markdown-yo rendering', () => {
   test('the legacy markdownParser spelling markdown_yo still selects markdown-yo', async () => {

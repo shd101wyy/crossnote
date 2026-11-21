@@ -144,6 +144,22 @@ function normalizeNotebookConfig(config: NotebookConfig): NotebookConfig {
   return config;
 }
 
+/**
+ * Parse a `notebookPath` argument. A native Windows path (`C:\notes`)
+ * parses its drive letter as the scheme (`scheme: "C"`, path `\notes`) and
+ * silently drops it — the drive-relative remainder only works while the
+ * process cwd happens to share the drive, so `crossnote serve D:\notes`
+ * from a `C:` cwd breaks. Native paths are a supported input (the serve
+ * CLI and the tests pass them), so a drive path is treated as a file path,
+ * the way `URI.file` does. Inputs that already carry a scheme
+ * (`file:///…`, `untitled:…`) and POSIX paths parse exactly as before.
+ */
+export function parseNotebookPath(notebookPath: string): URI {
+  return /^[A-Za-z]:[\\/]/.test(notebookPath)
+    ? URI.file(notebookPath)
+    : URI.parse(notebookPath);
+}
+
 export class Notebook {
   public notebookPath!: URI;
   public config!: NotebookConfig;
@@ -270,7 +286,7 @@ export class Notebook {
     config = {},
     fs,
   }: NotebookConstructorArgs) {
-    const uri = URI.parse(notebookPath);
+    const uri = parseNotebookPath(notebookPath);
 
     // Check if workspaceFolder is absolute path
     if (!path.isAbsolute(uri.fsPath) || uri.path.startsWith('/./')) {
