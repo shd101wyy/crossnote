@@ -4,6 +4,10 @@ Please visit https://github.com/shd101wyy/vscode-markdown-preview-enhanced/relea
 
 ## [Unreleased]
 
+### Bug fixes
+
+- **The preview honours the `transition` a presentation is configured with** — to put the first slide in place without animating, the preview switched Reveal's slide transition off and then hard-coded `slide` back on, so `transition: none` (or `fade`, `zoom`, …) set in the `presentation` front matter was ignored in the preview and every slide change slid in. The configured transition is now put back after the first slide is positioned ([#567](https://github.com/shd101wyy/crossnote/pull/567) by @shd101wyy; related: [vscode-mpe#2341](https://github.com/shd101wyy/vscode-markdown-preview-enhanced/issues/2341) by @silv3rarr0w).
+
 ## [0.9.44] - 2026-11-21
 
 ### Bug fixes
