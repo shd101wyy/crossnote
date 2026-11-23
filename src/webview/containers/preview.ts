@@ -8,6 +8,7 @@ import { createContainer } from 'unstated-next';
 import { Backlink, WebviewConfig } from '../../notebook';
 import { classifyAnchorClick } from '../lib/anchor-routing';
 import { setLocale } from '../lib/i18n';
+import { mermaidErrorHtml, renderMermaidDiagram } from '../lib/mermaid';
 import { applyColorSchemeToPictures } from '../lib/picture-color-scheme';
 import { sanitizeHtml } from '../lib/sanitize';
 import {
@@ -225,7 +226,6 @@ const PreviewContainer = createContainer(() => {
   );
   const wavedromCache = useRef<Record<string, string>>({});
   const mermaidCache = useRef<Record<string, string>>({});
-  const MERMAID_TIMEOUT_MS = 30_000;
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
   // Set to true during each animation tick scroll so scrollPreview can skip it.
   // requestAnimationFrame fires after scroll events, so resetting there works.
@@ -1017,9 +1017,7 @@ const PreviewContainer = createContainer(() => {
           await mermaid.parse(code);
           return { node: mermaidGraph, code };
         } catch (error) {
-          mermaidGraph.innerHTML = `<pre class="language-text"><code>${escape(
-            String(error),
-          )}</code></pre>`;
+          mermaidGraph.innerHTML = mermaidErrorHtml(error);
           return null;
         }
       }),
@@ -1032,32 +1030,14 @@ const PreviewContainer = createContainer(() => {
       return;
     }
 
-    // Phase 2: render all valid diagrams in parallel with timeouts.
+    // Phase 2: render all valid diagrams in parallel.
     const newCache: Record<string, string> = {};
     await Promise.all(
       validNodes.map(async ({ node, code }, offset) => {
         const svgId = 'mermaid-' + Date.now() + '-' + offset;
-        const timeout = new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error('Mermaid rendering timed out')),
-            MERMAID_TIMEOUT_MS,
-          ),
-        );
-        try {
-          const { svg } = await Promise.race([
-            mermaid.render(svgId, code),
-            timeout,
-          ]);
-          node.innerHTML = svg;
+        const svg = await renderMermaidDiagram(mermaid, node, code, svgId);
+        if (svg) {
           newCache[code] = svg;
-        } catch (error) {
-          const noiseElement = document.getElementById('d' + svgId);
-          if (noiseElement) {
-            noiseElement.style.display = 'none';
-          }
-          node.innerHTML = `<pre class="language-text"><code>${escape(
-            String(error),
-          )}</code></pre>`;
         }
       }),
     );
