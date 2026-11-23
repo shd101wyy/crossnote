@@ -1001,7 +1001,8 @@ const PreviewContainer = createContainer(() => {
       return;
     }
 
-    // Phase 1: parse all diagrams in parallel, collecting valid nodes.
+    // Phase 1: parse every diagram, keeping the valid nodes. Mermaid queues
+    // the calls, so this only issues them together.
     const parseResults = await Promise.all(
       mermaidGraphs.map(async (mermaidGraph) => {
         const code = (mermaidGraph.textContent ?? '').trim();
@@ -1030,13 +1031,18 @@ const PreviewContainer = createContainer(() => {
       return;
     }
 
-    // Phase 2: render all valid diagrams in parallel.
+    // Phase 2: render every valid diagram.
     const newCache: Record<string, string> = {};
     await Promise.all(
       validNodes.map(async ({ node, code }, offset) => {
+        // The preview may have been refreshed since; its diagrams are gone.
+        if (!node.isConnected) {
+          return;
+        }
         const svgId = 'mermaid-' + Date.now() + '-' + offset;
         const svg = await renderMermaidDiagram(mermaid, node, code, svgId);
-        if (svg) {
+        // A node detached while rendering was measured in a detached document.
+        if (svg && node.isConnected) {
           newCache[code] = svg;
         }
       }),
