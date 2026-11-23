@@ -1035,14 +1035,9 @@ const PreviewContainer = createContainer(() => {
     const newCache: Record<string, string> = {};
     await Promise.all(
       validNodes.map(async ({ node, code }, offset) => {
-        // The preview may have been refreshed since; its diagrams are gone.
-        if (!node.isConnected) {
-          return;
-        }
         const svgId = 'mermaid-' + Date.now() + '-' + offset;
         const svg = await renderMermaidDiagram(mermaid, node, code, svgId);
-        // A node detached while rendering was measured in a detached document.
-        if (svg && node.isConnected) {
+        if (svg) {
           newCache[code] = svg;
         }
       }),

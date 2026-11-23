@@ -18,18 +18,19 @@ interface PageGlobals {
   crossnoteMermaid: MermaidHelper;
 }
 
-interface RenderedDiagram {
+interface Layout {
+  viewBoxWidth: number;
+  /** Width and height of every label box, in svg units. */
+  labelBoxes: number[][];
+}
+
+interface RenderedDiagram extends Layout {
   bodyWidth: number;
   nodeWidth: number;
-  viewBoxWidth: number;
-  /** View box width of the same diagram rendered with Mermaid's element under `<body>`. */
-  viewBoxWidthOnBody?: number;
-  labels: {
-    /** By how much the label runs past the bottom of the element that clips it. */
-    overflowBottom: number;
-    /** By how much the label's text is wider than the label box. */
-    overflowRight: number;
-  }[];
+  /** The same diagram laid out with Mermaid's element under `<body>`. */
+  onBody?: Layout;
+  /** By how much each label runs past the bottom of the element that clips it. */
+  labelOverflowBottom: number[];
 }
 
 const FLOWCHART = `flowchart TB
@@ -78,18 +79,27 @@ async function renderDiagram(
   {
     source,
     containerWidth,
+    containerTransform,
     zoom = 1,
     compareOnBody = false,
   }: {
     source: string;
     containerWidth?: string;
+    /** A CSS `transform` for the container, as user styles might set. */
+    containerTransform?: string;
     zoom?: number;
-    /** Also render with Mermaid's element under `<body>` and report its width. */
+    /** Also render with Mermaid's element under `<body>` and report that layout. */
     compareOnBody?: boolean;
   },
 ): Promise<RenderedDiagram> {
   return page.evaluate(
-    async ({ source, containerWidth, zoom, compareOnBody }) => {
+    async ({
+      source,
+      containerWidth,
+      containerTransform,
+      zoom,
+      compareOnBody,
+    }) => {
       const globals = window as unknown as PageGlobals;
       document.body.style.zoom = String(zoom);
       if (zoom !== 1) {
@@ -102,26 +112,35 @@ async function renderDiagram(
         cloneCssStyles: false,
       });
 
+      const layoutOf = (root: SVGSVGElement): Layout => ({
+        viewBoxWidth: Number(root.getAttribute('viewBox')!.split(/\s+/)[2]),
+        labelBoxes: [...root.querySelectorAll('foreignObject')].map((fo) => [
+          Number(fo.getAttribute('width')),
+          Number(fo.getAttribute('height')),
+        ]),
+      });
+
+      let onBody: Layout | undefined;
+      if (compareOnBody) {
+        const { svg } = await globals.mermaid.render('mermaid-on-body', source);
+        onBody = layoutOf(
+          new DOMParser().parseFromString(svg, 'image/svg+xml')
+            .documentElement as unknown as SVGSVGElement,
+        );
+      }
+
       const container = document.getElementById('hidden')!;
       container.className = 'markdown-preview';
       if (containerWidth) {
         container.style.width = containerWidth;
       }
+      if (containerTransform) {
+        container.style.transform = containerTransform;
+      }
       const node = document.createElement('div');
       node.className = 'mermaid';
       node.textContent = source;
       container.replaceChildren(node);
-
-      const viewBoxWidth = (root: SVGSVGElement) =>
-        Number(root.getAttribute('viewBox')!.split(/\s+/)[2]);
-      let viewBoxWidthOnBody;
-      if (compareOnBody) {
-        const { svg } = await globals.mermaid.render('mermaid-on-body', source);
-        viewBoxWidthOnBody = viewBoxWidth(
-          new DOMParser().parseFromString(svg, 'image/svg+xml')
-            .documentElement as unknown as SVGSVGElement,
-        );
-      }
 
       await globals.crossnoteMermaid.renderMermaidDiagram(
         globals.mermaid,
@@ -130,24 +149,34 @@ async function renderDiagram(
         'mermaid-under-test',
       );
 
+      const svg = node.querySelector('svg')!;
       return {
+        ...layoutOf(svg),
+        onBody,
         bodyWidth: document.body.getBoundingClientRect().width,
         nodeWidth: node.getBoundingClientRect().width,
-        viewBoxWidth: viewBoxWidth(node.querySelector('svg')!),
-        viewBoxWidthOnBody,
-        labels: [...node.querySelectorAll('foreignObject')].map((fo) => {
-          const label = fo.querySelector('div')!;
-          return {
-            overflowBottom:
+        labelOverflowBottom: [...svg.querySelectorAll('foreignObject')].map(
+          (fo) => {
+            const label = fo.querySelector('div')!;
+            return (
               label.getBoundingClientRect().bottom -
-              fo.getBoundingClientRect().bottom,
-            overflowRight: label.scrollWidth - label.clientWidth,
-          };
-        }),
+              fo.getBoundingClientRect().bottom
+            );
+          },
+        ),
       };
     },
-    { source, containerWidth, zoom, compareOnBody },
+    { source, containerWidth, containerTransform, zoom, compareOnBody },
   );
+}
+
+function expectSameLayout(actual: Layout, expected: Layout): void {
+  expect(actual.viewBoxWidth).toBeCloseTo(expected.viewBoxWidth, 1);
+  expect(actual.labelBoxes).toHaveLength(expected.labelBoxes.length);
+  actual.labelBoxes.forEach(([width, height], i) => {
+    expect(width).toBeCloseTo(expected.labelBoxes[i][0], 1);
+    expect(height).toBeCloseTo(expected.labelBoxes[i][1], 1);
+  });
 }
 
 test('labels are measured under the styles of the node the diagram is rendered in', async ({
@@ -161,11 +190,13 @@ test('labels are measured under the styles of the node the diagram is rendered i
   await page.addStyleTag({
     content: '.markdown-preview p { line-height: 2.5; margin: 0; }',
   });
-  const { labels } = await renderDiagram(page, { source: FLOWCHART });
+  const { labelOverflowBottom } = await renderDiagram(page, {
+    source: FLOWCHART,
+  });
 
-  expect(labels.length).toBeGreaterThan(0);
-  for (const label of labels) {
-    expect(label.overflowBottom).toBeLessThanOrEqual(0.5);
+  expect(labelOverflowBottom.length).toBeGreaterThan(0);
+  for (const overflow of labelOverflowBottom) {
+    expect(overflow).toBeLessThanOrEqual(0.5);
   }
 });
 
@@ -173,15 +204,14 @@ test("a diagram that lays out to its container's width is laid out as wide as <b
   page,
 }) => {
   await loadMermaid(page);
-  const { bodyWidth, nodeWidth, viewBoxWidth, viewBoxWidthOnBody } =
-    await renderDiagram(page, {
-      source: GANTT,
-      containerWidth: '320px',
-      compareOnBody: true,
-    });
+  const { bodyWidth, nodeWidth, ...layout } = await renderDiagram(page, {
+    source: GANTT,
+    containerWidth: '320px',
+    compareOnBody: true,
+  });
 
   expect(nodeWidth).toBeLessThan(bodyWidth / 2);
-  expect(viewBoxWidth).toBeCloseTo(viewBoxWidthOnBody!, 1);
+  expectSameLayout(layout, layout.onBody!);
 });
 
 test("at another zoom level a diagram is laid out as with Mermaid's element under <body>", async ({
@@ -191,13 +221,28 @@ test("at another zoom level a diagram is laid out as with Mermaid's element unde
   // Mermaid copes with the CSS `zoom` of <body> is its own matter (#566).
   await loadMermaid(page);
   for (const source of [FLOWCHART, GANTT]) {
-    const { viewBoxWidth, viewBoxWidthOnBody } = await renderDiagram(page, {
+    const { onBody, ...layout } = await renderDiagram(page, {
       source,
       containerWidth: '320px',
       zoom: 1.5,
       compareOnBody: true,
     });
 
-    expect(viewBoxWidth).toBeCloseTo(viewBoxWidthOnBody!, 1);
+    expectSameLayout(layout, onBody!);
   }
+});
+
+test("a diagram under a scaled ancestor is laid out as with Mermaid's element under <body>", async ({
+  page,
+}) => {
+  // A `transform` on a wrapper scales what is measured inside it, but not
+  // what Mermaid compares the measurements with.
+  await loadMermaid(page);
+  const { onBody, ...layout } = await renderDiagram(page, {
+    source: FLOWCHART,
+    containerTransform: 'scale(0.5)',
+    compareOnBody: true,
+  });
+
+  expectSameLayout(layout, onBody!);
 });
