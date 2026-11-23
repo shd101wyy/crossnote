@@ -9,6 +9,7 @@ import { Backlink, WebviewConfig } from '../../notebook';
 import { classifyAnchorClick } from '../lib/anchor-routing';
 import { setLocale } from '../lib/i18n';
 import { applyColorSchemeToPictures } from '../lib/picture-color-scheme';
+import { withoutSlideTransition } from '../lib/reveal';
 import { sanitizeHtml } from '../lib/sanitize';
 import {
   buildDomTextIndex,
@@ -1891,9 +1892,9 @@ const PreviewContainer = createContainer(() => {
     });
 
     // slide to initial position
-    window['Reveal'].configure({ transition: 'none' });
-    scrollToRevealSourceLine(cursorLine.current);
-    window['Reveal'].configure({ transition: 'slide' });
+    withoutSlideTransition(window['Reveal'], () =>
+      scrollToRevealSourceLine(cursorLine.current),
+    );
     window['Reveal'].layout();
 
     if (firstSlide) {

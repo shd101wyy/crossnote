@@ -4,6 +4,7 @@ interface RevealAPI {
   getCurrentSlide(): HTMLElement;
   addEventListener(event: string, handler: (data?: unknown) => void): void;
   configure(config: Record<string, unknown>): void;
+  getConfig(): { transition?: string };
   layout(): void;
 }
 
