@@ -85,14 +85,19 @@ describe('createMermaidMeasureHost', () => {
   });
 
   it('goes under <body> when an ancestor of the node is scaled', () => {
-    // A transformed or zoomed ancestor scales what is measured in the node.
-    // The host is the only fixed-position element here.
+    // A transform or zoom on an ancestor scales what is measured in the node.
+    // Here everything in the node measures half again as wide as it is; the
+    // host is the only fixed-position element.
     layout(984);
     jest
       .spyOn(Element.prototype, 'getBoundingClientRect')
       .mockImplementation(function (this: Element) {
-        const scaled = (this as HTMLElement).style.position === 'fixed';
-        return { width: scaled ? 1476 : 984 } as DOMRect;
+        const element = this as HTMLElement;
+        const own = element.style.width
+          ? Number.parseFloat(element.style.width)
+          : 984;
+        const width = element.style.position === 'fixed' ? own * 1.5 : own;
+        return { width } as DOMRect;
       });
     const node = rendered(makeNode());
 
@@ -108,6 +113,26 @@ describe('renderMermaidDiagram', () => {
     document.body.innerHTML = '';
     jest.restoreAllMocks();
     jest.useRealTimers();
+  });
+
+  it('does not render a node that is already out of the document', async () => {
+    // The preview refreshed while the diagram waited in Mermaid's queue. Its
+    // node could only be measured under <body>, without the preview's styles,
+    // and the result would be cached.
+    jest.useFakeTimers();
+    layout(984);
+    const node = rendered(makeNode());
+    const { mermaid, containers } = mermaidRendering(async () => ({
+      svg: SVG,
+    }));
+    node.remove();
+
+    const svg = await renderMermaidDiagram(mermaid, node, CODE, 'mermaid-1');
+
+    expect(svg).toBeNull();
+    expect(containers).toHaveLength(0);
+    expect(document.body.children).toHaveLength(0);
+    expect(jest.getTimerCount()).toBe(0);
   });
 
   it('renders in a measuring host inside the diagram node and returns the SVG', async () => {

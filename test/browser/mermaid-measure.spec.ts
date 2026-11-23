@@ -236,13 +236,16 @@ test("a diagram under a scaled ancestor is laid out as with Mermaid's element un
   page,
 }) => {
   // A `transform` on a wrapper scales what is measured inside it, but not
-  // what Mermaid compares the measurements with.
+  // what Mermaid compares the measurements with. The smaller scale sits just
+  // outside the tolerance of the check, so it pins it.
   await loadMermaid(page);
-  const { onBody, ...layout } = await renderDiagram(page, {
-    source: FLOWCHART,
-    containerTransform: 'scale(0.5)',
-    compareOnBody: true,
-  });
+  for (const containerTransform of ['scale(0.5)', 'scale(0.98)']) {
+    const { onBody, ...layout } = await renderDiagram(page, {
+      source: FLOWCHART,
+      containerTransform,
+      compareOnBody: true,
+    });
 
-  expectSameLayout(layout, onBody!);
+    expectSameLayout(layout, onBody!);
+  }
 });

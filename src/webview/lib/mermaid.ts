@@ -32,8 +32,9 @@ function isRendered(element: HTMLElement): boolean {
  *   (vscode-markdown-preview-enhanced#2454).
  * - It goes under `<body>` instead when the node cannot be measured in: when
  *   it is not being rendered (`display: none`, a closed `<details>` on older
- *   Chromium), or when an ancestor of it is transformed or zoomed, which
- *   scales what is measured in the node but not what Mermaid compares it with.
+ *   Chromium), or when an ancestor of it is scaled by a transform or a zoom,
+ *   which scales what is measured in the node but not what Mermaid compares it
+ *   with.
  * - It is a throwaway child of `node` rather than `node` itself, because
  *   Mermaid empties its container and keeps rendering into it after the call
  *   has timed out, which must not touch what the preview shows in `node`. (It
@@ -46,10 +47,12 @@ export function createMermaidMeasureHost(node: HTMLElement): HTMLElement {
   const host = document.createElement('div');
 
   // A block under <body> is exactly as wide as the element Mermaid measured in
-  // before. Its rect is that width in screen pixels.
+  // before. A block of a known width tells how many CSS pixels one of its
+  // pixels is, zooms of <body> included.
   const probe = document.body.appendChild(document.createElement('div'));
   const width = probe.offsetWidth;
-  const scale = width ? probe.getBoundingClientRect().width / width : 0;
+  probe.style.width = '1000px';
+  const scale = probe.getBoundingClientRect().width / 1000;
   probe.remove();
 
   host.style.cssText = `position: fixed; left: 0; top: 0; visibility: hidden; width: ${width}px;`;
@@ -68,10 +71,10 @@ export function createMermaidMeasureHost(node: HTMLElement): HTMLElement {
  *
  * @returns the rendered SVG, or `null` when it must not be used. Rendering
  *          failed or timed out, in which case the error is written into
- *          `node`; or the node was detached or stopped being rendered while
- *          Mermaid measured in it (the preview refreshed meanwhile), in which
- *          case the SVG is not the diagram, and `node` is left as it is for
- *          the next refresh.
+ *          `node`. Or `node` is out of the document — already before the call,
+ *          or detached or stopped being rendered while Mermaid measured in it
+ *          (the preview refreshed meanwhile) — in which case the SVG would not
+ *          be the diagram, and `node` is left as it is.
  */
 export async function renderMermaidDiagram(
   mermaid: Pick<Window['mermaid'], 'render'>,
@@ -79,6 +82,9 @@ export async function renderMermaidDiagram(
   code: string,
   svgId: string,
 ): Promise<string | null> {
+  if (!node.isConnected) {
+    return null;
+  }
   let host: HTMLElement | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
