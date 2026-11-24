@@ -3004,9 +3004,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTESLIDE\]<\/span>(?:<\/p>)?\s*/gm,
     );
 
-    // A marker written as HTML, not put there for a `<!-- slide -->`, makes
-    // for one split more than there are slides: what follows it belongs to
-    // the last slide.
+    // More pieces than slides are configured for: a marker written as HTML,
+    // or one in a file that was imported, whose slides are not known here.
+    // The pieces past the last slide are joined onto it, which keeps the page
+    // from failing; where such a marker comes before the last slide, the
+    // slides after it end up cut at the wrong places.
     if (slides.length > slideConfigs.length + 1) {
       const last = slideConfigs.length;
       slides = [...slides.slice(0, last), slides.slice(last).join('')];
