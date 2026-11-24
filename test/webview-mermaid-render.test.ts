@@ -28,11 +28,28 @@ function rendered(element: HTMLElement): HTMLElement {
   return element;
 }
 
-/** What every element reports for its laid-out width. */
+/**
+ * Lay the document out: every element is `offsetWidth` wide, and a width
+ * written on an element measures as that number, as it does where nothing
+ * scales it (jsdom lays nothing out).
+ */
 function layout(offsetWidth: number) {
   jest
     .spyOn(HTMLElement.prototype, 'offsetWidth', 'get')
     .mockReturnValue(offsetWidth);
+  measureWidthsAsWritten((element) => {
+    const own = Number.parseFloat(element.style.width);
+    return own || offsetWidth;
+  });
+}
+
+/** Have `getBoundingClientRect()` report widths as `widthOf` works them out. */
+function measureWidthsAsWritten(widthOf: (element: HTMLElement) => number) {
+  jest
+    .spyOn(Element.prototype, 'getBoundingClientRect')
+    .mockImplementation(function (this: Element) {
+      return { width: widthOf(this as HTMLElement) } as DOMRect;
+    });
 }
 
 /** A Mermaid stub that hands the measuring element to `render`. */
@@ -65,46 +82,47 @@ describe('createMermaidMeasureHost', () => {
     layout(984);
     const node = rendered(makeNode());
 
-    const host = createMermaidMeasureHost(node);
+    const measure = createMermaidMeasureHost(node);
+    const { container } = measure;
 
-    expect(host.parentElement).toBe(node);
-    expect(host.style.position).toBe('fixed');
-    expect(host.style.visibility).toBe('hidden');
-    expect(host.style.width).toBe('984px');
+    expect(measure.inNode).toBe(true);
+    expect(container.parentElement).toBe(node);
+    expect(container.style.position).toBe('fixed');
+    expect(container.style.visibility).toBe('hidden');
+    expect(container.style.width).toBe('984px');
     // the element the width was read from is gone again
     expect(Array.from(document.body.children)).toEqual([node]);
+
+    measure.remove();
+    expect(container.isConnected).toBe(false);
   });
 
   it('goes under <body> when the diagram node is not being rendered', () => {
     layout(984);
     const node = makeNode();
 
-    const host = createMermaidMeasureHost(node);
+    const measure = createMermaidMeasureHost(node);
 
-    expect(host.parentElement).toBe(document.body);
+    expect(measure.inNode).toBe(false);
+    expect(measure.container.parentElement).toBe(document.body);
   });
 
   it('goes under <body> when an ancestor of the node is scaled', () => {
-    // A transform or zoom on an ancestor scales what is measured in the node.
-    // Here everything in the node measures half again as wide as it is; the
-    // host is the only fixed-position element.
+    // A transform on an ancestor scales what is measured in the node, and
+    // jsdom has no top layer to show the host in. Here everything in the node
+    // measures half again as wide as it is written.
     layout(984);
-    jest
-      .spyOn(Element.prototype, 'getBoundingClientRect')
-      .mockImplementation(function (this: Element) {
-        const element = this as HTMLElement;
-        const own = element.style.width
-          ? Number.parseFloat(element.style.width)
-          : 984;
-        const width = element.style.position === 'fixed' ? own * 1.5 : own;
-        return { width } as DOMRect;
-      });
     const node = rendered(makeNode());
+    measureWidthsAsWritten((element) => {
+      const own = Number.parseFloat(element.style.width) || 984;
+      return node.contains(element) ? own * 1.5 : own;
+    });
 
-    const host = createMermaidMeasureHost(node);
+    const measure = createMermaidMeasureHost(node);
 
-    expect(host.parentElement).toBe(document.body);
-    expect(host.style.width).toBe('984px');
+    expect(measure.inNode).toBe(false);
+    expect(measure.container.parentElement).toBe(document.body);
+    expect(measure.container.style.width).toBe('984px');
   });
 });
 
