@@ -20,7 +20,11 @@ interface MathJaxAPI {
 
 interface MermaidAPI {
   parse(text: string): Promise<unknown>;
-  render(id: string, code: string): Promise<{ svg: string }>;
+  render(
+    id: string,
+    code: string,
+    container?: Element,
+  ): Promise<{ svg: string }>;
   initialize(config: Record<string, unknown>): void;
 }
 
