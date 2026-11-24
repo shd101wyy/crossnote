@@ -4,6 +4,8 @@ interface RevealAPI {
   getCurrentSlide(): HTMLElement;
   addEventListener(event: string, handler: (data?: unknown) => void): void;
   configure(config: Record<string, unknown>): void;
+  /** The configuration in effect; only available once Reveal is initialized. */
+  getConfig(): { transition: string };
   layout(): void;
 }
 
