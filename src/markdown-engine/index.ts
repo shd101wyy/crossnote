@@ -3352,7 +3352,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (tocBracketEnabled) {
       // [TOC]
       html = html.replace(
-        /^\s*(?:<p[^>]*>)?<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
+        /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
         ($0) => {
           // Check if $0 has `data-source-line` attribute
           const match = $0.match(/data-source-line="(\d+)"/);
