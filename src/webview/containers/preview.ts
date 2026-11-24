@@ -1927,7 +1927,10 @@ const PreviewContainer = createContainer(() => {
         .catch(() => undefined)
         .then(() =>
           slide === reveal.getCurrentSlide() ? renderMermaid(slide) : undefined,
-        );
+        )
+        // Reveal centers a slide from the height of what it holds, so it is
+        // laid out again once the diagrams are in.
+        .then(() => reveal.layout());
       return rendering;
     };
 
@@ -1938,7 +1941,7 @@ const PreviewContainer = createContainer(() => {
       // a transition is not emitted when nothing animates, as with the
       // `none` transition.
       const { currentSlide } = event as { currentSlide: HTMLElement };
-      renderSlide(currentSlide).then(() => reveal.layout());
+      renderSlide(currentSlide);
 
       if (Date.now() < previewScrollDelay.current) {
         return;
@@ -1955,13 +1958,21 @@ const PreviewContainer = createContainer(() => {
 
     // slide to initial position, with the diagrams of that slide rendered.
     // The transition is switched off so that the slide is put in place
-    // without animating; the configured one is set back afterwards.
+    // without animating; the configured one is set back afterwards, which
+    // lays the slides out again.
     const { transition } = reveal.getConfig();
     reveal.configure({ transition: 'none' });
     scrollToRevealSourceLine(cursorLine.current);
-    await renderSlide(reveal.getCurrentSlide());
-    reveal.configure({ transition });
-    reveal.layout();
+    // The diagrams of that slide are given time to render before the deck is
+    // shown, so that their source does not show first. A slow one is not
+    // waited for: it comes when it is done.
+    await Promise.race([
+      renderSlide(reveal.getCurrentSlide()),
+      new Promise<void>((resolve) => setTimeout(resolve, 1500)),
+    ]);
+    if (transition) {
+      reveal.configure({ transition });
+    }
 
     if (firstSlide) {
       firstSlide.style.visibility = 'visible';

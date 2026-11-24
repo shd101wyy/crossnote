@@ -417,3 +417,60 @@ test('a slide left before its diagram is rendered has it rendered when it is cur
   expect(await page.locator('div.mermaid[data-processed]').count()).toBe(2);
   expect(pageErrors).toEqual([]);
 });
+
+test('the diagram of the first slide is rendered when the preview opens on it', async ({
+  page,
+}) => {
+  // No slide changes on opening: the first slide's diagrams are rendered by
+  // the initialization itself.
+  const pageErrors: string[] = [];
+  await openPresentation(page, pageErrors, {
+    transition: 'none',
+    cursorLine: SLIDES[0].line,
+  });
+  await waitForDiagram(page, 0);
+  const opened = await readDeck(page);
+
+  expect(opened.indices.h).toBe(0);
+  expect(opened.rendered).toEqual([true, false, false, false]);
+  expect(opened.viewBoxWidths[0]).toBe(await unscaledViewBoxWidth(page));
+  expect(opened.labelLines[0]).toBeGreaterThan(1);
+  expect(opened.offCenter[0]).toBeLessThan(1);
+  expect(pageErrors).toEqual([]);
+});
+
+test('a slow diagram on the slide the preview opens on does not keep the deck from being shown', async ({
+  page,
+}) => {
+  // The transition is switched off only while that slide is put in place and
+  // its diagrams are waited for, so it says when the preview is done loading.
+  const pageErrors: string[] = [];
+  await openPresentation(page, pageErrors, {
+    transition: 'fade',
+    cursorLine: SLIDES[OPENED_ON].line,
+    holdRender: true,
+  });
+  await page.waitForFunction(
+    () => (window as unknown as PresentationWindow).__heldRenders.length === 1,
+  );
+  await page.waitForFunction(
+    () =>
+      (window as unknown as PresentationWindow).Reveal.getConfig()
+        .transition === 'fade',
+  );
+  // The diagram is still being rendered.
+  expect(
+    await page.evaluate(
+      () => (window as unknown as PresentationWindow).__heldRenders.length,
+    ),
+  ).toBe(1);
+
+  await releaseHeldRender(page);
+  await waitForDiagram(page, OPENED_ON);
+  const shown = await readDeck(page);
+
+  expect(shown.viewBoxWidths[OPENED_ON]).toBe(await unscaledViewBoxWidth(page));
+  expect(shown.labelLines[OPENED_ON]).toBeGreaterThan(1);
+  expect(shown.offCenter[OPENED_ON]).toBeLessThan(1);
+  expect(pageErrors).toEqual([]);
+});
