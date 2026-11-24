@@ -34,6 +34,39 @@ window['jQuery'] = $;
 window['$'] = $;
 const showSidebarTocStorageKey = 'crossnote.showSidebarToc';
 
+/**
+ * MathJax is loaded with `<script defer>`, so the preview bundle can run
+ * (and the first `updateHtml` can arrive) while `window.MathJax` is still
+ * only the config object. Calling `typesetClear` then throws
+ * `TypeError: window.MathJax.typesetClear is not a function`, which
+ * `initEvents` swallows, leaving raw `$…$` as a finished preview (#569).
+ */
+function isMathJaxReady(): boolean {
+  const mathJax = window.MathJax;
+  return (
+    typeof mathJax?.typesetClear === 'function' &&
+    typeof mathJax.texReset === 'function' &&
+    typeof mathJax.typesetPromise === 'function' &&
+    typeof mathJax.startup?.promise?.then === 'function'
+  );
+}
+
+function waitForMathJaxReady(): Promise<void> {
+  if (isMathJaxReady()) {
+    return window.MathJax.startup.promise;
+  }
+  return new Promise((resolve) => {
+    const poll = () => {
+      if (isMathJaxReady()) {
+        window.MathJax.startup.promise.then(() => resolve());
+        return;
+      }
+      window.setTimeout(poll, 50);
+    };
+    poll();
+  });
+}
+
 function getWindowScrollTop() {
   return document.documentElement.scrollTop || 0;
 }
@@ -843,7 +876,7 @@ const PreviewContainer = createContainer(() => {
   }, []);
 
   const renderMathJax = useCallback(() => {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>((resolve, reject) => {
       if (!hiddenPreviewElement.current) {
         return resolve();
       }
@@ -860,14 +893,22 @@ const PreviewContainer = createContainer(() => {
           return resolve();
         }
 
-        // Clear MathJax's internal list of typeset items (it otherwise grows
-        // unbounded across re-renders, leaking the detached nodes from the
-        // freshly rebuilt hidden preview) and reset the equation numbering so
-        // numbered equations don't drift on every edit.
-        window['MathJax'].typesetClear(); // Don't pass element here!!!
-        window['MathJax'].texReset();
-        window['MathJax']
-          .typesetPromise([hiddenPreviewElement.current])
+        waitForMathJaxReady()
+          .then(() => {
+            if (!hiddenPreviewElement.current) {
+              return;
+            }
+            // Clear MathJax's internal list of typeset items (it otherwise
+            // grows unbounded across re-renders, leaking the detached nodes
+            // from the freshly rebuilt hidden preview) and reset the
+            // equation numbering so numbered equations don't drift on
+            // every edit.
+            window['MathJax'].typesetClear(); // Don't pass element here!!!
+            window['MathJax'].texReset();
+            return window['MathJax'].typesetPromise([
+              hiddenPreviewElement.current,
+            ]);
+          })
           .then(() => {
             // sometimes the this callback will be called twice
             // and only the second time will the Math expressions be rendered.
@@ -881,7 +922,8 @@ const PreviewContainer = createContainer(() => {
 
             scrollMap.current = null;
             return resolve();
-          });
+          })
+          .catch(reject);
       } else {
         return resolve();
       }

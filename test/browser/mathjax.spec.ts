@@ -1,4 +1,6 @@
+import * as path from 'path';
 import { expect, Page, test } from '@playwright/test';
+import { build } from 'esbuild';
 import { buildMathJaxConfigScript } from '../../src/markdown-engine/mathjax-config';
 import { getDefaultMathjaxConfig } from '../../src/notebook/types';
 import { startServer, TestServer } from './server';
@@ -12,6 +14,9 @@ import { startServer, TestServer } from './server';
  *    and emits "Label … multiply defined" errors with drifting numbers.
  *  - Semantic enrichment (speech-rule-engine) must be disabled by default for
  *    performance (#2312), and re-enableable via `mathjaxConfig`.
+ *  - The first `updateHtml` must wait for MathJax to be actually ready
+ *    (`typesetClear` / `startup.promise`) so a slow deferred load cannot
+ *    leave raw `$…$` source as a finished preview (#569).
  */
 
 // Minimal shape of the MathJax global used inside page.evaluate callbacks.
@@ -28,10 +33,27 @@ interface MathJaxGlobal {
 type WindowWithMathJax = Window &
   typeof globalThis & { MathJax: MathJaxGlobal };
 
+interface HostWindow extends Window {
+  __hostMessages?: Array<{ command?: string }>;
+}
+
+const FIRST_LOAD_MATH_HTML =
+  '<p><span class="mathjax-exps">$x^2 + y^2 = z^2$</span></p>' +
+  '<div class="mathjax-exps">$$E = mc^2$$</div>';
+
 let server: TestServer;
+let previewHarnessJs: string;
 
 test.beforeAll(async () => {
   server = await startServer();
+  const { outputFiles } = await build({
+    entryPoints: [path.resolve(__dirname, 'preview-mathjax-harness.tsx')],
+    bundle: true,
+    format: 'iife',
+    platform: 'browser',
+    write: false,
+  });
+  previewHarnessJs = outputFiles[0].text;
 });
 
 test.afterAll(async () => {
@@ -180,4 +202,108 @@ test('semantic enrichment can be re-enabled via mathjaxConfig', async ({
   // The startup.ready hook must copy the user's override onto the live
   // document (MathJax ignores it in the config block).
   expect(enableEnrichment).toBe(true);
+});
+
+/**
+ * Reproduce the first-preview race: MathJax is loaded with `<script defer>`,
+ * so the preview bundle can run, post `webviewFinishLoading`, and handle the
+ * first `updateHtml` before `typesetClear` exists. Start the real preview
+ * path first and only then inject MathJax so that race is deterministic.
+ */
+test('first updateHtml waits for MathJax instead of finishing as raw $…$ (#569)', async ({
+  page,
+}) => {
+  const config = {
+    mathRenderingOption: 'MathJax',
+    markdownParser: 'markdown-it',
+    sourceUri: 'file:///tmp/crossnote-569.md',
+    enablePreviewZenMode: true,
+    enablePreviewContextMenu: false,
+    isVSCode: true,
+  };
+  const mathJaxConfig = makeConfig();
+  mathJaxConfig.startup = { typeset: false, elements: ['.hidden-preview'] };
+
+  await page.addInitScript(() => {
+    const hostMessages: Array<{ command?: string }> = [];
+    const hostWindow = window as unknown as HostWindow & {
+      acquireVsCodeApi: () => {
+        postMessage(message: unknown): void;
+        getState(): unknown;
+        setState(state: unknown): void;
+      };
+    };
+    hostWindow.acquireVsCodeApi = () => ({
+      postMessage: (message: unknown) => {
+        hostMessages.push(message as { command?: string });
+      },
+      getState: () => null,
+      setState: () => undefined,
+    });
+    hostWindow.__hostMessages = hostMessages;
+  });
+
+  const consoleErrors: string[] = [];
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') {
+      consoleErrors.push(msg.text());
+    }
+  });
+
+  await page.goto(server.url);
+  await page.evaluate(
+    ({ configJson, mathHtml }) => {
+      const meta = document.createElement('meta');
+      meta.id = 'crossnote-data';
+      meta.setAttribute('data-config', configJson);
+      document.head.appendChild(meta);
+      document.body.setAttribute('data-html', mathHtml);
+    },
+    { configJson: JSON.stringify(config), mathHtml: FIRST_LOAD_MATH_HTML },
+  );
+
+  // Config object only — `typesetClear` is still missing, as with a slow CDN.
+  await page.addScriptTag({ content: buildMathJaxConfigScript(mathJaxConfig) });
+  await page.addScriptTag({ content: previewHarnessJs });
+
+  await page.waitForSelector('[data-for="preview"] .mathjax-exps');
+  await page.waitForFunction(() =>
+    ((window as HostWindow).__hostMessages || []).some(
+      (message) => message.command === 'webviewFinishLoading',
+    ),
+  );
+
+  await page.evaluate(
+    (payload) => {
+      window.postMessage(payload, '*');
+    },
+    {
+      command: 'updateHtml',
+      html: FIRST_LOAD_MATH_HTML,
+      id: '',
+      class: '',
+      totalLineCount: 3,
+      tocHTML: '',
+      sourceUri: config.sourceUri,
+      sourceScheme: 'file',
+      markdown: '$x^2 + y^2 = z^2$\n\n$$E = mc^2$$',
+    },
+  );
+
+  await page.waitForSelector('[data-fore="preview"] .mathjax-exps');
+
+  // Unfixed renderMathJax has already thrown by this point. Inject MathJax
+  // so a waiter can proceed; nothing retries on the unfixed path.
+  await page.addScriptTag({ url: `${server.url}/mathjax/tex-mml-chtml.js` });
+
+  const preview = page.locator('[data-for="preview"]');
+  await expect(preview.locator('mjx-container')).toHaveCount(2, {
+    timeout: 8000,
+  });
+  await expect(preview).not.toContainText('$x^2 + y^2 = z^2$');
+  await expect(preview).not.toContainText('$$E = mc^2$$');
+  expect(
+    consoleErrors.join('\n'),
+    'typesetClear TypeError must not be swallowed into a finished raw preview',
+  ).not.toMatch(/typesetClear is not a function/);
 });
