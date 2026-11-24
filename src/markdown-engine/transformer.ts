@@ -1114,30 +1114,39 @@ export async function transformMarkdown(
               }
               // markdown files
               // this return here is necessary
-              const { outputString: output2, headings: headings2 } =
-                await transformMarkdown(fileContent, {
-                  fileDirectoryPath: path.dirname(absoluteFilePath),
-                  projectDirectoryPath,
-                  filesCache,
-                  useRelativeFilePath: false,
-                  forPreview: false,
-                  markdownParser,
-                  forMarkdownExport,
-                  protocolsWhiteListRegExp,
-                  notSourceFile: true, // <= this is not the sourcefile
-                  imageDirectoryPath,
-                  notebook,
-                  // Use a fresh generator per recursive file import.
-                  // Sharing the outer's stateful generator causes the
-                  // same heading text to slug differently on second use
-                  // (e.g. `colours` → `colours-1`), which then breaks
-                  // fragment-to-heading lookup at the slice step.
-                  headingIdGenerator: new HeadingIdGenerator(),
-                  fileHash,
-                });
+              const {
+                outputString: output2,
+                headings: headings2,
+                slideConfigs: slideConfigs2,
+              } = await transformMarkdown(fileContent, {
+                fileDirectoryPath: path.dirname(absoluteFilePath),
+                projectDirectoryPath,
+                filesCache,
+                useRelativeFilePath: false,
+                forPreview: false,
+                markdownParser,
+                forMarkdownExport,
+                protocolsWhiteListRegExp,
+                notSourceFile: true, // <= this is not the sourcefile
+                imageDirectoryPath,
+                notebook,
+                // Use a fresh generator per recursive file import.
+                // Sharing the outer's stateful generator causes the
+                // same heading text to slug differently on second use
+                // (e.g. `colours` → `colours-1`), which then breaks
+                // fragment-to-heading lookup at the slice step.
+                headingIdGenerator: new HeadingIdGenerator(),
+                fileHash,
+              });
 
               output = '\n' + output2 + '  ';
               headings = headings.concat(headings2);
+              slideConfigs.push(
+                ...slideConfigs2.map((slideConfig) => ({
+                  ...slideConfig,
+                  lineNo: lineNo + 1,
+                })),
+              );
             } else if (extname === '.html') {
               // html file
               output = '<div>' + fileContent + '</div>  ';

@@ -20,6 +20,7 @@ interface Slide {
   h: string;
   v: string;
   text: string;
+  line: string;
 }
 
 /**
@@ -28,10 +29,14 @@ interface Slide {
 async function renderSlides(
   markdown: string,
   markdownParser: 'markdown-it' | 'pandoc' = 'markdown-it',
+  files: Record<string, string> = {},
 ): Promise<Slide[]> {
   const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
   const filePath = path.join(tmpDir, 'deck.md');
   fs.writeFileSync(filePath, markdown);
+  for (const [name, content] of Object.entries(files)) {
+    fs.writeFileSync(path.join(tmpDir, name), content);
+  }
   const notebook = await Notebook.init({
     notebookPath: tmpDir,
     config: {
@@ -55,6 +60,7 @@ async function renderSlides(
       h: section.attribs['data-h'],
       v: section.attribs['data-v'],
       text: $(section).text().replace(/\s+/g, ' ').trim(),
+      line: section.attribs['data-source-line'],
     }));
 }
 
@@ -138,6 +144,84 @@ let a = 1;
 
     expect(slides.map(({ h, v }) => [h, v])).toEqual([['0', '0']]);
     expect(slides[0].text).toMatch(/^First .* Second$/);
+  });
+
+  const part = `<!-- slide -->
+
+# Part A
+
+<!-- slide -->
+
+# Part B
+`;
+
+  test('the slides of an imported markdown file are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+![](part.md)
+
+<!-- slide -->
+
+# Second
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual([
+      'First',
+      'Part A',
+      'Part B',
+      'Second',
+    ]);
+    expect(slides.map(({ line }) => line)).toEqual(['1', '5', '5', '7']);
+  });
+
+  test('the slides of a markdown file imported as the last block are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+![](part.md)
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual([
+      'First',
+      'Part A',
+      'Part B',
+    ]);
+  });
+
+  test('the slides of an embedded markdown file are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+![[part.md]]
+
+<!-- slide -->
+
+# Second
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual([
+      'First',
+      'Part A',
+      'Part B',
+      'Second',
+    ]);
+    expect(slides.map(({ line }) => line)).toEqual(['1', '5', '5', '7']);
   });
 
   test('a marker that is not in a paragraph of its own starts the line it is on', async () => {
