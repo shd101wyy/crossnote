@@ -46,9 +46,9 @@ function isRendered(element: HTMLElement): boolean {
 export function createMermaidMeasureHost(node: HTMLElement): HTMLElement {
   const host = document.createElement('div');
 
-  // A block under <body> is exactly as wide as the element Mermaid measured in
-  // before. A block of a known width tells how many CSS pixels one of its
-  // pixels is, zooms of <body> included.
+  // A block under <body> is as wide as the element Mermaid measured in before:
+  // both widths are read the same way. A block of a known width tells how many
+  // CSS pixels one of its pixels is, zooms of <body> included.
   const probe = document.body.appendChild(document.createElement('div'));
   const width = probe.offsetWidth;
   probe.style.width = '1000px';
@@ -71,10 +71,11 @@ export function createMermaidMeasureHost(node: HTMLElement): HTMLElement {
  *
  * @returns the rendered SVG, or `null` when it must not be used. Rendering
  *          failed or timed out, in which case the error is written into
- *          `node`. Or `node` is out of the document — already before the call,
- *          or detached or stopped being rendered while Mermaid measured in it
- *          (the preview refreshed meanwhile) — in which case the SVG would not
- *          be the diagram, and `node` is left as it is.
+ *          `node`. Or the diagram could not be measured in `node`: it was
+ *          already out of the document before the call, or it was detached or
+ *          stopped being rendered while Mermaid measured in it (the preview
+ *          refreshed meanwhile). Such an SVG is not the diagram, and `node`
+ *          is left as it is.
  */
 export async function renderMermaidDiagram(
   mermaid: Pick<Window['mermaid'], 'render'>,
