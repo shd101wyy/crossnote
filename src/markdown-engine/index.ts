@@ -2996,9 +2996,23 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     slideConfigs: JsonObject[],
     useRelativeFilePath: boolean,
   ) {
+    // A marker is a paragraph of its own, wherever the block before it ends
+    // on the line: a fenced block is not followed by a newline, as a
+    // paragraph is. One that is not in a paragraph of its own has to start
+    // the line.
     let slides = html.split(
-      /^\s*(?:<p[^>]*>)?<span>\[CROSSNOTESLIDE\]<\/span>(?:<\/p>)?\s*/gm,
+      /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTESLIDE\]<\/span>(?:<\/p>)?\s*/gm,
     );
+
+    // More pieces than slides are configured for: a marker written as HTML,
+    // or one in a file that was imported, whose slides are not known here.
+    // The pieces past the last slide are joined onto it, which keeps the page
+    // from failing; where such a marker comes before the last slide, the
+    // slides after it end up cut at the wrong places.
+    if (slides.length > slideConfigs.length + 1) {
+      const last = slideConfigs.length;
+      slides = [...slides.slice(0, last), slides.slice(last).join('')];
+    }
 
     const before = slides[0];
     slides = slides.slice(1);
@@ -3340,7 +3354,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     if (tocBracketEnabled) {
       // [TOC]
       html = html.replace(
-        /^\s*(?:<p[^>]*>)?<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
+        /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
         ($0) => {
           // Check if $0 has `data-source-line` attribute
           const match = $0.match(/data-source-line="(\d+)"/);
@@ -3428,8 +3442,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     html =
       frontMatterTable +
-      // NOTE: '\n' is necessary here. Otherwise, it might generate html like '</table><p data-source-line="12">[CROSSNOTESLIDE]</p>'
-      // and we will fail to parse for slides, which splits by `^<p...>[CROSSNOTESLIDE]</p>`.
+      // NOTE: '\n' is necessary here. Otherwise, the first block of the body can
+      // follow the front matter table on the same line, and a slide marker that
+      // is not a paragraph of its own has to start a line to be found
+      // (`parseSlides`).
       '\n' +
       $('head').html() +
       $('body').html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
