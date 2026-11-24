@@ -17,9 +17,10 @@ import { startServer, TestServer } from './server';
 
 interface RevealApi {
   isReady(): boolean;
-  getConfig(): { transition: string };
+  getConfig(): { transition: string; scrollActivationWidth: number | null };
   getIndices(): { h: number; v: number };
   getCurrentSlide(): HTMLElement;
+  isScrollView(): boolean;
 }
 
 type PresentationWindow = Window & {
@@ -149,6 +150,10 @@ async function openPresentation(
       window.initRevealPresentation = async function () {
         await Reveal.initialize(${JSON.stringify({
           margin: 0.1,
+          // The engine's initialize default (markdown-engine/index.ts):
+          // without it, reveal.js 5+ turns decks narrower than 435px into
+          // its scroll view.
+          scrollActivationWidth: null,
           ...presentationConfig,
           ...(transition === undefined ? {} : { transition }),
         })})
@@ -436,6 +441,43 @@ test('the diagram of the first slide is rendered when the preview opens on it', 
   expect(opened.viewBoxWidths[0]).toBe(await unscaledViewBoxWidth(page));
   expect(opened.labelLines[0]).toBeGreaterThan(1);
   expect(opened.offCenter[0]).toBeLessThan(1);
+  expect(pageErrors).toEqual([]);
+});
+
+test('a deck in a preview pane narrower than the scroll view activation width stays paginated', async ({
+  page,
+}) => {
+  // The engine initializes Reveal with `scrollActivationWidth: null` so
+  // that reveal.js 5+ keeps the paginated layout in a narrow preview pane
+  // instead of switching to its scroll view (which would change how
+  // slides move and how the cursor syncs). The harness mirrors that
+  // default; this test pins the behavior it preserves.
+  const pageErrors: string[] = [];
+  await page.setViewportSize({ width: 400, height: 600 });
+  await openPresentation(page, pageErrors, {
+    transition: 'none',
+    cursorLine: SLIDES[OPENED_ON].line,
+  });
+  await waitForDiagram(page, OPENED_ON);
+
+  const state = await page.evaluate(() => {
+    // The plain-object cast keeps the global `Window` augmentation in
+    // `src/webview/global.d.ts` (whose narrower `getConfig` would otherwise
+    // win the overload) out of the way.
+    const { Reveal } = window as unknown as { Reveal: RevealApi };
+    return {
+      isScrollView: Reveal.isScrollView(),
+      scrollActivationWidth: Reveal.getConfig().scrollActivationWidth,
+    };
+  });
+  expect(state.isScrollView).toBe(false);
+  expect(state.scrollActivationWidth).toBeNull();
+
+  // Pagination still moves between slides and renders their diagrams.
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  await waitForDiagram(page, 3);
+  expect((await readDeck(page)).indices.h).toBe(3);
   expect(pageErrors).toEqual([]);
 });
 

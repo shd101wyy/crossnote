@@ -230,7 +230,9 @@ export default function ContextMenu() {
         }
         case 'select-revealjs-theme-beige':
         case 'select-revealjs-theme-black':
+        case 'select-revealjs-theme-black-contrast':
         case 'select-revealjs-theme-blood':
+        case 'select-revealjs-theme-dracula':
         case 'select-revealjs-theme-league':
         case 'select-revealjs-theme-moon':
         case 'select-revealjs-theme-night':
@@ -240,7 +242,8 @@ export default function ContextMenu() {
         case 'select-revealjs-theme-sky':
         case 'select-revealjs-theme-solarized':
         case 'select-revealjs-theme-vscode':
-        case 'select-revealjs-theme-white': {
+        case 'select-revealjs-theme-white':
+        case 'select-revealjs-theme-white-contrast': {
           postMessage('setRevealjsTheme', [
             sourceUri.current,
             `${id.replace('select-revealjs-theme-', '')}.css`,
@@ -1286,6 +1289,20 @@ export default function ContextMenu() {
                 white.css
               </span>
             </Item>
+            <Item
+              id="select-revealjs-theme-white-contrast"
+              onClick={handleItemClick}
+            >
+              <span
+                className={
+                  config.revealjsTheme === 'white-contrast.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                white-contrast.css
+              </span>
+            </Item>
           </Submenu>
           <Submenu
             label={
@@ -1306,6 +1323,20 @@ export default function ContextMenu() {
                 black.css
               </span>
             </Item>
+            <Item
+              id="select-revealjs-theme-black-contrast"
+              onClick={handleItemClick}
+            >
+              <span
+                className={
+                  config.revealjsTheme === 'black-contrast.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                black-contrast.css
+              </span>
+            </Item>
             <Item id="select-revealjs-theme-blood" onClick={handleItemClick}>
               <span
                 className={
@@ -1315,6 +1346,17 @@ export default function ContextMenu() {
                 }
               >
                 blood.css
+              </span>
+            </Item>
+            <Item id="select-revealjs-theme-dracula" onClick={handleItemClick}>
+              <span
+                className={
+                  config.revealjsTheme === 'dracula.css'
+                    ? 'text-primary font-bold'
+                    : ''
+                }
+              >
+                dracula.css
               </span>
             </Item>
             <Item id="select-revealjs-theme-league" onClick={handleItemClick}>

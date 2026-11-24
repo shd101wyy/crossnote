@@ -29,6 +29,11 @@ section.has-dark-background h6 {
  *********************************************/
 
 :root {
+  /* reveal.js 6 splits the deck background into `--r-background` (the
+     viewport/slide background) and `--r-background-color` (still used by
+     the core's `.backgrounds` and by `has-*-background` contrast
+     detection); this theme paints both with the editor background. */
+  --r-background: var(--vscode-editor-background, #1e1e1e);
   --r-background-color: var(--vscode-editor-background, #1e1e1e);
   --r-main-font: var(--vscode-font-family, system-ui, -apple-system, sans-serif);
   --r-main-font-size: 40px;

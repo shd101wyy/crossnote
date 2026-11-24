@@ -516,6 +516,10 @@ export class MarkdownEngine {
       presentationInitScript += `
         await Reveal.initialize(${JSON.stringify({
           margin: 0.1,
+          // reveal.js 5+ switches narrow decks to its scroll view; keep the
+          // paginated layout of earlier versions when the preview pane is
+          // narrow (`view: 'scroll'` still opts in explicitly).
+          scrollActivationWidth: null,
           ...presentationConfig,
         })})
         // NOTE: We have to add the promise below otherwise
@@ -612,7 +616,9 @@ window["initRevealPresentation"] = async function() {
   static AutoPrismThemeMapForPresentation = {
     'beige.css': 'pen-paper-coffee.css',
     'black.css': 'one-dark.css',
+    'black-contrast.css': 'one-dark.css',
     'blood.css': 'monokai.css',
+    'dracula.css': 'one-dark.css',
     'league.css': 'okaidia.css',
     'moon.css': 'funky.css',
     'night.css': 'atom-dark.css',
@@ -621,6 +627,7 @@ window["initRevealPresentation"] = async function() {
     'sky.css': 'default.css',
     'solarized.css': 'solarized-light.css',
     'white.css': 'default.css',
+    'white-contrast.css': 'default.css',
     'vscode.css': 'vscode.css',
   };
 
@@ -1345,7 +1352,7 @@ window["initRevealPresentation"] = async function() {
         );
       } else {
         presentationScript = `
-        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/reveal.js'></script>`;
+        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@6.0.2/dist/reveal.js'></script>`;
       }
 
       const presentationConfigRaw = yamlConfig['presentation'];
@@ -1357,17 +1364,22 @@ window["initRevealPresentation"] = async function() {
           : {};
       const dependencies =
         (presentationConfig['dependencies'] as unknown[] | undefined) || [];
+
+      // The speaker notes plugin. reveal.js 5+ has no plugin auto-loading:
+      // the plugin script has to run before initialization and the plugin
+      // (its `RevealNotes` global) has to be passed via `plugins`.
+      let notesPlugin: [script: string, definition: string] | null = null;
       if (presentationConfig['enableSpeakerNotes']) {
         if (options.offline) {
-          dependencies.push({
-            src: path.resolve(
-              utility.getCrossnoteBuildDirectory(),
-              './dependencies/reveal/plugin/notes/notes.js',
-            ),
-            async: true,
-          });
+          notesPlugin = [
+            await offlineScript('./dependencies/reveal/plugin/notes/notes.js'),
+            'window.RevealNotes',
+          ];
         } else {
-          dependencies.push({ src: 'revealjs_deps/notes.js', async: true }); // TODO: copy notes.js file to corresponding folder
+          notesPlugin = [
+            `<script src="revealjs_deps/notes.js"></script>`, // TODO: copy notes.js file to corresponding folder
+            'window.RevealNotes',
+          ];
         }
       }
       presentationConfig['dependencies'] = dependencies;
@@ -1380,24 +1392,19 @@ window["initRevealPresentation"] = async function() {
           './dependencies/reveal/css/reveal.css',
         ),
       )}
-      ${
-        options.isForPrint
-          ? await this.fs.readFile(
-              path.resolve(
-                utility.getCrossnoteBuildDirectory(),
-                './dependencies/reveal/css/print/pdf.css',
-              ),
-            )
-          : ''
-      }
       </style>
       `;
       presentationInitScript = `
+      ${notesPlugin?.[0] ?? ''}
       <script>
-        Reveal.initialize(${JSON.stringify({
+        Reveal.initialize(Object.assign(${JSON.stringify({
           margin: 0.1,
+          // Keep the paginated layout of reveal.js 4 also in print view,
+          // instead of the scroll view decks narrower than 435px get by
+          // default since reveal.js 5.
+          scrollActivationWidth: null,
           ...presentationConfig,
-        })})
+        })}, ${notesPlugin ? `{ plugins: [${notesPlugin[1]}] }` : '{}'}))
       </script>
       `;
     }
@@ -1516,7 +1523,7 @@ window["initRevealPresentation"] = async function() {
             `./dependencies/reveal/css/theme/${safeTheme}`,
           );
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/theme/${safeTheme}">`;
+          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@6.0.2/dist/theme/${safeTheme}">`;
         }
       } else {
         // preview theme
@@ -1786,10 +1793,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // presentation speaker notes
     // copy dependency files
-    if (
-      !offline &&
-      html.indexOf('[{"src":"revealjs_deps/notes.js","async":true}]') >= 0
-    ) {
+    if (!offline && html.indexOf('revealjs_deps/notes.js') >= 0) {
       const depsDirName = path.resolve(path.dirname(dest), 'revealjs_deps');
       if (!fs.existsSync(depsDirName)) {
         fs.mkdirSync(depsDirName);
@@ -1800,12 +1804,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           './dependencies/reveal/plugin/notes/notes.js',
         ),
       ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.js')));
-      fs.createReadStream(
-        path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/reveal/plugin/notes/notes.html',
-        ),
-      ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.html')));
     }
 
     await this.fs.writeFile(dest, html);
