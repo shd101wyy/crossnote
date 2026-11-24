@@ -2996,8 +2996,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     slideConfigs: JsonObject[],
     useRelativeFilePath: boolean,
   ) {
+    // A marker is a paragraph of its own, wherever the block before it ends
+    // on the line: a fenced block is not followed by a newline, as a
+    // paragraph is. One that is not in a paragraph of its own has to start
+    // the line.
     let slides = html.split(
-      /^\s*(?:<p[^>]*>)?<span>\[CROSSNOTESLIDE\]<\/span>(?:<\/p>)?\s*/gm,
+      /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTESLIDE\]<\/span>(?:<\/p>)?\s*/gm,
     );
 
     const before = slides[0];
