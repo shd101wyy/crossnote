@@ -3004,6 +3004,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTESLIDE\]<\/span>(?:<\/p>)?\s*/gm,
     );
 
+    // A marker written as HTML, not put there for a `<!-- slide -->`, makes
+    // for one split more than there are slides: what follows it belongs to
+    // the last slide.
+    if (slides.length > slideConfigs.length + 1) {
+      const last = slideConfigs.length;
+      slides = [...slides.slice(0, last), slides.slice(last).join('')];
+    }
+
     const before = slides[0];
     slides = slides.slice(1);
 
@@ -3432,8 +3440,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     html =
       frontMatterTable +
-      // NOTE: '\n' is necessary here. Otherwise, it might generate html like '</table><p data-source-line="12">[CROSSNOTESLIDE]</p>'
-      // and we will fail to parse for slides, which splits by `^<p...>[CROSSNOTESLIDE]</p>`.
+      // NOTE: '\n' is necessary here. Otherwise, the first block of the body can
+      // follow the front matter table on the same line, and a slide marker that
+      // is not a paragraph of its own has to start a line to be found
+      // (`parseSlides`).
       '\n' +
       $('head').html() +
       $('body').html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.

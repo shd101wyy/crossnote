@@ -25,14 +25,17 @@ interface Slide {
 /**
  * Render `markdown` as the preview of a presentation and return its slides.
  */
-async function renderSlides(markdown: string): Promise<Slide[]> {
+async function renderSlides(
+  markdown: string,
+  markdownParser: 'markdown-it' | 'pandoc' = 'markdown-it',
+): Promise<Slide[]> {
   const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
   const filePath = path.join(tmpDir, 'deck.md');
   fs.writeFileSync(filePath, markdown);
   const notebook = await Notebook.init({
     notebookPath: tmpDir,
     config: {
-      markdownParser: 'markdown-it',
+      markdownParser,
       markdownYoBinaryPath: '',
     },
   });
@@ -88,10 +91,71 @@ ${block}
         ['0', '0'],
         ['1', '0'],
       ]);
-      expect(slides[0].text).toMatch(/^First /);
+      expect(slides[0].text).toMatch(/^First/);
       expect(slides[1].text).toBe('Second');
     },
   );
+
+  // Pandoc puts the marker on a line of its own inside its paragraph.
+  test('a slide marker after a fenced code block starts a slide under pandoc too', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+\`\`\`js
+let a = 1;
+\`\`\`
+
+<!-- slide -->
+
+# Second
+`,
+      'pandoc',
+    );
+
+    expect(slides.map(({ h, v }) => [h, v])).toEqual([
+      ['0', '0'],
+      ['1', '0'],
+    ]);
+  });
+
+  // Only a `<!-- slide -->` is configured a slide. The same span, written as
+  // HTML, is split on as well: it must not cost the document its slides.
+  test('a marker written as HTML does not stop the slides from being made', async () => {
+    const slides = await renderSlides(`<!-- slide -->
+
+# First
+
+\`\`\`js
+let a = 1;
+\`\`\`
+
+<span>[CROSSNOTESLIDE]</span>
+
+# Second
+`);
+
+    expect(slides.map(({ h, v }) => [h, v])).toEqual([['0', '0']]);
+    expect(slides[0].text).toMatch(/^First .* Second$/);
+  });
+
+  test('a marker that is not in a paragraph of its own starts the line it is on', async () => {
+    // In a block of raw HTML the marker is a bare span on a line of its own.
+    const slides = await renderSlides(`<!-- slide -->
+
+# First
+
+<div>
+<!-- slide -->
+# Second
+`);
+
+    expect(slides.map(({ h, v }) => [h, v])).toEqual([
+      ['0', '0'],
+      ['1', '0'],
+    ]);
+  });
 
   test('a vertical marker starts the next slide of a stack', async () => {
     const slides = await renderSlides(`<!-- slide -->
