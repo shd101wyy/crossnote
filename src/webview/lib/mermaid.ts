@@ -16,11 +16,157 @@ function isRendered(element: HTMLElement): boolean {
 }
 
 /**
- * The element Mermaid lays one diagram out in. Remove it once the diagram has
- * been rendered.
+ * Wide enough for the width it measures as to tell zooms that are next to 1
+ * in single precision apart, and to pin down the zoom of `<body>` to within
+ * one of those steps. Firefox stops laying widths out beyond 2<sup>30</sup>
+ * app units (about 17.9 million CSS pixels), so five times the largest zoom
+ * of the preview has to stay below that.
+ */
+const ZOOM_PROBE_WIDTH = 2 ** 21;
+
+/** The distance from 1 to the next number in single precision above it. */
+const STEP_ABOVE_ONE = 2 ** -23;
+
+/**
+ * `value`, moved by `steps` to the next numbers that can be written in single
+ * precision.
+ */
+function floatNeighbour(value: number, steps: number): number {
+  const view = new DataView(new ArrayBuffer(4));
+  view.setFloat32(0, value);
+  view.setUint32(0, view.getUint32(0) + steps);
+  return view.getFloat32(0);
+}
+
+/**
+ * How much wider than `ZOOM_PROBE_WIDTH` an element of that width measures in
+ * `element`: 0 where a width in CSS pixels measures as that number.
+ */
+function zoomDeviation(element: HTMLElement): number {
+  const probe = document.createElement('div');
+  probe.style.width = `${ZOOM_PROBE_WIDTH}px`;
+  element.appendChild(probe);
+  const deviation = probe.getBoundingClientRect().width - ZOOM_PROBE_WIDTH;
+  probe.remove();
+  return deviation;
+}
+
+/**
+ * Render `host` in the top layer, where the transforms of its ancestors do not
+ * reach it: the scale Reveal puts on the slides of a presentation, or one set
+ * by user styles, would scale what is measured in the host but not what
+ * Mermaid compares it with. The styles of the host still come from where it
+ * is in the document. Not every engine has a top layer; there the transforms
+ * apply.
+ */
+function showInTopLayer(host: HTMLElement): void {
+  if (typeof host.showPopover !== 'function') {
+    return;
+  }
+  // `popover` hides an element that is not shown, so it is only kept when
+  // showing worked.
+  host.setAttribute('popover', 'manual');
+  try {
+    host.showPopover();
+  } catch {
+    host.removeAttribute('popover');
+  }
+}
+
+/**
+ * Make widths written in CSS pixels measure as those numbers in `host`, which
+ * is under `<body>`, and return the element in it for Mermaid to measure in;
+ * `null` when it cannot be done.
  *
- * Mermaid draws into a temporary `<svg>` inside this element and sizes the
- * diagram from what it measures there, so it has to be a place where the
+ * The preview's zoom is a CSS `zoom` on `<body>`, which the host inherits. In
+ * current engines it scales what `getBoundingClientRect()` reports, so a
+ * label at its `max-width` of 120px measures as 120 times the zoom: never
+ * equal to what Mermaid compares it with, so no label is ever wrapped
+ * (crossnote#566). The zoom of the host undoes it, but only at the right
+ * number: zooms are single-precision numbers in the engine and are multiplied
+ * in single precision, and the product has to be exactly 1. At other products
+ * close by Mermaid measures a 120px label as 119.99999px (Chromium four steps
+ * above 1, WebKit one step above), so which number does is found by trying
+ * the reciprocal of the zoom and its neighbouring single-precision numbers
+ * and measuring, not by assuming.
+ *
+ * The product skips from one step below 1 to one step above it at some zoom
+ * levels (1.7, 3.4). A second zoom inside the host, the reciprocal of what
+ * the first one came to, makes it exactly 1 then: one zoom cannot be written
+ * more precisely than a single-precision number, two can. A zoom that user
+ * styles put on an ancestor of the node is undone the same way.
+ *
+ * Which number it is depends on the engine; an engine that reports widths
+ * unscaled takes the host as it is. When nothing measures exact, the host is
+ * left as Mermaid's own element is.
+ */
+function measureExactIn(
+  host: HTMLElement,
+  bodyZoom: number,
+): HTMLElement | null {
+  showInTopLayer(host);
+  host.style.zoom = '';
+  if (zoomDeviation(host) === 0) {
+    return host;
+  }
+  if (!(bodyZoom > 0) || !Number.isFinite(bodyZoom)) {
+    return null;
+  }
+  // The zoom at which the product came out closest above 1, in case no zoom
+  // makes it exactly 1.
+  let closest: { deviation: number; zoom: string } | undefined;
+  const reciprocal = Math.fround(1 / bodyZoom);
+  for (const steps of [0, 1, -1, 2, -2, 3, -3, 4, -4]) {
+    const zoom = String(floatNeighbour(reciprocal, steps));
+    host.style.zoom = zoom;
+    const deviation = zoomDeviation(host);
+    if (deviation === 0) {
+      return host;
+    }
+    if (deviation > 0 && (!closest || deviation < closest.deviation)) {
+      closest = { deviation, zoom };
+    }
+  }
+  if (!closest) {
+    host.style.zoom = '';
+    return null;
+  }
+  host.style.zoom = closest.zoom;
+
+  const stepsAboveOne = Math.round(
+    closest.deviation / (ZOOM_PROBE_WIDTH * STEP_ABOVE_ONE),
+  );
+  const inner = document.createElement('div');
+  // The zooms multiply to that many steps above 1; one that many steps below
+  // 1 makes their product exactly 1.
+  inner.style.zoom = String(
+    Math.fround(1 / (1 + stepsAboveOne * STEP_ABOVE_ONE)),
+  );
+  host.appendChild(inner);
+  if (zoomDeviation(inner) === 0) {
+    return inner;
+  }
+  inner.remove();
+  host.style.zoom = '';
+  return null;
+}
+
+/** Where Mermaid measures one diagram. */
+export interface MermaidMeasureHost {
+  /** The element to hand to Mermaid as the one it measures in. */
+  container: HTMLElement;
+  /** Whether that is inside the diagram's own element. */
+  inNode: boolean;
+  /** Take the host out of the document. */
+  remove(): void;
+}
+
+/**
+ * The place Mermaid lays one diagram out in. Take it out of the document once
+ * the diagram has been rendered.
+ *
+ * Mermaid draws into a temporary `<svg>` inside this place and sizes the
+ * diagram from what it measures there, so it has to be one where the
  * diagram's own styles are in effect and where measurements come in the units
  * Mermaid compares them with:
  *
@@ -30,11 +176,16 @@ function isRendered(element: HTMLElement): boolean {
  *   a wrapped label taller once the diagram is in place than when it was
  *   measured, and its last line is cut off
  *   (vscode-markdown-preview-enhanced#2454).
- * - It goes under `<body>` instead when the node cannot be measured in: when
- *   it is not being rendered (`display: none`, a closed `<details>` on older
- *   Chromium), or when an ancestor of it is scaled by a transform or a zoom,
- *   which scales what is measured in the node but not what Mermaid compares it
- *   with.
+ * - It is shown in the top layer, where a transform on an ancestor of the
+ *   node — the scale Reveal puts on the slides of a presentation, for one —
+ *   does not scale what is measured in it, and its zoom undoes the zoom of
+ *   the preview (`measureExactIn`).
+ * - It goes under `<body>` instead when widths cannot be made to measure
+ *   exact in the node: when the node is not being rendered (`display: none`,
+ *   a closed `<details>` on older Chromium), when an ancestor of it has a
+ *   transform in an engine without a top layer, or when a zoom of its own is
+ *   set on an ancestor of it and cannot be undone as the zoom of the preview
+ *   is.
  * - It is a throwaway child of `node` rather than `node` itself, because
  *   Mermaid empties its container and keeps rendering into it after the call
  *   has timed out, which must not touch what the preview shows in `node`. (It
@@ -43,27 +194,36 @@ function isRendered(element: HTMLElement): boolean {
  *   used to be, because some diagrams (gantt) lay themselves out to the width
  *   of their container.
  */
-export function createMermaidMeasureHost(node: HTMLElement): HTMLElement {
+export function createMermaidMeasureHost(
+  node: HTMLElement,
+): MermaidMeasureHost {
   const host = document.createElement('div');
 
   // A block under <body> is as wide as the element Mermaid measured in before:
-  // both widths are read the same way. A block of a known width tells how many
-  // CSS pixels one of its pixels is, zooms of <body> included.
+  // both widths are read the same way.
   const probe = document.body.appendChild(document.createElement('div'));
   const width = probe.offsetWidth;
-  probe.style.width = '1000px';
-  const scale = probe.getBoundingClientRect().width / 1000;
+  // The zoom of <body> is measured rather than read from its style, which is
+  // reported to six digits: too few to undo a zoom of 1.5883388257531164.
+  probe.style.width = `${ZOOM_PROBE_WIDTH}px`;
+  const bodyZoom = probe.getBoundingClientRect().width / ZOOM_PROBE_WIDTH;
   probe.remove();
 
-  host.style.cssText = `position: fixed; left: 0; top: 0; visibility: hidden; width: ${width}px;`;
-  node.appendChild(host);
-  const inNodeScale = host.offsetWidth
-    ? host.getBoundingClientRect().width / host.offsetWidth
-    : 0;
-  if (!isRendered(node) || Math.abs(inNodeScale - scale) >= 0.01) {
-    document.body.appendChild(host);
+  host.style.cssText = `position: fixed; left: 0; top: 0; visibility: hidden; margin: 0; border: 0; padding: 0; overflow: hidden; width: ${width}px;`;
+
+  if (isRendered(node)) {
+    node.appendChild(host);
+    const container = measureExactIn(host, bodyZoom);
+    if (container) {
+      return { container, inNode: true, remove: () => host.remove() };
+    }
   }
-  return host;
+  document.body.appendChild(host);
+  return {
+    container: measureExactIn(host, bodyZoom) ?? host,
+    inNode: false,
+    remove: () => host.remove(),
+  };
 }
 
 /**
@@ -86,11 +246,10 @@ export async function renderMermaidDiagram(
   if (!node.isConnected) {
     return null;
   }
-  let host: HTMLElement | undefined;
+  let measure: MermaidMeasureHost | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    host = createMermaidMeasureHost(node);
-    const measuredInNode = host.parentElement === node;
+    measure = createMermaidMeasureHost(node);
     const timeout = new Promise<never>((_, reject) => {
       timer = setTimeout(
         () => reject(new Error('Mermaid rendering timed out')),
@@ -98,10 +257,10 @@ export async function renderMermaidDiagram(
       );
     });
     const { svg } = await Promise.race([
-      mermaid.render(svgId, code, host),
+      mermaid.render(svgId, code, measure.container),
       timeout,
     ]);
-    if (measuredInNode && !isRendered(node)) {
+    if (measure.inNode && !isRendered(node)) {
       return null;
     }
     node.innerHTML = svg;
@@ -111,6 +270,6 @@ export async function renderMermaidDiagram(
     return null;
   } finally {
     clearTimeout(timer);
-    host?.remove();
+    measure?.remove();
   }
 }

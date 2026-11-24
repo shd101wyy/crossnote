@@ -25,6 +25,8 @@ interface Layout {
 }
 
 interface RenderedDiagram extends Layout {
+  /** The rendered SVG: the same string whenever the diagram is laid out the same. */
+  svg: string;
   bodyWidth: number;
   nodeWidth: number;
   /** The same diagram laid out with Mermaid's element under `<body>`. */
@@ -45,6 +47,22 @@ const GANTT = `gantt
     section Section
     A task :a1, 2024-01-01, 30d
     Another task :after a1, 20d`;
+
+/**
+ * Every zoom level the preview steps through, with the numbers it reaches
+ * them by: 0.1 is added to and subtracted from 1 forty times.
+ */
+const ZOOM_LEVELS: number[] = (() => {
+  const levels: number[] = [];
+  let up = 1;
+  let down = 1;
+  for (let step = 0; step < 40; step++) {
+    up = Math.min(up + 0.1, 5);
+    down = Math.max(down - 0.1, 0.2);
+    levels.push(up, down);
+  }
+  return [...new Set(levels)];
+})();
 
 let server: TestServer;
 
@@ -80,6 +98,8 @@ async function renderDiagram(
     source,
     containerWidth,
     containerTransform,
+    containerZoom,
+    containerHidden = false,
     zoom = 1,
     compareOnBody = false,
   }: {
@@ -87,6 +107,11 @@ async function renderDiagram(
     containerWidth?: string;
     /** A CSS `transform` for the container, as user styles might set. */
     containerTransform?: string;
+    /** A CSS `zoom` of the container's own, as user styles might set. */
+    containerZoom?: string;
+    /** Leave the container out of layout, as a closed `<details>` does. */
+    containerHidden?: boolean;
+    /** The preview's zoom, a CSS `zoom` on `<body>`. */
     zoom?: number;
     /** Also render with Mermaid's element under `<body>` and report that layout. */
     compareOnBody?: boolean;
@@ -97,6 +122,8 @@ async function renderDiagram(
       source,
       containerWidth,
       containerTransform,
+      containerZoom,
+      containerHidden,
       zoom,
       compareOnBody,
     }) => {
@@ -131,12 +158,10 @@ async function renderDiagram(
 
       const container = document.getElementById('hidden')!;
       container.className = 'markdown-preview';
-      if (containerWidth) {
-        container.style.width = containerWidth;
-      }
-      if (containerTransform) {
-        container.style.transform = containerTransform;
-      }
+      container.style.width = containerWidth ?? '';
+      container.style.transform = containerTransform ?? '';
+      container.style.zoom = containerZoom ?? '';
+      container.style.display = containerHidden ? 'none' : '';
       const node = document.createElement('div');
       node.className = 'mermaid';
       node.textContent = source;
@@ -152,6 +177,7 @@ async function renderDiagram(
       const svg = node.querySelector('svg')!;
       return {
         ...layoutOf(svg),
+        svg: node.innerHTML,
         onBody,
         bodyWidth: document.body.getBoundingClientRect().width,
         nodeWidth: node.getBoundingClientRect().width,
@@ -166,7 +192,15 @@ async function renderDiagram(
         ),
       };
     },
-    { source, containerWidth, containerTransform, zoom, compareOnBody },
+    {
+      source,
+      containerWidth,
+      containerTransform,
+      containerZoom,
+      containerHidden,
+      zoom,
+      compareOnBody,
+    },
   );
 }
 
@@ -214,31 +248,110 @@ test("a diagram that lays out to its container's width is laid out as wide as <b
   expectSameLayout(layout, layout.onBody!);
 });
 
-test("at another zoom level a diagram is laid out as with Mermaid's element under <body>", async ({
+test('at every zoom level of the preview a diagram is laid out as it is unzoomed', async ({
   page,
 }) => {
-  // The measuring element must not change what a zoomed preview gets; how
-  // Mermaid copes with the CSS `zoom` of <body> is its own matter (#566).
+  // The zoom of the preview is a CSS `zoom` on <body>. Where the engine
+  // scales the widths it reports by it, a label never measures as wide as the
+  // width Mermaid wraps labels at, so no label is wrapped (#566).
   await loadMermaid(page);
-  for (const source of [FLOWCHART, GANTT]) {
-    const { onBody, ...layout } = await renderDiagram(page, {
-      source,
-      containerWidth: '320px',
-      zoom: 1.5,
-      compareOnBody: true,
-    });
+  const unzoomed = await renderDiagram(page, { source: FLOWCHART });
+  // It is labels that wrapping changes: a wrapped one is taller than one line.
+  expect(
+    Math.max(...unzoomed.labelBoxes.map(([, height]) => height)),
+  ).toBeGreaterThan(40);
 
-    expectSameLayout(layout, onBody!);
+  for (const zoom of ZOOM_LEVELS) {
+    const { svg } = await renderDiagram(page, { source: FLOWCHART, zoom });
+    expect(svg, `at zoom ${zoom}`).toBe(unzoomed.svg);
   }
 });
 
-test("a diagram under a scaled ancestor is laid out as with Mermaid's element under <body>", async ({
+test('at zoom levels in between, a diagram is laid out as it is unzoomed', async ({
+  page,
+}) => {
+  await loadMermaid(page);
+  const unzoomed = await renderDiagram(page, { source: FLOWCHART });
+  // The zoom of <body> and the zoom that undoes it are multiplied in single
+  // precision, and their product skips from just below 1 to just above it at
+  // 1.7 and 3.4. The zoom is also reported to six digits only, which is too
+  // few to undo 1.5883388257531164 with; 1.0000004768371582 is four steps
+  // above 1 in single precision, where a 120px label measures 119.99999px.
+  for (const zoom of [
+    1.7, 3.4, 1.5883388257531164, 1.0000004768371582, 0.2012345678, 4.6,
+  ]) {
+    const { svg } = await renderDiagram(page, { source: FLOWCHART, zoom });
+    expect(svg, `at zoom ${zoom}`).toBe(unzoomed.svg);
+  }
+});
+
+test("at another zoom level, a diagram that lays out to its container's width is as wide as <body> is then", async ({
+  page,
+}) => {
+  // <body> is narrower in CSS pixels at a larger zoom, and a gantt is laid
+  // out to that width, as it is where Mermaid's own element is.
+  await loadMermaid(page);
+  const { onBody, ...layout } = await renderDiagram(page, {
+    source: GANTT,
+    containerWidth: '320px',
+    zoom: 1.5,
+    compareOnBody: true,
+  });
+
+  expectSameLayout(layout, onBody!);
+});
+
+test('a diagram under a scaled ancestor is laid out as it is unscaled, under the styles of the node', async ({
   page,
 }) => {
   // A `transform` on a wrapper scales what is measured inside it, but not
   // what Mermaid compares the measurements with. The smaller scale is twice
-  // the tolerance of the check, so it pins it.
+  // the tolerance of the comparison, so it pins it.
   await loadMermaid(page);
+  await page.addStyleTag({
+    content: '.markdown-preview p { line-height: 2.5; margin: 0; }',
+  });
+  const unscaled = await renderDiagram(page, { source: FLOWCHART });
+
+  for (const containerTransform of ['scale(0.5)', 'scale(0.98)']) {
+    const { svg, labelOverflowBottom } = await renderDiagram(page, {
+      source: FLOWCHART,
+      containerTransform,
+    });
+
+    expect(svg).toBe(unscaled.svg);
+    for (const overflow of labelOverflowBottom) {
+      expect(overflow).toBeLessThanOrEqual(0.5);
+    }
+  }
+});
+
+test('a diagram under an ancestor with a zoom of its own is laid out as it is unzoomed', async ({
+  page,
+}) => {
+  await loadMermaid(page);
+  const unzoomed = await renderDiagram(page, { source: FLOWCHART });
+
+  for (const containerZoom of ['2', '1.5', '1.7', '0.5']) {
+    const { svg } = await renderDiagram(page, {
+      source: FLOWCHART,
+      containerZoom,
+    });
+
+    expect(svg, `under a zoom of ${containerZoom}`).toBe(unzoomed.svg);
+  }
+});
+
+test("without a top layer, a diagram under a scaled ancestor is laid out as with Mermaid's element under <body>", async ({
+  page,
+}) => {
+  await loadMermaid(page);
+  // An engine without popovers has no top layer.
+  await page.evaluate(() => {
+    (HTMLElement.prototype as { showPopover?: unknown }).showPopover =
+      undefined;
+  });
+
   for (const containerTransform of ['scale(0.5)', 'scale(0.98)']) {
     const { onBody, ...layout } = await renderDiagram(page, {
       source: FLOWCHART,
@@ -248,4 +361,17 @@ test("a diagram under a scaled ancestor is laid out as with Mermaid's element un
 
     expectSameLayout(layout, onBody!);
   }
+});
+
+test("a diagram in a node that is not rendered is laid out as with Mermaid's element under <body>", async ({
+  page,
+}) => {
+  await loadMermaid(page);
+  const { onBody, ...layout } = await renderDiagram(page, {
+    source: FLOWCHART,
+    containerHidden: true,
+    compareOnBody: true,
+  });
+
+  expectSameLayout(layout, onBody!);
 });
