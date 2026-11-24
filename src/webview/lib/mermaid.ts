@@ -19,8 +19,8 @@ function isRendered(element: HTMLElement): boolean {
  * Wide enough for the width it measures as to tell zooms that are next to 1
  * in single precision apart, and to pin down the zoom of `<body>` to within
  * one such number. Firefox stops laying widths out beyond 2<sup>30</sup>
- * app units (about 17.9 million CSS pixels), so five times the largest zoom
- * of the preview has to stay below that.
+ * app units (about 17.9 million CSS pixels), and this width at the largest
+ * zoom of the preview is still below that.
  */
 const ZOOM_PROBE_WIDTH = 2 ** 21;
 
@@ -60,27 +60,32 @@ function zoomDeviation(element: HTMLElement): number {
  * reach it: the scale Reveal puts on the slides of a presentation, or one set
  * by user styles, would scale what is measured in the host but not what
  * Mermaid compares it with. The styles of the host still come from where it
- * is in the document. Not every engine has a top layer; there the transforms
- * apply.
+ * is in the document. Not every engine has a top layer, and showing can be
+ * refused; there the transforms apply.
  */
 function showInTopLayer(host: HTMLElement): void {
   if (typeof host.showPopover !== 'function') {
     return;
   }
-  // `popover` hides an element that is not shown, so it is only kept when
-  // showing worked.
-  host.setAttribute('popover', 'manual');
+  // `popover` hides an element that is not shown, so it is only kept when the
+  // host is in the top layer. Showing is refused without throwing when a
+  // `beforetoggle` listener cancels it.
   try {
+    host.setAttribute('popover', 'manual');
     host.showPopover();
+    if (host.matches(':popover-open')) {
+      return;
+    }
   } catch {
-    host.removeAttribute('popover');
+    // Shown in the top layer it is not.
   }
+  host.removeAttribute('popover');
 }
 
 /**
- * Make widths written in CSS pixels measure as those numbers in `host`, which
- * is under `<body>`, and return the element in it for Mermaid to measure in;
- * `null` when it cannot be done.
+ * Make widths written in CSS pixels measure as those numbers in `host`, and
+ * return the element in it for Mermaid to measure in; `null` when it cannot be
+ * done.
  *
  * The preview's zoom is a CSS `zoom` on `<body>`, which the host inherits. In
  * current engines it scales what `getBoundingClientRect()` reports, so a
@@ -97,12 +102,13 @@ function showInTopLayer(host: HTMLElement): void {
  * The product skips from one step below 1 to one step above it at some zoom
  * levels (1.7, 3.4). A second zoom inside the host, the reciprocal of what
  * the first one came to, makes it exactly 1 then: one zoom cannot be written
- * more precisely than a single-precision number, two can. A zoom that user
- * styles put on an ancestor of the node is undone the same way.
+ * more precisely than a single-precision number, two can. It also makes up
+ * for a zoom above 1 that user styles put on an ancestor of the node; for one
+ * below 1 nothing does, and the host ends up under `<body>`.
  *
  * Which number it is depends on the engine; an engine that reports widths
- * unscaled takes the host as it is. When nothing measures exact, the host is
- * left as Mermaid's own element is.
+ * unscaled takes the host as it is. When nothing measures exact, the zoom of
+ * the host is set back and `null` is returned.
  */
 function measureExactIn(
   host: HTMLElement,

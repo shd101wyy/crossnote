@@ -342,6 +342,22 @@ test('a diagram under an ancestor with a zoom of its own is laid out as it is un
   }
 });
 
+/**
+ * Render under an ancestor that is scaled: Mermaid's element then goes under
+ * `<body>`, where the layout is the one Mermaid's own element gives there.
+ */
+async function expectLaidOutAsOnBodyUnderTransform(page: Page): Promise<void> {
+  for (const containerTransform of ['scale(0.5)', 'scale(0.98)']) {
+    const { onBody, ...layout } = await renderDiagram(page, {
+      source: FLOWCHART,
+      containerTransform,
+      compareOnBody: true,
+    });
+
+    expectSameLayout(layout, onBody!);
+  }
+}
+
 test("without a top layer, a diagram under a scaled ancestor is laid out as with Mermaid's element under <body>", async ({
   page,
 }) => {
@@ -352,15 +368,26 @@ test("without a top layer, a diagram under a scaled ancestor is laid out as with
       undefined;
   });
 
-  for (const containerTransform of ['scale(0.5)', 'scale(0.98)']) {
-    const { onBody, ...layout } = await renderDiagram(page, {
-      source: FLOWCHART,
-      containerTransform,
-      compareOnBody: true,
-    });
+  await expectLaidOutAsOnBodyUnderTransform(page);
+});
 
-    expectSameLayout(layout, onBody!);
-  }
+test("where the top layer is refused, a diagram under a scaled ancestor is laid out as with Mermaid's element under <body>", async ({
+  page,
+}) => {
+  await loadMermaid(page);
+  // An element is not shown in the top layer when a `beforetoggle` listener
+  // cancels it, and `showPopover()` does not say so by throwing. An element
+  // that is not shown is kept out of layout by its `popover` attribute, which
+  // would have Mermaid measure nothing at all.
+  await page.evaluate(() => {
+    document.addEventListener(
+      'beforetoggle',
+      (event) => event.preventDefault(),
+      true,
+    );
+  });
+
+  await expectLaidOutAsOnBodyUnderTransform(page);
 });
 
 test("a diagram in a node that is not rendered is laid out as with Mermaid's element under <body>", async ({
