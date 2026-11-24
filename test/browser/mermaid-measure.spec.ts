@@ -276,9 +276,11 @@ test('at zoom levels in between, a diagram is laid out as it is unzoomed', async
   // precision, and their product skips from just below 1 to just above it at
   // 1.7 and 3.4. The zoom is also reported to six digits only, which is too
   // few to undo 1.5883388257531164 with; 1.0000004768371582 is four steps
-  // above 1 in single precision, where a 120px label measures 119.99999px.
+  // above 1 in single precision, where a 120px label measures 119.99999px;
+  // 2.1570750650018455 needs the zoom two steps above the reciprocal.
   for (const zoom of [
-    1.7, 3.4, 1.5883388257531164, 1.0000004768371582, 0.2012345678, 4.6,
+    1.7, 3.4, 1.5883388257531164, 1.0000004768371582, 2.1570750650018455,
+    0.2012345678, 4.6,
   ]) {
     const { svg } = await renderDiagram(page, { source: FLOWCHART, zoom });
     expect(svg, `at zoom ${zoom}`).toBe(unzoomed.svg);

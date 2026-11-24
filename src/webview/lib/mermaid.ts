@@ -64,12 +64,9 @@ function zoomDeviation(element: HTMLElement): number {
  * refused; there the transforms apply.
  */
 function showInTopLayer(host: HTMLElement): void {
-  if (typeof host.showPopover !== 'function') {
-    return;
-  }
   // `popover` hides an element that is not shown, so it is only kept when the
-  // host is in the top layer. Showing is refused without throwing when a
-  // `beforetoggle` listener cancels it.
+  // host is in the top layer. An engine without popovers throws, and showing
+  // is refused without throwing when a `beforetoggle` listener cancels it.
   try {
     host.setAttribute('popover', 'manual');
     host.showPopover();
@@ -77,7 +74,7 @@ function showInTopLayer(host: HTMLElement): void {
       return;
     }
   } catch {
-    // Shown in the top layer it is not.
+    // Not shown in the top layer.
   }
   host.removeAttribute('popover');
 }
@@ -95,27 +92,30 @@ function showInTopLayer(host: HTMLElement): void {
  * number: zooms are single-precision numbers in the engine and are multiplied
  * in single precision, and the product has to be exactly 1. At other products
  * close by Mermaid measures a 120px label as 119.99999px (Chromium four
- * numbers above 1, WebKit one), so which number does is found by trying
+ * numbers above 1, WebKit one below), so which number does is found by trying
  * the reciprocal of the zoom and its neighbouring single-precision numbers
  * and measuring, not by assuming.
  *
  * The product skips from one step below 1 to one step above it at some zoom
  * levels (1.7, 3.4). A second zoom inside the host, the reciprocal of what
  * the first one came to, makes it exactly 1 then: one zoom cannot be written
- * more precisely than a single-precision number, two can. It also makes up
- * for a zoom above 1 that user styles put on an ancestor of the node; for one
- * below 1 nothing does, and the host ends up under `<body>`.
+ * more precisely than a single-precision number, two can. Whether it makes up
+ * for a zoom that user styles put on an ancestor of the node is left to how
+ * the numbers fall; where it does not, nothing measures exact and the host
+ * ends up under `<body>`.
  *
  * Which number it is depends on the engine; an engine that reports widths
- * unscaled takes the host as it is. When nothing measures exact, the zoom of
- * the host is set back and `null` is returned.
+ * unscaled takes the host as it is. That is also what happens on Chromium 114,
+ * the engine of VS Code 1.82 to 1.85: there a width this large reports
+ * unscaled while a label does not, so labels stay unwrapped at a zoom of the
+ * preview there, as before. When nothing measures exact, the zoom of the host
+ * is set back and `null` is returned.
  */
 function measureExactIn(
   host: HTMLElement,
   bodyZoom: number,
 ): HTMLElement | null {
   showInTopLayer(host);
-  host.style.zoom = '';
   if (zoomDeviation(host) === 0) {
     return host;
   }
@@ -125,7 +125,7 @@ function measureExactIn(
   // The zoom at which the product came out closest above 1, in case no zoom
   // makes it exactly 1.
   let closest: { deviation: number; zoom: string } | undefined;
-  const reciprocal = Math.fround(1 / bodyZoom);
+  const reciprocal = 1 / bodyZoom;
   for (const stepsInSinglePrecision of [0, 1, -1, 2, -2, 3, -3, 4, -4]) {
     const zoom = String(floatNeighbour(reciprocal, stepsInSinglePrecision));
     host.style.zoom = zoom;
