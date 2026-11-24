@@ -15,6 +15,7 @@ interface MathJaxAPI {
     document: {
       state(n: number): void;
     };
+    promise: Promise<void>;
   };
 }
 
