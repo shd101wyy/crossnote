@@ -307,3 +307,111 @@ test('first updateHtml waits for MathJax instead of finishing as raw $…$ (#569
     'typesetClear TypeError must not be swallowed into a finished raw preview',
   ).not.toMatch(/typesetClear is not a function/);
 });
+
+/**
+ * When MathJax never arrives, `renderMathJax` must not hang `initEvents`
+ * forever: staged HTML still has to reach the visible preview, and later
+ * `updateHtml` messages must replace it. Otherwise the first-load copy from
+ * `data-html` stays on screen and the refreshing icon never clears (#572).
+ */
+test('preview follows later edits when MathJax never becomes ready (#572)', async ({
+  page,
+}) => {
+  const config = {
+    mathRenderingOption: 'MathJax',
+    markdownParser: 'markdown-it',
+    sourceUri: 'file:///tmp/crossnote-572.md',
+    enablePreviewZenMode: true,
+    enablePreviewContextMenu: false,
+    isVSCode: true,
+  };
+  const mathJaxConfig = makeConfig();
+  mathJaxConfig.startup = { typeset: false, elements: ['.hidden-preview'] };
+
+  const firstHtml =
+    '<p>FIRST_PAINT</p>' + '<p><span class="mathjax-exps">$a+b=c$</span></p>';
+  const laterHtml =
+    '<p>LATER_EDIT</p>' + '<p><span class="mathjax-exps">$x+y=z$</span></p>';
+
+  await page.addInitScript(() => {
+    const hostMessages: Array<{ command?: string }> = [];
+    const hostWindow = window as unknown as HostWindow & {
+      acquireVsCodeApi: () => {
+        postMessage(message: unknown): void;
+        getState(): unknown;
+        setState(state: unknown): void;
+      };
+    };
+    hostWindow.acquireVsCodeApi = () => ({
+      postMessage: (message: unknown) => {
+        hostMessages.push(message as { command?: string });
+      },
+      getState: () => null,
+      setState: () => undefined,
+    });
+    hostWindow.__hostMessages = hostMessages;
+  });
+
+  await page.goto(server.url);
+  await page.evaluate(
+    ({ configJson, mathHtml }) => {
+      const meta = document.createElement('meta');
+      meta.id = 'crossnote-data';
+      meta.setAttribute('data-config', configJson);
+      document.head.appendChild(meta);
+      document.body.setAttribute('data-html', mathHtml);
+    },
+    { configJson: JSON.stringify(config), mathHtml: firstHtml },
+  );
+
+  // Config object only — the MathJax script is never injected, as when the
+  // CDN is unreachable.
+  await page.addScriptTag({ content: buildMathJaxConfigScript(mathJaxConfig) });
+  await page.addScriptTag({ content: previewHarnessJs });
+
+  await page.waitForSelector('[data-for="preview"]');
+  await page.waitForFunction(() =>
+    ((window as HostWindow).__hostMessages || []).some(
+      (message) => message.command === 'webviewFinishLoading',
+    ),
+  );
+
+  const preview = page.locator('[data-for="preview"]');
+  await expect(preview).toContainText('FIRST_PAINT');
+
+  const postUpdateHtml = (html: string, markdown: string) =>
+    page.evaluate(
+      (payload) => {
+        window.postMessage(payload, '*');
+      },
+      {
+        command: 'updateHtml',
+        html,
+        id: '',
+        class: '',
+        totalLineCount: 2,
+        tocHTML: '',
+        sourceUri: config.sourceUri,
+        sourceScheme: 'file',
+        markdown,
+      },
+    );
+
+  await postUpdateHtml(firstHtml, '$a+b=c$');
+
+  // Unfixed initEvents waits forever for MathJax, so the visible element
+  // keeps the first-load `data-html` copy and the icon never clears.
+  await expect(page.getByTestId('refreshing-icon')).toHaveCount(1);
+  await expect(page.getByTestId('refreshing-icon')).toHaveCount(0, {
+    timeout: 8000,
+  });
+  await expect(preview).toContainText('FIRST_PAINT');
+
+  // The 4s wait is shared: a later math edit must not pay it again.
+  const started = Date.now();
+  await postUpdateHtml(laterHtml, '$x+y=z$');
+  await expect(preview).toContainText('LATER_EDIT', { timeout: 1000 });
+  expect(Date.now() - started).toBeLessThan(1000);
+  await expect(preview).not.toContainText('FIRST_PAINT');
+  await expect(page.getByTestId('refreshing-icon')).toHaveCount(0);
+});

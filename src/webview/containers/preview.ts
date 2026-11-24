@@ -40,6 +40,10 @@ const showSidebarTocStorageKey = 'crossnote.showSidebarToc';
  * only the config object. Calling `typesetClear` then throws
  * `TypeError: window.MathJax.typesetClear is not a function`, which
  * `initEvents` swallows, leaving raw `$…$` as a finished preview (#569).
+ *
+ * Wait until MathJax is actually ready, but fail open after a bounded wait
+ * so a blocked CDN cannot freeze later edits (#572). Delayed-but-successful
+ * loads still typeset the first preview (the #570 wait).
  */
 function isMathJaxReady(): boolean {
   const mathJax = window.MathJax;
@@ -51,20 +55,59 @@ function isMathJaxReady(): boolean {
   );
 }
 
+/** Fail open so a blocked MathJax CDN cannot freeze later edits (#572). */
+const MATHJAX_READY_TIMEOUT_MS = 4000;
+
+let mathJaxWait: Promise<void> | undefined;
+
 function waitForMathJaxReady(): Promise<void> {
   if (isMathJaxReady()) {
     return window.MathJax.startup.promise;
   }
-  return new Promise((resolve) => {
+  mathJaxWait ??= new Promise((resolve, reject) => {
+    let settled = false;
+    const settle = (finish: () => void) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      finish();
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      settle(() =>
+        reject(
+          new Error(
+            `MathJax did not become ready within ${MATHJAX_READY_TIMEOUT_MS}ms`,
+          ),
+        ),
+      );
+    }, MATHJAX_READY_TIMEOUT_MS);
+
+    const done = () => {
+      window.clearTimeout(timeoutId);
+      settle(() => resolve());
+    };
+
+    const fail = (error: unknown) => {
+      window.clearTimeout(timeoutId);
+      settle(() => reject(error));
+    };
+
     const poll = () => {
+      if (settled) {
+        return;
+      }
       if (isMathJaxReady()) {
-        window.MathJax.startup.promise.then(() => resolve());
+        window.MathJax.startup.promise.then(done, fail);
         return;
       }
       window.setTimeout(poll, 50);
     };
+
     poll();
   });
+  return mathJaxWait;
 }
 
 function getWindowScrollTop() {
@@ -265,6 +308,14 @@ const PreviewContainer = createContainer(() => {
   const isAnimatingScroll = useRef<boolean>(false);
   // const refreshingTimeout = useRef<NodeJS.Timeout | null>(null);
   const isLoadingPreviewRef = useRef<boolean>(true);
+  /**
+   * Bumped at the start of each `initEvents`. Two refreshes can be waiting
+   * for the same MathJax at once; when it becomes ready the older one would
+   * copy the hidden element and clear it before the newer one copies, and
+   * the newer one would then show an empty preview. The counter stops the
+   * older one before it copies.
+   */
+  const initEventsGeneration = useRef(0);
   /**
    * Track the slide line number, and (h, v) indices
    */
@@ -1223,9 +1274,27 @@ const PreviewContainer = createContainer(() => {
     if (!previewElement.current || !hiddenPreviewElement.current) {
       return;
     }
+    const generation = ++initEventsGeneration.current;
+    const isCurrent = () => generation === initEventsGeneration.current;
     try {
       setIsRefreshingPreview(true);
-      await Promise.all([renderMathJax(), renderWavedrom(), renderTikzjax()]);
+      try {
+        await Promise.all([renderMathJax(), renderWavedrom(), renderTikzjax()]);
+      } catch (error) {
+        // A failed or never-ready renderer must not block applying staged
+        // HTML: otherwise later edits stay in the hidden element forever
+        // (#572). Continue with the copy and the later init steps that
+        // still make sense.
+        console.error(error);
+      }
+
+      if (
+        !isCurrent() ||
+        !previewElement.current ||
+        !hiddenPreviewElement.current
+      ) {
+        return;
+      }
 
       previewElement.current.innerHTML = hiddenPreviewElement.current.innerHTML;
       hiddenPreviewElement.current.innerHTML = '';
@@ -1236,12 +1305,17 @@ const PreviewContainer = createContainer(() => {
 
       await Promise.all([renderInteractiveVega(), renderMermaid()]);
 
-      setupCodeChunks();
+      if (!isCurrent()) {
+        return;
+      }
 
-      setIsRefreshingPreview(false);
+      setupCodeChunks();
     } catch (error) {
       console.error(error);
-      setIsRefreshingPreview(false);
+    } finally {
+      if (isCurrent()) {
+        setIsRefreshingPreview(false);
+      }
     }
   }, [
     renderInteractiveVega,
