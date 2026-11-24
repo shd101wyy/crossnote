@@ -18,7 +18,7 @@ function isRendered(element: HTMLElement): boolean {
 /**
  * Wide enough for the width it measures as to tell zooms that are next to 1
  * in single precision apart, and to pin down the zoom of `<body>` to within
- * one of those steps. Firefox stops laying widths out beyond 2<sup>30</sup>
+ * one such number. Firefox stops laying widths out beyond 2<sup>30</sup>
  * app units (about 17.9 million CSS pixels), so five times the largest zoom
  * of the preview has to stay below that.
  */
@@ -28,13 +28,17 @@ const ZOOM_PROBE_WIDTH = 2 ** 21;
 const STEP_ABOVE_ONE = 2 ** -23;
 
 /**
- * `value`, moved by `steps` to the next numbers that can be written in single
- * precision.
+ * `value`, moved by `stepsInSinglePrecision` to the next numbers that can be
+ * written in single precision.
+ *
+ * Mind how things are named in this file: Tailwind scans it for class names,
+ * words in comments included, and styles whatever it finds that is a class of
+ * its own.
  */
-function floatNeighbour(value: number, steps: number): number {
+function floatNeighbour(value: number, stepsInSinglePrecision: number): number {
   const view = new DataView(new ArrayBuffer(4));
   view.setFloat32(0, value);
-  view.setUint32(0, view.getUint32(0) + steps);
+  view.setUint32(0, view.getUint32(0) + stepsInSinglePrecision);
   return view.getFloat32(0);
 }
 
@@ -85,8 +89,8 @@ function showInTopLayer(host: HTMLElement): void {
  * (crossnote#566). The zoom of the host undoes it, but only at the right
  * number: zooms are single-precision numbers in the engine and are multiplied
  * in single precision, and the product has to be exactly 1. At other products
- * close by Mermaid measures a 120px label as 119.99999px (Chromium four steps
- * above 1, WebKit one step above), so which number does is found by trying
+ * close by Mermaid measures a 120px label as 119.99999px (Chromium four
+ * numbers above 1, WebKit one), so which number does is found by trying
  * the reciprocal of the zoom and its neighbouring single-precision numbers
  * and measuring, not by assuming.
  *
@@ -116,8 +120,8 @@ function measureExactIn(
   // makes it exactly 1.
   let closest: { deviation: number; zoom: string } | undefined;
   const reciprocal = Math.fround(1 / bodyZoom);
-  for (const steps of [0, 1, -1, 2, -2, 3, -3, 4, -4]) {
-    const zoom = String(floatNeighbour(reciprocal, steps));
+  for (const stepsInSinglePrecision of [0, 1, -1, 2, -2, 3, -3, 4, -4]) {
+    const zoom = String(floatNeighbour(reciprocal, stepsInSinglePrecision));
     host.style.zoom = zoom;
     const deviation = zoomDeviation(host);
     if (deviation === 0) {
@@ -137,8 +141,8 @@ function measureExactIn(
     closest.deviation / (ZOOM_PROBE_WIDTH * STEP_ABOVE_ONE),
   );
   const inner = document.createElement('div');
-  // The zooms multiply to that many steps above 1; one that many steps below
-  // 1 makes their product exactly 1.
+  // The zooms multiply to that many numbers above 1; one that many numbers
+  // below 1 makes their product exactly 1.
   inner.style.zoom = String(
     Math.fround(1 / (1 + stepsAboveOne * STEP_ABOVE_ONE)),
   );
