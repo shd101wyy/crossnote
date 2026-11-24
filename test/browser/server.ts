@@ -5,6 +5,7 @@ import * as path from 'path';
 const MATHJAX_DIR = path.resolve(__dirname, '../../node_modules/mathjax');
 const MERMAID_DIR = path.resolve(__dirname, '../../node_modules/mermaid/dist');
 const WAVEDROM_DIR = path.resolve(__dirname, '../../dependencies/wavedrom');
+const REVEAL_DIR = path.resolve(__dirname, '../../dependencies/reveal');
 
 const CONTENT_TYPES: Record<string, string> = {
   '.js': 'text/javascript; charset=utf-8',
@@ -42,7 +43,7 @@ export function isPathWithinRoot(root: string, candidate: string): boolean {
  * Serve a blank preview page at `/` and the locally installed MathJax 4
  * package under `/mathjax/...` over real HTTP (so the speech-rule-engine's
  * web worker, which won't run from a `file://` origin, works as it does in the
- * actual webview).
+ * actual webview). The vendored Reveal is served under `/reveal/...`.
  */
 // URL prefix → on-disk root. Static assets are served from these so MathJax's
 // component loader and WaveDrom's skins resolve their siblings over real HTTP.
@@ -50,6 +51,7 @@ const STATIC_MOUNTS: { prefix: string; root: string }[] = [
   { prefix: '/mathjax/', root: MATHJAX_DIR },
   { prefix: '/mermaid/', root: MERMAID_DIR },
   { prefix: '/wavedrom/', root: WAVEDROM_DIR },
+  { prefix: '/reveal/', root: REVEAL_DIR },
 ];
 
 export async function startServer(): Promise<TestServer> {

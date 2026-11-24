@@ -4,7 +4,8 @@ import PreviewContainer from '../../src/webview/containers/preview';
 
 /**
  * Minimal mount of the real preview container so browser tests can drive
- * `updateHtml` / `initEvents` / `renderMathJax` without the full preview UI
+ * `updateHtml` / `initEvents` / `renderMathJax` / `initPresentationEvent`
+ * without the full preview UI
  * (monaco, context menu, …).
  */
 function Harness() {

@@ -1030,66 +1030,78 @@ const PreviewContainer = createContainer(() => {
     });
   }, []);
 
-  const renderMermaid = useCallback(async () => {
-    if (!previewElement.current) {
-      return;
-    }
-    const mermaid = window['mermaid']; // window.mermaid doesn't work, has to be written as window['mermaid']
-    const mermaidGraphs = Array.from(
-      previewElement.current.querySelectorAll('div.mermaid'),
-    );
+  /**
+   * Render the Mermaid diagrams under `root` that were not rendered before:
+   * those of the whole preview, or those of the slide of a presentation that
+   * is current now (`initPresentationEvent`).
+   */
+  const renderMermaid = useCallback(
+    async (root: HTMLElement | null = previewElement.current) => {
+      if (!root) {
+        return;
+      }
+      const mermaid = window['mermaid']; // window.mermaid doesn't work, has to be written as window['mermaid']
+      const mermaidGraphs = Array.from(
+        root.querySelectorAll<HTMLElement>('div.mermaid'),
+      ).filter((graph) => !graph.hasAttribute('data-processed'));
 
-    if (!mermaidGraphs.length) {
-      return;
-    }
+      if (!mermaidGraphs.length) {
+        return;
+      }
 
-    // Phase 1: parse every diagram, keeping the valid nodes. Mermaid queues
-    // the calls, so this only issues them together.
-    const parseResults = await Promise.all(
-      mermaidGraphs.map(async (mermaidGraph) => {
-        const code = (mermaidGraph.textContent ?? '').trim();
-        if (!code) {
-          return null;
-        }
-        // Cache hit: reuse previously rendered SVG (skip parse + render).
-        if (code in mermaidCache.current) {
-          mermaidGraph.innerHTML = mermaidCache.current[code];
-          return null;
-        }
-        try {
-          await mermaid.parse(code);
-          return { node: mermaidGraph, code };
-        } catch (error) {
-          mermaidGraph.innerHTML = mermaidErrorHtml(error);
-          return null;
-        }
-      }),
-    );
+      // Phase 1: parse every diagram, keeping the valid nodes. Mermaid queues
+      // the calls, so this only issues them together.
+      const parseResults = await Promise.all(
+        mermaidGraphs.map(async (mermaidGraph) => {
+          // Marked as Mermaid marks the diagrams it runs, and before it is
+          // known whether it can be rendered: a diagram asked for again,
+          // while it renders or after it failed, is left alone.
+          mermaidGraph.setAttribute('data-processed', 'true');
+          const code = (mermaidGraph.textContent ?? '').trim();
+          if (!code) {
+            return null;
+          }
+          // Cache hit: reuse previously rendered SVG (skip parse + render).
+          if (code in mermaidCache.current) {
+            mermaidGraph.innerHTML = mermaidCache.current[code];
+            return null;
+          }
+          try {
+            await mermaid.parse(code);
+            return { node: mermaidGraph, code };
+          } catch (error) {
+            mermaidGraph.innerHTML = mermaidErrorHtml(error);
+            return null;
+          }
+        }),
+      );
 
-    const validNodes = parseResults.filter(
-      (r): r is { node: HTMLElement; code: string } => r !== null,
-    );
-    if (!validNodes.length) {
-      return;
-    }
+      const validNodes = parseResults.filter(
+        (r): r is { node: HTMLElement; code: string } => r !== null,
+      );
+      if (!validNodes.length) {
+        return;
+      }
 
-    // Phase 2: render every valid diagram.
-    const newCache: Record<string, string> = {};
-    await Promise.all(
-      validNodes.map(async ({ node, code }, offset) => {
-        const svgId = 'mermaid-' + Date.now() + '-' + offset;
-        const svg = await renderMermaidDiagram(mermaid, node, code, svgId);
-        if (svg) {
-          newCache[code] = svg;
-        }
-      }),
-    );
+      // Phase 2: render every valid diagram.
+      const newCache: Record<string, string> = {};
+      await Promise.all(
+        validNodes.map(async ({ node, code }, offset) => {
+          const svgId = 'mermaid-' + Date.now() + '-' + offset;
+          const svg = await renderMermaidDiagram(mermaid, node, code, svgId);
+          if (svg) {
+            newCache[code] = svg;
+          }
+        }),
+      );
 
-    // Merge newly rendered entries into the cache without evicting
-    // entries for diagrams that may still be in the DOM from a
-    // previous refresh.
-    Object.assign(mermaidCache.current, newCache);
-  }, []);
+      // Merge newly rendered entries into the cache without evicting
+      // entries for diagrams that may still be in the DOM from a
+      // previous refresh.
+      Object.assign(mermaidCache.current, newCache);
+    },
+    [],
+  );
 
   const runCodeChunk = useCallback(
     (id: string | null) => {
@@ -1889,17 +1901,33 @@ const PreviewContainer = createContainer(() => {
       // This is defined in `markdown-engine/index.ts`
       await window['initRevealPresentation']();
     }
-    const firstSlide = window['Reveal'].getCurrentSlide();
+    const reveal = window['Reveal'];
+    const firstSlide = reveal.getCurrentSlide();
     firstSlide.style.visibility = 'hidden';
     // analyze slides
     initSlidesData();
 
-    // scroll slides
-    window['Reveal'].addEventListener('slidetransitionend', () => {
-      window['Reveal'].layout();
-    });
+    // The diagrams of the slides render one slide at a time, in the order
+    // asked for. A slide asked for again while its diagrams render, as the
+    // one the preview opens on is by its first slide event, is not rendered
+    // twice; the later call still waits for its diagrams.
+    let rendering: Promise<void> = Promise.resolve();
+    const renderSlide = (slide: HTMLElement) => {
+      rendering = rendering
+        .catch(() => undefined)
+        .then(() => renderMermaid(slide));
+      return rendering;
+    };
 
-    window['Reveal'].addEventListener('slidechanged', (event) => {
+    // scroll slides
+    reveal.addEventListener('slidechanged', (event) => {
+      // The diagrams of a slide are rendered when the slide becomes the
+      // current one. Every slide change emits this event; the one that ends
+      // a transition is not emitted when nothing animates, as with the
+      // `none` transition.
+      const { currentSlide } = event as { currentSlide: HTMLElement };
+      renderSlide(currentSlide).then(() => reveal.layout());
+
       if (Date.now() < previewScrollDelay.current) {
         return;
       }
@@ -1913,11 +1941,15 @@ const PreviewContainer = createContainer(() => {
       }
     });
 
-    // slide to initial position
-    window['Reveal'].configure({ transition: 'none' });
+    // slide to initial position, with the diagrams of that slide rendered.
+    // The transition is switched off so that the slide is put in place
+    // without animating; the configured one is set back afterwards.
+    const { transition } = reveal.getConfig();
+    reveal.configure({ transition: 'none' });
     scrollToRevealSourceLine(cursorLine.current);
-    window['Reveal'].configure({ transition: 'slide' });
-    window['Reveal'].layout();
+    await renderSlide(reveal.getCurrentSlide());
+    reveal.configure({ transition });
+    reveal.layout();
 
     if (firstSlide) {
       firstSlide.style.visibility = 'visible';
@@ -1937,6 +1969,7 @@ const PreviewContainer = createContainer(() => {
     bindTaskListEvent,
     initSlidesData,
     postMessage,
+    renderMermaid,
     scrollToRevealSourceLine,
     setupCodeChunks,
   ]);
