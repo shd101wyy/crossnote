@@ -25,6 +25,10 @@ interface RevealApi {
 type PresentationWindow = Window & {
   Reveal: RevealApi;
   __hostMessages: Array<{ command?: string; args?: unknown[] }>;
+  /** Set when `holdRender` is on: one resolver for each render Mermaid was asked for and is held in. */
+  __heldRenders: Array<() => void>;
+  /** Set when `holdRender` is on: Mermaid's own `render`, which is not held. */
+  __unheldRender: Window['mermaid']['render'];
 };
 
 interface DeckState {
@@ -48,11 +52,12 @@ const DIAGRAM = `flowchart LR
     Idea["Collect every idea in one place before deciding what to build next"] --> Decide["Decide"]`;
 
 /** The slides of the deck, each by the line of the source it is written at. */
+const LAST_DIAGRAM = DIAGRAM.replace('Decide["Decide"]', 'Decide["Commit"]');
 const SLIDES: { line: number; diagram?: string }[] = [
   { line: 3, diagram: DIAGRAM },
   { line: 9, diagram: DIAGRAM },
   { line: 15 },
-  { line: 19, diagram: DIAGRAM },
+  { line: 19, diagram: LAST_DIAGRAM },
 ];
 /** The preview opens with the editor cursor on the second slide. */
 const OPENED_ON = 1;
@@ -83,7 +88,19 @@ test.afterAll(async () => {
 async function openPresentation(
   page: Page,
   pageErrors: string[],
-  { transition, cursorLine }: { transition?: string; cursorLine: number },
+  {
+    transition,
+    cursorLine,
+    presentationConfig = {},
+    holdRender = false,
+  }: {
+    transition?: string;
+    cursorLine: number;
+    /** Further configuration for Reveal. */
+    presentationConfig?: Record<string, unknown>;
+    /** Hold every render Mermaid is asked for until the test releases it. */
+    holdRender?: boolean;
+  },
 ): Promise<void> {
   const slides = SLIDES.map(
     (
@@ -118,9 +135,21 @@ async function openPresentation(
     <script src="${server.url}/mermaid/mermaid.min.js"></script>
     <script>
       mermaid.initialize({ startOnLoad: false, cloneCssStyles: false, theme: 'default' })
+      ${
+        holdRender
+          ? `window.__heldRenders = []
+      const render = mermaid.render.bind(mermaid)
+      window.__unheldRender = render
+      mermaid.render = async (...args) => {
+        await new Promise((resolve) => window.__heldRenders.push(resolve))
+        return render(...args)
+      }`
+          : ''
+      }
       window.initRevealPresentation = async function () {
         await Reveal.initialize(${JSON.stringify({
           margin: 0.1,
+          ...presentationConfig,
           ...(transition === undefined ? {} : { transition }),
         })})
         await new Promise((resolve) => setTimeout(resolve, 200))
@@ -224,18 +253,33 @@ async function readDeck(page: Page): Promise<DeckState> {
 }
 
 /** The width in the `viewBox` Mermaid gives the diagram where nothing scales it. */
-function unscaledViewBoxWidth(page: Page): Promise<number> {
+function unscaledViewBoxWidth(
+  page: Page,
+  diagram: string = DIAGRAM,
+): Promise<number> {
   return page.evaluate(async (diagram) => {
-    const { svg } = await (
-      window as unknown as { mermaid: Window['mermaid'] }
-    ).mermaid.render('deck-reference', diagram);
+    const globals = window as unknown as PresentationWindow;
+    const { svg } = await (globals.__unheldRender ?? globals.mermaid.render)(
+      'deck-reference',
+      diagram,
+    );
     return Number(
       new DOMParser()
         .parseFromString(svg, 'image/svg+xml')
         .documentElement.getAttribute('viewBox')!
         .split(/\s+/)[2],
     );
-  }, DIAGRAM);
+  }, diagram);
+}
+
+/** Wait until Mermaid has been asked for `count` renders it is held in, then let the first go. */
+async function releaseHeldRender(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => (window as unknown as PresentationWindow).__heldRenders.length > 0,
+  );
+  await page.evaluate(() => {
+    (window as unknown as PresentationWindow).__heldRenders.shift()?.();
+  });
 }
 
 /** Move the editor cursor, as the host tells the preview of it. */
@@ -282,7 +326,9 @@ for (const transition of [undefined, 'none', 'fade', 'slide', 'zoom']) {
     const moved = await readDeck(page);
 
     expect(moved.rendered).toEqual([false, true, false, true]);
-    expect(moved.viewBoxWidths[3]).toBe(unscaledWidth);
+    expect(moved.viewBoxWidths[3]).toBe(
+      await unscaledViewBoxWidth(page, LAST_DIAGRAM),
+    );
     expect(moved.labelLines[3]).toBeGreaterThan(1);
     expect(moved.offCenter[3]).toBeLessThan(1);
 
@@ -316,8 +362,58 @@ test('the slide the editor cursor is moved to has its diagrams rendered, also wh
   const moved = await readDeck(page);
 
   expect(moved.indices.h).toBe(3);
-  expect(moved.viewBoxWidths[3]).toBe(await unscaledViewBoxWidth(page));
+  expect(moved.viewBoxWidths[3]).toBe(
+    await unscaledViewBoxWidth(page, LAST_DIAGRAM),
+  );
   expect(moved.labelLines[3]).toBeGreaterThan(1);
   expect(moved.offCenter[3]).toBeLessThan(1);
+  expect(pageErrors).toEqual([]);
+});
+
+test('a slide left before its diagram is rendered has it rendered when it is current again', async ({
+  page,
+}) => {
+  // Reveal takes slides further away than `viewDistance` out of layout, so
+  // the diagram of a slide that is left while it renders is measured in a
+  // node that is no longer rendered, and nothing is written into the node.
+  const pageErrors: string[] = [];
+  await openPresentation(page, pageErrors, {
+    transition: 'none',
+    cursorLine: SLIDES[OPENED_ON].line,
+    presentationConfig: { viewDistance: 1 },
+    holdRender: true,
+  });
+  // The diagram of the slide opened on is being rendered.
+  await page.waitForFunction(
+    () => (window as unknown as PresentationWindow).__heldRenders.length === 1,
+  );
+
+  // Two slides on, before it is done.
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  await page.waitForFunction(
+    (h) =>
+      (window as unknown as PresentationWindow).Reveal.getIndices().h === h,
+    3,
+  );
+  await releaseHeldRender(page);
+  // The slide that is current now has its diagram rendered.
+  await releaseHeldRender(page);
+  await waitForDiagram(page, 3);
+  // The slide left is not rendered while it is away: laid out outside its
+  // slide, a diagram gets the text styles of the page, not of the slide.
+  expect((await readDeck(page)).rendered).toEqual([false, false, false, true]);
+
+  // Back on the slide the preview opened on: now its diagram is rendered.
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowLeft');
+  await releaseHeldRender(page);
+  await waitForDiagram(page, OPENED_ON);
+  const back = await readDeck(page);
+
+  expect(back.rendered).toEqual([false, true, false, true]);
+  expect(back.viewBoxWidths[OPENED_ON]).toBe(await unscaledViewBoxWidth(page));
+  expect(back.labelLines[OPENED_ON]).toBeGreaterThan(1);
+  expect(await page.locator('div.mermaid[data-processed]').count()).toBe(2);
   expect(pageErrors).toEqual([]);
 });

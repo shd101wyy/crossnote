@@ -1053,10 +1053,6 @@ const PreviewContainer = createContainer(() => {
       // the calls, so this only issues them together.
       const parseResults = await Promise.all(
         mermaidGraphs.map(async (mermaidGraph) => {
-          // Marked as Mermaid marks the diagrams it runs, and before it is
-          // known whether it can be rendered: a diagram asked for again,
-          // while it renders or after it failed, is left alone.
-          mermaidGraph.setAttribute('data-processed', 'true');
           const code = (mermaidGraph.textContent ?? '').trim();
           if (!code) {
             return null;
@@ -1064,6 +1060,7 @@ const PreviewContainer = createContainer(() => {
           // Cache hit: reuse previously rendered SVG (skip parse + render).
           if (code in mermaidCache.current) {
             mermaidGraph.innerHTML = mermaidCache.current[code];
+            mermaidGraph.setAttribute('data-processed', 'true');
             return null;
           }
           try {
@@ -1071,6 +1068,7 @@ const PreviewContainer = createContainer(() => {
             return { node: mermaidGraph, code };
           } catch (error) {
             mermaidGraph.innerHTML = mermaidErrorHtml(error);
+            mermaidGraph.setAttribute('data-processed', 'true');
             return null;
           }
         }),
@@ -1091,6 +1089,15 @@ const PreviewContainer = createContainer(() => {
           const svg = await renderMermaidDiagram(mermaid, node, code, svgId);
           if (svg) {
             newCache[code] = svg;
+          }
+          // Marked as Mermaid marks the diagrams it runs, once the node shows
+          // the diagram or the error, so that a diagram asked for again is
+          // left alone. One whose node went out of the document or out of
+          // layout while Mermaid measured in it has nothing written: the
+          // slide of a presentation that was left before its diagram was
+          // rendered has it rendered when it is current again.
+          if (node.firstElementChild) {
+            node.setAttribute('data-processed', 'true');
           }
         }),
       );
@@ -1910,12 +1917,17 @@ const PreviewContainer = createContainer(() => {
     // The diagrams of the slides render one slide at a time, in the order
     // asked for. A slide asked for again while its diagrams render, as the
     // one the preview opens on is by its first slide event, is not rendered
-    // twice; the later call still waits for its diagrams.
+    // twice; the later call still waits for its diagrams. A slide left for
+    // another one before its turn is not rendered: Reveal takes slides that
+    // are further away out of layout, and a diagram is to be laid out under
+    // the text styles of its slide. It is rendered when it is current again.
     let rendering: Promise<void> = Promise.resolve();
     const renderSlide = (slide: HTMLElement) => {
       rendering = rendering
         .catch(() => undefined)
-        .then(() => renderMermaid(slide));
+        .then(() =>
+          slide === reveal.getCurrentSlide() ? renderMermaid(slide) : undefined,
+        );
       return rendering;
     };
 
