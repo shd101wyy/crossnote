@@ -106,7 +106,9 @@ export type CodeBlockTheme =
 export type RevealJsTheme =
   | 'beige.css'
   | 'black.css'
+  | 'black-contrast.css'
   | 'blood.css'
+  | 'dracula.css'
   | 'league.css'
   | 'moon.css'
   | 'night.css'
@@ -116,6 +118,7 @@ export type RevealJsTheme =
   | 'solarized.css'
   | 'vscode.css'
   | 'white.css'
+  | 'white-contrast.css'
   | 'none.css';
 
 export type MermaidTheme = 'default' | 'forest' | 'dark' | 'neutral' | 'null';
