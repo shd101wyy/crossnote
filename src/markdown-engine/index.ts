@@ -533,25 +533,8 @@ if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.theme = MERMAID_CONFIG.theme || "${this.notebook.config.mermaidTheme}"
 }
 mermaid.initialize(MERMAID_CONFIG || {})
-if (typeof(window['Reveal']) !== 'undefined') {
-  function mermaidRevealHelper(event) {
-    var currentSlide = event.currentSlide
-    var diagrams = currentSlide.querySelectorAll('div.mermaid')
-    for (var i = 0; i < diagrams.length; i++) {
-      var diagram = diagrams[i]
-      if (!diagram.hasAttribute('data-processed')) {
-        mermaid.init(null, diagram, ()=> {
-          Reveal.slide(event.indexh, event.indexv)
-        })
-      }
-    }
-  }
-  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
-  Reveal.addEventListener('ready', mermaidRevealHelper)
-} else {
-  // The line below will cause mermaid bug in preview.
-  // mermaid.init(null, document.querySelectorAll('div.mermaid'))
-}
+// The diagrams of a presentation are rendered by the preview, slide by slide
+// (initPresentationEvent in src/webview/containers/preview.ts).
 </script>`;
 
     // wavedrom init script

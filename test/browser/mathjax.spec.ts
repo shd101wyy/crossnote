@@ -47,7 +47,7 @@ let previewHarnessJs: string;
 test.beforeAll(async () => {
   server = await startServer();
   const { outputFiles } = await build({
-    entryPoints: [path.resolve(__dirname, 'preview-mathjax-harness.tsx')],
+    entryPoints: [path.resolve(__dirname, 'preview-container-harness.tsx')],
     bundle: true,
     format: 'iife',
     platform: 'browser',
