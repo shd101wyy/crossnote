@@ -12,22 +12,21 @@
  * honest about the Node 18 floor.
  */
 import * as fs from 'fs';
+import { evaluatePeleBundle } from '../lib/pele-bundle';
+import type { PeleRenderer } from '../lib/pele';
 import * as path from 'path';
-import * as vm from 'vm';
 import { getCrossnoteBuildDirectory } from '../utility';
 
-/** The part of the `pele` global that is called here. */
-export interface PeleRenderer {
-  render(source: string): { svg: string };
-}
+export type { PeleRenderer };
+export { evaluatePeleBundle };
 
 /** What was loaded, and from which file: the build directory can be set later. */
 let loaded: { from: string; pele: PeleRenderer | null } | undefined;
 
 /**
- * The `pele` global of the vendored browser build, evaluated once per file in
- * a context of its own — the bundle gets no `require` and no `process` — or
- * `null` when the file is missing or does not evaluate.
+ * The `pele` global of the vendored browser build (`dependencies/pele/pele.global.js`),
+ * evaluated once per file, or `null` when the file is missing or does not
+ * evaluate.
  */
 export function loadPele(): PeleRenderer | null {
   const from = path.resolve(
@@ -39,14 +38,7 @@ export function loadPele(): PeleRenderer | null {
   }
   let pele: PeleRenderer | null = null;
   try {
-    const bundle = fs.readFileSync(from, 'utf8');
-    pele = vm.runInNewContext(
-      `${bundle}\n;pele`,
-      {},
-      {
-        filename: 'pele.global.js',
-      },
-    ) as PeleRenderer;
+    pele = evaluatePeleBundle(fs.readFileSync(from, 'utf8'));
   } catch (error) {
     console.warn(`[crossnote] pele could not be loaded from ${from}:`, error);
   }

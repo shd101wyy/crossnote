@@ -36,8 +36,12 @@ purely additive, and the two can coexist in one note.
   browser build `dist/pele.global.js` (733 KB) is a classic script that defines
   the global `pele` — the same shape as the vendored mermaid bundle.
 - **That global build runs on Node 18.20.8** when evaluated as a script
-  (`vm.runInNewContext(code + ';pele', {})`): it loads in ~13 ms and renders
-  synchronously. So the pandoc image path can render pele in Node after all.
+  (`vm.runInNewContext(code + ';pele', { URL })`): it loads in ~13 ms and
+  renders synchronously. So the pandoc image path can render pele in Node after
+  all. **The context needs `URL`**: pele checks `http:` / `https:` targets with
+  `new URL(…)` inside a try/catch, and where the constructor is missing it
+  throws nothing — every web link and image is just left out (found by the
+  Node-vs-browser test).
 - **No API newer than the webview floor** (VS Code 1.82 / Chromium 114) is
   called by the bundle, and it parses on Node 18 (V8 10.2), which is older than
   Chromium 114's engine.
@@ -58,6 +62,11 @@ style="max-width:100%;height:auto;--_bg:var(--pele-bg,#fff);…">`. Responsive
   SVG); the export document inserts pele's output as mermaid's is inserted.
 - **Errors**: `render()` throws `PeleError` with `code`, `line`, `column`, and
   a message that quotes the diagram source — to be shown as text, never markup.
+- **The output is a pure function of the source and the options** — but of all
+  the options: every diagram changes with `fontFamily` / `fontFamilyMono`, a
+  sankey's gradient ids and a cynefin's wavy borders change with `idPrefix`.
+  So "the same diagram drawn twice" only compares like for like with the same
+  options, and a comparison across id prefixes has to leave path outlines out.
 - **librsvg (sharp) does not understand `var()`** — an unrasterized pele SVG
   comes out solid black. Resolving the variables to their fallback values
   first gives a correct raster.
@@ -128,8 +137,9 @@ fontFamily, fontFamilyMono })`, then `node.innerHTML = sanitizeHtml(svg)`.
 ### Node — `src/renderers/pele.ts`
 
 - Evaluates the vendored build in a fresh `vm` context (no `require`, no
-  `process`) once per process and keeps the `pele` object.
-- `renderPeleSvg(source)`: the SVG with every `var()` resolved to its fallback
+  `process`, and `URL` — see above; `src/lib/pele-bundle.ts`) once per file
+  and keeps the `pele` object.
+- `renderPele(source)`: the SVG with every `var()` resolved to its fallback
   value (light), on an opaque white background, for rasterizers without CSS
   variables.
 - `processGraphs`: a `pele` fence takes the svg → png path (sharp / ImageMagick),
@@ -173,8 +183,22 @@ One commit per milestone, `pnpm check && pnpm test` green before each.
    `src/renderers/pele.ts`; `processGraphs` image path. With the CSS variables
    left unresolved the raster is 98% black; the image test sits at 33% drawn
    pixels against a 2% threshold (checked by removing the resolution).
-3. **Webview + scripts + theming** — `src/webview/lib/pele.ts`, preview container, script tags, export script, dark palette.
-4. **Tests and docs** — jest suites per area (incl. a hostile-diagram security test through the real bundle and the real sanitizer), a Playwright spec, CHANGELOG, full check/test/build, smoke test in a real VS Code.
+3. **Webview + scripts + theming** — done. `src/webview/lib/pele.ts`, preview
+   container (note refresh, and every slide of a presentation when the deck is
+   initialised), script tags (preview, export, offline / CDN), the export
+   script `src/markdown-engine/pele-export.ts` and the `chromeExport` check,
+   dark palette keyed on `<body data-preview-theme>`. In an exported document
+   the scheme is read from the body's background as the preview reads it; every
+   preview theme but `none.less` gives `<body>` its background.
+4. **Tests and docs** — jest suites per area (engine, Node renderer, vendored
+   bundle, webview helper incl. a hostile-diagram security test through the
+   real bundle and the real sanitizer, export template and script) and
+   `test/browser/pele.spec.ts` in Chromium (all 33 documented diagram types
+   through the real bundle, preview vs export script, Node vs browser, colors
+   and scheme changes, APIs of the webview floor deleted, the real preview
+   container for a note and a presentation) are green; 33 types looked at in
+   light and dark, in the preview and in an exported document. Left: CHANGELOG,
+   full check/test/build, smoke test in a real VS Code.
 5. **Ship** — push, PR, self-review, CI green, squash merge.
 
 Out of scope, noted for the PR: a `pele` → mermaid grammar mapping for editor

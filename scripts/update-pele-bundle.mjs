@@ -84,17 +84,25 @@ if (!/^"use strict";var pele=/m.test(bundle.slice(0, 200))) {
     'Downloaded file does not define the global `pele` (expected `"use strict";var pele=` after the banner)',
   );
 }
-const pele = vm.runInNewContext(`${bundle}\n;pele`, {}, {
+// Evaluated as `src/lib/pele-bundle.ts` evaluates it: in a context of its
+// own, with `URL`. Pele checks web links and images with `new URL(…)` and
+// draws none of them where the constructor is missing — without an error.
+const pele = vm.runInNewContext(`${bundle}\n;pele`, { URL }, {
   filename: 'pele.global.js',
 });
 if (typeof pele?.render !== 'function' || typeof pele.PeleError !== 'function') {
   throw new Error('Downloaded file does not expose `render` and `PeleError`');
 }
-if (!pele.render('flowchart LR\n  A --> B').svg.startsWith('<svg')) {
-  throw new Error('Downloaded file does not render a diagram in Node');
+const { svg, links } = pele.render(
+  'flowchart LR\n  A[Site] --> B\n  click A "https://pele.run/" "open"',
+);
+if (!svg.startsWith('<svg') || links.length !== 1) {
+  throw new Error(
+    'Downloaded file does not render a diagram with its web link in Node',
+  );
 }
 
 fs.writeFileSync(outfile, bundle);
 console.log(
-  `pele ${version} bundle written to ${outfile} (${bundle.length} bytes, sha256 ${crypto.createHash('sha256').update(bundle).digest('hex')})`,
+  `pele ${version} bundle written to ${outfile} (${Buffer.byteLength(bundle)} bytes, sha256 ${crypto.createHash('sha256').update(bundle).digest('hex')})`,
 );

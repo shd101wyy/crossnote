@@ -1,7 +1,8 @@
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vm from 'vm';
+import type { PeleRenderer } from '../src/lib/pele';
+import { evaluatePeleBundle } from '../src/lib/pele-bundle';
 
 /**
  * `dependencies/pele/pele.global.js` is loaded by a `<script>` tag in every
@@ -38,21 +39,14 @@ const FLOOR_APIS: { label: string; usage: RegExp }[] = [
   { label: 'Symbol.asyncDispose', usage: /Symbol\.asyncDispose/ },
 ];
 
-/** The part of the `pele` global that crossnote calls. */
-interface PeleGlobal {
-  render(source: string): { svg: string };
+/** The vendored build as crossnote calls it — and the class of its errors. */
+type PeleGlobal = PeleRenderer & {
   PeleError: new (...args: unknown[]) => Error;
-}
+};
 
-/** Evaluate the vendored build the way `src/renderers/pele.ts` does. */
+/** The vendored build, evaluated as `src/renderers/pele.ts` evaluates it. */
 function loadPele(bundle: string): PeleGlobal {
-  return vm.runInNewContext(
-    `${bundle}\n;pele`,
-    {},
-    {
-      filename: 'pele.global.js',
-    },
-  );
+  return evaluatePeleBundle(bundle) as PeleGlobal;
 }
 
 describe('vendored pele bundle', () => {
@@ -137,5 +131,34 @@ describe('vendored pele bundle', () => {
       thrown = error;
     }
     expect(thrown).toBeInstanceOf(pele.PeleError);
+  });
+
+  test('draws web links and web images in Node as it does in a browser', () => {
+    // pele checks `http:` and `https:` targets with `new URL(…)`. Where the
+    // constructor is missing it throws no error: the diagram just comes out
+    // without its links and images.
+    const { svg } = loadPele(bundle).render(
+      'flowchart LR\n  A[Site] --> B\n  click A "https://pele.run/" "open"\n  B --> C@{ img: "https://example.com/a.png", label: "pic" }',
+    );
+
+    expect(svg).toContain('<a href="https://pele.run/"');
+    expect(svg).toContain('<image href="https://example.com/a.png"');
+  });
+
+  test('CDN fallback URL in markdown-engine matches the vendored pele', () => {
+    // A non-offline HTML export loads pele from jsDelivr when the document
+    // has a pele diagram; step 4 of the vendoring checklist
+    // (dependencies/README.md) is a manual version edit of
+    // src/markdown-engine/index.ts. The exported document draws with whatever
+    // that URL serves, so it is to be the version that was verified here.
+    const engine = fs.readFileSync(
+      path.resolve(__dirname, '../src/markdown-engine/index.ts'),
+      'utf8',
+    );
+    const fallback = engine.match(
+      /npm\/pele@([\w.-]+)\/dist\/pele\.global\.js/,
+    );
+    expect(fallback).not.toBeNull();
+    expect(fallback?.[1]).toBe(banner?.[1]);
   });
 });

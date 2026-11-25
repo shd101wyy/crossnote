@@ -1,3 +1,5 @@
+import type { PeleRenderer } from '../../lib/pele';
+
 interface RevealAPI {
   slide(h: number, v?: number): void;
   toggleOverview(): void;
@@ -40,6 +42,8 @@ declare global {
       RenderWaveForm(i: number, content: unknown, id: string): void;
     };
     mermaid: MermaidAPI;
+    /** Set by `dependencies/pele/pele.global.js`, which the preview page loads. */
+    pele?: PeleRenderer;
     vegaEmbed: (el: Element, spec: unknown, opts: unknown) => Promise<unknown>;
     initRevealPresentation?: () => Promise<void>;
     setHighlightElement?: (element: HTMLElement) => void;
