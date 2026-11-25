@@ -60,7 +60,7 @@ export async function processGraphs(
     if (
       trimmedLine.match(/^```(.+)"?cmd"?[:=]/) || // code chunk
       trimmedLine.match(
-        /^```(puml|plantuml|dot|viz|mermaid|pele|vega|vega-lite|wavedrom)/,
+        /^```(puml|plantuml|dot|viz|mermaid|pele(?=\s|$)|vega|vega-lite|wavedrom)/,
       )
     ) {
       // graphs
@@ -367,9 +367,11 @@ export async function processGraphs(
         clearCodeBlock(lines, start, end);
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
       }
-    } else if (def.match(/^pele\b/)) {
+    } else if (def.match(/^pele(?:\s|$)/)) {
       // Pele draws Mermaid syntax too. Unlike mermaid it needs no external
       // tool here: its bundle runs in the Node process (renderers/pele.ts).
+      // The language of the fence is `pele` on its own, as in the preview
+      // (supportedLanguages): `pele-something` is a code block in both.
       try {
         const checksum = computeChecksum(optionsStr + content);
         let svg = graphsCache[checksum];

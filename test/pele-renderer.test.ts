@@ -222,12 +222,17 @@ describe('processGraphs with pele blocks', () => {
     expect(outputString).toMatch(/```\nPeleError: Parse error on line 2:/);
   });
 
-  it('leaves a fence of another language alone', async () => {
-    const { outputString, imagePaths } = await convert(
-      '```pelephant\nA --> B\n```',
-    );
+  // The language of the fence is `pele` on its own, as in the preview: a
+  // `pele-flow` block is a code block there too.
+  it.each(['pelephant', 'pele-flow', 'pele.flow'])(
+    'leaves a fence whose language only begins with pele alone (%s)',
+    async (language) => {
+      const { outputString, imagePaths } = await convert(
+        `\`\`\`${language}\nA --> B\n\`\`\``,
+      );
 
-    expect(imagePaths).toHaveLength(0);
-    expect(outputString).toContain('```pelephant');
-  });
+      expect(imagePaths).toHaveLength(0);
+      expect(outputString).toContain('```' + language);
+    },
+  );
 });
