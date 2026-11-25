@@ -1377,7 +1377,7 @@ window["initRevealPresentation"] = async function() {
           ];
         } else {
           notesPlugin = [
-            `<script src="revealjs_deps/notes.js"></script>`, // TODO: copy notes.js file to corresponding folder
+            `<script src="revealjs_deps/notes.js"></script>`, // copied next to the document by `htmlExport`
             'window.RevealNotes',
           ];
         }
@@ -1399,9 +1399,9 @@ window["initRevealPresentation"] = async function() {
       <script>
         Reveal.initialize(Object.assign(${JSON.stringify({
           margin: 0.1,
-          // Keep the paginated layout of reveal.js 4 also in print view,
-          // instead of the scroll view decks narrower than 435px get by
-          // default since reveal.js 5.
+          // reveal.js 5+ shows a deck narrower than 435px in its scroll view;
+          // an exported presentation stays paginated as before when it is
+          // opened in a narrow window (the front matter still opts in).
           scrollActivationWidth: null,
           ...presentationConfig,
         })}, ${notesPlugin ? `{ plugins: [${notesPlugin[1]}] }` : '{}'}))
@@ -1791,19 +1791,23 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     const html = await this.htmlExportDocument({ offline, runAllCodeChunks });
 
-    // presentation speaker notes
-    // copy dependency files
+    // The speaker notes plugin of a presentation that is not exported
+    // offline is loaded from next to the exported file.
     if (!offline && html.indexOf('revealjs_deps/notes.js') >= 0) {
       const depsDirName = path.resolve(path.dirname(dest), 'revealjs_deps');
       if (!fs.existsSync(depsDirName)) {
         fs.mkdirSync(depsDirName);
       }
-      fs.createReadStream(
+      // Copied in full before the export is reported as written. The file
+      // is opened, and the presentation started, as soon as the export
+      // returns: reveal.js 6 does not start from a truncated plugin.
+      fs.copyFileSync(
         path.resolve(
           utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/plugin/notes/notes.js',
         ),
-      ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.js')));
+        path.resolve(depsDirName, 'notes.js'),
+      );
     }
 
     await this.fs.writeFile(dest, html);

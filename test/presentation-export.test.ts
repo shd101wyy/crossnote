@@ -153,6 +153,35 @@ describe('presentation HTML export (reveal.js)', () => {
     expect(copied).toBe(notesPluginContent);
   });
 
+  test('the notes plugin is copied in full by the time the export is written', async () => {
+    // The plugin is loaded, and the presentation started, as soon as the
+    // exported file is opened: reveal.js 6 does not start from a truncated
+    // copy. A copy left to finish on its own is not done by then; this one
+    // takes many turns of its own, where the real one takes one.
+    const plugin = path.join(
+      tmpDir,
+      'dependencies',
+      'reveal',
+      'plugin',
+      'notes',
+      'notes.js',
+    );
+    const copy = path.join(tmpDir, 'revealjs_deps', 'notes.js');
+    const large = Buffer.concat([
+      Buffer.from('/*'),
+      Buffer.alloc(8 * 1024 * 1024, '/'),
+      Buffer.from('*/'),
+    ]);
+    fs.writeFileSync(plugin, large);
+    fs.rmSync(copy, { force: true });
+    try {
+      await exportDeck({ offline: false });
+      expect(fs.readFileSync(copy).equals(large)).toBe(true);
+    } finally {
+      fs.writeFileSync(plugin, notesPluginContent);
+    }
+  });
+
   test('offline export inlines reveal.js and the notes plugin, self-contained', async () => {
     const html = await exportDeck({ offline: true });
 

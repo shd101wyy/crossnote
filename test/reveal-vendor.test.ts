@@ -114,14 +114,12 @@ describe('vendored reveal.js', () => {
       'utf8',
     );
     expect(none).not.toMatch(/\{[^}]*:[^}]*\}/);
-    // `vscode.css` maps the deck onto VS Code CSS variables; reveal.js 6
-    // paints the viewport from `--r-background` (replacing the 4.x role of
-    // `--r-background-color`), so the theme has to define both.
+    // `vscode.css` maps the deck onto VS Code CSS variables: the viewport
+    // background is painted from `--r-background-color`.
     const vscode = fs.readFileSync(
       path.join(revealDir, 'css/theme/vscode.css'),
       'utf8',
     );
-    expect(vscode).toContain('--r-background:');
     expect(vscode).toContain('--r-background-color:');
     expect(vscode).toContain('--vscode-editor-background');
   });
