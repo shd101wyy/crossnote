@@ -224,6 +224,104 @@ let a = 1;
     expect(slides.map(({ line }) => line)).toEqual(['1', '5', '5', '7']);
   });
 
+  test('only the slides of an imported section are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+@import "part.md#Part A"
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+      'markdown-it',
+      {
+        'part.md': `# Part A
+
+<!-- slide -->
+
+## A.2
+
+# Part B
+
+<!-- slide -->
+
+## B.1
+`,
+      },
+    );
+
+    // The marker before `# Part B` is not in the deck: it does not take the
+    // place of the one before `# Second`.
+    expect(slides.map(({ text }) => text)).toEqual([
+      'First Part A',
+      'A.2',
+      'Second',
+    ]);
+    expect(slides.map(({ h, v, line }) => [h, v, line])).toEqual([
+      ['0', '0', '1'],
+      ['1', '0', '5'],
+      ['1', '1', '7'],
+    ]);
+  });
+
+  test('only the slides of an imported block are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+@import "part.md#^note"
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+      'markdown-it',
+      {
+        'part.md': `<!-- slide -->
+
+# Other
+
+<!-- slide -->
+Text ^note
+`,
+      },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual(['First', 'Text', 'Second']);
+    expect(slides.map(({ h, v, line }) => [h, v, line])).toEqual([
+      ['0', '0', '1'],
+      ['1', '0', '5'],
+      ['1', '1', '7'],
+    ]);
+  });
+
+  test('the slides of a section that is not found are not brought along', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+@import "part.md#No such part"
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual(['First', 'Second']);
+    expect(slides.map(({ h, v, line }) => [h, v, line])).toEqual([
+      ['0', '0', '1'],
+      ['0', '1', '7'],
+    ]);
+  });
+
   test('a marker that is not in a paragraph of its own starts the line it is on', async () => {
     // In a block of raw HTML the marker is a bare span on a line of its own.
     const slides = await renderSlides(`<!-- slide -->

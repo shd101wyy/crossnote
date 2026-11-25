@@ -304,7 +304,7 @@ export async function transformMarkdown(
   let inMathDisplayBlock = false;
   let mathBlockCloseTag: string | null = null;
   let codeChunkOffset = 0;
-  const slideConfigs: BlockAttributes[] = [];
+  let slideConfigs: BlockAttributes[] = [];
   const JSAndCssFiles: string[] = [];
   let headings: HeadingData[] = [];
   let tocBracketEnabled = false;
@@ -1440,6 +1440,19 @@ export async function transformMarkdown(
     }
 
     if (fileHash) {
+      // A slide marker of a line that is not kept would take the place of a
+      // marker of the importing file.
+      const keepSlideConfigsOfLines = (
+        firstLineNo: number,
+        afterLineNo: number,
+      ) => {
+        slideConfigs = slideConfigs.filter(
+          (slideConfig) =>
+            slideConfig.lineNo >= firstLineNo &&
+            slideConfig.lineNo < afterLineNo,
+        );
+      };
+
       // URL-decode so `#Filenaming%20conventions` (Obsidian-encoded
       // markdown link) matches the same heading as `#Filenaming conventions`.
       let targetId = fileHash.slice(1);
@@ -1475,8 +1488,10 @@ export async function transformMarkdown(
             );
           }
           outputString = paragraph.join('\n');
+          keepSlideConfigsOfLines(startIdx + 1, endIdx + 2);
         } else {
           outputString = `<!-- crossnote: block "${targetId}" not found -->`;
+          slideConfigs = [];
         }
         headings = [];
       } else if (targetId) {
@@ -1517,18 +1532,21 @@ export async function transformMarkdown(
               .split('\n')
               .slice(startLineNo - 1, endLineNo - 1)
               .join('\n');
+            keepSlideConfigsOfLines(startLineNo, endLineNo);
           } else {
             headings = headings.slice(startHeadingIndex);
             outputString = outputString
               .split('\n')
               .slice(startLineNo - 1)
               .join('\n');
+            keepSlideConfigsOfLines(startLineNo, Infinity);
           }
         } else {
           // Heading not found: render an error marker rather than
           // silently falling through and emitting the whole file.
           outputString = `<!-- crossnote: heading "${targetId}" not found -->`;
           headings = [];
+          slideConfigs = [];
         }
       }
     }
