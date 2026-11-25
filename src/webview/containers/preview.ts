@@ -162,6 +162,56 @@ function getWindowHeight() {
   return window.innerHeight;
 }
 
+/** Whether a CSS `zoom` scales what `getBoundingClientRect()` reports. */
+let rectanglesFollowZoom: boolean | undefined;
+
+/**
+ * Screen pixels in a pixel of a rectangle of the preview.
+ *
+ * The preview is zoomed by a CSS `zoom` on `<body>`. From Chromium 128 on a
+ * rectangle is in screen pixels, which the window scrolls in. Before, the
+ * zoom scales the preview but not its rectangles: a pixel of a rectangle is
+ * the zoom in screen pixels (vscode-markdown-preview-enhanced#2455). Which
+ * of the two the engine does is measured, not assumed.
+ */
+function screenPixelsPerRectPixel(): number {
+  if (rectanglesFollowZoom === undefined) {
+    const plain = document.createElement('div');
+    plain.style.cssText =
+      'position:absolute;top:0;left:0;width:10px;height:10px;visibility:hidden';
+    const zoomed = plain.cloneNode() as HTMLElement;
+    zoomed.style.zoom = '2';
+    document.body.append(plain, zoomed);
+    // Nothing is laid out where the preview is not displayed, as in a frame
+    // hidden with `display: none`: there is nothing to measure from, and it
+    // is measured from the next position that is asked for.
+    const plainWidth = plain.getBoundingClientRect().width;
+    if (plainWidth > 0) {
+      rectanglesFollowZoom =
+        zoomed.getBoundingClientRect().width > plainWidth * 1.5;
+    }
+    plain.remove();
+    zoomed.remove();
+  }
+  return rectanglesFollowZoom ? 1 : parseFloat(document.body.style.zoom) || 1;
+}
+
+/** Screen pixels in a length or position a rectangle of the preview reports. */
+function inScreenPixels(rectPixels: number): number {
+  return rectPixels * screenPixelsPerRectPixel();
+}
+
+/**
+ * Document y, in the pixels the window scrolls in, of a y from the top of
+ * the window as a rectangle reports it.
+ *
+ * Positions come from rectangles: `offsetTop` and `scrollHeight` of the
+ * blocks are not scaled by the zoom.
+ */
+function getDocumentY(y: number): number {
+  return inScreenPixels(y) + getWindowScrollTop();
+}
+
 const BlockElements = {
   P: 1,
   H1: 1,
@@ -532,12 +582,13 @@ const PreviewContainer = createContainer(() => {
     nonEmptyList.push(0);
     newScrollMap[0] = 0;
 
-    // write down the offsetTop of element that has 'data-source-line' property to scrollMap
+    // write down the document y of element that has 'data-source-line' property to scrollMap
     const lineElements =
       previewElement.current.querySelectorAll('[data-source-line]');
+    const previewRect = previewElement.current.getBoundingClientRect();
 
     for (let i = 0; i < lineElements.length; i++) {
-      let el = lineElements[i] as HTMLElement;
+      const el = lineElements[i] as HTMLElement;
       if (!isBlockElement(el.tagName)) {
         continue;
       }
@@ -552,21 +603,19 @@ const PreviewContainer = createContainer(() => {
       if (t < nonEmptyList[nonEmptyList.length - 1]) {
         el.removeAttribute('data-source-line');
       } else {
-        let offsetTop = 0;
-        while (el && el !== previewElement.current) {
-          offsetTop += el.offsetTop;
-          el = el.offsetParent as HTMLElement;
+        const rect = el.getBoundingClientRect();
+        // An element that takes no space, as one with `display: none`, has
+        // no position.
+        if (!rect.width && !rect.height) {
+          continue;
         }
-
-        if (offsetTop > 0) {
-          nonEmptyList.push(t);
-          newScrollMap[t] = Math.round(offsetTop);
-        }
+        nonEmptyList.push(t);
+        newScrollMap[t] = Math.round(getDocumentY(rect.top));
       }
     }
 
     nonEmptyList.push(totalLineCount.current);
-    newScrollMap.push(previewElement.current.scrollHeight);
+    newScrollMap.push(getDocumentY(previewRect.bottom));
 
     let pos = 0;
     for (let i = 0; i < totalLineCount.current; i++) {
@@ -605,19 +654,6 @@ const PreviewContainer = createContainer(() => {
   }, []);
 
   /**
-   * Document y of the preview element's top, which scrollMap offsets are
-   * relative to.
-   */
-  const getPreviewOrigin = useCallback(() => {
-    if (!previewElement.current) {
-      return 0;
-    }
-    return (
-      previewElement.current.getBoundingClientRect().top + getWindowScrollTop()
-    );
-  }, []);
-
-  /**
    * The line the block-level scroll map puts at a viewport height.
    */
   const getLineAtHeight = useCallback(
@@ -626,7 +662,7 @@ const PreviewContainer = createContainer(() => {
       if (!map) {
         return 0;
       }
-      const target = y + getWindowScrollTop() - getPreviewOrigin();
+      const target = getDocumentY(y);
       let lo = 0;
       let hi = map.length - 1;
       while (lo < hi) {
@@ -639,7 +675,7 @@ const PreviewContainer = createContainer(() => {
       }
       return lo;
     },
-    [buildScrollMap, getPreviewOrigin],
+    [buildScrollMap],
   );
 
   /**
@@ -667,9 +703,7 @@ const PreviewContainer = createContainer(() => {
         dom.text,
       );
       const map = buildScrollMap();
-      const expected =
-        map && line < map.length ? map[line] + getPreviewOrigin() : null;
-      const scrollTop = getWindowScrollTop();
+      const expected = map && line < map.length ? map[line] : null;
       let best: { k: number; y: number } | null = null;
       let bestDistance = Infinity;
       for (const candidate of candidates) {
@@ -678,7 +712,7 @@ const PreviewContainer = createContainer(() => {
         if (!rect) {
           continue;
         }
-        const y = rect.top + rect.height / 2 + scrollTop;
+        const y = getDocumentY(rect.top + rect.height / 2);
         const distance = expected === null ? 0 : Math.abs(y - expected);
         if (distance < bestDistance) {
           best = { k, y };
@@ -692,7 +726,7 @@ const PreviewContainer = createContainer(() => {
       }
       return best;
     },
-    [buildScrollMap, getDomTextIndex, getPreviewOrigin, getSourceTextIndex],
+    [buildScrollMap, getDomTextIndex, getSourceTextIndex],
   );
 
   /**
@@ -769,7 +803,7 @@ const PreviewContainer = createContainer(() => {
       }
       const source = getSourceTextIndex();
       const rect = getCharRect(dom, k);
-      const screenY = rect ? rect.top + rect.height / 2 : y;
+      const screenY = rect ? inScreenPixels(rect.top + rect.height / 2) : y;
       return {
         line: source.lines[best],
         character: source.columns[best],
@@ -873,7 +907,7 @@ const PreviewContainer = createContainer(() => {
     // Align the editor to the text at the middle of the preview.
     const { left, width } = previewElement.current.getBoundingClientRect();
     const position = findSourcePositionNearHeight(
-      [left + width * 0.15, left + width * 0.3, left + width * 0.5],
+      [0.15, 0.3, 0.5].map((ratio) => inScreenPixels(left + width * ratio)),
       getWindowHeight() / 2,
     );
     if (position) {
@@ -1453,7 +1487,7 @@ const PreviewContainer = createContainer(() => {
 
       if (line + 1 === totalLineCount.current) {
         // last line
-        scrollToPosition(previewElement.current.scrollHeight);
+        scrollToPosition(document.documentElement.scrollHeight);
       } else {
         /**
          * Since I am not able to access the viewport of the editor
@@ -1562,17 +1596,13 @@ const PreviewContainer = createContainer(() => {
               }
 
               // jump to tag position
-              let offsetTop = 0;
-              let el = targetElement;
-              while (el && el !== previewElement.current) {
-                offsetTop += el.offsetTop;
-                el = el.offsetParent as HTMLElement;
-              }
+              const rect = targetElement.getBoundingClientRect();
+              const top = getDocumentY(rect.top);
 
-              if (getWindowScrollTop() > offsetTop) {
-                setWindowScrollTop(offsetTop - 32 - targetElement.offsetHeight);
+              if (getWindowScrollTop() > top) {
+                setWindowScrollTop(top - 32 - inScreenPixels(rect.height));
               } else {
-                setWindowScrollTop(offsetTop);
+                setWindowScrollTop(top);
               }
             };
             break;
@@ -2444,7 +2474,7 @@ const PreviewContainer = createContainer(() => {
 
     const rect = getCharRect(dom, first);
     const screenRatio = rect
-      ? (rect.top + rect.height / 2) / getWindowHeight()
+      ? inScreenPixels(rect.top + rect.height / 2) / getWindowHeight()
       : 0.5;
     postMessage('selectSourceRange', [
       sourceUri.current,
@@ -2668,6 +2698,8 @@ const PreviewContainer = createContainer(() => {
    */
   useEffect(() => {
     document.body.style.zoom = String(zoomLevel);
+    // The scroll map is in the pixels the window scrolls in, which the zoom changes.
+    scrollMap.current = null;
 
     if (zoomLevel !== 1) {
       const counterZoom = 1 / zoomLevel;
