@@ -544,6 +544,25 @@ test('a diagram takes its colors from the scheme of its page, and changes with i
   expect(errors).toEqual([]);
 });
 
+test('an exported document that paints neither <body> nor <html> is a light page', async ({
+  page,
+}) => {
+  // The page of the `none.css` preview theme: black text on the canvas, which
+  // is white. Read from <body> alone it came out dark, and a diagram on it in
+  // the dark palette.
+  const errors = errorsOf(page);
+  await openWithPele(page);
+  await page.addStyleTag({ content: stylesheet });
+  const selector = await drawIn(page, blocksOf([FLOWCHART.source]), 'export');
+
+  expect(await readColors(page, selector)).toEqual({
+    scheme: 'light',
+    label: LIGHT_LABEL,
+    node: LIGHT_NODE,
+  });
+  expect(errors).toEqual([]);
+});
+
 test('the bundle draws without the APIs the oldest supported webview lacks', async ({
   page,
 }) => {

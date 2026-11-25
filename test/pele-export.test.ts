@@ -225,6 +225,43 @@ describe('the script that draws the diagrams of an exported document', () => {
     expect(stylesheet).toContain("[data-preview-theme='dark'] .pele {");
   });
 
+  test('reads a page that paints neither <body> nor <html> as a light one', () => {
+    // The `none.css` preview theme paints neither: the document is black
+    // text on the canvas, which is white. Read from <body> alone such a page
+    // came out dark, and its diagrams in the dark palette.
+    const schemeOf = (body: string, html: string): string | undefined => {
+      const attributes: Record<string, string> = {};
+      const context = vm.createContext({
+        console: { error() {} },
+        pele: {},
+        document: {
+          querySelector: () => null,
+          querySelectorAll: () => [],
+          body: {
+            setAttribute: (name: string, value: string) => {
+              attributes[name] = value;
+            },
+          },
+          documentElement: {},
+        },
+        getComputedStyle: (element: unknown) => ({
+          backgroundColor:
+            element === context.document.documentElement ? html : body,
+          getPropertyValue: () => '',
+          fontFamily: 'Arial',
+        }),
+      });
+      context.window = context;
+      vm.runInContext(script, context);
+      return attributes['data-preview-theme'];
+    };
+
+    expect(schemeOf('rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)')).toBe('light');
+    expect(schemeOf('rgb(255, 255, 255)', 'rgba(0, 0, 0, 0)')).toBe('light');
+    expect(schemeOf('rgb(36, 41, 46)', 'rgba(0, 0, 0, 0)')).toBe('dark');
+    expect(schemeOf('rgba(0, 0, 0, 0)', 'rgb(13, 17, 23)')).toBe('dark');
+  });
+
   test('cannot end its own script element early', () => {
     // It is inlined into a <script> element: a closing tag in it would cut
     // the drawing short and let what follows be read as markup.

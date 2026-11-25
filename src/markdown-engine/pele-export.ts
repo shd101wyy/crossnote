@@ -24,12 +24,21 @@ if (typeof pele === 'undefined') {
 
 // Mark the scheme of the page where the styles look for it, as the preview
 // does (<body data-preview-theme>): pele's own colors are for a light page,
-// and the stylesheet switches them on a dark one.
+// and the stylesheet switches them on a dark one. The preview reads the
+// background of <body>. A document is shown on a canvas under <html>, so a
+// page that paints neither — with the none.css preview theme — is a light
+// one: the canvas is white, black text on it.
 function markColorScheme() {
   // The test of the preview: isBackgroundColorLight in
   // src/webview/lib/utility.ts.
-  var rgb = getComputedStyle(document.body).backgroundColor.match(/\\d+/g)
-  var luminance = rgb ? 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2] : 0
+  var painted = function (color) {
+    var rgba = color.match(/\\d+/g)
+    // rgba(r, g, b, a) with nothing showing of it is not a background.
+    return rgba && (rgba.length < 4 || Number(rgba[3]) > 0) ? rgba : null
+  }
+  var rgb = painted(getComputedStyle(document.body).backgroundColor) ||
+    painted(getComputedStyle(document.documentElement).backgroundColor)
+  var luminance = rgb ? 0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2] : 255
   document.body.setAttribute('data-preview-theme', luminance > 128 ? 'light' : 'dark')
 }
 markColorScheme()
