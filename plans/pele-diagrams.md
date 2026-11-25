@@ -1,6 +1,7 @@
 # Pele diagrams — the `pele` code fence
 
-Status: **merging** (started 2026-11-25 on `feat/pele-diagrams`, off `develop`; PR [#581](https://github.com/shd101wyy/crossnote/pull/581))
+Status: **implemented** (PR [#581](https://github.com/shd101wyy/crossnote/pull/581),
+squash-merged into `develop` on 2026-11-26)
 
 ## Goal
 
@@ -226,8 +227,8 @@ One commit per milestone, `pnpm check && pnpm test` green before each.
    theme — not by the color theme of VS Code, unless the preview theme is
    `none.css`.
 
-5. **Ship** — push, PR, self-review, two independent reviews (below), CI green,
-   squash merge.
+5. **Ship** — done. Push, PR, self-review, two independent reviews (below),
+   CI green, squash merge.
 
 Out of scope, noted for the PR: a `pele` → mermaid grammar mapping for editor
 highlighting in vscode-markdown-preview-enhanced; a notebook option to render
@@ -304,3 +305,6 @@ through the export script in a real browser gave nothing. Two things to fix:
 - Not of this PR, found on the way: block attributes are put on their element
   with their values not escaped — `{id="a><img …>"}` makes an element, whose
   handler the sanitizer strips afterwards — and that for every block type.
+- The text output of a code chunk (`output=text`) is written behind a bare
+  fence of three backticks too: an output that holds such a line is cut short
+  there. Not of this PR either.
