@@ -93,6 +93,10 @@ source}</div>` (`src/render-enhancers/fenced-diagrams.ts`); the webview
   most diagrams; mermaid shells out to mermaid-cli.
 - The webview already marks the page's scheme on `<body data-preview-theme>`
   (luminance of the computed body background; `styles/preview.less` keys on it).
+- Every preview theme but `none.css` gives `<body>` its background color, so
+  the scheme of an exported document can be read the same way (the export
+  script does); `none.css` leaves it to the page — in VS Code to the editor
+  background.
 
 ## Design
 
@@ -197,8 +201,25 @@ One commit per milestone, `pnpm check && pnpm test` green before each.
    through the real bundle, preview vs export script, Node vs browser, colors
    and scheme changes, APIs of the webview floor deleted, the real preview
    container for a note and a presentation) are green; 33 types looked at in
-   light and dark, in the preview and in an exported document. Left: CHANGELOG,
-   full check/test/build, smoke test in a real VS Code.
+   light and dark, in the preview and in an exported document. CHANGELOG entry
+   written; `pnpm check`, `pnpm test` and `pnpm build` run.
+
+   Also run in a real VS Code with vscode-markdown-preview-enhanced built
+   against this branch, on 1.138 and on 1.82 (webview Chromium 114): a note in
+   the extension's default preview theme, in `github-dark.css` and in
+   `none.css` under a dark color theme — the palette follows the page — with
+   the preview following an edit on disk; and a deck with `white.css` and with
+   `night.css`, every slide's diagram in before the slide is shown and each
+   slide centered with it — and once more for the decks after the rebase onto
+   reveal.js 6.0.2. The extension's `copy-files` takes
+   `crossnote/out/dependencies/**` as a whole, so the `pele` directory ships
+   with the next crossnote bump and needs nothing on the extension's side.
+
+   Learned there: the page of a preview is painted by its preview theme (the
+   extension defaults to `github-light.css`), a presentation's by its Reveal
+   theme — not by the color theme of VS Code, unless the preview theme is
+   `none.css`.
+
 5. **Ship** — push, PR, self-review, CI green, squash merge.
 
 Out of scope, noted for the PR: a `pele` → mermaid grammar mapping for editor
