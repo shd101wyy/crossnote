@@ -80,12 +80,13 @@ const fileExtensionToLanguageMap = {
  * slides count as being on the line of the import, and the paths of their
  * backgrounds, which the importing file resolves against its own directory,
  * are made paths from the root of the project: those are resolved the same
- * from either file.
+ * from either file. Where the file has no directory here, as one on the web,
+ * its backgrounds are left as they are written.
  */
 function importedSlideConfigs(
   slideConfigs: BlockAttributes[],
   lineNo: number,
-  fileDirectoryPath: string,
+  fileDirectoryPath: string | null,
   projectDirectoryPath: string,
   protocolsWhiteListRegExp: RegExp | null,
 ): BlockAttributes[] {
@@ -97,8 +98,8 @@ function importedSlideConfigs(
   return slideConfigs.map((slideConfig) => {
     const config: BlockAttributes = { ...slideConfig, lineNo };
     for (const background of backgrounds) {
-      const value: string = config[background];
-      if (typeof value !== 'string') {
+      const value = config[background];
+      if (!fileDirectoryPath || typeof value !== 'string') {
         continue;
       }
       const { path: backgroundPath, suffix } = splitUrlReference(value);
@@ -115,9 +116,11 @@ function importedSlideConfigs(
       }
       config[background] =
         '/' +
-        path.relative(
-          projectDirectoryPath,
-          path.resolve(fileDirectoryPath, backgroundPath),
+        escapeUrlPath(
+          path.relative(
+            projectDirectoryPath,
+            path.resolve(fileDirectoryPath, backgroundPath),
+          ),
         ) +
         suffix;
     }
@@ -1195,7 +1198,10 @@ export async function transformMarkdown(
                 ...importedSlideConfigs(
                   slideConfigs2,
                   lineNo + 1,
-                  path.dirname(absoluteFilePath),
+                  protocolsWhiteListRegExp &&
+                    filePath.match(protocolsWhiteListRegExp)
+                    ? null
+                    : path.dirname(absoluteFilePath),
                   projectDirectoryPath,
                   protocolsWhiteListRegExp,
                 ),
