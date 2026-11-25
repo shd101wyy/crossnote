@@ -570,7 +570,8 @@ test('an exported document reads the background of its page in whatever form it 
   // an oklch() or a color-mix() as readily as with rgb(), and keeps a
   // fractional alpha. One pixel of a canvas holds any of them as rgba. Read
   // as numbers from the text, a color-mix() came out light and a
-  // mostly-opaque dark one as transparent.
+  // mostly-opaque dark one as transparent; where it is only guessed at, a
+  // light oklch() color comes out dark.
   const errors = errorsOf(page);
   await openWithPele(page);
   await page.addStyleTag({ content: stylesheet });
@@ -579,6 +580,8 @@ test('an exported document reads the background of its page in whatever form it 
     ['oklch(0.2 0.01 260)', 'dark'],
     ['#0d1117cc', 'dark'],
     ['rgb(13 17 23 / 5%)', 'light'],
+    ['oklch(0.98 0.01 100)', 'light'],
+    ['color-mix(in srgb, white 95%, #0d1117)', 'light'],
   ] as const) {
     const sheet = await page.addStyleTag({
       content: `body { background-color: ${color}; }`,
