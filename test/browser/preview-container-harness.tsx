@@ -1,5 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import RefreshingIcon from '../../src/webview/components/RefreshingIcon';
 import PreviewContainer from '../../src/webview/containers/preview';
 
 /**
@@ -9,7 +10,7 @@ import PreviewContainer from '../../src/webview/containers/preview';
  * (monaco, context menu, …).
  */
 function Harness() {
-  const { hiddenPreviewElement, previewElement } =
+  const { hiddenPreviewElement, isRefreshingPreview, previewElement } =
     PreviewContainer.useContainer();
   return (
     <>
@@ -23,6 +24,11 @@ function Harness() {
         data-for="preview"
         ref={previewElement}
       />
+      {isRefreshingPreview && (
+        <div data-testid="refreshing-icon">
+          <RefreshingIcon />
+        </div>
+      )}
     </>
   );
 }

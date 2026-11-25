@@ -41,6 +41,11 @@ const showSidebarTocStorageKey = 'crossnote.showSidebarToc';
  * only the config object. Calling `typesetClear` then throws
  * `TypeError: window.MathJax.typesetClear is not a function`, which
  * `initEvents` swallows, leaving raw `$…$` as a finished preview (#569).
+ *
+ * Wait until MathJax is actually ready, but fail open after a bounded wait
+ * so a blocked CDN cannot freeze later edits (#572). Delayed-but-successful
+ * loads still typeset the first preview (the #570 wait). A load that
+ * finishes after the bound typesets the visible preview in place.
  */
 function isMathJaxReady(): boolean {
   const mathJax = window.MathJax;
@@ -52,20 +57,97 @@ function isMathJaxReady(): boolean {
   );
 }
 
+/** Fail open so a blocked MathJax CDN cannot freeze later edits (#572). */
+const MATHJAX_READY_TIMEOUT_MS = 4000;
+
+let mathJaxWait: Promise<void> | undefined;
+
+/**
+ * The visible preview element, set by the container so a MathJax that
+ * arrives after the fail-open timeout can typeset what is already on
+ * screen (`previewElement.current`) without waiting for another edit.
+ */
+let previewElementRef: { current: HTMLDivElement | null } | undefined;
+
+function typesetVisiblePreviewInPlace() {
+  const preview = previewElementRef?.current;
+  if (!preview || !isMathJaxReady()) {
+    return;
+  }
+  // Clear MathJax's internal list of typeset items and reset equation
+  // numbering, same sequence as renderMathJax. Don't pass the element
+  // to typesetClear.
+  window['MathJax'].typesetClear();
+  window['MathJax'].texReset();
+  void window['MathJax'].typesetPromise([preview]).catch((error: unknown) => {
+    console.error(error);
+  });
+}
+
 function waitForMathJaxReady(): Promise<void> {
   if (isMathJaxReady()) {
     return window.MathJax.startup.promise;
   }
-  return new Promise((resolve) => {
+  mathJaxWait ??= new Promise((resolve, reject) => {
+    let waitSettled = false;
+    let readyHandled = false;
+
+    const settleWait = (finish: () => void) => {
+      if (waitSettled) {
+        return;
+      }
+      waitSettled = true;
+      finish();
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      settleWait(() =>
+        reject(
+          new Error(
+            `MathJax did not become ready within ${MATHJAX_READY_TIMEOUT_MS}ms`,
+          ),
+        ),
+      );
+    }, MATHJAX_READY_TIMEOUT_MS);
+
+    const onReady = () => {
+      if (readyHandled) {
+        return;
+      }
+      readyHandled = true;
+      window.clearTimeout(timeoutId);
+      if (waitSettled) {
+        typesetVisiblePreviewInPlace();
+      } else {
+        settleWait(() => resolve());
+      }
+    };
+
+    const onFail = (error: unknown) => {
+      if (readyHandled) {
+        return;
+      }
+      readyHandled = true;
+      window.clearTimeout(timeoutId);
+      settleWait(() => reject(error));
+    };
+
     const poll = () => {
+      // Keep polling after the fail-open timeout so a slow CDN still
+      // typesets the preview that is already on screen (#569 / #572).
+      if (readyHandled) {
+        return;
+      }
       if (isMathJaxReady()) {
-        window.MathJax.startup.promise.then(() => resolve());
+        window.MathJax.startup.promise.then(onReady, onFail);
         return;
       }
       window.setTimeout(poll, 50);
     };
+
     poll();
   });
+  return mathJaxWait;
 }
 
 function getWindowScrollTop() {
@@ -267,6 +349,14 @@ const PreviewContainer = createContainer(() => {
   // const refreshingTimeout = useRef<NodeJS.Timeout | null>(null);
   const isLoadingPreviewRef = useRef<boolean>(true);
   /**
+   * Bumped at the start of each `initEvents`. Two refreshes can be waiting
+   * for the same MathJax at once; when it becomes ready the older one would
+   * copy the hidden element and clear it before the newer one copies, and
+   * the newer one would then show an empty preview. The counter stops the
+   * older one before it copies.
+   */
+  const initEventsGeneration = useRef(0);
+  /**
    * Track the slide line number, and (h, v) indices
    */
   const slidesData = useRef<SlideData[]>([]);
@@ -279,6 +369,7 @@ const PreviewContainer = createContainer(() => {
    */
   const currentSlideOffset = useRef<number>(-1);
   const previewElement = useRef<HTMLDivElement>(null);
+  previewElementRef = previewElement;
   const hiddenPreviewElement = useRef<HTMLDivElement>(null);
   const sidebarTocElement = useRef<HTMLDivElement>(null);
   const backlinksElement = useRef<HTMLDivElement>(null);
@@ -1224,9 +1315,32 @@ const PreviewContainer = createContainer(() => {
     if (!previewElement.current || !hiddenPreviewElement.current) {
       return;
     }
+    const generation = ++initEventsGeneration.current;
+    const isCurrent = () => generation === initEventsGeneration.current;
     try {
       setIsRefreshingPreview(true);
-      await Promise.all([renderMathJax(), renderWavedrom(), renderTikzjax()]);
+      const results = await Promise.allSettled([
+        renderMathJax(),
+        renderWavedrom(),
+        renderTikzjax(),
+      ]);
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          // A failed or never-ready renderer must not block applying staged
+          // HTML, and must not cut short renderers that are still working
+          // (#572). Continue with the copy and the later init steps that
+          // still make sense.
+          console.error(result.reason);
+        }
+      }
+
+      if (
+        !isCurrent() ||
+        !previewElement.current ||
+        !hiddenPreviewElement.current
+      ) {
+        return;
+      }
 
       previewElement.current.innerHTML = hiddenPreviewElement.current.innerHTML;
       hiddenPreviewElement.current.innerHTML = '';
@@ -1240,12 +1354,17 @@ const PreviewContainer = createContainer(() => {
       renderPeleDiagrams(previewElement.current);
       await Promise.all([renderInteractiveVega(), renderMermaid()]);
 
-      setupCodeChunks();
+      if (!isCurrent()) {
+        return;
+      }
 
-      setIsRefreshingPreview(false);
+      setupCodeChunks();
     } catch (error) {
       console.error(error);
-      setIsRefreshingPreview(false);
+    } finally {
+      if (isCurrent()) {
+        setIsRefreshingPreview(false);
+      }
     }
   }, [
     renderInteractiveVega,
