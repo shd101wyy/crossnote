@@ -12,7 +12,7 @@ import {
   stringifyBlockAttributes,
 } from '../lib/block-attributes';
 import computeChecksum from '../lib/compute-checksum';
-import { escapeUrlPath, toFileURL } from '../utility';
+import { escapeUrlPath, splitUrlReference, toFileURL } from '../utility';
 import { Notebook } from '../notebook';
 import { findFragmentTargetLine } from '../notebook/note-fragments';
 import { MarkdownParser } from '../notebook/types';
@@ -74,6 +74,56 @@ const fileExtensionToLanguageMap = {
   gv: 'dot',
   viz: 'dot',
 };
+
+/**
+ * The slide configs of an imported file, for the file that imports it. The
+ * slides count as being on the line of the import, and the paths of their
+ * backgrounds, which the importing file resolves against its own directory,
+ * are made paths from the root of the project: those are resolved the same
+ * from either file.
+ */
+function importedSlideConfigs(
+  slideConfigs: BlockAttributes[],
+  lineNo: number,
+  fileDirectoryPath: string,
+  projectDirectoryPath: string,
+  protocolsWhiteListRegExp: RegExp | null,
+): BlockAttributes[] {
+  const backgrounds = [
+    'data-background-image',
+    'data-background-video',
+    'data-background-iframe',
+  ];
+  return slideConfigs.map((slideConfig) => {
+    const config: BlockAttributes = { ...slideConfig, lineNo };
+    for (const background of backgrounds) {
+      const value: string = config[background];
+      if (typeof value !== 'string') {
+        continue;
+      }
+      const { path: backgroundPath, suffix } = splitUrlReference(value);
+      // A URL, or a path from the root of the project or of the system, is
+      // resolved the same from either file.
+      if (
+        (protocolsWhiteListRegExp && value.match(protocolsWhiteListRegExp)) ||
+        value.startsWith('data:') ||
+        value.startsWith('tag://') ||
+        value.startsWith('#') ||
+        path.isAbsolute(backgroundPath)
+      ) {
+        continue;
+      }
+      config[background] =
+        '/' +
+        path.relative(
+          projectDirectoryPath,
+          path.resolve(fileDirectoryPath, backgroundPath),
+        ) +
+        suffix;
+    }
+    return config;
+  });
+}
 
 /**
  * Convert 2D array to markdown table.
@@ -1142,10 +1192,13 @@ export async function transformMarkdown(
               output = '\n' + output2 + '  ';
               headings = headings.concat(headings2);
               slideConfigs.push(
-                ...slideConfigs2.map((slideConfig) => ({
-                  ...slideConfig,
-                  lineNo: lineNo + 1,
-                })),
+                ...importedSlideConfigs(
+                  slideConfigs2,
+                  lineNo + 1,
+                  path.dirname(absoluteFilePath),
+                  projectDirectoryPath,
+                  protocolsWhiteListRegExp,
+                ),
               );
             } else if (extname === '.html') {
               // html file

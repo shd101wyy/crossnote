@@ -21,6 +21,8 @@ interface Slide {
   v: string;
   text: string;
   line: string;
+  /** The `data-background-*` attributes of the slide. */
+  backgrounds: Record<string, string>;
 }
 
 /**
@@ -30,12 +32,15 @@ async function renderSlides(
   markdown: string,
   markdownParser: 'markdown-it' | 'pandoc' = 'markdown-it',
   files: Record<string, string> = {},
+  useRelativeFilePath: boolean = false,
 ): Promise<Slide[]> {
   const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
   const filePath = path.join(tmpDir, 'deck.md');
   fs.writeFileSync(filePath, markdown);
   for (const [name, content] of Object.entries(files)) {
-    fs.writeFileSync(path.join(tmpDir, name), content);
+    const file = path.join(tmpDir, name);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, content);
   }
   const notebook = await Notebook.init({
     notebookPath: tmpDir,
@@ -47,7 +52,7 @@ async function renderSlides(
   const engine = new MarkdownEngine({ notebook, filePath });
   const { html } = await engine.parseMD(markdown, {
     isForPreview: true,
-    useRelativeFilePath: false,
+    useRelativeFilePath,
     hideFrontMatter: false,
   });
 
@@ -61,6 +66,15 @@ async function renderSlides(
       v: section.attribs['data-v'],
       text: $(section).text().replace(/\s+/g, ' ').trim(),
       line: section.attribs['data-source-line'],
+      backgrounds: Object.keys(section.attribs).reduce(
+        (backgrounds: Record<string, string>, name) => {
+          if (name.startsWith('data-background-')) {
+            backgrounds[name] = section.attribs[name];
+          }
+          return backgrounds;
+        },
+        {},
+      ),
     }));
 }
 
@@ -321,6 +335,49 @@ Text ^note
       ['0', '1', '7'],
     ]);
   });
+
+  for (const useRelativeFilePath of [false, true]) {
+    test(`the backgrounds of the slides of an imported file are found from that file, in ${
+      useRelativeFilePath ? 'relative' : 'absolute'
+    } paths`, async () => {
+      const slides = await renderSlides(
+        `@import "sub/part.md"`,
+        'markdown-it',
+        {
+          'sub/part.md': `<!-- slide data-background-image="bg.png" -->
+
+# Part A
+
+<!-- slide data-background-video="clip.mp4#t=2" data-background-iframe="https://example.com/page" data-background-image="/root.png" -->
+
+# Part B
+`,
+        },
+        useRelativeFilePath,
+      );
+
+      // How the path of a file in the directory `directory` of the notebook
+      // comes out.
+      const pathTo = (directory: string, file: string) =>
+        useRelativeFilePath
+          ? `${directory}${file}`
+          : expect.stringMatching(
+              new RegExp(
+                `^file://.*/${directory}${file.replace(/\./g, '\\.')}$`,
+              ),
+            );
+
+      expect(slides[0].backgrounds).toEqual({
+        'data-background-image': pathTo('sub/', 'bg.png'),
+      });
+      expect(slides[1].backgrounds).toEqual({
+        'data-background-video': pathTo('sub/', 'clip.mp4#t=2'),
+        // A URL, and a path from the root of the project, are as they were.
+        'data-background-iframe': 'https://example.com/page',
+        'data-background-image': pathTo('', 'root.png'),
+      });
+    });
+  }
 
   test('a marker that is not in a paragraph of its own starts the line it is on', async () => {
     // In a block of raw HTML the marker is a bare span on a line of its own.
