@@ -43,7 +43,8 @@ const showSidebarTocStorageKey = 'crossnote.showSidebarToc';
  *
  * Wait until MathJax is actually ready, but fail open after a bounded wait
  * so a blocked CDN cannot freeze later edits (#572). Delayed-but-successful
- * loads still typeset the first preview (the #570 wait).
+ * loads still typeset the first preview (the #570 wait). A load that
+ * finishes after the bound typesets the visible preview in place.
  */
 function isMathJaxReady(): boolean {
   const mathJax = window.MathJax;
@@ -60,22 +61,46 @@ const MATHJAX_READY_TIMEOUT_MS = 4000;
 
 let mathJaxWait: Promise<void> | undefined;
 
+/**
+ * The visible preview element, set by the container so a MathJax that
+ * arrives after the fail-open timeout can typeset what is already on
+ * screen (`previewElement.current`) without waiting for another edit.
+ */
+let previewElementRef: { current: HTMLDivElement | null } | undefined;
+
+function typesetVisiblePreviewInPlace() {
+  const preview = previewElementRef?.current;
+  if (!preview || !isMathJaxReady()) {
+    return;
+  }
+  // Clear MathJax's internal list of typeset items and reset equation
+  // numbering, same sequence as renderMathJax. Don't pass the element
+  // to typesetClear.
+  window['MathJax'].typesetClear();
+  window['MathJax'].texReset();
+  void window['MathJax'].typesetPromise([preview]).catch((error: unknown) => {
+    console.error(error);
+  });
+}
+
 function waitForMathJaxReady(): Promise<void> {
   if (isMathJaxReady()) {
     return window.MathJax.startup.promise;
   }
   mathJaxWait ??= new Promise((resolve, reject) => {
-    let settled = false;
-    const settle = (finish: () => void) => {
-      if (settled) {
+    let waitSettled = false;
+    let readyHandled = false;
+
+    const settleWait = (finish: () => void) => {
+      if (waitSettled) {
         return;
       }
-      settled = true;
+      waitSettled = true;
       finish();
     };
 
     const timeoutId = window.setTimeout(() => {
-      settle(() =>
+      settleWait(() =>
         reject(
           new Error(
             `MathJax did not become ready within ${MATHJAX_READY_TIMEOUT_MS}ms`,
@@ -84,22 +109,36 @@ function waitForMathJaxReady(): Promise<void> {
       );
     }, MATHJAX_READY_TIMEOUT_MS);
 
-    const done = () => {
+    const onReady = () => {
+      if (readyHandled) {
+        return;
+      }
+      readyHandled = true;
       window.clearTimeout(timeoutId);
-      settle(() => resolve());
+      if (waitSettled) {
+        typesetVisiblePreviewInPlace();
+      } else {
+        settleWait(() => resolve());
+      }
     };
 
-    const fail = (error: unknown) => {
+    const onFail = (error: unknown) => {
+      if (readyHandled) {
+        return;
+      }
+      readyHandled = true;
       window.clearTimeout(timeoutId);
-      settle(() => reject(error));
+      settleWait(() => reject(error));
     };
 
     const poll = () => {
-      if (settled) {
+      // Keep polling after the fail-open timeout so a slow CDN still
+      // typesets the preview that is already on screen (#569 / #572).
+      if (readyHandled) {
         return;
       }
       if (isMathJaxReady()) {
-        window.MathJax.startup.promise.then(done, fail);
+        window.MathJax.startup.promise.then(onReady, onFail);
         return;
       }
       window.setTimeout(poll, 50);
@@ -329,6 +368,7 @@ const PreviewContainer = createContainer(() => {
    */
   const currentSlideOffset = useRef<number>(-1);
   const previewElement = useRef<HTMLDivElement>(null);
+  previewElementRef = previewElement;
   const hiddenPreviewElement = useRef<HTMLDivElement>(null);
   const sidebarTocElement = useRef<HTMLDivElement>(null);
   const backlinksElement = useRef<HTMLDivElement>(null);
@@ -1278,14 +1318,19 @@ const PreviewContainer = createContainer(() => {
     const isCurrent = () => generation === initEventsGeneration.current;
     try {
       setIsRefreshingPreview(true);
-      try {
-        await Promise.all([renderMathJax(), renderWavedrom(), renderTikzjax()]);
-      } catch (error) {
-        // A failed or never-ready renderer must not block applying staged
-        // HTML: otherwise later edits stay in the hidden element forever
-        // (#572). Continue with the copy and the later init steps that
-        // still make sense.
-        console.error(error);
+      const results = await Promise.allSettled([
+        renderMathJax(),
+        renderWavedrom(),
+        renderTikzjax(),
+      ]);
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          // A failed or never-ready renderer must not block applying staged
+          // HTML, and must not cut short renderers that are still working
+          // (#572). Continue with the copy and the later init steps that
+          // still make sense.
+          console.error(result.reason);
+        }
       }
 
       if (

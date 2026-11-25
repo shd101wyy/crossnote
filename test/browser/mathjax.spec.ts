@@ -17,6 +17,10 @@ import { startServer, TestServer } from './server';
  *  - The first `updateHtml` must wait for MathJax to be actually ready
  *    (`typesetClear` / `startup.promise`) so a slow deferred load cannot
  *    leave raw `$…$` source as a finished preview (#569).
+ *  - A MathJax that arrives after the 4s fail-open bound still typesets
+ *    the visible preview in place, with no further `updateHtml`.
+ *  - A fast MathJax reject must not drop a slower renderer still working
+ *    on the hidden element (`Promise.allSettled`).
  */
 
 // Minimal shape of the MathJax global used inside page.evaluate callbacks.
@@ -412,6 +416,232 @@ test('preview follows later edits when MathJax never becomes ready (#572)', asyn
   await postUpdateHtml(laterHtml, '$x+y=z$');
   await expect(preview).toContainText('LATER_EDIT', { timeout: 1000 });
   expect(Date.now() - started).toBeLessThan(1000);
+  await expect(preview).not.toContainText('FIRST_PAINT');
+  await expect(page.getByTestId('refreshing-icon')).toHaveCount(0);
+});
+
+/**
+ * A MathJax that arrives after the 4s fail-open bound must still typeset
+ * the preview that is already on screen, with no further `updateHtml`.
+ * Otherwise a slow CDN leaves raw `$…$` until the next edit (#569 / #572).
+ */
+test('late MathJax typesets the visible preview without another updateHtml (#572)', async ({
+  page,
+}) => {
+  const config = {
+    mathRenderingOption: 'MathJax',
+    markdownParser: 'markdown-it',
+    sourceUri: 'file:///tmp/crossnote-572-late.md',
+    enablePreviewZenMode: true,
+    enablePreviewContextMenu: false,
+    isVSCode: true,
+  };
+  const mathJaxConfig = makeConfig();
+  mathJaxConfig.startup = { typeset: false, elements: ['.hidden-preview'] };
+
+  await page.addInitScript(() => {
+    const hostMessages: Array<{ command?: string }> = [];
+    const hostWindow = window as unknown as HostWindow & {
+      acquireVsCodeApi: () => {
+        postMessage(message: unknown): void;
+        getState(): unknown;
+        setState(state: unknown): void;
+      };
+    };
+    hostWindow.acquireVsCodeApi = () => ({
+      postMessage: (message: unknown) => {
+        hostMessages.push(message as { command?: string });
+      },
+      getState: () => null,
+      setState: () => undefined,
+    });
+    hostWindow.__hostMessages = hostMessages;
+  });
+
+  await page.goto(server.url);
+  await page.evaluate(
+    ({ configJson, mathHtml }) => {
+      const meta = document.createElement('meta');
+      meta.id = 'crossnote-data';
+      meta.setAttribute('data-config', configJson);
+      document.head.appendChild(meta);
+      document.body.setAttribute('data-html', mathHtml);
+    },
+    { configJson: JSON.stringify(config), mathHtml: FIRST_LOAD_MATH_HTML },
+  );
+
+  await page.addScriptTag({ content: buildMathJaxConfigScript(mathJaxConfig) });
+  await page.addScriptTag({ content: previewHarnessJs });
+
+  await page.waitForSelector('[data-for="preview"]');
+  await page.waitForFunction(() =>
+    ((window as HostWindow).__hostMessages || []).some(
+      (message) => message.command === 'webviewFinishLoading',
+    ),
+  );
+
+  const preview = page.locator('[data-for="preview"]');
+  await page.evaluate(
+    (payload) => {
+      window.postMessage(payload, '*');
+    },
+    {
+      command: 'updateHtml',
+      html: FIRST_LOAD_MATH_HTML,
+      id: '',
+      class: '',
+      totalLineCount: 3,
+      tocHTML: '',
+      sourceUri: config.sourceUri,
+      sourceScheme: 'file',
+      markdown: '$x^2 + y^2 = z^2$\n\n$$E = mc^2$$',
+    },
+  );
+
+  // Bound has passed: staged HTML is on screen, still raw `$…$`.
+  await expect(page.getByTestId('refreshing-icon')).toHaveCount(0, {
+    timeout: 8000,
+  });
+  await expect(preview).toContainText('$x^2 + y^2 = z^2$');
+  await expect(preview.locator('mjx-container')).toHaveCount(0);
+
+  // About a second after the bound, and with no second updateHtml.
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await page.addScriptTag({ url: `${server.url}/mathjax/tex-mml-chtml.js` });
+
+  await expect(preview.locator('mjx-container')).toHaveCount(2, {
+    timeout: 8000,
+  });
+  await expect(preview).not.toContainText('$x^2 + y^2 = z^2$');
+  await expect(preview).not.toContainText('$$E = mc^2$$');
+});
+
+/**
+ * A fast MathJax reject must not copy staged HTML while a slower renderer
+ * is still working on the hidden element. Stand-in for tikzjaxRender that
+ * replaces the captured `text/tikz` scripts 300ms later: the first refresh
+ * waits 4s for MathJax and shows the diagram; the second rejects MathJax at
+ * once and must still keep the diagram (#572).
+ */
+test('a fast MathJax reject still waits for a slower TikZ renderer (#572)', async ({
+  page,
+}) => {
+  const config = {
+    mathRenderingOption: 'MathJax',
+    markdownParser: 'markdown-it',
+    sourceUri: 'file:///tmp/crossnote-572-tikz.md',
+    enablePreviewZenMode: true,
+    enablePreviewContextMenu: false,
+    isVSCode: true,
+  };
+  const mathJaxConfig = makeConfig();
+  mathJaxConfig.startup = { typeset: false, elements: ['.hidden-preview'] };
+
+  const tikzBlock =
+    '<div class="tikzjax"><script type="text/tikz">' +
+    '\\begin{tikzpicture}\\draw (0,0) -- (1,1);\\end{tikzpicture}' +
+    '</script></div>';
+  const firstHtml =
+    '<p>FIRST_PAINT</p>' +
+    '<p><span class="mathjax-exps">$a+b=c$</span></p>' +
+    tikzBlock;
+  const laterHtml =
+    '<p>LATER_EDIT</p>' +
+    '<p><span class="mathjax-exps">$x+y=z$</span></p>' +
+    tikzBlock;
+
+  await page.addInitScript(() => {
+    const hostMessages: Array<{ command?: string }> = [];
+    const hostWindow = window as unknown as HostWindow & {
+      acquireVsCodeApi: () => {
+        postMessage(message: unknown): void;
+        getState(): unknown;
+        setState(state: unknown): void;
+      };
+      tikzjaxRender?: () => void;
+    };
+    hostWindow.acquireVsCodeApi = () => ({
+      postMessage: (message: unknown) => {
+        hostMessages.push(message as { command?: string });
+      },
+      getState: () => null,
+      setState: () => undefined,
+    });
+    hostWindow.__hostMessages = hostMessages;
+    // Capture the script nodes at call time. An innerHTML copy of the
+    // hidden element detaches them; replacing those nodes later then
+    // does nothing, which is how a copy that runs ahead of tikzjax
+    // drops the diagram.
+    hostWindow.tikzjaxRender = () => {
+      const scripts = Array.from(
+        document.querySelectorAll('script[type="text/tikz"]'),
+      );
+      window.setTimeout(() => {
+        for (const script of scripts) {
+          if (!script.parentNode) {
+            continue;
+          }
+          const standin = document.createElement('div');
+          standin.className = 'tikzjax-standin';
+          standin.textContent = 'TIKZ_OK';
+          script.replaceWith(standin);
+        }
+      }, 300);
+    };
+  });
+
+  await page.goto(server.url);
+  await page.evaluate(
+    ({ configJson, mathHtml }) => {
+      const meta = document.createElement('meta');
+      meta.id = 'crossnote-data';
+      meta.setAttribute('data-config', configJson);
+      document.head.appendChild(meta);
+      document.body.setAttribute('data-html', mathHtml);
+    },
+    { configJson: JSON.stringify(config), mathHtml: firstHtml },
+  );
+
+  await page.addScriptTag({ content: buildMathJaxConfigScript(mathJaxConfig) });
+  await page.addScriptTag({ content: previewHarnessJs });
+
+  await page.waitForSelector('[data-for="preview"]');
+  await page.waitForFunction(() =>
+    ((window as HostWindow).__hostMessages || []).some(
+      (message) => message.command === 'webviewFinishLoading',
+    ),
+  );
+
+  const preview = page.locator('[data-for="preview"]');
+
+  const postUpdateHtml = (html: string, markdown: string) =>
+    page.evaluate(
+      (payload) => {
+        window.postMessage(payload, '*');
+      },
+      {
+        command: 'updateHtml',
+        html,
+        id: '',
+        class: '',
+        totalLineCount: 3,
+        tocHTML: '',
+        sourceUri: config.sourceUri,
+        sourceScheme: 'file',
+        markdown,
+      },
+    );
+
+  await postUpdateHtml(firstHtml, '$a+b=c$');
+  await expect(page.getByTestId('refreshing-icon')).toHaveCount(0, {
+    timeout: 8000,
+  });
+  await expect(preview).toContainText('FIRST_PAINT');
+  await expect(preview).toContainText('TIKZ_OK');
+
+  await postUpdateHtml(laterHtml, '$x+y=z$');
+  await expect(preview).toContainText('LATER_EDIT', { timeout: 2000 });
+  await expect(preview).toContainText('TIKZ_OK');
   await expect(preview).not.toContainText('FIRST_PAINT');
   await expect(page.getByTestId('refreshing-icon')).toHaveCount(0);
 });
