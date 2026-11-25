@@ -9,6 +9,7 @@ import { Backlink, WebviewConfig } from '../../notebook';
 import { classifyAnchorClick } from '../lib/anchor-routing';
 import { setLocale } from '../lib/i18n';
 import { mermaidErrorHtml, renderMermaidDiagram } from '../lib/mermaid';
+import { renderPeleDiagrams } from '../lib/pele';
 import { applyColorSchemeToPictures } from '../lib/picture-color-scheme';
 import { sanitizeHtml } from '../lib/sanitize';
 import {
@@ -40,6 +41,11 @@ const showSidebarTocStorageKey = 'crossnote.showSidebarToc';
  * only the config object. Calling `typesetClear` then throws
  * `TypeError: window.MathJax.typesetClear is not a function`, which
  * `initEvents` swallows, leaving raw `$…$` as a finished preview (#569).
+ *
+ * Wait until MathJax is actually ready, but fail open after a bounded wait
+ * so a blocked CDN cannot freeze later edits (#572). Delayed-but-successful
+ * loads still typeset the first preview (the #570 wait). A load that
+ * finishes after the bound typesets the visible preview in place.
  */
 function isMathJaxReady(): boolean {
   const mathJax = window.MathJax;
@@ -51,20 +57,97 @@ function isMathJaxReady(): boolean {
   );
 }
 
+/** Fail open so a blocked MathJax CDN cannot freeze later edits (#572). */
+const MATHJAX_READY_TIMEOUT_MS = 4000;
+
+let mathJaxWait: Promise<void> | undefined;
+
+/**
+ * The visible preview element, set by the container so a MathJax that
+ * arrives after the fail-open timeout can typeset what is already on
+ * screen (`previewElement.current`) without waiting for another edit.
+ */
+let previewElementRef: { current: HTMLDivElement | null } | undefined;
+
+function typesetVisiblePreviewInPlace() {
+  const preview = previewElementRef?.current;
+  if (!preview || !isMathJaxReady()) {
+    return;
+  }
+  // Clear MathJax's internal list of typeset items and reset equation
+  // numbering, same sequence as renderMathJax. Don't pass the element
+  // to typesetClear.
+  window['MathJax'].typesetClear();
+  window['MathJax'].texReset();
+  void window['MathJax'].typesetPromise([preview]).catch((error: unknown) => {
+    console.error(error);
+  });
+}
+
 function waitForMathJaxReady(): Promise<void> {
   if (isMathJaxReady()) {
     return window.MathJax.startup.promise;
   }
-  return new Promise((resolve) => {
+  mathJaxWait ??= new Promise((resolve, reject) => {
+    let waitSettled = false;
+    let readyHandled = false;
+
+    const settleWait = (finish: () => void) => {
+      if (waitSettled) {
+        return;
+      }
+      waitSettled = true;
+      finish();
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      settleWait(() =>
+        reject(
+          new Error(
+            `MathJax did not become ready within ${MATHJAX_READY_TIMEOUT_MS}ms`,
+          ),
+        ),
+      );
+    }, MATHJAX_READY_TIMEOUT_MS);
+
+    const onReady = () => {
+      if (readyHandled) {
+        return;
+      }
+      readyHandled = true;
+      window.clearTimeout(timeoutId);
+      if (waitSettled) {
+        typesetVisiblePreviewInPlace();
+      } else {
+        settleWait(() => resolve());
+      }
+    };
+
+    const onFail = (error: unknown) => {
+      if (readyHandled) {
+        return;
+      }
+      readyHandled = true;
+      window.clearTimeout(timeoutId);
+      settleWait(() => reject(error));
+    };
+
     const poll = () => {
+      // Keep polling after the fail-open timeout so a slow CDN still
+      // typesets the preview that is already on screen (#569 / #572).
+      if (readyHandled) {
+        return;
+      }
       if (isMathJaxReady()) {
-        window.MathJax.startup.promise.then(() => resolve());
+        window.MathJax.startup.promise.then(onReady, onFail);
         return;
       }
       window.setTimeout(poll, 50);
     };
+
     poll();
   });
+  return mathJaxWait;
 }
 
 function getWindowScrollTop() {
@@ -77,6 +160,56 @@ function setWindowScrollTop(scrollTop: number) {
 
 function getWindowHeight() {
   return window.innerHeight;
+}
+
+/** Whether a CSS `zoom` scales what `getBoundingClientRect()` reports. */
+let rectanglesFollowZoom: boolean | undefined;
+
+/**
+ * Screen pixels in a pixel of a rectangle of the preview.
+ *
+ * The preview is zoomed by a CSS `zoom` on `<body>`. From Chromium 128 on a
+ * rectangle is in screen pixels, which the window scrolls in. Before, the
+ * zoom scales the preview but not its rectangles: a pixel of a rectangle is
+ * the zoom in screen pixels (vscode-markdown-preview-enhanced#2455). Which
+ * of the two the engine does is measured, not assumed.
+ */
+function screenPixelsPerRectPixel(): number {
+  if (rectanglesFollowZoom === undefined) {
+    const plain = document.createElement('div');
+    plain.style.cssText =
+      'position:absolute;top:0;left:0;width:10px;height:10px;visibility:hidden';
+    const zoomed = plain.cloneNode() as HTMLElement;
+    zoomed.style.zoom = '2';
+    document.body.append(plain, zoomed);
+    // Nothing is laid out where the preview is not displayed, as in a frame
+    // hidden with `display: none`: there is nothing to measure from, and it
+    // is measured from the next position that is asked for.
+    const plainWidth = plain.getBoundingClientRect().width;
+    if (plainWidth > 0) {
+      rectanglesFollowZoom =
+        zoomed.getBoundingClientRect().width > plainWidth * 1.5;
+    }
+    plain.remove();
+    zoomed.remove();
+  }
+  return rectanglesFollowZoom ? 1 : parseFloat(document.body.style.zoom) || 1;
+}
+
+/** Screen pixels in a length or position a rectangle of the preview reports. */
+function inScreenPixels(rectPixels: number): number {
+  return rectPixels * screenPixelsPerRectPixel();
+}
+
+/**
+ * Document y, in the pixels the window scrolls in, of a y from the top of
+ * the window as a rectangle reports it.
+ *
+ * Positions come from rectangles: `offsetTop` and `scrollHeight` of the
+ * blocks are not scaled by the zoom.
+ */
+function getDocumentY(y: number): number {
+  return inScreenPixels(y) + getWindowScrollTop();
 }
 
 const BlockElements = {
@@ -266,6 +399,14 @@ const PreviewContainer = createContainer(() => {
   // const refreshingTimeout = useRef<NodeJS.Timeout | null>(null);
   const isLoadingPreviewRef = useRef<boolean>(true);
   /**
+   * Bumped at the start of each `initEvents`. Two refreshes can be waiting
+   * for the same MathJax at once; when it becomes ready the older one would
+   * copy the hidden element and clear it before the newer one copies, and
+   * the newer one would then show an empty preview. The counter stops the
+   * older one before it copies.
+   */
+  const initEventsGeneration = useRef(0);
+  /**
    * Track the slide line number, and (h, v) indices
    */
   const slidesData = useRef<SlideData[]>([]);
@@ -278,6 +419,7 @@ const PreviewContainer = createContainer(() => {
    */
   const currentSlideOffset = useRef<number>(-1);
   const previewElement = useRef<HTMLDivElement>(null);
+  previewElementRef = previewElement;
   const hiddenPreviewElement = useRef<HTMLDivElement>(null);
   const sidebarTocElement = useRef<HTMLDivElement>(null);
   const backlinksElement = useRef<HTMLDivElement>(null);
@@ -440,12 +582,13 @@ const PreviewContainer = createContainer(() => {
     nonEmptyList.push(0);
     newScrollMap[0] = 0;
 
-    // write down the offsetTop of element that has 'data-source-line' property to scrollMap
+    // write down the document y of element that has 'data-source-line' property to scrollMap
     const lineElements =
       previewElement.current.querySelectorAll('[data-source-line]');
+    const previewRect = previewElement.current.getBoundingClientRect();
 
     for (let i = 0; i < lineElements.length; i++) {
-      let el = lineElements[i] as HTMLElement;
+      const el = lineElements[i] as HTMLElement;
       if (!isBlockElement(el.tagName)) {
         continue;
       }
@@ -460,21 +603,19 @@ const PreviewContainer = createContainer(() => {
       if (t < nonEmptyList[nonEmptyList.length - 1]) {
         el.removeAttribute('data-source-line');
       } else {
-        let offsetTop = 0;
-        while (el && el !== previewElement.current) {
-          offsetTop += el.offsetTop;
-          el = el.offsetParent as HTMLElement;
+        const rect = el.getBoundingClientRect();
+        // An element that takes no space, as one with `display: none`, has
+        // no position.
+        if (!rect.width && !rect.height) {
+          continue;
         }
-
-        if (offsetTop > 0) {
-          nonEmptyList.push(t);
-          newScrollMap[t] = Math.round(offsetTop);
-        }
+        nonEmptyList.push(t);
+        newScrollMap[t] = Math.round(getDocumentY(rect.top));
       }
     }
 
     nonEmptyList.push(totalLineCount.current);
-    newScrollMap.push(previewElement.current.scrollHeight);
+    newScrollMap.push(getDocumentY(previewRect.bottom));
 
     let pos = 0;
     for (let i = 0; i < totalLineCount.current; i++) {
@@ -513,19 +654,6 @@ const PreviewContainer = createContainer(() => {
   }, []);
 
   /**
-   * Document y of the preview element's top, which scrollMap offsets are
-   * relative to.
-   */
-  const getPreviewOrigin = useCallback(() => {
-    if (!previewElement.current) {
-      return 0;
-    }
-    return (
-      previewElement.current.getBoundingClientRect().top + getWindowScrollTop()
-    );
-  }, []);
-
-  /**
    * The line the block-level scroll map puts at a viewport height.
    */
   const getLineAtHeight = useCallback(
@@ -534,7 +662,7 @@ const PreviewContainer = createContainer(() => {
       if (!map) {
         return 0;
       }
-      const target = y + getWindowScrollTop() - getPreviewOrigin();
+      const target = getDocumentY(y);
       let lo = 0;
       let hi = map.length - 1;
       while (lo < hi) {
@@ -547,7 +675,7 @@ const PreviewContainer = createContainer(() => {
       }
       return lo;
     },
-    [buildScrollMap, getPreviewOrigin],
+    [buildScrollMap],
   );
 
   /**
@@ -575,9 +703,7 @@ const PreviewContainer = createContainer(() => {
         dom.text,
       );
       const map = buildScrollMap();
-      const expected =
-        map && line < map.length ? map[line] + getPreviewOrigin() : null;
-      const scrollTop = getWindowScrollTop();
+      const expected = map && line < map.length ? map[line] : null;
       let best: { k: number; y: number } | null = null;
       let bestDistance = Infinity;
       for (const candidate of candidates) {
@@ -586,7 +712,7 @@ const PreviewContainer = createContainer(() => {
         if (!rect) {
           continue;
         }
-        const y = rect.top + rect.height / 2 + scrollTop;
+        const y = getDocumentY(rect.top + rect.height / 2);
         const distance = expected === null ? 0 : Math.abs(y - expected);
         if (distance < bestDistance) {
           best = { k, y };
@@ -600,7 +726,7 @@ const PreviewContainer = createContainer(() => {
       }
       return best;
     },
-    [buildScrollMap, getDomTextIndex, getPreviewOrigin, getSourceTextIndex],
+    [buildScrollMap, getDomTextIndex, getSourceTextIndex],
   );
 
   /**
@@ -677,7 +803,7 @@ const PreviewContainer = createContainer(() => {
       }
       const source = getSourceTextIndex();
       const rect = getCharRect(dom, k);
-      const screenY = rect ? rect.top + rect.height / 2 : y;
+      const screenY = rect ? inScreenPixels(rect.top + rect.height / 2) : y;
       return {
         line: source.lines[best],
         character: source.columns[best],
@@ -781,7 +907,7 @@ const PreviewContainer = createContainer(() => {
     // Align the editor to the text at the middle of the preview.
     const { left, width } = previewElement.current.getBoundingClientRect();
     const position = findSourcePositionNearHeight(
-      [left + width * 0.15, left + width * 0.3, left + width * 0.5],
+      [0.15, 0.3, 0.5].map((ratio) => inScreenPixels(left + width * ratio)),
       getWindowHeight() / 2,
     );
     if (position) {
@@ -1223,9 +1349,32 @@ const PreviewContainer = createContainer(() => {
     if (!previewElement.current || !hiddenPreviewElement.current) {
       return;
     }
+    const generation = ++initEventsGeneration.current;
+    const isCurrent = () => generation === initEventsGeneration.current;
     try {
       setIsRefreshingPreview(true);
-      await Promise.all([renderMathJax(), renderWavedrom(), renderTikzjax()]);
+      const results = await Promise.allSettled([
+        renderMathJax(),
+        renderWavedrom(),
+        renderTikzjax(),
+      ]);
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          // A failed or never-ready renderer must not block applying staged
+          // HTML, and must not cut short renderers that are still working
+          // (#572). Continue with the copy and the later init steps that
+          // still make sense.
+          console.error(result.reason);
+        }
+      }
+
+      if (
+        !isCurrent() ||
+        !previewElement.current ||
+        !hiddenPreviewElement.current
+      ) {
+        return;
+      }
 
       previewElement.current.innerHTML = hiddenPreviewElement.current.innerHTML;
       hiddenPreviewElement.current.innerHTML = '';
@@ -1234,14 +1383,22 @@ const PreviewContainer = createContainer(() => {
         isBackgroundColorLight(document.body) ? 'light' : 'dark',
       );
 
+      // Drawn before anything is awaited: pele draws at once, so the diagrams
+      // are there with the rest of the page.
+      renderPeleDiagrams(previewElement.current);
       await Promise.all([renderInteractiveVega(), renderMermaid()]);
 
-      setupCodeChunks();
+      if (!isCurrent()) {
+        return;
+      }
 
-      setIsRefreshingPreview(false);
+      setupCodeChunks();
     } catch (error) {
       console.error(error);
-      setIsRefreshingPreview(false);
+    } finally {
+      if (isCurrent()) {
+        setIsRefreshingPreview(false);
+      }
     }
   }, [
     renderInteractiveVega,
@@ -1330,7 +1487,7 @@ const PreviewContainer = createContainer(() => {
 
       if (line + 1 === totalLineCount.current) {
         // last line
-        scrollToPosition(previewElement.current.scrollHeight);
+        scrollToPosition(document.documentElement.scrollHeight);
       } else {
         /**
          * Since I am not able to access the viewport of the editor
@@ -1439,17 +1596,13 @@ const PreviewContainer = createContainer(() => {
               }
 
               // jump to tag position
-              let offsetTop = 0;
-              let el = targetElement;
-              while (el && el !== previewElement.current) {
-                offsetTop += el.offsetTop;
-                el = el.offsetParent as HTMLElement;
-              }
+              const rect = targetElement.getBoundingClientRect();
+              const top = getDocumentY(rect.top);
 
-              if (getWindowScrollTop() > offsetTop) {
-                setWindowScrollTop(offsetTop - 32 - targetElement.offsetHeight);
+              if (getWindowScrollTop() > top) {
+                setWindowScrollTop(top - 32 - inScreenPixels(rect.height));
               } else {
-                setWindowScrollTop(offsetTop);
+                setWindowScrollTop(top);
               }
             };
             break;
@@ -1914,6 +2067,14 @@ const PreviewContainer = createContainer(() => {
     // analyze slides
     initSlidesData();
 
+    // Every slide's pele diagrams are drawn now, before the first slide is
+    // shown. Unlike Mermaid's, they do not need their slide to be laid out:
+    // pele measures its labels on a canvas. So each is there when its slide
+    // is first shown, and the layout that `renderSlide` ends with centers the
+    // slide with it. The slides are not inside the preview element but beside
+    // it, under <body>.
+    renderPeleDiagrams(document.body);
+
     // The diagrams of the slides render one slide at a time, in the order
     // asked for. A slide asked for again while its diagrams render, as the
     // one the preview opens on is by its first slide event, is not rendered
@@ -2313,7 +2474,7 @@ const PreviewContainer = createContainer(() => {
 
     const rect = getCharRect(dom, first);
     const screenRatio = rect
-      ? (rect.top + rect.height / 2) / getWindowHeight()
+      ? inScreenPixels(rect.top + rect.height / 2) / getWindowHeight()
       : 0.5;
     postMessage('selectSourceRange', [
       sourceUri.current,
@@ -2537,6 +2698,8 @@ const PreviewContainer = createContainer(() => {
    */
   useEffect(() => {
     document.body.style.zoom = String(zoomLevel);
+    // The scroll map is in the pixels the window scrolls in, which the zoom changes.
+    scrollMap.current = null;
 
     if (zoomLevel !== 1) {
       const counterZoom = 1 / zoomLevel;

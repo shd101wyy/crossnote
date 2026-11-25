@@ -49,6 +49,7 @@ import { readOfflineCss, readOfflineJs } from './inline-offline-assets';
 import { buildMathJaxConfigScript } from './mathjax-config';
 import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
+import { buildPeleExportScript } from './pele-export';
 import { sanitizeRenderedHTML } from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
 import { transformMarkdown } from './transformer';
@@ -91,6 +92,13 @@ export interface MarkdownEngineOutput {
 
 type MermaidExportWindow = Window & {
   __crossnoteMermaidExport?: {
+    status: 'pending' | 'complete' | 'error';
+    message?: string;
+  };
+};
+
+type PeleExportWindow = Window & {
+  __crossnotePeleExport?: {
     status: 'pending' | 'complete' | 'error';
     message?: string;
   };
@@ -313,6 +321,13 @@ const dependentLibraryMaterials = [
 ];
 
 /**
+ * Whether a rendered document holds a pele diagram: the `div` of class `pele`
+ * that a `pele` code block becomes (src/render-enhancers/fenced-diagrams.ts),
+ * wherever the class stands among the block's attributes.
+ */
+const PELE_DIAGRAM = /<div\b[^>]*\sclass="[^"]*\bpele\b[^"]*"/;
+
+/**
  * The markdown engine that can be used to parse markdown and export files
  */
 export class MarkdownEngine {
@@ -418,6 +433,18 @@ export class MarkdownEngine {
     await mermaid.registerExternalDiagrams([zenuml]);
   </script>`;
 
+    // pele
+    // `pele` code blocks hold Mermaid syntax that pele draws
+    // (src/webview/lib/pele.ts). Like mermaid, its bundle is loaded for every
+    // preview: the document can gain a diagram with the next keystroke.
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
+      path.resolve(
+        utility.getCrossnoteBuildDirectory(),
+        './dependencies/pele/pele.global.js',
+      ),
+      vscodePreviewPanel,
+    )}" charset="UTF-8"></script>`;
+
     // wavedrome
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
@@ -516,6 +543,10 @@ export class MarkdownEngine {
       presentationInitScript += `
         await Reveal.initialize(${JSON.stringify({
           margin: 0.1,
+          // reveal.js 5+ switches narrow decks to its scroll view; keep the
+          // paginated layout of earlier versions when the preview pane is
+          // narrow (`view: 'scroll'` still opts in explicitly).
+          scrollActivationWidth: null,
           ...presentationConfig,
         })})
         // NOTE: We have to add the promise below otherwise
@@ -612,7 +643,9 @@ window["initRevealPresentation"] = async function() {
   static AutoPrismThemeMapForPresentation = {
     'beige.css': 'pen-paper-coffee.css',
     'black.css': 'one-dark.css',
+    'black-contrast.css': 'one-dark.css',
     'blood.css': 'monokai.css',
+    'dracula.css': 'one-dark.css',
     'league.css': 'okaidia.css',
     'moon.css': 'funky.css',
     'night.css': 'atom-dark.css',
@@ -621,6 +654,7 @@ window["initRevealPresentation"] = async function() {
     'sky.css': 'default.css',
     'solarized.css': 'solarized-light.css',
     'white.css': 'default.css',
+    'white-contrast.css': 'default.css',
     'vscode.css': 'vscode.css',
   };
 
@@ -1267,6 +1301,21 @@ window["initRevealPresentation"] = async function() {
       )}</script>`;
     }
 
+    // pele
+    // (a `pele` code block: Mermaid syntax drawn by the pele bundle)
+    let peleScript = '';
+    let peleInitScript = '';
+    if (PELE_DIAGRAM.test(html)) {
+      if (options.offline) {
+        peleScript = await offlineScript('./dependencies/pele/pele.global.js');
+      } else {
+        peleScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/pele@1.13.0/dist/pele.global.js"></script>`;
+      }
+      // A classic script: pele draws synchronously, so the diagrams are in
+      // place as soon as the script has run.
+      peleInitScript = `<script>${buildPeleExportScript()}</script>`;
+    }
+
     // wavedrom
     let wavedromScript = ``;
     let wavedromInitScript = ``;
@@ -1345,7 +1394,7 @@ window["initRevealPresentation"] = async function() {
         );
       } else {
         presentationScript = `
-        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/reveal.js'></script>`;
+        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@6.0.2/dist/reveal.js'></script>`;
       }
 
       const presentationConfigRaw = yamlConfig['presentation'];
@@ -1357,17 +1406,22 @@ window["initRevealPresentation"] = async function() {
           : {};
       const dependencies =
         (presentationConfig['dependencies'] as unknown[] | undefined) || [];
+
+      // The speaker notes plugin. reveal.js 5+ has no plugin auto-loading:
+      // the plugin script has to run before initialization and the plugin
+      // (its `RevealNotes` global) has to be passed via `plugins`.
+      let notesPlugin: [script: string, definition: string] | null = null;
       if (presentationConfig['enableSpeakerNotes']) {
         if (options.offline) {
-          dependencies.push({
-            src: path.resolve(
-              utility.getCrossnoteBuildDirectory(),
-              './dependencies/reveal/plugin/notes/notes.js',
-            ),
-            async: true,
-          });
+          notesPlugin = [
+            await offlineScript('./dependencies/reveal/plugin/notes/notes.js'),
+            'window.RevealNotes',
+          ];
         } else {
-          dependencies.push({ src: 'revealjs_deps/notes.js', async: true }); // TODO: copy notes.js file to corresponding folder
+          notesPlugin = [
+            `<script src="revealjs_deps/notes.js"></script>`, // copied next to the document by `htmlExport`
+            'window.RevealNotes',
+          ];
         }
       }
       presentationConfig['dependencies'] = dependencies;
@@ -1380,24 +1434,19 @@ window["initRevealPresentation"] = async function() {
           './dependencies/reveal/css/reveal.css',
         ),
       )}
-      ${
-        options.isForPrint
-          ? await this.fs.readFile(
-              path.resolve(
-                utility.getCrossnoteBuildDirectory(),
-                './dependencies/reveal/css/print/pdf.css',
-              ),
-            )
-          : ''
-      }
       </style>
       `;
       presentationInitScript = `
+      ${notesPlugin?.[0] ?? ''}
       <script>
-        Reveal.initialize(${JSON.stringify({
+        Reveal.initialize(Object.assign(${JSON.stringify({
           margin: 0.1,
+          // reveal.js 5+ shows a deck narrower than 435px in its scroll view;
+          // an exported presentation stays paginated as before when it is
+          // opened in a narrow window (the front matter still opts in).
+          scrollActivationWidth: null,
           ...presentationConfig,
-        })})
+        })}, ${notesPlugin ? `{ plugins: [${notesPlugin[1]}] }` : '{}'}))
       </script>
       `;
     }
@@ -1516,7 +1565,7 @@ window["initRevealPresentation"] = async function() {
             `./dependencies/reveal/css/theme/${safeTheme}`,
           );
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@4.6.0/dist/theme/${safeTheme}">`;
+          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@6.0.2/dist/theme/${safeTheme}">`;
         }
       } else {
         // preview theme
@@ -1680,6 +1729,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${tikzjaxStyle}
       ${presentationScript}
       ${mermaidScript}
+      ${peleScript}
       ${wavedromScript}
       ${tikzjaxScript}
       ${vegaScript}
@@ -1700,6 +1750,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${sidebarTOCBtn}
     </body>
     ${presentationInitScript}
+    ${peleInitScript}
     ${mermaidInitScript}
     ${wavedromInitScript}
     ${vegaInitScript}
@@ -1784,28 +1835,23 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     const html = await this.htmlExportDocument({ offline, runAllCodeChunks });
 
-    // presentation speaker notes
-    // copy dependency files
-    if (
-      !offline &&
-      html.indexOf('[{"src":"revealjs_deps/notes.js","async":true}]') >= 0
-    ) {
+    // The speaker notes plugin of a presentation that is not exported
+    // offline is loaded from next to the exported file.
+    if (!offline && html.indexOf('revealjs_deps/notes.js') >= 0) {
       const depsDirName = path.resolve(path.dirname(dest), 'revealjs_deps');
       if (!fs.existsSync(depsDirName)) {
         fs.mkdirSync(depsDirName);
       }
-      fs.createReadStream(
+      // Copied in full before the export is reported as written. The file
+      // is opened, and the presentation started, as soon as the export
+      // returns: reveal.js 6 does not start from a truncated plugin.
+      fs.copyFileSync(
         path.resolve(
           utility.getCrossnoteBuildDirectory(),
           './dependencies/reveal/plugin/notes/notes.js',
         ),
-      ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.js')));
-      fs.createReadStream(
-        path.resolve(
-          utility.getCrossnoteBuildDirectory(),
-          './dependencies/reveal/plugin/notes/notes.html',
-        ),
-      ).pipe(fs.createWriteStream(path.resolve(depsDirName, 'notes.html')));
+        path.resolve(depsDirName, 'notes.js'),
+      );
     }
 
     await this.fs.writeFile(dest, html);
@@ -1960,6 +2006,24 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
       if (mermaidError !== undefined) {
         throw new Error('Mermaid rendering failed: ' + mermaidError);
+      }
+      // Pele draws synchronously while the page loads, so there is nothing to
+      // wait for, and a diagram that cannot be drawn is reported in its
+      // place. Two things fail the export: the drawing script itself failing
+      // — the pele bundle not loading, mostly — and a diagram that script
+      // never reached, which would be captured as its source text.
+      const peleFailure = await page.evaluate(() => {
+        const message = (window as PeleExportWindow).__crossnotePeleExport
+          ?.message;
+        if (message !== undefined) {
+          return message;
+        }
+        return document.querySelector('div.pele:not([data-processed])')
+          ? 'A diagram was not drawn: the script that draws them did not reach it.'
+          : undefined;
+      });
+      if (peleFailure !== undefined) {
+        throw new Error('Pele rendering failed: ' + peleFailure);
       }
 
       const chromeConfig =

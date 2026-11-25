@@ -1286,9 +1286,9 @@ export async function transformMarkdown(
                 config,
                 true,
               )}\n${fileContent}\n\`\`\`  `;
-            } else if (extname === '.mermaid') {
-              // mermaid
-              output = `\`\`\`mermaid ${stringifyBlockAttributes(
+            } else if (extname === '.mermaid' || extname === '.pele') {
+              // mermaid; a .pele file holds Mermaid syntax too, rendered by pele
+              output = `\`\`\`${extname.slice(1)} ${stringifyBlockAttributes(
                 config,
                 true,
               )}\n${fileContent}\n\`\`\`  `;

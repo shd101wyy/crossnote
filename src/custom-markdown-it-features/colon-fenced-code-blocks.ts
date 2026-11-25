@@ -18,7 +18,7 @@
  *        :::
  *
  *      → rendered identically to the equivalent backtick fence so all
- *      diagram render-enhancers (mermaid, plantuml, wavedrom, …) pick
+ *      diagram render-enhancers (mermaid, pele, plantuml, wavedrom, …) pick
  *      it up without changes.
  *
  * Disambiguation: only info strings that match a small fixed set of
@@ -39,6 +39,7 @@ import { parseBlockInfo } from '../lib/block-info/parse-block-info';
  */
 export const COLON_FENCE_CODE_LANGUAGES = new Set([
   'mermaid',
+  'pele',
   'wavedrom',
   'puml',
   'plantuml',

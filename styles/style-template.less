@@ -546,3 +546,22 @@ html body[for='html-export']:not([data-presentation-mode]) {
     }
   }
 }
+
+// Pele diagrams: what a `pele` code block becomes, drawn by the pele bundle
+// (src/webview/lib/pele.ts). A diagram takes its colors from the --pele-*
+// CSS variables; pele declares them in the SVG with fallbacks that suit a
+// light page. The preview marks the scheme of the page on <body>
+// (`data-preview-theme`), and the script of an exported document does the
+// same, so on a dark page the dark palette of pele's theming guide applies
+// without the diagram being drawn again. Global CSS can set any of them.
+[data-preview-theme='dark'] .pele {
+  --pele-bg: #100f0f;
+  --pele-fg: #cecdc3;
+  --pele-muted: #878580;
+  --pele-line: #cecdc3;
+  --pele-surface: #1c1b1a;
+  --pele-surface-alt: #282726;
+  --pele-border: #403e3c;
+  --pele-accent: #4385be;
+  --pele-critical: #d14d41;
+}
