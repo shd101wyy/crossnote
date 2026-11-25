@@ -41,6 +41,8 @@ const scopesForLanguageName = {
   // extended
   'yaml_table': 'yaml',
   'mermaid': 'mermaid',
+  // pele fences hold Mermaid syntax
+  'pele': 'mermaid',
   'plantuml': 'plantuml',
   'puml': 'plantuml',
   'wavedrom': 'wavedrom',

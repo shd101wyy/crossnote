@@ -49,6 +49,7 @@ import { readOfflineCss, readOfflineJs } from './inline-offline-assets';
 import { buildMathJaxConfigScript } from './mathjax-config';
 import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
+import { buildPeleExportScript } from './pele-export';
 import { sanitizeRenderedHTML } from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
 import { transformMarkdown } from './transformer';
@@ -91,6 +92,13 @@ export interface MarkdownEngineOutput {
 
 type MermaidExportWindow = Window & {
   __crossnoteMermaidExport?: {
+    status: 'pending' | 'complete' | 'error';
+    message?: string;
+  };
+};
+
+type PeleExportWindow = Window & {
+  __crossnotePeleExport?: {
     status: 'pending' | 'complete' | 'error';
     message?: string;
   };
@@ -313,6 +321,13 @@ const dependentLibraryMaterials = [
 ];
 
 /**
+ * Whether a rendered document holds a pele diagram: the `div` of class `pele`
+ * that a `pele` code block becomes (src/render-enhancers/fenced-diagrams.ts),
+ * wherever the class stands among the block's attributes.
+ */
+const PELE_DIAGRAM = /<div\b[^>]*\sclass="[^"]*\bpele\b[^"]*"/;
+
+/**
  * The markdown engine that can be used to parse markdown and export files
  */
 export class MarkdownEngine {
@@ -417,6 +432,18 @@ export class MarkdownEngine {
     import zenuml from 'https://cdn.jsdelivr.net/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs';
     await mermaid.registerExternalDiagrams([zenuml]);
   </script>`;
+
+    // pele
+    // `pele` code blocks hold Mermaid syntax that pele draws
+    // (src/webview/lib/pele.ts). Like mermaid, its bundle is loaded for every
+    // preview: the document can gain a diagram with the next keystroke.
+    scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
+      path.resolve(
+        utility.getCrossnoteBuildDirectory(),
+        './dependencies/pele/pele.global.js',
+      ),
+      vscodePreviewPanel,
+    )}" charset="UTF-8"></script>`;
 
     // wavedrome
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
@@ -1274,6 +1301,21 @@ window["initRevealPresentation"] = async function() {
       )}</script>`;
     }
 
+    // pele
+    // (a `pele` code block: Mermaid syntax drawn by the pele bundle)
+    let peleScript = '';
+    let peleInitScript = '';
+    if (PELE_DIAGRAM.test(html)) {
+      if (options.offline) {
+        peleScript = await offlineScript('./dependencies/pele/pele.global.js');
+      } else {
+        peleScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/pele@1.13.0/dist/pele.global.js"></script>`;
+      }
+      // A classic script: pele draws synchronously, so the diagrams are in
+      // place as soon as the script has run.
+      peleInitScript = `<script>${buildPeleExportScript()}</script>`;
+    }
+
     // wavedrom
     let wavedromScript = ``;
     let wavedromInitScript = ``;
@@ -1687,6 +1729,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${tikzjaxStyle}
       ${presentationScript}
       ${mermaidScript}
+      ${peleScript}
       ${wavedromScript}
       ${tikzjaxScript}
       ${vegaScript}
@@ -1707,6 +1750,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       ${sidebarTOCBtn}
     </body>
     ${presentationInitScript}
+    ${peleInitScript}
     ${mermaidInitScript}
     ${wavedromInitScript}
     ${vegaInitScript}
@@ -1962,6 +2006,24 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
       if (mermaidError !== undefined) {
         throw new Error('Mermaid rendering failed: ' + mermaidError);
+      }
+      // Pele draws synchronously while the page loads, so there is nothing to
+      // wait for, and a diagram that cannot be drawn is reported in its
+      // place. Two things fail the export: the drawing script itself failing
+      // — the pele bundle not loading, mostly — and a diagram that script
+      // never reached, which would be captured as its source text.
+      const peleFailure = await page.evaluate(() => {
+        const message = (window as PeleExportWindow).__crossnotePeleExport
+          ?.message;
+        if (message !== undefined) {
+          return message;
+        }
+        return document.querySelector('div.pele:not([data-processed])')
+          ? 'A diagram was not drawn: the script that draws them did not reach it.'
+          : undefined;
+      });
+      if (peleFailure !== undefined) {
+        throw new Error('Pele rendering failed: ' + peleFailure);
       }
 
       const chromeConfig =
