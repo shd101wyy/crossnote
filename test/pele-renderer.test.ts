@@ -5,6 +5,7 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import MarkdownIt from 'markdown-it';
 import { Notebook } from '../src/notebook/index';
 import { processGraphs } from '../src/converters/process-graphs';
 import {
@@ -221,6 +222,46 @@ describe('processGraphs with pele blocks', () => {
     expect(outputString).not.toContain('```pele');
     expect(outputString).toMatch(/```\nPeleError: Parse error on line 2:/);
   });
+
+  // The error of a pele diagram quotes its source, and pele reads a bare
+  // carriage return as a line break — which the lines of the note do not see.
+  // So what is no line of the note comes out of the error as a line of
+  // backticks, and behind a fence of three backticks it closed the error block
+  // from inside: what followed was markup in the exported document.
+  it.each([
+    ['three backticks', '```'],
+    ['five backticks', '`````'],
+  ])(
+    'keeps an error that holds a line of %s inside its block',
+    async (_what, backticks) => {
+      const payload =
+        '<img src=x onerror=alert(1)> [phish](https://evil.example/)';
+      const { outputString } = await convert(
+        '```pele\n  pie\n  "dogs\r' +
+          backticks +
+          '\r' +
+          payload +
+          '\r' +
+          backticks +
+          '\rcats" : -1\n```\n',
+      );
+
+      // The block the error is written in, as a markdown reader sees it, with
+      // what it escapes.
+      const rendered = new MarkdownIt({ html: true }).render(outputString);
+      expect(rendered).toMatch(
+        new RegExp(`^<pre><code>PeleError: &quot;dogs\\n${backticks}\\n`),
+      );
+      // The text of the diagram, as text.
+      expect(rendered).toContain(
+        '&lt;img src=x onerror=alert(1)&gt; [phish](https://evil.example/)',
+      );
+      expect(rendered).not.toContain('<img');
+      expect(rendered).not.toContain('<a ');
+      // Behind a fence longer than any run of backticks in it.
+      expect(outputString).toContain(`\n${backticks}\`\nPeleError: "dogs`);
+    },
+  );
 
   // The language of the fence is `pele` on its own, as in the preview: a
   // `pele-flow` block is a code block there too.

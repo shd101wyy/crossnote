@@ -16,6 +16,29 @@ import * as sharp from '../tools/sharp';
 import * as wavedromAPI from '../tools/wavedrom';
 import { extractCommandFromBlockInfo, sanitizeImageFilename } from '../utility';
 
+/**
+ * The error of a diagram that could not be drawn, as a code block standing in
+ * the note where the diagram was.
+ *
+ * A message may quote the source of the diagram — pele's does, line by line —
+ * and so hold a line of backticks. pele reads a bare carriage return as a
+ * line break, which the lines of the note do not see: what is one line of the
+ * note can come out as a line of its own. A line that closed this block would
+ * turn the rest of the message into markup of the exported document, and the
+ * text of a diagram is not markup — it is what was written inside a code
+ * fence. So carriage returns are made newlines, and the fence is longer than
+ * any run of backticks in the message.
+ */
+function diagramErrorBlock(error: unknown): string {
+  const message = String(error).replace(/\r\n?/g, '\n');
+  const longestRun = Math.max(
+    0,
+    ...Array.from(message.matchAll(/`+/g), (run) => run[0].length),
+  );
+  const fence = '`'.repeat(Math.max(3, longestRun + 1));
+  return `\n${fence}\n${message}\n${fence}  \n`;
+}
+
 export async function processGraphs(
   text: string,
   {
@@ -242,7 +265,7 @@ export async function processGraphs(
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
+        lines[end] += diagramErrorBlock(error);
       }
     } else if (def.match(/^(viz|dot)/)) {
       try {
@@ -264,7 +287,7 @@ export async function processGraphs(
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
+        lines[end] += diagramErrorBlock(error);
       }
     } else if (def.match(/^vega-lite/)) {
       // vega-lite
@@ -286,7 +309,7 @@ export async function processGraphs(
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
+        lines[end] += diagramErrorBlock(error);
       }
     } else if (def.match(/^vega/)) {
       // vega
@@ -308,7 +331,7 @@ export async function processGraphs(
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
+        lines[end] += diagramErrorBlock(error);
       }
     } else if (def.match(/^mermaid/)) {
       // mermaid-cli Ver.8.4.8 has a bug, render in png https://github.com/mermaid-js/mermaid/issues/664
@@ -365,7 +388,7 @@ export async function processGraphs(
         imagePaths.push(pngFilePath);
       } catch (error) {
         clearCodeBlock(lines, start, end);
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
+        lines[end] += diagramErrorBlock(error);
       }
     } else if (def.match(/^pele(?:\s|$)/)) {
       // Pele draws Mermaid syntax too. Unlike mermaid it needs no external
@@ -391,7 +414,7 @@ export async function processGraphs(
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
+        lines[end] += diagramErrorBlock(error);
       }
     } else if (def.match(/^wavedrom/)) {
       try {
@@ -413,7 +436,7 @@ export async function processGraphs(
         );
       } catch (error) {
         clearCodeBlock(lines, start, end);
-        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
+        lines[end] += diagramErrorBlock(error);
       }
     } else if (currentCodeChunk) {
       // code chunk
