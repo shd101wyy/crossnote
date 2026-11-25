@@ -169,7 +169,10 @@ One commit per milestone, `pnpm check && pnpm test` green before each.
 1. **Vendor** — done. `dependencies/pele/pele.global.js` (sha256 `0b0a46c5…a0910`,
    the same bytes from jsDelivr and from the npm package), update script, vendor
    guard test (which also pins the digest), README.
-2. **Engine + Node renderer** — fence, colon fence, import, `div.pele`; `src/renderers/pele.ts`; `processGraphs` image path.
+2. **Engine + Node renderer** — done. Fence, colon fence, import, `div.pele`;
+   `src/renderers/pele.ts`; `processGraphs` image path. With the CSS variables
+   left unresolved the raster is 98% black; the image test sits at 33% drawn
+   pixels against a 2% threshold (checked by removing the resolution).
 3. **Webview + scripts + theming** — `src/webview/lib/pele.ts`, preview container, script tags, export script, dark palette.
 4. **Tests and docs** — jest suites per area (incl. a hostile-diagram security test through the real bundle and the real sanitizer), a Playwright spec, CHANGELOG, full check/test/build, smoke test in a real VS Code.
 5. **Ship** — push, PR, self-review, CI green, squash merge.

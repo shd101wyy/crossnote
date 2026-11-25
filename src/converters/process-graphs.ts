@@ -6,6 +6,7 @@ import { parseBlockAttributes } from '../lib/block-attributes';
 import computeChecksum from '../lib/compute-checksum';
 import { Notebook } from '../notebook';
 import * as plantumlAPI from '../renderers/puml';
+import { renderPele } from '../renderers/pele';
 import * as vegaAPI from '../renderers/vega';
 import * as vegaLiteAPI from '../renderers/vega-lite';
 import { Viz } from '../renderers/viz';
@@ -59,7 +60,7 @@ export async function processGraphs(
     if (
       trimmedLine.match(/^```(.+)"?cmd"?[:=]/) || // code chunk
       trimmedLine.match(
-        /^```(puml|plantuml|dot|viz|mermaid|vega|vega-lite|wavedrom)/,
+        /^```(puml|plantuml|dot|viz|mermaid|pele|vega|vega-lite|wavedrom)/,
       )
     ) {
       // graphs
@@ -362,6 +363,30 @@ export async function processGraphs(
           )})${imageOptions}  `;
 
         imagePaths.push(pngFilePath);
+      } catch (error) {
+        clearCodeBlock(lines, start, end);
+        lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
+      }
+    } else if (def.match(/^pele\b/)) {
+      // Pele draws Mermaid syntax too. Unlike mermaid it needs no external
+      // tool here: its bundle runs in the Node process (renderers/pele.ts).
+      try {
+        const checksum = computeChecksum(optionsStr + content);
+        let svg = graphsCache[checksum];
+        if (!svg) {
+          svg = renderPele(content);
+          graphsCache[checksum] = svg;
+        }
+        await convertSVGToPNGFile(
+          options['filename'] as string | undefined,
+          svg,
+          lines,
+          start,
+          end,
+          true,
+          (options['alt'] as string | undefined) || '',
+          optionsStr,
+        );
       } catch (error) {
         clearCodeBlock(lines, start, end);
         lines[end] += `\n` + `\`\`\`\n${error}\n\`\`\`  \n`;
