@@ -212,54 +212,130 @@ describe('the script that draws the diagrams of an exported document', () => {
     );
   });
 
-  test('marks the scheme of the page where the stylesheet switches colors', () => {
+  /**
+   * Run the script in a page whose <body> and <html> have the given
+   * background colors, and return the scheme it marked the page with, and
+   * the colors it asked a canvas for. Without `canvas` the page has no 2D
+   * context and the colors are read from their text; with one, the context
+   * holds `pixel` for whichever color it is given, a transparent one excepted.
+   */
+  function schemeOf(
+    body: string,
+    html: string,
+    canvas?: { pixel: number[] },
+  ): { scheme: string | undefined; fills: string[] } {
+    const attributes: Record<string, string> = {};
+    const fills: string[] = [];
+    const context2d = {
+      fillStyle: '',
+      clearRect: () => undefined,
+      fillRect: () => {
+        fills.push(context2d.fillStyle);
+      },
+      getImageData: () => ({
+        data:
+          context2d.fillStyle === 'rgba(0, 0, 0, 0)'
+            ? [0, 0, 0, 0]
+            : canvas?.pixel,
+      }),
+    };
+    const document = {
+      querySelector: () => null,
+      querySelectorAll: () => [],
+      createElement: () => ({
+        getContext: () => (canvas ? context2d : null),
+      }),
+      body: {
+        setAttribute: (name: string, value: string) => {
+          attributes[name] = value;
+        },
+      },
+      documentElement: {},
+    };
+    const page = vm.createContext({
+      console: { error() {} },
+      pele: {},
+      document,
+      getComputedStyle: (element: unknown) => ({
+        backgroundColor: element === document.documentElement ? html : body,
+        getPropertyValue: () => '',
+        fontFamily: 'Arial',
+      }),
+    });
+    page.window = page;
+    vm.runInContext(script, page);
+    return { scheme: attributes['data-preview-theme'], fills };
+  }
+
+  test('marks the page with the attribute the stylesheet keys colors on', () => {
     // style-template.less keys pele's dark palette on the same attribute the
     // preview sets on <body>.
-    expect(script).toContain(
-      "document.body.setAttribute('data-preview-theme', luminance > 128 ? 'light' : 'dark')",
-    );
     const stylesheet = fs.readFileSync(
       path.resolve(__dirname, '../styles/style-template.less'),
       'utf8',
     );
     expect(stylesheet).toContain("[data-preview-theme='dark'] .pele {");
+    expect(schemeOf('rgb(36, 41, 46)', 'rgba(0, 0, 0, 0)').scheme).toBe('dark');
+    expect(schemeOf('rgb(255, 255, 255)', 'rgba(0, 0, 0, 0)').scheme).toBe(
+      'light',
+    );
   });
 
   test('reads a page that paints neither <body> nor <html> as a light one', () => {
     // The `none.css` preview theme paints neither: the document is black
     // text on the canvas, which is white. Read from <body> alone such a page
     // came out dark, and its diagrams in the dark palette.
-    const schemeOf = (body: string, html: string): string | undefined => {
-      const attributes: Record<string, string> = {};
-      const context = vm.createContext({
-        console: { error() {} },
-        pele: {},
-        document: {
-          querySelector: () => null,
-          querySelectorAll: () => [],
-          body: {
-            setAttribute: (name: string, value: string) => {
-              attributes[name] = value;
-            },
-          },
-          documentElement: {},
-        },
-        getComputedStyle: (element: unknown) => ({
-          backgroundColor:
-            element === context.document.documentElement ? html : body,
-          getPropertyValue: () => '',
-          fontFamily: 'Arial',
-        }),
-      });
-      context.window = context;
-      vm.runInContext(script, context);
-      return attributes['data-preview-theme'];
-    };
+    expect(schemeOf('rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)').scheme).toBe(
+      'light',
+    );
+    expect(schemeOf('rgb(255, 255, 255)', 'rgba(0, 0, 0, 0)').scheme).toBe(
+      'light',
+    );
+    expect(schemeOf('rgb(36, 41, 46)', 'rgba(0, 0, 0, 0)').scheme).toBe('dark');
+    expect(schemeOf('rgba(0, 0, 0, 0)', 'rgb(13, 17, 23)').scheme).toBe('dark');
+  });
 
-    expect(schemeOf('rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0)')).toBe('light');
-    expect(schemeOf('rgb(255, 255, 255)', 'rgba(0, 0, 0, 0)')).toBe('light');
-    expect(schemeOf('rgb(36, 41, 46)', 'rgba(0, 0, 0, 0)')).toBe('dark');
-    expect(schemeOf('rgba(0, 0, 0, 0)', 'rgb(13, 17, 23)')).toBe('dark');
+  test('reads a background that is not opaque over the white canvas', () => {
+    // What shows through a background by its alpha is the canvas, which is
+    // white. These colors are read from their text, as where the page has no
+    // canvas: read as whole numbers alone, 0.8 came out as nothing showing.
+    expect(schemeOf('rgba(13, 17, 23, 0.8)', 'rgba(0, 0, 0, 0)').scheme).toBe(
+      'dark',
+    );
+    expect(schemeOf('rgba(13, 17, 23, 0.05)', 'rgba(0, 0, 0, 0)').scheme).toBe(
+      'light',
+    );
+    // Through a canvas the alpha is in the pixel too.
+    const barely = { pixel: [13, 17, 23, 51] };
+    const fully = { pixel: [13, 17, 23, 255] };
+    expect(schemeOf('rgba(0, 0, 0, 0)', '#0d1117', barely).scheme).toBe(
+      'light',
+    );
+    expect(schemeOf('rgba(0, 0, 0, 0)', '#0d1117', fully).scheme).toBe('dark');
+  });
+
+  test('reads a color in whatever form the page wrote it, through a canvas', () => {
+    // rgb() and rgba() are not the only forms. Read as numbers from the
+    // text, a color-mix() came out light and an oklch() one as transparent.
+    const dark = { pixel: [13, 17, 23, 255] };
+    expect(
+      schemeOf(
+        'color-mix(in srgb, #0d1117 90%, white)',
+        'rgba(0, 0, 0, 0)',
+        dark,
+      ),
+    ).toEqual({
+      scheme: 'dark',
+      fills: ['color-mix(in srgb, #0d1117 90%, white)'],
+    });
+    expect(
+      schemeOf('oklch(0.2 0.01 260)', 'rgba(0, 0, 0, 0)', dark).scheme,
+    ).toBe('dark');
+    // <body> shows nothing of its own: <html> is asked, and answers.
+    expect(schemeOf('rgba(0, 0, 0, 0)', 'oklch(0.2 0.01 260)', dark)).toEqual({
+      scheme: 'dark',
+      fills: ['rgba(0, 0, 0, 0)', 'oklch(0.2 0.01 260)'],
+    });
   });
 
   test('cannot end its own script element early', () => {
@@ -293,17 +369,29 @@ describe('Chrome export with pele diagrams', () => {
    * Run the engine's emitted scripts against a controllable page. Only the
    * browser transport is replaced; parsing, HTML generation and export are
    * real. The classic scripts run as the document is loaded — the one that
-   * draws the pele diagrams among them — with `pele` as the page's own.
+   * draws the pele diagrams among them, unless `drawingScript` is off — with
+   * `pele` as the page's own.
    */
-  function browserHarness(pele: PeleRenderer | undefined) {
+  function browserHarness(
+    pele: PeleRenderer | undefined,
+    { drawingScript = true }: { drawingScript?: boolean } = {},
+  ) {
     const diagrams: FakeDiagram[] = [];
     const body: { attributes: Record<string, string> } = { attributes: {} };
     const captures: Array<Array<{ drawn: string; processed: string }>> = [];
     const context = vm.createContext({
       console: { error() {} },
       document: {
-        querySelector: () => null, // no Mermaid diagram
+        querySelector: (selector: string) =>
+          // What the export asks: a pele diagram that was not drawn. No
+          // Mermaid diagram.
+          selector === 'div.pele:not([data-processed])'
+            ? (diagrams.find(
+                (diagram) => !diagram.attributes['data-processed'],
+              ) ?? null)
+            : null,
         querySelectorAll: () => diagrams,
+        createElement: () => ({ getContext: () => null }), // no canvas
         body: {
           setAttribute: (name: string, value: string) => {
             body.attributes[name] = value;
@@ -350,7 +438,9 @@ describe('Chrome export with pele diagrams', () => {
         for (const [, script] of html.matchAll(
           /<script>([\s\S]*?)<\/script>/g,
         )) {
-          vm.runInContext(script, context);
+          if (drawingScript || !script.includes('__crossnotePeleExport')) {
+            vm.runInContext(script, context);
+          }
         }
       },
       waitForFunction: async (predicate: () => unknown) => {
@@ -441,6 +531,23 @@ describe('Chrome export with pele diagrams', () => {
 
     await expect(engine.chromeExport()).rejects.toThrow(
       'Pele rendering failed: The pele script is not loaded.',
+    );
+    expect(harness.captures).toEqual([]);
+    expect(fs.existsSync(path.join(directory, 'note.pdf'))).toBe(false);
+    expect(harness.browser.close).toHaveBeenCalledTimes(1);
+  });
+
+  test('fails, and writes no file, when a diagram was left undrawn', async () => {
+    // Nothing is reported in place of such a diagram: it would be captured
+    // as the source text stands in the document.
+    const harness = browserHarness(pele, { drawingScript: false });
+    jest
+      .mocked(launch)
+      .mockResolvedValue(harness.browser as unknown as Browser);
+    const engine = await createEngine('```pele\nflowchart LR\n  A --> B\n```');
+
+    await expect(engine.chromeExport()).rejects.toThrow(
+      'Pele rendering failed: A diagram was not drawn',
     );
     expect(harness.captures).toEqual([]);
     expect(fs.existsSync(path.join(directory, 'note.pdf'))).toBe(false);

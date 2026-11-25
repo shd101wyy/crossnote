@@ -563,6 +563,45 @@ test('an exported document that paints neither <body> nor <html> is a light page
   expect(errors).toEqual([]);
 });
 
+test('an exported document reads the background of its page in whatever form it is written', async ({
+  page,
+}) => {
+  // A browser keeps the space a color is written in: <body> is painted with
+  // an oklch() or a color-mix() as readily as with rgb(), and keeps a
+  // fractional alpha. One pixel of a canvas holds any of them as rgba. Read
+  // as numbers from the text, a color-mix() came out light and a
+  // mostly-opaque dark one as transparent.
+  const errors = errorsOf(page);
+  await openWithPele(page);
+  await page.addStyleTag({ content: stylesheet });
+  for (const [color, scheme] of [
+    ['color-mix(in srgb, #0d1117 90%, white)', 'dark'],
+    ['oklch(0.2 0.01 260)', 'dark'],
+    ['#0d1117cc', 'dark'],
+    ['rgb(13 17 23 / 5%)', 'light'],
+  ] as const) {
+    const sheet = await page.addStyleTag({
+      content: `body { background-color: ${color}; }`,
+    });
+    const selector = await drawIn(page, blocksOf([FLOWCHART.source]), 'export');
+    const colors = await readColors(page, selector);
+    // What the browser handed the script.
+    const computed = await page.evaluate(
+      () => getComputedStyle(document.body).backgroundColor,
+    );
+    await sheet.evaluate((element) => (element as HTMLElement).remove());
+
+    expect({ color, computed, ...colors }).toEqual({
+      color,
+      computed,
+      scheme,
+      label: scheme === 'dark' ? DARK_LABEL : LIGHT_LABEL,
+      node: scheme === 'dark' ? DARK_NODE : LIGHT_NODE,
+    });
+  }
+  expect(errors).toEqual([]);
+});
+
 test('the bundle draws without the APIs the oldest supported webview lacks', async ({
   page,
 }) => {
@@ -571,15 +610,14 @@ test('the bundle draws without the APIs the oldest supported webview lacks', asy
   // by name; this draws with them gone — all but `Symbol.dispose` and
   // `Symbol.asyncDispose`, whose slots a page cannot empty. Nor can Node 18,
   // which has them too: for those two, the guard test is the only check.
+  // (`Array.prototype.toSorted` and its two siblings are of Chromium 110, so
+  // the floor has them.)
   const removed = [
     'Promise.withResolvers',
     'Object.groupBy',
     'Map.groupBy',
     'Array.fromAsync',
     'URL.canParse',
-    'Array.prototype.toSorted',
-    'Array.prototype.toReversed',
-    'Array.prototype.toSpliced',
   ];
   await page.addInitScript((removed) => {
     for (const path of removed) {

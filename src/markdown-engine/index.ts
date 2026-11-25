@@ -2009,13 +2009,21 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
       // Pele draws synchronously while the page loads, so there is nothing to
       // wait for, and a diagram that cannot be drawn is reported in its
-      // place. Only the drawing script itself failing — the pele bundle not
-      // loading, mostly — fails the export.
-      const peleError = await page.evaluate(
-        () => (window as PeleExportWindow).__crossnotePeleExport?.message,
-      );
-      if (peleError !== undefined) {
-        throw new Error('Pele rendering failed: ' + peleError);
+      // place. Two things fail the export: the drawing script itself failing
+      // — the pele bundle not loading, mostly — and a diagram that script
+      // never reached, which would be captured as its source text.
+      const peleFailure = await page.evaluate(() => {
+        const message = (window as PeleExportWindow).__crossnotePeleExport
+          ?.message;
+        if (message !== undefined) {
+          return message;
+        }
+        return document.querySelector('div.pele:not([data-processed])')
+          ? 'A diagram was not drawn: the script that draws them did not reach it.'
+          : undefined;
+      });
+      if (peleFailure !== undefined) {
+        throw new Error('Pele rendering failed: ' + peleFailure);
       }
 
       const chromeConfig =
