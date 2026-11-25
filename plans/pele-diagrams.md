@@ -5,10 +5,11 @@ Status: **in progress** (started 2026-11-25 on `feat/pele-diagrams`, off `develo
 ## Goal
 
 Let a note draw a diagram by writing Mermaid syntax in a `pele` fenced code block
-(also `:::pele`, and `@import("x.pele")`), rendered by [pele](https://pele.run)
+(also `:::pele`, and `@import "x.pele";`), rendered by [pele](https://pele.run)
 (<https://www.npmjs.com/package/pele>) everywhere crossnote renders mermaid
 diagrams: the VS Code preview, `crossnote serve`, the wiki, presentations, HTML
-export, PDF (Chrome, Prince), and the pandoc / markdown exports.
+export, PDF (through Chrome; the Prince export has not been tried), and the
+pandoc / markdown exports.
 
 ## Why this shape
 
@@ -120,7 +121,7 @@ source}</div>` (`src/render-enhancers/fenced-diagrams.ts`); the webview
   `<div class="pele …attrs">{escape(code)}</div>` (rendered on the client).
   `code_block=true`, `hide`, `output_first` behave as for mermaid.
 - `COLON_FENCE_CODE_LANGUAGES` += `pele` (`:::pele`).
-- `transformer.ts`: `@import("x.pele")` becomes a `pele` fence, like `.mermaid`.
+- `transformer.ts`: `@import "x.pele";` becomes a `pele` fence, like `.mermaid`.
 - `extension-helper.ts`: prism scope of `pele` = `mermaid`.
 
 ### Webview — `src/webview/lib/pele.ts`
@@ -192,8 +193,13 @@ One commit per milestone, `pnpm check && pnpm test` green before each.
    initialised), script tags (preview, export, offline / CDN), the export
    script `src/markdown-engine/pele-export.ts` and the `chromeExport` check,
    dark palette keyed on `<body data-preview-theme>`. In an exported document
-   the scheme is read from the body's background as the preview reads it; every
-   preview theme but `none.less` gives `<body>` its background.
+   the scheme is read where the page is painted — `<body>`, else `<html>` —
+   and a page that paints neither is the white canvas it is shown on, a light
+   page; the preview takes such a page for dark (it sits in an app that is
+   dark by default). A color is read through one pixel of a canvas, so that a
+   fractional alpha and a color written as `oklch()` or a `color-mix()` come
+   out right; where the engine has no canvas, `rgb()` and `rgba()` are read
+   from the text.
 4. **Tests and docs** — jest suites per area (engine, Node renderer, vendored
    bundle, webview helper incl. a hostile-diagram security test through the
    real bundle and the real sanitizer, export template and script) and

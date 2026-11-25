@@ -17,9 +17,6 @@ import type { PeleRenderer } from '../lib/pele';
 import * as path from 'path';
 import { getCrossnoteBuildDirectory } from '../utility';
 
-export type { PeleRenderer };
-export { evaluatePeleBundle };
-
 /** What was loaded, and from which file: the build directory can be set later. */
 let loaded: { from: string; pele: PeleRenderer | null } | undefined;
 
@@ -47,8 +44,8 @@ export function loadPele(): PeleRenderer | null {
 }
 
 /**
- * Replace every `var(--x)` and `var(--x, fallback)` in the attribute values of
- * `svg` by a concrete value.
+ * Replace the `var(--x)` and `var(--x, fallback)` in the attribute values of
+ * pele's `svg` by concrete values.
  *
  * Pele themes a diagram with CSS variables. The root `<svg>` declares them in
  * its `style` attribute, each as the fallback of a `--pele-*` variable that
@@ -58,6 +55,12 @@ export function loadPele(): PeleRenderer | null {
  * value from `variables`, as the page would set it, and is otherwise its
  * fallback: one of pele's defaults, which are made for a light page. Text
  * content is left alone: a label that says `var(--x)` keeps saying it.
+ *
+ * This reads the forms pele writes — the declarations of a double-quoted root
+ * `style`, each a plain value or one variable reference — and is no CSS
+ * parser: a value with a `;` in it or parentheses nested two deep is read
+ * only in part, and so is a root whose `style` comes after an attribute that
+ * holds a `>`.
  */
 export function inlineCssVariables(
   svg: string,

@@ -1921,8 +1921,9 @@ const PreviewContainer = createContainer(() => {
     // Every slide's pele diagrams are drawn now, before the first slide is
     // shown. Unlike Mermaid's, they do not need their slide to be laid out:
     // pele measures its labels on a canvas. So each is there when its slide
-    // is first shown, and Reveal's first layout takes it into account. The
-    // slides are not inside the preview element but beside it, under <body>.
+    // is first shown, and the layout that `renderSlide` ends with centers the
+    // slide with it. The slides are not inside the preview element but beside
+    // it, under <body>.
     renderPeleDiagrams(document.body);
 
     // The diagrams of the slides render one slide at a time, in the order

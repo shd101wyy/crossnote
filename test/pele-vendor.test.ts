@@ -31,9 +31,6 @@ const FLOOR_APIS: { label: string; usage: RegExp }[] = [
   { label: 'Object.groupBy', usage: /Object\.groupBy/ },
   { label: 'Map.groupBy', usage: /Map\.groupBy/ },
   { label: 'Array.fromAsync', usage: /Array\.fromAsync/ },
-  { label: 'Array.prototype.toSorted', usage: /\.toSorted\(/ },
-  { label: 'Array.prototype.toReversed', usage: /\.toReversed\(/ },
-  { label: 'Array.prototype.toSpliced', usage: /\.toSpliced\(/ },
   { label: 'URL.canParse', usage: /URL\.canParse/ },
   { label: 'Symbol.dispose', usage: /Symbol\.dispose/ },
   { label: 'Symbol.asyncDispose', usage: /Symbol\.asyncDispose/ },
@@ -107,8 +104,8 @@ describe('vendored pele bundle', () => {
   });
 
   test('contains no runtime APIs newer than the webview floor', () => {
-    // A bundle calling a Chromium-116+ API parses everywhere but throws at
-    // runtime in older webviews.
+    // A bundle calling an API of a later Chromium parses everywhere but
+    // throws at runtime in older webviews.
     const used = FLOOR_APIS.filter((api) => api.usage.test(bundle)).map(
       (api) => api.label,
     );

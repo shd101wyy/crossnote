@@ -37,7 +37,7 @@ const ensureClassInAttributes = (
   }
 };
 
-// same order as in docs
+// same order as in docs, pele beside mermaid, whose syntax it draws
 const supportedLanguages = [
   'mermaid',
   'pele',
