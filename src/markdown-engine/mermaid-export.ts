@@ -9,6 +9,13 @@ export function buildMermaidExportScript(
   hasZenUML: boolean,
 ): string {
   return `
+// A page can carry the script twice: the first one renders, and the others
+// have nothing to add.
+if (!window.__crossnoteMermaidExport) {
+  await render()
+}
+
+async function render() {
 // Page load and data-processed do not imply that Mermaid's layout is complete.
 window.__crossnoteMermaidExport = { status: 'pending' }
 try {
@@ -30,26 +37,129 @@ if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.theme = MERMAID_CONFIG.theme || "${config.mermaidTheme}"
 }
 
+/**
+ * Show the diagram's element in the top layer, for Mermaid to measure in, and
+ * return what puts it back.
+ *
+ * A slide Reveal has not loaded is not displayed; it is displayed, invisibly,
+ * for as long as the diagram is rendered in it. Without a top layer the scale
+ * of the slides reaches the diagram, as before.
+ */
+function showInTopLayer(diagram) {
+  // Styles are written and removed as attributes, not through the style
+  // object of an element: Chromium brings an empty style attribute back where
+  // a style written through the style object of an element that had no style
+  // attribute is removed.
+  const cssText = diagram.getAttribute('style')
+  const shown = []
+  for (let el = diagram; el && el !== document.body; el = el.parentElement) {
+    if (getComputedStyle(el).display === 'none') {
+      const styleText = el.getAttribute('style')
+      shown.push([el, styleText, el.style.visibility])
+      el.setAttribute('style', (styleText ? styleText + '; ' : '') + 'display: block; visibility: hidden')
+    }
+  }
+  const style = getComputedStyle(diagram)
+  const width = diagram.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+  diagram.setAttribute('popover', 'manual')
+  // The top layer gives the element a border and a padding of its own and no
+  // width, and a minimum and maximum in percent of the window: it is as wide
+  // as it is in its slide, and not shown.
+  const styleText = diagram.getAttribute('style')
+  diagram.setAttribute('style', (styleText ? styleText + '; ' : '') + 'border: 0; padding: 0; width: ' + width + 'px; min-width: 0; max-width: none; visibility: hidden')
+  let inTopLayer = false
+  try {
+    diagram.showPopover()
+    inTopLayer = diagram.matches(':popover-open')
+  } catch (error) {
+    // No top layer here.
+  }
+  if (!inTopLayer) {
+    diagram.removeAttribute('popover')
+  }
+  return function () {
+    for (const [el, styleText, visibility] of shown) {
+      // reveal.js sets the display of a slide it enters or leaves, and never
+      // its visibility. Where it has had the slide since, the display is
+      // left to it.
+      if (el.style.display === 'block' && !el.classList.contains('present')) {
+        if (styleText) {
+          el.setAttribute('style', styleText)
+        } else {
+          el.removeAttribute('style')
+        }
+      } else {
+        el.style.visibility = visibility
+      }
+    }
+    diagram.removeAttribute('popover')
+    if (cssText) {
+      diagram.setAttribute('style', cssText)
+    } else {
+      diagram.removeAttribute('style')
+    }
+  }
+}
+
 mermaid.initialize(MERMAID_CONFIG || {})
-// Complete the initial pass before Reveal can start separate renders.
-await mermaid.run({
-  nodes: document.querySelectorAll('div.mermaid')
+// Only reveal.js is waited for and laid out again: a page that has something
+// else under the name Reveal is not a presentation.
+const reveal = typeof Reveal !== 'undefined' && typeof Reveal.isReady === 'function' ? Reveal : null
+const slides = reveal ? document.querySelector('.reveal .slides') : null
+// Reveal scales the slides it has laid out, and Mermaid measures a diagram in
+// its element, so that in that scale no label is wrapped (crossnote#575). In a
+// presentation the element of each diagram is shown in the top layer for its
+// rendering, where the scale does not reach it, as wide as it is in its slide;
+// it is done with once Reveal has laid the slides out. The print view of
+// reveal.js, which a PDF export is laid out in once the page has loaded, is
+// left to it.
+const inSlides = !!slides && !(typeof reveal.isPrintView === 'function' ? reveal.isPrintView() : /print-pdf/i.test(location.search))
+if (inSlides) {
+  await new Promise(function (resolve) {
+    if (reveal.isReady()) {
+      resolve()
+    } else {
+      reveal.addEventListener('ready', resolve)
+    }
+  })
+}
+const diagrams = Array.from(document.querySelectorAll('div.mermaid'))
+// Mermaid gives the diagrams of one run ids that differ. A run per diagram
+// would give them all the same id where ids are deterministic, and a diagram
+// takes the place of the one that has its id.
+const groups = MERMAID_CONFIG && MERMAID_CONFIG.deterministicIds ? [diagrams] : diagrams.map(function (diagram) {
+  return [diagram]
 })
-if (typeof(window['Reveal']) !== 'undefined') {
-  function mermaidRevealHelper(event) {
-    var currentSlide = event.currentSlide
-    var diagrams = currentSlide.querySelectorAll('div.mermaid')
-    for (var i = 0; i < diagrams.length; i++) {
-      var diagram = diagrams[i]
-      if (!diagram.hasAttribute('data-processed')) {
-        mermaid.init(null, diagram, ()=> {
-          Reveal.slide(event.indexh, event.indexv)
-        })
+let failure = null
+let rendered = false
+try {
+  for (const group of groups) {
+    const restore = []
+    try {
+      if (inSlides) {
+        for (const diagram of group) {
+          restore.push(showInTopLayer(diagram))
+        }
+      }
+      await mermaid.run({ nodes: group })
+      rendered = true
+    } catch (error) {
+      failure = failure || error
+    } finally {
+      for (const undo of restore) {
+        undo()
       }
     }
   }
-  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
-  Reveal.addEventListener('ready', mermaidRevealHelper)
+} finally {
+  // Reveal centers a slide from the height of its content, which the diagrams
+  // have changed.
+  if (inSlides && rendered) {
+    reveal.layout()
+  }
+}
+if (failure) {
+  throw failure
 }
 window.__crossnoteMermaidExport = { status: 'complete' }
 } catch (error) {
@@ -58,6 +168,7 @@ window.__crossnoteMermaidExport = { status: 'complete' }
     message: String(error && error.message || error)
   }
   console.error(error)
+}
 }
 `;
 }
