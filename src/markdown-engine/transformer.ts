@@ -12,7 +12,7 @@ import {
   stringifyBlockAttributes,
 } from '../lib/block-attributes';
 import computeChecksum from '../lib/compute-checksum';
-import { escapeUrlPath, toFileURL } from '../utility';
+import { escapeUrlPath, splitUrlReference, toFileURL } from '../utility';
 import { Notebook } from '../notebook';
 import { findFragmentTargetLine } from '../notebook/note-fragments';
 import { MarkdownParser } from '../notebook/types';
@@ -74,6 +74,59 @@ const fileExtensionToLanguageMap = {
   gv: 'dot',
   viz: 'dot',
 };
+
+/**
+ * The slide configs of an imported file, for the file that imports it. The
+ * slides count as being on the line of the import, and the paths of their
+ * backgrounds, which the importing file resolves against its own directory,
+ * are made paths from the root of the project: those are resolved the same
+ * from either file. Where the file has no directory here, as one on the web,
+ * its backgrounds are left as they are written.
+ */
+function importedSlideConfigs(
+  slideConfigs: BlockAttributes[],
+  lineNo: number,
+  fileDirectoryPath: string | null,
+  projectDirectoryPath: string,
+  protocolsWhiteListRegExp: RegExp | null,
+): BlockAttributes[] {
+  const backgrounds = [
+    'data-background-image',
+    'data-background-video',
+    'data-background-iframe',
+  ];
+  return slideConfigs.map((slideConfig) => {
+    const config: BlockAttributes = { ...slideConfig, lineNo };
+    for (const background of backgrounds) {
+      const value = config[background];
+      if (!fileDirectoryPath || typeof value !== 'string') {
+        continue;
+      }
+      const { path: backgroundPath, suffix } = splitUrlReference(value);
+      // A URL, or a path from the root of the project or of the system, is
+      // resolved the same from either file.
+      if (
+        (protocolsWhiteListRegExp && value.match(protocolsWhiteListRegExp)) ||
+        value.startsWith('data:') ||
+        value.startsWith('tag://') ||
+        value.startsWith('#') ||
+        path.isAbsolute(backgroundPath)
+      ) {
+        continue;
+      }
+      config[background] =
+        '/' +
+        escapeUrlPath(
+          path.relative(
+            projectDirectoryPath,
+            path.resolve(fileDirectoryPath, backgroundPath),
+          ),
+        ) +
+        suffix;
+    }
+    return config;
+  });
+}
 
 /**
  * Convert 2D array to markdown table.
@@ -304,7 +357,7 @@ export async function transformMarkdown(
   let inMathDisplayBlock = false;
   let mathBlockCloseTag: string | null = null;
   let codeChunkOffset = 0;
-  const slideConfigs: BlockAttributes[] = [];
+  let slideConfigs: BlockAttributes[] = [];
   const JSAndCssFiles: string[] = [];
   let headings: HeadingData[] = [];
   let tocBracketEnabled = false;
@@ -1114,30 +1167,45 @@ export async function transformMarkdown(
               }
               // markdown files
               // this return here is necessary
-              const { outputString: output2, headings: headings2 } =
-                await transformMarkdown(fileContent, {
-                  fileDirectoryPath: path.dirname(absoluteFilePath),
-                  projectDirectoryPath,
-                  filesCache,
-                  useRelativeFilePath: false,
-                  forPreview: false,
-                  markdownParser,
-                  forMarkdownExport,
-                  protocolsWhiteListRegExp,
-                  notSourceFile: true, // <= this is not the sourcefile
-                  imageDirectoryPath,
-                  notebook,
-                  // Use a fresh generator per recursive file import.
-                  // Sharing the outer's stateful generator causes the
-                  // same heading text to slug differently on second use
-                  // (e.g. `colours` → `colours-1`), which then breaks
-                  // fragment-to-heading lookup at the slice step.
-                  headingIdGenerator: new HeadingIdGenerator(),
-                  fileHash,
-                });
+              const {
+                outputString: output2,
+                headings: headings2,
+                slideConfigs: slideConfigs2,
+              } = await transformMarkdown(fileContent, {
+                fileDirectoryPath: path.dirname(absoluteFilePath),
+                projectDirectoryPath,
+                filesCache,
+                useRelativeFilePath: false,
+                forPreview: false,
+                markdownParser,
+                forMarkdownExport,
+                protocolsWhiteListRegExp,
+                notSourceFile: true, // <= this is not the sourcefile
+                imageDirectoryPath,
+                notebook,
+                // Use a fresh generator per recursive file import.
+                // Sharing the outer's stateful generator causes the
+                // same heading text to slug differently on second use
+                // (e.g. `colours` → `colours-1`), which then breaks
+                // fragment-to-heading lookup at the slice step.
+                headingIdGenerator: new HeadingIdGenerator(),
+                fileHash,
+              });
 
               output = '\n' + output2 + '  ';
               headings = headings.concat(headings2);
+              slideConfigs.push(
+                ...importedSlideConfigs(
+                  slideConfigs2,
+                  lineNo + 1,
+                  protocolsWhiteListRegExp &&
+                    filePath.match(protocolsWhiteListRegExp)
+                    ? null
+                    : path.dirname(absoluteFilePath),
+                  projectDirectoryPath,
+                  protocolsWhiteListRegExp,
+                ),
+              );
             } else if (extname === '.html') {
               // html file
               output = '<div>' + fileContent + '</div>  ';
@@ -1431,6 +1499,19 @@ export async function transformMarkdown(
     }
 
     if (fileHash) {
+      // A slide marker of a line that is not kept would take the place of a
+      // marker of the importing file.
+      const keepSlideConfigsOfLines = (
+        firstLineNo: number,
+        afterLineNo: number,
+      ) => {
+        slideConfigs = slideConfigs.filter(
+          (slideConfig) =>
+            slideConfig.lineNo >= firstLineNo &&
+            slideConfig.lineNo < afterLineNo,
+        );
+      };
+
       // URL-decode so `#Filenaming%20conventions` (Obsidian-encoded
       // markdown link) matches the same heading as `#Filenaming conventions`.
       let targetId = fileHash.slice(1);
@@ -1466,8 +1547,10 @@ export async function transformMarkdown(
             );
           }
           outputString = paragraph.join('\n');
+          keepSlideConfigsOfLines(startIdx + 1, endIdx + 2);
         } else {
           outputString = `<!-- crossnote: block "${targetId}" not found -->`;
+          slideConfigs = [];
         }
         headings = [];
       } else if (targetId) {
@@ -1508,18 +1591,21 @@ export async function transformMarkdown(
               .split('\n')
               .slice(startLineNo - 1, endLineNo - 1)
               .join('\n');
+            keepSlideConfigsOfLines(startLineNo, endLineNo);
           } else {
             headings = headings.slice(startHeadingIndex);
             outputString = outputString
               .split('\n')
               .slice(startLineNo - 1)
               .join('\n');
+            keepSlideConfigsOfLines(startLineNo, Infinity);
           }
         } else {
           // Heading not found: render an error marker rather than
           // silently falling through and emitting the whole file.
           outputString = `<!-- crossnote: heading "${targetId}" not found -->`;
           headings = [];
+          slideConfigs = [];
         }
       }
     }

@@ -20,6 +20,9 @@ interface Slide {
   h: string;
   v: string;
   text: string;
+  line: string;
+  /** The `data-background-*` attributes of the slide. */
+  backgrounds: Record<string, string>;
 }
 
 /**
@@ -28,10 +31,17 @@ interface Slide {
 async function renderSlides(
   markdown: string,
   markdownParser: 'markdown-it' | 'pandoc' = 'markdown-it',
+  files: Record<string, string> = {},
+  useRelativeFilePath: boolean = false,
 ): Promise<Slide[]> {
   const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
   const filePath = path.join(tmpDir, 'deck.md');
   fs.writeFileSync(filePath, markdown);
+  for (const [name, content] of Object.entries(files)) {
+    const file = path.join(tmpDir, name);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, content);
+  }
   const notebook = await Notebook.init({
     notebookPath: tmpDir,
     config: {
@@ -42,7 +52,7 @@ async function renderSlides(
   const engine = new MarkdownEngine({ notebook, filePath });
   const { html } = await engine.parseMD(markdown, {
     isForPreview: true,
-    useRelativeFilePath: false,
+    useRelativeFilePath,
     hideFrontMatter: false,
   });
 
@@ -55,6 +65,16 @@ async function renderSlides(
       h: section.attribs['data-h'],
       v: section.attribs['data-v'],
       text: $(section).text().replace(/\s+/g, ' ').trim(),
+      line: section.attribs['data-source-line'],
+      backgrounds: Object.keys(section.attribs).reduce(
+        (backgrounds: Record<string, string>, name) => {
+          if (name.startsWith('data-background-')) {
+            backgrounds[name] = section.attribs[name];
+          }
+          return backgrounds;
+        },
+        {},
+      ),
     }));
 }
 
@@ -139,6 +159,372 @@ let a = 1;
     expect(slides.map(({ h, v }) => [h, v])).toEqual([['0', '0']]);
     expect(slides[0].text).toMatch(/^First .* Second$/);
   });
+
+  const part = `<!-- slide -->
+
+# Part A
+
+<!-- slide -->
+
+# Part B
+`;
+
+  test('the slides of an imported markdown file are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+![](part.md)
+
+<!-- slide -->
+
+# Second
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual([
+      'First',
+      'Part A',
+      'Part B',
+      'Second',
+    ]);
+    expect(slides.map(({ line }) => line)).toEqual(['1', '5', '5', '7']);
+  });
+
+  test('the slides of a markdown file imported as the last block are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+![](part.md)
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual([
+      'First',
+      'Part A',
+      'Part B',
+    ]);
+  });
+
+  test('the slides of an embedded markdown file are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+![[part.md]]
+
+<!-- slide -->
+
+# Second
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual([
+      'First',
+      'Part A',
+      'Part B',
+      'Second',
+    ]);
+    expect(slides.map(({ line }) => line)).toEqual(['1', '5', '5', '7']);
+  });
+
+  test('only the slides of an imported section are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+@import "part.md#Part A"
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+      'markdown-it',
+      {
+        'part.md': `# Part A
+
+<!-- slide -->
+
+## A.2
+
+# Part B
+
+<!-- slide -->
+
+## B.1
+`,
+      },
+    );
+
+    // The marker before `# Part B` is not in the deck: it does not take the
+    // place of the one before `# Second`.
+    expect(slides.map(({ text }) => text)).toEqual([
+      'First Part A',
+      'A.2',
+      'Second',
+    ]);
+    expect(slides.map(({ h, v, line }) => [h, v, line])).toEqual([
+      ['0', '0', '1'],
+      ['1', '0', '5'],
+      ['1', '1', '7'],
+    ]);
+  });
+
+  test('only the slides of an imported block are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+@import "part.md#^note"
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+      'markdown-it',
+      {
+        'part.md': `<!-- slide -->
+
+# Other
+
+<!-- slide -->
+Text ^note
+`,
+      },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual(['First', 'Text', 'Second']);
+    expect(slides.map(({ h, v, line }) => [h, v, line])).toEqual([
+      ['0', '0', '1'],
+      ['1', '0', '5'],
+      ['1', '1', '7'],
+    ]);
+  });
+
+  test('the slides of a section that is not found are not brought along', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+@import "part.md#No such part"
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual(['First', 'Second']);
+    expect(slides.map(({ h, v, line }) => [h, v, line])).toEqual([
+      ['0', '0', '1'],
+      ['0', '1', '7'],
+    ]);
+  });
+
+  test('the slides of a block that is not found are not brought along', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+@import "part.md#^no such block"
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual(['First', 'Second']);
+    expect(slides.map(({ h, v, line }) => [h, v, line])).toEqual([
+      ['0', '0', '1'],
+      ['0', '1', '7'],
+    ]);
+  });
+
+  test('a section that runs to the end of its file brings its slides, and no other', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+@import "part.md#Part A"
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+      'markdown-it',
+      {
+        'part.md': `<!-- slide -->
+# Part A
+<!-- slide -->
+
+## A.1
+`,
+      },
+    );
+
+    expect(slides.map(({ text }) => text)).toEqual([
+      'First Part A',
+      'A.1',
+      'Second',
+    ]);
+    expect(slides.map(({ h, v, line }) => [h, v, line])).toEqual([
+      ['0', '0', '1'],
+      ['1', '0', '5'],
+      ['1', '1', '7'],
+    ]);
+  });
+
+  // A slide marker on the first line of the part, and one on its last
+  // line, are the part's; the ones just before and after it are not.
+  for (const [what, hash, part, texts] of [
+    [
+      'a section',
+      'Part A',
+      `<!-- slide -->
+# Part A
+<!-- slide -->
+## A.2
+<!-- slide -->
+# Part B
+
+<!-- slide -->
+
+## B.1
+`,
+      ['First Part A', 'A.2', '', 'Second'],
+    ],
+    [
+      'a block',
+      '^note',
+      `<!-- slide -->
+
+# Other
+
+<!-- slide -->
+Text ^note
+<!-- slide -->
+`,
+      ['First', 'Text', '', 'Second'],
+    ],
+  ] as const) {
+    test(`the markers on the first and the last line of ${what} are its slides`, async () => {
+      const slides = await renderSlides(
+        `<!-- slide -->
+
+# First
+
+@import "part.md#${hash}"
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+        'markdown-it',
+        { 'part.md': part },
+      );
+
+      // The marker on the last line of the part starts a slide of its own.
+      expect(slides.map(({ text }) => text)).toEqual(texts);
+      // Each marker of the part starts a slide of its own row.
+      expect(slides.map(({ h, v, line }) => [h, v, line])).toEqual([
+        ['0', '0', '1'],
+        ['1', '0', '5'],
+        ['2', '0', '5'],
+        ['2', '1', '7'],
+      ]);
+    });
+  }
+
+  test('the backgrounds of the slides of a file imported from the web are left as they are written', async () => {
+    // The file has no directory of its own here: the paths are resolved as
+    // those of the importing file are.
+    const originalFetch = global.fetch;
+    global.fetch = (async () =>
+      new Response(
+        '<!-- slide data-background-image="bg.png" -->\n\n# From the web\n',
+      )) as typeof fetch;
+    try {
+      const slides = await renderSlides(
+        '@import "https://example.com/part.md"',
+      );
+      expect(slides.map(({ text }) => text)).toEqual(['From the web']);
+      expect(slides[0].backgrounds['data-background-image']).toEqual(
+        expect.stringMatching(/^file:\/\/.*\/bg\.png$/),
+      );
+      // Not a path made of the address of the file.
+      expect(slides[0].backgrounds['data-background-image']).not.toContain(
+        'example.com',
+      );
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  for (const useRelativeFilePath of [false, true]) {
+    test(`the backgrounds of the slides of an imported file are found from that file, in ${
+      useRelativeFilePath ? 'relative' : 'absolute'
+    } paths`, async () => {
+      const slides = await renderSlides(
+        `@import "sub/part.md"`,
+        'markdown-it',
+        {
+          'sub/part.md': `<!-- slide data-background-image="bg.png" data-background-video="https://example.com/clip.mp4" data-background-iframe="/root.html" -->
+
+# Part A
+
+<!-- slide data-background-video="clip.mp4#t=2" data-background-iframe="page%3F1.html" -->
+
+# Part B
+`,
+        },
+        useRelativeFilePath,
+      );
+
+      // How the path of a file in the directory `directory` of the notebook
+      // comes out.
+      const pathTo = (directory: string, file: string) =>
+        useRelativeFilePath
+          ? `${directory}${file}`
+          : expect.stringMatching(
+              new RegExp(
+                `^file://.*/${directory}${file.replace(/\./g, '\\.')}$`,
+              ),
+            );
+
+      // A URL, and a path from the root of the project, are as they were.
+      expect(slides[0].backgrounds).toEqual({
+        'data-background-image': pathTo('sub/', 'bg.png'),
+        'data-background-video': 'https://example.com/clip.mp4',
+        'data-background-iframe': pathTo('', 'root.html'),
+      });
+      // The query of a video stays one, and so does a name that is written
+      // with an escaped character.
+      expect(slides[1].backgrounds).toEqual({
+        'data-background-video': pathTo('sub/', 'clip.mp4#t=2'),
+        'data-background-iframe': pathTo('sub/', 'page%3F1.html'),
+      });
+    });
+  }
 
   test('a marker that is not in a paragraph of its own starts the line it is on', async () => {
     // In a block of raw HTML the marker is a bare span on a line of its own.
