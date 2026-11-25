@@ -4,6 +4,7 @@
 import type { PeleRenderer } from '../src/lib/pele';
 import { loadPele } from '../src/renderers/pele';
 import { renderPeleDiagrams } from '../src/webview/lib/pele';
+import { PELE_HOSTILE } from './fixtures/pele-hostile';
 
 // The renderer finds the bundle through src/utility, which does not load in
 // the jsdom environment: jest resolves that module's `yaml` import to the ESM
@@ -248,79 +249,7 @@ describe('the vendored pele bundle in the preview', () => {
   });
 
   describe('a hostile diagram', () => {
-    /**
-     * Written to get markup of its own into the page — HTML in labels and
-     * titles, links to script URLs, a JavaScript callback, an image from a
-     * data URL — across pele's diagram types. Each parses: the attack is to
-     * go through the drawing, not fail in front of it.
-     */
-    const HOSTILE = [
-      `flowchart LR
-  A["<img src=x onerror=alert(1)>"] --> B["<script>alert(1)</script>"]
-  click A "javascript:alert(1)" "open"
-  click B "javascript:alert(2)"
-  C["<a href='javascript:alert(3)'>x</a>"] --> D["<svg onload=alert(4)>"]
-  click C "data:text/html,<script>alert(6)</script>" "open"
-  click D "vbscript:msgbox(1)"
-  E["x"] --> F["y"]
-  click F "https://example.com/?a=<script>alert(7)</script>" "open"
-  click E call alert(8)
-  classDef x fill:#f00,color:#fff,stroke:#000
-  class A x
-  style B fill:#00f,stroke:#000
-  linkStyle 0 stroke:#f00`,
-      `flowchart LR
-  I@{ img: "javascript:alert(1)", label: "pic" } --> J@{ img: "data:image/svg+xml,<svg onload=alert(1)>", label: "data" }`,
-      `sequenceDiagram
-  participant A as <img src=x onerror=alert(1)>
-  A->>B: <script>alert(1)</script>
-  link A: "javascript:alert(1)" "open"`,
-      `pie title <script>alert(1)</script>
-  "a" : 1
-  "b" : 2`,
-      `mindmap
-  root["<img src=x onerror=alert(1)>"]
-    a
-      b`,
-      `classDiagram
-  class A {
-    +<img src=x onerror=alert(1)>
-  }
-  link A "javascript:alert(1)" "open"
-  A --> B`,
-      `stateDiagram-v2
-  state "<img src=x onerror=alert(1)>" as s2
-  s1 --> s2
-  click s1 "javascript:alert(1)" "open"`,
-      `gantt
-  title <script>alert(1)</script>
-  dateFormat YYYY-MM-DD
-  section S
-  <img src=x onerror=alert(1)> :a1, 2026-01-01, 30d`,
-      `journey
-  title <script>alert(1)</script>
-  section S
-    <img src=x onerror=alert(1)>: 5: me`,
-      `kanban
-  todo["<img src=x onerror=alert(1)>"]
-  A["<script>alert(1)</script>"]`,
-      `timeline
-  title <script>alert(1)</script>
-    2001 : <img src=x onerror=alert(1)>`,
-      `C4Context
-  title <script>alert(1)</script>
-  Person(a, "<img src=x onerror=alert(1)>")
-  System(b, "B")
-  Rel(a, b, "uses")`,
-      `sankey-beta
-  "<img src=x onerror=alert(1)>","<script>alert(1)</script>",10`,
-      `radar-beta
-  title <script>alert(1)</script>
-  axis a["<img src=x onerror=alert(1)>"]
-  curve c1["<script>alert(1)</script>"] {1, 2}`,
-    ];
-
-    it.each(HOSTILE.map((source, index) => [index, source] as const))(
+    it.each(PELE_HOSTILE.map((source, index) => [index, source] as const))(
       'leaves nothing of hostile diagram %i in the page',
       (_index, source) => {
         const node = makeNode(source);

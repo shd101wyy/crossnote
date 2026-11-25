@@ -80,3 +80,4 @@ To update pele:
 4. Update the pele version in the CDN fallback script URL in `src/markdown-engine/index.ts` (`pele@<version>/dist/pele.global.js`).
 5. Add a `CHANGELOG.md` entry.
 6. Check `test/pele-vendor.test.ts` — it fails the bump if the new bundle calls an API the oldest supported webview lacks. Unlike mermaid's, pele's bundle gets no shim: such an API has to be reported to pele or the bump held back.
+7. Look at the tests of **"the SVG it hands back, as it is"** in that file. An exported document has no sanitizer, so they draw the hostile diagrams of `test/fixtures/pele-hostile.ts` with the new bundle and fail on any element outside pele's vocabulary, event handler, link to elsewhere than the web, or style that reaches outside the diagram. A new element or attribute there is to be understood before its name is added to the test.

@@ -3,6 +3,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { PeleRenderer } from '../src/lib/pele';
 import { evaluatePeleBundle } from '../src/lib/pele-bundle';
+import { PELE_DIAGRAMS } from './fixtures/pele-diagrams';
+import {
+  PELE_HOSTILE,
+  PELE_HOSTILE_INERT_TRACE,
+} from './fixtures/pele-hostile';
 
 /**
  * `dependencies/pele/pele.global.js` is loaded by a `<script>` tag in every
@@ -157,5 +162,164 @@ describe('vendored pele bundle', () => {
     );
     expect(fallback).not.toBeNull();
     expect(fallback?.[1]).toBe(banner?.[1]);
+  });
+
+  describe('the SVG it hands back, as it is', () => {
+    // An exported document has no sanitizer: `src/markdown-engine/pele-export.ts`
+    // writes what `pele.render` returns into the page, as mermaid's output is
+    // written there. The webview draws the same hostile diagrams through its
+    // sanitizer (`test/webview-pele-render.test.ts`), which says nothing about
+    // this output — with an escaping regression, a pele bump would pass every
+    // other test. So the output itself is held to what a review of the 1.13.0
+    // build found it to be: nothing of a diagram's text comes out as markup, a
+    // link or a style.
+    const pele = loadPele(bundle);
+
+    /**
+     * Every element the bundle has a template for. `br`, `div`, `p` and
+     * `foreignObject` are on its math path only, which crossnote never enables.
+     */
+    const PELE_ELEMENTS = new Set([
+      'a',
+      'circle',
+      'defs',
+      'desc',
+      'ellipse',
+      'g',
+      'image',
+      'linearGradient',
+      'path',
+      'polygon',
+      'rect',
+      'stop',
+      'svg',
+      'text',
+      'title',
+      'tspan',
+    ]);
+    /** Attributes a document loads or goes to. */
+    const URL_ATTRIBUTES = [
+      'href',
+      'xlink:href',
+      'src',
+      'action',
+      'formaction',
+      'poster',
+      'data',
+      'background',
+    ];
+    const SCHEMES = new Set(['http', 'https', 'mailto', 'tel']);
+
+    // A tag, with each of its attributes in double quotes. Pele escapes `<` in
+    // text and `>` and the quote in an attribute value, so a tag is a tag: what
+    // is left once the tags are taken out is text, which has neither.
+    const TAG = /<([a-zA-Z][\w:-]*)((?:\s+[\w:-]+="[^"]*")*)\s*\/?>/g;
+
+    function tagsOf(svg: string) {
+      const tags: Array<{ element: string; attributes: [string, string][] }> =
+        [];
+      for (const match of svg.matchAll(TAG)) {
+        // Each occurrence on its own: one that comes twice on a tag is read
+        // twice, as a browser keeps the first of them, whatever follows.
+        const attributes: [string, string][] = [];
+        for (const attribute of match[2].matchAll(/([\w:-]+)="([^"]*)"/g)) {
+          attributes.push([attribute[1], attribute[2]]);
+        }
+        tags.push({ element: match[1], attributes });
+      }
+      return { tags, rest: svg.replace(TAG, '').replace(/<\/[\w:-]+>/g, '') };
+    }
+
+    /**
+     * The scheme of a URL as a browser reads it — without the whitespace that
+     * `jav` + tab + `ascript:` is made of, and trimmed of what else a browser
+     * ignores at its ends — or `undefined` for a relative one. One that names
+     * no scheme and begins with two slashes names a host.
+     */
+    function schemeOf(url: string): string | undefined {
+      const compact = url.replace(/\s/g, '').trim();
+      if (/^(\/\/|\/\\)/.test(compact)) {
+        return 'protocol-relative';
+      }
+      return compact.match(/^([a-z][a-z0-9+.-]*):/i)?.[1].toLowerCase();
+    }
+
+    const drawings = [
+      ...PELE_DIAGRAMS.map((diagram) => diagram.source),
+      ...PELE_HOSTILE,
+      ...PELE_HOSTILE_INERT_TRACE,
+    ].map((source, index) => {
+      // None of the hostile ones fails: each parses, or it would be shown as
+      // an error and never reach the page.
+      let svg: string;
+      try {
+        svg = pele.render(source).svg;
+      } catch (error) {
+        throw new Error(`diagram ${index} does not parse: ${String(error)}`, {
+          cause: error,
+        });
+      }
+      return { index, ...tagsOf(svg) };
+    });
+
+    test('is made of its own elements, each attribute in quotes and written once', () => {
+      const found: string[] = [];
+      for (const { index, tags, rest } of drawings) {
+        if (/[<"]/.test(rest)) {
+          found.push(`${index}: ${rest.match(/.{0,20}[<"].{0,20}/)?.[0]}`);
+        }
+        for (const { element, attributes } of tags) {
+          if (!PELE_ELEMENTS.has(element)) {
+            found.push(`${index}: <${element}>`);
+          }
+          // Pele writes each once. One that comes twice hides whatever the
+          // first one says: a browser reads that one and no other.
+          const names = attributes.map(([name]) => name);
+          const twice = names.filter((name, at) => names.indexOf(name) !== at);
+          if (twice.length > 0) {
+            found.push(`${index}: ${twice.join(', ')} twice on <${element}>`);
+          }
+        }
+      }
+      expect(found).toEqual([]);
+    });
+
+    test('has no event handler, and no style that reaches outside the diagram', () => {
+      const found: string[] = [];
+      for (const { index, tags } of drawings) {
+        for (const { element, attributes } of tags) {
+          for (const [name, value] of attributes) {
+            if (/^on/i.test(name)) {
+              found.push(`${index}: ${name} on <${element}>`);
+            }
+            if (
+              name === 'style' &&
+              /url\s*\(|expression\s*\(|@import/i.test(value)
+            ) {
+              found.push(`${index}: style="${value}"`);
+            }
+          }
+        }
+      }
+      expect(found).toEqual([]);
+    });
+
+    test('links and loads from the web, mail, the phone or the page itself', () => {
+      const found: string[] = [];
+      for (const { index, tags } of drawings) {
+        for (const { element, attributes } of tags) {
+          for (const [name, value] of attributes) {
+            if (!URL_ATTRIBUTES.includes(name)) {
+              continue;
+            }
+            const scheme = schemeOf(value);
+            if (scheme !== undefined && !SCHEMES.has(scheme)) {
+              found.push(`${index}: ${name}="${value}" on <${element}>`);
+            }
+          }
+        }
+      }
+      expect(found).toEqual([]);
+    });
   });
 });
