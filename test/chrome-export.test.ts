@@ -43,7 +43,10 @@ function browserHarness(
   const context = vm.createContext({
     console: { error() {} },
     document: {
-      querySelector: () => diagrams[0] ?? null,
+      // The page holds Mermaid diagrams, which the export asks about by
+      // that selector alone — it asks after pele ones by another.
+      querySelector: (selector: string) =>
+        selector === 'div.mermaid' ? (diagrams[0] ?? null) : null,
       querySelectorAll: () => diagrams,
     },
     mermaid: {

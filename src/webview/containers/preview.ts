@@ -9,6 +9,7 @@ import { Backlink, WebviewConfig } from '../../notebook';
 import { classifyAnchorClick } from '../lib/anchor-routing';
 import { setLocale } from '../lib/i18n';
 import { mermaidErrorHtml, renderMermaidDiagram } from '../lib/mermaid';
+import { renderPeleDiagrams } from '../lib/pele';
 import { applyColorSchemeToPictures } from '../lib/picture-color-scheme';
 import { sanitizeHtml } from '../lib/sanitize';
 import {
@@ -1348,6 +1349,9 @@ const PreviewContainer = createContainer(() => {
         isBackgroundColorLight(document.body) ? 'light' : 'dark',
       );
 
+      // Drawn before anything is awaited: pele draws at once, so the diagrams
+      // are there with the rest of the page.
+      renderPeleDiagrams(previewElement.current);
       await Promise.all([renderInteractiveVega(), renderMermaid()]);
 
       if (!isCurrent()) {
@@ -2032,6 +2036,14 @@ const PreviewContainer = createContainer(() => {
     firstSlide.style.visibility = 'hidden';
     // analyze slides
     initSlidesData();
+
+    // Every slide's pele diagrams are drawn now, before the first slide is
+    // shown. Unlike Mermaid's, they do not need their slide to be laid out:
+    // pele measures its labels on a canvas. So each is there when its slide
+    // is first shown, and the layout that `renderSlide` ends with centers the
+    // slide with it. The slides are not inside the preview element but beside
+    // it, under <body>.
+    renderPeleDiagrams(document.body);
 
     // The diagrams of the slides render one slide at a time, in the order
     // asked for. A slide asked for again while its diagrams render, as the

@@ -37,9 +37,10 @@ const ensureClassInAttributes = (
   }
 };
 
-// same order as in docs
+// same order as in docs, pele beside mermaid, whose syntax it draws
 const supportedLanguages = [
   'mermaid',
+  'pele',
   'puml',
   'plantuml',
   'wavedrom',
@@ -243,8 +244,10 @@ async function renderDiagram({
   } else {
     try {
       switch (normalizedInfo.language) {
-        case 'mermaid': {
-          // these diagrams are rendered on the client
+        case 'mermaid':
+        case 'pele': {
+          // these diagrams are rendered on the client: mermaid by the mermaid
+          // bundle, pele (Mermaid syntax, another renderer) by the pele bundle
           $output = `<div ${stringifyBlockAttributes(
             ensureClassInAttributes(
               normalizedInfo.attributes,
