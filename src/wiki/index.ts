@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as vscode from 'vscode';
+import { jsonForScript } from '../lib/json-for-script';
 import { MarkdownEngine, MarkdownEngineOutput } from '../markdown-engine';
 import type { WebviewConfig } from '../notebook';
 import { previewHostShimScript } from '../serve/preview-host-shim';
@@ -811,9 +812,10 @@ function buildShellHTML({
       { cause: error },
     );
   }
-  // Escape `</script>`-breakouts: `<` inside the JSON payload (and inside
-  // the inlined app, for good measure) becomes a JS unicode escape.
-  const payload = JSON.stringify({
+  // `<` inside the JSON payload (and inside the inlined app, for good
+  // measure) becomes a JS unicode escape, so that no `</script>` in it can
+  // end the script.
+  const payload = jsonForScript({
     rootDirectories: rootNames,
     assets,
     themes,
@@ -821,7 +823,7 @@ function buildShellHTML({
     graph,
     backlinks,
     files,
-  }).replace(/</g, '\\u003c');
+  });
   const safeAppScript = appScript.replace(/<\/script/g, '<\\/script');
   const safeAppStyle = appStyle.replace(/<\/style/g, '<\\/style');
 
