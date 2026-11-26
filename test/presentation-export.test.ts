@@ -8,6 +8,7 @@ import {
   getCrossnoteBuildDirectory,
   setCrossnoteBuildDirectory,
 } from '../src/utility';
+import { readAgain } from './fixtures/mutating-markup';
 
 /**
  * The presentation (reveal.js) wiring of HTML exports: the engine emits the
@@ -232,14 +233,17 @@ describe('presentation HTML export (reveal.js)', () => {
   });
 
   test('a slide has neither an event handler, nor a background iframe or speaker notes that would run script', async () => {
+    // The notes are markup that a page reads differently from the sanitizer:
+    // reveal.js reads them once more, into the window of its speaker view.
     const html = await exportDeck({ offline: false }, [
-      `<!-- slide class="mine" onmouseover="alert(1)" data-background-iframe="javascript:alert(1)" data-notes='<input autofocus onfocus=alert(2)><b>Speak</b>' -->`,
+      `<!-- slide class="mine" onmouseover="alert(1)" data-background-iframe="javascript:alert(1)" data-notes='<form><math><mtext></form><form><mglyph><style></math><input autofocus onfocus=alert(2)><b>Speak</b>' -->`,
       '# One',
       '',
     ]);
     const attributes = load(html)('section.slide')
       .toArray()
       .flatMap((section) => Object.entries(section.attribs));
+    const notes = Object.fromEntries(attributes)['data-notes'];
 
     // Whatever else the slide says.
     expect(attributes.filter(([name]) => /^on/i.test(name))).toEqual([]);
@@ -247,9 +251,10 @@ describe('presentation HTML export (reveal.js)', () => {
       'data-background-iframe',
     );
     expect(Object.fromEntries(attributes)).toMatchObject({
-      'class': 'slide mine',
-      'data-notes': '<input autofocus=""><b>Speak</b>',
+      class: 'slide mine',
     });
+    expect(readAgain(notes)).toEqual([]);
+    expect(notes).toContain('<b>Speak</b>');
   });
 
   test('offline export inlines reveal.js and the notes plugin, self-contained', async () => {

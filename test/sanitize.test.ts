@@ -1,5 +1,10 @@
 import * as cheerio from 'cheerio';
 import { sanitizeRenderedHTML } from '../src/markdown-engine/sanitize';
+import {
+  LONG_MUTATION,
+  MUTATIONS,
+  readAgain,
+} from './fixtures/mutating-markup';
 
 describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
   function sanitize(html: string): string {
@@ -167,6 +172,19 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
 
       expect(notes).toBe('<section data-notes="<input>"></section>');
     });
+
+    it.each([...MUTATIONS, LONG_MUTATION])(
+      'leaves no event handler in the notes of a slide, whatever reading a page gives them: %s',
+      (markup) => {
+        const $ = cheerio.load('<section><p>Slide</p></section>', null, false);
+        $('section').attr('data-notes', markup);
+        const result = sanitize($.root().html() ?? '');
+        const notes = cheerio.load(result)('section').attr('data-notes');
+
+        // reveal.js reads the notes as the content of an element.
+        expect(readAgain(notes ?? '')).toEqual([]);
+      },
+    );
 
     it('leaves an attribute of another element as it is, though it is named the same', () => {
       const result = sanitize(

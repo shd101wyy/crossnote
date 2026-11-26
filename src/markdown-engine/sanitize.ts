@@ -74,7 +74,7 @@ export function sanitizeRenderedHTML($: CheerioAPI): void {
         (el as Element).name === 'section' &&
         HTML_ATTRIBUTES.has(attr.toLowerCase())
       ) {
-        attribs[attr] = sanitizeHtml(attribs[attr]);
+        attribs[attr] = sanitizeStableHTML(attribs[attr]);
         continue;
       }
 
@@ -106,9 +106,36 @@ export function sanitizeRenderedHTML($: CheerioAPI): void {
   });
 }
 
-/** Sanitize HTML written as the value of an attribute, as the HTML it is. */
-function sanitizeHtml(html: string): string {
-  const $ = cheerio.load(html, null, false);
-  sanitizeRenderedHTML($);
-  return $.root().html() ?? '';
+/**
+ * How many readings are given up on: markup can be written so that every
+ * reading puts an event handler one reading further away (a form nested in
+ * MathML does it), so no number of readings is enough for all markup.
+ */
+const MAX_READINGS = 3;
+
+/**
+ * Sanitize HTML that a page takes back as HTML, and return it as HTML.
+ *
+ * Reading markup a second time can read it differently from the first: in
+ * MathML and SVG, what one reading takes for the text of a `style` element is
+ * an element with an event handler in the next — a "mutation". So the markup
+ * is read and sanitized again until reading it once more changes nothing;
+ * where it has not stopped changing after `MAX_READINGS` readings, its MathML
+ * and SVG are taken out, for nowhere else do two readings differ.
+ *
+ * It is read as the content of an element, which is how the page takes it.
+ */
+export function sanitizeStableHTML(html: string): string {
+  for (let reading = 0; ; reading++) {
+    const $ = cheerio.load(`<div>${html}</div>`);
+    if (reading === MAX_READINGS) {
+      $('math, svg').remove();
+    }
+    sanitizeRenderedHTML($);
+    const next = $('div').html() ?? '';
+    if (next === html || reading === MAX_READINGS) {
+      return next;
+    }
+    html = next;
+  }
 }
