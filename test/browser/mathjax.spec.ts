@@ -1,7 +1,10 @@
 import * as path from 'path';
 import { expect, Page, test } from '@playwright/test';
 import { build } from 'esbuild';
-import { buildMathJaxConfigScript } from '../../src/markdown-engine/mathjax-config';
+import {
+  buildMathJaxConfigScript,
+  mathJaxConfigOf,
+} from '../../src/markdown-engine/mathjax-config';
 import { getDefaultMathjaxConfig } from '../../src/notebook/types';
 import { startServer, TestServer } from './server';
 
@@ -163,6 +166,68 @@ test('dropping typesetClear/texReset regresses numbering (guards why we keep the
   // typeset again without resetting MathJax's label/equation state.
   const laterErrors = rounds.slice(1).flatMap((r) => r.errors);
   expect(laterErrors.join('\n')).toMatch(/multiply defined/i);
+});
+
+const MERMAID_SOURCE = 'graph TD\n  A["cost $5"] --> B["price $10"]\n';
+const PELE_SOURCE = 'flowchart LR\n  A["cost $5"] --> B["price $10"]\n';
+
+/**
+ * Typeset a formula next to the sources of two diagrams — what the staged
+ * page holds before the diagrams are drawn — and return what became of them.
+ */
+function typesetNextToDiagrams(page: Page) {
+  return page.evaluate(
+    async ({ mermaid, pele }) => {
+      const MathJax = (window as WindowWithMathJax).MathJax;
+      const hidden = document.getElementById('hidden')!;
+      hidden.innerHTML =
+        '<p>Price is $x$.</p>' +
+        `<div class="mermaid">${mermaid}</div>` +
+        `<div class="pele">${pele}</div>`;
+      MathJax.typesetClear();
+      MathJax.texReset();
+      await MathJax.typesetPromise([hidden]);
+      return {
+        formulas: hidden.querySelectorAll('p mjx-container').length,
+        mermaid: hidden.querySelector('div.mermaid')?.textContent ?? null,
+        pele: hidden.querySelector('div.pele')?.textContent ?? null,
+      };
+    },
+    { mermaid: MERMAID_SOURCE, pele: PELE_SOURCE },
+  );
+}
+
+test('leaves the sources of mermaid and pele diagrams alone (#599)', async ({
+  page,
+}) => {
+  // What the engine gives MathJax for a note.
+  const config = mathJaxConfigOf(makeConfig(), {
+    mathInlineDelimiters: [['$', '$']],
+    mathBlockDelimiters: [['$$', '$$']],
+  });
+  await loadMathJax(page, config);
+
+  const typeset = await typesetNextToDiagrams(page);
+
+  // The formula of the page is typeset, and each diagram is left as written.
+  expect(typeset).toEqual({
+    formulas: 1,
+    mermaid: MERMAID_SOURCE,
+    pele: PELE_SOURCE,
+  });
+});
+
+test('unless it is told to, takes what stands between two $ of a source for a formula', async ({
+  page,
+}) => {
+  // What the test above is worth: without the instruction, the two sources
+  // are no longer the ones written.
+  await loadMathJax(page, makeConfig());
+
+  const typeset = await typesetNextToDiagrams(page);
+
+  expect(typeset.mermaid).not.toBe(MERMAID_SOURCE);
+  expect(typeset.pele).not.toBe(PELE_SOURCE);
 });
 
 test('semantic enrichment is disabled by default for performance (#2312)', async ({

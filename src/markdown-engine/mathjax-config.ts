@@ -65,3 +65,49 @@ export function buildMathJaxConfigScript(
   };
 })();`;
 }
+
+/**
+ * The configuration MathJax is given for a note: that of the notebook, with
+ * the math delimiters, and told to leave the sources of diagrams alone.
+ *
+ * The source of a mermaid or pele diagram is text in the page until the
+ * diagram is drawn, and MathJax takes what stands between two `$` of it for
+ * a formula: the diagram is then drawn from a source that is no longer the
+ * one written, and a `$$…$$` a mermaid label holds never reaches mermaid's
+ * own math. MathJax leaves `pre` and `code` alone by itself; it is told to
+ * leave those elements alone too.
+ *
+ * The classes it leaves alone are named in the options of the document
+ * (`options.ignoreHtmlClass`) — not in those of the tex input — as one
+ * pattern of alternatives, or as a list. Whatever the configuration names
+ * is kept; what is named replaces MathJax's own `mathjax_ignore`, which
+ * stays when nothing is named.
+ */
+export function mathJaxConfigOf(
+  mathJaxConfig: Record<string, unknown>,
+  config: { mathInlineDelimiters: string[][]; mathBlockDelimiters: string[][] },
+): Record<string, unknown> {
+  const options = mathJaxConfig['options'] as
+    | Record<string, unknown>
+    | undefined;
+  const ignored = options?.['ignoreHtmlClass'];
+  const named = (Array.isArray(ignored) ? ignored : [ignored]).filter(Boolean);
+  return {
+    ...mathJaxConfig,
+    tex: {
+      ...(mathJaxConfig['tex'] as Record<string, unknown> | undefined),
+      inlineMath: config.mathInlineDelimiters,
+      displayMath: config.mathBlockDelimiters,
+    },
+    options: {
+      ...options,
+      // One pattern of alternatives, with MathJax's own class unless the
+      // configuration names others.
+      ignoreHtmlClass: [
+        ...(named.length > 0 ? named : ['mathjax_ignore']),
+        'mermaid',
+        'pele',
+      ].join('|'),
+    },
+  };
+}
