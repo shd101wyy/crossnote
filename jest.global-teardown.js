@@ -1,10 +1,17 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
-// The folder the setup made is the TMPDIR of this process now.
 module.exports = () => {
-  const dir = process.env.TMPDIR || '';
-  if (path.basename(dir) === `crossnote-jest-${process.pid}`) {
-    fs.rmSync(dir, { recursive: true, force: true });
+  const dir = os.tmpdir();
+  if (path.basename(dir) !== `crossnote-jest-${process.pid}`) {
+    return;
+  }
+  fs.rmSync(dir, { recursive: true, force: true });
+  // The folder of before, for a run that follows in this process.
+  for (const name of process.platform === 'win32'
+    ? ['TEMP', 'TMP']
+    : ['TMPDIR']) {
+    process.env[name] = path.dirname(dir);
   }
 };
