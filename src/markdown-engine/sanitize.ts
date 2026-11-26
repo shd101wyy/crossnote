@@ -84,15 +84,13 @@ function sanitize($: CheerioAPI, notesAreHTML: boolean): void {
     }
   });
 
-  // An SVG animation can give a link its address after the sanitizer has
-  // looked at the link: an `<animate attributeName="href" values="javascript:…">`
-  // in an `<a>` makes a link of it that runs when it is clicked. Nothing
-  // legitimate animates an address, so an animation of one is taken out.
+  // An SVG animation in the page can give a link its address after the
+  // sanitizer has looked at the link: an `<animate attributeName="href"
+  // values="javascript:…">` in an `<a>` makes a link of it that runs when it
+  // is clicked. Nothing legitimate animates an address, so an animation of one
+  // is taken out.
   $('animate, set').each((_, el: Element) => {
-    const animated = (el.attribs['attributeName'] ?? '')
-      .trim()
-      .toLowerCase()
-      .replace(/^xlink:/, '');
+    const animated = (el.attribs['attributeName'] ?? '').trim().toLowerCase();
     if (URL_ATTRIBUTES.includes(animated)) {
       $(el).remove();
     }

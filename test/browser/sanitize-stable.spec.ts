@@ -68,7 +68,7 @@ function readIn(page: Page, html: string): Promise<string[]> {
 test.describe('markup that a page takes back as HTML', () => {
   test.beforeEach(async ({ page }) => {
     // An image that cannot load runs the handler that one reading leaves.
-    page.on('dialog', (dialog) => dialog.dismiss());
+    page.on('dialog', (dialog) => dialog.dismiss().catch(() => {}));
     await page.goto(server.url);
   });
 
@@ -140,7 +140,8 @@ async function openExport(
   const opened = new Promise<void>((resolve) => {
     page.on('dialog', (dialog) => {
       dialogs.push(dialog.message());
-      dialog.dismiss();
+      // One that arrives as the page closes cannot be dismissed.
+      dialog.dismiss().catch(() => {});
       resolve();
     });
   });
