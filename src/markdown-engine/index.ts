@@ -2619,18 +2619,26 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
     }
 
+    // calibre 6.19+ adds no local file outside the folder of the page it is
+    // given: the page is written next to the note, so that the images of
+    // the notebook (and those downloaded above) are in the book.
+    const pagePath = path.resolve(
+      this.fileDirectoryPath,
+      `${path.basename(this.filePath, extname)}.${Math.random()
+        .toString(36)
+        .substr(2, 9)}.crossnote-ebook.html`,
+    );
+    let pageWritten = false;
     try {
-      const info = await utility.tempOpen({
-        prefix: 'crossnote',
-        suffix: '.html',
-      });
-      fs.writeFileSync(info.fd, html);
-      await ebookConvert(info.path, dest, ebookConfig);
-      deleteDownloadedImages();
+      await fs.promises.writeFile(pagePath, html, { flag: 'wx' });
+      pageWritten = true;
+      await ebookConvert(pagePath, dest, ebookConfig);
       return dest;
-    } catch (error) {
+    } finally {
       deleteDownloadedImages();
-      throw error;
+      if (pageWritten) {
+        await fs.promises.unlink(pagePath).catch(() => undefined);
+      }
     }
   }
 

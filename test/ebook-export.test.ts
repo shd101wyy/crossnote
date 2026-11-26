@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { load } from 'cheerio';
+import { ebookConvert } from '../src/converters/ebook-convert';
 import { mkdirSync, track } from '../src/lib/temp';
 import { MarkdownEngine } from '../src/markdown-engine';
 import { Notebook } from '../src/notebook';
@@ -15,6 +16,10 @@ import {
  * page, and the front matter gives the page its `id` and `class`. Each of
  * those is the note's, and is written after the page was sanitized.
  */
+
+jest.mock('../src/converters/ebook-convert', () => ({
+  ebookConvert: jest.fn(),
+}));
 
 jest.mock('less', () => ({
   render: (
@@ -183,6 +188,61 @@ describe('the eBook export', () => {
     expect(ofVscode).toContain('/* light */');
     expect(ofVscode).toContain('/* prism */');
     expect(ofVscode).not.toContain('/* prism of the light theme */');
+  });
+
+  describe('handed to ebook-convert', () => {
+    const convert = ebookConvert as jest.MockedFunction<typeof ebookConvert>;
+
+    afterEach(() => {
+      convert.mockReset();
+    });
+
+    /** Begin to export the note as an EPUB. */
+    async function exportEPUB() {
+      const filePath = path.join(tmpDir, 'note.md');
+      fs.writeFileSync(filePath, ebookOf(''));
+      const notebook = await Notebook.init({
+        notebookPath: tmpDir,
+        config: {
+          markdownParser: 'markdown-it',
+          markdownYoBinaryPath: '',
+          previewTheme: 'github-light.css',
+        },
+      });
+      const engine = new MarkdownEngine({ notebook, filePath });
+      return { exported: engine.eBookExport({ fileType: 'epub' }) };
+    }
+
+    const pagesLeft = () =>
+      fs.readdirSync(tmpDir).filter((f) => f.endsWith('.crossnote-ebook.html'));
+
+    test('is a page in the folder of the note, removed after the conversion', async () => {
+      // calibre 6.19+ adds no local file outside the folder of the page.
+      let src = '';
+      let existed = false;
+      convert.mockImplementation(async (page) => {
+        src = page;
+        existed = fs.existsSync(page);
+      });
+      const { exported } = await exportEPUB();
+
+      expect(await exported).toBe(path.join(tmpDir, 'note.epub'));
+      expect(path.dirname(src)).toBe(tmpDir);
+      expect(path.basename(src)).toMatch(/^note\..+\.crossnote-ebook\.html$/);
+      expect(existed).toBe(true);
+      expect(fs.existsSync(src)).toBe(false);
+      expect(pagesLeft()).toEqual([]);
+    });
+
+    test('is removed when the conversion fails', async () => {
+      convert.mockImplementation(async () => {
+        throw new Error('ebook-convert failed');
+      });
+      const { exported } = await exportEPUB();
+
+      await expect(exported).rejects.toThrow('ebook-convert failed');
+      expect(pagesLeft()).toEqual([]);
+    });
   });
 });
 
