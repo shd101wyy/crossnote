@@ -17,6 +17,13 @@ afterEach(() => {
 });
 
 describe('lib/temp', () => {
+  it('the temp folder of a run is a folder of that run alone', () => {
+    // jest's setup gives a run `crossnote-jest-<pid>`, which its teardown
+    // removes (jest.config.js): a jest that ran the setup in another process
+    // would leave `os.tmpdir()` where it was.
+    expect(path.basename(tmpdir())).toMatch(/^crossnote-jest-\d+$/);
+  });
+
   describe('mkdirSync', () => {
     it('creates a temp directory under os.tmpdir() with the given prefix', () => {
       const dirPath = temp.mkdirSync('crossnote-test');

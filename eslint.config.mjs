@@ -14,6 +14,8 @@ export default tseslint.config(
       'tailwind.config.js',
       'eslint.config.mjs',
       'jest.config.js',
+      'jest.global-setup.js',
+      'jest.global-teardown.js',
       'test.js',
       'node_modules/**',
       'out/**',
