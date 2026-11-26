@@ -98,6 +98,20 @@ describe('front matter written into a page', () => {
     expect(html).not.toMatch(/<script>\s*window\.__pwn/);
   });
 
+  test('the title of an eBook stays in the title element', async () => {
+    const title = `</title><script>window.__pwn = 1</script><title x="`;
+    const { engine } = await createEngine(
+      `---\nebook:\n  title: ${JSON.stringify(title)}\n---\n\n# One\n`,
+    );
+    // An eBook written as HTML is the work of the engine alone: the other
+    // formats are made from it by calibre.
+    const dest = await engine.eBookExport({ fileType: 'html' });
+    const html = fs.readFileSync(dest, 'utf8');
+
+    expect(load(html)('title').text()).toBe(title);
+    expect(html).not.toMatch(/<script>\s*window\.__pwn/);
+  });
+
   test('the id and the class of the front matter are the id and the class of the page', async () => {
     const { engine } = await createEngine(
       [
@@ -147,6 +161,7 @@ describe('front matter written into a page', () => {
       '  theme: white.css',
       `  x: ${JSON.stringify(SCRIPT_END)}`,
       `  width: ${JSON.stringify('960' + SCRIPT_END)}`,
+      `  view: ${JSON.stringify('print' + SCRIPT_END)}`,
     ].join('\n');
 
     test('cannot end the script that starts the presentation of an export', async () => {

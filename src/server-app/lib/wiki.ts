@@ -1,4 +1,5 @@
 import { WikiData, WikiFileMeta, WikiThemesPayload, dirname } from './api';
+import { jsonForScript } from '../../lib/json-for-script';
 import { graphHostShimScript } from '../../serve/graph-host-shim';
 
 /**
@@ -375,13 +376,13 @@ export function assembleWikiGraphDocument(
     nodes: [],
     links: [],
   };
-  const payload = JSON.stringify({
+  const payload = jsonForScript({
     data: graph,
     activeFilePath:
       anchorKey.includes('/') && data.rootDirectories.length > 1
         ? anchorKey.slice(anchorKey.indexOf('/') + 1)
         : anchorKey,
-  }).replace(/</g, '\u003c');
+  });
   const shim = graphHostShimScript({
     source: 'embedded',
     embeddedFileExpression: JSON.stringify(anchorKey),
