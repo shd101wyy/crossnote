@@ -2219,11 +2219,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
     }
 
+    // Every file a download began to write, next to the note.
+    const savePaths: string[] = [];
     const asyncFunctions = imagesToDownload.map(async ($img) => {
       const httpSrc = $img.attr('src') ?? '';
       let savePath =
         Math.random().toString(36).substr(2, 9) + '_' + path.basename(httpSrc);
       savePath = path.resolve(this.fileDirectoryPath, savePath);
+      savePaths.push(savePath);
 
       const response = await fetch(httpSrc);
       if (!response.ok || !response.body) {
@@ -2241,7 +2244,28 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       return savePath;
     });
 
-    return Promise.all(asyncFunctions);
+    // Every download is awaited first, so that a failed one takes nothing
+    // with it that another is still writing.
+    const results = await Promise.allSettled(asyncFunctions);
+    const savedPaths: string[] = [];
+    let failure: PromiseRejectedResult | undefined;
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        savedPaths.push(result.value);
+      } else if (failure === undefined) {
+        failure = result;
+      }
+    }
+    if (failure) {
+      // The export stops here: what was written next to the note is removed.
+      await Promise.all(
+        savePaths.map((savePath) =>
+          fs.promises.unlink(savePath).catch(() => undefined),
+        ),
+      );
+      throw failure.reason;
+    }
+    return savedPaths;
   }
 
   /**
