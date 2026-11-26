@@ -26,14 +26,14 @@ interface Slide {
 }
 
 /**
- * Render `markdown` as the preview of a presentation and return its slides.
+ * Render `markdown` as the preview of a document.
  */
-async function renderSlides(
+async function render(
   markdown: string,
   markdownParser: 'markdown-it' | 'pandoc' = 'markdown-it',
   files: Record<string, string> = {},
   useRelativeFilePath: boolean = false,
-): Promise<Slide[]> {
+): Promise<{ html: string; isPresentation: boolean }> {
   const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
   const filePath = path.join(tmpDir, 'deck.md');
   fs.writeFileSync(filePath, markdown);
@@ -58,6 +58,24 @@ async function renderSlides(
 
   // The marker of a slide that was not turned into one is left in the page.
   expect(html).not.toContain('[CROSSNOTESLIDE]');
+  return { html, isPresentation: engine.isPreviewInPresentationMode };
+}
+
+/**
+ * Render `markdown` as the preview of a presentation and return its slides.
+ */
+async function renderSlides(
+  markdown: string,
+  markdownParser: 'markdown-it' | 'pandoc' = 'markdown-it',
+  files: Record<string, string> = {},
+  useRelativeFilePath: boolean = false,
+): Promise<Slide[]> {
+  const { html } = await render(
+    markdown,
+    markdownParser,
+    files,
+    useRelativeFilePath,
+  );
   const $ = load(html);
   return $('section[data-h]')
     .toArray()
@@ -210,6 +228,148 @@ let a = 1;
       'First',
       'Part A',
       'Part B',
+    ]);
+  });
+
+  test('the slides of a file imported by an imported file are kept', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+![](part.md)
+
+<!-- slide -->
+
+# Second
+`,
+      'markdown-it',
+      {
+        'part.md': `# Part A
+
+![](sub/sub.md)
+`,
+        'sub/sub.md': `<!-- slide vertical=true -->
+
+# Sub A
+
+<!-- slide -->
+
+# Sub B
+`,
+      },
+    );
+
+    expect(slides.map(({ h, v, line, text }) => [h, v, line, text])).toEqual([
+      ['0', '0', '1', 'First Part A'],
+      ['0', '1', '5', 'Sub A'],
+      ['1', '0', '5', 'Sub B'],
+      ['2', '0', '7', 'Second'],
+    ]);
+  });
+
+  // An import indented by four spaces is a code block to markdown-it, so
+  // nothing of the file reaches the page: its slides cannot either
+  // (crossnote#585).
+  const asCodeBlock: [string, string][] = [
+    ['@import', `    @import "part.md"`],
+    ['an image import', `    ![](part.md)`],
+  ];
+
+  test.each(asCodeBlock)(
+    'the slides of a file imported as a code block (%s) do not take the place of the others',
+    async (_, asBlock) => {
+      const slides = await renderSlides(
+        `<!-- slide -->
+
+# First
+
+${asBlock}
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+        'markdown-it',
+        { 'part.md': part },
+      );
+
+      expect(slides.map(({ h, v, line, text }) => [h, v, line, text])).toEqual([
+        ['0', '0', '1', expect.stringMatching(/^First /)],
+        ['0', '1', '7', 'Second'],
+      ]);
+    },
+  );
+
+  test('the slides of a file imported as a code block above the first marker do not take the place of the first slide', async () => {
+    const slides = await renderSlides(
+      `    @import "part.md"
+
+<!-- slide -->
+
+# First
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ h, v, line, text }) => [h, v, line, text])).toEqual([
+      ['0', '0', '3', 'First'],
+    ]);
+  });
+
+  // Under pandoc an import indented by four spaces is not a code block, so
+  // the slides of the file are in the deck.
+  test('the slides of an indented import are kept under pandoc', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+    @import "part.md"
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+      'pandoc',
+      { 'part.md': part },
+    );
+
+    expect(slides.map(({ h, v, line, text }) => [h, v, line, text])).toEqual([
+      ['0', '0', '1', 'First'],
+      ['1', '0', '5', 'Part A'],
+      ['2', '0', '5', 'Part B'],
+      ['2', '1', '7', 'Second'],
+    ]);
+  });
+
+  test('a file imported as a code block makes no presentation', async () => {
+    const { html, isPresentation } = await render(
+      `# Title
+
+    @import "part.md"
+`,
+      'markdown-it',
+      { 'part.md': part },
+    );
+
+    expect(isPresentation).toBe(false);
+    expect(load(html)('h1').text()).toBe('Title ');
+  });
+
+  test('a marker that names no slide does not take the place of one', async () => {
+    const slides = await renderSlides(`<!-- slide -->
+
+# First
+
+<span>[CROSSNOTESLIDE:7]</span>
+
+# Second
+`);
+
+    expect(slides.map(({ h, v, text }) => [h, v, text])).toEqual([
+      ['0', '0', 'First Second'],
     ]);
   });
 

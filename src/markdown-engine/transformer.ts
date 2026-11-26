@@ -65,7 +65,19 @@ export interface TransformMarkdownOptions {
   notebook: Notebook;
   forJest?: boolean;
   timestamp?: number;
+  /**
+   * Numbers the slide markers of the file and of the files it imports, so
+   * that no two markers in the page name the same slide configuration. A file
+   * passes the counter it was given to the files it imports.
+   */
+  slideMarkerCounter?: { next: number };
 }
+
+/**
+ * The key of a slide configuration that holds the number of its marker in the
+ * page. Not an attribute of the slide.
+ */
+export const SLIDE_MARKER_NUMBER = 'markerNumber';
 
 const fileExtensionToLanguageMap = {
   vhd: 'vhdl',
@@ -341,6 +353,7 @@ export async function transformMarkdown(
     forJest = false,
     fileHash,
     timestamp,
+    slideMarkerCounter = { next: 0 },
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
   const usePandocParser = markdownParser === 'pandoc';
@@ -693,6 +706,7 @@ export async function transformMarkdown(
               continue;
             } else if (subject.match(/^\.?slide:?$/)) {
               // slide
+              options[SLIDE_MARKER_NUMBER] = slideMarkerCounter.next++;
               slideConfigs.push(options);
               if (forMarkdownExport) {
                 i = commentEnd;
@@ -702,6 +716,10 @@ export async function transformMarkdown(
               } else {
                 i = commentEnd;
                 lineNo = lineNo + newlines;
+                // The marker names the configuration of the slide, which a
+                // marker of a file that does not reach the page cannot take
+                // the place of.
+                const marker = `<span>[CROSSNOTESLIDE:${options[SLIDE_MARKER_NUMBER]}]</span>`;
                 outputString =
                   outputString +
                   (usePandocParser
@@ -709,8 +727,8 @@ export async function transformMarkdown(
                         canCreateAnchor()
                           ? ` data-source-line="${lineNo - newlines + 1}"`
                           : ''
-                      }><span>[CROSSNOTESLIDE]</span></p>  `
-                    : `<span>[CROSSNOTESLIDE]</span>  `) +
+                      }>${marker}</p>  `
+                    : `${marker}  `) +
                   '\n'.repeat(newlines);
                 continue;
               }
@@ -1190,6 +1208,7 @@ export async function transformMarkdown(
                 // fragment-to-heading lookup at the slice step.
                 headingIdGenerator: new HeadingIdGenerator(),
                 fileHash,
+                slideMarkerCounter,
               });
 
               output = '\n' + output2 + '  ';

@@ -52,7 +52,7 @@ import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
 import { buildPeleExportScript } from './pele-export';
 import { sanitizeRenderedHTML } from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
-import { transformMarkdown } from './transformer';
+import { SLIDE_MARKER_NUMBER, transformMarkdown } from './transformer';
 
 interface MarkdownEngineConstructorArgs {
   /**
@@ -3036,40 +3036,59 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   /**
-   * Parse `html` to generate slides
+   * Parse `html` to generate slides. Each marker in the page names the
+   * configuration of its slide. Returns `null` when no marker does: the
+   * document is not a presentation then.
    */
   private parseSlides(
     html: string,
     slideConfigs: JsonObject[],
     useRelativeFilePath: boolean,
-  ) {
+  ): string | null {
+    const configs = new Map<number, JsonObject>(
+      slideConfigs.map((config) => [
+        config[SLIDE_MARKER_NUMBER] as number,
+        config,
+      ]),
+    );
     // A marker is a paragraph of its own, wherever the block before it ends
     // on the line: a fenced block is not followed by a newline, as a
     // paragraph is. One that is not in a paragraph of its own has to start
     // the line.
-    let slides = html.split(
-      /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTESLIDE\]<\/span>(?:<\/p>)?\s*/gm,
-    );
+    const marker =
+      /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTESLIDE(?::(\d+))?\]<\/span>(?:<\/p>)?\s*/gm;
 
-    // More pieces than slides are configured for: a marker written as HTML.
-    // The pieces past the last slide are joined onto it, which keeps the page
-    // from failing; where such a marker comes before the last slide, the
-    // slides after it end up cut at the wrong places.
-    if (slides.length > slideConfigs.length + 1) {
-      const last = slideConfigs.length;
-      slides = [...slides.slice(0, last), slides.slice(last).join('')];
+    // A marker that names no configuration — one written as HTML, or one of
+    // a slide whose configuration did not reach the page — starts no slide:
+    // what follows it stays with what comes before it.
+    const slides: { config: JsonObject; html: string }[] = [];
+    let before = '';
+    const append = (content: string) => {
+      if (slides.length) {
+        slides[slides.length - 1].html += content;
+      } else {
+        before += content;
+      }
+    };
+    let from = 0;
+    for (let match = marker.exec(html); match; match = marker.exec(html)) {
+      append(html.slice(from, match.index));
+      from = match.index + match[0].length;
+      const config = configs.get(Number(match[1]));
+      if (config) {
+        slides.push({ config, html: '' });
+      }
+    }
+    append(html.slice(from));
+    if (!slides.length) {
+      return null;
     }
 
-    const before = slides[0];
-    slides = slides.slice(1);
-
     let output = '';
-    let i = 0;
     let h = -1; // horizontal
     let v = 0; // vertical
-    while (i < slides.length) {
-      const slide = slides[i];
-      const slideConfig = slideConfigs[i];
+    for (let i = 0; i < slides.length; i++) {
+      const { config: slideConfig, html: slide } = slides[i];
 
       // resolve paths in slideConfig
       if ('data-background-image' in slideConfig) {
@@ -3091,18 +3110,20 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         );
       }
 
+      // The number of the marker is not an attribute of the slide.
+      delete slideConfig[SLIDE_MARKER_NUMBER];
       const attrString = stringifyBlockAttributes(slideConfig, false); // parseAttrString(slideConfig)
       const classString = slideConfig['class'] || '';
       const idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : '';
 
       if (!slideConfig['vertical']) {
         h += 1;
-        if (i > 0 && slideConfigs[i - 1]['vertical']) {
+        if (i > 0 && slides[i - 1].config['vertical']) {
           // end of vertical slides
           output += '</section>';
           v = 0;
         }
-        if (i < slides.length - 1 && slideConfigs[i + 1]['vertical']) {
+        if (i < slides.length - 1 && slides[i + 1].config['vertical']) {
           // start of vertical slides
           output += '<section>';
         }
@@ -3112,9 +3133,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
 
       output += `<section ${attrString} ${idString}  class="slide ${classString}" data-source-line="${slideConfig['lineNo']}" data-h="${h}" data-v="${v}">${slide}</section>`;
-      i += 1;
     }
-    if (i > 0 && slideConfigs[i - 1]['vertical']) {
+    if (slides[slides.length - 1].config['vertical']) {
       // end of vertical slides
       output += '</section>';
     }
@@ -3499,10 +3519,21 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     /**
      * check slides
      */
+    let presentationMode = false;
     if (slideConfigs.length) {
-      html = this.parseSlides(html, slideConfigs, options.useRelativeFilePath);
-      if (yamlConfig) {
-        yamlConfig['isPresentationMode'] = true; // mark as presentation mode
+      const presentation = this.parseSlides(
+        html,
+        slideConfigs,
+        options.useRelativeFilePath,
+      );
+      // No marker of a slide is in the page, as when an import that is a
+      // code block brought their configurations along.
+      if (presentation !== null) {
+        html = presentation;
+        presentationMode = true;
+        if (yamlConfig) {
+          yamlConfig['isPresentationMode'] = true; // mark as presentation mode
+        }
       }
     }
 
@@ -3518,7 +3549,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (options.isForPreview) {
       // this.cachedHTML = html // save to cache
-      this.isPreviewInPresentationMode = !!slideConfigs.length; // check presentation mode
+      this.isPreviewInPresentationMode = presentationMode; // check presentation mode
     }
 
     if (options.triggeredBySave && yamlConfig['export_on_save']) {
