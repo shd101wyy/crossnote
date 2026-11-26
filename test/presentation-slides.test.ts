@@ -703,6 +703,22 @@ Text ^note
     ]);
   });
 
+  test('the number of a slide marker is not an attribute of the slide', async () => {
+    const { html } = await render(`<!-- slide -->
+
+# First
+
+<!-- slide vertical -->
+
+# Second
+`);
+
+    const attributeNames = load(html)('section.slide')
+      .toArray()
+      .flatMap((section) => Object.keys(section.attribs));
+    expect(attributeNames.filter((name) => /marker/i.test(name))).toEqual([]);
+  });
+
   test('a vertical marker starts the next slide of a stack', async () => {
     const slides = await renderSlides(`<!-- slide -->
 
