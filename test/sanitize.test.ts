@@ -177,6 +177,62 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
     });
   });
 
+  describe('an SVG animation of an address', () => {
+    // The link takes its address from the animation, after the sanitizer has
+    // looked at the link: in a browser, a click on it runs the script.
+    const linkWith = (animation: string) =>
+      sanitize(
+        `<svg><a><text>click me</text>${animation}</a><a href="https://example.com"><text>link</text></a></svg>`,
+      );
+
+    it.each([
+      [
+        '<animate>',
+        '<animate attributeName="href" values="javascript:alert(1)" dur="indefinite"/>',
+      ],
+      [
+        '<animate> of xlink:href',
+        '<animate attributeName="xlink:href" values="javascript:alert(1)" dur="indefinite"/>',
+      ],
+      ['<set>', '<set attributeName="href" to="javascript:alert(1)"/>'],
+      [
+        '<set> of xlink:href',
+        '<set attributeName="xlink:href" to="javascript:alert(1)"/>',
+      ],
+      [
+        'a name written otherwise',
+        '<set attributeName=" XLINK:HREF " to="javascript:alert(1)"/>',
+      ],
+    ])('takes out %s', (_, animation) => {
+      const result = linkWith(animation);
+
+      expect(result).not.toContain('<animate');
+      expect(result).not.toContain('<set');
+      // The links are where they were.
+      expect(result).toContain('<text>click me</text>');
+      expect(result).toContain('<a href="https://example.com">');
+    });
+
+    it('keeps an animation of anything else', () => {
+      const animation =
+        '<rect><animate attributeName="x" from="0" to="10" dur="1s"/>' +
+        '<animate attributeName="fill" values="red;blue" dur="2s"/>' +
+        '<set attributeName="display" to="none"/>' +
+        '<animateTransform attributeName="transform" type="rotate" from="0" to="90" dur="1s"/></rect>';
+
+      const result = sanitize(`<svg>${animation}</svg>`);
+
+      for (const kept of [
+        '<animate attributeName="x"',
+        '<animate attributeName="fill"',
+        '<set attributeName="display"',
+        '<animateTransform attributeName="transform"',
+      ]) {
+        expect(result).toContain(kept);
+      }
+    });
+  });
+
   describe('HTML held in an attribute', () => {
     it('sanitizes the speaker notes of a slide as the HTML they are', () => {
       // reveal.js writes the notes of a slide into the window of its speaker
