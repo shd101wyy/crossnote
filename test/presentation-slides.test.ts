@@ -159,7 +159,7 @@ let a = 1;
   });
 
   // Only a `<!-- slide -->` is configured a slide. The same span, written as
-  // HTML, is split on as well: it must not cost the document its slides.
+  // HTML, names no slide: what follows it stays on the slide before.
   test('a marker written as HTML does not stop the slides from being made', async () => {
     const slides = await renderSlides(`<!-- slide -->
 
@@ -356,6 +356,56 @@ ${asBlock}
 
     expect(isPresentation).toBe(false);
     expect(load(html)('h1').text()).toBe('Title ');
+  });
+
+  test('a marker written as HTML between two slides starts none: what follows it stays on the slide before', async () => {
+    const slides = await renderSlides(`<!-- slide -->
+
+# First
+
+<span>[CROSSNOTESLIDE]</span>
+
+# Between
+
+<!-- slide -->
+
+# Second
+`);
+
+    expect(slides.map(({ h, v, text }) => [h, v, text])).toEqual([
+      ['0', '0', 'First Between'],
+      ['1', '0', 'Second'],
+    ]);
+  });
+
+  test('the slides of a file imported as a code block by an imported file are not brought along', async () => {
+    const slides = await renderSlides(
+      `<!-- slide -->
+
+# First
+
+![](part.md)
+
+<!-- slide vertical=true -->
+
+# Second
+`,
+      'markdown-it',
+      {
+        'part.md': `# Part A
+
+    ![](sub.md)
+`,
+        'sub.md': part,
+      },
+    );
+
+    // The code block is on the first slide, with the part; its file's two
+    // slides are nowhere.
+    expect(slides.map(({ h, v, line, text }) => [h, v, line, text])).toEqual([
+      ['0', '0', '1', expect.stringMatching(/^First Part A /)],
+      ['0', '1', '7', 'Second'],
+    ]);
   });
 
   test('a marker that names no slide does not take the place of one', async () => {
