@@ -2209,7 +2209,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     dest: string,
   ): Promise<string[]> {
     const imagesToDownload: Cheerio<AnyNode>[] = [];
-    if (path.extname(dest) === '.epub' || path.extname('dest') === '.mobi') {
+    if (['.epub', '.mobi'].includes(path.extname(dest))) {
       $('img').each((offset, img) => {
         const $img = $(img);
         const src = $img.attr('src') || '';
