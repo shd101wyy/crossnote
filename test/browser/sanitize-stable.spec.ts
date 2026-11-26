@@ -68,7 +68,7 @@ function readIn(page: Page, html: string): Promise<string[]> {
 test.describe('markup that a page takes back as HTML', () => {
   test.beforeEach(async ({ page }) => {
     // An image that cannot load runs the handler that one reading leaves.
-    page.on('dialog', (dialog) => dialog.dismiss());
+    page.on('dialog', (dialog) => dialog.dismiss().catch(() => {}));
     await page.goto(server.url);
   });
 
@@ -118,9 +118,13 @@ function firstReading(markup: string): string {
 /**
  * Open the HTML export of a page and return what the browser found in it:
  * the event handlers in the document, and the dialogs that opened by
- * themselves.
+ * themselves — or, given a selector, after that element was clicked.
  */
-async function openExport(context: BrowserContext, html: string) {
+async function openExport(
+  context: BrowserContext,
+  html: string,
+  click?: string,
+) {
   await context.route(/\/export\.html$/, (route) =>
     route.fulfill({
       contentType: 'text/html; charset=utf-8',
@@ -133,11 +137,22 @@ async function openExport(context: BrowserContext, html: string) {
   );
   const page = await context.newPage();
   const dialogs: string[] = [];
-  page.on('dialog', (dialog) => {
-    dialogs.push(dialog.message());
-    dialog.dismiss();
+  const opened = new Promise<void>((resolve) => {
+    page.on('dialog', (dialog) => {
+      dialogs.push(dialog.message());
+      // One that arrives as the page closes cannot be dismissed.
+      dialog.dismiss().catch(() => {});
+      resolve();
+    });
   });
   await page.goto(`${server.url}/export.html`);
+  if (click) {
+    await page.waitForSelector(click);
+    await page.click(click);
+  }
+  // A dialog is reported a moment after the page runs what opens it, so the
+  // page is not closed before it could be.
+  await Promise.race([opened, page.waitForTimeout(500)]);
   const handlers = await page.evaluate(() =>
     Array.from(document.querySelectorAll('*')).flatMap((el) =>
       Array.from(el.attributes)
@@ -165,6 +180,49 @@ test.describe('the page a note is rendered to, as an HTML export', () => {
       });
     });
   }
+
+  test('a link whose address comes from an animation runs nothing when it is clicked', async ({
+    context,
+  }) => {
+    // The animation gives the link its address once the page is read. The
+    // sanitizer used to leave the animation where it was, which is what the
+    // page looks like here.
+    const link = '<text x="10" y="30" font-size="20" id="link">click me</text>';
+    const svg = (animation: string) =>
+      `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="50"><a>${link}${animation}</a></svg>`;
+    const animation =
+      '<animate attributeName="href" values="javascript:alert(1)" dur="indefinite"/>';
+
+    expect(
+      (await openExport(context, svg(animation), '#link')).dialogs,
+    ).not.toEqual([]);
+
+    expect(
+      await openExport(context, firstReading(svg(animation)), '#link'),
+    ).toEqual({ handlers: [], dialogs: [] });
+  });
+
+  test('the sidebar of an export runs nothing a heading holds', async ({
+    context,
+  }) => {
+    // The sidebar table of contents is built from the headings of the note
+    // and written into the export outside the page. What a heading holds,
+    // as the note writes it, and as the engine hands the sidebar over.
+    const sidebar = (toc: string) =>
+      `<div class="md-sidebar-toc"><div class="md-toc">${toc}</div></div>`;
+    const headings =
+      '<a id="a" href="#a" class="md-toc-link"><img src=1 onerror=alert(1)></a>' +
+      `<a href="#b" class="md-toc-link">${MUTATIONS[0]}</a>`;
+
+    // Written as it is: the image runs its handler by itself.
+    expect((await openExport(context, sidebar(headings))).dialogs).not.toEqual(
+      [],
+    );
+
+    expect(
+      await openExport(context, sidebar(sanitizeStableHTML(headings)), '#a'),
+    ).toEqual({ handlers: [], dialogs: [] });
+  });
 });
 
 /**
