@@ -50,6 +50,7 @@ import { buildMathJaxConfigScript } from './mathjax-config';
 import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
 import { buildPeleExportScript } from './pele-export';
+import { buildPresentationInitScript } from './presentation-export';
 import { sanitizeRenderedHTML } from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
 import { SLIDE_MARKER_NUMBER, transformMarkdown } from './transformer';
@@ -102,6 +103,10 @@ type PeleExportWindow = Window & {
     status: 'pending' | 'complete' | 'error';
     message?: string;
   };
+};
+
+type PrintLayoutWindow = Window & {
+  __crossnotePrintLayoutReady?: boolean;
 };
 
 export interface HTMLTemplateOption {
@@ -1436,18 +1441,12 @@ window["initRevealPresentation"] = async function() {
       )}
       </style>
       `;
-      presentationInitScript = `
-      ${notesPlugin?.[0] ?? ''}
-      <script>
-        Reveal.initialize(Object.assign(${JSON.stringify({
-          margin: 0.1,
-          // reveal.js 5+ shows a deck narrower than 435px in its scroll view;
-          // an exported presentation stays paginated as before when it is
-          // opened in a narrow window (the front matter still opts in).
-          scrollActivationWidth: null,
-          ...presentationConfig,
-        })}, ${notesPlugin ? `{ plugins: [${notesPlugin[1]}] }` : '{}'}))
-      </script>
+      presentationInitScript = `${notesPlugin?.[0] ?? ''}
+      ${buildPresentationInitScript({
+        presentationConfig,
+        notesPlugin: notesPlugin?.[1],
+        hasMermaid: !!mermaidInitScript,
+      })}
       `;
     }
 
@@ -2024,6 +2023,26 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
       if (peleFailure !== undefined) {
         throw new Error('Pele rendering failed: ' + peleFailure);
+      }
+      if (yamlConfig['isPresentationMode']) {
+        // reveal.js lays the pages of a presentation out once the page has
+        // loaded, moving every slide into its page, and reports it. A PDF
+        // taken before is made of pages that are not there yet. The report is
+        // compared with `true`: a page is known by the id of each of its
+        // elements, so one with that id would otherwise pass for the report.
+        try {
+          await page.waitForFunction(
+            () =>
+              (window as PrintLayoutWindow).__crossnotePrintLayoutReady ===
+              true,
+            { timeout: 30_000 },
+          );
+        } catch (error) {
+          throw new Error(
+            'reveal.js did not lay the pages of the presentation out.',
+            { cause: error },
+          );
+        }
       }
 
       const chromeConfig =

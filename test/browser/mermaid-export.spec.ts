@@ -3,6 +3,7 @@ import * as path from 'path';
 import { BrowserContext, expect, Page, test } from '@playwright/test';
 import { escape } from 'html-escaper';
 import { buildMermaidExportScript } from '../../src/markdown-engine/mermaid-export';
+import { buildPresentationInitScript } from '../../src/markdown-engine/presentation-export';
 import {
   getDefaultNotebookConfig,
   NotebookConfig,
@@ -18,6 +19,10 @@ type ExportWindow = Window &
     __shownInTopLayer?: number;
     /** What was done for a presentation's sake, where the page keeps count. */
     __forPresentation?: string[];
+    /** Set by the presentation's script once reveal.js has laid the pages of a PDF export out. */
+    __crossnotePrintLayoutReady?: boolean;
+    /** What the slides were when each Mermaid rendering began, where a page keeps count. */
+    __drawing?: Array<{ pages: number; started: boolean }>;
   };
 
 const bundle = fs.readFileSync(
@@ -37,23 +42,26 @@ async function openExport(
   url: string,
   document: string,
   delayRendering: boolean = false,
+  mermaidUnavailable: boolean = false,
 ) {
   await page.route(url, (route) =>
     route.fulfill({ contentType: 'text/html', body: document }),
   );
   await page.route('**/mermaid.min.js', (route) =>
-    route.fulfill({
-      contentType: 'text/javascript',
-      body:
-        bundle +
-        (delayRendering
-          ? `
+    mermaidUnavailable
+      ? route.abort()
+      : route.fulfill({
+          contentType: 'text/javascript',
+          body:
+            bundle +
+            (delayRendering
+              ? `
 const run = mermaid.run.bind(mermaid);
 const ready = new Promise(resolve => { window.releaseMermaid = resolve; });
 mermaid.run = async options => { await ready; return run(options); };
 `
-          : ''),
-    }),
+              : ''),
+        }),
   );
   await page.route('https://crossnote.test/reveal/**', (route) => {
     const file = path.resolve(
@@ -216,6 +224,9 @@ const GANTT = `gantt
     section Section
     A task :a1, 2024-01-01, 30d
     Another task :after a1, 20d`;
+/** Taller than one page of a PDF export, which is 700px high. */
+const TALL_FLOWCHART = `flowchart TD
+${Array.from({ length: 16 }, (_, i) => `    Step${i} --> Step${i + 1}`).join('\n')}`;
 /** Where, in the source of a diagram, the tests that hold a rendering look. */
 const HELD = '%% held rendering';
 /** A gantt whose rendering waits until the test lets it go. */
@@ -276,6 +287,10 @@ interface PageOptions {
   wrap?: string;
   /** The style of that element. */
   wrapStyle?: string;
+  /** A classic script that runs after the Mermaid bundle, before the export script. */
+  afterMermaid?: string;
+  /** The request for the Mermaid bundle fails. */
+  mermaidUnavailable?: boolean;
 }
 
 /**
@@ -286,6 +301,7 @@ function mermaidScripts({
   mermaidConfig,
   twice = false,
   held = false,
+  afterMermaid = '',
 }: PageOptions) {
   const config = getDefaultNotebookConfig();
   const exportScript = `<script type="module">${buildMermaidExportScript(
@@ -306,6 +322,13 @@ function mermaidScripts({
       }
       return run(options)
     }
+  </script>`
+      : ''
+  }
+  ${
+    afterMermaid
+      ? `<script>
+    ${afterMermaid}
   </script>`
       : ''
   }
@@ -398,7 +421,7 @@ async function openUnscaled(page: Page, options: PresentationOptions) {
       </style>
     </head><body style="margin: 0">
       ${presentationBody(options.slides, options.wrap, options.wrapStyle)}
-      ${mermaidScripts(options)}
+      ${mermaidScripts({ ...options, afterMermaid: '' })}
     </body></html>`,
   );
   await waitForExport(page, 'complete');
@@ -1074,30 +1097,196 @@ test('the export script, on the page twice, has nothing to add the second time',
   ]);
 });
 
-for (const { how, search, reveal } of [
+/**
+ * What the print layout of reveal.js made of the deck: one slide in each
+ * page, and how many pages high each page is (a page is 700px, the height of
+ * a slide, and a slide taller than that has a page as many pages high).
+ */
+function readPrintLayout(page: Page) {
+  return page.evaluate(() => {
+    const reveal = (
+      window as unknown as {
+        Reveal: { isPrintView(): boolean; isReady(): boolean };
+      }
+    ).Reveal;
+    const pageHeight = parseFloat(document.body.style.height) - 1;
+    return {
+      printView: reveal.isPrintView(),
+      ready: reveal.isReady(),
+      pages: [...document.querySelectorAll<HTMLElement>('.pdf-page')].map(
+        (page) => ({
+          slides: page.querySelectorAll('section').length,
+          diagrams: page.querySelectorAll('div.mermaid svg').length,
+          pagesHigh: Math.round(parseFloat(page.style.height) / pageHeight),
+        }),
+      ),
+    };
+  });
+}
+
+/** The page keeps count of what each Mermaid rendering found when it began. */
+const COUNT_THE_SLIDES = `window.__drawing = []
+const run = mermaid.run.bind(mermaid)
+mermaid.run = async options => {
+  window.__drawing.push({ pages: document.querySelectorAll('.pdf-page').length, started: Reveal.isReady() })
+  return run(options)
+}`;
+
+/**
+ * Open an exported presentation as a PDF export through Chrome opens it: in
+ * the print view of reveal.js, in the order the export template has — reveal.js,
+ * the presentation's script, the Mermaid script — with the real reveal.js.
+ */
+async function openPrintExport(
+  page: Page,
+  search: string,
+  options: PresentationOptions,
+) {
+  // The window Chrome prints from is as small as this; a slide is 960px wide
+  // on paper whatever the window is.
+  await page.setViewportSize({ width: 800, height: 600 });
+  await openExport(
+    page,
+    `https://crossnote.test/presentation.html${search}`,
+    `<!doctype html><html><head>
+      <link rel="stylesheet" href="https://crossnote.test/reveal/css/reveal.css">
+      <style>.mermaid { margin: 0 40px }
+      ${options.style ?? ''}</style>
+      <script src="https://crossnote.test/reveal/js/reveal.js"></script>
+    </head><body>
+      ${presentationBody(options.slides, options.wrap, options.wrapStyle)}
+      ${buildPresentationInitScript({ presentationConfig: options.presentationConfig ?? {}, hasMermaid: true })}
+      ${mermaidScripts(options)}
+    </body></html>`,
+    false,
+    options.mermaidUnavailable,
+  );
+  await page.waitForFunction(
+    () => (window as ExportWindow).__crossnotePrintLayoutReady === true,
+  );
+}
+
+for (const search of ['?print-pdf', '?view=print']) {
+  test(`a PDF export is laid out around its Mermaid diagrams: they are drawn before Reveal starts, and every page is sized from its slide, at ${search} (#582)`, async ({
+    page,
+    context,
+  }) => {
+    // The gantt lays itself out to the width of its element: it shows that the
+    // slides have the width of the presentation, not of the small window.
+    const options: PresentationOptions = {
+      slides: [[WRAPPING_FLOWCHART], [TALL_FLOWCHART], [GANTT]],
+      afterMermaid: COUNT_THE_SLIDES,
+    };
+    await openPrintExport(page, search, options);
+    await waitForExport(page, 'complete');
+
+    // Each diagram was drawn while there was no page yet and Reveal was not
+    // started: in a slide that was not being moved into a page.
+    const drawing = await page.evaluate(
+      () => (window as ExportWindow).__drawing,
+    );
+    expect(drawing).toHaveLength(3);
+    expect(drawing).toEqual([
+      { pages: 0, started: false },
+      { pages: 0, started: false },
+      { pages: 0, started: false },
+    ]);
+
+    // Every diagram is in a page of its own slide, drawn, and the page of the
+    // tall slide is two pages high: reveal.js found the diagram in place.
+    const layout = await readPrintLayout(page);
+    expect([layout.printView, layout.ready]).toEqual([true, true]);
+    expect(layout.pages).toEqual([
+      { slides: 1, diagrams: 1, pagesHigh: 1 },
+      { slides: 1, diagrams: 1, pagesHigh: 2 },
+      { slides: 1, diagrams: 1, pagesHigh: 1 },
+    ]);
+    const { diagrams } = await readPage(page);
+    expect(
+      diagrams.map((diagram) => [
+        diagram.inSlides,
+        diagram.svgs,
+        diagram.leftOver,
+      ]),
+    ).toEqual([
+      [true, 1, false],
+      [true, 1, false],
+      [true, 1, false],
+    ]);
+
+    // A diagram is laid out as it is where no scale reaches it, and as wide
+    // as its slide is on paper.
+    await expectLaidOutAsUnscaled(page, context, options);
+  });
+}
+
+test('a PDF export whose Mermaid bundle did not load still has its presentation started', async ({
+  page,
+}) => {
+  // The script of the diagrams fails where it first uses Mermaid, before it
+  // would have told the presentation that its diagrams are drawn. An exported
+  // page that is opened in a browser has nobody to fail for: its presentation
+  // is started all the same, around the diagrams as they were written.
+  await openPrintExport(page, '?print-pdf', {
+    slides: [[WRAPPING_FLOWCHART], ['<p>Two</p>']],
+    mermaidUnavailable: true,
+  });
+  await waitForExport(page, 'error');
+
+  const layout = await readPrintLayout(page);
+  expect([layout.printView, layout.ready]).toEqual([true, true]);
+  expect(layout.pages).toEqual([
+    { slides: 1, diagrams: 0, pagesHigh: 1 },
+    { slides: 1, diagrams: 0, pagesHigh: 1 },
+  ]);
+});
+
+test('a PDF export without Mermaid diagrams is laid out by reveal.js at once, and says so', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 800, height: 600 });
+  await openExport(
+    page,
+    'https://crossnote.test/presentation.html?print-pdf',
+    `<!doctype html><html><head>
+      <link rel="stylesheet" href="https://crossnote.test/reveal/css/reveal.css">
+      <script src="https://crossnote.test/reveal/js/reveal.js"></script>
+    </head><body>
+      ${presentationBody([['<p>One</p>'], ['<p>Two</p>']])}
+      ${buildPresentationInitScript({ presentationConfig: {}, hasMermaid: false })}
+    </body></html>`,
+  );
+  await page.waitForFunction(
+    () => (window as ExportWindow).__crossnotePrintLayoutReady === true,
+  );
+
+  const layout = await readPrintLayout(page);
+  expect(layout.pages).toEqual([
+    { slides: 1, diagrams: 0, pagesHigh: 1 },
+    { slides: 1, diagrams: 0, pagesHigh: 1 },
+  ]);
+});
+
+for (const { how, search, reveal, expected } of [
   {
-    how: 'known by its address',
+    how: 'where nothing waits for them, though the address says print',
     search: '?print-pdf',
-    reveal: '{ isReady: () => true }',
-  },
-  {
-    how: 'which reveal.js 6 says it is in',
-    search: '?view=print',
     reveal: '{ isReady: () => true, isPrintView: () => true }',
+    expected: ['shown in the top layer', 'laid out again'],
   },
   {
-    how: 'also where what calls itself Reveal is not reveal.js',
-    search: '',
+    how: 'where what calls itself Reveal is not reveal.js',
+    search: '?print-pdf',
     reveal: '{}',
+    expected: [],
   },
 ]) {
-  test(`a PDF export is left to Reveal, ${how}: its diagrams are rendered where they are`, async ({
+  test(`a presentation's diagrams are drawn as they are on a page, ${how}`, async ({
     page,
   }) => {
-    // In a PDF export (`print-pdf`) Reveal moves the slides into pages once
-    // the page has loaded, which the export leaves to it. Reveal is stood in
-    // for, ready at once: a real one would lay the pages out while the test
-    // runs. The page keeps count of what is done for a presentation's sake.
+    // Only the script that starts Reveal puts the diagrams of a PDF export
+    // first (openPrintExport): it waits for them. Where nothing does, the
+    // export script goes by the page as it finds it. Reveal is stood in for.
     await openExport(
       page,
       `https://crossnote.test/print.html${search}`,
@@ -1122,12 +1311,9 @@ for (const { how, search, reveal } of [
     await waitForExport(page, 'complete');
     const { diagrams } = await readPage(page);
 
-    // The diagram is where the page has it, as wide as the scale leaves it,
-    // as it was before the scale was kept from the diagrams.
     expect(
       await page.evaluate(() => (window as ExportWindow).__forPresentation),
-    ).toEqual([]);
-    expect(diagrams[0].labels).toEqual(['nowrap', 'nowrap']);
+    ).toEqual(expected);
     expect(
       diagrams.map((diagram) => [
         diagram.inSlides,

@@ -86,7 +86,10 @@ describe('presentation HTML export (reveal.js)', () => {
   /**
    * A two-slide deck with speaker notes enabled, exported as HTML.
    */
-  async function exportDeck(options: { offline: boolean }): Promise<string> {
+  async function exportDeck(
+    options: { offline: boolean },
+    secondSlide: string[] = ['# Two'],
+  ): Promise<string> {
     fs.writeFileSync(
       path.join(tmpDir, 'deck.md'),
       [
@@ -100,7 +103,7 @@ describe('presentation HTML export (reveal.js)', () => {
         '# One',
         '',
         '<!-- slide -->',
-        '# Two',
+        ...secondSlide,
         '',
       ].join('\n'),
     );
@@ -151,6 +154,46 @@ describe('presentation HTML export (reveal.js)', () => {
       'utf8',
     );
     expect(copied).toBe(notesPluginContent);
+  });
+
+  test('reports when reveal.js has laid the pages of a PDF export out', async () => {
+    const html = await exportDeck({ offline: false });
+
+    // A PDF export through Chrome waits for it before the pages are printed.
+    const reportAt = html.indexOf(
+      "Reveal.addEventListener('pdf-ready', () => { window.__crossnotePrintLayoutReady = true })",
+    );
+    expect(reportAt).toBeGreaterThanOrEqual(0);
+    expect(html.indexOf('Reveal.initialize')).toBeGreaterThan(reportAt);
+    // No diagram is drawn on the page: Reveal is started where the script
+    // stands, by a classic script.
+    expect(html).toContain('<script>\n');
+    expect(html).not.toContain('__crossnoteDiagramsDrawn');
+  });
+
+  test('with Mermaid diagrams, starts reveal.js once they are drawn in a PDF export', async () => {
+    const html = await exportDeck({ offline: true }, [
+      '```mermaid',
+      'graph TD',
+      'A --> B',
+      '```',
+    ]);
+
+    // reveal.js lays the pages of a PDF export out from the slides as it
+    // finds them, and moves every slide into its page. The diagrams are
+    // drawn first: the script that starts Reveal waits for the one that
+    // draws them, and stands before it.
+    const waitsAt = html.indexOf(
+      'await new Promise(resolve => { window.__crossnoteDiagramsDrawn = resolve })',
+    );
+    const initializeAt = html.indexOf('Reveal.initialize');
+    const drawsAt = html.indexOf('mermaid.startOnLoad = false');
+    expect(waitsAt).toBeGreaterThanOrEqual(0);
+    expect(initializeAt).toBeGreaterThan(waitsAt);
+    expect(drawsAt).toBeGreaterThan(initializeAt);
+    expect(html).toContain(
+      "Reveal.addEventListener('pdf-ready', () => { window.__crossnotePrintLayoutReady = true })",
+    );
   });
 
   test('the notes plugin is copied in full by the time the export is written', async () => {

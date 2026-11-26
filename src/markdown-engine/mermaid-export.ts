@@ -10,13 +10,23 @@ export function buildMermaidExportScript(
 ): string {
   return `
 // A page can carry the script twice: the first one renders, and the others
-// have nothing to add.
-if (!window.__crossnoteMermaidExport) {
+// have nothing to add. The report is asked for as one of the page's own: a
+// page has each of its elements by its id, and one with that id would keep
+// the script from rendering.
+if (!Object.prototype.hasOwnProperty.call(window, '__crossnoteMermaidExport')) {
   await render()
 }
 
 async function render() {
-// Page load and data-processed do not imply that Mermaid's layout is complete.
+// A PDF export has its diagrams drawn before Reveal starts, and its pages laid
+// out around them: the script that starts Reveal waits for
+// window.__crossnoteDiagramsDrawn (buildPresentationInitScript). Nothing is
+// waited for before the diagrams are drawn then, and the slides are not laid
+// out again after. The page is told that the script is through with its
+// diagrams on every way out of this function: where it is not told, the
+// presentation of the page never starts.
+const beforeReveal = typeof window.__crossnoteDiagramsDrawn === 'function'
+// Page load and data-processed did not imply that Mermaid's layout is complete.
 window.__crossnoteMermaidExport = { status: 'pending' }
 try {
 // Disable the load listener before an external module can yield control.
@@ -110,11 +120,9 @@ const slides = reveal ? document.querySelector('.reveal .slides') : null
 // its element, so that in that scale no label is wrapped (crossnote#575). In a
 // presentation the element of each diagram is shown in the top layer for its
 // rendering, where the scale does not reach it, as wide as it is in its slide;
-// it is done with once Reveal has laid the slides out. The print view of
-// reveal.js, which a PDF export is laid out in once the page has loaded, is
-// left to it.
-const inSlides = !!slides && !(typeof reveal.isPrintView === 'function' ? reveal.isPrintView() : /print-pdf/i.test(location.search))
-if (inSlides) {
+// it is done with once Reveal has laid the slides out.
+const inSlides = !!slides
+if (inSlides && !beforeReveal) {
   await new Promise(function (resolve) {
     if (reveal.isReady()) {
       resolve()
@@ -154,7 +162,7 @@ try {
 } finally {
   // Reveal centers a slide from the height of its content, which the diagrams
   // have changed.
-  if (inSlides && rendered) {
+  if (inSlides && rendered && !beforeReveal) {
     reveal.layout()
   }
 }
@@ -168,6 +176,10 @@ window.__crossnoteMermaidExport = { status: 'complete' }
     message: String(error && error.message || error)
   }
   console.error(error)
+} finally {
+  if (beforeReveal) {
+    window.__crossnoteDiagramsDrawn()
+  }
 }
 }
 `;

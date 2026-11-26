@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { buildPresentationInitScript } from '../src/markdown-engine/presentation-export';
 
 /**
  * The vendored reveal.js (`dependencies/reveal/`) is managed by hand
@@ -145,9 +146,17 @@ describe('vendored reveal.js', () => {
     );
     expect(engine).toContain("'./dependencies/reveal/plugin/notes/notes.js'");
     expect(engine).toContain('window.RevealNotes');
-    expect(engine).toContain('plugins: [');
     // The removed `css/print/` directory must stay unreferenced.
     expect(engine).not.toContain('reveal/css/print/');
+    // The script that starts the presentation registers the plugin through
+    // `plugins`.
+    expect(
+      buildPresentationInitScript({
+        presentationConfig: {},
+        notesPlugin: 'window.RevealNotes',
+        hasMermaid: false,
+      }),
+    ).toContain('plugins: [window.RevealNotes]');
   });
 
   test('CDN fallback URLs in markdown-engine match the vendored version', () => {
