@@ -110,11 +110,15 @@ const slides = reveal ? document.querySelector('.reveal .slides') : null
 // its element, so that in that scale no label is wrapped (crossnote#575). In a
 // presentation the element of each diagram is shown in the top layer for its
 // rendering, where the scale does not reach it, as wide as it is in its slide;
-// it is done with once Reveal has laid the slides out. The print view of
-// reveal.js, which a PDF export is laid out in once the page has loaded, is
-// left to it.
-const inSlides = !!slides && !(typeof reveal.isPrintView === 'function' ? reveal.isPrintView() : /print-pdf/i.test(location.search))
-if (inSlides) {
+// it is done with once Reveal has laid the slides out.
+const inSlides = !!slides
+// A PDF export has its diagrams drawn before Reveal starts, and its pages laid
+// out around them: the script that starts Reveal waits for
+// window.__crossnoteDiagramsDrawn (buildPresentationInitScript). Nothing is
+// waited for before the diagrams are drawn then, and the slides are not laid
+// out again after.
+const beforeReveal = typeof window.__crossnoteDiagramsDrawn === 'function'
+if (inSlides && !beforeReveal) {
   await new Promise(function (resolve) {
     if (reveal.isReady()) {
       resolve()
@@ -154,8 +158,11 @@ try {
 } finally {
   // Reveal centers a slide from the height of its content, which the diagrams
   // have changed.
-  if (inSlides && rendered) {
+  if (inSlides && rendered && !beforeReveal) {
     reveal.layout()
+  }
+  if (beforeReveal) {
+    window.__crossnoteDiagramsDrawn()
   }
 }
 if (failure) {
