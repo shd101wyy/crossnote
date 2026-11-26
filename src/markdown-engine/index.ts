@@ -45,7 +45,7 @@ import * as utility from '../utility';
 import { removeFileProtocol } from '../utility';
 import HeadingIdGenerator from './heading-id-generator';
 import { readOfflineCss, readOfflineJs } from './inline-offline-assets';
-import { buildMathJaxConfigScript } from './mathjax-config';
+import { buildMathJaxConfigScript, mathJaxConfigOf } from './mathjax-config';
 import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
 import { buildPeleExportScript } from './pele-export';
@@ -430,6 +430,15 @@ export class MarkdownEngine {
     this.tocHTML = '';
   }
 
+  /**
+   * The configuration MathJax is given for a page: a copy, for what a page
+   * sets on it stays out of the notebook's configuration.
+   */
+  private mathJaxConfig(): Record<string, unknown> {
+    const config = this.notebook.config;
+    return mathJaxConfigOf(copy({ ...config.mathjaxConfig }), config);
+  }
+
   private get protocolsWhiteListRegExp() {
     // protocal whitelist
     const protocolsWhiteList = (
@@ -535,14 +544,7 @@ export class MarkdownEngine {
       this.notebook.config.mathRenderingOption === 'MathJax' ||
       this.notebook.config.markdownParser === 'pandoc'
     ) {
-      // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
-      const mathJaxConfig = copy({
-        ...this.notebook.config.mathjaxConfig,
-      }) as Record<string, unknown>;
-      const texConfig = (mathJaxConfig['tex'] || {}) as Record<string, unknown>;
-      mathJaxConfig['tex'] = texConfig;
-      texConfig['inlineMath'] = this.notebook.config.mathInlineDelimiters;
-      texConfig['displayMath'] = this.notebook.config.mathBlockDelimiters;
+      const mathJaxConfig = this.mathJaxConfig();
 
       // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
       // Disable typesetting on startup
@@ -1277,17 +1279,7 @@ window["initRevealPresentation"] = async function() {
       this.notebook.config.mathRenderingOption === 'MathJax' ||
       this.notebook.config.markdownParser === 'pandoc'
     ) {
-      // NOTE: {...this.notebook.config.mathjaxConfig} is neceesary here
-      const mathJaxConfig = copy({
-        ...this.notebook.config.mathjaxConfig,
-      }) as Record<string, unknown>;
-      const texConfig2 = (mathJaxConfig['tex'] || {}) as Record<
-        string,
-        unknown
-      >;
-      mathJaxConfig['tex'] = texConfig2;
-      texConfig2['inlineMath'] = this.notebook.config.mathInlineDelimiters;
-      texConfig2['displayMath'] = this.notebook.config.mathBlockDelimiters;
+      const mathJaxConfig = this.mathJaxConfig();
 
       if (options.offline) {
         mathStyle = `

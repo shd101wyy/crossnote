@@ -12,7 +12,10 @@
  */
 import * as path from 'path';
 import { isDollarMathSpan } from '../src/custom-markdown-it-features/math';
-import { buildMathJaxConfigScript } from '../src/markdown-engine/mathjax-config';
+import {
+  buildMathJaxConfigScript,
+  mathJaxConfigOf,
+} from '../src/markdown-engine/mathjax-config';
 import { Notebook } from '../src/notebook/index';
 import { getDefaultMathjaxConfig } from '../src/notebook/types';
 
@@ -558,4 +561,71 @@ describe('buildMathJaxConfigScript (#2312 enrichment override)', () => {
     // Wrap so the bare `window.MathJax = (...)` assignment parses.
     expect(() => new Function('window', script)).not.toThrow();
   });
+});
+
+describe('mathJaxConfigOf', () => {
+  const config = {
+    mathInlineDelimiters: [
+      ['$', '$'],
+      ['\\(', '\\)'],
+    ],
+    mathBlockDelimiters: [['$$', '$$']],
+  };
+
+  it('takes the delimiters from the configuration and keeps the rest', () => {
+    const mathJaxConfig = mathJaxConfigOf(
+      { tex: { tags: 'ams' }, options: { enableMenu: false }, loader: {} },
+      config,
+    );
+
+    expect(mathJaxConfig).toMatchObject({
+      tex: {
+        inlineMath: config.mathInlineDelimiters,
+        displayMath: config.mathBlockDelimiters,
+        tags: 'ams',
+      },
+      options: { enableMenu: false },
+      loader: {},
+    });
+  });
+
+  test.each([
+    ['none', undefined, 'mathjax_ignore|mermaid|pele|vega|vega-lite'],
+    [
+      'a class',
+      { ignoreHtmlClass: 'mine' },
+      'mine|mermaid|pele|vega|vega-lite',
+    ],
+    [
+      'a pattern of alternatives',
+      { ignoreHtmlClass: 'tex2jax_ignore|mine' },
+      'tex2jax_ignore|mine|mermaid|pele|vega|vega-lite',
+    ],
+    [
+      'a list',
+      { ignoreHtmlClass: ['mine', 'yours'] },
+      'mine|yours|mermaid|pele|vega|vega-lite',
+    ],
+    [
+      'a list with an empty name in it',
+      { ignoreHtmlClass: ['mine', ''] },
+      'mine|mermaid|pele|vega|vega-lite',
+    ],
+    [
+      'an empty list',
+      { ignoreHtmlClass: [] },
+      'mathjax_ignore|mermaid|pele|vega|vega-lite',
+    ],
+  ])(
+    'has the sources of diagrams left alone, with %s named by the configuration',
+    (_, options, ignored) => {
+      const mathJaxConfig = mathJaxConfigOf({ options }, config);
+
+      // MathJax reads the classes from the options of the document.
+      expect(mathJaxConfig['options']).toMatchObject({
+        ignoreHtmlClass: ignored,
+      });
+      expect(mathJaxConfig['tex']).not.toHaveProperty('ignoreHtmlClass');
+    },
+  );
 });
