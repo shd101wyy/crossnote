@@ -317,6 +317,21 @@ function isExistingFile(filePath: string): boolean {
   }
 }
 
+/**
+ * The values of attributes as a browser reads them where they are written as
+ * the values of attributes: a character reference in one, such as `&amp;`,
+ * is decoded — as it was while the attributes of a slide were written into
+ * the page as text.
+ */
+function readAttributeValues(attributes: Record<string, string>) {
+  const tag = cheerio.load(
+    `<p ${Object.entries(attributes)
+      .map(([name, value]) => `${name}="${value.replace(/"/g, '&quot;')}"`)
+      .join(' ')}></p>`,
+  );
+  return tag('p').attr() ?? {};
+}
+
 // NOTE: The order of the following matters.
 const dependentLibraryMaterials = [
   { key: 'vega', version: '5.25.0' },
@@ -341,8 +356,16 @@ const SLIDE_BACKGROUNDS = [
   'data-background-iframe',
 ];
 
-/** The keys of a slide configuration that are not attributes of the slide. */
-const NOT_SLIDE_ATTRIBUTES = new Set([SLIDE_MARKER_NUMBER, 'lineNo']);
+/**
+ * The keys of a slide configuration that are not attributes of the slide,
+ * spelled in lower case.
+ */
+const NOT_SLIDE_ATTRIBUTES = new Set([
+  SLIDE_MARKER_NUMBER.toLowerCase(),
+  'lineno',
+  'class',
+  'id',
+]);
 
 /**
  * The name an attribute can have. Any other key of block attributes is left
@@ -3155,22 +3178,38 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           : null;
       }
 
-      const section = $('<section>').html(slide);
+      const attributes: Record<string, string> = {};
       for (const [name, value] of Object.entries(slideConfig)) {
         // The number of the marker and the line of the slide are not
-        // attributes of the slide: its source line is written below.
-        if (!NOT_SLIDE_ATTRIBUTES.has(name) && ATTRIBUTE_NAME.test(name)) {
-          section.attr(name, String(value));
+        // attributes of the slide: its source line is written below. An
+        // attribute is the same in capitals: the class and the id of the
+        // slide are written below, under whatever case they are written.
+        if (
+          !NOT_SLIDE_ATTRIBUTES.has(name.toLowerCase()) &&
+          ATTRIBUTE_NAME.test(name)
+        ) {
+          attributes[name] = String(value);
         }
       }
-      const id = slideConfig['id'];
-      section.attr({
-        'class': `slide ${slideConfig['class'] ?? ''}`,
-        'data-source-line': String(slideConfig['lineNo']),
-        'data-h': String(h),
-        'data-v': String(v),
-        'id': id ? String(id) : null,
-      });
+      // What is written under the keys that are `name` in lower case, joined.
+      const valuesOf = (name: string) =>
+        Object.entries(slideConfig)
+          .filter(([key]) => key.toLowerCase() === name)
+          .map(([, value]) => String(value))
+          .join(' ');
+      const id = valuesOf('id');
+      const section = $('<section>')
+        .html(slide)
+        .attr(
+          readAttributeValues({
+            ...attributes,
+            'class': `slide ${valuesOf('class')}`.trim(),
+            'data-source-line': String(slideConfig['lineNo']),
+            'data-h': String(h),
+            'data-v': String(v),
+            ...(id ? { id } : {}),
+          }),
+        );
       (stack ?? deck).append(section);
     }
 

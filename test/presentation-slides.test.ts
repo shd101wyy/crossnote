@@ -887,6 +887,35 @@ Text ^note
       expect(section.attr('id')).toBe('first');
     });
 
+    test('a class and an id written in capitals are the class and the id of the slide', async () => {
+      const { html } = await render(
+        '<!-- slide CLASS="mine" ID="first" -->\n\n# First',
+      );
+      const section = load(html)('section[data-h]');
+
+      expect(section.attr('class')).toBe('slide mine');
+      expect(section.attr('id')).toBe('first');
+    });
+
+    test('the speaker notes of a slide are sanitized as the HTML they are', async () => {
+      // reveal.js writes them into the window of its speaker view as HTML.
+      const { html } = await render(
+        `<!-- slide data-notes='<input autofocus onfocus=alert(1)><b>Note</b>' -->\n\n# First`,
+      );
+
+      expect(load(html)('section[data-h]').attr('data-notes')).toBe(
+        '<input autofocus=""><b>Note</b>',
+      );
+    });
+
+    test('a character reference in a value is decoded, as it always was', async () => {
+      const { html } = await render(
+        '<!-- slide data-x="a&amp;b &#32; c" -->\n\n# First',
+      );
+
+      expect(load(html)('section[data-h]').attr('data-x')).toBe('a&b   c');
+    });
+
     test('a value with quotes in it is written as it is', async () => {
       const { html } = await render(
         `<!-- slide data-x='say "hi"' -->\n\n# First`,
@@ -909,8 +938,12 @@ Text ^note
       ).toEqual([['First', {}]]);
     });
 
+    // The address is read as a browser reads it: reveal.js loads it in an
+    // iframe of its own making, and a browser leaves a tab out of it.
     test.each([
       'javascript:alert(1)',
+      'java&#9;script:alert(1)',
+      '&#1;javascript:alert(1)',
       'data:text/html,<script>alert(1)</script>',
     ])(
       'a background iframe whose address %s would run script is no background of an exported page',

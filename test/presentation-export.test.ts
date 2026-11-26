@@ -230,19 +230,25 @@ describe('presentation HTML export (reveal.js)', () => {
     }
   });
 
-  test('a slide has neither an event handler nor a background iframe that would run script in the page', async () => {
+  test('a slide has neither an event handler, nor a background iframe or speaker notes that would run script', async () => {
     const html = await exportDeck({ offline: false }, [
-      '<!-- slide class="mine" onmouseover="alert(1)" data-background-iframe="javascript:alert(1)" -->',
+      `<!-- slide class="mine" onmouseover="alert(1)" data-background-iframe="javascript:alert(1)" data-notes='<input autofocus onfocus=alert(2)><b>Speak</b>' -->`,
       '# One',
       '',
     ]);
-    const sections = load(html)('section.slide');
+    const attributes = load(html)('section.slide')
+      .toArray()
+      .flatMap((section) => Object.entries(section.attribs));
 
-    expect(sections).toHaveLength(1);
-    expect(sections.attr('class')).toBe('slide mine');
-    expect(
-      sections.toArray().flatMap((section) => Object.keys(section.attribs)),
-    ).toEqual(['class', 'data-source-line', 'data-h', 'data-v']);
+    // Whatever else the slide says.
+    expect(attributes.filter(([name]) => /^on/i.test(name))).toEqual([]);
+    expect(attributes.map(([name]) => name)).not.toContain(
+      'data-background-iframe',
+    );
+    expect(Object.fromEntries(attributes)).toMatchObject({
+      'class': 'slide mine',
+      'data-notes': '<input autofocus=""><b>Speak</b>',
+    });
   });
 
   test('offline export inlines reveal.js and the notes plugin, self-contained', async () => {

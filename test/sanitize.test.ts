@@ -109,6 +109,33 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
       expect(result).toContain('<section><p>Slide</p></section>');
     });
 
+    // A browser leaves a tab, a line feed or a carriage return out of a URL
+    // wherever it is, and a control character or a space at either end of it:
+    // each of these addresses runs its script as `javascript:` would.
+    it.each([
+      ['a tab in its scheme', 'java&#9;script:alert(1)'],
+      ['a line feed in its scheme', 'jav&#10;ascript:alert(1)'],
+      ['a carriage return in its scheme', 'jav&#13;ascript:alert(1)'],
+      ['a control character before its scheme', '&#1;javascript:alert(1)'],
+      ['a control character before vbscript', '&#11;vbscript:MsgBox(1)'],
+      ['a tab in the type of a data URL', 'data:text&#9;/html,<b>x</b>'],
+    ])('strips an address with %s', (_, address) => {
+      const result = sanitize(`<a href="${address}">Click</a>`);
+      expect(result).toBe('<a>Click</a>');
+    });
+
+    it.each([
+      ['/my files/a b.pdf'],
+      ['https://example.com/search?a=1&b=2'],
+      ['mailto:a@example.com?subject=hi there'],
+      ['#java script'],
+      ['javascript-tips.html'],
+      ['data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'],
+    ])('keeps the address %s', (address) => {
+      const result = sanitize(`<a href="${address}">Click</a>`);
+      expect(result).toContain('href=');
+    });
+
     it('preserves safe URLs', () => {
       const result = sanitize('<a href="https://example.com">Safe link</a>');
       expect(result).toContain('href="https://example.com"');
@@ -117,6 +144,38 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
     it('preserves data: image URLs', () => {
       const result = sanitize('<img src="data:image/png;base64,abc123">');
       expect(result).toContain('data:image/png');
+    });
+  });
+
+  describe('HTML held in an attribute', () => {
+    it('sanitizes the speaker notes of a slide as the HTML they are', () => {
+      // reveal.js writes the notes of a slide into the window of its speaker
+      // view as HTML.
+      const result = sanitize(
+        '<section data-notes="&lt;input autofocus onfocus=&quot;alert(1)&quot;&gt;&lt;b&gt;Note&lt;/b&gt;&lt;img src=x onerror=alert(2)&gt;"></section>',
+      );
+      const notes = cheerio.load(result)('section').attr('data-notes');
+
+      expect(notes).toBe('<input autofocus=""><b>Note</b><img src="x">');
+    });
+
+    it('sanitizes the notes that the notes of a slide hold in turn', () => {
+      const result = sanitize(
+        '<section data-notes="&lt;section data-notes=&quot;&amp;lt;input onfocus=alert(1)&amp;gt;&quot;></section>"></section>',
+      );
+      const notes = cheerio.load(result)('section').attr('data-notes');
+
+      expect(notes).toBe('<section data-notes="<input>"></section>');
+    });
+
+    it('leaves the notes of a slide that are no threat as they are', () => {
+      const result = sanitize(
+        '<section data-notes="Say it &lt;b&gt;loudly&lt;/b&gt;."><p>Slide</p></section>',
+      );
+      const section = cheerio.load(result)('section');
+
+      expect(section.attr('data-notes')).toBe('Say it <b>loudly</b>.');
+      expect(section.html()).toBe('<p>Slide</p>');
     });
   });
 

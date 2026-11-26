@@ -6,6 +6,7 @@
  * handlers, script tags, javascript: URLs).
  */
 
+import * as cheerio from 'cheerio';
 import type { CheerioAPI } from 'cheerio';
 import type { AnyNode, Element } from 'domhandler';
 import { normalizeWavedromSource } from '../renderers/wavedrom-source';
@@ -15,6 +16,11 @@ const DANGEROUS_TAGS = ['object', 'embed', 'applet'];
 
 // Script types that are used as data containers (not executable by browsers)
 const SAFE_SCRIPT_TYPES = new Set(['wavedrom', 'text/tikz']);
+
+// Attributes whose value is HTML, which a script of the page writes into the
+// page again as such: reveal.js writes the speaker notes of a slide
+// (`data-notes`) into the window of its speaker view.
+const HTML_ATTRIBUTES = new Set(['data-notes']);
 
 /**
  * Sanitize rendered HTML in-place using a cheerio instance.
@@ -63,6 +69,12 @@ export function sanitizeRenderedHTML($: CheerioAPI): void {
     }
 
     for (const attr of Object.keys(attribs)) {
+      // The value is HTML: it is sanitized as the HTML it is.
+      if (HTML_ATTRIBUTES.has(attr.toLowerCase())) {
+        attribs[attr] = sanitizeHtml(attribs[attr]);
+        continue;
+      }
+
       // Strip all on* event handler attributes (onload, onerror, onclick, etc.)
       if (/^on/i.test(attr)) {
         delete attribs[attr];
@@ -89,4 +101,11 @@ export function sanitizeRenderedHTML($: CheerioAPI): void {
     attribs['sandbox'] = '';
     delete attribs['srcdoc'];
   });
+}
+
+/** Sanitize HTML written as the value of an attribute, as the HTML it is. */
+function sanitizeHtml(html: string): string {
+  const $ = cheerio.load(html, null, false);
+  sanitizeRenderedHTML($);
+  return $.root().html() ?? '';
 }
