@@ -201,6 +201,28 @@ test.describe('the page a note is rendered to, as an HTML export', () => {
       await openExport(context, firstReading(svg(animation)), '#link'),
     ).toEqual({ handlers: [], dialogs: [] });
   });
+
+  test('the sidebar of an export runs nothing a heading holds', async ({
+    context,
+  }) => {
+    // The sidebar table of contents is built from the headings of the note
+    // and written into the export outside the page. What a heading holds,
+    // as the note writes it, and as the engine hands the sidebar over.
+    const sidebar = (toc: string) =>
+      `<div class="md-sidebar-toc"><div class="md-toc">${toc}</div></div>`;
+    const headings =
+      '<a id="a" href="#a" class="md-toc-link"><img src=1 onerror=alert(1)></a>' +
+      `<a href="#b" class="md-toc-link">${MUTATIONS[0]}</a>`;
+
+    // Written as it is: the image runs its handler by itself.
+    expect((await openExport(context, sidebar(headings))).dialogs).not.toEqual(
+      [],
+    );
+
+    expect(
+      await openExport(context, sidebar(sanitizeStableHTML(headings)), '#a'),
+    ).toEqual({ handlers: [], dialogs: [] });
+  });
 });
 
 /**
