@@ -97,12 +97,25 @@ describe('the MathJax of a page', () => {
       const mathJaxConfig = mathJaxConfigIn(html);
       // Named where MathJax reads them: in the options of the document.
       expect(mathJaxConfig['options']).toMatchObject({
-        ignoreHtmlClass: 'mathjax_ignore|mermaid|pele',
+        ignoreHtmlClass: 'mathjax_ignore|mermaid|pele|vega|vega-lite',
       });
       expect(mathJaxConfig['tex']).not.toHaveProperty('ignoreHtmlClass');
       // The delimiters are the configuration's, as before.
       expect(mathJaxConfig['tex']).toMatchObject({ inlineMath: [['$', '$']] });
     }
+  });
+
+  test('is a copy: what a page sets on it stays out of the configuration of the notebook', async () => {
+    const { notebook, engine } = await createNotebook();
+    const before = JSON.stringify(notebook.config.mathjaxConfig);
+    await engine.generateHTMLTemplateForPreview({
+      inputString: '# One\n',
+      config: notebook.config as WebviewConfig,
+      vscodePreviewPanel: null,
+    });
+    await engine.htmlExportDocument();
+
+    expect(JSON.stringify(notebook.config.mathjaxConfig)).toBe(before);
   });
 
   test('keeps the classes the configuration names', async () => {
@@ -112,7 +125,7 @@ describe('the MathJax of a page', () => {
     const html = await engine.htmlExportDocument();
 
     expect(mathJaxConfigIn(html)['options']).toMatchObject({
-      ignoreHtmlClass: 'tex2jax_ignore|mine|mermaid|pele',
+      ignoreHtmlClass: 'tex2jax_ignore|mine|mermaid|pele|vega|vega-lite',
     });
   });
 });

@@ -24,6 +24,9 @@ import { startServer, TestServer } from './server';
  *    the visible preview in place, with no further `updateHtml`.
  *  - A fast MathJax reject must not drop a slower renderer still working
  *    on the hidden element (`Promise.allSettled`).
+ *  - The sources of diagrams are left alone (#599): MathJax typesets the
+ *    page before mermaid, pele and interactive vega draw, and the source of
+ *    each is text in the page until then.
  */
 
 // Minimal shape of the MathJax global used inside page.evaluate callbacks.
@@ -170,20 +173,24 @@ test('dropping typesetClear/texReset regresses numbering (guards why we keep the
 
 const MERMAID_SOURCE = 'graph TD\n  A["cost $5"] --> B["price $10"]\n';
 const PELE_SOURCE = 'flowchart LR\n  A["cost $5"] --> B["price $10"]\n';
+/** What an interactive vega block holds: its spec, as the text of the page. */
+const VEGA_SOURCE = '{"title":"Cost $5 vs $10"}';
 
 /**
- * Typeset a formula next to the sources of two diagrams — what the staged
- * page holds before the diagrams are drawn — and return what became of them.
+ * Typeset a formula next to the sources of diagrams — what the staged page
+ * holds before the diagrams are drawn — and return what became of them.
  */
 function typesetNextToDiagrams(page: Page) {
   return page.evaluate(
-    async ({ mermaid, pele }) => {
+    async ({ mermaid, pele, vega }) => {
       const MathJax = (window as WindowWithMathJax).MathJax;
       const hidden = document.getElementById('hidden')!;
       hidden.innerHTML =
         '<p>Price is $x$.</p>' +
         `<div class="mermaid">${mermaid}</div>` +
-        `<div class="pele">${pele}</div>`;
+        `<div class="pele">${pele}</div>` +
+        `<p class="vega"><span style="display: none">${vega}</span></p>` +
+        `<div class="something mermaid">${mermaid}</div>`;
       MathJax.typesetClear();
       MathJax.texReset();
       await MathJax.typesetPromise([hidden]);
@@ -191,15 +198,16 @@ function typesetNextToDiagrams(page: Page) {
         formulas: hidden.querySelectorAll('p mjx-container').length,
         mermaid: hidden.querySelector('div.mermaid')?.textContent ?? null,
         pele: hidden.querySelector('div.pele')?.textContent ?? null,
+        vega: hidden.querySelector('p.vega')?.textContent ?? null,
+        mermaidAmongOtherClasses:
+          hidden.querySelector('div.something')?.textContent ?? null,
       };
     },
-    { mermaid: MERMAID_SOURCE, pele: PELE_SOURCE },
+    { mermaid: MERMAID_SOURCE, pele: PELE_SOURCE, vega: VEGA_SOURCE },
   );
 }
 
-test('leaves the sources of mermaid and pele diagrams alone (#599)', async ({
-  page,
-}) => {
+test('leaves the sources of diagrams alone (#599)', async ({ page }) => {
   // What the engine gives MathJax for a note.
   const config = mathJaxConfigOf(makeConfig(), {
     mathInlineDelimiters: [['$', '$']],
@@ -214,6 +222,8 @@ test('leaves the sources of mermaid and pele diagrams alone (#599)', async ({
     formulas: 1,
     mermaid: MERMAID_SOURCE,
     pele: PELE_SOURCE,
+    vega: VEGA_SOURCE,
+    mermaidAmongOtherClasses: MERMAID_SOURCE,
   });
 });
 
@@ -228,6 +238,7 @@ test('unless it is told to, takes what stands between two $ of a source for a fo
 
   expect(typeset.mermaid).not.toBe(MERMAID_SOURCE);
   expect(typeset.pele).not.toBe(PELE_SOURCE);
+  expect(typeset.vega).not.toBe(VEGA_SOURCE);
 });
 
 test('semantic enrichment is disabled by default for performance (#2312)', async ({

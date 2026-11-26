@@ -70,18 +70,19 @@ export function buildMathJaxConfigScript(
  * The configuration MathJax is given for a note: that of the notebook, with
  * the math delimiters, and told to leave the sources of diagrams alone.
  *
- * The source of a mermaid or pele diagram is text in the page until the
- * diagram is drawn, and MathJax takes what stands between two `$` of it for
- * a formula: the diagram is then drawn from a source that is no longer the
- * one written, and a `$$…$$` a mermaid label holds never reaches mermaid's
- * own math. MathJax leaves `pre` and `code` alone by itself; it is told to
- * leave those elements alone too.
+ * MathJax typesets the page before the diagrams are drawn, and the source of
+ * a diagram is text in the page until then: MathJax takes what stands
+ * between two `$` of it for a formula. The diagram is then drawn from a
+ * source that is no longer the one written, and a `$$…$$` a mermaid label
+ * holds never reaches mermaid's own math. So it leaves alone the elements a
+ * mermaid or a pele diagram is drawn from, and those an interactive vega
+ * diagram is read from. (MathJax leaves `pre` and `code` alone by itself.)
  *
  * The classes it leaves alone are named in the options of the document
  * (`options.ignoreHtmlClass`) — not in those of the tex input — as one
- * pattern of alternatives, or as a list. Whatever the configuration names
- * is kept; what is named replaces MathJax's own `mathjax_ignore`, which
- * stays when nothing is named.
+ * pattern of alternatives. Whatever the configuration names, as a pattern or
+ * as a list, is kept; what is named replaces MathJax's own `mathjax_ignore`,
+ * which stays when nothing is named.
  */
 export function mathJaxConfigOf(
   mathJaxConfig: Record<string, unknown>,
@@ -107,6 +108,8 @@ export function mathJaxConfigOf(
         ...(named.length > 0 ? named : ['mathjax_ignore']),
         'mermaid',
         'pele',
+        'vega',
+        'vega-lite',
       ].join('|'),
     },
   };

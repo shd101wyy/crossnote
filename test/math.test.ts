@@ -590,26 +590,34 @@ describe('mathJaxConfigOf', () => {
   });
 
   test.each([
-    ['none', undefined, 'mathjax_ignore|mermaid|pele'],
-    ['a class', { ignoreHtmlClass: 'mine' }, 'mine|mermaid|pele'],
+    ['none', undefined, 'mathjax_ignore|mermaid|pele|vega|vega-lite'],
+    [
+      'a class',
+      { ignoreHtmlClass: 'mine' },
+      'mine|mermaid|pele|vega|vega-lite',
+    ],
     [
       'a pattern of alternatives',
       { ignoreHtmlClass: 'tex2jax_ignore|mine' },
-      'tex2jax_ignore|mine|mermaid|pele',
+      'tex2jax_ignore|mine|mermaid|pele|vega|vega-lite',
     ],
     [
       'a list',
       { ignoreHtmlClass: ['mine', 'yours'] },
-      'mine|yours|mermaid|pele',
+      'mine|yours|mermaid|pele|vega|vega-lite',
     ],
     [
       'a list with an empty name in it',
       { ignoreHtmlClass: ['mine', ''] },
-      'mine|mermaid|pele',
+      'mine|mermaid|pele|vega|vega-lite',
     ],
-    ['an empty list', { ignoreHtmlClass: [] }, 'mathjax_ignore|mermaid|pele'],
+    [
+      'an empty list',
+      { ignoreHtmlClass: [] },
+      'mathjax_ignore|mermaid|pele|vega|vega-lite',
+    ],
   ])(
-    'has the sources of mermaid and pele diagrams left alone, with %s named by the configuration',
+    'has the sources of diagrams left alone, with %s named by the configuration',
     (_, options, ignored) => {
       const mathJaxConfig = mathJaxConfigOf({ options }, config);
 

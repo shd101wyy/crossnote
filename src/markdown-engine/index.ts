@@ -430,6 +430,15 @@ export class MarkdownEngine {
     this.tocHTML = '';
   }
 
+  /**
+   * The configuration MathJax is given for a page: a copy, for what a page
+   * sets on it stays out of the notebook's configuration.
+   */
+  private mathJaxConfig(): Record<string, unknown> {
+    const config = this.notebook.config;
+    return mathJaxConfigOf(copy({ ...config.mathjaxConfig }), config);
+  }
+
   private get protocolsWhiteListRegExp() {
     // protocal whitelist
     const protocolsWhiteList = (
@@ -535,12 +544,7 @@ export class MarkdownEngine {
       this.notebook.config.mathRenderingOption === 'MathJax' ||
       this.notebook.config.markdownParser === 'pandoc'
     ) {
-      const config = this.notebook.config;
-      // The copy keeps what is set for one page out of the notebook's config.
-      const mathJaxConfig = mathJaxConfigOf(
-        copy({ ...config.mathjaxConfig }),
-        config,
-      );
+      const mathJaxConfig = this.mathJaxConfig();
 
       // https://docs.mathjax.org/en/latest/options/startup/startup.html#the-configuration-block
       // Disable typesetting on startup
@@ -1275,12 +1279,7 @@ window["initRevealPresentation"] = async function() {
       this.notebook.config.mathRenderingOption === 'MathJax' ||
       this.notebook.config.markdownParser === 'pandoc'
     ) {
-      const config = this.notebook.config;
-      // The copy keeps what is set for one page out of the notebook's config.
-      const mathJaxConfig = mathJaxConfigOf(
-        copy({ ...config.mathjaxConfig }),
-        config,
-      );
+      const mathJaxConfig = this.mathJaxConfig();
 
       if (options.offline) {
         mathStyle = `
