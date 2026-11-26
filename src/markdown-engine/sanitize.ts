@@ -17,9 +17,9 @@ const DANGEROUS_TAGS = ['object', 'embed', 'applet'];
 // Script types that are used as data containers (not executable by browsers)
 const SAFE_SCRIPT_TYPES = new Set(['wavedrom', 'text/tikz']);
 
-// Attributes whose value is HTML, which a script of the page writes into the
-// page again as such: reveal.js writes the speaker notes of a slide
-// (`data-notes`) into the window of its speaker view.
+// Attributes of a slide whose value is HTML, which a script of the page
+// writes into the page again as such: reveal.js writes the speaker notes of a
+// slide (`data-notes` on a `section`) into the window of its speaker view.
 const HTML_ATTRIBUTES = new Set(['data-notes']);
 
 /**
@@ -69,8 +69,11 @@ export function sanitizeRenderedHTML($: CheerioAPI): void {
     }
 
     for (const attr of Object.keys(attribs)) {
-      // The value is HTML: it is sanitized as the HTML it is.
-      if (HTML_ATTRIBUTES.has(attr.toLowerCase())) {
+      // The value is the HTML of speaker notes: it is sanitized as such.
+      if (
+        (el as Element).name === 'section' &&
+        HTML_ATTRIBUTES.has(attr.toLowerCase())
+      ) {
         attribs[attr] = sanitizeHtml(attribs[attr]);
         continue;
       }

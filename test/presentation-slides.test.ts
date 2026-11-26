@@ -916,6 +916,28 @@ Text ^note
       expect(load(html)('section[data-h]').attr('data-x')).toBe('a&b   c');
     });
 
+    test('the place of a slide in the deck and its source line are written by crossnote, under whatever case they are written', async () => {
+      const { html } = await render(
+        '<!-- slide DATA-H=99 data-v=99 DATA-SOURCE-LINE=99 -->\n\n# First',
+      );
+      const section = load(html)('section[data-h]');
+
+      expect(section.attr('data-h')).toBe('0');
+      expect(section.attr('data-v')).toBe('0');
+      expect(section.attr('data-source-line')).toBe('1');
+      expect(Object.keys(section.attr() ?? {}).length).toBe(4);
+    });
+
+    test('a background written in capitals is a background', async () => {
+      const slides = await renderSlides(
+        '<!-- slide DATA-BACKGROUND-IMAGE="bg.png" -->\n\n# First',
+      );
+
+      expect(slides[0].backgrounds['data-background-image']).toEqual(
+        expect.stringMatching(/^file:\/\/.*\/bg\.png$/),
+      );
+    });
+
     test('a value with quotes in it is written as it is', async () => {
       const { html } = await render(
         `<!-- slide data-x='say "hi"' -->\n\n# First`,

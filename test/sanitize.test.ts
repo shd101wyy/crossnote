@@ -168,6 +168,17 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
       expect(notes).toBe('<section data-notes="<input>"></section>');
     });
 
+    it('leaves an attribute of another element as it is, though it is named the same', () => {
+      const result = sanitize(
+        '<p data-notes="x&lt;y and a &amp;amp; b and 1 &lt; 2">text</p>',
+      );
+
+      // The value is as it was, not cut at what looks like a tag.
+      expect(cheerio.load(result)('p').attr('data-notes')).toBe(
+        'x<y and a &amp; b and 1 < 2',
+      );
+    });
+
     it('leaves the notes of a slide that are no threat as they are', () => {
       const result = sanitize(
         '<section data-notes="Say it &lt;b&gt;loudly&lt;/b&gt;."><p>Slide</p></section>',

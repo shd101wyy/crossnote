@@ -357,14 +357,19 @@ const SLIDE_BACKGROUNDS = [
 ];
 
 /**
- * The keys of a slide configuration that are not attributes of the slide,
- * spelled in lower case.
+ * The keys of a slide configuration that are not written as they are: the
+ * number of the marker and the line of the slide are not attributes of the
+ * slide, and the place of the slide in the deck and its source line are
+ * written by crossnote. Spelled in lower case.
  */
 const NOT_SLIDE_ATTRIBUTES = new Set([
   SLIDE_MARKER_NUMBER.toLowerCase(),
   'lineno',
   'class',
   'id',
+  'data-h',
+  'data-v',
+  'data-source-line',
 ]);
 
 /**
@@ -3154,15 +3159,19 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     let v = 0; // vertical
     for (const [i, { config: slideConfig, html: slide }] of slides.entries()) {
       // resolve paths in slideConfig
-      for (const attribute of SLIDE_BACKGROUNDS) {
+      // An attribute is the same in capitals.
+      for (const name of Object.keys(slideConfig)) {
+        if (!SLIDE_BACKGROUNDS.includes(name.toLowerCase())) {
+          continue;
+        }
         // A background that is not written as an address names none.
-        if (typeof slideConfig[attribute] === 'string') {
-          slideConfig[attribute] = this.resolveFilePath(
-            slideConfig[attribute],
+        if (typeof slideConfig[name] === 'string') {
+          slideConfig[name] = this.resolveFilePath(
+            slideConfig[name],
             useRelativeFilePath,
           );
         } else {
-          delete slideConfig[attribute];
+          delete slideConfig[name];
         }
       }
 
