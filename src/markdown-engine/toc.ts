@@ -1,3 +1,4 @@
+import { escape } from 'html-escaper';
 import MarkdownIt from 'markdown-it';
 import HeadingIdGenerator from './heading-id-generator';
 
@@ -200,7 +201,9 @@ export function generateSidebarToCHTML(
     // See vscode-markdown-preview-enhanced #2276 and #2277.
     const headingHtml = md.renderInline(content);
     const headingId = heading.id || headingIdGenerator.generateId(content);
-    return `<a href="#${headingId}" class="md-toc-link">${headingHtml}</a>`;
+    return `<a href="#${escape(
+      headingId,
+    )}" class="md-toc-link">${headingHtml}</a>`;
   };
 
   if (opt.ordered) {

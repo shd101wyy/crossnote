@@ -212,3 +212,15 @@ export function canBeReadDifferently($: CheerioAPI): boolean {
 export function settledHTML($: CheerioAPI, html: string): string {
   return canBeReadDifferently($) ? sanitizeStableHTML(html) : html;
 }
+
+/**
+ * HTML built outside the page and written into one — the sidebar table of
+ * contents of an export is: read, sanitized and settled as a page is. It
+ * starts with an element, so it is read as the body of a document, which is
+ * where the browser reads it.
+ */
+export function sanitizeHTML(html: string): string {
+  const $ = cheerio.load(html);
+  sanitizeRenderedHTML($);
+  return settledHTML($, $('body').html() ?? '');
+}
