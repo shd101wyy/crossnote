@@ -8,8 +8,8 @@
  * ends by calling `window.__crossnoteDiagramsDrawn`. So no diagram is drawn in
  * a slide that is being moved, and every page is laid out around its diagrams.
  * Until Reveal is started, the slides are as wide as the window; they are
- * given the width of the presentation, which is the width they have on paper,
- * for a diagram is drawn as wide as its slide.
+ * given the width of the presentation — on paper a slide has it, where it is
+ * a number — for a diagram is drawn as wide as its slide.
  */
 export function buildPresentationInitScript({
   presentationConfig,
@@ -44,10 +44,20 @@ export function buildPresentationInitScript({
   }
 
   // The print view of reveal.js, as far as it can be told before Reveal is
-  // started: reveal.js starts in it when the address has `print-pdf` (as a PDF
-  // export through Chrome has) or `view=print`, or the presentation is
-  // configured with `view: 'print'`.
-  const printView = `${presentationConfig['view'] === 'print'} || /print-pdf/i.test(location.search) || /[?&]view=print(?:&|$)/.test(location.search)`;
+  // started. reveal.js is in it when the address has `print-pdf` (as a PDF
+  // export through Chrome has) or says `view=print`, which overrules the
+  // `view` of the presentation. The address is read the way reveal.js reads
+  // it, so that the two agree on every address.
+  const printView = `(() => {
+    const query = {}
+    location.search.replace(/[A-Z0-9]+?=([\\w.%-]*)/gi, parameter => {
+      const [name, value] = parameter.split('=')
+      query[name] = unescape(value)
+      return parameter
+    })
+    const view = 'view' in query ? query.view : ${JSON.stringify(presentationConfig['view'])}
+    return /print-pdf/gi.test(location.search) || view === 'print'
+  })()`;
   const slideWidth = JSON.stringify(presentationConfig['width'] ?? 960);
 
   return `<script type="module">

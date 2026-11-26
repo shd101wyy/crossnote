@@ -42,23 +42,26 @@ async function openExport(
   url: string,
   document: string,
   delayRendering: boolean = false,
+  mermaidUnavailable: boolean = false,
 ) {
   await page.route(url, (route) =>
     route.fulfill({ contentType: 'text/html', body: document }),
   );
   await page.route('**/mermaid.min.js', (route) =>
-    route.fulfill({
-      contentType: 'text/javascript',
-      body:
-        bundle +
-        (delayRendering
-          ? `
+    mermaidUnavailable
+      ? route.abort()
+      : route.fulfill({
+          contentType: 'text/javascript',
+          body:
+            bundle +
+            (delayRendering
+              ? `
 const run = mermaid.run.bind(mermaid);
 const ready = new Promise(resolve => { window.releaseMermaid = resolve; });
 mermaid.run = async options => { await ready; return run(options); };
 `
-          : ''),
-    }),
+              : ''),
+        }),
   );
   await page.route('https://crossnote.test/reveal/**', (route) => {
     const file = path.resolve(
@@ -286,6 +289,8 @@ interface PageOptions {
   wrapStyle?: string;
   /** A classic script that runs after the Mermaid bundle, before the export script. */
   afterMermaid?: string;
+  /** The request for the Mermaid bundle fails. */
+  mermaidUnavailable?: boolean;
 }
 
 /**
@@ -1153,6 +1158,8 @@ async function openPrintExport(
       ${buildPresentationInitScript({ presentationConfig: options.presentationConfig ?? {}, hasMermaid: true })}
       ${mermaidScripts(options)}
     </body></html>`,
+    false,
+    options.mermaidUnavailable,
   );
   await page.waitForFunction(
     () => (window as ExportWindow).__crossnotePrintLayoutReady === true,
@@ -1212,6 +1219,27 @@ for (const search of ['?print-pdf', '?view=print']) {
     await expectLaidOutAsUnscaled(page, context, options);
   });
 }
+
+test('a PDF export whose Mermaid bundle did not load still has its presentation started', async ({
+  page,
+}) => {
+  // The script of the diagrams fails where it first uses Mermaid, before it
+  // would have told the presentation that its diagrams are drawn. An exported
+  // page that is opened in a browser has nobody to fail for: its presentation
+  // is started all the same, around the diagrams as they were written.
+  await openPrintExport(page, '?print-pdf', {
+    slides: [[WRAPPING_FLOWCHART], ['<p>Two</p>']],
+    mermaidUnavailable: true,
+  });
+  await waitForExport(page, 'error');
+
+  const layout = await readPrintLayout(page);
+  expect([layout.printView, layout.ready]).toEqual([true, true]);
+  expect(layout.pages).toEqual([
+    { slides: 1, diagrams: 0, pagesHigh: 1 },
+    { slides: 1, diagrams: 0, pagesHigh: 1 },
+  ]);
+});
 
 test('a PDF export without Mermaid diagrams is laid out by reveal.js at once, and says so', async ({
   page,

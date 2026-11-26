@@ -15,7 +15,11 @@ jest.mock('puppeteer-core/lib/cjs/puppeteer/puppeteer-core.js', () => ({
 
 /** Wait until `condition` holds, letting the page's scripts run meanwhile. */
 async function waitFor(condition: () => boolean) {
+  const deadline = Date.now() + 5_000;
   while (!condition()) {
+    if (Date.now() > deadline) {
+      throw new Error('The page did not get there in time');
+    }
     await new Promise<void>((resolve) => setImmediate(resolve));
   }
 }
@@ -54,6 +58,8 @@ function browserHarness(
     captureError?: Error;
     /** The page has reveal.js. */
     reveal?: boolean;
+    /** Mermaid is not on the page: its script fails where it first uses it. */
+    mermaidUnavailable?: boolean;
   } = {},
 ) {
   const loaded = deferred();
@@ -88,7 +94,11 @@ function browserHarness(
       querySelectorAll: () => diagrams,
     },
     mermaid: {
-      initialize() {},
+      initialize() {
+        if (options.mermaidUnavailable) {
+          throw new Error('mermaid is not loaded');
+        }
+      },
       async run() {
         diagrams.forEach((diagram: Diagram) => (diagram.processed = true));
         await rendering.promise;
@@ -121,6 +131,12 @@ function browserHarness(
       address = url;
       context.location.search = new URL(url).search;
       const html = fs.readFileSync(fileURLToPath(url), 'utf8');
+      // A page has each of its elements by its id as a property of its window.
+      for (const [, id] of html.matchAll(/ id="([^"]+)"/g)) {
+        if (!(id in context)) {
+          context[id] = {};
+        }
+      }
       diagrams.push(...[...html.matchAll(/class="mermaid/g)].map(() => ({})));
       for (const [, isModule, script] of html.matchAll(
         /<script( type="module")?>([\s\S]*?)<\/script>/g,
@@ -368,6 +384,51 @@ describe('Chrome export waits for Mermaid', () => {
       harness.reveal!.emit('pdf-ready');
       await exporting;
       expect(harness.captures).toEqual([['complete', 'complete', 'complete']]);
+      expect(harness.browser.close).toHaveBeenCalledTimes(1);
+    });
+
+    test('is not printed on account of an element whose id is the name of the report of the print layout', async () => {
+      const harness = browserHarness({ reveal: true });
+      jest
+        .mocked(launch)
+        .mockResolvedValue(harness.browser as unknown as Browser);
+      const engine = await createEngine(
+        deck.replace(
+          '# Second',
+          '<div id="__crossnotePrintLayoutReady"></div>\n\n# Second',
+        ),
+      );
+      const exporting = engine.chromeExport();
+      await harness.loaded.promise;
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      try {
+        // reveal.js has not reported its pages: the page is still waited in.
+        expect(harness.captures).toEqual([]);
+      } finally {
+        harness.reveal?.emit('pdf-ready');
+      }
+      await exporting;
+      expect(harness.captures).toEqual([[]]);
+      expect(harness.browser.close).toHaveBeenCalledTimes(1);
+    });
+
+    test('is started by reveal.js although the script of its Mermaid diagrams failed before it drew any', async () => {
+      const harness = browserHarness({
+        reveal: true,
+        mermaidUnavailable: true,
+      });
+      jest
+        .mocked(launch)
+        .mockResolvedValue(harness.browser as unknown as Browser);
+      const engine = await createEngine(deck.replace('# Second', markdown));
+      const exporting = engine.chromeExport();
+      await harness.loaded.promise;
+      // The export fails with the error of the script. The page it opened is
+      // left as an exported page is that is opened in a browser: its
+      // presentation is started all the same, around the diagrams as written.
+      await expect(exporting).rejects.toThrow('mermaid is not loaded');
+      await waitFor(() => harness.reveal!.initialize.mock.calls.length === 1);
+      expect(harness.captures).toEqual([]);
       expect(harness.browser.close).toHaveBeenCalledTimes(1);
     });
   });

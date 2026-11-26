@@ -48,16 +48,45 @@ function runScript(script: string, { search = '' }: { search?: string } = {}) {
 }
 
 describe('the script that starts a presentation of an exported document', () => {
+  // The addresses are read the way reveal.js reads them (reveal 6.0.2).
   const printView: [string, string, Record<string, unknown>][] = [
     ['by its address', '?print-pdf', {}],
+    ['by its address in capitals', '?PRINT-PDF', {}],
+    ['by its address, before a fragment', '?print-pdf#/first', {}],
     ['by view=print in its address', '?view=print', {}],
+    ['by a view that is written escaped', '?view=%70rint', {}],
     ['among other parameters', '?a=1&view=print&b=2', {}],
+    [
+      'among other parameters that a semicolon separates',
+      '?a=1;view=print',
+      {},
+    ],
+    ['by a parameter whose name ends in view', '?a-view=print', {}],
+    ['by the last of two views', '?view=scroll&view=print', {}],
     ['by its configuration', '', { view: 'print' }],
+    [
+      'by its configuration, where the address has other parameters',
+      '?page=3',
+      { view: 'print' },
+    ],
   ];
 
   const pageView: [string, string, Record<string, unknown>][] = [
     ['without a print address', '?page=3', {}],
     ['by a view of another name', '?view=scroll', {}],
+    ['by a view written in capitals', '?view=Print', {}],
+    ['by a parameter whose name is written in capitals', '?VIEW=print', {}],
+    ['by the last of two views', '?view=print&view=scroll', {}],
+    [
+      'by a view that says nothing, though configured',
+      '?view=',
+      { view: 'print' },
+    ],
+    [
+      'by a view of another name, though configured',
+      '?view=scroll',
+      { view: 'print' },
+    ],
   ];
 
   test('starts the presentation at once where the page has no Mermaid diagram', async () => {

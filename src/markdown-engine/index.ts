@@ -2027,10 +2027,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (yamlConfig['isPresentationMode']) {
         // reveal.js lays the pages of a presentation out once the page has
         // loaded, moving every slide into its page, and reports it. A PDF
-        // taken before is made of pages that are not there yet.
+        // taken before is made of pages that are not there yet. The report is
+        // compared with `true`: a page is known by the id of each of its
+        // elements, so one with that id would otherwise pass for the report.
         try {
           await page.waitForFunction(
-            () => (window as PrintLayoutWindow).__crossnotePrintLayoutReady,
+            () =>
+              (window as PrintLayoutWindow).__crossnotePrintLayoutReady ===
+              true,
             { timeout: 30_000 },
           );
         } catch (error) {

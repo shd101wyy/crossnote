@@ -16,7 +16,15 @@ if (!window.__crossnoteMermaidExport) {
 }
 
 async function render() {
-// Page load and data-processed do not imply that Mermaid's layout is complete.
+// A PDF export has its diagrams drawn before Reveal starts, and its pages laid
+// out around them: the script that starts Reveal waits for
+// window.__crossnoteDiagramsDrawn (buildPresentationInitScript). Nothing is
+// waited for before the diagrams are drawn then, and the slides are not laid
+// out again after. The page is told that the script is through with its
+// diagrams on every way out of this function: where it is not told, the
+// presentation of the page never starts.
+const beforeReveal = typeof window.__crossnoteDiagramsDrawn === 'function'
+// Page load and data-processed did not imply that Mermaid's layout is complete.
 window.__crossnoteMermaidExport = { status: 'pending' }
 try {
 // Disable the load listener before an external module can yield control.
@@ -112,12 +120,6 @@ const slides = reveal ? document.querySelector('.reveal .slides') : null
 // rendering, where the scale does not reach it, as wide as it is in its slide;
 // it is done with once Reveal has laid the slides out.
 const inSlides = !!slides
-// A PDF export has its diagrams drawn before Reveal starts, and its pages laid
-// out around them: the script that starts Reveal waits for
-// window.__crossnoteDiagramsDrawn (buildPresentationInitScript). Nothing is
-// waited for before the diagrams are drawn then, and the slides are not laid
-// out again after.
-const beforeReveal = typeof window.__crossnoteDiagramsDrawn === 'function'
 if (inSlides && !beforeReveal) {
   await new Promise(function (resolve) {
     if (reveal.isReady()) {
@@ -175,6 +177,10 @@ window.__crossnoteMermaidExport = { status: 'complete' }
     message: String(error && error.message || error)
   }
   console.error(error)
+} finally {
+  if (beforeReveal) {
+    window.__crossnoteDiagramsDrawn()
+  }
 }
 }
 `;
