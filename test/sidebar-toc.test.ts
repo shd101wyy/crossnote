@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { load } from 'cheerio';
+import { isDangerousUrl, URL_ATTRIBUTES } from '../src/lib/dangerous-urls';
 import { mkdirSync, track } from '../src/lib/temp';
 import { MarkdownEngine } from '../src/markdown-engine';
 import { Notebook } from '../src/notebook';
@@ -35,10 +36,17 @@ jest.mock('less', () => ({
  */
 function threatsOf(html: string): string[] {
   const found = readAgain(html);
-  load(html)('a[href]').each((_, el) => {
-    const href = el.attribs['href'];
-    if (/^(javascript|vbscript):/i.test(href)) {
-      found.push(`href="${href}"`);
+  load(html)('*').each((_, el) => {
+    if (!('attribs' in el)) {
+      return;
+    }
+    for (const [name, value] of Object.entries(el.attribs)) {
+      if (
+        URL_ATTRIBUTES.includes(name.toLowerCase()) &&
+        isDangerousUrl(value)
+      ) {
+        found.push(`${name}="${value}"`);
+      }
     }
   });
   return found;
@@ -124,6 +132,13 @@ describe('the sidebar table of contents of an HTML export', () => {
 
     expect(threatsOf(tocHTML)).toEqual([]);
     expect(tocHTML).toContain('<math');
+  });
+
+  test('is nothing for a note without a heading', async () => {
+    const { tocHTML, sidebar } = await exportWith('text only\n');
+
+    expect(tocHTML).toBe('');
+    expect(sidebar).toBe('');
   });
 
   test('is still a table of contents', async () => {

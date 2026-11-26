@@ -50,7 +50,11 @@ import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
 import { buildPeleExportScript } from './pele-export';
 import { buildPresentationInitScript } from './presentation-export';
-import { sanitizeHTML, sanitizeRenderedHTML, settledHTML } from './sanitize';
+import {
+  sanitizeRenderedHTML,
+  sanitizeStableHTML,
+  settledHTML,
+} from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
 import { SLIDE_MARKER_NUMBER, transformMarkdown } from './transformer';
 
@@ -3477,9 +3481,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // Collaposible ToC
     // NOTE: We disable the source map here.
     const sidebarTocMd = this.notebook.getTocMarkdownIt();
-    // The headings are the note's: the markup is sanitized as a page is, for
-    // the sidebar of an export is written outside the page.
-    this.tocHTML = sanitizeHTML(
+    // The headings are the note's: the markup is read and sanitized as the
+    // content of an element, which is what the sidebar of an export and the
+    // page itself make of it.
+    this.tocHTML = sanitizeStableHTML(
       generateSidebarToCHTML(headings, sidebarTocMd, {
         ordered,
         depthFrom,
