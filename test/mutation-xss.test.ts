@@ -92,4 +92,38 @@ describe('the page a note is rendered to', () => {
     expect(html).toContain('<span class="katex">');
     expect(html).toContain('<math xmlns="http://www.w3.org/1998/Math/MathML">');
   });
+
+  /**
+   * What it takes to be read again, and nothing to hide: a formula is
+   * MathML, and each of these has a `<` in its text. The page is read again
+   * and comes back as it was. A `plaintext` element has no end tag, so all
+   * that follows it is text; it is kept as the text of a `pre` element.
+   */
+  test.each([
+    [
+      'a style with a `<` in it',
+      '<style>p > a { color: red }</style>',
+      '<style>p > a { color: red }</style>',
+    ],
+    [
+      'the fallback of an iframe',
+      '<iframe src="https://example.com">a < b</iframe>',
+      'a < b</iframe>',
+    ],
+    [
+      'the data script of a TikZ diagram',
+      '<script type="text/tikz">a < b</script>',
+      '<script type="text/tikz">a < b</script>',
+    ],
+    [
+      'a plaintext element',
+      '<plaintext>rest of the page <b>as text</b>',
+      '<pre>rest of the page &lt;b&gt;as text&lt;/b&gt;',
+    ],
+  ])('keeps a formula next to %s', async (_, markup, kept) => {
+    const html = await render(`$x^2$\n\n${block(markup)}`, true);
+
+    expect(html).toContain('<math xmlns="http://www.w3.org/1998/Math/MathML">');
+    expect(html).toContain(kept);
+  });
 });

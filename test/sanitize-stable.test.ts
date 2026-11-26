@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 import {
-  isReadDifferently,
+  canBeReadDifferently,
   sanitizeRenderedHTML,
   sanitizeStableHTML,
   settledHTML,
@@ -140,7 +140,7 @@ describe('a page that has been read and sanitized', () => {
       '<style>.a[b<c] { color: red }</style><p>x</p>',
     ],
   ])('cannot be read differently by a browser with %s', (_, markup) => {
-    expect(isReadDifferently(read(markup).$)).toBe(false);
+    expect(canBeReadDifferently(read(markup).$)).toBe(false);
   });
 
   test.each([
@@ -161,7 +161,7 @@ describe('a page that has been read and sanitized', () => {
       `<svg></svg><style>${MUTATIONS[0]}</style>`,
     ],
   ])('can be read differently by a browser with %s', (_, markup) => {
-    expect(isReadDifferently(read(markup).$)).toBe(true);
+    expect(canBeReadDifferently(read(markup).$)).toBe(true);
   });
 
   test('is handed to the browser as it is where it cannot be read differently', () => {
