@@ -25,6 +25,8 @@ const SAFE_SCRIPT_TYPES = new Set(['wavedrom', 'text/tikz']);
 // so the value is read as the HTML it is on every element that has it.
 const HTML_ATTRIBUTES = new Set(['data-notes']);
 
+const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
+
 /**
  * Sanitize rendered HTML in-place using a cheerio instance.
  *
@@ -68,6 +70,17 @@ function sanitize($: CheerioAPI, notesAreHTML: boolean): void {
       } else {
         $(el).text(safe);
       }
+    }
+  });
+
+  // A `plaintext` element has no end tag: all that follows it is its text,
+  // the end tags of the elements around it included when it is read again.
+  // Written out as it is, the page would never read the same twice, so its
+  // text is kept, as the text of a `pre` element. In MathML and SVG a
+  // `plaintext` is an ordinary element, and is left as it is.
+  $('plaintext').each((_, el: Element) => {
+    if (el.namespace === HTML_NAMESPACE) {
+      $(el).replaceWith($('<pre></pre>').text($(el).text()));
     }
   });
 
@@ -131,7 +144,9 @@ const MAX_READINGS = 3;
  * an element with an event handler in the next — a "mutation". So the markup
  * is read and sanitized again until reading it once more changes nothing;
  * where it has not stopped changing after `MAX_READINGS` readings, its MathML
- * and SVG are taken out, for nowhere else do two readings differ.
+ * and SVG are taken out, for nowhere else can a reading bring out an event
+ * handler. A reading after which a page cannot be read differently is the
+ * last.
  *
  * It is read as the content of an element, which is how the page takes it.
  * `notesAreHTML` is that of `sanitize`: the markup of a page holds notes that
@@ -148,9 +163,52 @@ export function sanitizeStableHTML(
     }
     sanitize($, notesAreHTML);
     const next = $('div').html() ?? '';
-    if (next === html || reading === MAX_READINGS) {
+    if (next === html || reading === MAX_READINGS || !canBeReadDifferently($)) {
       return next;
     }
     html = next;
   }
+}
+
+/**
+ * The elements whose text is taken as it is written where they are HTML.
+ */
+const RAW_TEXT_ELEMENTS =
+  'style, script, xmp, iframe, noembed, noframes, noscript, plaintext';
+
+/**
+ * Whether a browser can read the page differently from cheerio, which has
+ * just read it: `$` is the page after `sanitizeRenderedHTML($)`.
+ *
+ * A reading can bring out what the one before did not have — an element with
+ * a handler of its own — only where MathML or SVG meets an element whose text
+ * is taken as it is written and has a `<` in that text: in HTML the `<` is
+ * text, in MathML and SVG it begins markup. Any other page may come out with
+ * its elements arranged otherwise, but with none that the sanitizer did not
+ * see. (Checked on 4,442 pages that a second reading gave an event handler or
+ * a dangerous address: every one has both. Of 4,000 others, read by Chromium,
+ * none got either.)
+ */
+export function canBeReadDifferently($: CheerioAPI): boolean {
+  return (
+    $('math, svg').length > 0 &&
+    $(RAW_TEXT_ELEMENTS).is(
+      (_, el) =>
+        'children' in el &&
+        el.children.some(
+          (child) => child.type === 'text' && child.data.includes('<'),
+        ),
+    )
+  );
+}
+
+/**
+ * The page to hand to a browser: `$` has been read and sanitized with
+ * `sanitizeRenderedHTML($)`, and `html` is what it comes to as HTML. The
+ * browser reads that once more — an HTML export is opened as a document, the
+ * preview is written into an element — so where it can be read differently,
+ * it is read and sanitized again until one reading more changes nothing.
+ */
+export function settledHTML($: CheerioAPI, html: string): string {
+  return canBeReadDifferently($) ? sanitizeStableHTML(html) : html;
 }

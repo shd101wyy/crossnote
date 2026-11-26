@@ -1,6 +1,10 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test';
+import * as cheerio from 'cheerio';
 import { escape } from 'html-escaper';
-import { sanitizeStableHTML } from '../../src/markdown-engine/sanitize';
+import {
+  sanitizeRenderedHTML,
+  sanitizeStableHTML,
+} from '../../src/markdown-engine/sanitize';
 import {
   LONG_MUTATION,
   MUTATIONS,
@@ -10,11 +14,13 @@ import { startServer, TestServer } from './server';
 
 /**
  * The sanitizer reads markup with cheerio; the page reads it with the
- * browser. The speaker notes of a slide go from the one to the other: what
- * the sanitizer makes of `data-notes` is written into the speaker view by
- * reveal.js, as HTML. So here a real Chromium reads the notes again, as the
- * page reads them — once by itself, and once through the notes plugin of the
- * vendored reveal.js.
+ * browser. A page that the engine has rendered is read once more before it
+ * is shown — an HTML export is opened as a document — and the speaker notes
+ * of a slide once more after that: what the sanitizer makes of `data-notes`
+ * is written into the speaker view by reveal.js, as HTML. So here a real
+ * Chromium reads them again, as the page reads them: the export as a
+ * document, the notes by themselves, and once through the notes plugin of
+ * the vendored reveal.js.
  */
 
 type RevealWindow = Window &
@@ -95,6 +101,70 @@ test.describe('markup that a page takes back as HTML', () => {
     expect(sanitized).not.toMatch(/<math|<svg/);
     expect(await readIn(page, sanitized)).toEqual([]);
   });
+});
+
+/**
+ * The page as the engine hands it back before it is read again: parsed as a
+ * document, sanitized, and written out.
+ */
+function firstReading(markup: string): string {
+  const $ = cheerio.load(
+    `<!DOCTYPE html><html><head></head><body><div>${markup}</div></body></html>`,
+  );
+  sanitizeRenderedHTML($);
+  return ($('head').html() ?? '') + ($('body').html() ?? '');
+}
+
+/**
+ * Open the HTML export of a page and return what the browser found in it:
+ * the event handlers in the document, and the dialogs that opened by
+ * themselves.
+ */
+async function openExport(context: BrowserContext, html: string) {
+  await context.route(/\/export\.html$/, (route) =>
+    route.fulfill({
+      contentType: 'text/html; charset=utf-8',
+      body: `<!DOCTYPE html>
+<html>
+  <head><meta charset="utf-8"></head>
+  <body><div class="crossnote">${html}</div></body>
+</html>`,
+    }),
+  );
+  const page = await context.newPage();
+  const dialogs: string[] = [];
+  page.on('dialog', (dialog) => {
+    dialogs.push(dialog.message());
+    dialog.dismiss();
+  });
+  await page.goto(`${server.url}/export.html`);
+  const handlers = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('*')).flatMap((el) =>
+      Array.from(el.attributes)
+        .filter(({ name }) => /^on/i.test(name))
+        .map(({ name }) => name),
+    ),
+  );
+  await page.close();
+  return { handlers, dialogs };
+}
+
+test.describe('the page a note is rendered to, as an HTML export', () => {
+  for (const [index, markup] of MUTATIONS.entries()) {
+    test(`#${index + 1} runs nothing when it is opened`, async ({
+      context,
+    }) => {
+      // Read once only, the document runs the handler by itself: an image
+      // that cannot load, an input that focuses itself.
+      const once = firstReading(markup);
+      expect((await openExport(context, once)).dialogs).not.toEqual([]);
+
+      expect(await openExport(context, sanitizeStableHTML(once))).toEqual({
+        handlers: [],
+        dialogs: [],
+      });
+    });
+  }
 });
 
 /**

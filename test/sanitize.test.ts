@@ -157,6 +157,26 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
     });
   });
 
+  describe('a plaintext element', () => {
+    it('is kept as its text, in a pre element', () => {
+      // A `plaintext` element has no end tag: all that follows it is its text.
+      const result = sanitize(
+        '<p>before</p><plaintext>after <b>as text</b><p>still text</p>',
+      );
+      expect(result).toBe(
+        '<p>before</p><pre>after &lt;b&gt;as text&lt;/b&gt;&lt;p&gt;still text&lt;/p&gt;</pre>',
+      );
+    });
+
+    it('in MathML is an ordinary element, and is left as it is', () => {
+      const result = sanitize(
+        '<math><mglyph><plaintext>a</plaintext></mglyph></math>',
+      );
+      expect(result).toContain('<plaintext>a</plaintext>');
+      expect(result).not.toContain('<pre>');
+    });
+  });
+
   describe('HTML held in an attribute', () => {
     it('sanitizes the speaker notes of a slide as the HTML they are', () => {
       // reveal.js writes the notes of a slide into the window of its speaker

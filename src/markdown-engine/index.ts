@@ -50,7 +50,7 @@ import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
 import { buildPeleExportScript } from './pele-export';
 import { buildPresentationInitScript } from './presentation-export';
-import { sanitizeRenderedHTML } from './sanitize';
+import { sanitizeRenderedHTML, settledHTML } from './sanitize';
 import { HeadingData, generateSidebarToCHTML } from './toc';
 import { SLIDE_MARKER_NUMBER, transformMarkdown } from './transformer';
 
@@ -3243,7 +3243,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // list items were written: it is sanitized again.
     sanitizeRenderedHTML($);
 
-    return $('body').html() ?? '';
+    return settledHTML($, $('body').html() ?? '');
   }
 
   private async pandocRender(
@@ -3593,6 +3593,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       '\n' +
       $('head').html() +
       $('body').html(); // cheerio $.html() will add <html><head></head><body>$html</body></html>, so we hack it by select body first.
+
+    // The browser reads the page once more than the sanitizer above (an export
+    // is a document, the preview is written into an element), and in MathML
+    // and SVG it can read it differently there.
+    html = settledHTML($, html);
 
     /**
      * check slides
