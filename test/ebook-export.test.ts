@@ -61,7 +61,7 @@ describe('the eBook export', () => {
     // the prism theme of the light theme
     fs.writeFileSync(
       path.join(tmpDir, 'styles', 'prism_theme', 'github.css'),
-      '/* prism */',
+      '/* prism of the light theme */',
     );
     fs.writeFileSync(
       path.join(tmpDir, 'styles', 'preview_theme', 'github-light.css'),
@@ -125,6 +125,8 @@ describe('the eBook export', () => {
   test.each([
     ['a name with an ampersand', '[Q&A](other.md)', 'Q&A'],
     ['a name with emphasis', '[**Bold** chapter](other.md)', 'Bold chapter'],
+    ['a name with a quote in it', '[Say "hi"](other.md)', 'Say "hi"'],
+    ['an image alone', '[![alt text](a.png)](other.md)', 'alt text'],
   ])(
     'gives an entry for its title the text of its link, with %s',
     async (_, link, title) => {
@@ -136,6 +138,15 @@ describe('the eBook export', () => {
       expect(load(html)('[ebook-toc-level-1]').attr('heading')).toBe(title);
     },
   );
+
+  test('takes a theme that is not a name for the theme of the notebook', async () => {
+    // A list is not a name, even where it holds one.
+    const html = await exportHTML(
+      `---\nebook:\n  title: T\n  theme:\n    - one-light.css\n---\n\n${MARKUP_IN_A_LINK}`,
+    );
+
+    expect(html).toContain('/* light */');
+  });
 
   test('writes the cover into its image as an address, and nothing else', async () => {
     const cover = 'data:image/png;base64,x" onerror="window.__pwn_cover=1';
@@ -164,6 +175,14 @@ describe('the eBook export', () => {
 
     const html = await exportHTML(ebookOf('  theme: github-light.css\n'));
     expect(html).toContain('/* light */');
+    expect(html).toContain('/* prism of the light theme */');
+
+    // `vscode.css` is the theme of the preview: an eBook takes the light
+    // theme for it, and keeps the code blocks of the default theme.
+    const ofVscode = await exportHTML(ebookOf('  theme: vscode.css\n'));
+    expect(ofVscode).toContain('/* light */');
+    expect(ofVscode).toContain('/* prism */');
+    expect(ofVscode).not.toContain('/* prism of the light theme */');
   });
 });
 

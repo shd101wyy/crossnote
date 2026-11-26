@@ -2338,9 +2338,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         }
 
         const filePath = decodeURIComponent($a.attr('href') ?? ''); // markdown file path
-        // The text of the link: calibre reads it back as the title of the
-        // entry, and it is written into an attribute.
-        const heading = $a.text();
+        // What the link says — its text, or what its image says of itself:
+        // calibre reads it back as the title of the entry, and it is
+        // written into an attribute.
+        const heading = $a.text() || $a.find('img').first().attr('alt') || '';
         const id = headingIdGenerator.generateId(`ebook-heading-` + heading); // "ebook-heading-id-" + headingOffset;
 
         tocStructure.push({ level, filePath, heading, id });
@@ -2475,12 +2476,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // `ebook.theme` is named by the note, and its file is inlined into the
     // page: only a bare `<name>.css` is a theme, as for a presentation.
-    const ebookThemeName = MarkdownEngine.resolveThemeForExport(
-      MarkdownEngine.themeFileOf(
-        ebookConfig['theme'],
-        this.notebook.config.previewTheme,
-      ),
-      'preview',
+    const ebookThemeName = MarkdownEngine.themeFileOf(
+      ebookConfig['theme'],
+      this.notebook.config.previewTheme,
     );
 
     // prism and preview theme
