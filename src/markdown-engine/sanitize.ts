@@ -50,6 +50,28 @@ function sanitize($: CheerioAPI, notesAreHTML: boolean): void {
   // Remove dangerous non-script tags entirely
   $(DANGEROUS_TAGS.join(', ')).remove();
 
+  // A `use` element brings into the page what its address names, and the
+  // sanitizer has seen the page only: only a fragment of the page is
+  // allowed, as in the preview. (Firefox renders the file that is named,
+  // with whatever event handler or address it holds.)
+  $('use').each((_, el: Element) => {
+    for (const attr of ['href', 'xlink:href']) {
+      const href = el.attribs[attr];
+      if (href !== undefined && !href.startsWith('#')) {
+        delete el.attribs[attr];
+      }
+    }
+  });
+
+  // A `base` element and a meta refresh send the page to another address
+  // without running script.
+  $('base').remove();
+  $('meta[http-equiv]').each((_, el: Element) => {
+    if ((el.attribs['http-equiv'] ?? '').trim().toLowerCase() === 'refresh') {
+      $(el).remove();
+    }
+  });
+
   // Remove script tags, but preserve non-executable data scripts
   // (e.g., <script type="WaveDrom"> used by wavedrom diagrams)
   $('script').each((_, el: Element) => {

@@ -177,6 +177,30 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
     });
   });
 
+  describe('a use element, a base element and a meta refresh', () => {
+    it('takes the address off a use element that is not a fragment of the page', () => {
+      // What the file holds was never sanitized. Firefox renders it.
+      const result = sanitize(
+        '<svg><use href="x.svg#a"/><use xlink:href="https://evil.example/x.svg#a"/><use href="#a"/><use xlink:href="#b"/></svg>',
+      );
+
+      expect(result).toBe(
+        '<svg><use></use><use></use><use href="#a"></use><use xlink:href="#b"></use></svg>',
+      );
+    });
+
+    it('takes out a base element and a meta refresh, and keeps another meta', () => {
+      // Both send the page to another address without running script.
+      const result = sanitize(
+        '<div><base href="https://evil.example/" target="_blank"><meta http-equiv=" refresh " content="0;url=https://evil.example/"><meta charset="utf-8"><meta name="viewport" content="width=device-width"></div>',
+      );
+
+      expect(result).toBe(
+        '<div><meta charset="utf-8"><meta name="viewport" content="width=device-width"></div>',
+      );
+    });
+  });
+
   describe('HTML held in an attribute', () => {
     it('sanitizes the speaker notes of a slide as the HTML they are', () => {
       // reveal.js writes the notes of a slide into the window of its speaker

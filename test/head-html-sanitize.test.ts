@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { load } from 'cheerio';
 import { pathToFileURL } from 'url';
 import { mkdirSync, track } from '../src/lib/temp';
 import { MarkdownEngine } from '../src/markdown-engine';
@@ -160,6 +161,73 @@ describe('head.html script sanitization', () => {
       '<!-- config --><script>window.__x = 1;</script>',
     );
     expect(html).not.toMatch(/<script[^>]*>window\.__x/);
+  });
+
+  test('an event handler, a base and a meta refresh in head.html reach neither the preview nor the export', async () => {
+    // The file is the notebook's, and it is written into the page outside
+    // the page's sanitizer. What is left is what a head may hold.
+    const tmpDir = mkdirSync({ prefix: 'xnote-head' });
+    fs.mkdirSync(path.join(tmpDir, '.crossnote'), { recursive: true });
+    fs.writeFileSync(
+      path.join(tmpDir, '.crossnote', 'head.html'),
+      [
+        '<link rel="stylesheet" href="missing.css" onerror="window.__pwn=1">',
+        '<link rel="stylesheet" href="theme.css" onload="window.__pwn=2">',
+        '<base href="https://evil.example/">',
+        '<meta http-equiv="refresh" content="0;url=https://evil.example/">',
+        '<style>.custom { color: red; }</style>',
+        '',
+      ].join('\n'),
+    );
+    const filePath = path.join(tmpDir, 'test.md');
+    fs.writeFileSync(filePath, '# Test');
+    const notebook = await Notebook.init({
+      notebookPath: tmpDir,
+      config: {
+        markdownParser: 'markdown-it',
+        markdownYoBinaryPath: '',
+      },
+    });
+    const engine = new MarkdownEngine({ notebook, filePath });
+
+    for (const html of [
+      await engine.generateHTMLTemplateForPreview({
+        inputString: '# Test',
+        config: notebook.config as WebviewConfig,
+        vscodePreviewPanel: null,
+      }),
+      await engine.htmlExportDocument(),
+    ]) {
+      // The preview has a `base` of its own, and the export a meta of its own.
+      expect(
+        load(html)(
+          '[onerror], [onload], base[href^="https://"], meta[http-equiv="refresh"]',
+        ),
+      ).toHaveLength(0);
+      expect(html).toContain('<style>.custom { color: red; }</style>');
+    }
+  });
+
+  test('the base of the preview holds the path of the note as the value of its attribute', async () => {
+    // A file name may hold a quote and markup.
+    const tmpDir = mkdirSync({ prefix: 'xnote-head' });
+    const filePath = path.join(tmpDir, 'n"ote <b>.md');
+    fs.writeFileSync(filePath, '# Test');
+    const notebook = await Notebook.init({
+      notebookPath: tmpDir,
+      config: {
+        markdownParser: 'markdown-it',
+        markdownYoBinaryPath: '',
+      },
+    });
+    const engine = new MarkdownEngine({ notebook, filePath });
+    const html = await engine.generateHTMLTemplateForPreview({
+      inputString: '# Test',
+      config: notebook.config as WebviewConfig,
+      vscodePreviewPanel: null,
+    });
+
+    expect(load(html)('base').first().attr('href')).toBe(filePath);
   });
 });
 
@@ -325,5 +393,27 @@ describe('head.html trusted script roots', () => {
     });
 
     expect(html).not.toContain(fileUrlOf(path.join(globalDir, 'helper.js')));
+  });
+
+  test('with scripts allowed, the rest of head.html is sanitized all the same', async () => {
+    const { workspaceDir, globalDir } = setupDirs();
+    fs.writeFileSync(path.join(globalDir, 'helper.js'), 'alert("global");');
+
+    const html = await renderPreviewWithHead({
+      workspaceDir,
+      trustedRoots: [globalDir],
+      headHtml:
+        '<script src="./helper.js"></script>' +
+        '<link rel="stylesheet" href="missing.css" onerror="window.__pwn=1">' +
+        '<script>window.__x = 1;</script>',
+      previewScriptsEnabled: true,
+    });
+
+    // The script the host allowed is where it was.
+    expect(html).toContain(
+      `<script src="${fileUrlOf(path.join(globalDir, 'helper.js'))}"></script>`,
+    );
+    expect(load(html)('[onerror]')).toHaveLength(0);
+    expect(html).not.toMatch(/<script[^>]*>window\.__x/);
   });
 });

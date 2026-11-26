@@ -1034,7 +1034,7 @@ window["initRevealPresentation"] = async function() {
     webviewScript = '',
     scripts = '',
     styles = '',
-    head = `<base href="${this.filePath}">`,
+    head = `<base href="${escape(this.filePath)}">`,
     config,
     vscodePreviewPanel = null,
     contentSecurityPolicy = '',
@@ -2952,6 +2952,21 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       });
     } else {
       $('script').remove();
+    }
+
+    // The scripts the host allowed are put back once the rest is sanitized.
+    const allowedScripts = allowScripts
+      ? $('script')
+          .map((_, script) => $.html(script))
+          .get()
+      : [];
+
+    // The rest of the file is the notebook's, and it is written into the
+    // page outside the page's sanitizer: an event handler, a dangerous
+    // address, a `<base>` or a meta refresh is taken out as from a page.
+    sanitizeRenderedHTML($);
+    if (allowedScripts.length > 0) {
+      $('head').append(allowedScripts.join('\n'));
     }
 
     // Return only the head content, not the full HTML structure. An
