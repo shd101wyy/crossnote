@@ -53,7 +53,7 @@ describe('the remote images of an eBook', () => {
     // succeeds leaves its file there for the conversion to find.
     for (const name of fs.readdirSync(tmpDir)) {
       if (name !== 'note.md') {
-        fs.rmSync(path.join(tmpDir, name), { force: true });
+        fs.rmSync(path.join(tmpDir, name), { force: true, recursive: true });
       }
     }
     globalThis.fetch = jest.fn(async () => image()) as unknown as typeof fetch;
@@ -63,8 +63,8 @@ describe('the remote images of an eBook', () => {
     globalThis.fetch = fetch_;
   });
 
-  /** Bring the images of `html` next to the note for `dest`. */
-  const download = (html: string, dest: string) =>
+  /** Bring the images of the page next to the note for `dest`. */
+  const download = ($: cheerio.CheerioAPI, dest: string) =>
     (
       engine as unknown as {
         eBookDownloadImages(
@@ -72,7 +72,7 @@ describe('the remote images of an eBook', () => {
           dest: string,
         ): Promise<string[]>;
       }
-    ).eBookDownloadImages(cheerio.load(html), path.join(tmpDir, dest));
+    ).eBookDownloadImages($, path.join(tmpDir, dest));
 
   const WEB_PAGE =
     '<p><img src="https://example.com/a.png"><img src="local.png"></p>';
@@ -80,7 +80,8 @@ describe('the remote images of an eBook', () => {
   test.each(['note.epub', 'note.mobi'])(
     'are brought into the folder of the note for %s',
     async (dest) => {
-      const saved = await download(WEB_PAGE, dest);
+      const $ = cheerio.load(WEB_PAGE);
+      const saved = await download($, dest);
 
       expect(saved).toHaveLength(1);
       const [imagePath] = saved;
@@ -90,49 +91,45 @@ describe('the remote images of an eBook', () => {
       expect((globalThis.fetch as jest.Mock).mock.calls).toEqual([
         ['https://example.com/a.png'],
       ]);
+      // The page points at it; a local image is left where it is.
+      expect($('img').eq(0).attr('src')).toBe(utility.toFileURL(imagePath));
+      expect($('img').eq(1).attr('src')).toBe('local.png');
     },
   );
 
-  test('the page points at what was brought, and a local image is left where it is', async () => {
-    const $ = cheerio.load(WEB_PAGE);
-    const saved = await (
-      engine as unknown as {
-        eBookDownloadImages(
-          $: cheerio.CheerioAPI,
-          dest: string,
-        ): Promise<string[]>;
-      }
-    ).eBookDownloadImages($, path.join(tmpDir, 'note.mobi'));
-
-    expect($('img').eq(0).attr('src')).toBe(utility.toFileURL(saved[0]));
-    expect($('img').eq(1).attr('src')).toBe('local.png');
-  });
-
   test('are left where they are for any other format', async () => {
-    expect(await download(WEB_PAGE, 'note.html')).toEqual([]);
+    expect(await download(cheerio.load(WEB_PAGE), 'note.html')).toEqual([]);
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   test.each(['note.epub', 'note.mobi'])(
     'are removed again when one of them cannot be fetched, for %s',
     async (dest) => {
-      globalThis.fetch = jest.fn(async (url: string) =>
-        url.endsWith('b.png')
-          ? { ok: false }
-          : url.endsWith('c.png')
-            ? brokenImage()
-            : image(),
-      ) as unknown as typeof fetch;
+      // The image that is fetched well answers late: a cleanup that ran
+      // before every download had ended would leave its file behind.
+      globalThis.fetch = jest.fn(async (url: string) => {
+        if (url.endsWith('b.png')) {
+          return { ok: false };
+        }
+        if (url.endsWith('c.png')) {
+          return brokenImage();
+        }
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        return image();
+      }) as unknown as typeof fetch;
 
       await expect(
         download(
-          '<p><img src="https://example.com/a.png"><img src="https://example.com/b.png"><img src="https://example.com/c.png"></p>',
+          cheerio.load(
+            '<p><img src="https://example.com/a.png"><img src="https://example.com/b.png"><img src="https://example.com/c.png"></p>',
+          ),
           dest,
         ),
       ).rejects.toThrow(
         'Failed to download image from https://example.com/b.png',
       );
       // Nothing of them stays next to the note.
+      await new Promise((resolve) => setTimeout(resolve, 300));
       expect(
         fs.readdirSync(tmpDir).filter((name) => name !== 'note.md'),
       ).toEqual([]);
