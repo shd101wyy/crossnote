@@ -775,6 +775,14 @@ window["initRevealPresentation"] = async function() {
   private static readonly safeThemeFilename = /^[A-Za-z0-9_-]+\.css$/;
 
   /**
+   * The file of a theme named by a note — a presentation's or an eBook's:
+   * its name where it is a bare `<name>.css`, and `fallback` otherwise.
+   */
+  private static themeFileOf(theme: string, fallback: string): string {
+    return MarkdownEngine.safeThemeFilename.test(theme) ? theme : fallback;
+  }
+
+  /**
    * The dark variant of a paired theme, for screen exports with
    * `exportColorScheme: 'auto'`: the light variant applies by default
    * and the dark variant is embedded under
@@ -1266,13 +1274,13 @@ window["initRevealPresentation"] = async function() {
       )}" charset="UTF-8"></script>`;
     };
 
-    // get `id` and `class`
+    // get `id` and `class`: a class of the front matter is a name or a list
+    // of them; anything else is written as its text.
     const elementId = (yamlConfig['id'] as string) || '';
-    let elementClass = (yamlConfig['class'] as string | string[]) || [];
-    if (typeof elementClass === 'string') {
-      elementClass = [elementClass];
-    }
-    elementClass = elementClass.join(' ');
+    const classes = yamlConfig['class'] as string | string[] | undefined;
+    const elementClass = Array.isArray(classes)
+      ? classes.join(' ')
+      : String(classes ?? '');
 
     // math style and script
     let mathStyle: string;
@@ -1594,9 +1602,7 @@ window["initRevealPresentation"] = async function() {
         // `<name>.css` filename is accepted; a value with separators or
         // `..` falls back to reveal.js's default theme instead of
         // reading an arbitrary file.
-        const safeTheme = MarkdownEngine.safeThemeFilename.test(theme)
-          ? theme
-          : 'white.css';
+        const safeTheme = MarkdownEngine.themeFileOf(theme, 'white.css');
 
         if (options.offline) {
           presentationStyle += await offlineStyle(
@@ -2417,7 +2423,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
       outputHTML += `<div id="${id}" ebook-toc-level-${
         level + 1
-      } heading="${heading}">${$$.html()}</div>`; // append new content
+      } heading="${escape(heading)}">${$$.html()}</div>`; // append new content
     });
 
     $ = cheerio.load(outputHTML);
@@ -2467,6 +2473,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
     }
 
+    // `ebook.theme` is named by the note, and its file is inlined into the
+    // page: only a bare `<name>.css` is a theme, as for a presentation.
+    const ebookThemeName =
+      MarkdownEngine.themeFileOf((ebookConfig['theme'] as string) ?? '', '') ||
+      this.notebook.config.previewTheme;
+
     // prism and preview theme
     let styleCSS: string;
     try {
@@ -2484,8 +2496,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
             utility.getCrossnoteBuildDirectory(),
             `./styles/prism_theme/${MarkdownEngine.resolveThemeForExport(
               (MarkdownEngine.AutoPrismThemeMap as Record<string, string>)[
-                (ebookConfig['theme'] as string | undefined) ||
-                  this.notebook.config.previewTheme
+                ebookThemeName
               ] ?? 'default.css',
               'codeBlock',
             )}`,
@@ -2503,8 +2514,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           path.resolve(
             utility.getCrossnoteBuildDirectory(),
             `./styles/preview_theme/${MarkdownEngine.resolveThemeForExport(
-              (ebookConfig['theme'] as string | undefined) ||
-                this.notebook.config.previewTheme,
+              ebookThemeName,
               'preview',
             )}`,
           ),
