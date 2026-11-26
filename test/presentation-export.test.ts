@@ -177,12 +177,13 @@ describe('presentation HTML export (reveal.js)', () => {
   });
 
   test('with Mermaid diagrams, starts reveal.js once they are drawn in a PDF export', async () => {
-    const html = await exportDeck({ offline: true }, [
-      '```mermaid',
-      'graph TD',
-      'A --> B',
-      '```',
-    ]);
+    // The second slide of the deck holds a diagram.
+    const html = await exportDeck(
+      { offline: true },
+      twoSlides
+        .slice(0, 4)
+        .concat(['```mermaid', 'graph TD', 'A --> B', '```', '']),
+    );
 
     // reveal.js lays the pages of a PDF export out from the slides as it
     // finds them, and moves every slide into its page. The diagrams are
