@@ -116,7 +116,12 @@ function browserHarness(
       },
     });
   }
-  context.window = context;
+  // The window of the page. A page has each of its elements by its id as a
+  // property of its window — one it inherits, not one of its own: a script
+  // that writes a property of that name makes it its own.
+  const elements: Record<string, unknown> = Object.create(context);
+  const window: Record<string, unknown> = Object.create(elements);
+  context.window = window;
   const evaluate = (fn: () => unknown) =>
     vm.runInContext(`(${fn.toString()})()`, context);
   const capture = async (config: { path: string }) => {
@@ -126,21 +131,35 @@ function browserHarness(
   };
   /** The address the page was opened at. */
   let address = '';
+  let signalled = 0;
+  let counted: (() => void) | undefined;
   const page = {
     async goto(url: string) {
       address = url;
       context.location.search = new URL(url).search;
       const html = fs.readFileSync(fileURLToPath(url), 'utf8');
-      // A page has each of its elements by its id as a property of its window.
       for (const [, id] of html.matchAll(/ id="([^"]+)"/g)) {
-        if (!(id in context)) {
-          context[id] = {};
+        if (!(id in elements)) {
+          elements[id] = {};
         }
       }
       diagrams.push(...[...html.matchAll(/class="mermaid/g)].map(() => ({})));
       for (const [, isModule, script] of html.matchAll(
         /<script( type="module")?>([\s\S]*?)<\/script>/g,
       )) {
+        // The script that starts the presentation puts the signal that its
+        // diagrams are drawn on the page: every call of it is counted.
+        if (
+          typeof window.__crossnoteDiagramsDrawn === 'function' &&
+          window.__crossnoteDiagramsDrawn !== counted
+        ) {
+          const signal = window.__crossnoteDiagramsDrawn as () => void;
+          counted = () => {
+            signalled += 1;
+            signal();
+          };
+          window.__crossnoteDiagramsDrawn = counted;
+        }
         if (isModule) {
           // Navigation does not wait for a module's top-level await.
           Promise.resolve(
@@ -185,6 +204,10 @@ function browserHarness(
     captures,
     reveal,
     slides,
+    /** How often the page was told that its Mermaid diagrams are drawn. */
+    get signalled() {
+      return signalled;
+    },
   };
 }
 
@@ -384,7 +407,41 @@ describe('Chrome export waits for Mermaid', () => {
       harness.reveal!.emit('pdf-ready');
       await exporting;
       expect(harness.captures).toEqual([['complete', 'complete', 'complete']]);
+      expect(harness.signalled).toBe(1);
       expect(harness.browser.close).toHaveBeenCalledTimes(1);
+    });
+
+    test('with an element whose id is the name of the Mermaid report still has its diagrams drawn', async () => {
+      const harness = browserHarness({ reveal: true });
+      jest
+        .mocked(launch)
+        .mockResolvedValue(harness.browser as unknown as Browser);
+      const engine = await createEngine(
+        deck.replace(
+          '# Second',
+          `<div id="__crossnoteMermaidExport"></div>\n\n${markdown}`,
+        ),
+      );
+      const exporting = engine.chromeExport();
+      try {
+        // The script renders in spite of the element…
+        await waitFor(() =>
+          harness.diagrams.every((diagram: Diagram) => diagram.processed),
+        );
+        harness.rendering.resolve();
+        // … and tells the presentation that it is through, the once.
+        await waitFor(() => harness.signalled === 1);
+        harness.reveal!.emit('pdf-ready');
+        await exporting;
+        expect(harness.captures).toEqual([
+          ['complete', 'complete', 'complete'],
+        ]);
+      } finally {
+        // Keeps the export from waiting for the diagrams where they are not.
+        harness.page.giveUp = true;
+        harness.rendering.resolve();
+        await exporting.catch(() => {});
+      }
     });
 
     test('is not printed on account of an element whose id is the name of the report of the print layout', async () => {
@@ -428,6 +485,7 @@ describe('Chrome export waits for Mermaid', () => {
       // presentation is started all the same, around the diagrams as written.
       await expect(exporting).rejects.toThrow('mermaid is not loaded');
       await waitFor(() => harness.reveal!.initialize.mock.calls.length === 1);
+      expect(harness.signalled).toBe(1);
       expect(harness.captures).toEqual([]);
       expect(harness.browser.close).toHaveBeenCalledTimes(1);
     });

@@ -10,8 +10,10 @@ export function buildMermaidExportScript(
 ): string {
   return `
 // A page can carry the script twice: the first one renders, and the others
-// have nothing to add.
-if (!window.__crossnoteMermaidExport) {
+// have nothing to add. The report is asked for as one of the page's own: a
+// page has each of its elements by its id, and one with that id would keep
+// the script from rendering.
+if (!Object.prototype.hasOwnProperty.call(window, '__crossnoteMermaidExport')) {
   await render()
 }
 
@@ -162,9 +164,6 @@ try {
   // have changed.
   if (inSlides && rendered && !beforeReveal) {
     reveal.layout()
-  }
-  if (beforeReveal) {
-    window.__crossnoteDiagramsDrawn()
   }
 }
 if (failure) {
