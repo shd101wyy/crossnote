@@ -257,6 +257,28 @@ describe('presentation HTML export (reveal.js)', () => {
     expect(notes).toContain('<b>Speak</b>');
   });
 
+  test('a fragment of a slide has no speaker notes that would run script either', async () => {
+    // reveal.js writes the notes of a fragment — any element of the slide
+    // with the class — into its speaker view too.
+    const html = await exportDeck({ offline: false }, [
+      '<!-- slide -->',
+      '# One',
+      '',
+      `<p class="fragment" data-notes='<input autofocus onfocus=alert(2)><b>Speak</b>'>A point</p>`,
+      '',
+      `- another <!-- .element: class="fragment" data-notes='<img src=x onerror=alert(3)>' -->`,
+      '',
+    ]);
+    const fragments = load(html)('.slides .fragment');
+
+    // The class of a fragment is kept, and its notes are read as HTML.
+    expect(fragments.toArray().map((el) => el.name)).toEqual(['p', 'li']);
+    expect(fragments.toArray().map((el) => el.attribs['data-notes'])).toEqual([
+      '<input autofocus=""><b>Speak</b>',
+      '<img src="x">',
+    ]);
+  });
+
   test('offline export inlines reveal.js and the notes plugin, self-contained', async () => {
     const html = await exportDeck({ offline: true });
 

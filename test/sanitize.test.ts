@@ -13,6 +13,11 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
     return ($('body').html() ?? '').trim();
   }
 
+  /** The notes of the first element of a page that has any. */
+  function notesOf(html: string): string | undefined {
+    return cheerio.load(html)('[data-notes]').first().attr('data-notes');
+  }
+
   describe('script tag removal', () => {
     it('removes inline script tags', () => {
       const result = sanitize('<p>Hello</p><script>alert("xss")</script>');
@@ -164,27 +169,57 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
       expect(notes).toBe('<input autofocus=""><b>Note</b><img src="x">');
     });
 
-    it('sanitizes the notes that the notes of a slide hold in turn', () => {
+    it('leaves the notes that the notes of a slide hold as the attribute they are there', () => {
+      // Nothing writes an attribute of an element inside the notes into the
+      // page again, so there it is only an attribute — and notes within notes
+      // are not read again and again.
       const result = sanitize(
         '<section data-notes="&lt;section data-notes=&quot;&amp;lt;input onfocus=alert(1)&amp;gt;&quot;></section>"></section>',
       );
-      const notes = cheerio.load(result)('section').attr('data-notes');
 
-      expect(notes).toBe('<section data-notes="<input>"></section>');
+      // What reveal.js writes is an element whose attribute holds the text.
+      expect(notesOf(result)).toBe(
+        '<section data-notes="<input onfocus=alert(1)>"></section>',
+      );
+      expect(readAgain(notesOf(result) ?? '')).toEqual([]);
     });
 
-    it.each([...MUTATIONS, LONG_MUTATION])(
-      'leaves no event handler in the notes of a slide, whatever reading a page gives them: %s',
-      (markup) => {
-        const $ = cheerio.load('<section><p>Slide</p></section>', null, false);
-        $('section').attr('data-notes', markup);
-        const result = sanitize($.root().html() ?? '');
-        const notes = cheerio.load(result)('section').attr('data-notes');
+    /** The notes on the first element of `element`, as the engine writes it. */
+    function withNotes(element: string, notes: string): string {
+      const $ = cheerio.load(element, null, false);
+      $.root().children().first().attr('data-notes', notes);
+      return $.root().html() ?? '';
+    }
 
-        // reveal.js reads the notes as the content of an element.
-        expect(readAgain(notes ?? '')).toEqual([]);
-      },
-    );
+    // reveal.js takes the notes of a slide and of a fragment, which is any
+    // element of the slide with the class.
+    describe.each([
+      ['a slide', '<section><p>Slide</p></section>'],
+      ['a fragment', '<div class="fragment">A point</div>'],
+      [
+        'an element with other classes too',
+        '<p class="step fragment fade-in">A point</p>',
+      ],
+      ['a fragment written in capitals', '<p class="FRAGMENT">A point</p>'],
+    ])('the notes of %s', (_, element) => {
+      it('are read as the HTML they are', () => {
+        const result = sanitize(
+          withNotes(element, '<input autofocus onfocus=alert(1)><b>Speak</b>'),
+        );
+
+        expect(notesOf(result)).toBe('<input autofocus=""><b>Speak</b>');
+      });
+
+      it.each([...MUTATIONS, LONG_MUTATION])(
+        'have no event handler, whatever reading a page gives them: %s',
+        (markup) => {
+          const result = sanitize(withNotes(element, markup));
+
+          // reveal.js reads the notes as the content of an element.
+          expect(readAgain(notesOf(result) ?? '')).toEqual([]);
+        },
+      );
+    });
 
     it('leaves an attribute of another element as it is, though it is named the same', () => {
       const result = sanitize(

@@ -98,20 +98,28 @@ test.describe('markup that a page takes back as HTML', () => {
 });
 
 /**
- * Present a slide with the given speaker notes, open the speaker view, and
- * return what it finds in the notes, and what they made the pages say.
+ * Present a slide — with the given speaker notes, or with a fragment that
+ * has them — open the speaker view, and return what it finds in the notes,
+ * and what they made the pages say.
  *
  * The deck is laid out like an export: the document loads reveal.js and its
  * notes plugin, and starts the presentation. The speaker view previews the
  * slides in iframes that load the deck again, and tells the presentation
  * that it is connected once they have: the deck is answered for every window
- * of the browser context.
+ * of the browser context. reveal.js takes the notes of the slide, and of the
+ * fragment that is current: the presentation is moved on to that one.
  */
 async function speakerViewOf(
   context: BrowserContext,
   page: Page,
   notes: string,
+  on: 'slide' | 'fragment',
 ) {
+  const fragment = `<p class="fragment" data-notes="${escape(notes)}">A point</p>`;
+  const slide =
+    on === 'slide'
+      ? `<section class="slide" data-notes="${escape(notes)}"><h1>One</h1></section>`
+      : `<section class="slide"><h1>One</h1>${fragment}</section>`;
   await context.route(/\/deck\.html(\?|$)/, (route) =>
     route.fulfill({
       contentType: 'text/html; charset=utf-8',
@@ -119,7 +127,7 @@ async function speakerViewOf(
 <html>
   <head><meta charset="utf-8"></head>
   <body>
-    <div class="reveal"><div class="slides"><section class="slide" data-notes="${escape(notes)}"><h1>One</h1></section></div></div>
+    <div class="reveal"><div class="slides">${slide}</div></div>
     <script src="${server.url}/reveal/js/reveal.js"></script>
     <script src="${server.url}/reveal/plugin/notes/notes.js"></script>
     <script>
@@ -131,6 +139,12 @@ async function speakerViewOf(
   );
   await page.goto(`${server.url}/deck.html`);
   await page.waitForFunction(() => (window as RevealWindow).Reveal.isReady());
+  if (on === 'fragment') {
+    await page.keyboard.press('ArrowRight');
+    await page.waitForFunction(() =>
+      document.querySelector('.current-fragment')?.hasAttribute('data-notes'),
+    );
+  }
 
   const dialogs: string[] = [];
   const hear = (dialog: { message(): string; dismiss(): Promise<void> }) => {
@@ -165,31 +179,41 @@ async function speakerViewOf(
 }
 
 test.describe('the speaker view of a presentation', () => {
-  test('finds no event handler in the notes of a slide', async ({
-    context,
-    page,
-  }) => {
-    const found = await speakerViewOf(
+  for (const [where, on] of [
+    ['of a slide', 'slide'],
+    ['of a fragment', 'fragment'],
+  ] as const) {
+    test(`finds no event handler in the notes ${where}`, async ({
       context,
       page,
-      sanitizeStableHTML(MUTATIONS[0]),
-    );
+    }) => {
+      const found = await speakerViewOf(
+        context,
+        page,
+        sanitizeStableHTML(MUTATIONS[0]),
+        on,
+      );
 
-    expect(found.handlers).toEqual([]);
-    expect(found.dialogs).toEqual([]);
-    // The notes did reach the speaker view.
-    expect(found.html).toContain('<input autofocus="">');
-  });
+      expect(found.handlers).toEqual([]);
+      expect(found.dialogs).toEqual([]);
+      // The notes did reach the speaker view.
+      expect(found.html).toContain('<input autofocus="">');
+    });
 
-  test('where one reading leaves one', async ({ context, page }) => {
-    // The speaker view reads the notes as reveal.js gives them to it, so
-    // what a reading of the sanitizer's output leaves is what it gets.
-    const found = await speakerViewOf(
+    test(`in the notes ${where}, one reading leaves an event handler`, async ({
       context,
       page,
-      sanitizeOnce(MUTATIONS[0]),
-    );
+    }) => {
+      // The speaker view reads the notes as reveal.js gives them to it, so
+      // what a reading of the sanitizer's output leaves is what it gets.
+      const found = await speakerViewOf(
+        context,
+        page,
+        sanitizeOnce(MUTATIONS[0]),
+        on,
+      );
 
-    expect(found.handlers).not.toEqual([]);
-  });
+      expect(found.handlers).not.toEqual([]);
+    });
+  }
 });

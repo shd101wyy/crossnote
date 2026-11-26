@@ -59,6 +59,24 @@ describe('markup that a page takes back as HTML', () => {
     expect(readAgain(sanitized)).toEqual([]);
   });
 
+  test('reads notes nested in notes once, however deep they are', () => {
+    // A chain of sections whose notes hold the next level, none of them
+    // closed. Reading each level again inside the one around it took half a
+    // minute for notes of this size.
+    let notes = '<b>x</b>';
+    for (let level = 0; level < 160; level++) {
+      notes = `<section data-notes="${notes
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')}">`;
+    }
+
+    const started = Date.now();
+    const sanitized = sanitizeStableHTML(notes);
+
+    expect(Date.now() - started).toBeLessThan(2000);
+    expect(readAgain(sanitized)).toEqual([]);
+  });
+
   test.each([
     [
       'a MathML formula',

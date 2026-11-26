@@ -17,10 +17,28 @@ const DANGEROUS_TAGS = ['object', 'embed', 'applet'];
 // Script types that are used as data containers (not executable by browsers)
 const SAFE_SCRIPT_TYPES = new Set(['wavedrom', 'text/tikz']);
 
-// Attributes of a slide whose value is HTML, which a script of the page
-// writes into the page again as such: reveal.js writes the speaker notes of a
-// slide (`data-notes` on a `section`) into the window of its speaker view.
+// The attribute whose value is HTML, which a script of the page writes into
+// the page again as such: reveal.js writes the speaker notes of a slide
+// (`data-notes` on its `section`) and of a fragment (`data-notes` on the
+// element of class `fragment`) into the window of its speaker view.
 const HTML_ATTRIBUTES = new Set(['data-notes']);
+
+/**
+ * Whether the value of the attribute is the HTML of speaker notes, which
+ * reveal.js writes into its speaker view. A fragment is any element of the
+ * slide with the class, whatever else is in its class list.
+ */
+function isNotes(el: Element, attr: string): boolean {
+  if (!HTML_ATTRIBUTES.has(attr.toLowerCase())) {
+    return false;
+  }
+  return (
+    el.name === 'section' ||
+    (el.attribs['class'] ?? '')
+      .split(/\s+/)
+      .some((name) => name.toLowerCase() === 'fragment')
+  );
+}
 
 /**
  * Sanitize rendered HTML in-place using a cheerio instance.
@@ -32,6 +50,16 @@ const HTML_ATTRIBUTES = new Set(['data-notes']);
  * before extracting the final HTML string.
  */
 export function sanitizeRenderedHTML($: CheerioAPI): void {
+  sanitize($, true);
+}
+
+/**
+ * `notesAreHTML`: whether an attribute of speaker notes in the page is the
+ * HTML of notes. It is not within notes: nothing writes an attribute of an
+ * element inside the notes into the page again, so there it is only an
+ * attribute, and notes within notes are not read again and again.
+ */
+function sanitize($: CheerioAPI, notesAreHTML: boolean): void {
   // Remove dangerous non-script tags entirely
   $(DANGEROUS_TAGS.join(', ')).remove();
 
@@ -70,11 +98,8 @@ export function sanitizeRenderedHTML($: CheerioAPI): void {
 
     for (const attr of Object.keys(attribs)) {
       // The value is the HTML of speaker notes: it is sanitized as such.
-      if (
-        (el as Element).name === 'section' &&
-        HTML_ATTRIBUTES.has(attr.toLowerCase())
-      ) {
-        attribs[attr] = sanitizeStableHTML(attribs[attr]);
+      if (notesAreHTML && isNotes(el as Element, attr)) {
+        attribs[attr] = sanitizeStableHTML(attribs[attr], false);
         continue;
       }
 
@@ -124,14 +149,19 @@ const MAX_READINGS = 3;
  * and SVG are taken out, for nowhere else do two readings differ.
  *
  * It is read as the content of an element, which is how the page takes it.
+ * `notesAreHTML` is that of `sanitize`: the markup of a page holds notes that
+ * reveal.js writes into the page again, the markup of notes does not.
  */
-export function sanitizeStableHTML(html: string): string {
+export function sanitizeStableHTML(
+  html: string,
+  notesAreHTML: boolean = true,
+): string {
   for (let reading = 0; ; reading++) {
     const $ = cheerio.load(`<div>${html}</div>`);
     if (reading === MAX_READINGS) {
       $('math, svg').remove();
     }
-    sanitizeRenderedHTML($);
+    sanitize($, notesAreHTML);
     const next = $('div').html() ?? '';
     if (next === html || reading === MAX_READINGS) {
       return next;
