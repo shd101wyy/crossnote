@@ -1,3 +1,5 @@
+import { jsonForScript } from '../lib/json-for-script';
+
 /**
  * The script that starts the presentation of an exported document — built
  * separately so that a test can run it in a browser.
@@ -23,7 +25,7 @@ export function buildPresentationInitScript({
   /** The page has the script that draws Mermaid diagrams. */
   hasMermaid: boolean;
 }): string {
-  const initialize = `Reveal.initialize(Object.assign(${JSON.stringify({
+  const initialize = `Reveal.initialize(Object.assign(${jsonForScript({
     margin: 0.1,
     // reveal.js 5+ shows a deck narrower than 435px in its scroll view;
     // an exported presentation stays paginated as before when it is
@@ -55,10 +57,10 @@ export function buildPresentationInitScript({
       query[name] = unescape(value)
       return parameter
     })
-    const view = 'view' in query ? query.view : ${JSON.stringify(presentationConfig['view'])}
+    const view = 'view' in query ? query.view : ${jsonForScript(presentationConfig['view'])}
     return /print-pdf/gi.test(location.search) || view === 'print'
   })()`;
-  const slideWidth = JSON.stringify(presentationConfig['width'] ?? 960);
+  const slideWidth = jsonForScript(presentationConfig['width'] ?? 960);
 
   return `<script type="module">
   if (${printView}) {
