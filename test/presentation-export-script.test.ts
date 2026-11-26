@@ -6,13 +6,7 @@ import { buildPresentationInitScript } from '../src/markdown-engine/presentation
  * started in it, its global takes listeners and `initialize`, and knows
  * nothing else.
  */
-function runScript(
-  script: string,
-  {
-    search = '',
-    presentationConfig = {},
-  }: { search?: string; presentationConfig?: Record<string, unknown> } = {},
-) {
+function runScript(script: string, { search = '' }: { search?: string } = {}) {
   const listeners: Record<string, Array<() => void>> = {};
   let started = 0;
   const slides = { style: {} as Record<string, string> };
@@ -117,7 +111,7 @@ describe('the script that starts a presentation of an exported document', () => 
           presentationConfig,
           hasMermaid: true,
         }),
-        { search, presentationConfig },
+        { search },
       );
       // The module script has run up to its wait.
       await new Promise<void>((resolve) => setImmediate(resolve));
@@ -143,7 +137,7 @@ describe('the script that starts a presentation of an exported document', () => 
           presentationConfig,
           hasMermaid: true,
         }),
-        { search, presentationConfig },
+        { search },
       );
 
       expect(await page.done).toBeUndefined();

@@ -1099,15 +1099,22 @@ test('the export script, on the page twice, has nothing to add the second time',
  */
 function readPrintLayout(page: Page) {
   return page.evaluate(() => {
+    const reveal = (
+      window as unknown as {
+        Reveal: { isPrintView(): boolean; isReady(): boolean };
+      }
+    ).Reveal;
     const pageHeight = parseFloat(document.body.style.height) - 1;
     return {
-      printView: Reveal.isPrintView(),
-      ready: Reveal.isReady(),
-      pages: [...document.querySelectorAll('.pdf-page')].map((page) => ({
-        slides: page.querySelectorAll('section').length,
-        diagrams: page.querySelectorAll('div.mermaid svg').length,
-        pagesHigh: Math.round(parseFloat(page.style.height) / pageHeight),
-      })),
+      printView: reveal.isPrintView(),
+      ready: reveal.isReady(),
+      pages: [...document.querySelectorAll<HTMLElement>('.pdf-page')].map(
+        (page) => ({
+          slides: page.querySelectorAll('section').length,
+          diagrams: page.querySelectorAll('div.mermaid svg').length,
+          pagesHigh: Math.round(parseFloat(page.style.height) / pageHeight),
+        }),
+      ),
     };
   });
 }
@@ -1157,8 +1164,10 @@ for (const search of ['?print-pdf', '?view=print']) {
     page,
     context,
   }) => {
+    // The gantt lays itself out to the width of its element: it shows that the
+    // slides have the width of the presentation, not of the small window.
     const options: PresentationOptions = {
-      slides: [[WRAPPING_FLOWCHART], [TALL_FLOWCHART], [WRAPPING_FLOWCHART]],
+      slides: [[WRAPPING_FLOWCHART], [TALL_FLOWCHART], [GANTT]],
       afterMermaid: COUNT_THE_SLIDES,
     };
     await openPrintExport(page, search, options);

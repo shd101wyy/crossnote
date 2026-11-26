@@ -65,14 +65,14 @@ function browserHarness(
     ? {
         initialize: jest.fn(),
         listeners,
-        emit(type) {
+        emit(type: string) {
           for (const listener of listeners[type] ?? []) {
             listener();
           }
         },
       }
     : undefined;
-  const slides = { style: {} as Record<string, string> };
+  const slides: { style: Record<string, string> } = { style: {} };
   const context = vm.createContext({
     console: { error() {} },
     location: { search: '' },
