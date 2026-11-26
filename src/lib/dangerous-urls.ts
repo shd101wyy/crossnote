@@ -15,6 +15,8 @@ export const URL_ATTRIBUTES = [
   'action',
   'formaction',
   'xlink:href',
+  // reveal.js loads it in an iframe of its own making
+  'data-background-iframe',
 ];
 
 /** True if a URL value uses a scheme that can execute script. */

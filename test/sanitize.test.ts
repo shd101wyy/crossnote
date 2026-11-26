@@ -101,6 +101,14 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
       expect(result).not.toContain('javascript');
     });
 
+    it('strips javascript: from a background iframe of reveal.js', () => {
+      const result = sanitize(
+        '<section data-background-iframe="javascript:alert(1)"><p>Slide</p></section>',
+      );
+      expect(result).not.toContain('javascript:');
+      expect(result).toContain('<section><p>Slide</p></section>');
+    });
+
     it('preserves safe URLs', () => {
       const result = sanitize('<a href="https://example.com">Safe link</a>');
       expect(result).toContain('href="https://example.com"');

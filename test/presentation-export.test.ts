@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { load } from 'cheerio';
 import * as path from 'path';
 import { mkdirSync, track } from '../src/lib/temp';
 import { MarkdownEngine } from '../src/markdown-engine';
@@ -83,12 +84,21 @@ describe('presentation HTML export (reveal.js)', () => {
     setCrossnoteBuildDirectory(originalBuildDirectory);
   });
 
+  const twoSlides = [
+    '<!-- slide -->',
+    '# One',
+    '',
+    '<!-- slide -->',
+    '# Two',
+    '',
+  ];
+
   /**
-   * A two-slide deck with speaker notes enabled, exported as HTML.
+   * A deck with speaker notes enabled, exported as HTML.
    */
   async function exportDeck(
     options: { offline: boolean },
-    secondSlide: string[] = ['# Two'],
+    slides: string[] = twoSlides,
   ): Promise<string> {
     fs.writeFileSync(
       path.join(tmpDir, 'deck.md'),
@@ -99,12 +109,7 @@ describe('presentation HTML export (reveal.js)', () => {
         '  enableSpeakerNotes: true',
         '---',
         '',
-        '<!-- slide -->',
-        '# One',
-        '',
-        '<!-- slide -->',
-        ...secondSlide,
-        '',
+        ...slides,
       ].join('\n'),
     );
     const notebook = await Notebook.init({
@@ -223,6 +228,21 @@ describe('presentation HTML export (reveal.js)', () => {
     } finally {
       fs.writeFileSync(plugin, notesPluginContent);
     }
+  });
+
+  test('a slide has neither an event handler nor a background iframe that would run script in the page', async () => {
+    const html = await exportDeck({ offline: false }, [
+      '<!-- slide class="mine" onmouseover="alert(1)" data-background-iframe="javascript:alert(1)" -->',
+      '# One',
+      '',
+    ]);
+    const sections = load(html)('section.slide');
+
+    expect(sections).toHaveLength(1);
+    expect(sections.attr('class')).toBe('slide mine');
+    expect(
+      sections.toArray().flatMap((section) => Object.keys(section.attribs)),
+    ).toEqual(['class', 'data-source-line', 'data-h', 'data-v']);
   });
 
   test('offline export inlines reveal.js and the notes plugin, self-contained', async () => {

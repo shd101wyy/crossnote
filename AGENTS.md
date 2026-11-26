@@ -94,6 +94,7 @@ This project processes untrusted markdown content that may contain malicious HTM
 - Uses cheerio (already loaded for post-processing) to strip dangerous elements/attributes
 - **Never bypass this sanitization** — it covers all output paths (preview, export, etc.)
 - All render enhancers must run **before** `sanitizeRenderedHTML($)` in `parseMD`
+- Nothing may be written into the rendered HTML after that pass without being sanitized: `parseSlides` writes the attributes of the slides (`<!-- slide … -->`) and of list items (`<!-- .element: … -->`) afterwards and therefore calls `sanitizeRenderedHTML($)` again on the markup it builds. Follow the same pattern when adding post-pass markup
 
 ### Client-side (webview/browser context)
 
