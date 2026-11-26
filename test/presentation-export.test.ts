@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { load } from 'cheerio';
 import * as path from 'path';
 import { mkdirSync, track } from '../src/lib/temp';
 import { MarkdownEngine } from '../src/markdown-engine';
@@ -7,6 +8,7 @@ import {
   getCrossnoteBuildDirectory,
   setCrossnoteBuildDirectory,
 } from '../src/utility';
+import { readAgain } from './fixtures/mutating-markup';
 
 /**
  * The presentation (reveal.js) wiring of HTML exports: the engine emits the
@@ -83,12 +85,21 @@ describe('presentation HTML export (reveal.js)', () => {
     setCrossnoteBuildDirectory(originalBuildDirectory);
   });
 
+  const twoSlides = [
+    '<!-- slide -->',
+    '# One',
+    '',
+    '<!-- slide -->',
+    '# Two',
+    '',
+  ];
+
   /**
-   * A two-slide deck with speaker notes enabled, exported as HTML.
+   * A deck with speaker notes enabled, exported as HTML.
    */
   async function exportDeck(
     options: { offline: boolean },
-    secondSlide: string[] = ['# Two'],
+    slides: string[] = twoSlides,
   ): Promise<string> {
     fs.writeFileSync(
       path.join(tmpDir, 'deck.md'),
@@ -99,12 +110,7 @@ describe('presentation HTML export (reveal.js)', () => {
         '  enableSpeakerNotes: true',
         '---',
         '',
-        '<!-- slide -->',
-        '# One',
-        '',
-        '<!-- slide -->',
-        ...secondSlide,
-        '',
+        ...slides,
       ].join('\n'),
     );
     const notebook = await Notebook.init({
@@ -172,12 +178,13 @@ describe('presentation HTML export (reveal.js)', () => {
   });
 
   test('with Mermaid diagrams, starts reveal.js once they are drawn in a PDF export', async () => {
-    const html = await exportDeck({ offline: true }, [
-      '```mermaid',
-      'graph TD',
-      'A --> B',
-      '```',
-    ]);
+    // The second slide of the deck holds a diagram.
+    const html = await exportDeck(
+      { offline: true },
+      twoSlides
+        .slice(0, 4)
+        .concat(['```mermaid', 'graph TD', 'A --> B', '```', '']),
+    );
 
     // reveal.js lays the pages of a PDF export out from the slides as it
     // finds them, and moves every slide into its page. The diagrams are
@@ -223,6 +230,66 @@ describe('presentation HTML export (reveal.js)', () => {
     } finally {
       fs.writeFileSync(plugin, notesPluginContent);
     }
+  });
+
+  test('a slide has neither an event handler, nor a background iframe or speaker notes that would run script', async () => {
+    // The notes are markup that a page reads differently from the sanitizer:
+    // reveal.js reads them once more, into the window of its speaker view.
+    const html = await exportDeck({ offline: false }, [
+      `<!-- slide class="mine" onmouseover="alert(1)" data-background-iframe="javascript:alert(1)" data-notes='<form><math><mtext></form><form><mglyph><style></math><input autofocus onfocus=alert(2)><b>Speak</b>' -->`,
+      '# One',
+      '',
+    ]);
+    const attributes = load(html)('section.slide')
+      .toArray()
+      .flatMap((section) => Object.entries(section.attribs));
+    const notes = Object.fromEntries(attributes)['data-notes'];
+
+    // Whatever else the slide says.
+    expect(attributes.filter(([name]) => /^on/i.test(name))).toEqual([]);
+    expect(attributes.map(([name]) => name)).not.toContain(
+      'data-background-iframe',
+    );
+    expect(Object.fromEntries(attributes)).toMatchObject({
+      class: 'slide mine',
+    });
+    expect(readAgain(notes)).toEqual([]);
+    expect(notes).toContain('<b>Speak</b>');
+  });
+
+  test('a fragment of a slide has no speaker notes that would run script either', async () => {
+    // reveal.js writes the notes of a fragment into its speaker view too. It
+    // finds a fragment by its classes — `fragment`, and `current-fragment`
+    // for the one that is shown — and to a browser neither the case of a
+    // class nor that of the name of the attribute is another attribute.
+    const html = await exportDeck({ offline: false }, [
+      '<!-- slide -->',
+      '# One',
+      '',
+      `<p class="fragment" data-notes='<input autofocus onfocus=alert(2)><b>Speak</b>'>A point</p>`,
+      `<p class="current-fragment" data-notes='<input autofocus onfocus=alert(4)>'>Shown</p>`,
+      '',
+      `- another <!-- .element: class="fragment" data-notes='<img src=x onerror=alert(3)>' -->`,
+      `- a third <!-- .element: CLASS="fragment" data-notes='<img src=y onerror=alert(5)>' -->`,
+      `- a fourth <!-- .element: class="fragment" DATA-NOTES='<img src=z onerror=alert(6)>' -->`,
+      '',
+    ]);
+    const notes = load(html)('.slides *')
+      .toArray()
+      .flatMap((el) =>
+        Object.entries(el.attribs).filter(
+          ([name]) => name.toLowerCase() === 'data-notes',
+        ),
+      )
+      .map(([, value]) => value);
+
+    expect(notes).toEqual([
+      '<input autofocus=""><b>Speak</b>',
+      '<input autofocus="">',
+      '<img src="x">',
+      '<img src="y">',
+      '<img src="z">',
+    ]);
   });
 
   test('offline export inlines reveal.js and the notes plugin, self-contained', async () => {

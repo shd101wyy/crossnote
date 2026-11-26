@@ -20,7 +20,6 @@ import { pandocConvert } from '../converters/pandoc-convert';
 import { princeConvert } from '../converters/prince-convert';
 import { mapAbsoluteCssUrls } from '../lib/css-urls';
 import { parseBlockAttributes } from '../lib/block-attributes/parseBlockAttributes';
-import { stringifyBlockAttributes } from '../lib/block-attributes/stringifyBlockAttributes';
 import { normalizeBlockInfo } from '../lib/block-info/normalize-block-info';
 import { parseBlockInfo } from '../lib/block-info/parse-block-info';
 import {
@@ -318,6 +317,21 @@ function isExistingFile(filePath: string): boolean {
   }
 }
 
+/**
+ * The values of attributes as a browser reads them where they are written as
+ * the values of attributes: a character reference in one, such as `&amp;`,
+ * is decoded — as it was while the attributes of a slide were written into
+ * the page as text.
+ */
+function readAttributeValues(attributes: Record<string, string>) {
+  const tag = cheerio.load(
+    `<p ${Object.entries(attributes)
+      .map(([name, value]) => `${name}="${value.replace(/"/g, '&quot;')}"`)
+      .join(' ')}></p>`,
+  );
+  return tag('p').attr() ?? {};
+}
+
 // NOTE: The order of the following matters.
 const dependentLibraryMaterials = [
   { key: 'vega', version: '5.25.0' },
@@ -331,6 +345,38 @@ const dependentLibraryMaterials = [
  * wherever the class stands among the block's attributes.
  */
 const PELE_DIAGRAM = /<div\b[^>]*\sclass="[^"]*\bpele\b[^"]*"/;
+
+/**
+ * The attributes of a slide that are the address of its background. reveal.js
+ * loads each in an element of its own, an iframe for the last.
+ */
+const SLIDE_BACKGROUNDS = [
+  'data-background-image',
+  'data-background-video',
+  'data-background-iframe',
+];
+
+/**
+ * The keys of a slide configuration that are not written as they are: the
+ * number of the marker and the line of the slide are not attributes of the
+ * slide, and the place of the slide in the deck and its source line are
+ * written by crossnote. Spelled in lower case.
+ */
+const NOT_SLIDE_ATTRIBUTES = new Set([
+  SLIDE_MARKER_NUMBER.toLowerCase(),
+  'lineno',
+  'class',
+  'id',
+  'data-h',
+  'data-v',
+  'data-source-line',
+]);
+
+/**
+ * The name an attribute can have. Any other key of block attributes is left
+ * out: written into the tag of its element, it would end the tag there.
+ */
+const ATTRIBUTE_NAME = /^[a-z_:][a-z0-9:._-]*$/i;
 
 /**
  * The markdown engine that can be used to parse markdown and export files
@@ -3103,64 +3149,81 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       return null;
     }
 
-    let output = '';
+    const $ = cheerio.load(
+      `<div style="display:none;">${before}</div><div class="reveal"><div class="slides"></div></div>`,
+    );
+    const deck = $('.slides');
+    // The slides of a stack are sections of a section.
+    let stack: Cheerio<AnyNode> | null = null;
     let h = -1; // horizontal
     let v = 0; // vertical
-    for (let i = 0; i < slides.length; i++) {
-      const { config: slideConfig, html: slide } = slides[i];
-
+    for (const [i, { config: slideConfig, html: slide }] of slides.entries()) {
       // resolve paths in slideConfig
-      if ('data-background-image' in slideConfig) {
-        slideConfig['data-background-image'] = this.resolveFilePath(
-          slideConfig['data-background-image'] as string,
-          useRelativeFilePath,
-        );
-      }
-      if ('data-background-video' in slideConfig) {
-        slideConfig['data-background-video'] = this.resolveFilePath(
-          slideConfig['data-background-video'] as string,
-          useRelativeFilePath,
-        );
-      }
-      if ('data-background-iframe' in slideConfig) {
-        slideConfig['data-background-iframe'] = this.resolveFilePath(
-          slideConfig['data-background-iframe'] as string,
-          useRelativeFilePath,
-        );
+      // An attribute is the same in capitals.
+      for (const name of Object.keys(slideConfig)) {
+        if (!SLIDE_BACKGROUNDS.includes(name.toLowerCase())) {
+          continue;
+        }
+        // A background that is not written as an address names none.
+        if (typeof slideConfig[name] === 'string') {
+          slideConfig[name] = this.resolveFilePath(
+            slideConfig[name],
+            useRelativeFilePath,
+          );
+        } else {
+          delete slideConfig[name];
+        }
       }
 
-      // The number of the marker is not an attribute of the slide.
-      delete slideConfig[SLIDE_MARKER_NUMBER];
-      const attrString = stringifyBlockAttributes(slideConfig, false); // parseAttrString(slideConfig)
-      const classString = slideConfig['class'] || '';
-      const idString = slideConfig['id'] ? `id="${slideConfig['id']}"` : '';
-
-      if (!slideConfig['vertical']) {
-        h += 1;
-        if (i > 0 && slides[i - 1].config['vertical']) {
-          // end of vertical slides
-          output += '</section>';
-          v = 0;
-        }
-        if (i < slides.length - 1 && slides[i + 1].config['vertical']) {
-          // start of vertical slides
-          output += '<section>';
-        }
-      } else {
+      if (slideConfig['vertical']) {
         // vertical slide
         v += 1;
+      } else {
+        h += 1;
+        v = 0;
+        // The slides of a stack share the section it starts.
+        stack = slides[i + 1]?.config['vertical']
+          ? $('<section>').appendTo(deck)
+          : null;
       }
 
-      output += `<section ${attrString} ${idString}  class="slide ${classString}" data-source-line="${slideConfig['lineNo']}" data-h="${h}" data-v="${v}">${slide}</section>`;
-    }
-    if (slides[slides.length - 1].config['vertical']) {
-      // end of vertical slides
-      output += '</section>';
+      const attributes: Record<string, string> = {};
+      for (const [name, value] of Object.entries(slideConfig)) {
+        // The number of the marker and the line of the slide are not
+        // attributes of the slide: its source line is written below. An
+        // attribute is the same in capitals: the class and the id of the
+        // slide are written below, under whatever case they are written.
+        if (
+          !NOT_SLIDE_ATTRIBUTES.has(name.toLowerCase()) &&
+          ATTRIBUTE_NAME.test(name)
+        ) {
+          attributes[name] = String(value);
+        }
+      }
+      // What is written under the keys that are `name` in lower case, joined.
+      const valuesOf = (name: string) =>
+        Object.entries(slideConfig)
+          .filter(([key]) => key.toLowerCase() === name)
+          .map(([, value]) => String(value))
+          .join(' ');
+      const id = valuesOf('id');
+      const section = $('<section>')
+        .html(slide)
+        .attr(
+          readAttributeValues({
+            ...attributes,
+            'class': `slide ${valuesOf('class')}`.trim(),
+            'data-source-line': String(slideConfig['lineNo']),
+            'data-h': String(h),
+            'data-v': String(v),
+            ...(id ? { id } : {}),
+          }),
+        );
+      (stack ?? deck).append(section);
     }
 
     // check list item attribtues
     // issue: https://github.com/shd101wyy/markdown-preview-enhanced/issues/559
-    const $ = cheerio.load(output);
     $('li').each((j, elem) => {
       const $elem = $(elem);
       const html2 = ($elem.html() ?? '').trim().split('\n')[0];
@@ -3168,23 +3231,19 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       if (attributeMatch) {
         const attributes = attributeMatch[1].replace(/\.element:/, '').trim();
         const attrObj = parseBlockAttributes(attributes);
-        for (const key in attrObj) {
-          // eslint-disable-next-line no-prototype-builtins
-          if (attrObj.hasOwnProperty(key)) {
-            $elem.attr(key, attrObj[key]);
+        for (const [name, value] of Object.entries(attrObj)) {
+          if (ATTRIBUTE_NAME.test(name)) {
+            $elem.attr(name, String(value));
           }
         }
       }
     });
 
-    return `
-    <div style="display:none;">${before}</div>
-    <div class="reveal">
-      <div class="slides">
-        ${$.html()}
-      </div>
-    </div>
-    `;
+    // The page was sanitized before the attributes of the slides and of the
+    // list items were written: it is sanitized again.
+    sanitizeRenderedHTML($);
+
+    return $('body').html() ?? '';
   }
 
   private async pandocRender(

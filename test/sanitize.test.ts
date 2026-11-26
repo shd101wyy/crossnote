@@ -1,11 +1,21 @@
 import * as cheerio from 'cheerio';
 import { sanitizeRenderedHTML } from '../src/markdown-engine/sanitize';
+import {
+  LONG_MUTATION,
+  MUTATIONS,
+  readAgain,
+} from './fixtures/mutating-markup';
 
 describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
   function sanitize(html: string): string {
     const $ = cheerio.load(html);
     sanitizeRenderedHTML($);
     return ($('body').html() ?? '').trim();
+  }
+
+  /** The notes of the first element of a page that has any. */
+  function notesOf(html: string): string | undefined {
+    return cheerio.load(html)('[data-notes]').first().attr('data-notes');
   }
 
   describe('script tag removal', () => {
@@ -101,6 +111,41 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
       expect(result).not.toContain('javascript');
     });
 
+    it('strips javascript: from a background iframe of reveal.js', () => {
+      const result = sanitize(
+        '<section data-background-iframe="javascript:alert(1)"><p>Slide</p></section>',
+      );
+      expect(result).not.toContain('javascript:');
+      expect(result).toContain('<section><p>Slide</p></section>');
+    });
+
+    // A browser leaves a tab, a line feed or a carriage return out of a URL
+    // wherever it is, and a control character or a space at either end of it:
+    // each of these addresses runs its script as `javascript:` would.
+    it.each([
+      ['a tab in its scheme', 'java&#9;script:alert(1)'],
+      ['a line feed in its scheme', 'jav&#10;ascript:alert(1)'],
+      ['a carriage return in its scheme', 'jav&#13;ascript:alert(1)'],
+      ['a control character before its scheme', '&#1;javascript:alert(1)'],
+      ['a control character before vbscript', '&#11;vbscript:MsgBox(1)'],
+      ['a tab in the type of a data URL', 'data:text&#9;/html,<b>x</b>'],
+    ])('strips an address with %s', (_, address) => {
+      const result = sanitize(`<a href="${address}">Click</a>`);
+      expect(result).toBe('<a>Click</a>');
+    });
+
+    it.each([
+      ['/my files/a b.pdf'],
+      ['https://example.com/search?a=1&b=2'],
+      ['mailto:a@example.com?subject=hi there'],
+      ['#java script'],
+      ['javascript-tips.html'],
+      ['data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'],
+    ])('keeps the address %s', (address) => {
+      const result = sanitize(`<a href="${address}">Click</a>`);
+      expect(result).toContain('href=');
+    });
+
     it('preserves safe URLs', () => {
       const result = sanitize('<a href="https://example.com">Safe link</a>');
       expect(result).toContain('href="https://example.com"');
@@ -109,6 +154,86 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
     it('preserves data: image URLs', () => {
       const result = sanitize('<img src="data:image/png;base64,abc123">');
       expect(result).toContain('data:image/png');
+    });
+  });
+
+  describe('HTML held in an attribute', () => {
+    it('sanitizes the speaker notes of a slide as the HTML they are', () => {
+      // reveal.js writes the notes of a slide into the window of its speaker
+      // view as HTML.
+      const result = sanitize(
+        '<section data-notes="&lt;input autofocus onfocus=&quot;alert(1)&quot;&gt;&lt;b&gt;Note&lt;/b&gt;&lt;img src=x onerror=alert(2)&gt;"></section>',
+      );
+      const notes = cheerio.load(result)('section').attr('data-notes');
+
+      expect(notes).toBe('<input autofocus=""><b>Note</b><img src="x">');
+    });
+
+    it('leaves the notes that the notes of a slide hold as the attribute they are there', () => {
+      // Nothing writes an attribute of an element inside the notes into the
+      // page again, so there it is only an attribute — and notes within notes
+      // are not read again and again.
+      const result = sanitize(
+        '<section data-notes="&lt;section data-notes=&quot;&amp;lt;input onfocus=alert(1)&amp;gt;&quot;></section>"></section>',
+      );
+
+      // What reveal.js writes is an element whose attribute holds the text.
+      expect(notesOf(result)).toBe(
+        '<section data-notes="<input onfocus=alert(1)>"></section>',
+      );
+      expect(readAgain(notesOf(result) ?? '')).toEqual([]);
+    });
+
+    /** The notes on the first element of `element`, as the engine writes it. */
+    function withNotes(element: string, notes: string): string {
+      const $ = cheerio.load(element, null, false);
+      $.root().children().first().attr('data-notes', notes);
+      return $.root().html() ?? '';
+    }
+
+    // reveal.js takes the notes of a slide and of the fragment that is
+    // current, and which elements those are it decides by classes — one of
+    // which a note can write itself. So the notes are notes wherever they are.
+    describe.each([
+      ['a slide', '<section><p>Slide</p></section>'],
+      ['a fragment', '<div class="fragment">A point</div>'],
+      [
+        'an element with other classes too',
+        '<p class="step fragment fade-in">A point</p>',
+      ],
+      [
+        'the fragment that is current, the class written by the note',
+        '<p class="current-fragment">A point</p>',
+      ],
+      ['any other element', '<p>A point</p>'],
+    ])('the notes of %s', (_, element) => {
+      it('are read as the HTML they are', () => {
+        const result = sanitize(
+          withNotes(element, '<input autofocus onfocus=alert(1)><b>Speak</b>'),
+        );
+
+        expect(notesOf(result)).toBe('<input autofocus=""><b>Speak</b>');
+      });
+
+      it.each([...MUTATIONS, LONG_MUTATION])(
+        'have no event handler, whatever reading a page gives them: %s',
+        (markup) => {
+          const result = sanitize(withNotes(element, markup));
+
+          // reveal.js reads the notes as the content of an element.
+          expect(readAgain(notesOf(result) ?? '')).toEqual([]);
+        },
+      );
+    });
+
+    it('leaves the notes of a slide that are no threat as they are', () => {
+      const result = sanitize(
+        '<section data-notes="Say it &lt;b&gt;loudly&lt;/b&gt;."><p>Slide</p></section>',
+      );
+      const section = cheerio.load(result)('section');
+
+      expect(section.attr('data-notes')).toBe('Say it <b>loudly</b>.');
+      expect(section.html()).toBe('<p>Slide</p>');
     });
   });
 

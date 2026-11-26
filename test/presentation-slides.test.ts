@@ -766,7 +766,10 @@ Text ^note
     const attributeNames = load(html)('section.slide')
       .toArray()
       .flatMap((section) => Object.keys(section.attribs));
-    expect(attributeNames.filter((name) => /marker/i.test(name))).toEqual([]);
+    expect(attributeNames.filter((name) => /marker|line/i.test(name))).toEqual([
+      'data-source-line',
+      'data-source-line',
+    ]);
   });
 
   test('a vertical marker starts the next slide of a stack', async () => {
@@ -799,5 +802,189 @@ Text ^note
 `);
 
     expect(slides.map(({ h, text }) => [h, text])).toEqual([['0', 'First']]);
+  });
+
+  describe('the attributes of a slide and of a list item', () => {
+    /** The names of the attributes of every element the page has under `selector`. */
+    function attributes(html: string, selector: string) {
+      return load(html)(selector)
+        .toArray()
+        .flatMap((element) =>
+          'attribs' in element ? Object.keys(element.attribs) : [],
+        );
+    }
+
+    const handlers: [string, string, string][] = [
+      [
+        'a slide',
+        '<!-- slide onmouseover="alert(1)" -->\n\n# First',
+        'section[data-h]',
+      ],
+      [
+        'a slide, named in capitals',
+        '<!-- slide ONMOUSEOVER=alert(1) -->\n\n# First',
+        'section[data-h]',
+      ],
+      [
+        'a list item',
+        '<!-- slide -->\n\n- item <!-- .element: onclick="alert(1)" -->',
+        'section[data-h] li',
+      ],
+    ];
+
+    const notNames: [string, string, string, string[]][] = [
+      [
+        'a slide',
+        '<!-- slide x>=1 -->\n\n# First',
+        'section[data-h]',
+        ['class', 'data-source-line', 'data-h', 'data-v'],
+      ],
+      [
+        'a list item',
+        '<!-- slide -->\n\n- item <!-- .element: x>=1 -->',
+        'section[data-h] li',
+        ['data-source-line'],
+      ],
+    ];
+
+    test.each(handlers)(
+      'an event handler written for %s is not in the page',
+      async (_, markdown, selector) => {
+        const { html } = await render(markdown);
+
+        expect(load(html)(selector)).toHaveLength(1);
+        expect(
+          attributes(html, selector).filter((name) => /^on/i.test(name)),
+        ).toEqual([]);
+      },
+    );
+
+    test.each(notNames)(
+      'a key that is not the name of an attribute is left out of %s',
+      async (_, markdown, selector, expected) => {
+        const { html, isPresentation } = await render(markdown);
+
+        expect(isPresentation).toBe(true);
+        expect(attributes(html, selector)).toEqual(expected);
+      },
+    );
+
+    test('an attribute of a list item named hasOwnProperty is written like any other', async () => {
+      const { html } = await render(
+        '<!-- slide -->\n\n- item <!-- .element: hasOwnProperty=x -->',
+      );
+
+      expect(load(html)('section[data-h] li').attr('hasownproperty')).toBe('x');
+    });
+
+    test('the class of a slide is written with its own class, and its id once', async () => {
+      const { html } = await render(
+        '<!-- slide class="mine" id="first" -->\n\n# First',
+      );
+      const section = load(html)('section[data-h]');
+
+      expect(section.attr('class')).toBe('slide mine');
+      expect(section.attr('id')).toBe('first');
+    });
+
+    test('a class and an id written in capitals are the class and the id of the slide', async () => {
+      const { html } = await render(
+        '<!-- slide CLASS="mine" ID="first" -->\n\n# First',
+      );
+      const section = load(html)('section[data-h]');
+
+      expect(section.attr('class')).toBe('slide mine');
+      expect(section.attr('id')).toBe('first');
+    });
+
+    test('the speaker notes of a slide are sanitized as the HTML they are', async () => {
+      // reveal.js writes them into the window of its speaker view as HTML.
+      const { html } = await render(
+        `<!-- slide data-notes='<input autofocus onfocus=alert(1)><b>Note</b>' -->\n\n# First`,
+      );
+
+      expect(load(html)('section[data-h]').attr('data-notes')).toBe(
+        '<input autofocus=""><b>Note</b>',
+      );
+    });
+
+    test('a character reference in a value is decoded, as it always was', async () => {
+      const { html } = await render(
+        '<!-- slide data-x="a&amp;b &#32; c" -->\n\n# First',
+      );
+
+      expect(load(html)('section[data-h]').attr('data-x')).toBe('a&b   c');
+    });
+
+    test('the place of a slide in the deck and its source line are written by crossnote, under whatever case they are written', async () => {
+      const { html } = await render(
+        '<!-- slide DATA-H=99 data-v=99 DATA-SOURCE-LINE=99 -->\n\n# First',
+      );
+      const section = load(html)('section[data-h]');
+
+      expect(section.attr('data-h')).toBe('0');
+      expect(section.attr('data-v')).toBe('0');
+      expect(section.attr('data-source-line')).toBe('1');
+      expect(Object.keys(section.attr() ?? {}).length).toBe(4);
+    });
+
+    test('a background written in capitals is a background', async () => {
+      const slides = await renderSlides(
+        '<!-- slide DATA-BACKGROUND-IMAGE="bg.png" -->\n\n# First',
+      );
+
+      expect(slides[0].backgrounds['data-background-image']).toEqual(
+        expect.stringMatching(/^file:\/\/.*\/bg\.png$/),
+      );
+    });
+
+    test('a value with quotes in it is written as it is', async () => {
+      const { html } = await render(
+        `<!-- slide data-x='say "hi"' -->\n\n# First`,
+      );
+
+      expect(load(html)('section[data-h]').attr('data-x')).toBe('say "hi"');
+    });
+
+    test.each([
+      'data-background-image',
+      'data-background-video',
+      'data-background-iframe',
+    ])('%s written without an address is no background', async (attribute) => {
+      const slides = await renderSlides(
+        `<!-- slide ${attribute} -->\n\n# First`,
+      );
+
+      expect(
+        slides.map(({ text, backgrounds }) => [text, backgrounds]),
+      ).toEqual([['First', {}]]);
+    });
+
+    // The address is read as a browser reads it: reveal.js loads it in an
+    // iframe of its own making, and a browser leaves a tab out of it.
+    test.each([
+      'javascript:alert(1)',
+      'java&#9;script:alert(1)',
+      '&#1;javascript:alert(1)',
+      'data:text/html,<script>alert(1)</script>',
+    ])(
+      'a background iframe whose address %s would run script is no background of an exported page',
+      async (address) => {
+        // An export has the paths of its files relative: an address that is
+        // not a path is left as it is written.
+        const { html } = await render(
+          `<!-- slide data-background-iframe="${address}" data-background-image="bg.png" -->\n\n# First`,
+          'markdown-it',
+          {},
+          true,
+        );
+        const section = load(html)('section[data-h]');
+
+        expect(section).toHaveLength(1);
+        expect(section.attr('data-background-iframe')).toBeUndefined();
+        // A background of another kind is not touched.
+        expect(section.attr('data-background-image')).toBe('bg.png');
+      },
+    );
   });
 });
