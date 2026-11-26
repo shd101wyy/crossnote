@@ -53,19 +53,19 @@ function sanitize($: CheerioAPI, notesAreHTML: boolean): void {
   // A `use` element brings into the page what its address names, and the
   // sanitizer has seen the page only: only a fragment of the page is
   // allowed, as in the preview. (Firefox renders the file that is named,
-  // with whatever event handler or address it holds.)
+  // with whatever event handler or address it holds.) Its address is read
+  // as `href`, however it is written: `xlink:href` too.
   $('use').each((_, el: Element) => {
-    for (const attr of ['href', 'xlink:href']) {
-      const href = el.attribs[attr];
-      if (href !== undefined && !href.startsWith('#')) {
-        delete el.attribs[attr];
-      }
+    const href = el.attribs['href'];
+    if (href !== undefined && !href.startsWith('#')) {
+      delete el.attribs['href'];
     }
   });
 
-  // A `base` element and a meta refresh send the page to another address
-  // without running script.
-  $('base').remove();
+  // The address of a `base` element and a meta refresh send the page to
+  // another address without running script. A `base` with a `target` only
+  // sends its links to another window, and stays.
+  $('base[href]').remove();
   $('meta[http-equiv]').each((_, el: Element) => {
     if ((el.attribs['http-equiv'] ?? '').trim().toLowerCase() === 'refresh') {
       $(el).remove();

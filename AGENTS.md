@@ -97,6 +97,7 @@ This project processes untrusted markdown content that may contain malicious HTM
 - Nothing may be written into the rendered HTML after that pass without being sanitized: `parseSlides` writes the attributes of the slides (`<!-- slide … -->`) and of list items (`<!-- .element: … -->`) afterwards and therefore calls `sanitizeRenderedHTML($)` again on the markup it builds; the sidebar table of contents, built from the headings of the note, goes through `sanitizeStableHTML()`. Follow the same pattern when adding post-pass markup
 - **The browser reads the page once more than the sanitizer.** An HTML export is opened as a document and the preview is written into an element, and in MathML and SVG that reading can differ from cheerio's: text the sanitizer saw can be an element with an event handler in the browser (a "mutation"). So the last tree of a page is handed over through `settledHTML($, html)` — `parseMD` for a document, `parseSlides` for a presentation — which reads and sanitizes the page again where a browser can read it differently: where it has MathML or SVG _and_ an element whose text is taken as it is written (`style`, `script`, `iframe`, …) with a `<` in that text (`canBeReadDifferently`). Markup that a script of the page writes back into the page as HTML — reveal.js's `data-notes` — goes through `sanitizeStableHTML()` inside `sanitizeRenderedHTML`. Do the same for any new path that returns rendered HTML
 - Front matter is note content too, and it does not pass through the sanitizer: whatever a template takes from it is escaped for where it is written — `escape()` in HTML text and attribute values, `jsonForScript()` inside a `<script>` (a `</script>` in a value ends the script, quoted or not)
+- The notebook's `head.html` include is workspace content too, and it is written into every `<head>`: `resolvePathsInHeader` sanitizes it with `sanitizeRenderedHTML`, keeping only the scripts the host explicitly allowed (`previewScriptsEnabled`; file-based, inside the notebook or a trusted root)
 
 ### Client-side (webview/browser context)
 
@@ -110,6 +111,9 @@ This project processes untrusted markdown content that may contain malicious HTM
 - All `on*` event handler attributes
 - `javascript:`, `vbscript:`, `data:text/html` URLs
 - `srcdoc` on iframes; forces `sandbox=""` on all iframes
+- A `<base>` with an address and a `<meta http-equiv="refresh">` — neither runs script, both send the page to another address (a `<base>` with a `target` only stays)
+- The address of a `<use>` element unless it is a fragment of the page (`#…`): the file it names was never sanitized
+- An SVG `animate`/`set` of a link's address (`href`, `xlink:href`): it would give the link its address after the sanitizer has looked at it
 
 ## Important Context
 

@@ -181,22 +181,23 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
     it('takes the address off a use element that is not a fragment of the page', () => {
       // What the file holds was never sanitized. Firefox renders it.
       const result = sanitize(
-        '<svg><use href="x.svg#a"/><use xlink:href="https://evil.example/x.svg#a"/><use href="#a"/><use xlink:href="#b"/></svg>',
+        '<svg><use href="x.svg#a"/><use xlink:href="https://evil.example/x.svg#a"/><use href=""/><use href="#a"/><use xlink:href="#b"/></svg>',
       );
 
       expect(result).toBe(
-        '<svg><use></use><use></use><use href="#a"></use><use xlink:href="#b"></use></svg>',
+        '<svg><use></use><use></use><use></use><use href="#a"></use><use xlink:href="#b"></use></svg>',
       );
     });
 
-    it('takes out a base element and a meta refresh, and keeps another meta', () => {
-      // Both send the page to another address without running script.
+    it('takes out a base element with an address and a meta refresh, and keeps another base and meta', () => {
+      // Both send the page to another address without running script. A
+      // `base` with a `target` only does not.
       const result = sanitize(
-        '<div><base href="https://evil.example/" target="_blank"><meta http-equiv=" refresh " content="0;url=https://evil.example/"><meta charset="utf-8"><meta name="viewport" content="width=device-width"></div>',
+        '<div><base href="https://evil.example/" target="_blank"><base target="_blank"><meta http-equiv=" refresh " content="0;url=https://evil.example/"><meta http-equiv="REFRESH" content="0"><meta charset="utf-8"><meta name="viewport" content="width=device-width"></div>',
       );
 
       expect(result).toBe(
-        '<div><meta charset="utf-8"><meta name="viewport" content="width=device-width"></div>',
+        '<div><base target="_blank"><meta charset="utf-8"><meta name="viewport" content="width=device-width"></div>',
       );
     });
   });

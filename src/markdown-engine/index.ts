@@ -2970,12 +2970,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       $('script').remove();
     }
 
-    // The scripts the host allowed are put back once the rest is sanitized.
-    const allowedScripts = allowScripts
-      ? $('script')
-          .map((_, script) => $.html(script))
-          .get()
-      : [];
+    // The scripts the host allowed are put back once the rest is sanitized:
+    // those of the head itself, each once. (One inside a `template` runs
+    // nothing there, and what follows an `svg` is not in the head: both are
+    // sanitized as the rest of the file is.)
+    const allowedScripts: string[] = [];
+    if (allowScripts) {
+      $('head > script').each((_, script) => {
+        allowedScripts.push($.html(script));
+        $(script).remove();
+      });
+    }
 
     // The rest of the file is the notebook's, and it is written into the
     // page outside the page's sanitizer: an event handler, a dangerous

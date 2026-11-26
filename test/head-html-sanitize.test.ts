@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { load } from 'cheerio';
 import { pathToFileURL } from 'url';
+import { load } from 'cheerio';
 import { mkdirSync, track } from '../src/lib/temp';
 import { MarkdownEngine } from '../src/markdown-engine';
 import { Notebook } from '../src/notebook';
@@ -409,11 +409,46 @@ describe('head.html trusted script roots', () => {
       previewScriptsEnabled: true,
     });
 
-    // The script the host allowed is where it was.
+    // The script the host allowed is there.
     expect(html).toContain(
       `<script src="${fileUrlOf(path.join(globalDir, 'helper.js'))}"></script>`,
     );
     expect(load(html)('[onerror]')).toHaveLength(0);
     expect(html).not.toMatch(/<script[^>]*>window\.__x/);
+  });
+
+  test('an allowed script is put back only where it is a script of the head', async () => {
+    // One inside a `template` runs nothing there, and what follows an `svg`
+    // is not in the head at all: neither is made live.
+    const { workspaceDir, globalDir } = setupDirs();
+    fs.writeFileSync(path.join(globalDir, 'helper.js'), 'alert("global");');
+
+    const html = await renderPreviewWithHead({
+      workspaceDir,
+      trustedRoots: [globalDir],
+      headHtml:
+        '<script src="./helper.js"></script>' +
+        '<template><script src="./helper.js"></script></template>' +
+        '<svg><script src="./helper.js"></script></svg>' +
+        '<script src="./helper.js"></script>',
+      previewScriptsEnabled: true,
+    });
+
+    expect(load(html)('script[src$="helper.js"]')).toHaveLength(1);
+  });
+
+  test('an allowed script typed as data is put back once', async () => {
+    // The sanitizer keeps a script typed as data, as it is.
+    const { workspaceDir, globalDir } = setupDirs();
+    fs.writeFileSync(path.join(globalDir, 'helper.js'), 'alert("global");');
+
+    const html = await renderPreviewWithHead({
+      workspaceDir,
+      trustedRoots: [globalDir],
+      headHtml: '<script type="text/tikz" src="./helper.js"></script>',
+      previewScriptsEnabled: true,
+    });
+
+    expect(load(html)('script[src$="helper.js"]')).toHaveLength(1);
   });
 });
