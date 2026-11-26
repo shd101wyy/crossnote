@@ -18,27 +18,12 @@ const DANGEROUS_TAGS = ['object', 'embed', 'applet'];
 const SAFE_SCRIPT_TYPES = new Set(['wavedrom', 'text/tikz']);
 
 // The attribute whose value is HTML, which a script of the page writes into
-// the page again as such: reveal.js writes the speaker notes of a slide
-// (`data-notes` on its `section`) and of a fragment (`data-notes` on the
-// element of class `fragment`) into the window of its speaker view.
+// the page again as such: reveal.js writes the speaker notes of a slide and
+// of a fragment of it — `data-notes` on the section and on the element —
+// into the window of its speaker view. Which elements it takes them from is
+// its own to decide (a class it looks for, one it gives an element itself),
+// so the value is read as the HTML it is on every element that has it.
 const HTML_ATTRIBUTES = new Set(['data-notes']);
-
-/**
- * Whether the value of the attribute is the HTML of speaker notes, which
- * reveal.js writes into its speaker view. A fragment is any element of the
- * slide with the class, whatever else is in its class list.
- */
-function isNotes(el: Element, attr: string): boolean {
-  if (!HTML_ATTRIBUTES.has(attr.toLowerCase())) {
-    return false;
-  }
-  return (
-    el.name === 'section' ||
-    (el.attribs['class'] ?? '')
-      .split(/\s+/)
-      .some((name) => name.toLowerCase() === 'fragment')
-  );
-}
 
 /**
  * Sanitize rendered HTML in-place using a cheerio instance.
@@ -98,7 +83,7 @@ function sanitize($: CheerioAPI, notesAreHTML: boolean): void {
 
     for (const attr of Object.keys(attribs)) {
       // The value is the HTML of speaker notes: it is sanitized as such.
-      if (notesAreHTML && isNotes(el as Element, attr)) {
+      if (notesAreHTML && HTML_ATTRIBUTES.has(attr.toLowerCase())) {
         attribs[attr] = sanitizeStableHTML(attribs[attr], false);
         continue;
       }

@@ -98,28 +98,29 @@ test.describe('markup that a page takes back as HTML', () => {
 });
 
 /**
- * Present a slide — with the given speaker notes, or with a fragment that
- * has them — open the speaker view, and return what it finds in the notes,
- * and what they made the pages say.
+ * Present a slide — with the given speaker notes, or with an element of the
+ * slide that has them — open the speaker view, and return what it finds in
+ * the notes, and what they made the pages say.
  *
  * The deck is laid out like an export: the document loads reveal.js and its
  * notes plugin, and starts the presentation. The speaker view previews the
  * slides in iframes that load the deck again, and tells the presentation
  * that it is connected once they have: the deck is answered for every window
  * of the browser context. reveal.js takes the notes of the slide, and of the
- * fragment that is current: the presentation is moved on to that one.
+ * fragment that is current: a fragment is found by its class, and for a
+ * fragment the presentation is moved on first.
  */
 async function speakerViewOf(
   context: BrowserContext,
   page: Page,
   notes: string,
-  on: 'slide' | 'fragment',
+  on: 'slide' | 'fragment' | 'current-fragment',
 ) {
-  const fragment = `<p class="fragment" data-notes="${escape(notes)}">A point</p>`;
+  const element = `<p class="${on}" data-notes="${escape(notes)}">A point</p>`;
   const slide =
     on === 'slide'
       ? `<section class="slide" data-notes="${escape(notes)}"><h1>One</h1></section>`
-      : `<section class="slide"><h1>One</h1>${fragment}</section>`;
+      : `<section class="slide"><h1>One</h1>${element}</section>`;
   await context.route(/\/deck\.html(\?|$)/, (route) =>
     route.fulfill({
       contentType: 'text/html; charset=utf-8',
@@ -182,6 +183,10 @@ test.describe('the speaker view of a presentation', () => {
   for (const [where, on] of [
     ['of a slide', 'slide'],
     ['of a fragment', 'fragment'],
+    [
+      'of the element a note itself marks as the fragment that is current',
+      'current-fragment',
+    ],
   ] as const) {
     test(`finds no event handler in the notes ${where}`, async ({
       context,

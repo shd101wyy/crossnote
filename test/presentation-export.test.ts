@@ -258,24 +258,37 @@ describe('presentation HTML export (reveal.js)', () => {
   });
 
   test('a fragment of a slide has no speaker notes that would run script either', async () => {
-    // reveal.js writes the notes of a fragment — any element of the slide
-    // with the class — into its speaker view too.
+    // reveal.js writes the notes of a fragment into its speaker view too. It
+    // finds a fragment by its classes — `fragment`, and `current-fragment`
+    // for the one that is shown — and to a browser neither the case of a
+    // class nor that of the name of the attribute is another attribute.
     const html = await exportDeck({ offline: false }, [
       '<!-- slide -->',
       '# One',
       '',
       `<p class="fragment" data-notes='<input autofocus onfocus=alert(2)><b>Speak</b>'>A point</p>`,
+      `<p class="current-fragment" data-notes='<input autofocus onfocus=alert(4)>'>Shown</p>`,
       '',
       `- another <!-- .element: class="fragment" data-notes='<img src=x onerror=alert(3)>' -->`,
+      `- a third <!-- .element: CLASS="fragment" data-notes='<img src=y onerror=alert(5)>' -->`,
+      `- a fourth <!-- .element: class="fragment" DATA-NOTES='<img src=z onerror=alert(6)>' -->`,
       '',
     ]);
-    const fragments = load(html)('.slides .fragment');
+    const notes = load(html)('.slides *')
+      .toArray()
+      .flatMap((el) =>
+        Object.entries(el.attribs).filter(
+          ([name]) => name.toLowerCase() === 'data-notes',
+        ),
+      )
+      .map(([, value]) => value);
 
-    // The class of a fragment is kept, and its notes are read as HTML.
-    expect(fragments.toArray().map((el) => el.name)).toEqual(['p', 'li']);
-    expect(fragments.toArray().map((el) => el.attribs['data-notes'])).toEqual([
+    expect(notes).toEqual([
       '<input autofocus=""><b>Speak</b>',
+      '<input autofocus="">',
       '<img src="x">',
+      '<img src="y">',
+      '<img src="z">',
     ]);
   });
 

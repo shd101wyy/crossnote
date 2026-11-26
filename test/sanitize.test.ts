@@ -191,8 +191,9 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
       return $.root().html() ?? '';
     }
 
-    // reveal.js takes the notes of a slide and of a fragment, which is any
-    // element of the slide with the class.
+    // reveal.js takes the notes of a slide and of the fragment that is
+    // current, and which elements those are it decides by classes — one of
+    // which a note can write itself. So the notes are notes wherever they are.
     describe.each([
       ['a slide', '<section><p>Slide</p></section>'],
       ['a fragment', '<div class="fragment">A point</div>'],
@@ -200,7 +201,11 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
         'an element with other classes too',
         '<p class="step fragment fade-in">A point</p>',
       ],
-      ['a fragment written in capitals', '<p class="FRAGMENT">A point</p>'],
+      [
+        'the fragment that is current, the class written by the note',
+        '<p class="current-fragment">A point</p>',
+      ],
+      ['any other element', '<p>A point</p>'],
     ])('the notes of %s', (_, element) => {
       it('are read as the HTML they are', () => {
         const result = sanitize(
@@ -218,17 +223,6 @@ describe('sanitizeRenderedHTML (CVE-2025-65716)', () => {
           // reveal.js reads the notes as the content of an element.
           expect(readAgain(notesOf(result) ?? '')).toEqual([]);
         },
-      );
-    });
-
-    it('leaves an attribute of another element as it is, though it is named the same', () => {
-      const result = sanitize(
-        '<p data-notes="x&lt;y and a &amp;amp; b and 1 &lt; 2">text</p>',
-      );
-
-      // The value is as it was, not cut at what looks like a tag.
-      expect(cheerio.load(result)('p').attr('data-notes')).toBe(
-        'x<y and a &amp; b and 1 < 2',
       );
     });
 
