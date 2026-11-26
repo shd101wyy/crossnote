@@ -13,4 +13,7 @@ module.exports = {
   // not jest — they need a real Chromium to exercise MathJax typesetting.
   testPathIgnorePatterns: ['/node_modules/', '/test/browser/'],
   testEnvironment: 'node',
+  // The folder of the temp files of a run, made before and removed after it.
+  globalSetup: '<rootDir>/jest.global-setup.js',
+  globalTeardown: '<rootDir>/jest.global-teardown.js',
 };
