@@ -1,4 +1,10 @@
-import { sanitizeStableHTML } from '../src/markdown-engine/sanitize';
+import * as cheerio from 'cheerio';
+import {
+  isReadDifferently,
+  sanitizeRenderedHTML,
+  sanitizeStableHTML,
+  settledHTML,
+} from '../src/markdown-engine/sanitize';
 import {
   LONG_MUTATION,
   MUTATIONS,
@@ -106,4 +112,71 @@ describe('markup that a page takes back as HTML', () => {
       '',
     );
   });
+});
+
+describe('a page that has been read and sanitized', () => {
+  /** The page `markup` comes to, read and sanitized as the engine reads it. */
+  function read(markup: string) {
+    const $ = cheerio.load(markup);
+    sanitizeRenderedHTML($);
+    return { $, html: $('body').html() ?? '' };
+  }
+
+  const FORMULA =
+    '<span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>+</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">x+2</annotation></semantics></math></span>';
+
+  test.each([
+    ['a formula', FORMULA],
+    [
+      'a diagram',
+      '<svg viewBox="0 0 10 10"><style>.a{fill:red}</style><title>Diagram</title><g class="a"><path d="M0 0"></path></g></svg>',
+    ],
+    [
+      'MathML and a style with no `<` in it',
+      '<math><mi>x</mi></math><style>.a[b] { color: red }</style>',
+    ],
+    [
+      'a style with a `<` in it and no MathML nor SVG',
+      '<style>.a[b<c] { color: red }</style><p>x</p>',
+    ],
+  ])('cannot be read differently by a browser with %s', (_, markup) => {
+    expect(isReadDifferently(read(markup).$)).toBe(false);
+  });
+
+  test.each([
+    [
+      'MathML and a style with a `<` in it',
+      '<math><mi>x</mi></math><style>.a::after { content: "<" }</style>',
+    ],
+    [
+      'SVG and an iframe with text in it',
+      '<svg><path d="M0 0"></path></svg><iframe>less < more</iframe>',
+    ],
+    [
+      'MathML and the data script of a TikZ diagram',
+      '<math><mi>x</mi></math><script type="text/tikz">\\draw (0,0) node {$a<b$};</script>',
+    ],
+    [
+      'a diagram whose style holds a `<`',
+      `<svg></svg><style>${MUTATIONS[0]}</style>`,
+    ],
+  ])('can be read differently by a browser with %s', (_, markup) => {
+    expect(isReadDifferently(read(markup).$)).toBe(true);
+  });
+
+  test('is handed to the browser as it is where it cannot be read differently', () => {
+    const { $, html } = read(FORMULA);
+
+    // A page of formulas is not read again: the browser reads it as it is.
+    expect(settledHTML($, html)).toBe(html);
+  });
+
+  test.each([...MUTATIONS, LONG_MUTATION])(
+    'is read and sanitized again where it can be read differently: %s',
+    (markup) => {
+      const { $, html } = read(`<div>${markup}</div>`);
+
+      expect(readAgain(settledHTML($, html))).toEqual([]);
+    },
+  );
 });
