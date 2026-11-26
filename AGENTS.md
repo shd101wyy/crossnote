@@ -114,6 +114,7 @@ This project processes untrusted markdown content that may contain malicious HTM
 - A `<base>` with an address and a `<meta http-equiv="refresh">` — neither runs script, both send the page to another address (a `<base>` with a `target` only stays)
 - The address of a `<use>` element unless it is a fragment of the page (`#…`): the file it names was never sanitized
 - An SVG `animate`/`set` of a link's address (`href`, `xlink:href`): it would give the link its address after the sanitizer has looked at it
+- A `plaintext` element, kept as the text of a `pre` element: it has no end tag, and a second reading of the page would make it swallow all that follows
 
 ## Important Context
 
