@@ -767,19 +767,23 @@ window["initRevealPresentation"] = async function() {
   };
 
   /**
-   * A theme name that is safe to interpolate into an asset path. Reveal.js
-   * presentation themes come from front matter (`presentation.theme`), and
-   * offline exports read the resolved file and inline it into the output —
-   * only a bare `<name>.css` basename is ever allowed through.
+   * A theme name that is safe to interpolate into an asset path. The theme
+   * of a presentation and of an eBook comes from front matter, and offline
+   * exports read the resolved file and inline it into the output — only a
+   * bare `<name>.css` basename is ever allowed through.
    */
   private static readonly safeThemeFilename = /^[A-Za-z0-9_-]+\.css$/;
 
   /**
    * The file of a theme named by a note — a presentation's or an eBook's:
-   * its name where it is a bare `<name>.css`, and `fallback` otherwise.
+   * its name where it is a string that is a bare `<name>.css`, and
+   * `fallback` otherwise.
    */
-  private static themeFileOf(theme: string, fallback: string): string {
-    return MarkdownEngine.safeThemeFilename.test(theme) ? theme : fallback;
+  private static themeFileOf(theme: unknown, fallback: string): string {
+    return typeof theme === 'string' &&
+      MarkdownEngine.safeThemeFilename.test(theme)
+      ? theme
+      : fallback;
   }
 
   /**
@@ -1275,12 +1279,12 @@ window["initRevealPresentation"] = async function() {
     };
 
     // get `id` and `class`: a class of the front matter is a name or a list
-    // of them; anything else is written as its text.
+    // of them; anything else that is not nothing is written as its text.
     const elementId = (yamlConfig['id'] as string) || '';
     const classes = yamlConfig['class'] as string | string[] | undefined;
     const elementClass = Array.isArray(classes)
       ? classes.join(' ')
-      : String(classes ?? '');
+      : String(classes || '');
 
     // math style and script
     let mathStyle: string;
@@ -1597,11 +1601,6 @@ window["initRevealPresentation"] = async function() {
             this.notebook.config.revealjsTheme,
           'revealjs',
         );
-        // `theme` is front-matter controlled, and offline exports read
-        // the file and inline it into the document — so only a bare
-        // `<name>.css` filename is accepted; a value with separators or
-        // `..` falls back to reveal.js's default theme instead of
-        // reading an arbitrary file.
         const safeTheme = MarkdownEngine.themeFileOf(theme, 'white.css');
 
         if (options.offline) {
@@ -2285,9 +2284,8 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (ebookConfig['cover']) {
       // change cover to absolute path if necessary
-      const cover = ebookConfig['cover'] as string;
       ebookConfig['cover'] = utility.removeFileProtocol(
-        this.resolveFilePath(cover, false),
+        this.resolveFilePath(String(ebookConfig['cover']), false),
       );
     }
 
@@ -2340,7 +2338,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         }
 
         const filePath = decodeURIComponent($a.attr('href') ?? ''); // markdown file path
-        const heading = $a.html() ?? '';
+        // The text of the link: calibre reads it back as the title of the
+        // entry, and it is written into an attribute.
+        const heading = $a.text();
         const id = headingIdGenerator.generateId(`ebook-heading-` + heading); // "ebook-heading-id-" + headingOffset;
 
         tocStructure.push({ level, filePath, heading, id });
@@ -2439,7 +2439,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
           .children()
           .first()
           .prepend(
-            `<img style="display:block; margin-bottom: 24px;" src="${coverUrl}">`,
+            `<img style="display:block; margin-bottom: 24px;" src="${escape(coverUrl)}">`,
           );
       }
 
@@ -2475,9 +2475,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // `ebook.theme` is named by the note, and its file is inlined into the
     // page: only a bare `<name>.css` is a theme, as for a presentation.
-    const ebookThemeName =
-      MarkdownEngine.themeFileOf((ebookConfig['theme'] as string) ?? '', '') ||
-      this.notebook.config.previewTheme;
+    const ebookThemeName = MarkdownEngine.resolveThemeForExport(
+      MarkdownEngine.themeFileOf(
+        ebookConfig['theme'],
+        this.notebook.config.previewTheme,
+      ),
+      'preview',
+    );
 
     // prism and preview theme
     let styleCSS: string;

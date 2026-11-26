@@ -122,6 +122,32 @@ describe('the eBook export', () => {
     expect($('[onmouseover]')).toHaveLength(0);
   });
 
+  test.each([
+    ['a name with an ampersand', '[Q&A](other.md)', 'Q&A'],
+    ['a name with emphasis', '[**Bold** chapter](other.md)', 'Bold chapter'],
+  ])(
+    'gives an entry for its title the text of its link, with %s',
+    async (_, link, title) => {
+      // calibre reads the title of an entry back from this attribute.
+      const html = await exportHTML(
+        `---\nebook:\n  title: T\n---\n\n- ${link}\n`,
+      );
+
+      expect(load(html)('[ebook-toc-level-1]').attr('heading')).toBe(title);
+    },
+  );
+
+  test('writes the cover into its image as an address, and nothing else', async () => {
+    const cover = 'data:image/png;base64,x" onerror="window.__pwn_cover=1';
+    const html = await exportHTML(
+      ebookOf(`  cover: ${JSON.stringify(cover)}\n`),
+    );
+    const image = load(html)('img').first();
+
+    expect(Object.keys(image.attr() ?? {}).sort()).toEqual(['src', 'style']);
+    expect(image.attr('src')).toBe(cover);
+  });
+
   test('reads the file of a theme, and no other file', async () => {
     // A theme is a bare name in the folder of the themes. Anything else is
     // the theme of the notebook.
@@ -172,6 +198,8 @@ describe('the class of the page in an export', () => {
     ['a list of names', 'class: [a, 1]', 'a 1'],
     ['a boolean', 'class: true', 'true'],
     ['a number', 'class: 123', '123'],
+    ['false', 'class: false', ''],
+    ['zero', 'class: 0', ''],
   ])('is written as it is, with %s', async (_, frontMatter, expected) => {
     const filePath = path.join(tmpDir, 'note.md');
     fs.writeFileSync(filePath, `---\n${frontMatter}\n---\n\n# One\n`);
@@ -188,4 +216,27 @@ describe('the class of the page in an export', () => {
 
     expect(page.attr('class')).toBe(`crossnote markdown-preview  ${expected}`);
   });
+
+  test.each([
+    ['a number', 'id: 0', undefined],
+    ['a boolean', 'id: false', undefined],
+    ['a list', 'id: [a, b]', 'a,b'],
+  ])(
+    'has an id written as it is, with %s',
+    async (_, frontMatter, expected) => {
+      const filePath = path.join(tmpDir, 'note.md');
+      fs.writeFileSync(filePath, `---\n${frontMatter}\n---\n\n# One\n`);
+      const notebook = await Notebook.init({
+        notebookPath: tmpDir,
+        config: {
+          markdownParser: 'markdown-it',
+          markdownYoBinaryPath: '',
+        },
+      });
+      const engine = new MarkdownEngine({ notebook, filePath });
+      const html = await engine.htmlExportDocument();
+
+      expect(load(html)('div.crossnote').attr('id')).toBe(expected);
+    },
+  );
 });
