@@ -18,10 +18,11 @@ import { ebookConvert } from '../converters/ebook-convert';
 import { markdownConvert } from '../converters/markdown-convert';
 import { pandocConvert } from '../converters/pandoc-convert';
 import { princeConvert } from '../converters/prince-convert';
-import { mapAbsoluteCssUrls } from '../lib/css-urls';
 import { parseBlockAttributes } from '../lib/block-attributes/parseBlockAttributes';
 import { normalizeBlockInfo } from '../lib/block-info/normalize-block-info';
 import { parseBlockInfo } from '../lib/block-info/parse-block-info';
+import { mapAbsoluteCssUrls } from '../lib/css-urls';
+import { jsonForScript } from '../lib/json-for-script';
 import {
   FileSystemApi,
   Notebook,
@@ -592,7 +593,7 @@ export class MarkdownEngine {
       presentationConfig['dependencies'] = dependencies;
 
       presentationInitScript += `
-        await Reveal.initialize(${JSON.stringify({
+        await Reveal.initialize(${jsonForScript({
           margin: 0.1,
           // reveal.js 5+ switches narrow decks to its scroll view; keep the
           // paginated layout of earlier versions when the preview pane is
@@ -1764,7 +1765,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   <!DOCTYPE html>
   <html>
     <head>
-      <title>${title}</title>
+      <title>${escape(title)}</title>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       ${colorSchemeMeta}
@@ -1786,9 +1787,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     <body ${options.isForPrint ? '' : 'for="html-export"'} ${
       yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
     }>
-      <div class="crossnote markdown-preview ${princeClass} ${elementClass}" ${
+      <div class="crossnote markdown-preview ${princeClass} ${escape(elementClass)}" ${
         yamlConfig['isPresentationMode'] ? 'data-presentation-mode' : ''
-      } ${elementId ? `id="${elementId}"` : ''}>
+      } ${elementId ? `id="${escape(elementId)}"` : ''}>
       ${html}
       </div>
       ${sidebarTOC}
@@ -2553,7 +2554,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 <!DOCTYPE html>
 <html>
   <head>
-    <title>${title}</title>
+    <title>${escape(String(title))}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>

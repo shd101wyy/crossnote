@@ -5,6 +5,7 @@ import { pathToFileURL } from 'url';
 import type * as vscode from 'vscode';
 import { SHA256 } from 'crypto-js';
 import { MarkdownEngineOutput, Notebook, utility } from '../index';
+import { jsonForScript } from '../lib/json-for-script';
 import { NotebookConfig, WebviewConfig } from '../notebook';
 import { constructGraphView } from '../notebook/graph-view';
 import {
@@ -119,7 +120,7 @@ function appShellHTML(serverInfo: {
   vscode: boolean;
   url: string;
 }): string {
-  const serialized = JSON.stringify(serverInfo).replace(/</g, '\\u003c');
+  const serialized = jsonForScript(serverInfo);
   return `<!DOCTYPE html>
 <html>
   <head>
