@@ -87,5 +87,5 @@ if (
 const outfile = path.resolve('dependencies/mermaid/mermaid.min.js');
 fs.writeFileSync(outfile, bundle.endsWith('\n') ? bundle : `${bundle}\n`);
 console.log(
-  `mermaid ${version} bundle written to ${outfile} (${bundle.length} bytes)`,
+  `mermaid ${version} bundle written to ${outfile} (${fs.statSync(outfile).size} bytes)`,
 );
