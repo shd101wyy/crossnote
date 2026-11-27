@@ -72,9 +72,18 @@ describe('a fragment of a file that has an import over several lines above it', 
         '# Part A\n\ntext\n@import "x.html"\n# Part B\n\nafter\n',
       'div-above.md':
         '::: note\n\ntext\n\n:::\n\n# Part A\n\ntext\n\n# Part B\n',
-      'div-inside.md': '# Part A\n\n::: note\n\ntext\n\n:::\n\n# Part B\n',
+      'div-inside.md':
+        '# Part A\n\n::: note\n\ntext\n\n:::\nlast line\n# Part B\n',
       'slide-above.md':
         '<!-- slide\nvertical=true -->\n\n# Part A\n\ntext\n\n# Part B\n',
+      'x.ts': 'const a = 1;\nconst b = 2;\n',
+      // A div, then the section, which ends with an import right above the
+      // heading after it.
+      'div-then-import-at-end.md':
+        '::: note\n\n# Part A\n\ntext A\n\n@import "x.ts"\n# Part B\n',
+      // A div, an import right above the first heading of the section.
+      'div-then-import-at-start.md':
+        '::: note\n\n# Part Zero\n\n@import "x.ts"\n# Part A\n\ntext A\n\n# Part B\n',
       'block-is-import.md': '@import "x.csv" ^id\n\nthird\n',
       'block-ends-import.md': 'first ^id\n@import "x.csv"\n\nthird\n',
       // The ^id stands on a line the transformer does not rewrite.
@@ -323,6 +332,37 @@ describe('a fragment of a file that has an import over several lines above it', 
           '# Part B {#part-b }',
         ),
       );
+    },
+  );
+
+  test.each([
+    [
+      'that ends with an import right above its last heading',
+      'div-then-import-at-end.md',
+      [
+        '# Part A {#part-a }',
+        '',
+        'text A',
+        '',
+        '```ts',
+        'const a = 1;',
+        'const b = 2;',
+        '',
+        '```',
+      ],
+    ],
+    [
+      'that begins right below an import, past a div',
+      'div-then-import-at-start.md',
+      ['# Part A {#part-a }', '', 'text A'],
+    ],
+  ])(
+    'after a `:::` div, a section %s is whole: no fence is cut',
+    async (_where, file, expected) => {
+      // A cut one line off lands inside what the import wrote: a fence
+      // without its end, or a stray end, takes the rest of the note with it.
+      const { outputString } = await imported(`@import "${file}#Part A"`);
+      expect(brought(outputString)).toEqual(expected);
     },
   );
 

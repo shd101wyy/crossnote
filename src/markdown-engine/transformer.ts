@@ -399,13 +399,13 @@ export async function transformMarkdown(
 
     // Lines the output has beyond the lines of the note. A line of the note
     // is a line of the output, as a rule. A few are written as more than
-    // one: an import that is written out as what it imports (under the
-    // pandoc parser a markdown, an html or a csv file, and a code file as a
-    // fenced block), the opening marker of a `:::` div under the pandoc
-    // parser, and a slide comment of several lines that a markdown export
-    // keeps. The lines of the note after such a line start lower in the
-    // output than their numbers say: `[lineNo, lines beyond the first]` for
-    // each of them, in the order of the note (crossnote#593).
+    // one: under the pandoc parser an import that is written out as what it
+    // imports (a markdown, an html or a csv file, a file of code or of a
+    // diagram as a fenced block) and the opening marker of a `:::` div; and
+    // a slide comment of several lines that a markdown export keeps. The
+    // lines of the note after such a line start lower in the output than
+    // their numbers say: `[lineNo, lines beyond the first]` for each of
+    // them, in the order of the note (crossnote#593).
     const extraLines: Array<[number, number]> = [];
 
     /**
