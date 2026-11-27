@@ -7,7 +7,7 @@ I managed some of the libraries by myself instead of through npm to reduce the o
   "font-awesome": "6.4.2", // Download from here: https://fontawesome.com/download
   // Fontawesome cheatsheet is available here: https://kapeli.com/cheat_sheets/Font_Awesome.docset/Contents/Resources/Documents/index
   "katex": "v0.19.1", // Only keep the css and fonts files.
-  "mermaid": "12.3.0", // see "Updating the vendored mermaid bundle" below
+  "mermaid": "12.4.0", // see "Updating the vendored mermaid bundle" below
   // https://www.jsdelivr.com/package/npm/mermaid
   "reveal": "6.0.2", // see "Updating the vendored reveal.js" below
 
@@ -54,7 +54,7 @@ To update reveal.js:
 
 ## Updating the vendored mermaid bundle
 
-`dependencies/mermaid/mermaid.min.js` is mermaid's **official dist build** downloaded from jsDelivr (e.g. <https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.min.js>). Do **not** re-bundle mermaid locally with esbuild — the committed file must be byte-identical to the CDN file so the `__esbuild_esm_mermaid_nm` IIFE wrapper and the trailing `globalThis["mermaid"] = ...` assignment match what mermaid ships.
+`dependencies/mermaid/mermaid.min.js` is mermaid's **official dist build** downloaded from jsDelivr (e.g. <https://cdn.jsdelivr.net/npm/mermaid@12.4.0/dist/mermaid.min.js>). Do **not** re-bundle mermaid locally with esbuild — the committed file must be byte-identical to the CDN file so the `__esbuild_esm_mermaid_nm` IIFE wrapper and the trailing `globalThis["mermaid"] = ...` assignment match what mermaid ships.
 
 To update mermaid:
 
@@ -62,7 +62,7 @@ To update mermaid:
 2. `node scripts/update-mermaid-bundle.mjs` — downloads the matching official dist bundle from jsDelivr into `dependencies/mermaid/mermaid.min.js` (uses the version installed in `node_modules`; an explicit version can be passed as an argument). Equivalent to manually downloading `https://cdn.jsdelivr.net/npm/mermaid@<version>/dist/mermaid.min.js` and copying it to `dependencies/mermaid/mermaid.min.js`.
 3. Update the mermaid version in the CDN fallback script URL in `src/markdown-engine/index.ts` (`mermaid@<version>/dist/mermaid.min.js`).
 4. Update the version list above and add a `CHANGELOG.md` entry.
-5. Check `test/mermaid-bundle.test.ts` — it fails the bump if the new bundle calls a Chromium-116+ API the oldest supported webview lacks unless `src/markdown-engine/mermaid-polyfill.ts` defines a shim for it.
+5. Check `test/mermaid-bundle.test.ts` — it fails the bump if the vendored file is not the dist file of the installed mermaid, and if the new bundle calls an API on its list — one newer than the oldest supported webview — unless `src/markdown-engine/mermaid-polyfill.ts` defines a shim for it. An API that is not on the list is not caught: when a diagram fails on an old webview with `X is not a function`, add `X` to the list together with its shim.
 
 Note: the `mermaid` npm package itself declares `engines.node >= 22` (recent lines) while crossnote pins Node 18. That is currently harmless — the package is only used for its types (`MermaidConfig`); it is never imported at runtime, and pnpm does not enforce `engines` on install. Do **not** runtime-import `mermaid` from Node code without re-evaluating the Node-18 support floor first.
 
