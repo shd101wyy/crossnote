@@ -544,6 +544,160 @@ test('a diagram takes its colors from the scheme of its page, and changes with i
   expect(errors).toEqual([]);
 });
 
+const USER_RED = 'rgb(255, 0, 0)';
+const USER_BLUE = 'rgb(0, 0, 255)';
+
+for (const scheme of ['light', 'dark'] as const) {
+  for (const rule of [':root', 'html', 'body', '.pele']) {
+    test(`a variable that global CSS sets on \`${rule}\` restyles a diagram on a ${scheme} page`, async ({
+      page,
+    }) => {
+      // The dark palette is declared so that it loses to a rule of the
+      // user's wherever that is written (crossnote#603: on `:root`, it won).
+      const errors = errorsOf(page);
+      await openWithPele(page);
+      // Global CSS comes after the stylesheet, as the user's does.
+      await page.addStyleTag({ content: stylesheet });
+      await page.addStyleTag({
+        content: `${rule} { --pele-fg: ${USER_RED}; --pele-surface: ${USER_BLUE}; }`,
+      });
+      await page.evaluate(
+        (scheme) => document.body.setAttribute('data-preview-theme', scheme),
+        scheme,
+      );
+
+      const container = await drawIn(
+        page,
+        blocksOf([FLOWCHART.source]),
+        'preview',
+      );
+      expect(await readColors(page, container)).toEqual({
+        scheme,
+        label: USER_RED,
+        node: USER_BLUE,
+      });
+      expect(errors).toEqual([]);
+    });
+  }
+}
+
+test('a variable that global CSS sets before the stylesheet restyles a diagram on a dark page too', async ({
+  page,
+}) => {
+  // Global CSS can come before the stylesheet: an @import of the user's is
+  // put first, and so is a preview theme.
+  const errors = errorsOf(page);
+  await openWithPele(page);
+  await page.addStyleTag({ content: `html { --pele-fg: ${USER_RED}; }` });
+  await page.addStyleTag({ content: stylesheet });
+  await page.evaluate(() =>
+    document.body.setAttribute('data-preview-theme', 'dark'),
+  );
+
+  const container = await drawIn(page, blocksOf([FLOWCHART.source]), 'preview');
+  expect(await readColors(page, container)).toMatchObject({
+    scheme: 'dark',
+    label: USER_RED,
+  });
+  expect(errors).toEqual([]);
+});
+
+test('drawing diagrams does not look at the style of the whole page for each', async ({
+  page,
+}) => {
+  // The palette is declared on <html> by a :has() on <body>, with the child
+  // combinator. With a descendant there, every change in the page has the
+  // root's :has looked at again, in a style recalculation that grows with the
+  // page — once per diagram, as its font is read. The cost shows in how long
+  // drawing takes on a page of many elements, stylesheet or none.
+  const errors = errorsOf(page);
+  /** How long drawing `count` diagrams takes on a page of many elements. */
+  const timeToDraw = async (css: string, count: number) => {
+    await openWithPele(page);
+    if (css) {
+      await page.addStyleTag({ content: css });
+    }
+    await page.evaluate(() =>
+      document.body.setAttribute('data-preview-theme', 'dark'),
+    );
+    return page.evaluate(
+      (blocks) => {
+        // A page of many elements, as a long note is.
+        const host = document.createElement('div');
+        host.innerHTML =
+          '<table><tr><td><span>x</span></td></tr></table>'.repeat(12000);
+        document.body.appendChild(host);
+        const draw = () => {
+          const container = document.createElement('div');
+          container.innerHTML = blocks;
+          document.body.appendChild(container);
+          const started = performance.now();
+          (window as unknown as PeleWindow).crossnotePele!.renderPeleDiagrams(
+            container,
+          );
+          return performance.now() - started;
+        };
+        // A first one, for the code to be warm.
+        draw();
+        return draw();
+      },
+      blocksOf(Array(count).fill(FLOWCHART.source)),
+    );
+  };
+
+  const withoutTheStylesheet = await timeToDraw('', 1000);
+  const withIt = await timeToDraw(stylesheet, 1000);
+  expect(withIt).toBeLessThan(withoutTheStylesheet * 3 + 100);
+  expect(errors).toEqual([]);
+});
+
+test('a diagram whose font cannot be read shows its error, and the others are drawn', async ({
+  page,
+}) => {
+  // The node is marked drawn before its font is read: an error there has to
+  // take the place of the diagram, as the error of a drawing does, and must
+  // not end the script with the diagram left as its source.
+  const errors = errorsOf(page);
+  await openWithPele(page);
+  // Only the first diagram's cannot; the page's own reads — of the color the
+  // page is painted with — still work.
+  await page.evaluate(() => {
+    const getComputedStyleOf = window.getComputedStyle.bind(window);
+    let first = true;
+    window.getComputedStyle = (element: Element) => {
+      if (first && element.classList.contains('pele')) {
+        first = false;
+        throw new Error('no style');
+      }
+      return getComputedStyleOf(element);
+    };
+  });
+
+  const container = await drawIn(
+    page,
+    blocksOf([SEQUENCE.source, FLOWCHART.source]),
+    'export',
+  );
+  const diagrams = await page.evaluate((container) => {
+    return Array.from(
+      document.querySelector(container)!.querySelectorAll('div.pele'),
+    ).map((node) => ({
+      drawn: !!node.querySelector('svg.pele'),
+      error: node.querySelector('pre code')?.textContent ?? null,
+    }));
+  }, container);
+  expect(diagrams).toEqual([
+    { drawn: false, error: 'Error: no style' },
+    { drawn: true, error: null },
+  ]);
+  expect(
+    await page.evaluate(
+      () => (window as unknown as PeleWindow).__crossnotePeleExport,
+    ),
+  ).toEqual({ status: 'complete' });
+  expect(errors).toEqual([]);
+});
+
 test('an exported document that paints neither <body> nor <html> is a light page', async ({
   page,
 }) => {
