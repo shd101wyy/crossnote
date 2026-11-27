@@ -197,9 +197,11 @@ describe('the eBook export', () => {
       convert.mockReset();
     });
 
-    /** Begin to export the note as an EPUB. */
-    async function exportEPUB() {
-      const filePath = path.join(tmpDir, 'note.md');
+    /** Begin to export the note of `folder` (of the notebook) as an EPUB. */
+    async function exportEPUB(folder = tmpDir) {
+      fs.mkdirSync(folder, { recursive: true });
+      fs.writeFileSync(path.join(folder, 'other.md'), '# Other\n');
+      const filePath = path.join(folder, 'note.md');
       fs.writeFileSync(filePath, ebookOf(''));
       const notebook = await Notebook.init({
         notebookPath: tmpDir,
@@ -213,10 +215,10 @@ describe('the eBook export', () => {
       return { exported: engine.eBookExport({ fileType: 'epub' }) };
     }
 
-    const pagesLeft = () =>
-      fs.readdirSync(tmpDir).filter((f) => f.endsWith('.crossnote-ebook.html'));
+    const pagesLeft = (folder = tmpDir) =>
+      fs.readdirSync(folder).filter((f) => f.endsWith('.crossnote-ebook.html'));
 
-    test('is a page in the folder of the note, removed after the conversion', async () => {
+    test('is a page at the root of the notebook, removed after the conversion', async () => {
       // calibre 6.19+ adds no local file outside the folder of the page.
       let src = '';
       let existed = false;
@@ -232,6 +234,25 @@ describe('the eBook export', () => {
       expect(existed).toBe(true);
       expect(fs.existsSync(src)).toBe(false);
       expect(pagesLeft()).toEqual([]);
+    });
+
+    test('is a page at the root of the notebook for a note in a sub-folder', async () => {
+      const sub = path.join(tmpDir, 'sub');
+      let src = '';
+      let existed = false;
+      convert.mockImplementation(async (page) => {
+        src = page;
+        existed = fs.existsSync(page);
+      });
+      const { exported } = await exportEPUB(sub);
+
+      expect(await exported).toBe(path.join(sub, 'note.epub'));
+      expect(path.dirname(src)).toBe(tmpDir);
+      expect(path.basename(src)).toMatch(/^note\..+\.crossnote-ebook\.html$/);
+      expect(existed).toBe(true);
+      expect(fs.existsSync(src)).toBe(false);
+      expect(pagesLeft()).toEqual([]);
+      expect(pagesLeft(sub)).toEqual([]);
     });
 
     test('is removed when the conversion fails', async () => {
