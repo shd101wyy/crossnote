@@ -178,6 +178,35 @@ describe('renderMermaidDiagram', () => {
     expect(jest.getTimerCount()).toBe(0);
   });
 
+  it('writes the SVG through the sanitizer, and returns what it wrote', async () => {
+    // What Mermaid drew is content of the note. At `securityLevel: 'loose'`
+    // it writes the address of a `click` as it was given, and an `onclick`
+    // of its own; a label may hold HTML. The labels are HTML inside
+    // <foreignObject>, and they stay.
+    jest.useFakeTimers();
+    layout(984);
+    const node = rendered(makeNode());
+    const { mermaid } = mermaidRendering(async () => ({
+      svg:
+        '<svg id="mermaid-1" viewBox="0 0 10 10">' +
+        '<a href="javascript:alert(1)" rel="noopener" target="_blank">' +
+        '<g class="node" onclick="alert(1)"><rect></rect>' +
+        '<foreignObject width="10" height="10">' +
+        '<div xmlns="http://www.w3.org/1999/xhtml" style="display: table;">' +
+        '<span class="nodeLabel"><p><b>Label</b>' +
+        '<img src="x" onerror="alert(1)"><script>alert(1)</script>' +
+        '</p></span></div></foreignObject></g></a></svg>',
+    }));
+
+    const svg = await renderMermaidDiagram(mermaid, node, CODE, 'mermaid-1');
+
+    expect(node.querySelector('foreignObject b')?.textContent).toBe('Label');
+    expect(node.querySelector('foreignObject img')).not.toBeNull();
+    // What was written is what is kept to be written again.
+    expect(svg).toBe(node.innerHTML);
+    expect(svg).not.toMatch(/onclick|onerror|<script|javascript:/);
+  });
+
   it('replaces a failed diagram with its error and returns null', async () => {
     jest.useFakeTimers();
     layout(984);
