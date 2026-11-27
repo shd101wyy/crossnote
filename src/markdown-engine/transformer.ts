@@ -57,6 +57,13 @@ export interface TransformMarkdownOptions {
   forPreview: boolean;
   markdownParser?: MarkdownParser;
   forMarkdownExport?: boolean;
+  /**
+   * Whether a `<!-- slide -->` comment is left out as any other comment is:
+   * no marker of a slide is written for it. Its lines stay, blank, as the
+   * lines of every comment do. For a document that has no slides: the pandoc
+   * export.
+   */
+  omitSlideComments?: boolean;
   protocolsWhiteListRegExp: RegExp | null;
   notSourceFile?: boolean;
   fileHash?: string;
@@ -344,6 +351,7 @@ export async function transformMarkdown(
     useRelativeFilePath = false,
     forPreview = false,
     forMarkdownExport = false,
+    omitSlideComments = false,
     markdownParser = 'markdown-it' as MarkdownParser,
     protocolsWhiteListRegExp = null,
     notSourceFile = false,
@@ -706,6 +714,12 @@ export async function transformMarkdown(
               continue;
             } else if (subject.match(/^\.?slide:?$/)) {
               // slide
+              if (omitSlideComments) {
+                i = commentEnd;
+                lineNo = lineNo + newlines;
+                outputString = outputString + '\n'.repeat(newlines);
+                continue;
+              }
               options[SLIDE_MARKER_NUMBER] = slideMarkerCounter.next++;
               slideConfigs.push(options);
               if (forMarkdownExport) {
@@ -1209,6 +1223,7 @@ export async function transformMarkdown(
                 headingIdGenerator: new HeadingIdGenerator(),
                 fileHash,
                 slideMarkerCounter,
+                omitSlideComments,
               });
 
               output = '\n' + output2 + '  ';

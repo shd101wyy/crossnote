@@ -410,7 +410,9 @@ export async function pandocConvert(
     text = await notebook.config.parserConfig.onWillParseMarkdown(text);
   }
 
-  // import external files
+  // import external files. A slide is a hint for a presentation, not a part
+  // of the document: the `<!-- slide -->` comments of the note, and of the
+  // files it imports, are left out (crossnote#591).
   const data = await transformMarkdown(text, {
     fileDirectoryPath,
     projectDirectoryPath,
@@ -419,6 +421,7 @@ export async function pandocConvert(
     protocolsWhiteListRegExp,
     forPreview: false,
     markdownParser: 'pandoc',
+    omitSlideComments: true,
     notebook,
   });
   text = data.outputString;
