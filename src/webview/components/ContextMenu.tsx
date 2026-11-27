@@ -366,6 +366,10 @@ export default function ContextMenu() {
     <div data-theme={theme} className="select-none">
       <Menu
         id={contextMenuId}
+        // The library fades the menu in and out unless told otherwise.
+        animation={
+          config.enablePreviewContextMenuAnimation === false ? false : undefined
+        }
         theme={
           useNativeMenu ? undefined : theme === 'dark' ? 'dark' : undefined
         }
