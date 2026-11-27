@@ -368,6 +368,21 @@ export async function transformMarkdown(
   // Replace CRLF with LF
   inputString = inputString.replace(/\r\n/g, '\n');
 
+  // Ranges of indented code blocks in the source (crossnote#594). Empty
+  // when the note has no indented import or image, so those notes skip
+  // the second parse. Which line is code is for markdown-it to say.
+  const indentedCodeBlockRanges: Array<[number, number]> = [];
+  if (
+    !usePandocParser &&
+    /^(?:\s|>)*(?:\t| {4,})(?:@import|!\[)/m.test(inputString)
+  ) {
+    for (const token of notebook.md.parse(inputString, {})) {
+      if (token.type === 'code_block' && token.map) {
+        indentedCodeBlockRanges.push([token.map[0], token.map[1]]);
+      }
+    }
+  }
+
   let lastOpeningCodeBlockFence: string | null = null;
   // null when not inside a `:::name … :::` block; 'code' when the inner
   // content is a code/diagram fence (markdown-it consumes it via the
@@ -947,12 +962,16 @@ export async function transformMarkdown(
       const wikilinkImportMatch = line.match(
         /^(\s*)!\[\[(.+?)\]\](?:{([^}]*)})?\s*$/,
       );
-      // A CommonMark indented code block (4 spaces or a tab) is not an
-      // import: rewriting it to `![@embedding](...)` is what the preview
-      // then shows as the code (crossnote#594). 1–3 leading spaces stay
-      // imports. Pandoc still inlines the file: a 4-space indent is not a
-      // code block on that path.
-      const indentedCodeBlock = !usePandocParser && /^(?:\t| {4,})/.test(line);
+      // A CommonMark indented code block is not an import: rewriting it
+      // to `![@embedding](...)` is what the preview then shows as the
+      // code (crossnote#594). Which lines are code is taken from
+      // markdown-it's `code_block` tokens — four spaces or a tab under a
+      // list item, or a lazy continuation, stay imports. Pandoc still
+      // inlines the file: a 4-space indent is not a code block on that
+      // path.
+      const indentedCodeBlock = indentedCodeBlockRanges.some(
+        ([start, end]) => lineNo >= start && lineNo < end,
+      );
       if (
         !indentedCodeBlock &&
         (importMatch || imageImportMatch || wikilinkImportMatch)

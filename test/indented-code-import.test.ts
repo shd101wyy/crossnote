@@ -27,6 +27,7 @@ Paragraph.
   beforeAll(async () => {
     tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'indented-code-import-'));
     fs.writeFileSync(path.join(tmp, 'part.md'), 'Imported part body.\n');
+    fs.writeFileSync(path.join(tmp, 'x.md'), 'Imported image markdown body.\n');
     fs.writeFileSync(path.join(tmp, 'x.txt'), 'plain file body\n');
     nb = await Notebook.init({
       notebookPath: tmp,
@@ -126,6 +127,14 @@ Paragraph.
       const output = await transform('    @import "part.md"\n', pandocNb);
       expect(output).toContain('Imported part body');
     });
+
+    test('eight-space @import in a nested list stays as typed', async () => {
+      const output = await transform(
+        '- outer\n  - inner\n\n        @import "part.md"\n',
+      );
+      expect(output).toContain('        @import "part.md"');
+      expect(output).not.toContain('@embedding');
+    });
   });
 
   describe('preview HTML', () => {
@@ -152,6 +161,52 @@ Paragraph.
       const html = await render(`${pad}@import "part.md"\n`);
       expect(html).toContain('Imported part body');
       expect(html).not.toContain('@embedding');
+    });
+
+    test('eight-space @import in a nested list stays a code block', async () => {
+      const html = await render(
+        '- outer\n  - inner\n\n        @import "part.md"\n',
+      );
+      const $ = load(html);
+      const code = $('pre')
+        .map((_, el) => $(el).text())
+        .get()
+        .join('\n');
+      expect(code).toContain('@import "part.md"');
+      expect(html).not.toContain('@embedding');
+      expect(html).not.toContain('Imported part body');
+    });
+
+    test.each([
+      [
+        'bullet list, blank line, four-space @import',
+        '- item\n\n    @import "part.md"\n',
+        'Imported part body',
+      ],
+      [
+        'ordered list, blank line, four-space @import',
+        '1. Step one\n\n    @import "part.md"\n\n2. Step two\n',
+        'Imported part body',
+      ],
+      [
+        'bullet list, no blank line, four-space @import',
+        '- item\n    @import "part.md"\n',
+        'Imported part body',
+      ],
+      [
+        'blockquote lazy continuation @import',
+        '> quote\n>     @import "part.md"\n',
+        'Imported part body',
+      ],
+      [
+        'bullet list, blank line, four-space image',
+        '- item\n\n    ![](x.md)\n',
+        'Imported image markdown body',
+      ],
+    ])('%s still includes the file', async (_label, markdown, body) => {
+      const html = await render(markdown);
+      expect(html).toContain(body);
+      expect(html).not.toContain('@import');
     });
   });
 });
