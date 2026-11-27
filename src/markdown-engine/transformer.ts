@@ -57,6 +57,12 @@ export interface TransformMarkdownOptions {
   forPreview: boolean;
   markdownParser?: MarkdownParser;
   forMarkdownExport?: boolean;
+  /**
+   * Whether a `<!-- slide -->` comment is left out, with the line it ends on
+   * and the block quote mark before it, as if it was not written. For a
+   * document that has no slides: the pandoc export.
+   */
+  omitSlideComments?: boolean;
   protocolsWhiteListRegExp: RegExp | null;
   notSourceFile?: boolean;
   fileHash?: string;
@@ -344,6 +350,7 @@ export async function transformMarkdown(
     useRelativeFilePath = false,
     forPreview = false,
     forMarkdownExport = false,
+    omitSlideComments = false,
     markdownParser = 'markdown-it' as MarkdownParser,
     protocolsWhiteListRegExp = null,
     notSourceFile = false,
@@ -706,6 +713,25 @@ export async function transformMarkdown(
               continue;
             } else if (subject.match(/^\.?slide:?$/)) {
               // slide
+              if (omitSlideComments) {
+                // What follows the comment on the line it ends on stays.
+                const lineEnd = inputString.indexOf('\n', commentEnd);
+                const rest =
+                  lineEnd < 0
+                    ? inputString.slice(commentEnd)
+                    : inputString.slice(commentEnd, lineEnd);
+                outputString = outputString.slice(
+                  0,
+                  outputString.length - blockquotePrefix.length,
+                );
+                i = commentEnd;
+                lineNo = lineNo + newlines;
+                if (!rest.trim()) {
+                  i = lineEnd < 0 ? inputString.length : lineEnd + 1;
+                  lineNo = lineNo + 1;
+                }
+                continue;
+              }
               options[SLIDE_MARKER_NUMBER] = slideMarkerCounter.next++;
               slideConfigs.push(options);
               if (forMarkdownExport) {

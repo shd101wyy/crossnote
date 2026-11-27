@@ -410,7 +410,8 @@ export async function pandocConvert(
     text = await notebook.config.parserConfig.onWillParseMarkdown(text);
   }
 
-  // import external files
+  // import external files. A document pandoc writes has no slides: the
+  // `<!-- slide -->` comments of the note are left out (crossnote#591).
   const data = await transformMarkdown(text, {
     fileDirectoryPath,
     projectDirectoryPath,
@@ -419,6 +420,7 @@ export async function pandocConvert(
     protocolsWhiteListRegExp,
     forPreview: false,
     markdownParser: 'pandoc',
+    omitSlideComments: true,
     notebook,
   });
   text = data.outputString;
@@ -442,15 +444,6 @@ export async function pandocConvert(
       '\n\n' + tocMarkdown + '\n\n',
     );
   }
-
-  // A `<!-- slide -->` is a hint for the presentation in the preview and in
-  // the HTML export. A document pandoc writes has no slides: the marker of a
-  // slide is taken out, with the rest of its line, as if the comment was not
-  // there (crossnote#591).
-  text = text.replace(
-    /<p><span>\[CROSSNOTESLIDE:\d+\]<\/span><\/p>[ \t]*\n?/g,
-    '',
-  );
 
   // change link path to relative path
   text = processPaths(text, fileDirectoryPath, projectDirectoryPath);
