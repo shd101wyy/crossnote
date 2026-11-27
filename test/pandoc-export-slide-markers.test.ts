@@ -11,7 +11,7 @@ import { Notebook } from '../src/notebook';
  * export: the transformer writes it as the marker the page is split on, and
  * that marker reached the document, as the text `[CROSSNOTESLIDE:0]`
  * (crossnote#591). A document pandoc writes has no slides: the transformer is
- * asked to leave the comments out, as if they were not written.
+ * asked to leave the comments out, as it leaves any other comment out.
  */
 
 /** The markdown the last `pandoc` was handed. */
@@ -35,12 +35,20 @@ jest.mock('child_process', () => ({
       };
     },
   ),
-  exec: jest.fn(),
 }));
 
-/** Export `markdown` as a Word document, and return what `pandoc` was given. */
-const exported = async (markdown: string): Promise<string> => {
+/**
+ * Export `markdown` as a Word document, with `files` next to the note, and
+ * return what `pandoc` was given.
+ */
+const exported = async (
+  markdown: string,
+  files: Record<string, string> = {},
+): Promise<string> => {
   const tmp = mkdirSync({ prefix: 'xnote-pandoc-slides-' });
+  for (const [name, content] of Object.entries(files)) {
+    fs.writeFileSync(path.join(tmp, name), content);
+  }
   const filePath = path.join(tmp, 'note.md');
   fs.writeFileSync(filePath, `---\noutput: word_document\n---\n\n${markdown}`);
   const notebook = await Notebook.init({
@@ -85,15 +93,15 @@ Text two.
     );
   });
 
-  test('what comes after a comment is where it was, without a blank line glued on', async () => {
+  test('the lines of the comment stay, as blank lines', async () => {
     const given = await exported(`Para one
 <!-- slide -->
 Para two
 `);
 
-    expect(given).not.toContain('CROSSNOTESLIDE');
-    // As if the comment was not written: one paragraph.
-    expect(given).toMatch(/Para one\nPara two/);
+    // The paragraph before the slide and the one after it are apart, as they
+    // are in the preview, where the marker stands between them.
+    expect(given).toMatch(/\nPara one\n\nPara two\n?$/);
   });
 
   test('the text of a marker is left alone', async () => {
@@ -104,13 +112,61 @@ Para two
 ${typed}
 \`\`\`
 
-<span>[CROSSNOTESLIDE:0]</span>
+${typed}
 
 # First
 `);
 
-    expect(given).toContain(typed);
-    expect(given).toContain('<span>[CROSSNOTESLIDE:0]</span>');
+    expect(given.split(typed)).toHaveLength(3);
+  });
+
+  test('in a file the note imports', async () => {
+    const given = await exported(
+      `# Title
+
+@import "deck.md"
+`,
+      {
+        'deck.md': `# First
+
+<!-- slide -->
+
+# Second
+
+Text two.
+`,
+      },
+    );
+
+    expect(given).not.toContain('CROSSNOTESLIDE');
+    expect(given).toContain('\n# Second {#second }\n\nText two.');
+  });
+
+  test('in a file the note imports by a fragment', async () => {
+    const given = await exported(
+      `@import "deck.md#second"
+`,
+      {
+        // The file is cut out by the lines of the note it is read as: the lines
+        // of a comment that is left out have to stay where they are.
+        'deck.md': `<!-- slide -->
+
+# First
+
+Text one.
+
+<!-- slide -->
+
+# Second
+
+Text two.
+`,
+      },
+    );
+
+    expect(given).not.toContain('CROSSNOTESLIDE');
+    expect(given).toMatch(/\n# Second \{#second \}\n\nText two\./);
+    expect(given).not.toContain('First');
   });
 });
 
@@ -141,72 +197,99 @@ describe('a slide comment the transformer leaves out', () => {
     });
   }
 
-  // Each note, and the note the comment is cut out of.
+  // The lines of the comment stay, as blank as any other comment leaves them.
   test.each([
     [
       'between two paragraphs',
       'Para one\n<!-- slide -->\nPara two\n',
-      'Para one\nPara two\n',
+      'Para one\n\nPara two\n',
     ],
     [
       'with a blank line after it',
       'Para one\n<!-- slide -->\n\nPara two\n',
-      'Para one\n\nPara two\n',
+      'Para one\n\n\nPara two\n',
     ],
     [
       'written over several lines',
       'Para one\n<!-- slide\nid=x\n-->\nPara two\n',
-      'Para one\nPara two\n',
+      'Para one\n\n\n\nPara two\n',
     ],
     [
       'written over several lines, with a blank line after it',
       'Para one\n<!-- slide\nid=x\n-->\n\nPara two\n',
-      'Para one\n\nPara two\n',
+      'Para one\n\n\n\n\nPara two\n',
     ],
     [
       'in a block quote',
       '> Para one\n> <!-- slide -->\n> Para two\n',
-      '> Para one\n> Para two\n',
+      '> Para one\n> \n> Para two\n',
     ],
     [
       'in a block quote of two levels',
       '>> Para one\n>> <!-- slide -->\n>> Para two\n',
-      '>> Para one\n>> Para two\n',
+      '>> Para one\n>> \n>> Para two\n',
     ],
-    // The line the comment ends on keeps what follows the comment on it.
+    [
+      'written over several lines in a block quote',
+      '> Para one\n> <!-- slide\n> id=x\n> -->\n> Para two\n',
+      '> Para one\n> \n\n\n> Para two\n',
+    ],
+    // What follows the comment on the line it ends on stays on that line.
     [
       'with text after it on its line',
       'Para one\n<!-- slide --> trailing\nPara two\n',
       'Para one\n trailing\nPara two\n',
     ],
-    ['at the start of the note', '<!-- slide -->\n# First\n', '# First\n'],
-    ['at the end of the note', '# First\n\n<!-- slide -->', '# First\n\n'],
+    [
+      'in a block quote, with text after it on its line',
+      '> Para one\n> <!-- slide --> quoted\n> Para two\n',
+      '> Para one\n>  quoted\n> Para two\n',
+    ],
+    [
+      'after a page break on the same line',
+      'Para one\n<!-- newpage --><!-- slide -->\nPara two\n',
+      'Para one\n<div class="pagebreak"> </div>\nPara two\n',
+    ],
+    [
+      'at the start of the note',
+      '<!-- slide -->\n# First\n',
+      '\n# First {#first }\n',
+    ],
+    [
+      'at the end of the note',
+      '# First\n\n<!-- slide -->',
+      '# First {#first }\n\n',
+    ],
     [
       'at the end of the note, after a line break',
       '# First\n\n<!-- slide -->\n',
-      '# First\n\n',
+      '# First {#first }\n\n\n',
     ],
     [
       'two, one after the other',
       'Para one\n<!-- slide -->\n<!-- slide vertical=true -->\nPara two\n',
-      'Para one\nPara two\n',
+      'Para one\n\n\nPara two\n',
+    ],
+    [
+      'in a list, which the blank line makes loose',
+      '- one\n<!-- slide -->\n- two\n',
+      '- one\n\n- two\n',
     ],
     [
       'written as `.slide`',
       'Para one\n<!-- .slide -->\nPara two\n',
-      'Para one\nPara two\n',
+      'Para one\n\nPara two\n',
     ],
     [
       'between a heading and its text',
       '# First\n<!-- slide -->\nText.\n',
-      '# First\nText.\n',
+      '# First {#first }\n\nText.\n',
     ],
   ])(
-    '%s: the note reads as if the comment was not written',
-    async (_label, note, without) => {
+    '%s: nothing of it is written, its lines stay',
+    async (_label, note, output) => {
       const { outputString } = await transformed(note, true);
-      const { outputString: baseline } = await transformed(without, true);
-      expect(outputString).toBe(baseline);
+      expect(outputString).toBe(output);
     },
   );
 
@@ -224,7 +307,7 @@ describe('a slide comment the transformer leaves out', () => {
       '<!-- slide class="x" -->\n# First\n',
       true,
     );
-    expect(outputString).toBe('# First {#first }\n');
+    expect(outputString).toBe('\n# First {#first }\n');
     expect(slideConfigs).toEqual([]);
   });
 });

@@ -58,9 +58,10 @@ export interface TransformMarkdownOptions {
   markdownParser?: MarkdownParser;
   forMarkdownExport?: boolean;
   /**
-   * Whether a `<!-- slide -->` comment is left out, with the line it ends on
-   * and the block quote mark before it, as if it was not written. For a
-   * document that has no slides: the pandoc export.
+   * Whether a `<!-- slide -->` comment is left out as any other comment is:
+   * no marker of a slide is written for it. Its lines stay, blank, as the
+   * lines of every comment do. For a document that has no slides: the pandoc
+   * export.
    */
   omitSlideComments?: boolean;
   protocolsWhiteListRegExp: RegExp | null;
@@ -714,22 +715,9 @@ export async function transformMarkdown(
             } else if (subject.match(/^\.?slide:?$/)) {
               // slide
               if (omitSlideComments) {
-                // What follows the comment on the line it ends on stays.
-                const lineEnd = inputString.indexOf('\n', commentEnd);
-                const rest =
-                  lineEnd < 0
-                    ? inputString.slice(commentEnd)
-                    : inputString.slice(commentEnd, lineEnd);
-                outputString = outputString.slice(
-                  0,
-                  outputString.length - blockquotePrefix.length,
-                );
                 i = commentEnd;
                 lineNo = lineNo + newlines;
-                if (!rest.trim()) {
-                  i = lineEnd < 0 ? inputString.length : lineEnd + 1;
-                  lineNo = lineNo + 1;
-                }
+                outputString = outputString + '\n'.repeat(newlines);
                 continue;
               }
               options[SLIDE_MARKER_NUMBER] = slideMarkerCounter.next++;
@@ -1235,6 +1223,7 @@ export async function transformMarkdown(
                 headingIdGenerator: new HeadingIdGenerator(),
                 fileHash,
                 slideMarkerCounter,
+                omitSlideComments,
               });
 
               output = '\n' + output2 + '  ';
