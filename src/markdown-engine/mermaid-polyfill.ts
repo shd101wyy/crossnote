@@ -3,12 +3,12 @@
  * Chromium 114) lacks and the mermaid bundle calls. Each is defined only
  * where it does not exist.
  *
- * `URL.canParse` (Chromium 120) is the one every diagram with a link meets.
- * Since mermaid 11.0 its URL sanitizer calls it for every `http(s)` link:
- * a `click` with a link on a flowchart, a class diagram or a gantt at
- * `securityLevel: 'strict'` (mermaid's default), and `links` in a sequence
- * diagram at any level, throw `TypeError: URL.canParse is not a function`,
- * and the whole diagram is not drawn.
+ * `URL.canParse` (Chromium 120) is the one diagrams with a link meet.
+ * Since mermaid 11.0 its URL sanitizer calls it for every `http(s)` link it
+ * is asked about: a `click` with a link on a flowchart, a class diagram or a
+ * gantt at every security level but `loose`, and `links` in a sequence
+ * diagram at every level. Where the global is missing, the diagram throws
+ * `TypeError: URL.canParse is not a function` and is not drawn.
  * The shim answers as the spec does: whether `new URL(url, base)` succeeds.
  *
  * `Object.groupBy` (Chromium 117) is the other. Mermaid ≥ 12.1 calls it

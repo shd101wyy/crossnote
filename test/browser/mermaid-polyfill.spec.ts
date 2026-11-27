@@ -107,21 +107,23 @@ test('a link that is not a URL is left out through the shim, and the diagram is 
   page,
 }) => {
   await openWithMermaid(page);
-  // Asked of `URL.canParse`, answered with `false`: what is left of the
-  // link is the sanitizer's decision, not the shim's.
+  // `http://` is not a URL: asked of `URL.canParse`, answered with `false`.
+  // What is left of the link then is the sanitizer's decision, not the
+  // shim's.
   const svg = await render(
     page,
     'shim-not-a-url',
     `flowchart LR
   A[Start]
-  click A "https://exa mple.com" "tooltip"`,
+  click A "http://" "tooltip"`,
   );
   expect(svg).toContain('aria-roledescription="flowchart-v2"');
-  expect(svg).not.toContain('exa mple.com');
+  expect(svg).not.toContain('xlink:href');
 });
 
 // Every other place mermaid asks its URL sanitizer about an http(s) link:
-// where the diagram and the security level together reach it.
+// where the diagram and the security level together reach it, and whether
+// the link is written into the svg.
 const OTHER_DIAGRAMS_WITH_A_LINK = [
   [
     'class',
@@ -129,6 +131,7 @@ const OTHER_DIAGRAMS_WITH_A_LINK = [
   class A
   click A href "${LINK}" "tooltip"`,
     'strict',
+    true,
   ],
   [
     'gantt',
@@ -139,6 +142,7 @@ const OTHER_DIAGRAMS_WITH_A_LINK = [
   task :done, a1, 0, 2d
   click a1 href "${LINK}"`,
     'strict',
+    false,
   ],
   [
     'sequence-strict',
@@ -146,6 +150,7 @@ const OTHER_DIAGRAMS_WITH_A_LINK = [
   Alice->>Bob: Hi
   links Alice: {"A": "${LINK}"}`,
     'strict',
+    true,
   ],
   [
     'sequence-loose',
@@ -153,6 +158,7 @@ const OTHER_DIAGRAMS_WITH_A_LINK = [
   Alice->>Bob: Hi
   links Alice: {"A": "${LINK}"}`,
     'loose',
+    true,
   ],
 ] as const;
 
@@ -160,9 +166,10 @@ test('the other diagrams that give a link to the sanitizer are drawn too', async
   page,
 }) => {
   await openWithMermaid(page);
-  for (const [id, source, level] of OTHER_DIAGRAMS_WITH_A_LINK) {
+  for (const [id, source, level, linkInTheSvg] of OTHER_DIAGRAMS_WITH_A_LINK) {
     const svg = await render(page, `shim-${id}`, source, level);
     expect(svg, id).toContain('aria-roledescription');
+    expect(svg.includes(LINK), id).toBe(linkInTheSvg);
   }
 });
 
