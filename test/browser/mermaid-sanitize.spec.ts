@@ -1,4 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
+import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from '../../src/markdown-engine/mermaid-polyfill';
 import { build } from 'esbuild';
 import * as path from 'path';
 import { startServer, TestServer } from './server';
@@ -35,6 +36,13 @@ async function open(
   securityLevel: 'strict' | 'loose' = 'strict',
 ): Promise<void> {
   await page.goto(server.url);
+  // As the preview loads them: the shim, then the bundle.
+  await page.addScriptTag({
+    content: MERMAID_LEGACY_WEBVIEW_POLYFILL.replace(/^<script>/, '').replace(
+      /<\/script>$/,
+      '',
+    ),
+  });
   await page.addScriptTag({ url: `${server.url}/mermaid/mermaid.min.js` });
   const { outputFiles } = await build({
     entryPoints: [path.resolve(__dirname, '../../src/webview/lib/mermaid.ts')],
