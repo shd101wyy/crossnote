@@ -151,9 +151,12 @@ describe('vendored mermaid bundle', () => {
 
   test('the polyfill defines URL.canParse per spec', () => {
     // What mermaid's URL sanitizer asks of it for every http(s) link: whether
-    // new URL(url, base) succeeds.
+    // new URL(url, base) succeeds. The body defines Object.groupBy too
+    // where it is missing, as on Node 18, so that is put back as well.
     const url = URL as unknown as { canParse?: unknown };
+    const objectWithGroupBy = Object as unknown as { groupBy?: unknown };
     const saved = url.canParse;
+    const savedGroupBy = objectWithGroupBy.groupBy;
     delete url.canParse;
     try {
       new Function(polyfillBody)();
@@ -172,6 +175,11 @@ describe('vendored mermaid bundle', () => {
         delete url.canParse;
       } else {
         url.canParse = saved;
+      }
+      if (savedGroupBy === undefined) {
+        delete objectWithGroupBy.groupBy;
+      } else {
+        objectWithGroupBy.groupBy = savedGroupBy;
       }
     }
   });

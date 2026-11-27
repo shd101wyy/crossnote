@@ -480,9 +480,8 @@ export class MarkdownEngine {
     scripts += `<script>var exports = undefined</script>`;
 
     // mermaid
-    // The polyfill must precede the bundle: mermaid ≥ 12.1 calls
-    // Object.groupBy, which the oldest supported webview lacks (see
-    // ./mermaid-polyfill.ts).
+    // The shim must precede the bundle: mermaid calls globals that the
+    // oldest supported webview lacks (see ./mermaid-polyfill.ts).
     scripts += MERMAID_LEGACY_WEBVIEW_POLYFILL;
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
@@ -1343,9 +1342,9 @@ window["initRevealPresentation"] = async function() {
     let mermaidScript = '';
     let mermaidInitScript = '';
     if (html.indexOf(' class="mermaid') >= 0) {
-      // The polyfill must precede the bundle in both offline and CDN
-      // modes: mermaid ≥ 12.1 calls Object.groupBy, which the oldest
-      // supported webview lacks (see ./mermaid-polyfill.ts).
+      // The shim must precede the bundle in both offline and CDN modes:
+      // mermaid calls globals that the oldest supported webview lacks
+      // (see ./mermaid-polyfill.ts).
       mermaidScript = MERMAID_LEGACY_WEBVIEW_POLYFILL;
       if (options.offline) {
         mermaidScript += await offlineScript(
