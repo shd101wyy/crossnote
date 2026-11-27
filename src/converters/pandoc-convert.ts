@@ -443,6 +443,15 @@ export async function pandocConvert(
     );
   }
 
+  // A `<!-- slide -->` is a hint for the presentation in the preview and in
+  // the HTML export. A document pandoc writes has no slides: the marker of a
+  // slide is taken out, with the rest of its line, as if the comment was not
+  // there (crossnote#591).
+  text = text.replace(
+    /<p><span>\[CROSSNOTESLIDE:\d+\]<\/span><\/p>[ \t]*\n?/g,
+    '',
+  );
+
   // change link path to relative path
   text = processPaths(text, fileDirectoryPath, projectDirectoryPath);
 
