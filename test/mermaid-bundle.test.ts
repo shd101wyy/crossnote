@@ -11,8 +11,8 @@ import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from '../src/markdown-engine/mermaid-
  */
 
 /**
- * Chromium-116+ APIs that the oldest supported webview (VS Code 1.82 /
- * Electron 25 / Chromium 114) lacks. An API the bundle uses must not
+ * APIs newer than the oldest supported webview (VS Code 1.82 / Electron
+ * 25 / Chromium 114). An API the bundle uses must not
  * appear here as a violation unless MERMAID_LEGACY_WEBVIEW_POLYFILL
  * literally contains its defining assignment (`defines`) — so an API can
  * only be exempted by shipping a shim that defines it, and removing the
@@ -35,6 +35,11 @@ const FLOOR_APIS: FloorApi[] = [
   },
   { label: 'Map.groupBy', usage: /Map\.groupBy/ },
   { label: 'Array.fromAsync', usage: /Array\.fromAsync/ },
+  {
+    label: 'URL.canParse',
+    usage: /URL\.canParse/,
+    defines: /URL\.canParse\s*=/,
+  },
 ];
 
 describe('vendored mermaid bundle', () => {
@@ -140,6 +145,41 @@ describe('vendored mermaid bundle', () => {
         delete objectWithGroupBy.groupBy;
       } else {
         objectWithGroupBy.groupBy = saved;
+      }
+    }
+  });
+
+  test('the polyfill defines URL.canParse per spec', () => {
+    // What mermaid's URL sanitizer asks of it for every http(s) link: whether
+    // new URL(url, base) succeeds. The body defines Object.groupBy too
+    // where it is missing, as on Node 18, so that is put back as well.
+    const url = URL as unknown as { canParse?: unknown };
+    const objectWithGroupBy = Object as unknown as { groupBy?: unknown };
+    const saved = url.canParse;
+    const savedGroupBy = objectWithGroupBy.groupBy;
+    delete url.canParse;
+    try {
+      new Function(polyfillBody)();
+      const canParse = url.canParse as (
+        url: unknown,
+        base?: unknown,
+      ) => boolean;
+      expect(canParse('https://example.com/a')).toBe(true);
+      expect(canParse('/a')).toBe(false);
+      expect(canParse('/a', 'https://example.com/')).toBe(true);
+      expect(canParse('https://example.com/a', 'not a base')).toBe(false);
+      expect(canParse('')).toBe(false);
+      expect(canParse(123)).toBe(false);
+    } finally {
+      if (saved === undefined) {
+        delete url.canParse;
+      } else {
+        url.canParse = saved;
+      }
+      if (savedGroupBy === undefined) {
+        delete objectWithGroupBy.groupBy;
+      } else {
+        objectWithGroupBy.groupBy = savedGroupBy;
       }
     }
   });
