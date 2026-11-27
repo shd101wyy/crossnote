@@ -646,8 +646,8 @@ export interface NotebookConfig {
   /**
    * Whether the context menu of the preview fades in and out.
    *
-   * When disabled, the menu opens and closes at once, as the menus of VS
-   * Code do.
+   * When disabled, the menu does not fade: it opens at once, and Escape or a
+   * click outside closes it at once, as the menus of VS Code do.
    *
    * @default `true`
    */

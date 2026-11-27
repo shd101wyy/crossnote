@@ -1,3 +1,4 @@
+import * as os from 'os';
 import * as path from 'path';
 import { expect, Page, test } from '@playwright/test';
 import { escape } from 'html-escaper';
@@ -29,8 +30,9 @@ test.beforeAll(async () => {
     format: 'iife',
     platform: 'browser',
     loader: { '.svg': 'dataurl' },
-    // The menu's stylesheet comes out next to the script; neither is written.
-    outdir: path.join(__dirname, '.context-menu-harness'),
+    // The menu's stylesheet comes out next to the script. Nothing is
+    // written, and the folder is outside the repository should that change.
+    outdir: path.join(os.tmpdir(), 'crossnote-context-menu-harness'),
     write: false,
   });
   harnessJs =
