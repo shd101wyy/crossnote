@@ -50,10 +50,6 @@ test.afterAll(async () => {
 const menuClasses = (page: Page) =>
   page.evaluate(() => (window as unknown as MenuWindow).__menuClasses);
 
-/** The classes of an enter or a leave animation among them. */
-const animationClasses = (classes: string[]) =>
-  classes.filter((name) => /contexify_will(Enter|Leave)/.test(name));
-
 /**
  * Open a page with the menu and right-click the preview, until the menu is
  * shown. The class of its enter animation is gone when the animation is
@@ -150,7 +146,9 @@ test('the menu opens and closes at once when its animation is off', async ({
   const menu = await openMenu(page, false);
 
   // No animation was put on the menu, and none runs.
-  expect(animationClasses(await menuClasses(page))).toEqual([]);
+  expect(await menuClasses(page)).toEqual([
+    'contexify native-vscode-menu contexify-no-animation',
+  ]);
   expect(
     await menu.evaluate((element) => getComputedStyle(element).animationName),
   ).toBe('none');
@@ -158,12 +156,39 @@ test('the menu opens and closes at once when its animation is off', async ({
   // It closes without waiting for an animation that will not come.
   await page.keyboard.press('Escape');
   await menu.waitFor({ state: 'detached' });
-  expect(animationClasses(await menuClasses(page))).toEqual([]);
+  expect(await menuClasses(page)).toEqual([
+    'contexify native-vscode-menu contexify-no-animation',
+  ]);
+});
+
+test('a submenu opens without a transition when the animation is off', async ({
+  page,
+}) => {
+  await openMenu(page, false);
+  // The submenus of the menu, closed: what a hover would fade in.
+  const durations = await page.evaluate(() =>
+    [...document.querySelectorAll('.contexify_submenu')].map((submenu) =>
+      getComputedStyle(submenu).transitionDuration.split(', ').join(','),
+    ),
+  );
+  expect(durations.length).toBeGreaterThan(0);
+  expect(new Set(durations)).toEqual(new Set(['0s']));
 });
 
 test('the menu fades again when the option is on', async ({ page }) => {
   await openMenu(page, true);
-  expect((await menuClasses(page)).join(' ')).toContain(
-    'contexify_willEnter-fade',
+  const classes = (await menuClasses(page)).join(' ');
+  expect(classes).toContain('contexify_willEnter-fade');
+  expect(classes).not.toContain('contexify-no-animation');
+});
+
+test('a submenu fades in by default', async ({ page }) => {
+  await openMenu(page, undefined);
+  const durations = await page.evaluate(() =>
+    [...document.querySelectorAll('.contexify_submenu')].map((submenu) =>
+      getComputedStyle(submenu).transitionDuration.split(', ').join(','),
+    ),
   );
+  expect(durations.length).toBeGreaterThan(0);
+  expect(new Set(durations)).toEqual(new Set(['0.265s']));
 });

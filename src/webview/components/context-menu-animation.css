@@ -1,0 +1,12 @@
+/*
+ * `enablePreviewContextMenuAnimation` turns the fade of the menu off through
+ * the library's `animation` prop. A submenu is faded in by a CSS transition
+ * of the library's own, which that prop does not reach: it is turned off here.
+ *
+ * The brief highlight the library gives an item that is clicked stays. The
+ * library closes the menu when that animation ends, so it cannot be taken out
+ * without leaving the menu open after every click.
+ */
+.contexify.contexify-no-animation .contexify_submenu {
+  transition: none;
+}

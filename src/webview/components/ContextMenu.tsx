@@ -29,6 +29,7 @@ import {
   Submenu,
 } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
+import './context-menu-animation.css';
 import './context-menu-vscode.css';
 import PreviewContainer from '../containers/preview';
 import { t } from '../lib/i18n';
@@ -305,6 +306,7 @@ export default function ContextMenu() {
   const useNativeMenu =
     (isVSCode || isVSCodeWebExtension) &&
     config.useVSCodeThemeForContextMenu !== false;
+  const animateMenu = config.enablePreviewContextMenuAnimation !== false;
 
   const openInPreviewEditor = useCallback(() => {
     // The editor component is intentionally not rendered in zen mode. Keep
@@ -367,13 +369,15 @@ export default function ContextMenu() {
       <Menu
         id={contextMenuId}
         // The library fades the menu in and out unless told otherwise.
-        animation={
-          config.enablePreviewContextMenuAnimation === false ? false : undefined
-        }
+        animation={animateMenu ? undefined : false}
         theme={
           useNativeMenu ? undefined : theme === 'dark' ? 'dark' : undefined
         }
-        className={useNativeMenu ? 'native-vscode-menu' : undefined}
+        className={classNames({
+          'native-vscode-menu': useNativeMenu,
+          // A submenu is faded in by a transition of the library's own.
+          'contexify-no-animation': !animateMenu,
+        })}
       >
         {selectedText && (
           <>
