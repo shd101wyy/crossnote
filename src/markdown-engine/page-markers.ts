@@ -6,13 +6,15 @@
  * One that is not in a paragraph of its own has to start the line.
  *
  * The `<p...>` alternative cannot contain `<`: a page of many `<p` with no
- * `>` is then scanned in linear time (crossnote#588).
+ * `>` is then scanned in linear time. A marker that starts a line has only
+ * spaces and tabs before it on that line (`^[ \t]*`), so a page of many
+ * line breaks is scanned in linear time too (crossnote#588).
  */
 
 export function slideMarkerRegExp(): RegExp {
-  return /(?:<p[^><]*>|^\s*)<span>\[CROSSNOTESLIDE(?::(\d+))?\]<\/span>(?:<\/p>)?\s*/gm;
+  return /(?:<p[^><]*>|^[ \t]*)<span>\[CROSSNOTESLIDE(?::(\d+))?\]<\/span>(?:<\/p>)?\s*/gm;
 }
 
 export function tocMarkerRegExp(): RegExp {
-  return /(?:<p[^><]*>|^\s*)<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm;
+  return /(?:<p[^><]*>|^[ \t]*)<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm;
 }

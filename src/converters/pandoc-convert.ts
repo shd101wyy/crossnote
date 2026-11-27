@@ -441,7 +441,7 @@ export async function pandocConvert(
       tab: '  ',
     });
     text = text.replace(
-      /^\s*(?:<p[^>]*>)?<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
+      /^[ \t]*(?:<p[^><]*>)?<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
       '\n\n' + tocMarkdown + '\n\n',
     );
   }

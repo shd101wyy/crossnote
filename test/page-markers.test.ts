@@ -178,4 +178,25 @@ let a = 1;
     expect(matches).toHaveLength(1);
     expect(ms).toBeLessThan(SCAN_BOUND_MS);
   }, 20_000);
+
+  /**
+   * A page of many line breaks: at every line start the old `^\s*`
+   * alternative scanned on through all the following line breaks to the
+   * end of the page before `<span>` failed, which is quadratic (crossnote#588).
+   */
+  test('a page of many line breaks is scanned quickly', () => {
+    const html = '\n'.repeat(80_000);
+    const { ms, matches } = scan(html, slideMarkerRegExp);
+
+    expect(matches).toHaveLength(0);
+    expect(ms).toBeLessThan(SCAN_BOUND_MS);
+  }, 20_000);
+
+  test('a page of many spaced line breaks is scanned quickly', () => {
+    const html = '\n '.repeat(40_000);
+    const { ms, matches } = scan(html, tocMarkerRegExp);
+
+    expect(matches).toHaveLength(0);
+    expect(ms).toBeLessThan(SCAN_BOUND_MS);
+  }, 20_000);
 });
