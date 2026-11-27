@@ -947,7 +947,16 @@ export async function transformMarkdown(
       const wikilinkImportMatch = line.match(
         /^(\s*)!\[\[(.+?)\]\](?:{([^}]*)})?\s*$/,
       );
-      if (importMatch || imageImportMatch || wikilinkImportMatch) {
+      // A CommonMark indented code block (4 spaces or a tab) is not an
+      // import: rewriting it to `![@embedding](...)` is what the preview
+      // then shows as the code (crossnote#594). 1–3 leading spaces stay
+      // imports. Pandoc still inlines the file: a 4-space indent is not a
+      // code block on that path.
+      const indentedCodeBlock = !usePandocParser && /^(?:\t| {4,})/.test(line);
+      if (
+        !indentedCodeBlock &&
+        (importMatch || imageImportMatch || wikilinkImportMatch)
+      ) {
         let filePath = '';
 
         // Extract #fragment from the original import path before
