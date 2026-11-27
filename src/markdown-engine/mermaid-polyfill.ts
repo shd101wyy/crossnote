@@ -4,7 +4,7 @@
  * where it does not exist.
  *
  * `URL.canParse` (Chromium 120) is the one every diagram with a link meets.
- * Since mermaid 12.0.0 its URL sanitizer calls it for every `http(s)` link:
+ * Since mermaid 11.0 its URL sanitizer calls it for every `http(s)` link:
  * a `click` with a link on a flowchart, a class diagram or a gantt at
  * `securityLevel: 'strict'` (mermaid's default), and `links` in a sequence
  * diagram at any level, throw `TypeError: URL.canParse is not a function`,
