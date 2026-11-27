@@ -2620,10 +2620,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     // calibre 6.19+ adds no local file outside the folder of the page it is
-    // given: the page is written next to the note, so that the images of
-    // the notebook (and those downloaded above) are in the book.
+    // given: the page is written at the root of the notebook, so that the
+    // images of the notebook (and those downloaded above) are in the book.
     const pagePath = path.resolve(
-      this.fileDirectoryPath,
+      this.projectDirectoryPath.fsPath,
       `${path.basename(this.filePath, extname)}.${Math.random()
         .toString(36)
         .substr(2, 9)}.crossnote-ebook.html`,
