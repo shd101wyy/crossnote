@@ -644,6 +644,17 @@ export interface NotebookConfig {
   enablePreviewContextMenu: boolean;
 
   /**
+   * Whether the context menu of the preview fades in and out.
+   *
+   * When disabled, neither the menu nor its submenus fade: the menu opens at
+   * once, and Escape or a click outside closes it at once, as the menus of VS
+   * Code do.
+   *
+   * @default `true`
+   */
+  enablePreviewContextMenuAnimation: boolean;
+
+  /**
    * Whether to always show backlinks in preview.
    */
   alwaysShowBacklinksInPreview: boolean;
@@ -786,6 +797,7 @@ export function getDefaultNotebookConfig(): NotebookConfig {
     maxNoteFileSize: 5 * 1024 * 1024,
     useVSCodeThemeForContextMenu: false,
     enablePreviewContextMenu: true,
+    enablePreviewContextMenuAnimation: true,
   };
 }
 
