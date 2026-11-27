@@ -103,17 +103,21 @@ test('a flowchart with a click link to the web is drawn where URL.canParse is mi
   expect(svg).toContain(LINK);
 });
 
-test('through the shim, a script link is still refused', async ({ page }) => {
+test('a link that is not a URL is left out through the shim, and the diagram is drawn', async ({
+  page,
+}) => {
   await openWithMermaid(page);
+  // Asked of `URL.canParse`, answered with `false`: what is left of the
+  // link is the sanitizer's decision, not the shim's.
   const svg = await render(
     page,
-    'shim-script',
+    'shim-not-a-url',
     `flowchart LR
   A[Start]
-  click A "javascript:alert(1)"`,
+  click A "https://exa mple.com" "tooltip"`,
   );
   expect(svg).toContain('aria-roledescription="flowchart-v2"');
-  expect(svg).not.toContain('javascript:');
+  expect(svg).not.toContain('exa mple.com');
 });
 
 // Every other place mermaid asks its URL sanitizer about an http(s) link:
