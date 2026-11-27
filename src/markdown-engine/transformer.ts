@@ -397,6 +397,24 @@ export async function transformMarkdown(
   ): Promise<TransformMarkdownOutput> {
     let outputString = '';
 
+    // Lines the output has beyond the lines of the note. Every line of the
+    // note is a line of the output, but for an import that is written out as
+    // what it imports (under the pandoc parser: a markdown, an html or a csv
+    // file, a code file as a fenced block), which takes as many lines as the
+    // imported file has. The lines of the note after it start lower in the
+    // output than their numbers say: `[lineNo, lines]` for each such import,
+    // in the order of the note (crossnote#593).
+    const extraLinesOfImports: Array<[number, number]> = [];
+
+    /** Write what the import on line `lineNo` of the note has become. */
+    const writeImport = (lineNo: number, output: string) => {
+      const lines = (output.match(/\n/g) ?? []).length;
+      if (lines > 0) {
+        extraLinesOfImports.push([lineNo + 1, lines]);
+      }
+      outputString = outputString + output + '\n';
+    };
+
     function getLine(i: number) {
       let end = inputString.indexOf('\n', i);
       if (end < 0) {
@@ -1131,8 +1149,8 @@ export async function transformMarkdown(
             })${configStr ? `{${configStr}}` : ''}${imageImportMatch[5]}`;
           }
           i = end + 1;
+          writeImport(lineNo, output);
           lineNo = lineNo + 1;
-          outputString = outputString + output + '\n';
           continue;
         } else {
           try {
@@ -1369,9 +1387,8 @@ export async function transformMarkdown(
             }
 
             i = end + 1;
-            lineNo = lineNo + 1;
             if (usePandocParser) {
-              outputString = outputString + output + '\n';
+              writeImport(lineNo, output);
             } else {
               outputString =
                 outputString +
@@ -1383,6 +1400,7 @@ export async function transformMarkdown(
                 })}}` +
                 '\n';
             }
+            lineNo = lineNo + 1;
             continue;
           } catch (error) {
             output = `<pre class="language-text"><code>${escape(
@@ -1390,9 +1408,8 @@ export async function transformMarkdown(
             )}</code></pre>  `;
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
-            lineNo = lineNo + 1;
             if (usePandocParser) {
-              outputString = outputString + output + '\n';
+              writeImport(lineNo, output);
             } else {
               outputString =
                 outputString +
@@ -1404,6 +1421,7 @@ export async function transformMarkdown(
                 })}}` +
                 '\n';
             }
+            lineNo = lineNo + 1;
             continue;
           }
         }
@@ -1554,13 +1572,28 @@ export async function transformMarkdown(
       } catch {
         // Leave as-is on malformed encoding.
       }
+      /**
+       * The line of the output that line `lineNo` of the note starts at, both
+       * counted from 1: the line itself, and the lines the imports before it
+       * added.
+       */
+      const outputLineOf = (lineNo: number): number => {
+        let extra = 0;
+        for (const [importLineNo, lines] of extraLinesOfImports) {
+          if (importLineNo >= lineNo) {
+            break;
+          }
+          extra += lines;
+        }
+        return lineNo + extra;
+      };
+
       if (targetId && targetId.startsWith('^')) {
         // Block-ID transclusion (`#^block-id`): emit only the paragraph
         // (contiguous non-blank lines) containing the `^id` marker.
         const lineIdx = findFragmentTargetLine(inputString, targetId);
         if (lineIdx >= 0) {
           const sourceLines = inputString.split('\n');
-          const outputLines = outputString.split('\n');
           let startIdx = lineIdx;
           while (startIdx > 0 && sourceLines[startIdx - 1].trim() !== '') {
             startIdx--;
@@ -1572,8 +1605,15 @@ export async function transformMarkdown(
           ) {
             endIdx++;
           }
-          const paragraph = outputLines.slice(startIdx, endIdx + 1);
-          const relIdx = lineIdx - startIdx;
+          // Of the output: from where the first line of the paragraph starts
+          // to where the line after its last one does.
+          const paragraph = outputString
+            .split('\n')
+            .slice(
+              outputLineOf(startIdx + 1) - 1,
+              outputLineOf(endIdx + 2) - 1,
+            );
+          const relIdx = outputLineOf(lineIdx + 1) - outputLineOf(startIdx + 1);
           if (relIdx >= 0 && relIdx < paragraph.length) {
             paragraph[relIdx] = paragraph[relIdx].replace(
               /\s\^[a-zA-Z0-9_-]+\s*$/,
@@ -1623,14 +1663,14 @@ export async function transformMarkdown(
             const endLineNo = endHeading.lineNo as number;
             outputString = outputString
               .split('\n')
-              .slice(startLineNo - 1, endLineNo - 1)
+              .slice(outputLineOf(startLineNo) - 1, outputLineOf(endLineNo) - 1)
               .join('\n');
             keepSlideConfigsOfLines(startLineNo, endLineNo);
           } else {
             headings = headings.slice(startHeadingIndex);
             outputString = outputString
               .split('\n')
-              .slice(startLineNo - 1)
+              .slice(outputLineOf(startLineNo) - 1)
               .join('\n');
             keepSlideConfigsOfLines(startLineNo, Infinity);
           }
