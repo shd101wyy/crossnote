@@ -189,7 +189,7 @@ describe('renderMermaidDiagram', () => {
     const { mermaid } = mermaidRendering(async () => ({
       svg:
         '<svg id="mermaid-1" viewBox="0 0 10 10">' +
-        '<a href="javascript:alert(1)" rel="noopener" target="_blank">' +
+        '<a xlink:href="javascript:alert(1)" rel="noopener" target="_blank">' +
         '<g class="node" onclick="alert(1)"><rect></rect>' +
         '<foreignObject width="10" height="10">' +
         '<div xmlns="http://www.w3.org/1999/xhtml" style="display: table;">' +

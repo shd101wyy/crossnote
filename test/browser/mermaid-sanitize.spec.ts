@@ -55,6 +55,7 @@ async function open(
   await page.evaluate((securityLevel) => {
     (window as unknown as PageGlobals).mermaid.initialize({
       startOnLoad: false,
+      cloneCssStyles: false,
       securityLevel,
     });
   }, securityLevel);
@@ -62,9 +63,14 @@ async function open(
 
 /**
  * Draw `code` through the helper into a node of the page, as the preview
- * does, and return the SVG it wrote there.
+ * does: what the helper returned — which the preview keeps to write it again
+ * — and what it wrote into the page.
  */
-function drawn(page: Page, id: string, code: string): Promise<string> {
+function drawn(
+  page: Page,
+  id: string,
+  code: string,
+): Promise<{ svg: string; html: string }> {
   return page.evaluate(
     async ({ id, code }) => {
       const node = document.createElement('div');
@@ -78,11 +84,17 @@ function drawn(page: Page, id: string, code: string): Promise<string> {
         code,
         id,
       );
+      const html = node.innerHTML;
       node.remove();
-      return svg ?? '';
+      return { svg: svg ?? '', html };
     },
     { id, code },
   );
+}
+
+/** The page and the kept copy of one drawing, looked at alike. */
+function eachCopy({ svg, html }: { svg: string; html: string }): string[] {
+  return [svg, html];
 }
 
 const LABELS = `flowchart LR
@@ -92,30 +104,38 @@ test('at the default security level a diagram keeps its labels and its links', a
   page,
 }) => {
   await open(page);
-  const svg = await drawn(
-    page,
-    'clean-strict',
-    `${LABELS}
+  const copies = eachCopy(
+    await drawn(
+      page,
+      'clean-strict',
+      `${LABELS}
   click B "https://example.com/a" "tooltip"`,
+    ),
   );
-  expect(svg).toContain('<foreignObject');
-  expect(svg).toContain('<b>End</b>');
-  expect(svg).toContain('href="https://example.com/a"');
+  for (const svg of copies) {
+    expect(svg).toContain('<foreignObject');
+    expect(svg).toContain('<b>End</b>');
+    expect(svg).toContain('https://example.com/a');
+  }
 });
 
 test('a `click` with a javascript: address is written into the page without it at `loose`', async ({
   page,
 }) => {
   await open(page, 'loose');
-  const svg = await drawn(
-    page,
-    'clean-loose',
-    `${LABELS}
+  const copies = eachCopy(
+    await drawn(
+      page,
+      'clean-loose',
+      `${LABELS}
   click B "javascript:alert(1)"`,
+    ),
   );
   // The diagram is whole; the address is gone.
-  expect(svg).toContain('<b>End</b>');
-  expect(svg).not.toContain('javascript:');
+  for (const svg of copies) {
+    expect(svg).toContain('<b>End</b>');
+    expect(svg).not.toMatch(/javascript:/);
+  }
 });
 
 for (const securityLevel of ['strict', 'loose'] as const) {
@@ -123,13 +143,17 @@ for (const securityLevel of ['strict', 'loose'] as const) {
     page,
   }) => {
     await open(page, securityLevel);
-    const svg = await drawn(
-      page,
-      `handler-${securityLevel}`,
-      `flowchart LR
+    const copies = eachCopy(
+      await drawn(
+        page,
+        `handler-${securityLevel}`,
+        `flowchart LR
   A["<img src=x onerror=alert(1)> <b>End</b>"]`,
+      ),
     );
-    expect(svg).toContain('<b>End</b>');
-    expect(svg).not.toMatch(/onerror|<script/);
+    for (const svg of copies) {
+      expect(svg).toContain('<b>End</b>');
+      expect(svg).not.toMatch(/onerror|<script/);
+    }
   });
 }
