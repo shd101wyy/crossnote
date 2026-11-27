@@ -556,8 +556,8 @@ for (const scheme of ['light', 'dark'] as const) {
       // user's wherever that is written (crossnote#603: on `:root`, it won).
       const errors = errorsOf(page);
       await openWithPele(page);
-      await page.addStyleTag({ content: stylesheet });
       // Global CSS comes after the stylesheet, as the user's does.
+      await page.addStyleTag({ content: stylesheet });
       await page.addStyleTag({
         content: `${rule} { --pele-fg: ${USER_RED}; --pele-surface: ${USER_BLUE}; }`,
       });
@@ -580,6 +580,27 @@ for (const scheme of ['light', 'dark'] as const) {
     });
   }
 }
+
+test('a variable that global CSS sets before the stylesheet restyles a diagram on a dark page too', async ({
+  page,
+}) => {
+  // Global CSS can come before the stylesheet: an @import of the user's is
+  // put first, and so is a preview theme.
+  const errors = errorsOf(page);
+  await openWithPele(page);
+  await page.addStyleTag({ content: `html { --pele-fg: ${USER_RED}; }` });
+  await page.addStyleTag({ content: stylesheet });
+  await page.evaluate(() =>
+    document.body.setAttribute('data-preview-theme', 'dark'),
+  );
+
+  const container = await drawIn(page, blocksOf([FLOWCHART.source]), 'preview');
+  expect(await readColors(page, container)).toMatchObject({
+    scheme: 'dark',
+    label: USER_RED,
+  });
+  expect(errors).toEqual([]);
+});
 
 test('a diagram whose font cannot be read shows its error, and the others are drawn', async ({
   page,
