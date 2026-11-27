@@ -544,6 +544,90 @@ test('a diagram takes its colors from the scheme of its page, and changes with i
   expect(errors).toEqual([]);
 });
 
+const USER_RED = 'rgb(255, 0, 0)';
+const USER_BLUE = 'rgb(0, 0, 255)';
+
+for (const scheme of ['light', 'dark'] as const) {
+  for (const rule of [':root', 'html', 'body', '.pele']) {
+    test(`a variable that global CSS sets on \`${rule}\` restyles a diagram on a ${scheme} page`, async ({
+      page,
+    }) => {
+      // The dark palette is declared so that it loses to a rule of the
+      // user's wherever that is written (crossnote#603: on `:root`, it won).
+      const errors = errorsOf(page);
+      await openWithPele(page);
+      await page.addStyleTag({ content: stylesheet });
+      // Global CSS comes after the stylesheet, as the user's does.
+      await page.addStyleTag({
+        content: `${rule} { --pele-fg: ${USER_RED}; --pele-surface: ${USER_BLUE}; }`,
+      });
+      await page.evaluate(
+        (scheme) => document.body.setAttribute('data-preview-theme', scheme),
+        scheme,
+      );
+
+      const container = await drawIn(
+        page,
+        blocksOf([FLOWCHART.source]),
+        'preview',
+      );
+      expect(await readColors(page, container)).toEqual({
+        scheme,
+        label: USER_RED,
+        node: USER_BLUE,
+      });
+      expect(errors).toEqual([]);
+    });
+  }
+}
+
+test('a diagram whose font cannot be read shows its error, and the others are drawn', async ({
+  page,
+}) => {
+  // The node is marked drawn before its font is read: an error there has to
+  // take the place of the diagram, as the error of a drawing does, and must
+  // not end the script with the diagram left as its source.
+  const errors = errorsOf(page);
+  await openWithPele(page);
+  // Only the first diagram's cannot; the page's own reads — of the color the
+  // page is painted with — still work.
+  await page.evaluate(() => {
+    const getComputedStyleOf = window.getComputedStyle.bind(window);
+    let first = true;
+    window.getComputedStyle = (element: Element) => {
+      if (first && element.classList.contains('pele')) {
+        first = false;
+        throw new Error('no style');
+      }
+      return getComputedStyleOf(element);
+    };
+  });
+
+  const container = await drawIn(
+    page,
+    blocksOf([SEQUENCE.source, FLOWCHART.source]),
+    'export',
+  );
+  const diagrams = await page.evaluate((container) => {
+    return Array.from(
+      document.querySelector(container)!.querySelectorAll('div.pele'),
+    ).map((node) => ({
+      drawn: !!node.querySelector('svg.pele'),
+      error: node.querySelector('pre code')?.textContent ?? null,
+    }));
+  }, container);
+  expect(diagrams).toEqual([
+    { drawn: false, error: 'Error: no style' },
+    { drawn: true, error: null },
+  ]);
+  expect(
+    await page.evaluate(
+      () => (window as unknown as PeleWindow).__crossnotePeleExport,
+    ),
+  ).toEqual({ status: 'complete' });
+  expect(errors).toEqual([]);
+});
+
 test('an exported document that paints neither <body> nor <html> is a light page', async ({
   page,
 }) => {

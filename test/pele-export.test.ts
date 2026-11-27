@@ -274,7 +274,9 @@ describe('the script that draws the diagrams of an exported document', () => {
       path.resolve(__dirname, '../styles/style-template.less'),
       'utf8',
     );
-    expect(stylesheet).toContain("[data-preview-theme='dark'] .pele {");
+    expect(stylesheet).toContain(
+      "html:where(:has(body[data-preview-theme='dark'])) {",
+    );
     expect(schemeOf('rgb(36, 41, 46)', 'rgba(0, 0, 0, 0)').scheme).toBe('dark');
     expect(schemeOf('rgb(255, 255, 255)', 'rgba(0, 0, 0, 0)').scheme).toBe(
       'light',
