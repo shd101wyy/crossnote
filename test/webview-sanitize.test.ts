@@ -14,7 +14,7 @@ import DOMPurify from 'dompurify';
 // time, which resolves against this test file's jsdom environment — so the
 // tests exercise the actual shipped config instead of a copy that can drift
 // (a replicated ADD_TAGS once missed `use` and hid the WaveDrom regression).
-import { sanitizeHtml } from '../src/webview/lib/sanitize';
+import { sanitizeHtml, sanitizeMermaidSvg } from '../src/webview/lib/sanitize';
 
 /**
  * Normalize cosmetic differences that DOMPurify introduces but don't affect
@@ -255,5 +255,46 @@ describe('DOMPurify sanitizeHtml (client-side)', () => {
       expect(result).not.toContain('evil.com');
       expect(result).toContain('xlink:href="#skin"');
     });
+  });
+});
+
+describe('sanitizeMermaidSvg', () => {
+  // A diagram as Mermaid draws it: its labels are HTML inside <foreignObject>.
+  const svg =
+    '<svg id="mermaid-1" xmlns="http://www.w3.org/2000/svg" ' +
+    'xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10">' +
+    '<a xlink:href="https://example.com/a" rel="noopener" target="_blank">' +
+    '<g class="node"><foreignObject width="10" height="10">' +
+    '<div xmlns="http://www.w3.org/1999/xhtml" style="display: table;">' +
+    '<span class="nodeLabel"><p><b>Label</b></p></span>' +
+    '</div></foreignObject></g></a>' +
+    '<g onclick="alert(1)"><a xlink:href="javascript:alert(1)">' +
+    '<foreignObject><div><p><img src="x" onerror="alert(1)">' +
+    '<script>alert(1)</script></p></div></foreignObject>' +
+    '</a></g></svg>';
+
+  it('keeps the labels, which are HTML inside <foreignObject>', () => {
+    const result = sanitizeMermaidSvg(svg);
+    expect(result).toContain('<foreignObject');
+    expect(result).toContain('<b>Label</b>');
+    expect(result).toContain('https://example.com/a');
+  });
+
+  it('strips scripts, handlers and javascript: addresses as sanitizeHtml does', () => {
+    expect(sanitizeMermaidSvg(svg)).not.toMatch(
+      /onclick|onerror|<script|javascript:/,
+    );
+  });
+
+  it('is the same a second time: what is kept to be written again is clean', () => {
+    const once = sanitizeMermaidSvg(svg);
+    expect(sanitizeMermaidSvg(once)).toBe(once);
+  });
+
+  it('does not make sanitizeHtml keep <foreignObject>', () => {
+    // The configuration is given per call: the HTML of a note does not gain
+    // the element.
+    sanitizeMermaidSvg(svg);
+    expect(sanitizeHtml(svg)).not.toContain('foreignObject');
   });
 });

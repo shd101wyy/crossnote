@@ -1,4 +1,5 @@
 import { escape } from 'html-escaper';
+import { sanitizeMermaidSvg } from './sanitize';
 
 /** Give up on a diagram that mermaid has not rendered within this time. */
 export const MERMAID_RENDER_TIMEOUT_MS = 30_000;
@@ -239,7 +240,8 @@ export function createMermaidMeasureHost(
 /**
  * Render one parsed Mermaid diagram into `node`.
  *
- * @returns the rendered SVG, or `null` when it must not be used. Rendering
+ * @returns the rendered SVG, sanitized as any HTML written into the page
+ *          is, or `null` when it must not be used. Rendering
  *          failed or timed out, in which case the error is written into
  *          `node`. Or the diagram could not be measured in `node`: it was
  *          already out of the document before the call, or it was detached or
@@ -273,8 +275,12 @@ export async function renderMermaidDiagram(
     if (measure.inNode && !isRendered(node)) {
       return null;
     }
-    node.innerHTML = svg;
-    return svg;
+    // What is written into the page, and kept to be written again, goes
+    // through the sanitizer as any other HTML of the preview does: what
+    // Mermaid drew is content of the note.
+    const safeSvg = sanitizeMermaidSvg(svg);
+    node.innerHTML = safeSvg;
+    return safeSvg;
   } catch (error) {
     node.innerHTML = mermaidErrorHtml(error);
     return null;
