@@ -51,6 +51,17 @@ const menuClasses = (page: Page) =>
   page.evaluate(() => (window as unknown as MenuWindow).__menuClasses);
 
 /**
+ * How long the transition of each closed submenu of the menu takes: what a
+ * hover would fade in.
+ */
+const submenuTransitionDurations = (page: Page) =>
+  page.evaluate(() =>
+    [...document.querySelectorAll('.contexify_submenu')].map((submenu) =>
+      getComputedStyle(submenu).transitionDuration.split(', ').join(','),
+    ),
+  );
+
+/**
  * Open a page with the menu and right-click the preview, until the menu is
  * shown. The class of its enter animation is gone when the animation is
  * over, so every class the menu has is recorded from before the click.
@@ -165,12 +176,7 @@ test('a submenu opens without a transition when the animation is off', async ({
   page,
 }) => {
   await openMenu(page, false);
-  // The submenus of the menu, closed: what a hover would fade in.
-  const durations = await page.evaluate(() =>
-    [...document.querySelectorAll('.contexify_submenu')].map((submenu) =>
-      getComputedStyle(submenu).transitionDuration.split(', ').join(','),
-    ),
-  );
+  const durations = await submenuTransitionDurations(page);
   expect(durations.length).toBeGreaterThan(0);
   expect(new Set(durations)).toEqual(new Set(['0s']));
 });
@@ -184,11 +190,7 @@ test('the menu fades again when the option is on', async ({ page }) => {
 
 test('a submenu fades in by default', async ({ page }) => {
   await openMenu(page, undefined);
-  const durations = await page.evaluate(() =>
-    [...document.querySelectorAll('.contexify_submenu')].map((submenu) =>
-      getComputedStyle(submenu).transitionDuration.split(', ').join(','),
-    ),
-  );
+  const durations = await submenuTransitionDurations(page);
   expect(durations.length).toBeGreaterThan(0);
   expect(new Set(durations)).toEqual(new Set(['0.265s']));
 });
