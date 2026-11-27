@@ -275,7 +275,7 @@ describe('the script that draws the diagrams of an exported document', () => {
       'utf8',
     );
     expect(stylesheet).toContain(
-      ":where(html:has(body[data-preview-theme='dark'])) {",
+      ":where(html:has(> body[data-preview-theme='dark'])) {",
     );
     expect(schemeOf('rgb(36, 41, 46)', 'rgba(0, 0, 0, 0)').scheme).toBe('dark');
     expect(schemeOf('rgb(255, 255, 255)', 'rgba(0, 0, 0, 0)').scheme).toBe(

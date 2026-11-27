@@ -602,6 +602,55 @@ test('a variable that global CSS sets before the stylesheet restyles a diagram o
   expect(errors).toEqual([]);
 });
 
+test('drawing diagrams does not look at the style of the whole page for each', async ({
+  page,
+}) => {
+  // The palette is declared on <html> by a :has() on <body>, with the child
+  // combinator. With a descendant there, every change in the page has the
+  // root's :has looked at again, in a style recalculation that grows with the
+  // page — once per diagram, as its font is read. The cost shows in how long
+  // drawing takes on a page of many elements, stylesheet or none.
+  const errors = errorsOf(page);
+  /** How long drawing `count` diagrams takes on a page of many elements. */
+  const timeToDraw = async (css: string, count: number) => {
+    await openWithPele(page);
+    if (css) {
+      await page.addStyleTag({ content: css });
+    }
+    await page.evaluate(() =>
+      document.body.setAttribute('data-preview-theme', 'dark'),
+    );
+    return page.evaluate(
+      (blocks) => {
+        // A page of many elements, as a long note is.
+        const host = document.createElement('div');
+        host.innerHTML =
+          '<table><tr><td><span>x</span></td></tr></table>'.repeat(12000);
+        document.body.appendChild(host);
+        const draw = () => {
+          const container = document.createElement('div');
+          container.innerHTML = blocks;
+          document.body.appendChild(container);
+          const started = performance.now();
+          (window as unknown as PeleWindow).crossnotePele!.renderPeleDiagrams(
+            container,
+          );
+          return performance.now() - started;
+        };
+        // A first one, for the code to be warm.
+        draw();
+        return draw();
+      },
+      blocksOf(Array(count).fill(FLOWCHART.source)),
+    );
+  };
+
+  const withoutTheStylesheet = await timeToDraw('', 1000);
+  const withIt = await timeToDraw(stylesheet, 1000);
+  expect(withIt).toBeLessThan(withoutTheStylesheet * 3 + 100);
+  expect(errors).toEqual([]);
+});
+
 test('a diagram whose font cannot be read shows its error, and the others are drawn', async ({
   page,
 }) => {
