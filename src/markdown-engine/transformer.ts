@@ -397,20 +397,26 @@ export async function transformMarkdown(
   ): Promise<TransformMarkdownOutput> {
     let outputString = '';
 
-    // Lines the output has beyond the lines of the note. Every line of the
-    // note is a line of the output, but for an import that is written out as
-    // what it imports (under the pandoc parser: a markdown, an html or a csv
-    // file, a code file as a fenced block), which takes as many lines as the
-    // imported file has. The lines of the note after it start lower in the
-    // output than their numbers say: `[lineNo, lines]` for each such import,
-    // in the order of the note (crossnote#593).
-    const extraLinesOfImports: Array<[number, number]> = [];
+    // Lines the output has beyond the lines of the note. A line of the note
+    // is a line of the output, as a rule. A few are written as more than
+    // one: an import that is written out as what it imports (under the
+    // pandoc parser a markdown, an html or a csv file, and a code file as a
+    // fenced block), the opening marker of a `:::` div under the pandoc
+    // parser, and a slide comment of several lines that a markdown export
+    // keeps. The lines of the note after such a line start lower in the
+    // output than their numbers say: `[lineNo, lines beyond the first]` for
+    // each of them, in the order of the note (crossnote#593).
+    const extraLines: Array<[number, number]> = [];
 
-    /** Write what the import on line `lineNo` of the note has become. */
-    const writeImport = (lineNo: number, output: string) => {
+    /**
+     * Write what line `lineNo` of the note has become — `lineNo` as this
+     * loop counts it, from 0 — and remember the lines it took beyond the
+     * first.
+     */
+    const writeLine = (lineNo: number, output: string) => {
       const lines = (output.match(/\n/g) ?? []).length;
       if (lines > 0) {
-        extraLinesOfImports.push([lineNo + 1, lines]);
+        extraLines.push([lineNo + 1, lines]);
       }
       outputString = outputString + output + '\n';
     };
@@ -532,8 +538,8 @@ export async function transformMarkdown(
             colonFenceMarkerLen = colonMarker.length;
           }
           i = end + 1;
+          writeLine(lineNo, line);
           lineNo = lineNo + 1;
-          outputString = outputString + line + '\n';
           continue;
         } else if (
           (inColonCodeBlock || inColonHtmlDiv) &&
@@ -742,8 +748,8 @@ export async function transformMarkdown(
               slideConfigs.push(options);
               if (forMarkdownExport) {
                 i = commentEnd;
+                writeLine(lineNo, `<!-- ${content} -->`);
                 lineNo = lineNo + newlines;
-                outputString = outputString + `<!-- ${content} -->` + '\n';
                 continue;
               } else {
                 i = commentEnd;
@@ -1149,7 +1155,7 @@ export async function transformMarkdown(
             })${configStr ? `{${configStr}}` : ''}${imageImportMatch[5]}`;
           }
           i = end + 1;
-          writeImport(lineNo, output);
+          writeLine(lineNo, output);
           lineNo = lineNo + 1;
           continue;
         } else {
@@ -1388,7 +1394,7 @@ export async function transformMarkdown(
 
             i = end + 1;
             if (usePandocParser) {
-              writeImport(lineNo, output);
+              writeLine(lineNo, output);
             } else {
               outputString =
                 outputString +
@@ -1409,7 +1415,7 @@ export async function transformMarkdown(
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
             if (usePandocParser) {
-              writeImport(lineNo, output);
+              writeLine(lineNo, output);
             } else {
               outputString =
                 outputString +
@@ -1579,8 +1585,8 @@ export async function transformMarkdown(
        */
       const outputLineOf = (lineNo: number): number => {
         let extra = 0;
-        for (const [importLineNo, lines] of extraLinesOfImports) {
-          if (importLineNo >= lineNo) {
+        for (const [lineOfExtra, lines] of extraLines) {
+          if (lineOfExtra >= lineNo) {
             break;
           }
           extra += lines;

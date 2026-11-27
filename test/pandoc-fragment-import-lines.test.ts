@@ -1,7 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { mkdirSync, track } from '../src/lib/temp';
-import { transformMarkdown } from '../src/markdown-engine/transformer';
+import {
+  transformMarkdown,
+  TransformMarkdownOptions,
+} from '../src/markdown-engine/transformer';
 import { Notebook } from '../src/notebook';
 
 /**
@@ -62,6 +65,21 @@ describe('a fragment of a file that has an import over several lines above it', 
       'import-inside.md':
         '# Part A\n\n@import "x.html"\n\n## A.2\n\n# Part B\n',
       'mid.md': '@import "part.md#Part A"\n\n# Part M\n\n## M.2\n',
+      // No blank line between the import and the heading after it.
+      'import-then-heading.md':
+        '@import "x.html"\n# Part A\n\ntext\n\n# Part B\n\nafter\n',
+      'import-then-end-heading.md':
+        '# Part A\n\ntext\n@import "x.html"\n# Part B\n\nafter\n',
+      'div-above.md':
+        '::: note\n\ntext\n\n:::\n\n# Part A\n\ntext\n\n# Part B\n',
+      'div-inside.md': '# Part A\n\n::: note\n\ntext\n\n:::\n\n# Part B\n',
+      'slide-above.md':
+        '<!-- slide\nvertical=true -->\n\n# Part A\n\ntext\n\n# Part B\n',
+      'block-is-import.md': '@import "x.csv" ^id\n\nthird\n',
+      'block-ends-import.md': 'first ^id\n@import "x.csv"\n\nthird\n',
+      // The ^id stands on a line the transformer does not rewrite.
+      'block-with-fence.md':
+        '@import "x.csv"\n```\nfirst\nsecond ^id\n```\n\nthird\n',
     };
     IMPORTS.forEach(([, line], i) => {
       files[`above-${i}.md`] = `${line}\n\n# Part A\n\n## A.2\n`;
@@ -80,6 +98,7 @@ describe('a fragment of a file that has an import over several lines above it', 
   async function imported(
     markdown: string,
     markdownParser: 'markdown-it' | 'pandoc' = 'pandoc',
+    options: Partial<TransformMarkdownOptions> = {},
   ) {
     return transformMarkdown(markdown, {
       notebook: nb,
@@ -92,7 +111,55 @@ describe('a fragment of a file that has an import over several lines above it', 
       protocolsWhiteListRegExp: /^(https?)/,
       forJest: true,
       timestamp: 12345,
+      ...options,
     });
+  }
+
+  /** The lines of an output, without the spaces a line ends with. */
+  function linesOf(outputString: string): string[] {
+    return outputString.split('\n').map((line) => line.trimEnd());
+  }
+
+  function withoutTrailingEmptyLines(lines: string[]): string[] {
+    const rest = [...lines];
+    while (rest.length && rest[rest.length - 1] === '') {
+      rest.pop();
+    }
+    return rest;
+  }
+
+  /** The text an embedding carries, or the output itself when it is none. */
+  function contentOf(outputString: string): string {
+    const embedding = /\{embedding="([^"]+)"\}/.exec(outputString);
+    return embedding
+      ? decodeURIComponent(
+          Buffer.from(embedding[1], 'base64').toString('latin1'),
+        )
+      : outputString;
+  }
+
+  /**
+   * What an import of a fragment brought, line by line: not the empty first
+   * line the import starts with, the spaces a line ends with, nor the empty
+   * lines at the end.
+   */
+  function brought(outputString: string): string[] {
+    return withoutTrailingEmptyLines(linesOf(contentOf(outputString)).slice(1));
+  }
+
+  /**
+   * The lines that stand between two headings when the file is imported
+   * whole under the pandoc parser: what a section of it is.
+   */
+  async function sectionOfWholeFile(
+    file: string,
+    start: string,
+    end: string,
+  ): Promise<string[]> {
+    const whole = linesOf((await imported(`@import "${file}"`)).outputString);
+    return withoutTrailingEmptyLines(
+      whole.slice(whole.indexOf(start), whole.indexOf(end)),
+    );
   }
 
   describe.each(IMPORTS.map(([kind], i) => [kind, i] as const))(
@@ -220,19 +287,113 @@ describe('a fragment of a file that has an import over several lines above it', 
     ]);
   });
 
+  test.each([
+    [
+      'on the line right above the first heading of the section',
+      'import-then-heading.md',
+    ],
+    [
+      'on the line right above the heading that ends the section',
+      'import-then-end-heading.md',
+    ],
+  ])('an import %s is counted where it stands', async (_where, file) => {
+    const { outputString } = await imported(`@import "${file}#Part A"`);
+    expect(brought(outputString)).toEqual(
+      await sectionOfWholeFile(
+        file,
+        '# Part A {#part-a }',
+        '# Part B {#part-b }',
+      ),
+    );
+  });
+
+  test.each([
+    ['above the section', 'div-above.md'],
+    ['inside the section', 'div-inside.md'],
+  ])(
+    'a `:::` div opened %s takes the two lines it is written on',
+    async (_where, file) => {
+      // Under the pandoc parser the opening marker is a `<div>` and a blank
+      // line: one line of the file over two of the output.
+      const { outputString } = await imported(`@import "${file}#Part A"`);
+      expect(brought(outputString)).toEqual(
+        await sectionOfWholeFile(
+          file,
+          '# Part A {#part-a }',
+          '# Part B {#part-b }',
+        ),
+      );
+    },
+  );
+
+  test.each([['pandoc'], ['markdown-it']] as const)(
+    'a slide comment of several lines that a markdown export keeps is counted as its lines (%s)',
+    async (markdownParser) => {
+      // The comment is written as it is, over two lines; the heading after
+      // it keeps its own.
+      const { outputString } = await imported(
+        '@import "slide-above.md#Part A"',
+        markdownParser,
+        { forMarkdownExport: true },
+      );
+      expect(brought(outputString)).toEqual(['# Part A', '', 'text']);
+    },
+  );
+
+  test('a block whose line is an import takes the lines of the import', async () => {
+    const { outputString } = await imported('@import "block-is-import.md#^id"');
+    expect(brought(outputString)).toEqual([
+      '',
+      '|a|b|',
+      '|---|---|',
+      '|1|2|',
+      '|3|4|',
+    ]);
+  });
+
+  test('a block that ends with an import takes the lines of the import', async () => {
+    const { outputString } = await imported(
+      '@import "block-ends-import.md#^id"',
+    );
+    expect(brought(outputString)).toEqual([
+      'first <span id="id" class="block-id"></span>',
+      '',
+      '|a|b|',
+      '|---|---|',
+      '|1|2|',
+      '|3|4|',
+    ]);
+  });
+
+  test('the marker of a block is taken off the line it stands on, past an import', async () => {
+    // The `^id` is on a line of a code fence, which the transformer leaves
+    // as it is; the import before it, in the same paragraph, added lines.
+    const { outputString } = await imported(
+      '@import "block-with-fence.md#^id"',
+    );
+    expect(brought(outputString)).toEqual([
+      '',
+      '|a|b|',
+      '|---|---|',
+      '|1|2|',
+      '|3|4|',
+      '',
+      '```',
+      'first',
+      'second',
+      '```',
+    ]);
+  });
+
   test('with markdown-it nothing changes: every import is one line', async () => {
     const { outputString, headings } = await imported(
       '@import "above-1.md#Part A"',
       'markdown-it',
     );
     // The section is carried in an embedding of its own line.
-    const embedding = outputString.match(/\{embedding="([^"]+)"\}/);
-    expect(embedding).not.toBeNull();
-    expect(
-      decodeURIComponent(
-        Buffer.from(embedding![1], 'base64').toString('latin1'),
-      ),
-    ).toBe(SECTION.join('\n').replace(/\n$/, ''));
+    expect(withoutTrailingEmptyLines(linesOf(contentOf(outputString)))).toEqual(
+      withoutTrailingEmptyLines(SECTION.map((line) => line.trimEnd())),
+    );
     expect(headings.map((heading) => heading.content)).toEqual([
       'Part A',
       'A.2',
