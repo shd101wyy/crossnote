@@ -3,7 +3,7 @@ import * as path from 'path';
 import { load } from 'cheerio';
 import { mkdirSync, track } from '../src/lib/temp';
 import { MarkdownEngine } from '../src/markdown-engine';
-import { Notebook } from '../src/notebook';
+import { Notebook, NotebookConfig } from '../src/notebook';
 
 jest.mock('less', () => ({
   render: (
@@ -31,6 +31,7 @@ interface Slide {
 async function notebookOf(
   markdownParser: 'markdown-it' | 'pandoc' = 'markdown-it',
   files: Record<string, string> = {},
+  config: Pick<NotebookConfig, 'wikiLinkResolution'> = {},
 ): Promise<Notebook> {
   const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
   for (const [name, content] of Object.entries(files)) {
@@ -43,6 +44,7 @@ async function notebookOf(
     config: {
       markdownParser,
       markdownYoBinaryPath: '',
+      ...config,
     },
   });
 }
@@ -1161,26 +1163,32 @@ Text ^note
     });
 
     // Under pandoc the path of the notebook is not set to the path of the
-    // note that is rendered, so where a wikilink of the notes is resolved
-    // from is what the rendering of the notes makes of it.
-    test('a wikilink of the notes is resolved from the path of their note', async () => {
-      const notebook = await notebookOf('pandoc', { 'pres/a/x.md': 'x' });
+    // note that is rendered, so where a wikilink is resolved from is what the
+    // rendering makes of it. (With the default resolution, a link is relative
+    // to the path it is resolved from, so it comes out the same from any.)
+    test('a wikilink of the notes is resolved from the path of their note: of two notes of the same name, the one next to the note', async () => {
+      const notebook = await notebookOf(
+        'pandoc',
+        { 'a/x.md': 'a', 'pres/x.md': 'pres' },
+        { wikiLinkResolution: 'shortest' },
+      );
       const { html } = await renderFile(
         notebook,
         'pres/deck.md',
-        '<!-- slide -->\n\n# First\n\n<aside class="notes" data-markdown>See [[a/x]]</aside>',
+        '<!-- slide -->\n\n# First\n\n<aside class="notes" data-markdown>See [[x]]</aside>',
       );
       const notes = load(html)('section[data-h] > aside.notes');
 
-      // The link is given the address of the file, as a link of the page is.
-      expect(notes.find('a').text()).toBe('a/x');
-      expect(notes.find('a').attr('href')).toMatch(/\/pres\/a\/x\.md$/);
+      expect(notes.find('a').text()).toBe('x');
+      expect(notes.find('a').attr('href')).toMatch(/\/pres\/x\.md$/);
     });
 
     test('the path of the notebook is given back: under pandoc, the table of contents of the note rendered next is resolved from the path of that note', async () => {
-      const notebook = await notebookOf('pandoc', {
-        'x.md': 'x',
-      });
+      const notebook = await notebookOf(
+        'pandoc',
+        { 'x.md': 'x' },
+        { wikiLinkResolution: 'absolute' },
+      );
       await renderFile(
         notebook,
         'pres/deck.md',
