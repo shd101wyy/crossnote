@@ -572,7 +572,6 @@ describe('the eBook export', () => {
         // test it happens in.
         await waitFor(() => consoleError.mock.calls.length >= fileTypes.length);
 
-        expect(consoleError).toHaveBeenCalledTimes(fileTypes.length);
         // The exports run side by side: which of them reports first is not
         // fixed, so the reports are read as a set.
         expect(consoleError).toHaveBeenCalledTimes(fileTypes.length);
@@ -582,7 +581,7 @@ describe('the eBook export', () => {
           fileTypes
             .map(
               (fileType) =>
-                `[crossnote] the eBook export of ${filePath} as ${fileType} on save failed.`,
+                `[crossnote] the eBook as ${fileType} export of ${filePath} on save failed.`,
             )
             .sort(),
         );
@@ -599,6 +598,36 @@ describe('the eBook export', () => {
       // so itself, before the timeout of the test does.
       10_000,
     );
+
+    test('the other exporters of a save report a failure the same way', async () => {
+      const { engine, filePath, parse } = await savedNote(
+        '  html: true\n  ebook: epub\n',
+        () => ({ ok: false }),
+      );
+      jest
+        .spyOn(engine, 'htmlExport')
+        .mockRejectedValue(new Error('no HTML today'));
+
+      await parse();
+      await waitFor(() => consoleError.mock.calls.length >= 2);
+
+      expect(
+        consoleError.mock.calls.map(([message]) => message).sort(),
+      ).toEqual(
+        [
+          `[crossnote] the eBook as epub export of ${filePath} on save failed.`,
+          `[crossnote] the HTML export of ${filePath} on save failed.`,
+        ].sort(),
+      );
+      expect(consoleError.mock.calls.map(([, error]) => error)).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ message: 'no HTML today' }),
+          expect.objectContaining({
+            message: 'Failed to download image from https://example.com/a.png',
+          }),
+        ]),
+      );
+    });
 
     test('does not hold back the exporters that come after it', async () => {
       // The image answers when it is released.

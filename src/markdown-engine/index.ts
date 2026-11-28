@@ -2877,40 +2877,65 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const isWeb = utility.isVSCodeWebExtension();
     for (const exporter in data) {
       if (exporter === 'html') {
-        this.htmlExport({});
+        this.exportBeganBySave('HTML', this.htmlExport({}));
       } else if (!isWeb && exporter === 'prince') {
-        this.princeExport({ openFileAfterGeneration: false });
+        this.exportBeganBySave(
+          'Prince',
+          this.princeExport({ openFileAfterGeneration: false }),
+        );
       } else if (
         (!isWeb && exporter === 'puppeteer') ||
         exporter === 'chrome'
       ) {
         const fileTypes = data[exporter];
-        let func = this.chromeExport;
-        func = func.bind(this);
-
+        const chromeExport = this.chromeExport.bind(this);
         if (fileTypes === true) {
-          func({ fileType: 'pdf', openFileAfterGeneration: false });
+          this.exportBeganBySave(
+            'Chrome',
+            chromeExport({ fileType: 'pdf', openFileAfterGeneration: false }),
+          );
         } else if (typeof fileTypes === 'string') {
-          func({ fileType: fileTypes, openFileAfterGeneration: false });
+          this.exportBeganBySave(
+            'Chrome',
+            chromeExport({
+              fileType: fileTypes,
+              openFileAfterGeneration: false,
+            }),
+          );
         } else if (fileTypes instanceof Array) {
           fileTypes.forEach((fileType) => {
-            func({
-              fileType: fileType as string,
-              openFileAfterGeneration: false,
-            });
+            this.exportBeganBySave(
+              'Chrome',
+              chromeExport({
+                fileType: fileType as string,
+                openFileAfterGeneration: false,
+              }),
+            );
           });
         }
       } else if (!isWeb && exporter === 'pandoc') {
-        this.pandocExport({ openFileAfterGeneration: false });
+        this.exportBeganBySave(
+          'pandoc',
+          this.pandocExport({ openFileAfterGeneration: false }),
+        );
       } else if (!isWeb && exporter === 'ebook') {
         const fileTypes = data[exporter];
         if (fileTypes === true) {
-          this.exportEBookOnSave('epub');
+          this.exportBeganBySave(
+            'eBook as epub',
+            this.eBookExport({ fileType: 'epub' }),
+          );
         } else if (typeof fileTypes === 'string') {
-          this.exportEBookOnSave(fileTypes);
+          this.exportBeganBySave(
+            `eBook as ${fileTypes}`,
+            this.eBookExport({ fileType: fileTypes }),
+          );
         } else if (fileTypes instanceof Array) {
           fileTypes.forEach((fileType) => {
-            this.exportEBookOnSave(fileType as string);
+            this.exportBeganBySave(
+              `eBook as ${fileType}`,
+              this.eBookExport({ fileType: fileType as string }),
+            );
           });
         }
       }
@@ -2918,14 +2943,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
   }
 
   /**
-   * The eBook export of a save. It runs on its own, as the other exporters
-   * of a save do, but a failure of it is reported instead of being left
-   * unhandled: an image on the web that cannot be fetched stops the export.
+   * An export begun by a save. Nothing waits for it, as nothing ever did, but
+   * a failure of it is reported instead of being left unhandled: a program
+   * without a handler for those is ended by one (`crossnote serve`, which
+   * renders a note as it is saved), and the extension host shows it as an
+   * error of the extension.
    */
-  private exportEBookOnSave(fileType: string) {
-    this.eBookExport({ fileType }).catch((error) => {
+  private exportBeganBySave(exporter: string, exporting: Promise<unknown>) {
+    exporting.catch((error) => {
       console.error(
-        `[crossnote] the eBook export of ${this.filePath} as ${fileType} on save failed.`,
+        `[crossnote] the ${exporter} export of ${this.filePath} on save failed.`,
         error,
       );
     });
