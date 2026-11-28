@@ -198,7 +198,7 @@ describe('the eBook export', () => {
     });
 
     /** Begin to export the note of `folder` (of the notebook) as an EPUB. */
-    async function exportEPUB(folder = tmpDir) {
+    async function exportEPUB(folder: string = tmpDir) {
       fs.mkdirSync(folder, { recursive: true });
       fs.writeFileSync(path.join(folder, 'other.md'), '# Other\n');
       const filePath = path.join(folder, 'note.md');
