@@ -135,6 +135,41 @@ Paragraph.
       expect(output).toContain('        @import "part.md"');
       expect(output).not.toContain('@embedding');
     });
+
+    test('a tab plus spaces before @import stays as typed', async () => {
+      const output = await transform('\t @import "part.md"\n');
+      expect(output).toContain('\t @import "part.md"');
+      expect(output).not.toContain('@embedding');
+    });
+
+    test('four spaces then > before @import stays as typed', async () => {
+      const output = await transform('    > @import "part.md"\n');
+      expect(output).toContain('    > @import "part.md"');
+      expect(output).not.toContain('@embedding');
+    });
+
+    test('an import after a code block is still rewritten; an image inside it is not', async () => {
+      const output = await transform(
+        'para\n\n    code\n@import "part.md"\n\n    ![](x.txt)\n',
+      );
+      expect(output).toContain('@embedding');
+      expect(output).not.toMatch(/^@import "part\.md"/m);
+      expect(output).toContain('    ![](x.txt)');
+    });
+
+    test('a slide comment then an indented @import is still rewritten', async () => {
+      const output = await transform('<!-- slide -->\n    @import "part.md"\n');
+      expect(output).toContain('@embedding');
+      expect(output).not.toContain('    @import "part.md"');
+    });
+
+    test('a leftover CR still rewrites a real @import', async () => {
+      const output = await transform(
+        'a\rb\n\n    x\n    y\n@import "part.md"\n\n    @import "x.md"\n',
+      );
+      expect(output).toContain('@embedding');
+      expect(output).not.toMatch(/^@import "part\.md"/m);
+    });
   });
 
   describe('preview HTML', () => {
@@ -177,6 +212,66 @@ Paragraph.
       expect(html).not.toContain('Imported part body');
     });
 
+    test('a tab plus spaces before @import stays a code block', async () => {
+      const html = await render('\t @import "part.md"\n');
+      const $ = load(html);
+      const code = $('pre')
+        .map((_, el) => $(el).text())
+        .get()
+        .join('\n');
+      expect(code).toContain('@import "part.md"');
+      expect(html).not.toContain('@embedding');
+      expect(html).not.toContain('Imported part body');
+    });
+
+    test('four spaces then > before @import stays a code block', async () => {
+      const html = await render('    > @import "part.md"\n');
+      const $ = load(html);
+      const code = $('pre')
+        .map((_, el) => $(el).text())
+        .get()
+        .join('\n');
+      expect(code).toContain('@import "part.md"');
+      expect(html).not.toContain('@embedding');
+      expect(html).not.toContain('Imported part body');
+    });
+
+    test('an import after a code block is still an import; an image inside it is code', async () => {
+      const html = await render(
+        'para\n\n    code\n@import "part.md"\n\n    ![](x.txt)\n',
+      );
+      expect(html).toContain('Imported part body');
+      expect(html).not.toContain('@import');
+      const $ = load(html);
+      const code = $('pre')
+        .map((_, el) => $(el).text())
+        .get()
+        .join('\n');
+      expect(code).toContain('![](x.txt)');
+      expect(html).not.toContain('plain file body');
+      expect(html).not.toMatch(/<img[^>]*x\.txt/);
+    });
+
+    test('a slide comment then an indented @import still embeds the file', async () => {
+      const html = await render('<!-- slide -->\n    @import "part.md"\n');
+      expect(html).toContain('Imported part body');
+      expect(html).not.toContain('@import');
+    });
+
+    test('a slide comment then an indented image imports the file as a code block', async () => {
+      const html = await render('<!-- slide -->\n    ![](x.txt)\n');
+      expect(html).toContain('plain file body');
+      expect(html).not.toMatch(/<img[^>]*x\.txt/);
+    });
+
+    test('a leftover CR does not leave a real @import as text', async () => {
+      const html = await render(
+        'a\rb\n\n    x\n    y\n@import "part.md"\n\n    @import "x.md"\n',
+      );
+      expect(html).toContain('Imported part body');
+      expect(html).not.toContain('@import "part.md"');
+    });
+
     test.each([
       [
         'bullet list, blank line, four-space @import',
@@ -208,5 +303,40 @@ Paragraph.
       expect(html).toContain(body);
       expect(html).not.toContain('@import');
     });
+  });
+
+  /**
+   * The indented-import gate and the code-line lookup run on every
+   * render. A `\s` in the gate is quadratic on whitespace-only lines
+   * (crossnote#594); scanning every range on every line is
+   * O(lines × code blocks). Both must stay linear: well under a
+   * second on the shapes that used to take seconds, same spirit as
+   * the 80k line-break scan in test/page-markers.test.ts (#620).
+   */
+  describe('transformMarkdown performance', () => {
+    const SCAN_BOUND_MS = 1000;
+
+    async function timedTransform(markdown: string): Promise<number> {
+      const started = process.hrtime.bigint();
+      await transform(markdown);
+      return Number(process.hrtime.bigint() - started) / 1e6;
+    }
+
+    test('a page of many line breaks is transformed quickly', async () => {
+      const ms = await timedTransform('\n'.repeat(80_000));
+      expect(ms).toBeLessThan(SCAN_BOUND_MS);
+    }, 20_000);
+
+    test('a page of many indented blank lines is transformed quickly', async () => {
+      const ms = await timedTransform('    \n'.repeat(40_000));
+      expect(ms).toBeLessThan(SCAN_BOUND_MS);
+    }, 20_000);
+
+    test('many indented code blocks then an image opener stay linear', async () => {
+      const ms = await timedTransform(
+        '    x\n# h\n'.repeat(10_000) + '    ![\n',
+      );
+      expect(ms).toBeLessThan(SCAN_BOUND_MS);
+    }, 20_000);
   });
 });
