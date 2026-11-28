@@ -587,6 +587,20 @@ describe('configuration values written into a page', () => {
       expect(hostile).toContain(cssWritten(STYLE_END));
     });
 
+    // A configuration may hold `null` for it, or nothing at all.
+    test.each([
+      ['null', null],
+      ['undefined', undefined],
+    ])(
+      'that is %s is no stylesheet: a preview and an export are made',
+      async (_, globalCss) => {
+        await expect(previewPage(note, { globalCss })).resolves.toContain(
+          '<body',
+        );
+        await expect(exportPage(note, { globalCss })).resolves.toContain('<h1');
+      },
+    );
+
     test('cannot end the style element of an eBook', async () => {
       const ebook = '---\nebook:\n  title: T\n---\n\n# One\n';
       const eBook = async (globalCss: string) => {
@@ -638,6 +652,10 @@ describe('cssForStyle', () => {
     ['an empty stylesheet', ''],
   ])('writes %s as it is', (_, css) => {
     expect(cssForStyle(css)).toBe(css);
+  });
+
+  test.each([[null], [undefined]])('gives %s back as it is', (css) => {
+    expect(cssForStyle(css as unknown as string)).toBe(css);
   });
 
   test('writes no `</`, so that nothing in it can end the element', () => {
