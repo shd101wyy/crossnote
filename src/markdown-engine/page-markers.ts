@@ -48,10 +48,15 @@ export function slideMarker(
  * The slide markers of one rendering: those that carry its token. A marker
  * without it — one written as text — is not matched, and stays the text it
  * is. `slideMarkerToken` is hex, so there is nothing to escape in it.
+ *
+ * A marker is a paragraph of its own, or starts a line; it comes in a `td`
+ * when the table before it has no blank line after it, for markdown-it makes
+ * a row of the table of the line of the marker (the cells it has too few are
+ * added), and the row is taken along with the marker.
  */
 export function slideMarkerRegExp(slideMarkerToken: string): RegExp {
   return new RegExp(
-    String.raw`(?:<p[^><]*>|^[ \t]*)<span>\[CROSSNOTESLIDE:${slideMarkerToken}:(\d+)\]<\/span>(?:<\/p>)?\s*`,
+    String.raw`(?:<p[^><]*>|^[ \t]*|<tr[^><]*>\s*)(?:<td[^><]*>)?<span>\[CROSSNOTESLIDE:${slideMarkerToken}:(\d+)\]<\/span>(?:<\/p>|<\/td>(?:\s*<td[^><]*><\/td>)*\s*<\/tr>)?\s*`,
     'gm',
   );
 }

@@ -181,6 +181,38 @@ let a = 1;
     ]);
   });
 
+  // markdown-it makes a row of the table of the line of a marker that comes
+  // right after a table: the row is taken along with the marker, and the
+  // table stays whole.
+  test.each([
+    ['without alignment', '| a | b |\n| - | - |\n| 1 | 2 |'],
+    ['with alignment', '| a | b |\n| :- | -: |\n| 1 | 2 |'],
+  ])(
+    'a slide marker on the line after a table, %s, starts a slide',
+    async (_, table) => {
+      const { html } = await render(
+        `<!-- slide -->\n\n${table}\n<!-- slide -->\n\n# Second\n`,
+      );
+      const slides = load(html)('section[data-h]');
+
+      expect(
+        slides
+          .toArray()
+          .map((section) => [
+            section.attribs['data-h'],
+            section.attribs['data-v'],
+          ]),
+      ).toEqual([
+        ['0', '0'],
+        ['1', '0'],
+      ]);
+      // The table is whole on the first slide, with its one row.
+      expect(slides.eq(0).find('table tbody tr')).toHaveLength(1);
+      expect(slides.eq(0).text().replace(/\s+/g, ' ').trim()).toBe('a b 1 2');
+      expect(slides.eq(1).text().replace(/\s+/g, ' ').trim()).toBe('Second');
+    },
+  );
+
   // Only a `<!-- slide -->` is configured a slide. The same span, written as
   // HTML, is text: it stays where it was written, and what follows it stays
   // on the slide before.
