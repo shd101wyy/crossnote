@@ -1,5 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { Readable } from 'stream';
+import { fileURLToPath } from 'url';
 import { load } from 'cheerio';
 import { ebookConvert } from '../src/converters/ebook-convert';
 import { mkdirSync, track } from '../src/lib/temp';
@@ -8,6 +10,7 @@ import { Notebook } from '../src/notebook';
 import {
   getCrossnoteBuildDirectory,
   setCrossnoteBuildDirectory,
+  toFileURL,
 } from '../src/utility';
 
 /**
@@ -33,6 +36,17 @@ jest.mock('less', () => ({
 
 const MARKUP_IN_A_LINK =
   '- [<span title=" onmouseover=window.__pwn_heading=1 x="">H</span>](other.md)\n';
+
+/** Wait until `condition` holds, letting what runs on its own get on. */
+async function waitFor(condition: () => boolean) {
+  const deadline = Date.now() + 5_000;
+  while (!condition()) {
+    if (Date.now() > deadline) {
+      throw new Error('It did not get there in time');
+    }
+    await new Promise<void>((resolve) => setImmediate(resolve));
+  }
+}
 
 describe('the eBook export', () => {
   track();
@@ -263,6 +277,429 @@ describe('the eBook export', () => {
 
       await expect(exported).rejects.toThrow('ebook-convert failed');
       expect(pagesLeft()).toEqual([]);
+    });
+
+    describe('with the images of the web', () => {
+      const fetch_ = globalThis.fetch;
+
+      afterEach(() => {
+        globalThis.fetch = fetch_;
+      });
+
+      /** Make `fetch` answer the engine as `respond` does. */
+      const answerFetch = (respond: (url: string) => unknown) => {
+        globalThis.fetch = jest.fn(respond) as unknown as typeof fetch;
+      };
+
+      /** An image on the web, whose body tells of the address it was asked by. */
+      const imageAt = (url: string) => ({
+        ok: true,
+        body: Readable.toWeb(
+          Readable.from([Buffer.from(`the image asked of ${url}`)]),
+        ),
+      });
+
+      /** What the page says of an image of the web, and what lies where it points. */
+      interface Image {
+        /** The `src` of the image in the page. */
+        src: string;
+        /** The name of the file next to the note that it was saved as. */
+        file: string;
+        /** What that file held while `ebook-convert` had the page. */
+        content: string;
+      }
+
+      /** A line of the note with the image of `src` in it, as markdown. */
+      const imageLine = (offset: number, src: string) =>
+        `Image ${offset + 1}: ![image ${offset}](<${src}>)`;
+
+      /**
+       * Export a note of the lines of `images` as an EPUB.
+       * `imagesOfThePage()` tells of each image of the page, in order, as
+       * `ebook-convert` had it: the files the images were saved as are
+       * removed after the conversion.
+       */
+      async function exportEPUB(images: string[]) {
+        const filePath = path.join(tmpDir, 'note.md');
+        // An image alone on its line is a file to import, which the
+        // transformer reads itself; in a sentence it is an image.
+        fs.writeFileSync(
+          filePath,
+          `---\nebook:\n  title: T\n---\n\n${images.join('  \n')}\n`,
+        );
+        const notebook = await Notebook.init({
+          notebookPath: tmpDir,
+          config: {
+            markdownParser: 'markdown-it',
+            markdownYoBinaryPath: '',
+            previewTheme: 'github-light.css',
+          },
+        });
+        const engine = new MarkdownEngine({ notebook, filePath });
+
+        let imagesOfPage: Image[] = [];
+        convert.mockImplementation(async (page) => {
+          const $ = load(fs.readFileSync(page, 'utf8'));
+          imagesOfPage = $('img')
+            .map((offset, img) => {
+              const src = $(img).attr('src') ?? '';
+              const file = path.basename(fileURLToPath(src));
+              return {
+                src,
+                file,
+                content: fs.readFileSync(path.join(tmpDir, file), 'utf8'),
+              };
+            })
+            .get();
+        });
+        return {
+          exported: engine.eBookExport({ fileType: 'epub' }),
+          imagesOfThePage: () => imagesOfPage,
+        };
+      }
+
+      /**
+       * The name a download was saved under, without the prefix that keeps
+       * it from the file of another download and from a file of the user's
+       * next to the note.
+       */
+      const nameOf = (file: string) => {
+        expect(file).toMatch(/^[0-9a-z]{1,9}_/);
+        return file.replace(/^[0-9a-z]{1,9}_/, '');
+      };
+
+      /** The files that downloads left next to the note. */
+      const downloadsLeft = () =>
+        fs.readdirSync(tmpDir).filter((name) => /^[0-9a-z]{1,9}_/.test(name));
+
+      test.each([
+        [
+          'an address with a query and a fragment',
+          'https://example.com/a.png?v=1&size=2#the-image',
+          'a.png',
+        ],
+        [
+          'a percent-encoded path',
+          'https://example.com/my%20image%20%E5%9B%BE%201.png',
+          'myimage1.png',
+        ],
+        ['an escaped %', 'https://example.com/50%25off.png', '50off.png'],
+        ['a path that ends in a slash', 'https://example.com/', 'image'],
+        [
+          'a path of which nothing stays but the extension',
+          'https://example.com/%E5%9B%BE.png',
+          'image.png',
+        ],
+        [
+          'a last segment of characters no file name takes',
+          'https://example.com/my image: 1 (final) & v2.png',
+          'myimage1finalv2.png',
+        ],
+        ['a stem of dots only', 'https://example.com/..png', 'image.png'],
+        ['a dot in front of the stem', 'https://example.com/.a.png', 'a.png'],
+        ['a dot after the extension', 'https://example.com/a.png.', 'a.png'],
+        [
+          'a long stem cut where a dot is',
+          `https://example.com/${'a.'.repeat(101)}`,
+          `${'a.'.repeat(99)}a`,
+        ],
+      ])(
+        'saves the image of %s under a name every system takes',
+        async (_, src, name) => {
+          answerFetch(imageAt);
+          const { exported, imagesOfThePage } = await exportEPUB([
+            imageLine(0, src),
+          ]);
+
+          await expect(exported).resolves.toBe(path.join(tmpDir, 'note.epub'));
+          const [image] = imagesOfThePage();
+          expect(nameOf(image.file)).toBe(name);
+          // The page points at that file, and it is gone after the conversion.
+          expect(image.src).toBe(toFileURL(path.join(tmpDir, image.file)));
+          expect(downloadsLeft()).toEqual([]);
+        },
+      );
+
+      test('takes the name of an image written as HTML from the path as it is written, where a % escapes nothing', async () => {
+        // As HTML the address comes to the engine as it is written; as
+        // markdown it would have had the % as `%25` first.
+        answerFetch(imageAt);
+        const { exported, imagesOfThePage } = await exportEPUB([
+          'Image 1: <img src="https://example.com/50%off.png" alt="image 0">',
+        ]);
+
+        await expect(exported).resolves.toBe(path.join(tmpDir, 'note.epub'));
+        const [image] = imagesOfThePage();
+        expect(nameOf(image.file)).toBe('50off.png');
+        expect(image.src).toBe(toFileURL(path.join(tmpDir, image.file)));
+        expect(downloadsLeft()).toEqual([]);
+      });
+
+      test('cuts a last segment too long for a file name, keeping its extension', async () => {
+        answerFetch(imageAt);
+        const { exported, imagesOfThePage } = await exportEPUB([
+          imageLine(0, `https://example.com/${'a'.repeat(296)}.png`),
+        ]);
+
+        await expect(exported).resolves.toBe(path.join(tmpDir, 'note.epub'));
+        const [image] = imagesOfThePage();
+        expect(nameOf(image.file)).toBe(`${'a'.repeat(196)}.png`);
+        // The whole name, the prefix in front included, in bytes.
+        expect(Buffer.byteLength(image.file)).toBeLessThanOrEqual(255);
+        expect(image.src).toBe(toFileURL(path.join(tmpDir, image.file)));
+        expect(downloadsLeft()).toEqual([]);
+      });
+
+      test('saves two addresses with the same last segment as two files, each pointed at by its own image', async () => {
+        answerFetch(imageAt);
+        const one = 'https://example.com/one/a.png';
+        const two = 'https://example.com/two/a.png';
+        const { exported, imagesOfThePage } = await exportEPUB([
+          imageLine(0, one),
+          imageLine(1, two),
+        ]);
+
+        await expect(exported).resolves.toBe(path.join(tmpDir, 'note.epub'));
+        const images = imagesOfThePage();
+        expect(images.map((image) => nameOf(image.file))).toEqual([
+          'a.png',
+          'a.png',
+        ]);
+        // Two files: one was not written over the other.
+        expect(new Set(images.map((image) => image.file)).size).toBe(2);
+        for (const [offset, src] of [one, two].entries()) {
+          const image = images[offset];
+          // Each image of the page points at the file of its own address.
+          expect(image.src).toBe(toFileURL(path.join(tmpDir, image.file)));
+          expect(image.content).toBe(`the image asked of ${src}`);
+        }
+        expect(downloadsLeft()).toEqual([]);
+      });
+
+      test('says which image it could not fetch when the network fails', async () => {
+        // What fetch rejects with when the network fails: no address in it.
+        const failure = new TypeError('fetch failed', {
+          cause: new Error('getaddrinfo ENOTFOUND example.com'),
+        });
+        answerFetch((url: string) => {
+          if (url.endsWith('a.png')) {
+            throw failure;
+          }
+          return imageAt(url);
+        });
+        const { exported } = await exportEPUB([
+          imageLine(0, 'https://example.com/a.png'),
+          imageLine(1, 'https://example.com/b.png'),
+        ]);
+
+        const error: unknown = await exported.then(
+          () => undefined,
+          (reason: unknown) => reason,
+        );
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toBe(
+          'Failed to download image from https://example.com/a.png',
+        );
+        expect((error as Error).cause).toBe(failure);
+        // The export stopped there: the image that was fetched is removed
+        // again, and ebook-convert was not given the page.
+        expect(downloadsLeft()).toEqual([]);
+        expect(convert).not.toHaveBeenCalled();
+      });
+
+      test('says which image it could not read when the body breaks while it is read', async () => {
+        // The first chunk comes, then the connection is gone: the pipeline
+        // rejects with what the stream errors with, which names no image.
+        const body = new ReadableStream<Uint8Array>({
+          start(controller: ReadableStreamDefaultController<Uint8Array>) {
+            controller.enqueue(Buffer.from('the first chunk'));
+            controller.error(new Error('socket hang up'));
+          },
+        });
+        answerFetch((url: string) =>
+          url.endsWith('a.png') ? { ok: true, body } : imageAt(url),
+        );
+        const { exported } = await exportEPUB([
+          imageLine(0, 'https://example.com/a.png'),
+          imageLine(1, 'https://example.com/b.png'),
+        ]);
+
+        const error: unknown = await exported.then(
+          () => undefined,
+          (reason: unknown) => reason,
+        );
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toBe(
+          'Failed to download image from https://example.com/a.png',
+        );
+        expect(String((error as { cause?: unknown }).cause)).toContain(
+          'socket hang up',
+        );
+        // The export stopped there: the files are removed again, and
+        // ebook-convert was not given the page.
+        expect(downloadsLeft()).toEqual([]);
+        expect(convert).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('begun by a save', () => {
+    const fetch_ = globalThis.fetch;
+    let consoleError: jest.SpyInstance;
+
+    beforeEach(() => {
+      // A failed export is reported on the console.
+      consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      consoleError.mockRestore();
+      globalThis.fetch = fetch_;
+    });
+
+    /**
+     * A note that exports on save what `exportOnSave` (the front matter of
+     * `export_on_save`) says, with an image on the web that `fetch` answers
+     * as `respond` does. `parse()` is what a host does when the note is
+     * saved.
+     */
+    async function savedNote(
+      exportOnSave: string,
+      respond: (url: string) => unknown,
+    ) {
+      globalThis.fetch = jest.fn(respond) as unknown as typeof fetch;
+      const filePath = path.join(tmpDir, 'note.md');
+      fs.writeFileSync(
+        filePath,
+        `---\nebook:\n  title: T\nexport_on_save:\n${exportOnSave}---\n\nImage: ![on the web](https://example.com/a.png)\n`,
+      );
+      const notebook = await Notebook.init({
+        notebookPath: tmpDir,
+        config: {
+          markdownParser: 'markdown-it',
+          markdownYoBinaryPath: '',
+          previewTheme: 'github-light.css',
+        },
+      });
+      const engine = new MarkdownEngine({ notebook, filePath });
+      return {
+        engine,
+        filePath,
+        parse: () =>
+          engine.parseMD(fs.readFileSync(filePath, 'utf8'), {
+            isForPreview: true,
+            useRelativeFilePath: false,
+            hideFrontMatter: false,
+            triggeredBySave: true,
+          }),
+      };
+    }
+
+    test.each([
+      ['a file type', '  ebook: epub\n', ['epub']],
+      ['true', '  ebook: true\n', ['epub']],
+      ['a list of file types', '  ebook: [epub, mobi]\n', ['epub', 'mobi']],
+    ])(
+      'reports an export that fails, instead of leaving its failure unhandled, with %s',
+      async (_, exportOnSave, fileTypes) => {
+        // The image cannot be fetched, which stops the export.
+        const { filePath, parse } = await savedNote(exportOnSave, () => ({
+          ok: false,
+        }));
+
+        await parse();
+        // The export runs on its own, awaited nowhere: it has reported
+        // before this goes on. That nothing of it is left unhandled is what
+        // jest itself sees to — a rejection that no one handles fails the
+        // test it happens in.
+        await waitFor(() => consoleError.mock.calls.length >= fileTypes.length);
+
+        // The exports run side by side: which of them reports first is not
+        // fixed, so the reports are read as a set.
+        expect(consoleError).toHaveBeenCalledTimes(fileTypes.length);
+        expect(
+          consoleError.mock.calls.map(([message]) => message).sort(),
+        ).toEqual(
+          fileTypes
+            .map(
+              (fileType) =>
+                `[crossnote] the eBook as ${fileType} export of ${filePath} on save failed.`,
+            )
+            .sort(),
+        );
+        for (const [, error] of consoleError.mock.calls) {
+          expect(error).toEqual(
+            expect.objectContaining({
+              message:
+                'Failed to download image from https://example.com/a.png',
+            }),
+          );
+        }
+      },
+      // The test may outlast its wait: when no report comes, the wait says
+      // so itself, before the timeout of the test does.
+      10_000,
+    );
+
+    test('the other exporters of a save report a failure the same way', async () => {
+      const { engine, filePath, parse } = await savedNote(
+        '  html: true\n  ebook: epub\n',
+        () => ({ ok: false }),
+      );
+      jest
+        .spyOn(engine, 'htmlExport')
+        .mockRejectedValue(new Error('no HTML today'));
+
+      await parse();
+      await waitFor(() => consoleError.mock.calls.length >= 2);
+
+      expect(
+        consoleError.mock.calls.map(([message]) => message).sort(),
+      ).toEqual(
+        [
+          `[crossnote] the eBook as epub export of ${filePath} on save failed.`,
+          `[crossnote] the HTML export of ${filePath} on save failed.`,
+        ].sort(),
+      );
+      expect(consoleError.mock.calls.map(([, error]) => error)).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ message: 'no HTML today' }),
+          expect.objectContaining({
+            message: 'Failed to download image from https://example.com/a.png',
+          }),
+        ]),
+      );
+    });
+
+    test('does not hold back the exporters that come after it', async () => {
+      // The image answers when it is released.
+      let release: () => void = () => {};
+      const released = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const { engine, parse } = await savedNote(
+        '  ebook: epub\n  html: true\n',
+        () => released.then(() => ({ ok: false })),
+      );
+      const eBook = jest.spyOn(engine, 'eBookExport');
+      const html = jest.spyOn(engine, 'htmlExport').mockResolvedValue('');
+
+      await parse();
+      // The eBook export has asked for its image and waits for it still,
+      // and `parseMD` has returned: the exporter after it has begun.
+      try {
+        await waitFor(
+          () => (globalThis.fetch as jest.Mock).mock.calls.length > 0,
+        );
+        expect(html).toHaveBeenCalledTimes(1);
+        expect(eBook.mock.invocationCallOrder[0]).toBeLessThan(
+          html.mock.invocationCallOrder[0],
+        );
+      } finally {
+        release();
+      }
+      // The export ends before the test does.
+      await waitFor(() => consoleError.mock.calls.length > 0);
     });
   });
 });
