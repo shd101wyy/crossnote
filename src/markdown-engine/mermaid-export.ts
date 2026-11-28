@@ -1,3 +1,4 @@
+import { jsonForScript } from '../lib/json-for-script';
 import type { NotebookConfig } from '../notebook/types';
 
 /** Build the async export script separately so its readiness can be tested in Chromium. */
@@ -35,16 +36,20 @@ mermaid.startOnLoad = false
 //      we can remove the following lines.
 ${
   hasZenUML
-    ? `const { default: zenuml } = await import('https://${config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs');
+    ? `const { default: zenuml } = await import(${jsonForScript(
+        `https://${config.jsdelivrCdnHost}/npm/@mermaid-js/mermaid-zenuml@0.1.0/dist/mermaid-zenuml.esm.min.mjs`,
+      )});
 await mermaid.registerExternalDiagrams([zenuml])`
     : ``
 }
 
-var MERMAID_CONFIG = (${JSON.stringify(config.mermaidConfig)});
+var MERMAID_CONFIG = (${jsonForScript(config.mermaidConfig)});
 if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.startOnLoad = false
   MERMAID_CONFIG.cloneCssStyles = false
-  MERMAID_CONFIG.theme = MERMAID_CONFIG.theme || "${config.mermaidTheme}"
+  MERMAID_CONFIG.theme = MERMAID_CONFIG.theme || ${jsonForScript(
+    String(config.mermaidTheme),
+  )}
 }
 
 /**

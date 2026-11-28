@@ -21,6 +21,7 @@ import { princeConvert } from '../converters/prince-convert';
 import { parseBlockAttributes } from '../lib/block-attributes/parseBlockAttributes';
 import { normalizeBlockInfo } from '../lib/block-info/normalize-block-info';
 import { parseBlockInfo } from '../lib/block-info/parse-block-info';
+import { cssForStyle } from '../lib/css-for-style';
 import { mapAbsoluteCssUrls } from '../lib/css-urls';
 import { jsonForScript } from '../lib/json-for-script';
 import {
@@ -617,7 +618,9 @@ export class MarkdownEngine {
       scripts += `<script type="text/javascript"> ${buildMathJaxConfigScript(
         mathJaxConfig,
       )} </script>`;
-      scripts += `<script type="text/javascript" defer src="${this.notebook.config.mathjaxScriptSrc}" charset="UTF-8"></script>`;
+      scripts += `<script type="text/javascript" defer src="${escape(
+        this.notebook.config.mathjaxScriptSrc,
+      )}" charset="UTF-8"></script>`;
     }
 
     // reveal.js
@@ -653,11 +656,13 @@ export class MarkdownEngine {
 
     // mermaid init
     scripts += `<script>
-var MERMAID_CONFIG = (${JSON.stringify(this.notebook.config.mermaidConfig)});
+var MERMAID_CONFIG = (${jsonForScript(this.notebook.config.mermaidConfig)});
 if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.startOnLoad = false
   MERMAID_CONFIG.cloneCssStyles = false
-  MERMAID_CONFIG.theme = MERMAID_CONFIG.theme || "${this.notebook.config.mermaidTheme}"
+  MERMAID_CONFIG.theme = MERMAID_CONFIG.theme || ${jsonForScript(
+    String(this.notebook.config.mermaidTheme),
+  )}
 }
 mermaid.initialize(MERMAID_CONFIG || {})
 // The diagrams of a presentation are rendered by the preview, slide by slide
@@ -999,9 +1004,11 @@ window["initRevealPresentation"] = async function() {
     )}">`;
 
     // global styles
-    styles += `<style>${this.resolvePathsInStyles(
-      this.notebook.config.globalCss,
-      vscodePreviewPanel,
+    styles += `<style>${cssForStyle(
+      this.resolvePathsInStyles(
+        this.notebook.config.globalCss,
+        vscodePreviewPanel,
+      ),
     )}</style>`;
 
     return styles;
@@ -1320,6 +1327,10 @@ window["initRevealPresentation"] = async function() {
       )}" charset="UTF-8"></script>`;
     };
 
+    // Every script and stylesheet the export takes from the CDN. The host is
+    // escaped once, for the attributes it is written in.
+    const cdnHost = escape(this.notebook.config.jsdelivrCdnHost);
+
     // get `id` and `class`: a class of the front matter is a name or a list
     // of them; anything else that is not nothing is written as its text.
     const elementId = (yamlConfig['id'] as string) || '';
@@ -1341,25 +1352,25 @@ window["initRevealPresentation"] = async function() {
         <script type="text/javascript">
           ${buildMathJaxConfigScript(mathJaxConfig)}
         </script>
-        <script type="text/javascript" defer src="${
-          this.notebook.config.mathjaxScriptSrc
-        }" charset="UTF-8"></script>
+        <script type="text/javascript" defer src="${escape(
+          this.notebook.config.mathjaxScriptSrc,
+        )}" charset="UTF-8"></script>
         `;
       } else {
         mathStyle = `
         <script type="text/javascript">
           ${buildMathJaxConfigScript(mathJaxConfig)}
         </script>
-        <script type="text/javascript" defer src="${
-          this.notebook.config.mathjaxScriptSrc
-        }"></script>
+        <script type="text/javascript" defer src="${escape(
+          this.notebook.config.mathjaxScriptSrc,
+        )}"></script>
         `;
       }
     } else if (this.notebook.config.mathRenderingOption === 'KaTeX') {
       if (options.offline) {
         mathStyle = await offlineStyle('./dependencies/katex/katex.min.css');
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.19.1/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${cdnHost}/npm/katex@0.19.1/dist/katex.min.css">`;
       }
     } else {
       mathStyle = '';
@@ -1373,7 +1384,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/font-awesome/css/all.min.css',
         );
       } else {
-        fontAwesomeStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">`;
+        fontAwesomeStyle = `<link rel="stylesheet" href="https://${cdnHost}/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">`;
       }
     }
 
@@ -1390,7 +1401,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/mermaid/mermaid.min.js',
         );
       } else {
-        mermaidScript += `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@12.4.0/dist/mermaid.min.js"></script>`;
+        mermaidScript += `<script src="https://${cdnHost}/npm/mermaid@12.4.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript = `<script type="module">${buildMermaidExportScript(
@@ -1407,7 +1418,7 @@ window["initRevealPresentation"] = async function() {
       if (options.offline) {
         peleScript = await offlineScript('./dependencies/pele/pele.global.js');
       } else {
-        peleScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/pele@1.13.0/dist/pele.global.js"></script>`;
+        peleScript = `<script src="https://${cdnHost}/npm/pele@1.13.0/dist/pele.global.js"></script>`;
       }
       // A classic script: pele draws synchronously, so the diagrams are in
       // place as soon as the script has run.
@@ -1429,9 +1440,9 @@ window["initRevealPresentation"] = async function() {
           './dependencies/wavedrom/wavedrom.min.js',
         );
       } else {
-        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/default.js"></script>`;
-        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/narrow.js"></script>`;
-        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/wavedrom.min.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${cdnHost}/npm/wavedrom@3.3.0/skins/default.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${cdnHost}/npm/wavedrom@3.3.0/skins/narrow.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${cdnHost}/npm/wavedrom@3.3.0/wavedrom.min.js"></script>`;
       }
       wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`;
     }
@@ -1455,7 +1466,7 @@ window["initRevealPresentation"] = async function() {
       for (const { key, version } of dependentLibraryMaterials) {
         vegaScript += options.offline
           ? await offlineScript(`./dependencies/${key}/${key}.min.js`)
-          : `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
+          : `<script type="text/javascript" src="https://${cdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
       }
 
       vegaInitScript += `<script>
@@ -1492,7 +1503,7 @@ window["initRevealPresentation"] = async function() {
         );
       } else {
         presentationScript = `
-        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@6.0.2/dist/reveal.js'></script>`;
+        <script src='https://${cdnHost}/npm/reveal.js@6.0.2/dist/reveal.js'></script>`;
       }
 
       const presentationConfig = presentationConfigOf(
@@ -1645,7 +1656,7 @@ window["initRevealPresentation"] = async function() {
             `./dependencies/reveal/css/theme/${safeTheme}`,
           );
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@6.0.2/dist/theme/${safeTheme}">`;
+          presentationStyle += `<link rel="stylesheet" href="https://${cdnHost}/npm/reveal.js@6.0.2/dist/theme/${safeTheme}">`;
         }
       } else {
         // preview theme
@@ -1728,8 +1739,8 @@ window["initRevealPresentation"] = async function() {
     // global styles
     // No webview here — this is the HTML/print export path, where `file://`
     // is what the output should carry.
-    const globalStyles = this.resolvePathsInStyles(
-      this.notebook.config.globalCss,
+    const globalStyles = cssForStyle(
+      this.resolvePathsInStyles(this.notebook.config.globalCss),
     );
 
     // sidebar toc
@@ -2545,7 +2556,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig['html'] &&
         (ebookConfig['html'] as Record<string, unknown>)['cdn']
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.19.1/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${escape(
+          this.notebook.config.jsdelivrCdnHost,
+        )}/npm/katex@0.19.1/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="${utility.toFileURL(
           path.resolve(
@@ -2630,7 +2643,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // global styles
     let globalStyles = '';
     try {
-      globalStyles = this.resolvePathsInStyles(this.notebook.config.globalCss);
+      globalStyles = cssForStyle(
+        this.resolvePathsInStyles(this.notebook.config.globalCss),
+      );
     } catch {
       // ignore it
     }
