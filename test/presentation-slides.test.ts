@@ -1160,32 +1160,24 @@ Text ^note
       expect(notes.html()).toBe('<p><em>a</em></p>\n');
     });
 
-    test('a wikilink of the notes is resolved from the path of their note, not from the path of a note embedded in the page', async () => {
-      // The embedding sets the path of the notebook to the file embedded,
-      // and leaves it so.
-      const { html } = await render(
-        [
-          '<!-- slide -->',
-          '',
-          '# First',
-          '',
-          'Intro ![[sub/other.md]] inline',
-          '',
-          '<aside class="notes" data-markdown>See [[a/x]]</aside>',
-        ].join('\n'),
-        'markdown-it',
-        { 'sub/other.md': 'other', 'a/x.md': 'x' },
+    // Under pandoc the path of the notebook is not set to the path of the
+    // note that is rendered, so where a wikilink of the notes is resolved
+    // from is what the rendering of the notes makes of it.
+    test('a wikilink of the notes is resolved from the path of their note', async () => {
+      const notebook = await notebookOf('pandoc', { 'pres/a/x.md': 'x' });
+      const { html } = await renderFile(
+        notebook,
+        'pres/deck.md',
+        '<!-- slide -->\n\n# First\n\n<aside class="notes" data-markdown>See [[a/x]]</aside>',
       );
       const notes = load(html)('section[data-h] > aside.notes');
 
+      // The link is given the address of the file, as a link of the page is.
       expect(notes.find('a').text()).toBe('a/x');
-      expect(notes.find('a').attr('href')).toBe('a/x.md');
+      expect(notes.find('a').attr('href')).toMatch(/\/pres\/a\/x\.md$/);
     });
 
-    test('the path is given back: under pandoc, the table of contents of the note rendered next is resolved from the path of that note', async () => {
-      // Under pandoc the path of the note is never set by a rendering, so
-      // the table of contents, which markdown-it renders, would be resolved
-      // from the path of the presentation.
+    test('the path of the notebook is given back: under pandoc, the table of contents of the note rendered next is resolved from the path of that note', async () => {
       const notebook = await notebookOf('pandoc', {
         'x.md': 'x',
       });
@@ -1198,5 +1190,58 @@ Text ^note
 
       expect(tocHTML).toContain('href="x.md"');
     });
+
+    // The notes are read once more than they were written: the HTML parser
+    // takes `<style @>` for an element, and CommonMark does not. In the page
+    // what follows it is the text of the element, and in the reading it is
+    // markup — an aside marked for markdown that was no element in the page,
+    // in the element that a note itself marks as the fragment that is
+    // current. reveal.js would render it with `marked`, into the speaker view
+    // as it is. The sanitizer takes the marker off it, and what it holds
+    // goes through the sanitizer as the HTML it now is.
+    const exposed = [
+      [
+        'a link',
+        [
+          '<aside class="notes" data-markdown>',
+          'x<style @>',
+          '',
+          '<div class="current-fragment">A<aside class="notes" data-markdown>[x](javascript:alert(1))</aside></div>',
+          '</style>',
+        ],
+      ],
+      [
+        'an input that takes the focus',
+        [
+          '<aside class="notes" data-markdown>',
+          'x<style @>',
+          '',
+          '<div class="current-fragment">A<aside class="notes" data-markdown>',
+          '<span a="1',
+          '2"><style @>',
+          '<input autofocus onfocus=alert(1)>',
+          '</style>',
+          '</aside></div>',
+          '</style>',
+        ],
+      ],
+    ] as [string, string[]][];
+
+    test.each(exposed)(
+      'an aside marked for markdown that the rendering of the notes brings out is not left to reveal.js: %s runs nothing',
+      async (_, markup) => {
+        const { html } = await render(
+          `<!-- slide -->\n\n# First\n\n${markup.join('\n')}`,
+        );
+        const $ = load(html);
+        const current = $('.current-fragment aside.notes');
+
+        // The notes reveal.js takes are there, and it takes them as HTML.
+        expect(current).toHaveLength(1);
+        expect($('[data-markdown]')).toHaveLength(0);
+        expect($('[onfocus]')).toHaveLength(0);
+        expect($('a[href^="javascript"]')).toHaveLength(0);
+      },
+    );
   });
 });

@@ -343,31 +343,56 @@ async function speakerViewOfSlide(
 }
 
 /**
+ * How a test has the engine leave the notes of a slide.
+ *
+ * - `rendered`: as it does. The notes are rendered and the sanitizer takes
+ *   the marker off every aside.
+ * - `markdown`: as it did before it rendered such notes itself. No notes are
+ *   rendered, and the asides the note marked keep their marker.
+ * - `exposed`: as a rendering that leaves reveal.js an aside the rendering
+ *   itself brought out (see `EXPOSED`). The notes are rendered, and that
+ *   aside keeps its marker.
+ */
+type NotesState = 'rendered' | 'markdown' | 'exposed';
+
+/**
  * Present a slide whose speaker notes are the markdown of an `aside.notes`
  * marked `data-markdown`, as an export of crossnote lays it out, and open the
  * speaker view on it.
  *
- * The engine cannot be loaded here, so the step it takes for such notes
- * (`parseSlides`) is applied by hand when `rendered` is set: the notes are
- * rendered with `renderMarkdownNotes`, by a markdown-it like the one of a
- * notebook, and the slide is sanitized and settled as the engine hands a page
- * over. Without it the notes are as the engine left them before it took that
- * step, and the notes plugin renders them with the `marked` bundled in it.
+ * The engine cannot be loaded here, so the steps it takes for such notes are
+ * applied by hand: the notes are rendered with `renderMarkdownNotes`, by a
+ * markdown-it like the one of a notebook, and the slide is sanitized and
+ * settled as the engine hands a page over. The sanitizer takes the marker off
+ * every aside; with `markdown` and `exposed` it is put back on the asides that
+ * reveal.js is left to render itself, with the `marked` bundled in it.
  */
 async function speakerViewOfMarkdownNotes(
   context: BrowserContext,
   page: Page,
   notes: string,
-  rendered: boolean,
+  state: NotesState = 'rendered',
 ) {
   const $ = cheerio.load(
     `<div class="reveal"><div class="slides"><section class="slide"><h1>One</h1><aside class="notes" data-markdown>${notes}</aside></section></div></div>`,
   );
-  if (rendered) {
-    const md = new MarkdownIt({ html: true });
-    renderMarkdownNotes($, (markdown) => md.render(markdown));
+  const md = new MarkdownIt({ html: true });
+  const render = (markdown: string) => md.render(markdown);
+  if (state === 'exposed') {
+    renderMarkdownNotes($, render);
+  }
+  const leftToReveal = $(
+    state === 'markdown'
+      ? 'aside.notes[data-markdown]'
+      : state === 'exposed'
+        ? '.current-fragment aside.notes'
+        : 'no-such-element',
+  );
+  if (state === 'rendered') {
+    renderMarkdownNotes($, render);
   }
   sanitizeRenderedHTML($);
+  leftToReveal.attr('data-markdown', '');
   const slide = settledHTML($, $('.slides').html() ?? '');
   return speakerViewOfSlide(context, page, slide);
 }
@@ -428,7 +453,7 @@ test.describe('the speaker view of a presentation whose notes are markdown', () 
     context,
     page,
   }) => {
-    const found = await speakerViewOfMarkdownNotes(context, page, notes, true);
+    const found = await speakerViewOfMarkdownNotes(context, page, notes);
 
     expect(found.dialogs).toEqual([]);
     expect(found.links).toEqual([]);
@@ -440,9 +465,82 @@ test.describe('the speaker view of a presentation whose notes are markdown', () 
     context,
     page,
   }) => {
-    const found = await speakerViewOfMarkdownNotes(context, page, notes, false);
+    const found = await speakerViewOfMarkdownNotes(
+      context,
+      page,
+      notes,
+      'markdown',
+    );
 
     expect(found.links).toEqual(['javascript:alert(1)']);
     expect(found.dialogs).toEqual(['1']);
   });
+
+  // The notes are read once more than they were written. `<style @>` opens a
+  // `style` for the HTML parser and is no tag for CommonMark: what is the
+  // text of that element in the page is markup in the reading — an aside
+  // marked for markdown, in the element that a note itself marks as the
+  // fragment that is current, from which reveal.js takes the notes first.
+  // `marked` then keeps what the sanitizer saw as text only.
+  const EXPOSED = [
+    [
+      'a link whose address runs script',
+      [
+        'x<style @>',
+        '',
+        '<div class="current-fragment">A<aside class="notes" data-markdown>[x](javascript:alert(1))</aside></div>',
+        '</style>',
+      ],
+      // What the notes hold as the speaker view has them, as HTML.
+      '[x](javascript:alert(1))',
+    ],
+    [
+      'an input that takes the focus by itself',
+      [
+        'x<style @>',
+        '',
+        '<div class="current-fragment">A<aside class="notes" data-markdown>',
+        '<span a="1',
+        '2"><style @>',
+        '<input autofocus onfocus=alert(1)>',
+        '</style>',
+        '</aside></div>',
+        '</style>',
+      ],
+      '<style @="">',
+    ],
+  ] as [string, string[], string][];
+
+  for (const [what, markup, notes] of EXPOSED) {
+    test(`finds nothing that runs in an aside marked for markdown that the rendering of the notes brings out: ${what}`, async ({
+      context,
+      page,
+    }) => {
+      const found = await speakerViewOfMarkdownNotes(
+        context,
+        page,
+        markup.join('\n'),
+      );
+
+      expect(found.handlers).toEqual([]);
+      expect(found.links).toEqual([]);
+      expect(found.dialogs).toEqual([]);
+      // The notes reveal.js takes from the current fragment are there, as HTML.
+      expect(found.html).toContain(notes);
+    });
+
+    test(`in an aside marked for markdown that the rendering brings out and that is left to reveal.js, ${what} runs its script`, async ({
+      context,
+      page,
+    }) => {
+      const found = await speakerViewOfMarkdownNotes(
+        context,
+        page,
+        markup.join('\n'),
+        'exposed',
+      );
+
+      expect(found.dialogs).toEqual(['1']);
+    });
+  }
 });

@@ -16,11 +16,18 @@ import type { CheerioAPI } from 'cheerio';
  * that has it is rendered on its own, and one without it is left as it is:
  * its notes are HTML, as they are when it stands alone.
  *
- * This has to run before the sanitizer sees the slide: what the rendering
+ * This has to run before the sanitizer sees the page: what the rendering
  * makes — an attribute a heading is given in markdown — it has to see.
  *
  * The innermost aside is rendered first, so that the markdown around it
  * takes the notes rendered within it as HTML.
+ *
+ * The notes are read once more than they were written, and what was their
+ * text can be markup in that reading: the HTML parser takes `<style @>` for
+ * an element and CommonMark does not, so what follows it in the page is the
+ * text of the element, and markup in the reading. An aside marked for
+ * markdown that comes out of this is not rendered here — the sanitizer takes
+ * the marker off every aside that still has one, wherever it came from.
  */
 export function renderMarkdownNotes(
   $: CheerioAPI,

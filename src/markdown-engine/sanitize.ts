@@ -106,6 +106,15 @@ function sanitize($: CheerioAPI, notesAreHTML: boolean): void {
     }
   });
 
+  // reveal.js renders the notes of an `aside.notes` marked `data-markdown`
+  // itself, with the `marked` bundled in its notes plugin, and writes what it
+  // made into the window of its speaker view as it is: markup the sanitizer
+  // never saw (#600). crossnote renders such notes itself
+  // (`renderMarkdownNotes`). What has the marker when the page is sanitized
+  // — one that the rendering of the notes around it brought out, or one that
+  // a reading of the page brings out — is taken as the HTML it is.
+  $('aside.notes[data-markdown]').removeAttr('data-markdown');
+
   // An SVG animation in the page can give a link its address after the
   // sanitizer has looked at the link: an `<animate attributeName="href"
   // values="javascript:…">` in an `<a>` makes a link of it that runs when it
