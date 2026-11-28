@@ -182,8 +182,15 @@ describe('a slide comment the transformer leaves out', () => {
     });
   });
 
+  /** The token of a rendering, as a rendering hands it down. */
+  const TOKEN = '0123456789abcdef0123456789abcdef';
+
   /** The note as the pandoc export transforms it. */
-  async function transformed(markdown: string, omitSlideComments: boolean) {
+  async function transformed(
+    markdown: string,
+    omitSlideComments: boolean,
+    slideMarkerToken?: string,
+  ) {
     return transformMarkdown(markdown, {
       fileDirectoryPath: tmp,
       projectDirectoryPath: tmp,
@@ -194,6 +201,7 @@ describe('a slide comment the transformer leaves out', () => {
       markdownParser: 'pandoc',
       omitSlideComments,
       notebook,
+      slideMarkerToken,
     });
   }
 
@@ -293,12 +301,15 @@ describe('a slide comment the transformer leaves out', () => {
     },
   );
 
-  test('the comment is still the marker of a slide where it is not left out', async () => {
+  test('the comment is still the marker of a slide where it is not left out, carrying the token it was handed', async () => {
     const { outputString, slideConfigs } = await transformed(
       '<!-- slide class="x" -->\n# First\n',
       false,
+      TOKEN,
     );
-    expect(outputString).toContain('<p><span>[CROSSNOTESLIDE:0]</span></p>');
+    expect(outputString).toContain(
+      `<p><span>[CROSSNOTESLIDE:${TOKEN}:0]</span></p>`,
+    );
     expect(slideConfigs).toHaveLength(1);
   });
 
