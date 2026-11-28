@@ -320,6 +320,108 @@ async function loadFile(
 const BLOCK_ID_RE = /(?<!\s)\s+\^([a-zA-Z0-9_-]+)$/;
 
 /**
+ * Cheap check that a note might have an `@import` or image inside an
+ * indented code block (crossnote#594). The class cannot cross a line
+ * break: a `\s` here is quadratic on a run of whitespace-only lines
+ * (the engine restarts at every line and backtracks through the run).
+ * Two `[ \t>]*` runs around `(?:\t| {4})` are quadratic on a long
+ * run of spaces on one line; a lookahead for the indent keeps the
+ * match linear. The class still covers a tab with 1–3 spaces
+ * (`\t @import`) and a `>` after four spaces (`    > @import`), which
+ * the line test at the import site sees after the `>` is stripped.
+ */
+const INDENTED_IMPORT_GATE = /^(?=[ \t>]*(?:\t| {4}))[ \t>]*(?:@import|!\[)/m;
+
+/**
+ * Same prefix the transform pass takes off a line before reading it.
+ */
+const BLOCKQUOTE_PREFIX_RE = /^\s*(>+)\s?/;
+
+/**
+ * Same subject the transform pass reads from an HTML comment
+ * (`\s` includes NBSP).
+ */
+const HTML_COMMENT_SUBJECT_RE = /^<!--\s+([^\s]+)/;
+
+const SLIDE_SUBJECT_RE = /^\.?slide:?$/;
+
+function splitQuotePrefix(line: string): {
+  line: string;
+  blockquotePrefix: string;
+} {
+  const blockquoteMatch = line.match(BLOCKQUOTE_PREFIX_RE);
+  if (blockquoteMatch) {
+    return {
+      blockquotePrefix: blockquoteMatch[0],
+      line: line.replace(blockquoteMatch[0], ''),
+    };
+  }
+  return { line, blockquotePrefix: '' };
+}
+
+/**
+ * Whether this line, as the transform pass sees it (quote prefix
+ * already taken off), is a `<!-- slide -->` comment.
+ */
+function isSlideCommentLine(line: string): boolean {
+  const subjectMatch = line.match(HTML_COMMENT_SUBJECT_RE);
+  if (!subjectMatch) {
+    return false;
+  }
+  const subject = subjectMatch[1];
+  return subject in CustomSubjects && SLIDE_SUBJECT_RE.test(subject);
+}
+
+/**
+ * This pass writes a `<!-- slide -->` as a paragraph marker
+ * (`<span>[CROSSNOTESLIDE:N]</span>  `), so an indented line right
+ * after it continues that paragraph on the page. The raw note still
+ * has an HTML comment, and markdown-it would call the next line a
+ * `code_block`. Parse this rewritten form so the two agree.
+ * Line count is kept so `token.map` still matches `lineNo`.
+ */
+function slideCommentsAsWritten(src: string): string {
+  const marker = '<span>[CROSSNOTESLIDE:0]</span>  ';
+  let out = '';
+  let i = 0;
+  while (i < src.length) {
+    const nl = src.indexOf('\n', i);
+    const lineEnd = nl < 0 ? src.length : nl;
+    const line = src.slice(i, lineEnd);
+    const { line: asPassSeesIt, blockquotePrefix } = splitQuotePrefix(line);
+    if (isSlideCommentLine(asPassSeesIt)) {
+      const close = src.indexOf('-->', i);
+      if (close < 0) {
+        // The pass ends the note at the first unclosed comment;
+        // nothing below can close one, so stop looking.
+        out += src.slice(i);
+        break;
+      }
+      const comment = src.slice(i, close + 3);
+      let newlines = 0;
+      for (let k = 0; k < comment.length; k++) {
+        if (comment.charCodeAt(k) === 10) {
+          newlines += 1;
+        }
+      }
+      out += blockquotePrefix + marker;
+      for (let n = 0; n < newlines; n++) {
+        out += '\n';
+      }
+      i = close + 3;
+      continue;
+    }
+    out += src.slice(i, lineEnd);
+    if (nl < 0) {
+      break;
+    }
+    out += '\n';
+    i = lineEnd + 1;
+  }
+  return out;
+}
+
+/**
  * The file an import target names when it is absolute: a `file://` URL, or a
  * Windows drive or UNC path (`C:/styles/my.less`, `\\server\share\x.less`).
  * A leading `/` is not included; in an import it means the project root.
@@ -367,6 +469,34 @@ export async function transformMarkdown(
   const usePandocParser = markdownParser === 'pandoc';
   // Replace CRLF with LF
   inputString = inputString.replace(/\r\n/g, '\n');
+
+  // Lines that markdown-it treats as an indented code block
+  // (crossnote#594). Empty when the note has no indented import or
+  // image, so those notes skip the second parse; a leftover CR stands
+  // the check down, because a `\r` is a line break to markdown-it and
+  // not to this loop. Which line is code is for markdown-it to say.
+  // Pandoc is not covered: a 4-space indent is a CodeBlock to pandoc's
+  // reader too, but pandoc-convert and markdown-convert skip this
+  // check, so those exports still inline the file.
+  const indentedCodeLines = new Set<number>();
+  if (
+    !usePandocParser &&
+    !inputString.includes('\r') &&
+    INDENTED_IMPORT_GATE.test(inputString)
+  ) {
+    const toParse =
+      !omitSlideComments && !forMarkdownExport
+        ? slideCommentsAsWritten(inputString)
+        : inputString;
+    for (const token of notebook.md.parse(toParse, {})) {
+      if (token.type === 'code_block' && token.map) {
+        const [start, end] = token.map;
+        for (let n = start; n < end; n++) {
+          indentedCodeLines.add(n);
+        }
+      }
+    }
+  }
 
   let lastOpeningCodeBlockFence: string | null = null;
   // null when not inside a `:::name … :::` block; 'code' when the inner
@@ -426,16 +556,9 @@ export async function transformMarkdown(
       if (end < 0) {
         end = inputString.length;
       }
-      let line = inputString.substring(i, end);
-
-      let blockquotePrefix: string;
-      const blockquoteMatch = line.match(/^\s*(>+)\s?/);
-      if (blockquoteMatch) {
-        blockquotePrefix = blockquoteMatch[0];
-        line = line.replace(blockquoteMatch[0], '');
-      } else {
-        blockquotePrefix = '';
-      }
+      const { line, blockquotePrefix } = splitQuotePrefix(
+        inputString.substring(i, end),
+      );
       return {
         line,
         blockquotePrefix,
@@ -699,7 +822,7 @@ export async function transformMarkdown(
           commentEnd += 3;
         }
 
-        const subjectMatch = line.match(/^<!--\s+([^\s]+)/);
+        const subjectMatch = line.match(HTML_COMMENT_SUBJECT_RE);
         if (!subjectMatch) {
           const content = inputString.slice(i + 4, commentEnd - 3);
           const newlinesMatch = content.match(/\n/g);
@@ -736,7 +859,7 @@ export async function transformMarkdown(
                 '<div class="pagebreak"> </div>' +
                 '\n'.repeat(newlines);
               continue;
-            } else if (subject.match(/^\.?slide:?$/)) {
+            } else if (isSlideCommentLine(line)) {
               // slide
               if (omitSlideComments) {
                 i = commentEnd;
@@ -947,7 +1070,20 @@ export async function transformMarkdown(
       const wikilinkImportMatch = line.match(
         /^(\s*)!\[\[(.+?)\]\](?:{([^}]*)})?\s*$/,
       );
-      if (importMatch || imageImportMatch || wikilinkImportMatch) {
+      // A CommonMark indented code block is not an import: rewriting it
+      // to `![@embedding](...)` is what the preview then shows as the
+      // code (crossnote#594). Which lines are code is taken from
+      // markdown-it's `code_block` tokens — four spaces or a tab under a
+      // list item, or a lazy continuation, stay imports. Looked up only
+      // once the line has matched, in a Set of those lines.
+      // Pandoc is not covered: a 4-space indent is a code block to
+      // pandoc's reader too (`para\n\n    @import "part.md"` →
+      // CodeBlock); the pandoc path inlines the file because it skips
+      // this check.
+      if (
+        (importMatch || imageImportMatch || wikilinkImportMatch) &&
+        !indentedCodeLines.has(lineNo)
+      ) {
         let filePath = '';
 
         // Extract #fragment from the original import path before
