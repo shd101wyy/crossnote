@@ -266,7 +266,7 @@ describe('the keys of a presentation that make reveal.js load a script', () => {
     '---',
     'presentation:',
     '  dependencies:',
-    '    - https://example.com/payload.js',
+    '    - src: https://example.com/payload.js',
     '  url: "javascript:alert(1)//"',
     '  transition: fade',
     '---',
@@ -275,7 +275,8 @@ describe('the keys of a presentation that make reveal.js load a script', () => {
     '# One',
     '',
   ].join('\n');
-  const payload = ['https://example.com/payload.js'];
+  // reveal.js 6 loads the entries that have a `src`, and nothing else.
+  const payload = [{ src: 'https://example.com/payload.js' }];
   const url = 'javascript:alert(1)//';
 
   /** What reveal.js is given by an export. */

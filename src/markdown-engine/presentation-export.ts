@@ -2,12 +2,12 @@ import { jsonForScript } from '../lib/json-for-script';
 
 /**
  * The `presentation` configuration of a note — its front matter — with the
- * keys taken out that make reveal.js load a script: `dependencies`, each of
- * which reveal.js loads into the page as a script, and `url`, from which its
- * notes plugin builds the frames of the speaker view. A note may load script
- * only when `enableScriptExecution` is on, as with the JavaScript and CSS
- * files it names (#602). (reveal.js itself drops `dependencies` that come
- * from the address of the page.)
+ * keys taken out that make reveal.js load a script: `dependencies` — the
+ * entries that have a `src`, which reveal.js loads into the page as scripts —
+ * and `url`, from which its notes plugin builds the frames of the speaker
+ * view. A note may load script only when `enableScriptExecution` is on, as
+ * with the JavaScript and CSS files it names (#602). (reveal.js itself drops
+ * `dependencies` that come from the address of the page.)
  *
  * What is not an object is no configuration.
  */
