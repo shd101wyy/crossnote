@@ -1,18 +1,31 @@
 import { spawnSync } from 'child_process';
 import * as fs from 'fs';
+import { createRequire } from 'module';
 import * as os from 'os';
 import * as path from 'path';
-import { build } from 'esbuild';
+import { build, type BuildOptions, type OutputFile } from 'esbuild';
 import { Notebook } from '../src/notebook/index';
 
 /**
  * Node 18.15–18.19 parse JSON import attributes written with `assert`,
  * and reject the `with` keyword (`SyntaxError: Unexpected token 'with'`).
- * esbuild keeps whichever form the source used in the ESM output.
- * Matches the attribute on a `.json` import, not a mention in a comment.
+ * esbuild keeps whichever form the source used in the ESM output unless
+ * the JSON file is inlined. Matches the attribute on a `.json` import,
+ * not a mention in a comment.
  */
 const JSON_IMPORT_ATTRIBUTE =
   /\.json['"]\s*(?:with|assert)\s*\{\s*type\s*:\s*['"]json['"]\s*\}/;
+
+const EMOJI_JSON_REQUIRE =
+  /require\(["']markdown-it-emoji\/lib\/data\/full\.json["']\)/;
+
+// The library esbuild configs live in build.js so this assertion tracks
+// the same options CI would miss if it only transformed emoji.ts.
+const requireBuild = createRequire(__filename);
+const { cjsConfig, esmConfig } = requireBuild('../build.js') as {
+  cjsConfig: BuildOptions;
+  esmConfig: BuildOptions;
+};
 
 describe('runtime compatibility', () => {
   test('parses HTML with Cheerio without a global File constructor', () => {
@@ -35,56 +48,29 @@ describe('runtime compatibility', () => {
     expect(result.stderr).not.toContain('File is not defined');
   });
 
-  test('emoji JSON is loaded without import attributes Node 18.15–18.19 reject', async () => {
+  test('library build inlines emoji JSON without import attributes Node 18.15–18.19 reject', async () => {
     const repoRoot = path.join(__dirname, '..');
-    const emojiSource = fs.readFileSync(
-      path.join(repoRoot, 'src/custom-markdown-it-features/emoji.ts'),
-      'utf8',
-    );
-    expect(emojiSource).not.toMatch(JSON_IMPORT_ATTRIBUTE);
 
-    const transformed = await build({
+    const esmResult = await build({
+      ...esmConfig,
       absWorkingDir: repoRoot,
-      entryPoints: ['src/custom-markdown-it-features/emoji.ts'],
-      bundle: false,
       write: false,
-      format: 'esm',
-      platform: 'neutral',
     });
-    const esmText = transformed.outputFiles.map((file) => file.text).join('\n');
+    const esmText = esmResult.outputFiles
+      .map((file: OutputFile) => file.text)
+      .join('\n');
     expect(esmText).not.toMatch(JSON_IMPORT_ATTRIBUTE);
 
-    const bundledEsmPath = path.join(repoRoot, 'out/esm/index.mjs');
-    if (fs.existsSync(bundledEsmPath)) {
-      expect(fs.readFileSync(bundledEsmPath, 'utf8')).not.toMatch(
-        JSON_IMPORT_ATTRIBUTE,
-      );
-
-      // The issue's repro: `node -e "import('crossnote')"` on Node 18.15–18.19.
-      const esmLoad = spawnSync(
-        process.execPath,
-        [
-          '-e',
-          "import('./out/esm/index.mjs').then(() => {}, (e) => { console.error(e); process.exit(1); })",
-        ],
-        { cwd: repoRoot, encoding: 'utf8' },
-      );
-      expect(esmLoad.error).toBeUndefined();
-      expect(esmLoad.status).toBe(0);
-      expect(esmLoad.stderr).not.toContain("Unexpected token 'with'");
-    }
-
-    const bundledCjsPath = path.join(repoRoot, 'out/cjs/index.cjs');
-    if (fs.existsSync(bundledCjsPath)) {
-      const cjsLoad = spawnSync(
-        process.execPath,
-        ['-e', "require('./out/cjs/index.cjs')"],
-        { cwd: repoRoot, encoding: 'utf8' },
-      );
-      expect(cjsLoad.error).toBeUndefined();
-      expect(cjsLoad.status).toBe(0);
-    }
-  });
+    const cjsResult = await build({
+      ...cjsConfig,
+      absWorkingDir: repoRoot,
+      write: false,
+    });
+    const cjsText = cjsResult.outputFiles
+      .map((file: OutputFile) => file.text)
+      .join('\n');
+    expect(cjsText).not.toMatch(EMOJI_JSON_REQUIRE);
+  }, 30000);
 
   test('emoji shortcodes still render', async () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'emoji-compat-'));

@@ -1,18 +1,11 @@
-import { createRequire } from 'module';
+// tslint:disable-next-line no-implicit-dependencies
 import type { MarkdownIt } from 'markdown-it';
 import MarkdownItEmoji from 'markdown-it-emoji';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import fullEmoji from 'markdown-it-emoji/lib/data/full.json' with { type: 'json' };
 import { Notebook } from '../notebook';
 import { fontawesomeObject, isFontawesomebrand } from './fontawesome';
-
-// Node 18.15–18.19 cannot parse JSON import attributes in the ESM output.
-const requireEmoji = createRequire(
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore import.meta is kept in ESM; the CJS build falls through
-  import.meta.url || __filename,
-);
-const fullEmoji = requireEmoji(
-  'markdown-it-emoji/lib/data/full.json',
-) as Record<string, string>;
 
 export default (md: MarkdownIt, notebook: Notebook) => {
   md.use(MarkdownItEmoji, {

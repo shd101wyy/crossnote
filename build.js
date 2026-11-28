@@ -41,6 +41,24 @@ function verifyEsmForBrowser(esmPath) {
 }
 
 /**
+ * Leave markdown-it-emoji external except its JSON table, which is inlined
+ * so out/esm has no `with { type: 'json' }` (Node 18.15–18.19 reject that)
+ * and out/cjs has no runtime require of the table (a bundler of the package
+ * with no node_modules, such as the VS Code extension, can still see it).
+ */
+const inlineMarkdownItEmojiJsonPlugin = {
+  name: 'inline-markdown-it-emoji-json',
+  setup(build) {
+    build.onResolve({ filter: /^markdown-it-emoji(?:\/|$)/ }, (args) => {
+      if (args.path.endsWith('.json')) {
+        return undefined;
+      }
+      return { path: args.path, external: true };
+    });
+  },
+};
+
+/**
  * @type {import('esbuild').BuildOptions}
  */
 const sharedConfig = {
@@ -60,9 +78,10 @@ const sharedConfig = {
     'node:fs/promises',
     'url',
     // === from package.json
-    ...Object.keys(dependencies),
+    ...Object.keys(dependencies).filter((name) => name !== 'markdown-it-emoji'),
     ...Object.keys(devDependencies),
   ],
+  plugins: [inlineMarkdownItEmojiJsonPlugin],
 };
 
 /**
@@ -181,4 +200,14 @@ async function main() {
   }
 }
 
-main();
+module.exports = {
+  sharedConfig,
+  cjsConfig,
+  esmConfig,
+  cliConfig,
+  webviewConfig,
+};
+
+if (require.main === module) {
+  main();
+}
