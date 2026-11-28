@@ -7,6 +7,7 @@ import { mkdirp } from 'mkdirp';
 import * as path from 'path';
 import { CodeChunkData } from '../code-chunk/code-chunk-data';
 import computeChecksum from '../lib/compute-checksum';
+import { tocMarkerRegExp } from '../markdown-engine/page-markers';
 import { toc } from '../markdown-engine/toc';
 import { transformMarkdown } from '../markdown-engine/transformer';
 import { Notebook } from '../notebook';
@@ -268,10 +269,7 @@ export async function markdownConvert(
       depthTo: 6,
       tab: '  ',
     });
-    text = text.replace(
-      /^\s*(?:<p[^>]*>)?<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
-      '\n\n' + tocMarkdown + '\n\n',
-    );
+    text = text.replace(tocMarkerRegExp(), '\n\n' + tocMarkdown + '\n\n');
   }
 
   // change link path to project '/' path

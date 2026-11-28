@@ -57,6 +57,13 @@ export interface TransformMarkdownOptions {
   forPreview: boolean;
   markdownParser?: MarkdownParser;
   forMarkdownExport?: boolean;
+  /**
+   * Whether a `<!-- slide -->` comment is left out as any other comment is:
+   * no marker of a slide is written for it. Its lines stay, blank, as the
+   * lines of every comment do. For a document that has no slides: the pandoc
+   * export.
+   */
+  omitSlideComments?: boolean;
   protocolsWhiteListRegExp: RegExp | null;
   notSourceFile?: boolean;
   fileHash?: string;
@@ -344,6 +351,7 @@ export async function transformMarkdown(
     useRelativeFilePath = false,
     forPreview = false,
     forMarkdownExport = false,
+    omitSlideComments = false,
     markdownParser = 'markdown-it' as MarkdownParser,
     protocolsWhiteListRegExp = null,
     notSourceFile = false,
@@ -388,6 +396,30 @@ export async function transformMarkdown(
     lineNo: number = 0,
   ): Promise<TransformMarkdownOutput> {
     let outputString = '';
+
+    // Lines the output has beyond the lines of the note. A line of the note
+    // is a line of the output, as a rule. A few are written as more than
+    // one: under the pandoc parser an import that is written out as what it
+    // imports (a markdown, an html or a csv file, a file of code or of a
+    // diagram as a fenced block) and the opening marker of a `:::` div; and
+    // a slide comment of several lines that a markdown export keeps. The
+    // lines of the note after such a line start lower in the output than
+    // their numbers say: `[lineNo, lines beyond the first]` for each of
+    // them, in the order of the note (crossnote#593).
+    const extraLines: Array<[number, number]> = [];
+
+    /**
+     * Write what line `lineNo` of the note has become — `lineNo` as this
+     * loop counts it, from 0 — and remember the lines it took beyond the
+     * first.
+     */
+    const writeLine = (lineNo: number, output: string) => {
+      const lines = (output.match(/\n/g) ?? []).length;
+      if (lines > 0) {
+        extraLines.push([lineNo + 1, lines]);
+      }
+      outputString = outputString + output + '\n';
+    };
 
     function getLine(i: number) {
       let end = inputString.indexOf('\n', i);
@@ -506,8 +538,8 @@ export async function transformMarkdown(
             colonFenceMarkerLen = colonMarker.length;
           }
           i = end + 1;
+          writeLine(lineNo, line);
           lineNo = lineNo + 1;
-          outputString = outputString + line + '\n';
           continue;
         } else if (
           (inColonCodeBlock || inColonHtmlDiv) &&
@@ -706,12 +738,18 @@ export async function transformMarkdown(
               continue;
             } else if (subject.match(/^\.?slide:?$/)) {
               // slide
+              if (omitSlideComments) {
+                i = commentEnd;
+                lineNo = lineNo + newlines;
+                outputString = outputString + '\n'.repeat(newlines);
+                continue;
+              }
               options[SLIDE_MARKER_NUMBER] = slideMarkerCounter.next++;
               slideConfigs.push(options);
               if (forMarkdownExport) {
                 i = commentEnd;
+                writeLine(lineNo, `<!-- ${content} -->`);
                 lineNo = lineNo + newlines;
-                outputString = outputString + `<!-- ${content} -->` + '\n';
                 continue;
               } else {
                 i = commentEnd;
@@ -1117,8 +1155,8 @@ export async function transformMarkdown(
             })${configStr ? `{${configStr}}` : ''}${imageImportMatch[5]}`;
           }
           i = end + 1;
+          writeLine(lineNo, output);
           lineNo = lineNo + 1;
-          outputString = outputString + output + '\n';
           continue;
         } else {
           try {
@@ -1209,6 +1247,7 @@ export async function transformMarkdown(
                 headingIdGenerator: new HeadingIdGenerator(),
                 fileHash,
                 slideMarkerCounter,
+                omitSlideComments,
               });
 
               output = '\n' + output2 + '  ';
@@ -1354,9 +1393,8 @@ export async function transformMarkdown(
             }
 
             i = end + 1;
-            lineNo = lineNo + 1;
             if (usePandocParser) {
-              outputString = outputString + output + '\n';
+              writeLine(lineNo, output);
             } else {
               outputString =
                 outputString +
@@ -1368,6 +1406,7 @@ export async function transformMarkdown(
                 })}}` +
                 '\n';
             }
+            lineNo = lineNo + 1;
             continue;
           } catch (error) {
             output = `<pre class="language-text"><code>${escape(
@@ -1375,9 +1414,8 @@ export async function transformMarkdown(
             )}</code></pre>  `;
             // return helper(end+1, lineNo+1, outputString+output+'\n')
             i = end + 1;
-            lineNo = lineNo + 1;
             if (usePandocParser) {
-              outputString = outputString + output + '\n';
+              writeLine(lineNo, output);
             } else {
               outputString =
                 outputString +
@@ -1389,6 +1427,7 @@ export async function transformMarkdown(
                 })}}` +
                 '\n';
             }
+            lineNo = lineNo + 1;
             continue;
           }
         }
@@ -1539,13 +1578,28 @@ export async function transformMarkdown(
       } catch {
         // Leave as-is on malformed encoding.
       }
+      /**
+       * The line of the output that line `lineNo` of the note starts at, both
+       * counted from 1: the line itself, and the lines the imports before it
+       * added.
+       */
+      const outputLineOf = (lineNo: number): number => {
+        let extra = 0;
+        for (const [lineOfExtra, lines] of extraLines) {
+          if (lineOfExtra >= lineNo) {
+            break;
+          }
+          extra += lines;
+        }
+        return lineNo + extra;
+      };
+
       if (targetId && targetId.startsWith('^')) {
         // Block-ID transclusion (`#^block-id`): emit only the paragraph
         // (contiguous non-blank lines) containing the `^id` marker.
         const lineIdx = findFragmentTargetLine(inputString, targetId);
         if (lineIdx >= 0) {
           const sourceLines = inputString.split('\n');
-          const outputLines = outputString.split('\n');
           let startIdx = lineIdx;
           while (startIdx > 0 && sourceLines[startIdx - 1].trim() !== '') {
             startIdx--;
@@ -1557,8 +1611,15 @@ export async function transformMarkdown(
           ) {
             endIdx++;
           }
-          const paragraph = outputLines.slice(startIdx, endIdx + 1);
-          const relIdx = lineIdx - startIdx;
+          // Of the output: from where the first line of the paragraph starts
+          // to where the line after its last one does.
+          const paragraph = outputString
+            .split('\n')
+            .slice(
+              outputLineOf(startIdx + 1) - 1,
+              outputLineOf(endIdx + 2) - 1,
+            );
+          const relIdx = outputLineOf(lineIdx + 1) - outputLineOf(startIdx + 1);
           if (relIdx >= 0 && relIdx < paragraph.length) {
             paragraph[relIdx] = paragraph[relIdx].replace(
               /\s\^[a-zA-Z0-9_-]+\s*$/,
@@ -1608,14 +1669,14 @@ export async function transformMarkdown(
             const endLineNo = endHeading.lineNo as number;
             outputString = outputString
               .split('\n')
-              .slice(startLineNo - 1, endLineNo - 1)
+              .slice(outputLineOf(startLineNo) - 1, outputLineOf(endLineNo) - 1)
               .join('\n');
             keepSlideConfigsOfLines(startLineNo, endLineNo);
           } else {
             headings = headings.slice(startHeadingIndex);
             outputString = outputString
               .split('\n')
-              .slice(startLineNo - 1)
+              .slice(outputLineOf(startLineNo) - 1)
               .join('\n');
             keepSlideConfigsOfLines(startLineNo, Infinity);
           }

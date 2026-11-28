@@ -158,6 +158,31 @@ describe('renderPeleDiagrams', () => {
     expect(node.hasAttribute('data-processed')).toBe(true);
   });
 
+  it('shows the error, as text, when the font of the page cannot be read', () => {
+    const unreadable = makeNode();
+    const after = makeNode();
+    const getComputedStyleOf = window.getComputedStyle;
+    jest
+      .spyOn(window, 'getComputedStyle')
+      .mockImplementation((element: Element) => {
+        if (element === unreadable) {
+          throw new Error('no style');
+        }
+        return getComputedStyleOf(element);
+      });
+    const { pele, calls } = stubPele(() => ({ svg: SVG }));
+
+    renderPeleDiagrams(document.body, pele);
+
+    // The node is marked drawn before its font is read, so the error has to
+    // take the place of the diagram, and the diagrams after it are drawn.
+    expect(unreadable.innerHTML).toBe(
+      '<pre class="language-text"><code>Error: no style</code></pre>',
+    );
+    expect(after.querySelector('svg')).not.toBeNull();
+    expect(calls).toHaveLength(1);
+  });
+
   it('says so when pele is not loaded', () => {
     const node = makeNode();
 

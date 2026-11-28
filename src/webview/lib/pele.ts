@@ -48,13 +48,14 @@ export function renderPeleDiagram(
   // Pele sizes a node from the width it measures the label at, so a label is
   // to be drawn in the font it was measured in: `--pele-font` when the page
   // sets it — pele's own way of choosing a font — and else the font of the
-  // page, which is what the label is drawn in otherwise.
-  const style = getComputedStyle(node);
-  const fontFamily =
-    style.getPropertyValue('--pele-font').trim() || style.fontFamily.trim();
-  const fontFamilyMono = style.getPropertyValue('--pele-font-mono').trim();
-
+  // page, which is what the label is drawn in otherwise. Read in with the
+  // drawing: the node is marked drawn already, so whatever fails here is
+  // shown as the error of the diagram, in its place.
   try {
+    const style = getComputedStyle(node);
+    const fontFamily =
+      style.getPropertyValue('--pele-font').trim() || style.fontFamily.trim();
+    const fontFamilyMono = style.getPropertyValue('--pele-font-mono').trim();
     const { svg } = pele.render(code, {
       idPrefix: `pele-${++drawn}-`,
       fontFamily: fontFamily || undefined,

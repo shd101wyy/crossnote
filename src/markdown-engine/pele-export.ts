@@ -95,10 +95,12 @@ for (var i = 0; i < nodes.length; i++) {
   if (!code) {
     continue
   }
-  var style = getComputedStyle(node)
-  var fontFamily = style.getPropertyValue('--pele-font').trim() || style.fontFamily.trim()
-  var fontFamilyMono = style.getPropertyValue('--pele-font-mono').trim()
+  // The font of the page is read in with the drawing, as in the preview: the
+  // node is marked drawn already.
   try {
+    var style = getComputedStyle(node)
+    var fontFamily = style.getPropertyValue('--pele-font').trim() || style.fontFamily.trim()
+    var fontFamilyMono = style.getPropertyValue('--pele-font-mono').trim()
     node.innerHTML = pele.render(code, {
       idPrefix: 'pele-' + i + '-',
       fontFamily: fontFamily || undefined,

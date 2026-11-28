@@ -146,11 +146,11 @@ describe('HTML export offline asset embedding', () => {
     expect(html).not.toContain(Buffer.from('WOFF1FONT').toString('base64'));
   });
 
-  test('the Object.groupBy polyfill precedes the mermaid bundle in every mode', async () => {
-    // Mermaid >= 12.1 calls Object.groupBy at parser-init time; the
-    // oldest supported webview (Chromium 114) lacks it, so the shim in
-    // MERMAID_LEGACY_WEBVIEW_POLYFILL must run before the bundle in
-    // every export mode. Each mode is checked per needle — file:// src,
+  test('the shim precedes the mermaid bundle in every mode', async () => {
+    // Mermaid calls Object.groupBy at parser-init time and URL.canParse
+    // in its URL sanitizer; the oldest supported webview (Chromium 114)
+    // lacks both, so the shim in MERMAID_LEGACY_WEBVIEW_POLYFILL must run
+    // before the bundle in every export mode. Each mode is checked per needle — file:// src,
     // CDN src, and the inlined body — so a stray occurrence of one
     // needle elsewhere can't mask an ordering violation of another.
     const modes = [

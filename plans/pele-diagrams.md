@@ -163,10 +163,11 @@ fontFamily, fontFamilyMono })`, then `node.innerHTML = sanitizeHtml(svg)`.
 
 ### Theming
 
-- `styles/style-template.less`: `[data-preview-theme='dark'] .pele { … }` with
-  the dark palette from pele's theming guide (preview and export share the
+- `styles/style-template.less`: `:where(html:has(> body[data-preview-theme='dark'])) { … }`
+  with the dark palette from pele's theming guide (preview and export share the
   file). Light pages use pele's own defaults. Users can override any
-  `--pele-*` variable from `globalCss`.
+  `--pele-*` variable from `globalCss`, whatever selector it is written with
+  (#603).
 
 ### Security
 

@@ -553,8 +553,22 @@ html body[for='html-export']:not([data-presentation-mode]) {
 // light page. The preview marks the scheme of the page on <body>
 // (`data-preview-theme`), and the script of an exported document does the
 // same, so on a dark page the dark palette of pele's theming guide applies
-// without the diagram being drawn again. Global CSS can set any of them.
-[data-preview-theme='dark'] .pele {
+// without the diagram being drawn again.
+//
+// Global CSS can set any of them on a dark page as on a light one. That is
+// why the palette is declared on <html>, as a selector without any weight: a
+// value declared on the diagram itself, or on <body>, would win over one that
+// a rule of the user's sets on :root. So a rule of the user's wins wherever it
+// is written and wherever it comes — `:root`, `html`, `body` or `.pele`,
+// before or after this stylesheet.
+//
+// The `>` before body stays: with a descendant there, every change anywhere
+// in the page has the root's `:has` looked at again, and the style of the
+// whole page recalculated — for each diagram drawn, as its font is read.
+// (`:has` needs Chromium 105, Firefox 121 or Safari 15.4; the oldest webview
+// supported has Chromium 114. Where it is not known, a dark page keeps the
+// light colors.)
+:where(html:has(> body[data-preview-theme='dark'])) {
   --pele-bg: #100f0f;
   --pele-fg: #cecdc3;
   --pele-muted: #878580;

@@ -11,8 +11,8 @@ import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from '../src/markdown-engine/mermaid-
  */
 
 /**
- * Chromium-116+ APIs that the oldest supported webview (VS Code 1.82 /
- * Electron 25 / Chromium 114) lacks. An API the bundle uses must not
+ * APIs newer than the oldest supported webview (VS Code 1.82 / Electron
+ * 25 / Chromium 114). An API the bundle uses must not
  * appear here as a violation unless MERMAID_LEGACY_WEBVIEW_POLYFILL
  * literally contains its defining assignment (`defines`) — so an API can
  * only be exempted by shipping a shim that defines it, and removing the
@@ -35,6 +35,11 @@ const FLOOR_APIS: FloorApi[] = [
   },
   { label: 'Map.groupBy', usage: /Map\.groupBy/ },
   { label: 'Array.fromAsync', usage: /Array\.fromAsync/ },
+  {
+    label: 'URL.canParse',
+    usage: /URL\.canParse/,
+    defines: /URL\.canParse\s*=/,
+  },
 ];
 
 describe('vendored mermaid bundle', () => {
@@ -50,7 +55,7 @@ describe('vendored mermaid bundle', () => {
   ).replace(/<\/script>$/, '');
 
   test('is not empty or truncated', () => {
-    // The official mermaid 12.x IIFE dist is ~5.5 MB (11.x was ~3.5 MB).
+    // The official mermaid 12.x IIFE dist is ~5.8 MB (11.x was ~3.5 MB).
     // Anything far smaller means the file was emptied or only partially
     // written.
     expect(bundle.length).toBeGreaterThan(3_000_000);
@@ -65,6 +70,17 @@ describe('vendored mermaid bundle', () => {
         'globalThis["mermaid"] = globalThis.__esbuild_esm_mermaid_nm["mermaid"].default;',
       ),
     ).toBe(true);
+  });
+
+  test('is the dist file of the mermaid that is installed', () => {
+    // The bundle is downloaded from the CDN at the version in node_modules
+    // (scripts/update-mermaid-bundle.mjs), so the two are the same file. A
+    // bump that leaves the old bundle behind fails here; nothing else
+    // compares the vendored file with the package.
+    const installed = fs.readFileSync(
+      path.resolve(__dirname, '../node_modules/mermaid/dist/mermaid.min.js'),
+    );
+    expect(fs.readFileSync(bundlePath).equals(installed)).toBe(true);
   });
 
   test('parses on the Node 18 runtime floor (no ES2024-only syntax)', () => {
@@ -129,6 +145,41 @@ describe('vendored mermaid bundle', () => {
         delete objectWithGroupBy.groupBy;
       } else {
         objectWithGroupBy.groupBy = saved;
+      }
+    }
+  });
+
+  test('the polyfill defines URL.canParse per spec', () => {
+    // What mermaid's URL sanitizer asks of it for every http(s) link: whether
+    // new URL(url, base) succeeds. The body defines Object.groupBy too
+    // where it is missing, as on Node 18, so that is put back as well.
+    const url = URL as unknown as { canParse?: unknown };
+    const objectWithGroupBy = Object as unknown as { groupBy?: unknown };
+    const saved = url.canParse;
+    const savedGroupBy = objectWithGroupBy.groupBy;
+    delete url.canParse;
+    try {
+      new Function(polyfillBody)();
+      const canParse = url.canParse as (
+        url: unknown,
+        base?: unknown,
+      ) => boolean;
+      expect(canParse('https://example.com/a')).toBe(true);
+      expect(canParse('/a')).toBe(false);
+      expect(canParse('/a', 'https://example.com/')).toBe(true);
+      expect(canParse('https://example.com/a', 'not a base')).toBe(false);
+      expect(canParse('')).toBe(false);
+      expect(canParse(123)).toBe(false);
+    } finally {
+      if (saved === undefined) {
+        delete url.canParse;
+      } else {
+        url.canParse = saved;
+      }
+      if (savedGroupBy === undefined) {
+        delete objectWithGroupBy.groupBy;
+      } else {
+        objectWithGroupBy.groupBy = savedGroupBy;
       }
     }
   });

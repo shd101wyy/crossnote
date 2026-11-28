@@ -49,6 +49,7 @@ import { readOfflineCss, readOfflineJs } from './inline-offline-assets';
 import { buildMathJaxConfigScript, mathJaxConfigOf } from './mathjax-config';
 import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
+import { slideMarkerRegExp, tocMarkerRegExp } from './page-markers';
 import { buildPeleExportScript } from './pele-export';
 import { buildPresentationInitScript } from './presentation-export';
 import {
@@ -480,9 +481,8 @@ export class MarkdownEngine {
     scripts += `<script>var exports = undefined</script>`;
 
     // mermaid
-    // The polyfill must precede the bundle: mermaid ≥ 12.1 calls
-    // Object.groupBy, which the oldest supported webview lacks (see
-    // ./mermaid-polyfill.ts).
+    // The shim must precede the bundle: mermaid calls globals that the
+    // oldest supported webview lacks (see ./mermaid-polyfill.ts).
     scripts += MERMAID_LEGACY_WEBVIEW_POLYFILL;
     scripts += `<script type="text/javascript" src="${utility.addFileProtocol(
       path.resolve(
@@ -1343,16 +1343,16 @@ window["initRevealPresentation"] = async function() {
     let mermaidScript = '';
     let mermaidInitScript = '';
     if (html.indexOf(' class="mermaid') >= 0) {
-      // The polyfill must precede the bundle in both offline and CDN
-      // modes: mermaid ≥ 12.1 calls Object.groupBy, which the oldest
-      // supported webview lacks (see ./mermaid-polyfill.ts).
+      // The shim must precede the bundle in both offline and CDN modes:
+      // mermaid calls globals that the oldest supported webview lacks
+      // (see ./mermaid-polyfill.ts).
       mermaidScript = MERMAID_LEGACY_WEBVIEW_POLYFILL;
       if (options.offline) {
         mermaidScript += await offlineScript(
           './dependencies/mermaid/mermaid.min.js',
         );
       } else {
-        mermaidScript += `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@12.3.0/dist/mermaid.min.js"></script>`;
+        mermaidScript += `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@12.4.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript = `<script type="module">${buildMermaidExportScript(
@@ -3181,8 +3181,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // on the line: a fenced block is not followed by a newline, as a
     // paragraph is. One that is not in a paragraph of its own has to start
     // the line.
-    const marker =
-      /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTESLIDE(?::(\d+))?\]<\/span>(?:<\/p>)?\s*/gm;
+    const marker = slideMarkerRegExp();
 
     // A marker that names no configuration — one written as HTML, or one of
     // a slide whose configuration did not reach the page — starts no slide:
@@ -3563,19 +3562,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (tocBracketEnabled) {
       // [TOC]
-      html = html.replace(
-        /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
-        ($0) => {
-          // Check if $0 has `data-source-line` attribute
-          const match = $0.match(/data-source-line="(\d+)"/);
-          const lineNo = match ? match[1] : '';
-          if (lineNo) {
-            return `<div data-source-line="${lineNo}">${this.tocHTML}</div>`;
-          } else {
-            return this.tocHTML;
-          }
-        },
-      );
+      html = html.replace(tocMarkerRegExp(), ($0) => {
+        // Check if $0 has `data-source-line` attribute
+        const match = $0.match(/data-source-line="(\d+)"/);
+        const lineNo = match ? match[1] : '';
+        if (lineNo) {
+          return `<div data-source-line="${lineNo}">${this.tocHTML}</div>`;
+        } else {
+          return this.tocHTML;
+        }
+      });
     }
 
     /**
