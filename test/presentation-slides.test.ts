@@ -31,7 +31,7 @@ interface Slide {
 async function notebookOf(
   markdownParser: 'markdown-it' | 'pandoc' = 'markdown-it',
   files: Record<string, string> = {},
-  config: Pick<NotebookConfig, 'wikiLinkResolution'> = {},
+  config: Partial<Pick<NotebookConfig, 'wikiLinkResolution'>> = {},
 ): Promise<Notebook> {
   const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
   for (const [name, content] of Object.entries(files)) {
