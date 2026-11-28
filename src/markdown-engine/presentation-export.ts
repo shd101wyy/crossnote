@@ -13,9 +13,18 @@ import { jsonForScript } from '../lib/json-for-script';
  * contained is not broken into by Chrome: it is printed as laid out, cut at the
  * edges of the sheets (#595). Its size is set by reveal.js, so containing it
  * changes nothing on screen.
+ *
+ * The speaker notes that reveal.js prints on sheets of their own
+ * (`showNotes: separate-page`) are not in a page of that kind: they are blocks
+ * that follow the page of their slide, each ended by a page break. When the
+ * last slide has notes, the last of them ends the deck on a page break, and
+ * Chrome prints one more, empty sheet. reveal.css takes the break off the last
+ * page of a slide (`.pdf-page:last-of-type`); the last notes block gets the
+ * same (#634).
  */
 export const presentationPrintStyle = `<style>
 html.print-pdf .reveal .slides .pdf-page { contain: size; }
+html.print-pdf .reveal .speaker-notes-pdf[data-layout='separate-page']:last-child { page-break-after: avoid; }
 </style>`;
 
 /**
