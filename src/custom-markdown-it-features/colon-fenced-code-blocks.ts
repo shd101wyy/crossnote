@@ -27,7 +27,7 @@
  * behaviour. See vscode-markdown-preview-enhanced #2275.
  */
 
-import MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 import { renderCodeBlockToken } from './code-fences';
 import { parseBlockInfo } from '../lib/block-info/parse-block-info';
 

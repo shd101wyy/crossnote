@@ -1,5 +1,5 @@
-import MarkdownIt from 'markdown-it';
-import Renderer from 'markdown-it/lib/renderer';
+import type { MarkdownIt } from 'markdown-it';
+import type { RendererRule } from 'markdown-it';
 import { Notebook } from '../notebook';
 
 /**
@@ -12,8 +12,9 @@ import { Notebook } from '../notebook';
  *
  */
 export default (md: MarkdownIt, notebook: Notebook) => {
-  const defaultImageRenderer: Renderer.RenderRule =
-    md.renderer.rules.image!.bind(md.renderer);
+  const defaultImageRenderer: RendererRule = md.renderer.rules.image!.bind(
+    md.renderer,
+  );
 
   md.renderer.rules.image = (tokens, idx, options, env, renderer) => {
     const token = tokens[idx];
@@ -36,11 +37,11 @@ export default (md: MarkdownIt, notebook: Notebook) => {
     }
     */
     if (token.children && token.children[0]?.content === '@embedding') {
-      const error = token.attrGet('error') ?? '';
+      const error = String(token.attrGet('error') ?? '');
       if (error) {
         return decodeURIComponent(atob(error));
       } else {
-        const embedding = token.attrGet('embedding') ?? '';
+        const embedding = String(token.attrGet('embedding') ?? '');
         const decoded = decodeURIComponent(atob(embedding));
 
         // NOTE: We disable the source map here.

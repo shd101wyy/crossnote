@@ -1,5 +1,5 @@
 // tslint:disable-next-line no-implicit-dependencies
-import MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 import MarkdownItEmoji from 'markdown-it-emoji';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error

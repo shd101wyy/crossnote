@@ -2,14 +2,16 @@ import { Mutex } from 'async-mutex';
 import * as caseAnything from 'case-anything';
 import ignore, { type Ignore } from 'ignore';
 import { execFileSync } from 'child_process';
-import MarkdownIt from 'markdown-it';
+import MarkdownIt, {
+  type MarkdownIt as MarkdownItInstance,
+  type Token,
+} from 'markdown-it';
 import MarkdownItAbbr from 'markdown-it-abbr';
 import MarkdownItDeflist from 'markdown-it-deflist';
 import MarkdownItFootnote from 'markdown-it-footnote';
 import MarkdownItMark from 'markdown-it-mark';
 import MarkdownItSub from 'markdown-it-sub';
 import MarkdownItSup from 'markdown-it-sup';
-import Token from 'markdown-it/lib/token';
 import * as os from 'os';
 import * as path from 'path';
 import { URI, Utils } from 'vscode-uri';
@@ -23,6 +25,7 @@ import useMarkdownItCriticMarkup from '../custom-markdown-it-features/critic-mar
 import useMarkdownItCurlyBracketAttributes from '../custom-markdown-it-features/curly-bracket-attributes';
 import useMarkdownItEmoji from '../custom-markdown-it-features/emoji';
 import useMarkdownItHTML5Embed from '../custom-markdown-it-features/html5-embed';
+import useMarkdownItLinkify from '../custom-markdown-it-features/linkify';
 import useMarkdownItMath from '../custom-markdown-it-features/math';
 import useMarkdownItSourceMap from '../custom-markdown-it-features/sourcemap';
 import useMarkdownItTag from '../custom-markdown-it-features/tag';
@@ -248,7 +251,7 @@ export class Notebook {
 
   private search: Search = new Search();
 
-  public md!: MarkdownIt;
+  public md!: MarkdownItInstance;
 
   /**
    * Optional markdown-yo WASM renderer.
@@ -272,7 +275,7 @@ export class Notebook {
    * `md.set`, so the instance is rebuilt when the live-updated options
    * change.
    */
-  private tocMarkdownIt: MarkdownIt | null = null;
+  private tocMarkdownIt: MarkdownItInstance | null = null;
   private tocMarkdownItOptions: {
     breaks: boolean;
     linkify: boolean;
@@ -332,6 +335,12 @@ export class Notebook {
     md.validateLink = (url: string) =>
       validateLink(url) || /^data:image\/svg\+xml[;,]/i.test(url.trim());
 
+    useMarkdownItLinkify(md);
+
+    // `markdown-it-emoji` and `markdown-it-html5-embed` merge their options
+    // with `md.utils.assign`, a helper markdown-it 15 removed.
+    Object.assign(md.utils, { assign: Object.assign });
+
     // markdown-it extensions
     md.use(MarkdownItFootnote);
     md.use(MarkdownItSub);
@@ -362,7 +371,7 @@ export class Notebook {
    * instance is created lazily and reused until the live-updated markdown-it
    * options change.
    */
-  public getTocMarkdownIt(): MarkdownIt {
+  public getTocMarkdownIt(): MarkdownItInstance {
     const currentOptions = {
       breaks: !!this.md.options.breaks,
       linkify: !!this.md.options.linkify,
@@ -862,7 +871,7 @@ export class Notebook {
           }
 
           results.push({
-            elementId: token.attrGet('id') || '',
+            elementId: String(token.attrGet('id') || ''),
             text,
             link: resolvedFile, // referenceMap key — bare file path
             html: this.renderReferenceHtml(parentToken, token),
@@ -875,7 +884,7 @@ export class Notebook {
           // routes by kind into the tagReferenceMap.
           const text = token.content.trim();
           results.push({
-            elementId: token.attrGet('id') || '',
+            elementId: String(token.attrGet('id') || ''),
             text,
             link: '',
             html: this.renderReferenceHtml(parentToken, token),
@@ -888,7 +897,7 @@ export class Notebook {
           tokens[i + 1].type === 'text'
         ) {
           if (token.attrs?.length && token.attrs[0][0] === 'href') {
-            let link = decodeURI(token.attrs[0][1]);
+            let link = decodeURI(String(token.attrs[0][1]));
             const text = tokens[i + 1].content.trim();
             // Accept any of the configured markdownFileExtensions, not
             // just literal `.md` — a notebook using `.markdown` /
@@ -908,7 +917,7 @@ export class Notebook {
             token.attrs[0][1] = addFileProtocol(link);
 
             results.push({
-              elementId: token.attrGet('id') || '',
+              elementId: String(token.attrGet('id') || ''),
               text,
               link,
               html: this.renderReferenceHtml(parentToken, token),

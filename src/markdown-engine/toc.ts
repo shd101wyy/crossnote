@@ -1,5 +1,5 @@
 import { escape } from 'html-escaper';
-import MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 import HeadingIdGenerator from './heading-id-generator';
 
 function nPrefix(str: string, n: number): string {

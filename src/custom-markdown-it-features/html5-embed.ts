@@ -1,5 +1,5 @@
 // tslint:disable-next-line no-implicit-dependencies
-import MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 import MarkdownItHtml5Embed from 'markdown-it-html5-embed';
 import { Notebook } from '../notebook';
 

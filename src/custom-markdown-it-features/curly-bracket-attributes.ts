@@ -1,5 +1,5 @@
-import MarkdownIt from 'markdown-it';
-import Token from 'markdown-it/lib/token';
+import type { MarkdownIt } from 'markdown-it';
+import type { Token } from 'markdown-it';
 import { parseBlockAttributes } from '../lib/block-attributes';
 
 export default (md: MarkdownIt) => {

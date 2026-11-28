@@ -4,7 +4,7 @@
  */
 
 import * as path from 'path';
-import MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 import { Notebook } from '../notebook';
 
 export default (md: MarkdownIt, notebook: Notebook) => {

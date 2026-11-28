@@ -3,7 +3,7 @@
  * #tag-name, #parent/child
  */
 
-import MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 import { Notebook } from '../notebook';
 
 export default (md: MarkdownIt, notebook: Notebook) => {
