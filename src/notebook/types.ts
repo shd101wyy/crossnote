@@ -1,5 +1,5 @@
 import { KatexOptions } from 'katex';
-import MarkdownIt from 'markdown-it';
+import type { MarkdownItOptions } from 'markdown-it';
 import { MermaidConfig } from 'mermaid';
 import { JsonObject } from 'type-fest';
 import { Note } from './note';
@@ -46,7 +46,7 @@ export type ExtendedMarkdownItOptions = {
    * Whether to enable the sourceMap
    */
   sourceMap?: boolean;
-} & MarkdownIt.Options;
+} & MarkdownItOptions;
 
 export type MathRenderingOption = 'None' | 'KaTeX' | 'MathJax';
 

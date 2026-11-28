@@ -1,5 +1,5 @@
 import * as path from 'path';
-import Token from 'markdown-it/lib/token';
+import type { Token } from 'markdown-it';
 import { Notebook } from '../src/notebook/index';
 
 describe('Tag syntax', () => {

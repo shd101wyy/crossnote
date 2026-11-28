@@ -1,5 +1,5 @@
-import MarkdownIt from 'markdown-it';
-import Token from 'markdown-it/lib/token';
+import type { MarkdownIt, MarkdownItOptions } from 'markdown-it';
+import type { Token } from 'markdown-it';
 import { ExtendedMarkdownItOptions } from '../notebook';
 
 /**
@@ -12,8 +12,13 @@ export default (md: MarkdownIt) => {
     idx: number,
     options: ExtendedMarkdownItOptions,
   ) {
+    // A render is given the options of the instance, which are complete.
     if (!options.sourceMap) {
-      return defaultRenderer(tokens, idx, options);
+      return defaultRenderer(
+        tokens,
+        idx,
+        options as Required<MarkdownItOptions>,
+      );
     }
 
     const token = tokens[idx];
@@ -24,6 +29,6 @@ export default (md: MarkdownIt) => {
     ) {
       token.attrSet('data-source-line', `${token.map[0] + 1}`);
     }
-    return defaultRenderer(tokens, idx, options);
+    return defaultRenderer(tokens, idx, options as Required<MarkdownItOptions>);
   };
 };

@@ -1,8 +1,7 @@
 // Modified from: https://github.com/qjebbs/vscode-markdown-extended/blob/master/src/plugin/markdownItAdmonition.ts
 // tslint:disable-next-line no-implicit-dependencies
-import MarkdownIt from 'markdown-it';
-import Renderer from 'markdown-it/lib/renderer';
-import Token from 'markdown-it/lib/token';
+import type { MarkdownIt } from 'markdown-it';
+import type { Renderer, Token } from 'markdown-it';
 
 export default (md: MarkdownIt) => {
   const _marker = 33; /* '!' */

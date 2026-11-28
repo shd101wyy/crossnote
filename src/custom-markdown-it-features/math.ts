@@ -1,7 +1,14 @@
 // tslint:disable-next-line no-implicit-dependencies
-import MarkdownIt from 'markdown-it';
+import type { MarkdownIt } from 'markdown-it';
 import { Notebook } from '../notebook';
 import parseMath from '../renderers/parse-math';
+
+/** What the math rules write into a token's `meta`. */
+type MathMeta = {
+  openTag: string;
+  closeTag: string;
+  displayMode?: boolean;
+};
 
 // Read as whole code points, so a letter outside the BMP (two UTF-16 units)
 // and a combining accent (`café` decomposed) both count.
@@ -216,10 +223,12 @@ export default (md: MarkdownIt, notebook: Notebook) => {
     if (content && !silent) {
       const token = state.push('math', '', 0);
       token.content = content.trim();
-      token.meta = token.meta || {};
-      token.meta.openTag = openTag;
-      token.meta.closeTag = closeTag;
-      token.meta.displayMode = displayMode;
+      token.meta = {
+        ...(token.meta as MathMeta | undefined),
+        openTag,
+        closeTag,
+        displayMode,
+      };
 
       state.pos += content.length + openTag.length + closeTag.length;
       return true;
@@ -230,12 +239,13 @@ export default (md: MarkdownIt, notebook: Notebook) => {
 
   md.renderer.rules.math = (tokens, idx) => {
     const content: string = tokens[idx].content ?? '';
+    const { openTag, closeTag, displayMode } = tokens[idx].meta as MathMeta;
     return parseMath({
       content,
-      openTag: tokens[idx].meta.openTag,
-      closeTag: tokens[idx].meta.closeTag,
+      openTag,
+      closeTag,
       renderingOption: notebook.config.mathRenderingOption,
-      displayMode: tokens[idx].meta.displayMode,
+      displayMode,
       katexConfig: notebook.config.katexConfig,
     });
   };
@@ -244,10 +254,11 @@ export default (md: MarkdownIt, notebook: Notebook) => {
   // These are always display-mode math.
   md.renderer.rules.math_block = (tokens, idx) => {
     const content: string = tokens[idx].content ?? '';
+    const { openTag, closeTag } = tokens[idx].meta as MathMeta;
     return parseMath({
       content,
-      openTag: tokens[idx].meta.openTag,
-      closeTag: tokens[idx].meta.closeTag,
+      openTag,
+      closeTag,
       renderingOption: notebook.config.mathRenderingOption,
       displayMode: true,
       katexConfig: notebook.config.katexConfig,

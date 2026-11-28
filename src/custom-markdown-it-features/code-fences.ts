@@ -5,8 +5,8 @@
 
 // tslint:disable-next-line no-implicit-dependencies
 import { escape } from 'html-escaper';
-import MarkdownIt from 'markdown-it';
-import Token from 'markdown-it/lib/token';
+import type { MarkdownIt } from 'markdown-it';
+import type { Token } from 'markdown-it';
 import { normalizeBlockInfo, parseBlockInfo } from '../lib/block-info';
 
 /**
