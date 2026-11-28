@@ -1,6 +1,24 @@
 import { jsonForScript } from '../lib/json-for-script';
 
 /**
+ * The style that prints every page of a PDF export as reveal.js laid it out.
+ *
+ * reveal.js gives a slide taller than the presentation a page two or more
+ * pages high, and Chrome breaks that page into sheets of paper. Inside it,
+ * Chrome does not break a block it cannot split — a Mermaid diagram (an SVG),
+ * or a list, which the themes display inline-block — but moves it whole to the
+ * next sheet when it does not fit on the one it starts on. So the heading of
+ * the slide was printed alone, the block began a sheet later, and its end was
+ * cut off by the page, which hides what overflows it. A page whose size is
+ * contained is not broken into by Chrome: it is printed as laid out, cut at the
+ * edges of the sheets (#595). Its size is set by reveal.js, so containing it
+ * changes nothing on screen.
+ */
+export const presentationPrintStyle = `<style>
+html.print-pdf .reveal .slides .pdf-page { contain: size; }
+</style>`;
+
+/**
  * The script that starts the presentation of an exported document — built
  * separately so that a test can run it in a browser.
  *

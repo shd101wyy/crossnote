@@ -51,7 +51,10 @@ import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
 import { slideMarkerRegExp, tocMarkerRegExp } from './page-markers';
 import { buildPeleExportScript } from './pele-export';
-import { buildPresentationInitScript } from './presentation-export';
+import {
+  buildPresentationInitScript,
+  presentationPrintStyle,
+} from './presentation-export';
 import {
   sanitizeRenderedHTML,
   sanitizeStableHTML,
@@ -1495,6 +1498,7 @@ window["initRevealPresentation"] = async function() {
         ),
       )}
       </style>
+      ${presentationPrintStyle}
       `;
       presentationInitScript = `${notesPlugin?.[0] ?? ''}
       ${buildPresentationInitScript({
