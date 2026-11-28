@@ -10,6 +10,9 @@ import { jsonForScript } from '../lib/json-for-script';
  * `dependencies` that come from the address of the page.)
  *
  * What is not an object is no configuration.
+ *
+ * `dependencies` is a list or nothing is given: what is not a list would make
+ * reveal.js throw before the presentation starts.
  */
 export function presentationConfigOf(
   presentation: unknown,
@@ -21,6 +24,8 @@ export function presentationConfigOf(
     !Array.isArray(presentation)
       ? { ...presentation }
       : {};
+  const dependencies = config['dependencies'];
+  config['dependencies'] = Array.isArray(dependencies) ? dependencies : [];
   if (!enableScriptExecution) {
     delete config['dependencies'];
     delete config['url'];

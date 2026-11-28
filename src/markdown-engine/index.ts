@@ -588,10 +588,6 @@ export class MarkdownEngine {
         yamlConfig['presentation'],
         this.notebook.config.enableScriptExecution,
       );
-      const dependencies = presentationConfig['dependencies'];
-      presentationConfig['dependencies'] = Array.isArray(dependencies)
-        ? dependencies
-        : [];
 
       presentationInitScript += `
         await Reveal.initialize(${jsonForScript({
@@ -1456,8 +1452,6 @@ window["initRevealPresentation"] = async function() {
         yamlConfig['presentation'],
         this.notebook.config.enableScriptExecution,
       );
-      const dependencies =
-        (presentationConfig['dependencies'] as unknown[] | undefined) || [];
 
       // The speaker notes plugin. reveal.js 5+ has no plugin auto-loading:
       // the plugin script has to run before initialization and the plugin
@@ -1476,7 +1470,6 @@ window["initRevealPresentation"] = async function() {
           ];
         }
       }
-      presentationConfig['dependencies'] = dependencies;
 
       presentationStyle = `
       <style>

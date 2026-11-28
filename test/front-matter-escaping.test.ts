@@ -296,7 +296,7 @@ describe('the keys of a presentation that make reveal.js load a script', () => {
     const given = givenByExport(await engine.htmlExportDocument());
 
     expect(given).not.toHaveProperty('url');
-    expect(given['dependencies']).toEqual([]);
+    expect(given).not.toHaveProperty('dependencies');
     // The rest of the configuration is given.
     expect(given['transition']).toBe('fade');
   });
@@ -311,7 +311,7 @@ describe('the keys of a presentation that make reveal.js load a script', () => {
     const given = givenByPreview(html);
 
     expect(given).not.toHaveProperty('url');
-    expect(given['dependencies']).toEqual([]);
+    expect(given).not.toHaveProperty('dependencies');
     expect(given['transition']).toBe('fade');
   });
 
@@ -343,8 +343,36 @@ describe('the keys of a presentation that make reveal.js load a script', () => {
     );
     const given = givenByExport(await engine.htmlExportDocument());
 
-    expect(given['margin']).toBe(0.1);
-    expect(given['dependencies']).toEqual([]);
+    expect(given).toEqual({
+      margin: 0.1,
+      scrollActivationWidth: null,
+      dependencies: [],
+    });
+  });
+
+  test('dependencies that are not a list are given as none, by an export and by a preview', async () => {
+    // reveal.js would throw on it before the presentation starts.
+    const note = [
+      '---',
+      'presentation:',
+      '  dependencies: https://example.com/payload.js',
+      '---',
+      '',
+      '<!-- slide -->',
+      '# One',
+      '',
+    ].join('\n');
+    const { engine, notebook } = await createEngine(note, true);
+    const html = await engine.generateHTMLTemplateForPreview({
+      inputString: note,
+      config: notebook.config as WebviewConfig,
+      vscodePreviewPanel: null,
+    });
+
+    expect(
+      givenByExport(await engine.htmlExportDocument())['dependencies'],
+    ).toEqual([]);
+    expect(givenByPreview(html)['dependencies']).toEqual([]);
   });
 });
 
