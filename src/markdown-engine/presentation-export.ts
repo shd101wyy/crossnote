@@ -46,9 +46,19 @@ export function presentationConfigOf(
  * contained is not broken into by Chrome: it is printed as laid out, cut at the
  * edges of the sheets (#595). Its size is set by reveal.js, so containing it
  * changes nothing on screen.
+ *
+ * The speaker notes that reveal.js prints on sheets of their own
+ * (`showNotes: separate-page`) are not in a page of that kind: they are blocks
+ * that follow the page of their slide, each ended by a page break. When they
+ * are the last element of the deck — the last slide has notes, and no page of
+ * a fragment of it follows — they end the deck on a page break, and Chrome
+ * prints one more, empty sheet. reveal.css takes the break off the last page
+ * of the deck (`.pdf-page:last-of-type`); the last notes block, a child of
+ * `.slides` as the pages are, gets the same (#634).
  */
 export const presentationPrintStyle = `<style>
 html.print-pdf .reveal .slides .pdf-page { contain: size; }
+html.print-pdf .reveal .slides > .speaker-notes-pdf[data-layout='separate-page']:last-child { page-break-after: avoid; }
 </style>`;
 
 /**
