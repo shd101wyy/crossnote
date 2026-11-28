@@ -3,6 +3,7 @@ import * as path from 'path';
 import { load } from 'cheerio';
 import { mkdirSync, track } from '../src/lib/temp';
 import { MarkdownEngine } from '../src/markdown-engine';
+import * as transformer from '../src/markdown-engine/transformer';
 import { Notebook } from '../src/notebook';
 
 jest.mock('less', () => ({
@@ -23,6 +24,26 @@ interface Slide {
   line: string;
   /** The `data-background-*` attributes of the slide. */
   backgrounds: Record<string, string>;
+}
+
+/**
+ * A notebook in a folder of its own, with `files` in the folder.
+ */
+async function notebookOf(files: Record<string, string> = {}) {
+  const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
+  for (const [name, content] of Object.entries(files)) {
+    const file = path.join(tmpDir, name);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, content);
+  }
+  const notebook = await Notebook.init({
+    notebookPath: tmpDir,
+    config: {
+      markdownParser: 'markdown-it',
+      markdownYoBinaryPath: '',
+    },
+  });
+  return { tmpDir, notebook };
 }
 
 /**
@@ -56,8 +77,10 @@ async function render(
     hideFrontMatter: false,
   });
 
-  // The marker of a slide that was not turned into one is left in the page.
-  expect(html).not.toContain('[CROSSNOTESLIDE]');
+  // A marker of the engine that was not turned into a slide is left in the
+  // page (crossnote#574). One written in the note is text, and stays: it
+  // carries no token of the rendering, or that of another one.
+  expect(html).not.toMatch(/\[CROSSNOTESLIDE:[0-9a-f]{32}:\d+\]/);
   return { html, isPresentation: engine.isPreviewInPresentationMode };
 }
 
@@ -158,8 +181,71 @@ let a = 1;
     ]);
   });
 
+  // markdown-it makes a row of the table of the line of a marker that comes
+  // right after a table: the row is taken along with the marker, and the
+  // table stays whole.
+  test.each([
+    ['without alignment', '| a | b |\n| - | - |\n| 1 | 2 |'],
+    ['with alignment', '| a | b |\n| :- | -: |\n| 1 | 2 |'],
+  ])(
+    'a slide marker on the line after a table, %s, starts a slide',
+    async (_, table) => {
+      const { html } = await render(
+        `<!-- slide -->\n\n${table}\n<!-- slide -->\n\n# Second\n`,
+      );
+      const slides = load(html)('section[data-h]');
+
+      expect(
+        slides
+          .toArray()
+          .map((section) => [
+            section.attribs['data-h'],
+            section.attribs['data-v'],
+          ]),
+      ).toEqual([
+        ['0', '0'],
+        ['1', '0'],
+      ]);
+      // The table is whole on the first slide, with its one row.
+      expect(slides.eq(0).find('table tbody tr')).toHaveLength(1);
+      expect(slides.eq(0).text().replace(/\s+/g, ' ').trim()).toBe('a b 1 2');
+      expect(slides.eq(1).text().replace(/\s+/g, ' ').trim()).toBe('Second');
+    },
+  );
+
+  // The table is open at the first marker: the part before the first slide
+  // ends inside it.
+  test('a slide marker on the line after a table starts the first slide: what is before it is hidden, and the deck is not', async () => {
+    const { html } = await render(
+      '# Title\n\n| a | b |\n| - | - |\n| 1 | 2 |\n<!-- slide class="b" -->\n\n# Two\n',
+    );
+    const $ = load(html);
+    const hidden = $('body > div[style*="display:none"]');
+
+    expect(hidden.find('> h1').text().trim()).toBe('Title');
+    expect(hidden.find('> table tbody tr')).toHaveLength(1);
+    // The deck is beside the hidden part, not in it.
+    expect(hidden.find('.reveal')).toHaveLength(0);
+    expect(
+      $('body > .reveal > .slides > section.slide.b h1').text().trim(),
+    ).toBe('Two');
+  });
+
+  test('a slide marker inside a table starts a slide there: the rows after it are on that slide, as text', async () => {
+    const { html } = await render(
+      '<!-- slide -->\n\n| a | b |\n| - | - |\n| 1 | 2 |\n<!-- slide -->\n| 3 | 4 |\n\n# Two\n',
+    );
+    const slides = load(html)('section[data-h]');
+
+    expect(slides).toHaveLength(2);
+    expect(slides.eq(0).find('table tbody tr')).toHaveLength(1);
+    expect(slides.eq(1).find('table')).toHaveLength(0);
+    expect(slides.eq(1).text().replace(/\s+/g, ' ').trim()).toBe('3 4 Two');
+  });
+
   // Only a `<!-- slide -->` is configured a slide. The same span, written as
-  // HTML, names no slide: what follows it stays on the slide before.
+  // HTML, is text: it stays where it was written, and what follows it stays
+  // on the slide before.
   test('a marker written as HTML does not stop the slides from being made', async () => {
     const slides = await renderSlides(`<!-- slide -->
 
@@ -176,6 +262,7 @@ let a = 1;
 
     expect(slides.map(({ h, v }) => [h, v])).toEqual([['0', '0']]);
     expect(slides[0].text).toMatch(/^First .* Second$/);
+    expect(slides[0].text).toContain('[CROSSNOTESLIDE]');
   });
 
   const part = `<!-- slide -->
@@ -358,7 +445,7 @@ ${asBlock}
     expect(load(html)('h1').text()).toBe('Title ');
   });
 
-  test('a marker written as HTML between two slides starts none: what follows it stays on the slide before', async () => {
+  test('a marker written as HTML between two slides starts none: it stays as text, with what follows it on the slide before', async () => {
     const slides = await renderSlides(`<!-- slide -->
 
 # First
@@ -373,7 +460,7 @@ ${asBlock}
 `);
 
     expect(slides.map(({ h, v, text }) => [h, v, text])).toEqual([
-      ['0', '0', 'First Between'],
+      ['0', '0', 'First [CROSSNOTESLIDE] Between'],
       ['1', '0', 'Second'],
     ]);
   });
@@ -408,18 +495,20 @@ ${asBlock}
     ]);
   });
 
-  test('a marker that names no slide does not take the place of one', async () => {
+  test('a marker written as HTML with a number stays as text, whether or not it names a slide', async () => {
     const slides = await renderSlides(`<!-- slide -->
 
 # First
 
 <span>[CROSSNOTESLIDE:7]</span>
 
+<span>[CROSSNOTESLIDE:0]</span>
+
 # Second
 `);
 
     expect(slides.map(({ h, v, text }) => [h, v, text])).toEqual([
-      ['0', '0', 'First Second'],
+      ['0', '0', 'First [CROSSNOTESLIDE:7] [CROSSNOTESLIDE:0] Second'],
     ]);
   });
 
@@ -802,6 +891,330 @@ Text ^note
 `);
 
     expect(slides.map(({ h, text }) => [h, text])).toEqual([['0', 'First']]);
+  });
+
+  /**
+   * A marker written as text (crossnote#589). The number of the marker of a
+   * slide is no secret — `0` is always the first slide's — so wherever the
+   * text of a marker reached the page it started a slide that carried the
+   * class, id, background and source line of slide `n`: what comes before the
+   * first slide could be shown as one, a slide was cut in the middle of an
+   * element, and the attributes of one slide were put on another. Every
+   * rendering now has a token of its own, which its markers carry: only a
+   * marker that carries it is one.
+   */
+  describe('a marker written as text', () => {
+    const typed = '<span>[CROSSNOTESLIDE:0]</span>';
+    const first =
+      '<!-- slide class="first" id="one" data-background-color="red" -->';
+    const asPreview = {
+      isForPreview: true,
+      useRelativeFilePath: false,
+      hideFrontMatter: false,
+    };
+
+    /** Each slide of a page: its attributes, and what it says. */
+    const slidesOf = (html: string) => {
+      const $ = load(html);
+      return $('section[data-h]')
+        .toArray()
+        .map((section) => ({
+          attributes: { ...section.attribs },
+          text: $(section).text().replace(/\s+/g, ' ').trim(),
+        }));
+    };
+    /** The class, the id and the text of each slide of a page. */
+    const named = (html: string) =>
+      slidesOf(html).map(({ attributes, text }) => [
+        attributes.class,
+        attributes.id,
+        text,
+      ]);
+
+    // The reproduction of the issue. The marker is written in the note, and
+    // used to start a second slide with the configuration of the first.
+    test.each(['markdown-it', 'pandoc'] as const)(
+      'starts no slide, and stays as the text it is (%s)',
+      async (markdownParser) => {
+        const { html, isPresentation } = await render(
+          `${first}
+
+# First
+
+${typed}
+
+# Second
+`,
+          markdownParser,
+        );
+
+        expect(isPresentation).toBe(true);
+        expect(slidesOf(html)).toEqual([
+          {
+            attributes: {
+              'data-background-color': 'red',
+              'class': 'slide first',
+              'data-source-line': '1',
+              'data-h': '0',
+              'data-v': '0',
+              'id': 'one',
+            },
+            text: 'First [CROSSNOTESLIDE:0] Second',
+          },
+        ]);
+      },
+    );
+
+    // Wherever the text of a marker reaches the page.
+    const withMarker = `Part
+
+${typed}
+
+More part`;
+    const reached: [string, string, Record<string, string>][] = [
+      [
+        'in a markdown file imported as an image',
+        '![](part.md)',
+        { 'part.md': withMarker },
+      ],
+      [
+        'in a markdown file imported with @import',
+        '@import "part.md"',
+        { 'part.md': withMarker },
+      ],
+      [
+        'in a markdown file embedded with a wikilink',
+        '![[part.md]]',
+        { 'part.md': withMarker },
+      ],
+      [
+        'in an html file imported as it is',
+        '@import "part.html" {code_block=false}',
+        { 'part.html': `<p>Part</p>\n${typed}\n<p>More part</p>` },
+      ],
+    ];
+
+    test.each(reached)('starts no slide %s', async (_, imported, files) => {
+      const { html, isPresentation } = await render(
+        `${first}
+
+# First
+
+${imported}
+
+<!-- slide class="second" -->
+
+# Second
+`,
+        'markdown-it',
+        files,
+      );
+
+      expect(isPresentation).toBe(true);
+      expect(named(html)).toEqual([
+        ['slide first', 'one', 'First Part [CROSSNOTESLIDE:0] More part'],
+        ['slide second', undefined, 'Second'],
+      ]);
+    });
+
+    test('makes no slide of what comes before the first one', async () => {
+      const { html, isPresentation } = await render(`# Title
+
+${typed}
+
+# Not a slide
+
+<!-- slide class="second" -->
+
+# Second
+`);
+
+      expect(isPresentation).toBe(true);
+      expect(named(html)).toEqual([['slide second', undefined, 'Second']]);
+      // What comes before the first slide is not in the deck.
+      expect(load(html)('.reveal').text()).not.toContain('Title');
+    });
+
+    // A note embedded in the middle of a line is rendered as a page of its
+    // own, by a rendering of its own.
+    test('in a note embedded in the middle of a line is not a marker of the page it is embedded into', async () => {
+      const { html, isPresentation } = await render(
+        `${first}
+
+# First
+
+text ![[part.md]] more
+
+<!-- slide class="second" -->
+
+# Second
+`,
+        'markdown-it',
+        { 'part.md': withMarker },
+      );
+
+      expect(isPresentation).toBe(true);
+      expect(named(html)).toEqual([
+        [
+          'slide first',
+          'one',
+          'First text Part [CROSSNOTESLIDE:0] More part more',
+        ],
+        ['slide second', undefined, 'Second'],
+      ]);
+    });
+
+    test('the deck of a note embedded in the middle of a line is not a part of the deck of the page', async () => {
+      const { html } = await render(
+        `${first}
+
+# First
+
+text ![[part.md]] more
+
+<!-- slide class="second" -->
+
+# Second
+`,
+        'markdown-it',
+        { 'part.md': part },
+      );
+      const $ = load(html);
+
+      // Two slides in the deck of the page; the two of the part are inside
+      // the first, in a deck of their own.
+      expect(
+        $('.reveal')
+          .first()
+          .children('.slides')
+          .children('section')
+          .map((_i, section) => $(section).attr('class'))
+          .get(),
+      ).toEqual(['slide first', 'slide second']);
+      expect(
+        $('.wikilink-embed-content .reveal .slides > section'),
+      ).toHaveLength(2);
+    });
+
+    test('that carries the token of another rendering starts no slide either', async () => {
+      // The marker of a slide, as another rendering of a note wrote it.
+      const { tmpDir, notebook } = await notebookOf();
+      const { outputString } = await transformer.transformMarkdown(
+        '<!-- slide -->\n\n# First\n',
+        {
+          fileDirectoryPath: tmpDir,
+          projectDirectoryPath: tmpDir,
+          filesCache: {},
+          useRelativeFilePath: false,
+          forPreview: false,
+          protocolsWhiteListRegExp: null,
+          notebook,
+        },
+      );
+      const asWritten = /\[CROSSNOTESLIDE:[0-9a-f]{32}:0\]/;
+      expect(outputString).toMatch(asWritten);
+      const marker = asWritten.exec(outputString)![0];
+
+      // Not through `render`, which checks that no marker with a token is
+      // left in the page: this one is written in the note, and stays.
+      const engine = notebook.getNoteMarkdownEngine('deck.md');
+      const { html } = await engine.parseMD(
+        `${first}
+
+# First
+
+<span>${marker}</span>
+
+# Second
+`,
+        asPreview,
+      );
+
+      expect(engine.isPreviewInPresentationMode).toBe(true);
+      expect(named(html)).toEqual([
+        ['slide first', 'one', `First ${marker} Second`],
+      ]);
+    });
+
+    test('is told from the markers of the engine by a token that is new for every rendering', async () => {
+      const { notebook } = await notebookOf();
+      const engine = notebook.getNoteMarkdownEngine('deck.md');
+      const note = `${first}
+
+# First
+
+<!-- slide class="second" -->
+
+# Second
+`;
+      const transform = jest.spyOn(transformer, 'transformMarkdown');
+      try {
+        for (let rendering = 0; rendering < 2; rendering++) {
+          await engine.parseMD(note, asPreview);
+        }
+        // The token each rendering of the note handed down.
+        const tokens = transform.mock.calls.map(
+          ([, options]) => options.slideMarkerToken,
+        );
+        expect(tokens).toEqual([
+          expect.stringMatching(/^[0-9a-f]{32}$/),
+          expect.stringMatching(/^[0-9a-f]{32}$/),
+        ]);
+        expect(tokens[1]).not.toBe(tokens[0]);
+      } finally {
+        transform.mockRestore();
+      }
+    });
+
+    // What a `<!-- slide … -->` configures is kept, on a second rendering of
+    // the note, and in a file it imports: the slides of the file are the
+    // slides of the page.
+    test('while a slide comment keeps what it configures, on a second rendering and in an imported file', async () => {
+      const { notebook } = await notebookOf({
+        'part.md': `<!-- slide class="part" id="two" data-background-color="blue" -->
+
+# Part A
+
+<!-- slide vertical=true class="part-b" -->
+
+# Part B
+`,
+      });
+      const engine = notebook.getNoteMarkdownEngine('deck.md');
+      const note = `${first}
+
+# First
+
+![](part.md)
+
+<!-- slide class="third" -->
+
+# Third
+`;
+      const renderings: ReturnType<typeof slidesOf>[] = [];
+      for (let rendering = 0; rendering < 2; rendering++) {
+        const { html } = await engine.parseMD(note, asPreview);
+        renderings.push(slidesOf(html));
+      }
+      const described = (slides: ReturnType<typeof slidesOf>) =>
+        slides.map(({ attributes, text }) => [
+          attributes.class,
+          attributes.id,
+          attributes['data-background-color'],
+          attributes['data-source-line'],
+          attributes['data-h'],
+          attributes['data-v'],
+          text,
+        ]);
+
+      expect(described(renderings[0])).toEqual([
+        ['slide first', 'one', 'red', '1', '0', '0', 'First'],
+        ['slide part', 'two', 'blue', '5', '1', '0', 'Part A'],
+        ['slide part-b', undefined, undefined, '5', '1', '1', 'Part B'],
+        ['slide third', undefined, undefined, '7', '2', '0', 'Third'],
+      ]);
+      expect(renderings[1]).toEqual(renderings[0]);
+    });
   });
 
   describe('the attributes of a slide and of a list item', () => {

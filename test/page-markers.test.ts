@@ -4,6 +4,8 @@ import { load } from 'cheerio';
 import { mkdirSync, track } from '../src/lib/temp';
 import { MarkdownEngine } from '../src/markdown-engine';
 import {
+  newSlideMarkerToken,
+  slideMarker,
   slideMarkerRegExp,
   tocMarkerRegExp,
 } from '../src/markdown-engine/page-markers';
@@ -18,6 +20,15 @@ jest.mock('less', () => ({
     callback(null, { css: '' });
   },
 }));
+
+/** The token of the rendering whose markers are looked for. */
+const TOKEN = '0123456789abcdef0123456789abcdef';
+
+/** The token of another rendering. */
+const OTHER_TOKEN = 'fedcba9876543210fedcba9876543210';
+
+/** The slide markers of the rendering, as `parseSlides` looks for them. */
+const slideMarkers = () => slideMarkerRegExp(TOKEN);
 
 /**
  * A page of many `<p` with no `>`: at every such `<p` the old `<p[^>]*>`
@@ -72,11 +83,51 @@ async function renderPreview(markdown: string): Promise<{
 describe('slide and [toc] markers in rendered HTML', () => {
   track();
 
+  test('a token is 32 hex characters, and new for every rendering', () => {
+    const first = newSlideMarkerToken();
+    const second = newSlideMarkerToken();
+    expect(first).toMatch(/^[0-9a-f]{32}$/);
+    expect(second).toMatch(/^[0-9a-f]{32}$/);
+    expect(second).not.toBe(first);
+  });
+
+  // The token comes first: no colon follows the number, where `:100:` and
+  // `:1234:` would be shortcodes to the emoji plugin.
+  test('a marker is the span, the token, then the number', () => {
+    expect(slideMarker(3, TOKEN)).toBe(
+      `<span>[CROSSNOTESLIDE:${TOKEN}:3]</span>`,
+    );
+  });
+
+  // The number does not come first, before a colon: `:100:` and `:1234:` are
+  // shortcodes to the emoji plugin, which puts an emoji in the place of the
+  // number, and the 101st and the 1235th slide were not cut.
+  test.each([100, 1234])(
+    'slide %i is cut, although its number between colons is an emoji',
+    async (number) => {
+      const count = number + 1;
+      const { html, isPresentation } = await renderPreview(
+        Array.from(
+          { length: count },
+          (_, i) => `<!-- slide class="s${i}" -->\n\n# Slide ${i}\n\n`,
+        ).join(''),
+      );
+      const $ = load(html);
+
+      expect(isPresentation).toBe(true);
+      expect(
+        $('section.slide')
+          .map((_, section) => $(section).attr('class'))
+          .get(),
+      ).toEqual(Array.from({ length: count }, (_, i) => `slide s${i}`));
+    },
+  );
+
   test('a paragraph of its own is a slide marker and keeps its number', () => {
     expect(
       captures(
-        '<p><span>[CROSSNOTESLIDE:0]</span></p>\n<p>First</p>\n<p><span>[CROSSNOTESLIDE:2]</span></p>\n<p>Second</p>',
-        slideMarkerRegExp,
+        `<p><span>[CROSSNOTESLIDE:${TOKEN}:0]</span></p>\n<p>First</p>\n<p><span>[CROSSNOTESLIDE:${TOKEN}:2]</span></p>\n<p>Second</p>`,
+        slideMarkers,
       ),
     ).toEqual(['0', '2']);
   });
@@ -84,8 +135,8 @@ describe('slide and [toc] markers in rendered HTML', () => {
   test('a paragraph with attributes is a slide marker', () => {
     expect(
       captures(
-        '<p data-source-line="4" class="x"><span>[CROSSNOTESLIDE:3]</span></p>',
-        slideMarkerRegExp,
+        `<p data-source-line="4" class="x"><span>[CROSSNOTESLIDE:${TOKEN}:3]</span></p>`,
+        slideMarkers,
       ),
     ).toEqual(['3']);
   });
@@ -93,22 +144,42 @@ describe('slide and [toc] markers in rendered HTML', () => {
   test('a marker that starts a line is found, with the spaces before it', () => {
     expect(
       captures(
-        '  <span>[CROSSNOTESLIDE:1]</span>\n<p>Hi</p>',
-        slideMarkerRegExp,
+        `  <span>[CROSSNOTESLIDE:${TOKEN}:1]</span>\n<p>Hi</p>`,
+        slideMarkers,
       ),
     ).toEqual(['1']);
   });
 
   test('a marker that does not start a line and is not a paragraph is left', () => {
     expect(
-      captures('hello<span>[CROSSNOTESLIDE:1]</span>', slideMarkerRegExp),
+      captures(`hello<span>[CROSSNOTESLIDE:${TOKEN}:1]</span>`, slideMarkers),
     ).toEqual([]);
   });
 
-  test('an unnumbered marker is found and names no configuration', () => {
-    expect(
-      captures('<p><span>[CROSSNOTESLIDE]</span></p>', slideMarkerRegExp),
-    ).toEqual([undefined]);
+  // The number of a slide is no secret: `0` is always the first one's. Only
+  // the token of the rendering tells the marker the engine wrote from text
+  // (crossnote#589).
+  test('a marker without the token of the rendering is not one', () => {
+    const texts = [
+      '[CROSSNOTESLIDE]',
+      '[CROSSNOTESLIDE:0]',
+      `[CROSSNOTESLIDE:${OTHER_TOKEN}:0]`,
+      // All but the last character of the token, and the number of a slide.
+      `[CROSSNOTESLIDE:${TOKEN.slice(0, 31)}0:0]`,
+      // The token in capitals.
+      `[CROSSNOTESLIDE:${TOKEN.toUpperCase()}:0]`,
+      // The token of the rendering in the text of another marker.
+      `[CROSSNOTESLIDE:0:${TOKEN}]`,
+      `[CROSSNOTESLIDE:${OTHER_TOKEN}:0:${TOKEN}]`,
+    ];
+    for (const text of texts) {
+      expect(
+        captures(
+          `<p><span>${text}</span></p>\n<p><span>${text}</span>`,
+          slideMarkers,
+        ),
+      ).toEqual([]);
+    }
   });
 
   test('a [toc] in a paragraph of its own, or that starts a line, is found', () => {
@@ -163,11 +234,28 @@ let a = 1;
 
   test('a page of many <p with no > plus a slide marker is scanned quickly', () => {
     const html = pageOfOpenPThen(
-      '\n<span>[CROSSNOTESLIDE:3]</span>\n<p>Hi</p>',
+      `\n<span>[CROSSNOTESLIDE:${TOKEN}:3]</span>\n<p>Hi</p>`,
     );
-    const { ms, matches } = scan(html, slideMarkerRegExp);
+    const { ms, matches } = scan(html, slideMarkers);
 
     expect(matches.map((match) => match[1])).toEqual(['3']);
+    expect(ms).toBeLessThan(SCAN_BOUND_MS);
+  }, 20_000);
+
+  /**
+   * The token is compared at every `[CROSSNOTESLIDE:` in the page, and a
+   * page can hold many that were written as text — each all but one
+   * character of the token, which is the longest the comparison can run.
+   */
+  test('a page of many markers written as text is scanned quickly', () => {
+    const almost = TOKEN.slice(0, 31) + (TOKEN.endsWith('0') ? '1' : '0');
+    const html = (
+      `<p><span>[CROSSNOTESLIDE:${almost}:3]</span></p>\n` +
+      `<p><span>[CROSSNOTESLIDE:3]</span></p>\n`
+    ).repeat(40_000);
+    const { ms, matches } = scan(html, slideMarkers);
+
+    expect(matches).toHaveLength(0);
     expect(ms).toBeLessThan(SCAN_BOUND_MS);
   }, 20_000);
 
@@ -186,7 +274,7 @@ let a = 1;
    */
   test('a page of many line breaks is scanned quickly', () => {
     const html = '\n'.repeat(80_000);
-    const { ms, matches } = scan(html, slideMarkerRegExp);
+    const { ms, matches } = scan(html, slideMarkers);
 
     expect(matches).toHaveLength(0);
     expect(ms).toBeLessThan(SCAN_BOUND_MS);
