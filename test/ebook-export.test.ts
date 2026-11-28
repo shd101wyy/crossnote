@@ -395,6 +395,14 @@ describe('the eBook export', () => {
           'https://example.com/my image: 1 (final) & v2.png',
           'myimage1finalv2.png',
         ],
+        ['a stem of dots only', 'https://example.com/..png', 'image.png'],
+        ['a dot in front of the stem', 'https://example.com/.a.png', 'a.png'],
+        ['a dot after the extension', 'https://example.com/a.png.', 'a.png'],
+        [
+          'a long stem cut where a dot is',
+          `https://example.com/${'a.'.repeat(101)}`,
+          `${'a.'.repeat(99)}a`,
+        ],
       ])(
         'saves the image of %s under a name every system takes',
         async (_, src, name) => {
@@ -495,6 +503,40 @@ describe('the eBook export', () => {
         expect((error as Error).cause).toBe(failure);
         // The export stopped there: the image that was fetched is removed
         // again, and ebook-convert was not given the page.
+        expect(downloadsLeft()).toEqual([]);
+        expect(convert).not.toHaveBeenCalled();
+      });
+
+      test('says which image it could not read when the body breaks while it is read', async () => {
+        // The first chunk comes, then the connection is gone: the pipeline
+        // rejects with what the stream errors with, which names no image.
+        const body = new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(Buffer.from('the first chunk'));
+            controller.error(new Error('socket hang up'));
+          },
+        });
+        answerFetch((url: string) =>
+          url.endsWith('a.png') ? { ok: true, body } : imageAt(url),
+        );
+        const { exported } = await exportEPUB([
+          imageLine(0, 'https://example.com/a.png'),
+          imageLine(1, 'https://example.com/b.png'),
+        ]);
+
+        const error: unknown = await exported.then(
+          () => undefined,
+          (reason: unknown) => reason,
+        );
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toBe(
+          'Failed to download image from https://example.com/a.png',
+        );
+        expect(String((error as { cause?: unknown }).cause)).toContain(
+          'socket hang up',
+        );
+        // The export stopped there: the files are removed again, and
+        // ebook-convert was not given the page.
         expect(downloadsLeft()).toEqual([]);
         expect(convert).not.toHaveBeenCalled();
       });

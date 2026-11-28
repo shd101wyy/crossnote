@@ -426,7 +426,8 @@ function downloadedImageName(src: string): string {
     .slice(0, name.length - extension.length)
     .replace(/^\.+|\.+$/g, '');
   const maxLength = DOWNLOADED_IMAGE_NAME_MAX_LENGTH - extension.length;
-  return (stem || 'image').slice(0, maxLength) + extension;
+  // The cut can leave a dot at the end: `a.a.a…` cut after an `a.`.
+  return (stem || 'image').slice(0, maxLength).replace(/\.+$/, '') + extension;
 }
 
 /**
@@ -2280,28 +2281,33 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       savePath = path.resolve(this.fileDirectoryPath, savePath);
       savePaths.push(savePath);
 
+      // What fetch rejects with when the network fails (`TypeError: fetch
+      // failed`) and what the pipeline rejects with when the body breaks
+      // while it is read (`Error: socket hang up`) name no image. This error
+      // does, and keeps that one as its cause.
+      const failure = (cause: unknown) =>
+        new Error(`Failed to download image from ${httpSrc}`, { cause });
       let response: Response;
       try {
         response = await fetch(httpSrc);
       } catch (error) {
-        // The network failed: what fetch rejects with then (`TypeError:
-        // fetch failed`) names no image. This error does, and keeps that
-        // one as its cause.
-        throw new Error(`Failed to download image from ${httpSrc}`, {
-          cause: error,
-        });
+        throw failure(error);
       }
       if (!response.ok || !response.body) {
         throw new Error(`Failed to download image from ${httpSrc}`);
       }
       const { pipeline } = await import('stream/promises');
       const { Readable } = await import('stream');
-      await pipeline(
-        Readable.fromWeb(
-          response.body as Parameters<typeof Readable.fromWeb>[0],
-        ),
-        fs.createWriteStream(savePath),
-      );
+      try {
+        await pipeline(
+          Readable.fromWeb(
+            response.body as Parameters<typeof Readable.fromWeb>[0],
+          ),
+          fs.createWriteStream(savePath),
+        );
+      } catch (error) {
+        throw failure(error);
+      }
       $img.attr('src', utility.toFileURL(savePath));
       return savePath;
     });
@@ -2869,7 +2875,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    *    puppeteer | chrome: true  // or pdf | jpeg | png
    *    pandoc: true
    *    ebook: true      // or epub | pdf | html | mobi
-   *    markdown: true
    * ---
    * @param data
    */
@@ -2944,10 +2949,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
   /**
    * An export begun by a save. Nothing waits for it, as nothing ever did, but
-   * a failure of it is reported instead of being left unhandled: a program
-   * without a handler for those is ended by one (`crossnote serve`, which
-   * renders a note as it is saved), and the extension host shows it as an
-   * error of the extension.
+   * a failure of it is reported by crossnote itself: a program that has no
+   * handler for an unhandled rejection is ended by one, and what a host makes
+   * of one is its own (the extension host shows it as an error of the
+   * extension).
    */
   private exportBeganBySave(exporter: string, exporting: Promise<unknown>) {
     exporting.catch((error) => {
