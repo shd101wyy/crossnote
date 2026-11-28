@@ -21,6 +21,7 @@ import { princeConvert } from '../converters/prince-convert';
 import { parseBlockAttributes } from '../lib/block-attributes/parseBlockAttributes';
 import { normalizeBlockInfo } from '../lib/block-info/normalize-block-info';
 import { parseBlockInfo } from '../lib/block-info/parse-block-info';
+import { cssForStyle } from '../lib/css-for-style';
 import { mapAbsoluteCssUrls } from '../lib/css-urls';
 import { jsonForScript } from '../lib/json-for-script';
 import {
@@ -49,10 +50,15 @@ import { readOfflineCss, readOfflineJs } from './inline-offline-assets';
 import { buildMathJaxConfigScript, mathJaxConfigOf } from './mathjax-config';
 import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
-import { slideMarkerRegExp, tocMarkerRegExp } from './page-markers';
+import {
+  newSlideMarkerToken,
+  slideMarkerRegExp,
+  tocMarkerRegExp,
+} from './page-markers';
 import { buildPeleExportScript } from './pele-export';
 import {
   buildPresentationInitScript,
+  presentationConfigOf,
   presentationPrintStyle,
 } from './presentation-export';
 import { renderMarkdownNotes } from './presentation-notes';
@@ -389,6 +395,49 @@ const NOT_SLIDE_ATTRIBUTES = new Set([
 const ATTRIBUTE_NAME = /^[a-z_:][a-z0-9:._-]*$/i;
 
 /**
+ * The most characters the name of a downloaded image takes. With the prefix
+ * in front of it (ten characters at most) it stays well under the 255 bytes
+ * that Linux, macOS and Windows allow a file name.
+ */
+const DOWNLOADED_IMAGE_NAME_MAX_LENGTH = 200;
+
+/**
+ * The name an image downloaded from `src` is saved under: the last segment
+ * of the path of the address, its percent-escapes decoded, of the
+ * characters a file name takes on every system. The extension stays on it,
+ * the name is cut to `DOWNLOADED_IMAGE_NAME_MAX_LENGTH` with the extension
+ * kept, and it is `image` when nothing is left of the segment. The name
+ * never begins or ends with a dot; with the prefix in front of it, as it is
+ * saved, it is a file name on every system — not `.`, `..`, or one of the
+ * devices of Windows (`CON`, `NUL`, …).
+ */
+function downloadedImageName(src: string): string {
+  let segment = '';
+  try {
+    segment = new URL(src).pathname.split('/').pop() ?? '';
+  } catch {
+    // Not an address: there is no name to take.
+  }
+  try {
+    segment = decodeURIComponent(segment);
+  } catch {
+    // A path with a `%` that escapes nothing (`50%off.png`): its name is
+    // taken as it is written.
+  }
+  const name = segment.replace(/[^A-Za-z0-9._-]/g, '');
+  // An extension is a dot followed by one to sixteen letters or digits, at
+  // the end of the name.
+  const extension = name.match(/\.[A-Za-z0-9]{1,16}$/)?.[0] ?? '';
+  // A stem of dots only is no stem: `..`, or nothing at all before `.png`.
+  const stem = name
+    .slice(0, name.length - extension.length)
+    .replace(/^\.+|\.+$/g, '');
+  const maxLength = DOWNLOADED_IMAGE_NAME_MAX_LENGTH - extension.length;
+  // The cut can leave a dot at the end: `a.a.a…` cut after an `a.`.
+  return (stem || 'image').slice(0, maxLength).replace(/\.+$/, '') + extension;
+}
+
+/**
  * The markdown engine that can be used to parse markdown and export files
  */
 export class MarkdownEngine {
@@ -570,7 +619,9 @@ export class MarkdownEngine {
       scripts += `<script type="text/javascript"> ${buildMathJaxConfigScript(
         mathJaxConfig,
       )} </script>`;
-      scripts += `<script type="text/javascript" defer src="${this.notebook.config.mathjaxScriptSrc}" charset="UTF-8"></script>`;
+      scripts += `<script type="text/javascript" defer src="${escape(
+        this.notebook.config.mathjaxScriptSrc,
+      )}" charset="UTF-8"></script>`;
     }
 
     // reveal.js
@@ -584,23 +635,10 @@ export class MarkdownEngine {
         vscodePreviewPanel,
       )}'></script>`;
 
-      let presentationConfig: Record<string, unknown> = {};
-      const presentationValue = yamlConfig['presentation'];
-      if (
-        typeof presentationValue === 'object' &&
-        presentationValue !== null &&
-        !Array.isArray(presentationValue)
-      ) {
-        presentationConfig = presentationValue as Record<string, unknown>;
-      }
-      if (typeof presentationConfig !== 'object') {
-        presentationConfig = {};
-      }
-      let dependencies = presentationConfig['dependencies'] || [];
-      if (!(dependencies instanceof Array)) {
-        dependencies = [];
-      }
-      presentationConfig['dependencies'] = dependencies;
+      const presentationConfig = presentationConfigOf(
+        yamlConfig['presentation'],
+        this.notebook.config.enableScriptExecution,
+      );
 
       presentationInitScript += `
         await Reveal.initialize(${jsonForScript({
@@ -619,11 +657,13 @@ export class MarkdownEngine {
 
     // mermaid init
     scripts += `<script>
-var MERMAID_CONFIG = (${JSON.stringify(this.notebook.config.mermaidConfig)});
+var MERMAID_CONFIG = (${jsonForScript(this.notebook.config.mermaidConfig)});
 if (typeof MERMAID_CONFIG !== 'undefined') {
   MERMAID_CONFIG.startOnLoad = false
   MERMAID_CONFIG.cloneCssStyles = false
-  MERMAID_CONFIG.theme = MERMAID_CONFIG.theme || "${this.notebook.config.mermaidTheme}"
+  MERMAID_CONFIG.theme = MERMAID_CONFIG.theme || ${jsonForScript(
+    String(this.notebook.config.mermaidTheme),
+  )}
 }
 mermaid.initialize(MERMAID_CONFIG || {})
 // The diagrams of a presentation are rendered by the preview, slide by slide
@@ -965,9 +1005,11 @@ window["initRevealPresentation"] = async function() {
     )}">`;
 
     // global styles
-    styles += `<style>${this.resolvePathsInStyles(
-      this.notebook.config.globalCss,
-      vscodePreviewPanel,
+    styles += `<style>${cssForStyle(
+      this.resolvePathsInStyles(
+        this.notebook.config.globalCss,
+        vscodePreviewPanel,
+      ),
     )}</style>`;
 
     return styles;
@@ -1286,6 +1328,10 @@ window["initRevealPresentation"] = async function() {
       )}" charset="UTF-8"></script>`;
     };
 
+    // Every script and stylesheet the export takes from the CDN. The host is
+    // escaped once, for the attributes it is written in.
+    const cdnHost = escape(this.notebook.config.jsdelivrCdnHost);
+
     // get `id` and `class`: a class of the front matter is a name or a list
     // of them; anything else that is not nothing is written as its text.
     const elementId = (yamlConfig['id'] as string) || '';
@@ -1307,25 +1353,25 @@ window["initRevealPresentation"] = async function() {
         <script type="text/javascript">
           ${buildMathJaxConfigScript(mathJaxConfig)}
         </script>
-        <script type="text/javascript" defer src="${
-          this.notebook.config.mathjaxScriptSrc
-        }" charset="UTF-8"></script>
+        <script type="text/javascript" defer src="${escape(
+          this.notebook.config.mathjaxScriptSrc,
+        )}" charset="UTF-8"></script>
         `;
       } else {
         mathStyle = `
         <script type="text/javascript">
           ${buildMathJaxConfigScript(mathJaxConfig)}
         </script>
-        <script type="text/javascript" defer src="${
-          this.notebook.config.mathjaxScriptSrc
-        }"></script>
+        <script type="text/javascript" defer src="${escape(
+          this.notebook.config.mathjaxScriptSrc,
+        )}"></script>
         `;
       }
     } else if (this.notebook.config.mathRenderingOption === 'KaTeX') {
       if (options.offline) {
         mathStyle = await offlineStyle('./dependencies/katex/katex.min.css');
       } else {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.19.1/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${cdnHost}/npm/katex@0.19.1/dist/katex.min.css">`;
       }
     } else {
       mathStyle = '';
@@ -1339,7 +1385,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/font-awesome/css/all.min.css',
         );
       } else {
-        fontAwesomeStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">`;
+        fontAwesomeStyle = `<link rel="stylesheet" href="https://${cdnHost}/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">`;
       }
     }
 
@@ -1356,7 +1402,7 @@ window["initRevealPresentation"] = async function() {
           './dependencies/mermaid/mermaid.min.js',
         );
       } else {
-        mermaidScript += `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/mermaid@12.4.0/dist/mermaid.min.js"></script>`;
+        mermaidScript += `<script src="https://${cdnHost}/npm/mermaid@12.4.0/dist/mermaid.min.js"></script>`;
       }
 
       mermaidInitScript = `<script type="module">${buildMermaidExportScript(
@@ -1373,7 +1419,7 @@ window["initRevealPresentation"] = async function() {
       if (options.offline) {
         peleScript = await offlineScript('./dependencies/pele/pele.global.js');
       } else {
-        peleScript = `<script src="https://${this.notebook.config.jsdelivrCdnHost}/npm/pele@1.13.0/dist/pele.global.js"></script>`;
+        peleScript = `<script src="https://${cdnHost}/npm/pele@1.13.0/dist/pele.global.js"></script>`;
       }
       // A classic script: pele draws synchronously, so the diagrams are in
       // place as soon as the script has run.
@@ -1395,9 +1441,9 @@ window["initRevealPresentation"] = async function() {
           './dependencies/wavedrom/wavedrom.min.js',
         );
       } else {
-        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/default.js"></script>`;
-        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/skins/narrow.js"></script>`;
-        wavedromScript += `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/wavedrom@3.3.0/wavedrom.min.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${cdnHost}/npm/wavedrom@3.3.0/skins/default.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${cdnHost}/npm/wavedrom@3.3.0/skins/narrow.js"></script>`;
+        wavedromScript += `<script type="text/javascript" src="https://${cdnHost}/npm/wavedrom@3.3.0/wavedrom.min.js"></script>`;
       }
       wavedromInitScript = `<script>WaveDrom.ProcessAll()</script>`;
     }
@@ -1421,7 +1467,7 @@ window["initRevealPresentation"] = async function() {
       for (const { key, version } of dependentLibraryMaterials) {
         vegaScript += options.offline
           ? await offlineScript(`./dependencies/${key}/${key}.min.js`)
-          : `<script type="text/javascript" src="https://${this.notebook.config.jsdelivrCdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
+          : `<script type="text/javascript" src="https://${cdnHost}/npm/${key}@${version}/build/${key}.js"></script>`;
       }
 
       vegaInitScript += `<script>
@@ -1458,18 +1504,13 @@ window["initRevealPresentation"] = async function() {
         );
       } else {
         presentationScript = `
-        <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@6.0.2/dist/reveal.js'></script>`;
+        <script src='https://${cdnHost}/npm/reveal.js@6.0.2/dist/reveal.js'></script>`;
       }
 
-      const presentationConfigRaw = yamlConfig['presentation'];
-      const presentationConfig: Record<string, unknown> =
-        typeof presentationConfigRaw === 'object' &&
-        presentationConfigRaw !== null &&
-        !Array.isArray(presentationConfigRaw)
-          ? { ...(presentationConfigRaw as Record<string, unknown>) }
-          : {};
-      const dependencies =
-        (presentationConfig['dependencies'] as unknown[] | undefined) || [];
+      const presentationConfig = presentationConfigOf(
+        yamlConfig['presentation'],
+        this.notebook.config.enableScriptExecution,
+      );
 
       // The speaker notes plugin. reveal.js 5+ has no plugin auto-loading:
       // the plugin script has to run before initialization and the plugin
@@ -1488,7 +1529,6 @@ window["initRevealPresentation"] = async function() {
           ];
         }
       }
-      presentationConfig['dependencies'] = dependencies;
 
       presentationStyle = `
       <style>
@@ -1617,7 +1657,7 @@ window["initRevealPresentation"] = async function() {
             `./dependencies/reveal/css/theme/${safeTheme}`,
           );
         } else {
-          presentationStyle += `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@6.0.2/dist/theme/${safeTheme}">`;
+          presentationStyle += `<link rel="stylesheet" href="https://${cdnHost}/npm/reveal.js@6.0.2/dist/theme/${safeTheme}">`;
         }
       } else {
         // preview theme
@@ -1700,8 +1740,8 @@ window["initRevealPresentation"] = async function() {
     // global styles
     // No webview here — this is the HTML/print export path, where `file://`
     // is what the output should carry.
-    const globalStyles = this.resolvePathsInStyles(
-      this.notebook.config.globalCss,
+    const globalStyles = cssForStyle(
+      this.resolvePathsInStyles(this.notebook.config.globalCss),
     );
 
     // sidebar toc
@@ -2228,23 +2268,44 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const savePaths: string[] = [];
     const asyncFunctions = imagesToDownload.map(async ($img) => {
       const httpSrc = $img.attr('src') ?? '';
+      // The prefix in front of the name keeps this download from that of
+      // another image of the same name, from those of an export of the note
+      // that runs at the same time, and from a file of the user's next to
+      // the note — the file is removed after the conversion.
       let savePath =
-        Math.random().toString(36).substr(2, 9) + '_' + path.basename(httpSrc);
+        Math.random().toString(36).substr(2, 9) +
+        '_' +
+        downloadedImageName(httpSrc);
       savePath = path.resolve(this.fileDirectoryPath, savePath);
       savePaths.push(savePath);
 
-      const response = await fetch(httpSrc);
+      // What fetch rejects with when the network fails (`TypeError: fetch
+      // failed`) and what the pipeline rejects with when the body breaks
+      // while it is read (`Error: socket hang up`) name no image. This error
+      // does, and keeps that one as its cause.
+      const failure = (cause: unknown) =>
+        new Error(`Failed to download image from ${httpSrc}`, { cause });
+      let response: Response;
+      try {
+        response = await fetch(httpSrc);
+      } catch (error) {
+        throw failure(error);
+      }
       if (!response.ok || !response.body) {
         throw new Error(`Failed to download image from ${httpSrc}`);
       }
       const { pipeline } = await import('stream/promises');
       const { Readable } = await import('stream');
-      await pipeline(
-        Readable.fromWeb(
-          response.body as Parameters<typeof Readable.fromWeb>[0],
-        ),
-        fs.createWriteStream(savePath),
-      );
+      try {
+        await pipeline(
+          Readable.fromWeb(
+            response.body as Parameters<typeof Readable.fromWeb>[0],
+          ),
+          fs.createWriteStream(savePath),
+        );
+      } catch (error) {
+        throw failure(error);
+      }
       $img.attr('src', utility.toFileURL(savePath));
       return savePath;
     });
@@ -2496,7 +2557,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         ebookConfig['html'] &&
         (ebookConfig['html'] as Record<string, unknown>)['cdn']
       ) {
-        mathStyle = `<link rel="stylesheet" href="https://${this.notebook.config.jsdelivrCdnHost}/npm/katex@0.19.1/dist/katex.min.css">`;
+        mathStyle = `<link rel="stylesheet" href="https://${escape(
+          this.notebook.config.jsdelivrCdnHost,
+        )}/npm/katex@0.19.1/dist/katex.min.css">`;
       } else {
         mathStyle = `<link rel="stylesheet" href="${utility.toFileURL(
           path.resolve(
@@ -2581,7 +2644,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // global styles
     let globalStyles = '';
     try {
-      globalStyles = this.resolvePathsInStyles(this.notebook.config.globalCss);
+      globalStyles = cssForStyle(
+        this.resolvePathsInStyles(this.notebook.config.globalCss),
+      );
     } catch {
       // ignore it
     }
@@ -2812,7 +2877,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    *    puppeteer | chrome: true  // or pdf | jpeg | png
    *    pandoc: true
    *    ebook: true      // or epub | pdf | html | mobi
-   *    markdown: true
    * ---
    * @param data
    */
@@ -2820,44 +2884,85 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const isWeb = utility.isVSCodeWebExtension();
     for (const exporter in data) {
       if (exporter === 'html') {
-        this.htmlExport({});
+        this.exportBeganBySave('HTML', this.htmlExport({}));
       } else if (!isWeb && exporter === 'prince') {
-        this.princeExport({ openFileAfterGeneration: false });
+        this.exportBeganBySave(
+          'Prince',
+          this.princeExport({ openFileAfterGeneration: false }),
+        );
       } else if (
         (!isWeb && exporter === 'puppeteer') ||
         exporter === 'chrome'
       ) {
         const fileTypes = data[exporter];
-        let func = this.chromeExport;
-        func = func.bind(this);
-
+        const chromeExport = this.chromeExport.bind(this);
         if (fileTypes === true) {
-          func({ fileType: 'pdf', openFileAfterGeneration: false });
+          this.exportBeganBySave(
+            'Chrome',
+            chromeExport({ fileType: 'pdf', openFileAfterGeneration: false }),
+          );
         } else if (typeof fileTypes === 'string') {
-          func({ fileType: fileTypes, openFileAfterGeneration: false });
+          this.exportBeganBySave(
+            'Chrome',
+            chromeExport({
+              fileType: fileTypes,
+              openFileAfterGeneration: false,
+            }),
+          );
         } else if (fileTypes instanceof Array) {
           fileTypes.forEach((fileType) => {
-            func({
-              fileType: fileType as string,
-              openFileAfterGeneration: false,
-            });
+            this.exportBeganBySave(
+              'Chrome',
+              chromeExport({
+                fileType: fileType as string,
+                openFileAfterGeneration: false,
+              }),
+            );
           });
         }
       } else if (!isWeb && exporter === 'pandoc') {
-        this.pandocExport({ openFileAfterGeneration: false });
+        this.exportBeganBySave(
+          'pandoc',
+          this.pandocExport({ openFileAfterGeneration: false }),
+        );
       } else if (!isWeb && exporter === 'ebook') {
         const fileTypes = data[exporter];
         if (fileTypes === true) {
-          this.eBookExport({ fileType: 'epub' });
+          this.exportBeganBySave(
+            'eBook as epub',
+            this.eBookExport({ fileType: 'epub' }),
+          );
         } else if (typeof fileTypes === 'string') {
-          this.eBookExport({ fileType: fileTypes });
+          this.exportBeganBySave(
+            `eBook as ${fileTypes}`,
+            this.eBookExport({ fileType: fileTypes }),
+          );
         } else if (fileTypes instanceof Array) {
           fileTypes.forEach((fileType) => {
-            this.eBookExport({ fileType: fileType as string });
+            this.exportBeganBySave(
+              `eBook as ${fileType}`,
+              this.eBookExport({ fileType: fileType as string }),
+            );
           });
         }
       }
     }
+  }
+
+  /**
+   * An export begun by a save. Nothing waits for it, as nothing ever did, but
+   * a failure of it is reported by crossnote itself: a program that has no
+   * handler for an unhandled rejection is ended by one, and what a host makes
+   * of one is its own (the extension host shows it as an error of the
+   * extension).
+   */
+  private exportBeganBySave(exporter: string, exporting: Promise<unknown>) {
+    exporting.catch((error) => {
+      console.error(
+        `[crossnote] the ${exporter} export of ${this.filePath} on save failed.`,
+        error,
+      );
+    });
   }
 
   /**
@@ -3170,11 +3275,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * Parse `html` to generate slides. Each marker in the page names the
    * configuration of its slide. Returns `null` when no marker does: the
    * document is not a presentation then.
+   *
+   * Only a marker that carries the token of this rendering is one: it was
+   * written by the transformer, in this file or in a file it imported. A
+   * `[CROSSNOTESLIDE…]` written as text carries no token — or that of another
+   * rendering, as of a note embedded by `![[…]]` in the middle of a line —
+   * and stays the text it is, wherever it reaches the page (crossnote#589).
    */
   private parseSlides(
     html: string,
     slideConfigs: JsonObject[],
     useRelativeFilePath: boolean,
+    slideMarkerToken: string,
   ): string | null {
     const configs = new Map<number, JsonObject>(
       slideConfigs.map((config) => [
@@ -3186,11 +3298,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // on the line: a fenced block is not followed by a newline, as a
     // paragraph is. One that is not in a paragraph of its own has to start
     // the line.
-    const marker = slideMarkerRegExp();
+    const marker = slideMarkerRegExp(slideMarkerToken);
 
-    // A marker that names no configuration — one written as HTML, or one of
-    // a slide whose configuration did not reach the page — starts no slide:
-    // what follows it stays with what comes before it.
+    // A marker that names no configuration — one of a slide whose
+    // configuration did not reach the page — starts no slide: what follows
+    // it stays with what comes before it.
     const slides: { config: JsonObject; html: string }[] = [];
     let before = '';
     const append = (content: string) => {
@@ -3215,8 +3327,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     const $ = cheerio.load(
-      `<div style="display:none;">${before}</div><div class="reveal"><div class="slides"></div></div>`,
+      `<div style="display:none;"></div><div class="reveal"><div class="slides"></div></div>`,
     );
+    // What comes before the first slide is hidden. It is written into its
+    // element as the content of an element: what it leaves open is closed
+    // there — a table of which the first marker made a row — and does not
+    // take the deck in with it.
+    $('body').children().first().html(before);
     const deck = $('.slides');
     // The slides of a stack are sections of a section.
     let stack: Cheerio<AnyNode> | null = null;
@@ -3447,6 +3564,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // import external files and insert anchors if necessary
 
+    // The token of this rendering, which every slide marker written for the
+    // page carries — the ones of the files it imports too — and by which
+    // `parseSlides` tells them from a marker written as text (crossnote#589).
+    const slideMarkerToken = newSlideMarkerToken();
+
     let {
       outputString,
       // eslint-disable-next-line prefer-const
@@ -3467,6 +3589,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
       notebook: this.notebook,
+      slideMarkerToken,
     });
 
     // process front-matter
@@ -3693,6 +3816,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         html,
         slideConfigs,
         options.useRelativeFilePath,
+        slideMarkerToken,
       );
       // No marker of a slide is in the page, as when an import that is a
       // code block brought their configurations along.

@@ -5,6 +5,7 @@
  * exercised in a real browser (Playwright) without pulling in the whole
  * markdown engine.
  */
+import { jsonForScript } from '../lib/json-for-script';
 
 // a11y document options that MathJax 4's combined component resets to their
 // defaults during startup. The `startup.ready` hook below re-applies whichever
@@ -35,7 +36,7 @@ const A11Y_OPTION_KEYS = [
 export function buildMathJaxConfigScript(
   mathJaxConfig: Record<string, unknown>,
 ): string {
-  return `window.MathJax = (${JSON.stringify(mathJaxConfig)});
+  return `window.MathJax = (${jsonForScript(mathJaxConfig)});
 (function () {
   var cfg = window.MathJax;
   cfg.startup = cfg.startup || {};
