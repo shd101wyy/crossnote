@@ -12,9 +12,15 @@ import type { CheerioAPI } from 'cheerio';
  * as the HTML they now are, which goes through the sanitizer with the slide.
  *
  * reveal.js takes the notes of every `aside.notes` of a slide, and reads them
- * as markdown when the first of them has the attribute — so that is what is
- * looked for here. The innermost aside is rendered first, so that the
- * markdown around it takes the notes rendered within it as HTML.
+ * as markdown when the first of them has the attribute. Here every aside
+ * that has it is rendered on its own, and one without it is left as it is:
+ * its notes are HTML, as they are when it stands alone.
+ *
+ * This has to run before the sanitizer sees the slide: what the rendering
+ * makes — an attribute a heading is given in markdown — it has to see.
+ *
+ * The innermost aside is rendered first, so that the markdown around it
+ * takes the notes rendered within it as HTML.
  */
 export function renderMarkdownNotes(
   $: CheerioAPI,

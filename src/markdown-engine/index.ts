@@ -3305,7 +3305,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     });
 
     // The speaker notes that are markdown are rendered before the sanitizer
-    // sees the slide, as the HTML they are then.
+    // sees the slide, as the HTML they are then. They are of this note: a
+    // wikilink of theirs is resolved from the path of this file, as one of
+    // the page is (a note embedded in the page has set the path to its own
+    // in the meantime).
+    this.notebook.currentRenderFilePath = path.relative(
+      this.notebook.notebookPath.fsPath,
+      this.filePath,
+    );
     renderMarkdownNotes($, (markdown) =>
       this.notebook.getFragmentMarkdownIt().render(markdown),
     );

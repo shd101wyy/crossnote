@@ -1016,10 +1016,45 @@ Text ^note
       // on the aside.
       expect(notes.attr('data-markdown')).toBeUndefined();
       expect(notes.find('li strong').text()).toBe('one');
-      // The path of the image is resolved as the path of any image of the page.
+      // The image is raw HTML of the page's first rendering, so its path was
+      // resolved as the path of any image of the page.
       expect(notes.find('img').attr('src')).toMatch(/\/x$/);
       expect(notes.find('[onerror]')).toHaveLength(0);
       expect(notes.find('a')).toHaveLength(0);
+    });
+
+    test('an attribute the notes give an element in markdown is not written: the notes are sanitized after they are rendered', async () => {
+      // The rendering of the notes makes the attribute; a sanitizer that ran
+      // before it would not have seen it.
+      const notes = await notesOf(
+        '<aside class="notes" data-markdown># Heading {onmouseover=alert(1)}</aside>',
+      );
+
+      expect(notes.find('h1').text().trim()).toBe('Heading');
+      expect(notes.find('[onmouseover]')).toHaveLength(0);
+    });
+
+    test('the notes of every slide are rendered, not only those of the first', async () => {
+      const { html } = await render(
+        [
+          '<!-- slide -->',
+          '',
+          '# First',
+          '',
+          '<aside class="notes" data-markdown>*a*</aside>',
+          '',
+          '<!-- slide -->',
+          '',
+          '# Second',
+          '',
+          '<aside class="notes" data-markdown>*b*</aside>',
+        ].join('\n'),
+      );
+      const notes = load(html)('section[data-h] aside.notes');
+
+      expect(notes).toHaveLength(2);
+      expect(notes.eq(0).html()).toBe('<p><em>a</em></p>\n');
+      expect(notes.eq(1).html()).toBe('<p><em>b</em></p>\n');
     });
 
     test('they are rendered with the markdown-it of the notebook', async () => {
