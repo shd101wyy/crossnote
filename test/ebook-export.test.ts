@@ -37,6 +37,17 @@ jest.mock('less', () => ({
 const MARKUP_IN_A_LINK =
   '- [<span title=" onmouseover=window.__pwn_heading=1 x="">H</span>](other.md)\n';
 
+/** Wait until `condition` holds, letting what runs on its own get on. */
+async function waitFor(condition: () => boolean) {
+  const deadline = Date.now() + 5_000;
+  while (!condition()) {
+    if (Date.now() > deadline) {
+      throw new Error('It did not get there in time');
+    }
+    await new Promise<void>((resolve) => setImmediate(resolve));
+  }
+}
+
 describe('the eBook export', () => {
   track();
 
@@ -487,6 +498,137 @@ describe('the eBook export', () => {
         expect(downloadsLeft()).toEqual([]);
         expect(convert).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('begun by a save', () => {
+    const fetch_ = globalThis.fetch;
+    let consoleError: jest.SpyInstance;
+
+    beforeEach(() => {
+      // A failed export is reported on the console.
+      consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      consoleError.mockRestore();
+      globalThis.fetch = fetch_;
+    });
+
+    /**
+     * A note that exports on save what `exportOnSave` (the front matter of
+     * `export_on_save`) says, with an image on the web that `fetch` answers
+     * as `respond` does. `parse()` is what a host does when the note is
+     * saved.
+     */
+    async function savedNote(
+      exportOnSave: string,
+      respond: (url: string) => unknown,
+    ) {
+      globalThis.fetch = jest.fn(respond) as unknown as typeof fetch;
+      const filePath = path.join(tmpDir, 'note.md');
+      fs.writeFileSync(
+        filePath,
+        `---\nebook:\n  title: T\nexport_on_save:\n${exportOnSave}---\n\nImage: ![on the web](https://example.com/a.png)\n`,
+      );
+      const notebook = await Notebook.init({
+        notebookPath: tmpDir,
+        config: {
+          markdownParser: 'markdown-it',
+          markdownYoBinaryPath: '',
+          previewTheme: 'github-light.css',
+        },
+      });
+      const engine = new MarkdownEngine({ notebook, filePath });
+      return {
+        engine,
+        filePath,
+        parse: () =>
+          engine.parseMD(fs.readFileSync(filePath, 'utf8'), {
+            isForPreview: true,
+            useRelativeFilePath: false,
+            hideFrontMatter: false,
+            triggeredBySave: true,
+          }),
+      };
+    }
+
+    test.each([
+      ['a file type', '  ebook: epub\n', ['epub']],
+      ['true', '  ebook: true\n', ['epub']],
+      ['a list of file types', '  ebook: [epub, mobi]\n', ['epub', 'mobi']],
+    ])(
+      'reports an export that fails, instead of leaving its failure unhandled, with %s',
+      async (_, exportOnSave, fileTypes) => {
+        // The image cannot be fetched, which stops the export.
+        const { filePath, parse } = await savedNote(exportOnSave, () => ({
+          ok: false,
+        }));
+
+        await parse();
+        // The export runs on its own, awaited nowhere: it has reported
+        // before this goes on. That nothing of it is left unhandled is what
+        // jest itself sees to — a rejection that no one handles fails the
+        // test it happens in.
+        await waitFor(() => consoleError.mock.calls.length >= fileTypes.length);
+
+        expect(consoleError).toHaveBeenCalledTimes(fileTypes.length);
+        // The exports run side by side: which of them reports first is not
+        // fixed, so the reports are read as a set.
+        expect(consoleError).toHaveBeenCalledTimes(fileTypes.length);
+        expect(
+          consoleError.mock.calls.map(([message]) => message).sort(),
+        ).toEqual(
+          fileTypes
+            .map(
+              (fileType) =>
+                `[crossnote] the eBook export of ${filePath} as ${fileType} on save failed.`,
+            )
+            .sort(),
+        );
+        for (const [, error] of consoleError.mock.calls) {
+          expect(error).toEqual(
+            expect.objectContaining({
+              message:
+                'Failed to download image from https://example.com/a.png',
+            }),
+          );
+        }
+      },
+      // The test may outlast its wait: when no report comes, the wait says
+      // so itself, before the timeout of the test does.
+      10_000,
+    );
+
+    test('does not hold back the exporters that come after it', async () => {
+      // The image answers when it is released.
+      let release: () => void = () => {};
+      const released = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const { engine, parse } = await savedNote(
+        '  ebook: epub\n  html: true\n',
+        () => released.then(() => ({ ok: false })),
+      );
+      const eBook = jest.spyOn(engine, 'eBookExport');
+      const html = jest.spyOn(engine, 'htmlExport').mockResolvedValue('');
+
+      await parse();
+      // The eBook export has asked for its image and waits for it still,
+      // and `parseMD` has returned: the exporter after it has begun.
+      try {
+        await waitFor(
+          () => (globalThis.fetch as jest.Mock).mock.calls.length > 0,
+        );
+        expect(html).toHaveBeenCalledTimes(1);
+        expect(eBook.mock.invocationCallOrder[0]).toBeLessThan(
+          html.mock.invocationCallOrder[0],
+        );
+      } finally {
+        release();
+      }
+      // The export ends before the test does.
+      await waitFor(() => consoleError.mock.calls.length > 0);
     });
   });
 });

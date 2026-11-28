@@ -2905,16 +2905,30 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       } else if (!isWeb && exporter === 'ebook') {
         const fileTypes = data[exporter];
         if (fileTypes === true) {
-          this.eBookExport({ fileType: 'epub' });
+          this.exportEBookOnSave('epub');
         } else if (typeof fileTypes === 'string') {
-          this.eBookExport({ fileType: fileTypes });
+          this.exportEBookOnSave(fileTypes);
         } else if (fileTypes instanceof Array) {
           fileTypes.forEach((fileType) => {
-            this.eBookExport({ fileType: fileType as string });
+            this.exportEBookOnSave(fileType as string);
           });
         }
       }
     }
+  }
+
+  /**
+   * The eBook export of a save. It runs on its own, as the other exporters
+   * of a save do, but a failure of it is reported instead of being left
+   * unhandled: an image on the web that cannot be fetched stops the export.
+   */
+  private exportEBookOnSave(fileType: string) {
+    this.eBookExport({ fileType }).catch((error) => {
+      console.error(
+        `[crossnote] the eBook export of ${this.filePath} as ${fileType} on save failed.`,
+        error,
+      );
+    });
   }
 
   /**
