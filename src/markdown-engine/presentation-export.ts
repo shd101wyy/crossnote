@@ -1,6 +1,39 @@
 import { jsonForScript } from '../lib/json-for-script';
 
 /**
+ * The `presentation` configuration of a note — its front matter — with the
+ * keys taken out that make reveal.js load a script: `dependencies` — the
+ * entries that have a `src`, which reveal.js loads into the page as scripts —
+ * and `url`, from which its notes plugin builds the frames of the speaker
+ * view. A note may load script only when `enableScriptExecution` is on, as
+ * with the JavaScript and CSS files it names (#602). (reveal.js itself drops
+ * `dependencies` that come from the address of the page.)
+ *
+ * What is not an object is no configuration.
+ *
+ * `dependencies` is a list or nothing is given: what is not a list would make
+ * reveal.js throw before the presentation starts.
+ */
+export function presentationConfigOf(
+  presentation: unknown,
+  enableScriptExecution: boolean,
+): Record<string, unknown> {
+  const config: Record<string, unknown> =
+    typeof presentation === 'object' &&
+    presentation !== null &&
+    !Array.isArray(presentation)
+      ? { ...presentation }
+      : {};
+  const dependencies = config['dependencies'];
+  config['dependencies'] = Array.isArray(dependencies) ? dependencies : [];
+  if (!enableScriptExecution) {
+    delete config['dependencies'];
+    delete config['url'];
+  }
+  return config;
+}
+
+/**
  * The style that prints every page of a PDF export as reveal.js laid it out.
  *
  * reveal.js gives a slide taller than the presentation a page two or more

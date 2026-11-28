@@ -57,6 +57,7 @@ import {
 import { buildPeleExportScript } from './pele-export';
 import {
   buildPresentationInitScript,
+  presentationConfigOf,
   presentationPrintStyle,
 } from './presentation-export';
 import {
@@ -392,6 +393,49 @@ const NOT_SLIDE_ATTRIBUTES = new Set([
 const ATTRIBUTE_NAME = /^[a-z_:][a-z0-9:._-]*$/i;
 
 /**
+ * The most characters the name of a downloaded image takes. With the prefix
+ * in front of it (ten characters at most) it stays well under the 255 bytes
+ * that Linux, macOS and Windows allow a file name.
+ */
+const DOWNLOADED_IMAGE_NAME_MAX_LENGTH = 200;
+
+/**
+ * The name an image downloaded from `src` is saved under: the last segment
+ * of the path of the address, its percent-escapes decoded, of the
+ * characters a file name takes on every system. The extension stays on it,
+ * the name is cut to `DOWNLOADED_IMAGE_NAME_MAX_LENGTH` with the extension
+ * kept, and it is `image` when nothing is left of the segment. The name
+ * never begins or ends with a dot; with the prefix in front of it, as it is
+ * saved, it is a file name on every system — not `.`, `..`, or one of the
+ * devices of Windows (`CON`, `NUL`, …).
+ */
+function downloadedImageName(src: string): string {
+  let segment = '';
+  try {
+    segment = new URL(src).pathname.split('/').pop() ?? '';
+  } catch {
+    // Not an address: there is no name to take.
+  }
+  try {
+    segment = decodeURIComponent(segment);
+  } catch {
+    // A path with a `%` that escapes nothing (`50%off.png`): its name is
+    // taken as it is written.
+  }
+  const name = segment.replace(/[^A-Za-z0-9._-]/g, '');
+  // An extension is a dot followed by one to sixteen letters or digits, at
+  // the end of the name.
+  const extension = name.match(/\.[A-Za-z0-9]{1,16}$/)?.[0] ?? '';
+  // A stem of dots only is no stem: `..`, or nothing at all before `.png`.
+  const stem = name
+    .slice(0, name.length - extension.length)
+    .replace(/^\.+|\.+$/g, '');
+  const maxLength = DOWNLOADED_IMAGE_NAME_MAX_LENGTH - extension.length;
+  // The cut can leave a dot at the end: `a.a.a…` cut after an `a.`.
+  return (stem || 'image').slice(0, maxLength).replace(/\.+$/, '') + extension;
+}
+
+/**
  * The markdown engine that can be used to parse markdown and export files
  */
 export class MarkdownEngine {
@@ -587,23 +631,10 @@ export class MarkdownEngine {
         vscodePreviewPanel,
       )}'></script>`;
 
-      let presentationConfig: Record<string, unknown> = {};
-      const presentationValue = yamlConfig['presentation'];
-      if (
-        typeof presentationValue === 'object' &&
-        presentationValue !== null &&
-        !Array.isArray(presentationValue)
-      ) {
-        presentationConfig = presentationValue as Record<string, unknown>;
-      }
-      if (typeof presentationConfig !== 'object') {
-        presentationConfig = {};
-      }
-      let dependencies = presentationConfig['dependencies'] || [];
-      if (!(dependencies instanceof Array)) {
-        dependencies = [];
-      }
-      presentationConfig['dependencies'] = dependencies;
+      const presentationConfig = presentationConfigOf(
+        yamlConfig['presentation'],
+        this.notebook.config.enableScriptExecution,
+      );
 
       presentationInitScript += `
         await Reveal.initialize(${jsonForScript({
@@ -1464,15 +1495,10 @@ window["initRevealPresentation"] = async function() {
         <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@6.0.2/dist/reveal.js'></script>`;
       }
 
-      const presentationConfigRaw = yamlConfig['presentation'];
-      const presentationConfig: Record<string, unknown> =
-        typeof presentationConfigRaw === 'object' &&
-        presentationConfigRaw !== null &&
-        !Array.isArray(presentationConfigRaw)
-          ? { ...(presentationConfigRaw as Record<string, unknown>) }
-          : {};
-      const dependencies =
-        (presentationConfig['dependencies'] as unknown[] | undefined) || [];
+      const presentationConfig = presentationConfigOf(
+        yamlConfig['presentation'],
+        this.notebook.config.enableScriptExecution,
+      );
 
       // The speaker notes plugin. reveal.js 5+ has no plugin auto-loading:
       // the plugin script has to run before initialization and the plugin
@@ -1491,7 +1517,6 @@ window["initRevealPresentation"] = async function() {
           ];
         }
       }
-      presentationConfig['dependencies'] = dependencies;
 
       presentationStyle = `
       <style>
@@ -2231,23 +2256,44 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const savePaths: string[] = [];
     const asyncFunctions = imagesToDownload.map(async ($img) => {
       const httpSrc = $img.attr('src') ?? '';
+      // The prefix in front of the name keeps this download from that of
+      // another image of the same name, from those of an export of the note
+      // that runs at the same time, and from a file of the user's next to
+      // the note — the file is removed after the conversion.
       let savePath =
-        Math.random().toString(36).substr(2, 9) + '_' + path.basename(httpSrc);
+        Math.random().toString(36).substr(2, 9) +
+        '_' +
+        downloadedImageName(httpSrc);
       savePath = path.resolve(this.fileDirectoryPath, savePath);
       savePaths.push(savePath);
 
-      const response = await fetch(httpSrc);
+      // What fetch rejects with when the network fails (`TypeError: fetch
+      // failed`) and what the pipeline rejects with when the body breaks
+      // while it is read (`Error: socket hang up`) name no image. This error
+      // does, and keeps that one as its cause.
+      const failure = (cause: unknown) =>
+        new Error(`Failed to download image from ${httpSrc}`, { cause });
+      let response: Response;
+      try {
+        response = await fetch(httpSrc);
+      } catch (error) {
+        throw failure(error);
+      }
       if (!response.ok || !response.body) {
         throw new Error(`Failed to download image from ${httpSrc}`);
       }
       const { pipeline } = await import('stream/promises');
       const { Readable } = await import('stream');
-      await pipeline(
-        Readable.fromWeb(
-          response.body as Parameters<typeof Readable.fromWeb>[0],
-        ),
-        fs.createWriteStream(savePath),
-      );
+      try {
+        await pipeline(
+          Readable.fromWeb(
+            response.body as Parameters<typeof Readable.fromWeb>[0],
+          ),
+          fs.createWriteStream(savePath),
+        );
+      } catch (error) {
+        throw failure(error);
+      }
       $img.attr('src', utility.toFileURL(savePath));
       return savePath;
     });
@@ -2815,7 +2861,6 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    *    puppeteer | chrome: true  // or pdf | jpeg | png
    *    pandoc: true
    *    ebook: true      // or epub | pdf | html | mobi
-   *    markdown: true
    * ---
    * @param data
    */
@@ -2823,44 +2868,85 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const isWeb = utility.isVSCodeWebExtension();
     for (const exporter in data) {
       if (exporter === 'html') {
-        this.htmlExport({});
+        this.exportBeganBySave('HTML', this.htmlExport({}));
       } else if (!isWeb && exporter === 'prince') {
-        this.princeExport({ openFileAfterGeneration: false });
+        this.exportBeganBySave(
+          'Prince',
+          this.princeExport({ openFileAfterGeneration: false }),
+        );
       } else if (
         (!isWeb && exporter === 'puppeteer') ||
         exporter === 'chrome'
       ) {
         const fileTypes = data[exporter];
-        let func = this.chromeExport;
-        func = func.bind(this);
-
+        const chromeExport = this.chromeExport.bind(this);
         if (fileTypes === true) {
-          func({ fileType: 'pdf', openFileAfterGeneration: false });
+          this.exportBeganBySave(
+            'Chrome',
+            chromeExport({ fileType: 'pdf', openFileAfterGeneration: false }),
+          );
         } else if (typeof fileTypes === 'string') {
-          func({ fileType: fileTypes, openFileAfterGeneration: false });
+          this.exportBeganBySave(
+            'Chrome',
+            chromeExport({
+              fileType: fileTypes,
+              openFileAfterGeneration: false,
+            }),
+          );
         } else if (fileTypes instanceof Array) {
           fileTypes.forEach((fileType) => {
-            func({
-              fileType: fileType as string,
-              openFileAfterGeneration: false,
-            });
+            this.exportBeganBySave(
+              'Chrome',
+              chromeExport({
+                fileType: fileType as string,
+                openFileAfterGeneration: false,
+              }),
+            );
           });
         }
       } else if (!isWeb && exporter === 'pandoc') {
-        this.pandocExport({ openFileAfterGeneration: false });
+        this.exportBeganBySave(
+          'pandoc',
+          this.pandocExport({ openFileAfterGeneration: false }),
+        );
       } else if (!isWeb && exporter === 'ebook') {
         const fileTypes = data[exporter];
         if (fileTypes === true) {
-          this.eBookExport({ fileType: 'epub' });
+          this.exportBeganBySave(
+            'eBook as epub',
+            this.eBookExport({ fileType: 'epub' }),
+          );
         } else if (typeof fileTypes === 'string') {
-          this.eBookExport({ fileType: fileTypes });
+          this.exportBeganBySave(
+            `eBook as ${fileTypes}`,
+            this.eBookExport({ fileType: fileTypes }),
+          );
         } else if (fileTypes instanceof Array) {
           fileTypes.forEach((fileType) => {
-            this.eBookExport({ fileType: fileType as string });
+            this.exportBeganBySave(
+              `eBook as ${fileType}`,
+              this.eBookExport({ fileType: fileType as string }),
+            );
           });
         }
       }
     }
+  }
+
+  /**
+   * An export begun by a save. Nothing waits for it, as nothing ever did, but
+   * a failure of it is reported by crossnote itself: a program that has no
+   * handler for an unhandled rejection is ended by one, and what a host makes
+   * of one is its own (the extension host shows it as an error of the
+   * extension).
+   */
+  private exportBeganBySave(exporter: string, exporting: Promise<unknown>) {
+    exporting.catch((error) => {
+      console.error(
+        `[crossnote] the ${exporter} export of ${this.filePath} on save failed.`,
+        error,
+      );
+    });
   }
 
   /**
