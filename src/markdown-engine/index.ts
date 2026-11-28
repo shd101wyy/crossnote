@@ -53,6 +53,7 @@ import { slideMarkerRegExp, tocMarkerRegExp } from './page-markers';
 import { buildPeleExportScript } from './pele-export';
 import {
   buildPresentationInitScript,
+  presentationConfigOf,
   presentationPrintStyle,
 } from './presentation-export';
 import {
@@ -626,23 +627,10 @@ export class MarkdownEngine {
         vscodePreviewPanel,
       )}'></script>`;
 
-      let presentationConfig: Record<string, unknown> = {};
-      const presentationValue = yamlConfig['presentation'];
-      if (
-        typeof presentationValue === 'object' &&
-        presentationValue !== null &&
-        !Array.isArray(presentationValue)
-      ) {
-        presentationConfig = presentationValue as Record<string, unknown>;
-      }
-      if (typeof presentationConfig !== 'object') {
-        presentationConfig = {};
-      }
-      let dependencies = presentationConfig['dependencies'] || [];
-      if (!(dependencies instanceof Array)) {
-        dependencies = [];
-      }
-      presentationConfig['dependencies'] = dependencies;
+      const presentationConfig = presentationConfigOf(
+        yamlConfig['presentation'],
+        this.notebook.config.enableScriptExecution,
+      );
 
       presentationInitScript += `
         await Reveal.initialize(${jsonForScript({
@@ -1503,15 +1491,10 @@ window["initRevealPresentation"] = async function() {
         <script src='https://${this.notebook.config.jsdelivrCdnHost}/npm/reveal.js@6.0.2/dist/reveal.js'></script>`;
       }
 
-      const presentationConfigRaw = yamlConfig['presentation'];
-      const presentationConfig: Record<string, unknown> =
-        typeof presentationConfigRaw === 'object' &&
-        presentationConfigRaw !== null &&
-        !Array.isArray(presentationConfigRaw)
-          ? { ...(presentationConfigRaw as Record<string, unknown>) }
-          : {};
-      const dependencies =
-        (presentationConfig['dependencies'] as unknown[] | undefined) || [];
+      const presentationConfig = presentationConfigOf(
+        yamlConfig['presentation'],
+        this.notebook.config.enableScriptExecution,
+      );
 
       // The speaker notes plugin. reveal.js 5+ has no plugin auto-loading:
       // the plugin script has to run before initialization and the plugin
@@ -1530,7 +1513,6 @@ window["initRevealPresentation"] = async function() {
           ];
         }
       }
-      presentationConfig['dependencies'] = dependencies;
 
       presentationStyle = `
       <style>

@@ -70,7 +70,10 @@ describe('front matter written into a page', () => {
     setCrossnoteBuildDirectory(originalBuildDirectory);
   });
 
-  async function createEngine(markdown: string) {
+  async function createEngine(
+    markdown: string,
+    config: Record<string, unknown> = {},
+  ) {
     fs.writeFileSync(path.join(tmpDir, 'note.md'), markdown);
     const notebook = await Notebook.init({
       notebookPath: tmpDir,
@@ -78,6 +81,7 @@ describe('front matter written into a page', () => {
         markdownParser: 'markdown-it',
         markdownYoBinaryPath: '',
         mathRenderingOption: 'None',
+        ...config,
       },
     });
     const engine = new MarkdownEngine({
@@ -199,6 +203,176 @@ describe('front matter written into a page', () => {
       const config = html.match(/Reveal\.initialize\((\{[^\n]*\})\)/)![1];
       expect(JSON.parse(config)).toMatchObject({ x: SCRIPT_END });
     });
+  });
+});
+
+describe('the keys of a presentation that make reveal.js load a script', () => {
+  track();
+
+  const originalBuildDirectory = getCrossnoteBuildDirectory();
+  let tmpDir: string;
+
+  beforeAll(() => {
+    tmpDir = mkdirSync({ prefix: 'xnote-presentation-keys-' });
+    const revealDir = path.join(tmpDir, 'dependencies', 'reveal');
+    for (const dir of [
+      path.join(revealDir, 'js'),
+      path.join(revealDir, 'css', 'theme'),
+      path.join(tmpDir, 'styles', 'preview_theme'),
+      path.join(tmpDir, 'styles', 'prism_theme'),
+    ]) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(
+      path.join(tmpDir, 'styles', 'prism_theme', 'default.css'),
+      '/* prism:default */',
+    );
+    fs.writeFileSync(path.join(revealDir, 'js', 'reveal.js'), '/* reveal */');
+    fs.writeFileSync(path.join(revealDir, 'css', 'reveal.css'), '/* css */');
+    fs.writeFileSync(
+      path.join(revealDir, 'css', 'theme', 'white.css'),
+      '/* theme */',
+    );
+    setCrossnoteBuildDirectory(tmpDir);
+  });
+
+  afterAll(() => {
+    setCrossnoteBuildDirectory(originalBuildDirectory);
+  });
+
+  async function createEngine(
+    markdown: string,
+    enableScriptExecution: boolean,
+  ) {
+    fs.writeFileSync(path.join(tmpDir, 'note.md'), markdown);
+    const notebook = await Notebook.init({
+      notebookPath: tmpDir,
+      config: {
+        markdownParser: 'markdown-it',
+        markdownYoBinaryPath: '',
+        mathRenderingOption: 'None',
+        enableScriptExecution,
+      },
+    });
+    const engine = new MarkdownEngine({
+      notebook,
+      filePath: path.join(tmpDir, 'note.md'),
+    });
+    return { engine, notebook };
+  }
+
+  /** A note that names a script for reveal.js to load, and a `url` that runs script where the speaker view loads its frames. */
+  const note = [
+    '---',
+    'presentation:',
+    '  dependencies:',
+    '    - src: https://example.com/payload.js',
+    '  url: "javascript:alert(1)//"',
+    '  transition: fade',
+    '---',
+    '',
+    '<!-- slide -->',
+    '# One',
+    '',
+  ].join('\n');
+  // reveal.js 6 loads the entries that have a `src`, and nothing else.
+  const payload = [{ src: 'https://example.com/payload.js' }];
+  const url = 'javascript:alert(1)//';
+
+  /** What reveal.js is given by an export. */
+  const givenByExport = (html: string): Record<string, unknown> =>
+    JSON.parse(
+      html.match(/Reveal\.initialize\(Object\.assign\((\{.*\}), \{/)![1],
+    );
+  /** What reveal.js is given by a preview. */
+  const givenByPreview = (html: string): Record<string, unknown> =>
+    JSON.parse(html.match(/await Reveal\.initialize\((.*)\)/)![1]);
+
+  test('an export does not give them unless enableScriptExecution is on', async () => {
+    // reveal.js loads every `dependencies` entry into the page as a script,
+    // and its notes plugin builds the frames of the speaker view from `url`
+    // (#602).
+    const { engine } = await createEngine(note, false);
+    const given = givenByExport(await engine.htmlExportDocument());
+
+    expect(given).not.toHaveProperty('url');
+    expect(given).not.toHaveProperty('dependencies');
+    // The rest of the configuration is given.
+    expect(given['transition']).toBe('fade');
+  });
+
+  test('a preview does not give them unless enableScriptExecution is on', async () => {
+    const { engine, notebook } = await createEngine(note, false);
+    const html = await engine.generateHTMLTemplateForPreview({
+      inputString: note,
+      config: notebook.config as WebviewConfig,
+      vscodePreviewPanel: null,
+    });
+    const given = givenByPreview(html);
+
+    expect(given).not.toHaveProperty('url');
+    expect(given).not.toHaveProperty('dependencies');
+    expect(given['transition']).toBe('fade');
+  });
+
+  test('with enableScriptExecution on, an export gives them as they are written', async () => {
+    const { engine } = await createEngine(note, true);
+    const given = givenByExport(await engine.htmlExportDocument());
+
+    expect(given['dependencies']).toEqual(payload);
+    expect(given['url']).toBe(url);
+  });
+
+  test('with enableScriptExecution on, a preview gives them as they are written', async () => {
+    const { engine, notebook } = await createEngine(note, true);
+    const html = await engine.generateHTMLTemplateForPreview({
+      inputString: note,
+      config: notebook.config as WebviewConfig,
+      vscodePreviewPanel: null,
+    });
+    const given = givenByPreview(html);
+
+    expect(given['dependencies']).toEqual(payload);
+    expect(given['url']).toBe(url);
+  });
+
+  test('what is not a presentation is no configuration', async () => {
+    const { engine } = await createEngine(
+      '---\npresentation: nope\n---\n\n<!-- slide -->\n# One\n',
+      true,
+    );
+    const given = givenByExport(await engine.htmlExportDocument());
+
+    expect(given).toEqual({
+      margin: 0.1,
+      scrollActivationWidth: null,
+      dependencies: [],
+    });
+  });
+
+  test('dependencies that are not a list are given as none, by an export and by a preview', async () => {
+    // reveal.js would throw on it before the presentation starts.
+    const note = [
+      '---',
+      'presentation:',
+      '  dependencies: https://example.com/payload.js',
+      '---',
+      '',
+      '<!-- slide -->',
+      '# One',
+      '',
+    ].join('\n');
+    const { engine, notebook } = await createEngine(note, true);
+    const html = await engine.generateHTMLTemplateForPreview({
+      inputString: note,
+      config: notebook.config as WebviewConfig,
+      vscodePreviewPanel: null,
+    });
+
+    expect(
+      givenByExport(await engine.htmlExportDocument())['dependencies'],
+    ).toEqual([]);
+    expect(givenByPreview(html)['dependencies']).toEqual([]);
   });
 });
 
