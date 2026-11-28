@@ -49,7 +49,11 @@ import { readOfflineCss, readOfflineJs } from './inline-offline-assets';
 import { buildMathJaxConfigScript, mathJaxConfigOf } from './mathjax-config';
 import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
-import { slideMarkerRegExp, tocMarkerRegExp } from './page-markers';
+import {
+  newSlideMarkerToken,
+  slideMarkerRegExp,
+  tocMarkerRegExp,
+} from './page-markers';
 import { buildPeleExportScript } from './pele-export';
 import {
   buildPresentationInitScript,
@@ -3169,11 +3173,18 @@ sidebarTOCBtn.addEventListener('click', function(event) {
    * Parse `html` to generate slides. Each marker in the page names the
    * configuration of its slide. Returns `null` when no marker does: the
    * document is not a presentation then.
+   *
+   * Only a marker that carries the token of this rendering is one: it was
+   * written by the transformer, in this file or in a file it imported. A
+   * `[CROSSNOTESLIDE…]` written as text carries no token — or that of another
+   * rendering, as of a note embedded by `![[…]]` in the middle of a line —
+   * and stays the text it is, wherever it reaches the page (crossnote#589).
    */
   private parseSlides(
     html: string,
     slideConfigs: JsonObject[],
     useRelativeFilePath: boolean,
+    slideMarkerToken: string,
   ): string | null {
     const configs = new Map<number, JsonObject>(
       slideConfigs.map((config) => [
@@ -3185,11 +3196,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // on the line: a fenced block is not followed by a newline, as a
     // paragraph is. One that is not in a paragraph of its own has to start
     // the line.
-    const marker = slideMarkerRegExp();
+    const marker = slideMarkerRegExp(slideMarkerToken);
 
-    // A marker that names no configuration — one written as HTML, or one of
-    // a slide whose configuration did not reach the page — starts no slide:
-    // what follows it stays with what comes before it.
+    // A marker that names no configuration — one of a slide whose
+    // configuration did not reach the page — starts no slide: what follows
+    // it stays with what comes before it.
     const slides: { config: JsonObject; html: string }[] = [];
     let before = '';
     const append = (content: string) => {
@@ -3446,6 +3457,11 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // import external files and insert anchors if necessary
 
+    // The token of this rendering, which every slide marker written for the
+    // page carries — the ones of the files it imports too — and by which
+    // `parseSlides` tells them from a marker written as text (crossnote#589).
+    const slideMarkerToken = newSlideMarkerToken();
+
     let {
       outputString,
       // eslint-disable-next-line prefer-const
@@ -3466,6 +3482,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       useRelativeFilePath: options.useRelativeFilePath,
       filesCache: this.filesCache,
       notebook: this.notebook,
+      slideMarkerToken,
     });
 
     // process front-matter
@@ -3674,6 +3691,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
         html,
         slideConfigs,
         options.useRelativeFilePath,
+        slideMarkerToken,
       );
       // No marker of a slide is in the page, as when an import that is a
       // code block brought their configurations along.

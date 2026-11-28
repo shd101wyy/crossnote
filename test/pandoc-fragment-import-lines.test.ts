@@ -103,6 +103,13 @@ describe('a fragment of a file that has an import over several lines above it', 
     });
   });
 
+  /**
+   * The token of the rendering, as every transform of this file is handed
+   * one: the marker of a slide carries it, so outputs are compared without
+   * it getting in the way.
+   */
+  const TOKEN = '0123456789abcdef0123456789abcdef';
+
   /** Transform a note written in the folder of the files above. */
   async function imported(
     markdown: string,
@@ -120,6 +127,7 @@ describe('a fragment of a file that has an import over several lines above it', 
       protocolsWhiteListRegExp: /^(https?)/,
       forJest: true,
       timestamp: 12345,
+      slideMarkerToken: TOKEN,
       ...options,
     });
   }
@@ -210,7 +218,7 @@ describe('a fragment of a file that has an import over several lines above it', 
       '',
       '## A.2 {#a2 }',
       '',
-      '<p><span>[CROSSNOTESLIDE:1]</span></p>  ',
+      `<p><span>[CROSSNOTESLIDE:${TOKEN}:1]</span></p>  `,
       '',
       '### A.3 {#a3 }',
       '  ',

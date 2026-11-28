@@ -21,6 +21,7 @@ import { COLON_FENCE_CODE_LANGUAGES } from '../custom-markdown-it-features/colon
 import { parseBlockInfo } from '../lib/block-info/parse-block-info';
 import { CustomSubjects } from './custom-subjects';
 import HeadingIdGenerator from './heading-id-generator';
+import { newSlideMarkerToken, slideMarker } from './page-markers';
 import { HeadingData } from './toc';
 
 export interface TransformMarkdownOutput {
@@ -78,6 +79,18 @@ export interface TransformMarkdownOptions {
    * passes the counter it was given to the files it imports.
    */
   slideMarkerCounter?: { next: number };
+  /**
+   * The token of the rendering, which goes into every slide marker written
+   * here and in the markdown files this file imports: only
+   * `slideMarkerRegExp(token)` finds those markers again, so one written as
+   * text starts no slide (crossnote#589). A rendering generates one
+   * (`newSlideMarkerToken()`) and hands it down to every transform of its
+   * page. A transform that is handed none gets a token of its own, which
+   * nobody else knows: no page is cut at what it writes. No marker is
+   * written for the pandoc export (`omitSlideComments`) or for the markdown
+   * export (`forMarkdownExport`).
+   */
+  slideMarkerToken?: string;
 }
 
 /**
@@ -374,14 +387,16 @@ function isSlideCommentLine(line: string): boolean {
 
 /**
  * This pass writes a `<!-- slide -->` as a paragraph marker
- * (`<span>[CROSSNOTESLIDE:N]</span>  `), so an indented line right
+ * (`slideMarker()`, then two spaces), so an indented line right
  * after it continues that paragraph on the page. The raw note still
  * has an HTML comment, and markdown-it would call the next line a
  * `code_block`. Parse this rewritten form so the two agree.
  * Line count is kept so `token.map` still matches `lineNo`.
+ * The number of the marker does not matter here: only where the code
+ * blocks are is read off the parse.
  */
-function slideCommentsAsWritten(src: string): string {
-  const marker = '<span>[CROSSNOTESLIDE:0]</span>  ';
+function slideCommentsAsWritten(src: string, slideMarkerToken: string): string {
+  const marker = slideMarker(0, slideMarkerToken) + '  ';
   let out = '';
   let i = 0;
   while (i < src.length) {
@@ -464,6 +479,7 @@ export async function transformMarkdown(
     fileHash,
     timestamp,
     slideMarkerCounter = { next: 0 },
+    slideMarkerToken = newSlideMarkerToken(),
   }: TransformMarkdownOptions,
 ): Promise<TransformMarkdownOutput> {
   const usePandocParser = markdownParser === 'pandoc';
@@ -486,7 +502,7 @@ export async function transformMarkdown(
   ) {
     const toParse =
       !omitSlideComments && !forMarkdownExport
-        ? slideCommentsAsWritten(inputString)
+        ? slideCommentsAsWritten(inputString, slideMarkerToken)
         : inputString;
     for (const token of notebook.md.parse(toParse, {})) {
       if (token.type === 'code_block' && token.map) {
@@ -879,8 +895,12 @@ export async function transformMarkdown(
                 lineNo = lineNo + newlines;
                 // The marker names the configuration of the slide, which a
                 // marker of a file that does not reach the page cannot take
-                // the place of.
-                const marker = `<span>[CROSSNOTESLIDE:${options[SLIDE_MARKER_NUMBER]}]</span>`;
+                // the place of, and the rendering, which a marker written as
+                // text cannot name (crossnote#589).
+                const marker = slideMarker(
+                  options[SLIDE_MARKER_NUMBER] as number,
+                  slideMarkerToken,
+                );
                 outputString =
                   outputString +
                   (usePandocParser
@@ -1383,6 +1403,9 @@ export async function transformMarkdown(
                 headingIdGenerator: new HeadingIdGenerator(),
                 fileHash,
                 slideMarkerCounter,
+                // The slides of the file are the slides of the page it is
+                // imported into: their markers carry the token of the page.
+                slideMarkerToken,
                 omitSlideComments,
               });
 
