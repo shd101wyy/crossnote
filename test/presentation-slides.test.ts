@@ -987,4 +987,111 @@ Text ^note
       },
     );
   });
+
+  describe('the speaker notes that are markdown', () => {
+    /**
+     * Render a presentation of one slide that holds the given markup, and
+     * return the notes of the slide: the `aside.notes` that are its content.
+     */
+    async function notesOf(markup: string) {
+      const { html } = await render(`<!-- slide -->\n\n# First\n\n${markup}`);
+      return load(html)('section[data-h] > aside.notes');
+    }
+
+    test('the notes of an aside marked data-markdown are rendered by crossnote, and sanitized as the HTML they are then', async () => {
+      // Left as markdown, reveal.js renders them itself with the `marked`
+      // bundled in its notes plugin, which keeps a `javascript:` link, and
+      // writes what it made into the window of its speaker view as it is
+      // (#600).
+      const notes = await notesOf(
+        [
+          '<aside class="notes" data-markdown>',
+          '- **one** <img src=x onerror=alert(1)>',
+          '- [two](javascript:alert(1))',
+          '</aside>',
+        ].join('\n'),
+      );
+
+      // reveal.js takes the notes as markdown for as long as the attribute is
+      // on the aside.
+      expect(notes.attr('data-markdown')).toBeUndefined();
+      expect(notes.find('li strong').text()).toBe('one');
+      // The path of the image is resolved as the path of any image of the page.
+      expect(notes.find('img').attr('src')).toMatch(/\/x$/);
+      expect(notes.find('[onerror]')).toHaveLength(0);
+      expect(notes.find('a')).toHaveLength(0);
+    });
+
+    test('they are rendered with the markdown-it of the notebook', async () => {
+      const notes = await notesOf(
+        '<aside class="notes" data-markdown>:smile: a\nb</aside>',
+      );
+
+      expect(notes.html()).toContain('😄');
+      expect(notes.html()).toContain('a<br>\nb');
+    });
+
+    test('what they hold is not given a line of the note, but a heading keeps the line it has in the note', async () => {
+      // The transformer writes the line of a heading into the heading itself,
+      // as attributes for the attrs plugin of markdown-it.
+      const notes = await notesOf(
+        '<aside class="notes" data-markdown>\n# Heading\nA paragraph.\n</aside>',
+      );
+
+      expect(notes.find('p').text()).toBe('A paragraph.');
+      expect(notes.find('[data-source-line]')).toHaveLength(1);
+      expect(notes.find('h1').attr('data-source-line')).toBe('6');
+    });
+
+    test('the attribute is the same in capitals', async () => {
+      const notes = await notesOf(
+        '<aside class="notes" DATA-MARKDOWN>*a*</aside>',
+      );
+
+      expect(notes.attr('data-markdown')).toBeUndefined();
+      expect(notes.html()).toBe('<p><em>a</em></p>\n');
+    });
+
+    test('an aside without the attribute is left as it is', async () => {
+      const notes = await notesOf(
+        '<aside class="notes"><b>Note</b> [x](y)</aside>',
+      );
+
+      expect(notes.html()).toBe('<b>Note</b> [x](y)');
+    });
+
+    test('an element that reveal.js takes no notes from is left as it is', async () => {
+      const { html } = await render(
+        '<!-- slide -->\n\n# First\n\n<div class="notes" data-markdown>*a*</div>\n\n<aside data-markdown>*b*</aside>',
+      );
+      const marked = load(html)('section[data-h] [data-markdown]');
+
+      expect(marked).toHaveLength(2);
+      expect(marked.eq(0).prop('tagName')).toBe('DIV');
+      expect(marked.eq(0).html()).toBe('*a*');
+      expect(marked.eq(1).prop('tagName')).toBe('ASIDE');
+      expect(marked.eq(1).html()).toBe('*b*');
+    });
+
+    test('notes within notes: the inner ones are rendered before the markdown around them', async () => {
+      const outer = await notesOf(
+        '<aside class="notes" data-markdown>- *outer*\n\n<aside class="notes" data-markdown>*inner*</aside></aside>',
+      );
+
+      expect(outer.attr('data-markdown')).toBeUndefined();
+      expect(outer.find('li em').text()).toBe('outer');
+      expect(outer.find('[data-markdown]')).toHaveLength(0);
+      expect(outer.find('aside.notes').html()).toBe('<p><em>inner</em></p>\n');
+    });
+
+    test('the notes of a fragment are rendered too', async () => {
+      const { html } = await render(
+        '<!-- slide -->\n\n# First\n\n<div class="fragment">A point<aside class="notes" data-markdown>*a*</aside></div>',
+      );
+      const notes = load(html)('section[data-h] .fragment aside.notes');
+
+      expect(notes.attr('data-markdown')).toBeUndefined();
+      expect(notes.html()).toBe('<p><em>a</em></p>\n');
+    });
+  });
 });

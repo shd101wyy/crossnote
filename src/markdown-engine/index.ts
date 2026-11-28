@@ -55,6 +55,7 @@ import {
   buildPresentationInitScript,
   presentationPrintStyle,
 } from './presentation-export';
+import { renderMarkdownNotes } from './presentation-notes';
 import {
   sanitizeRenderedHTML,
   sanitizeStableHTML,
@@ -3303,6 +3304,12 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       }
     });
 
+    // The speaker notes that are markdown are rendered before the sanitizer
+    // sees the slide, as the HTML they are then.
+    renderMarkdownNotes($, (markdown) =>
+      this.notebook.getFragmentMarkdownIt().render(markdown),
+    );
+
     // The page was sanitized before the attributes of the slides and of the
     // list items were written: it is sanitized again.
     sanitizeRenderedHTML($);
@@ -3548,7 +3555,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // Collaposible ToC
     // NOTE: We disable the source map here.
-    const sidebarTocMd = this.notebook.getTocMarkdownIt();
+    const sidebarTocMd = this.notebook.getFragmentMarkdownIt();
     // The headings are the note's: the markup is read and sanitized as the
     // content of an element, which is what the sidebar of an export and the
     // page itself make of it.

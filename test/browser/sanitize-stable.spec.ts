@@ -1,9 +1,12 @@
 import { BrowserContext, expect, Page, test } from '@playwright/test';
 import * as cheerio from 'cheerio';
 import { escape } from 'html-escaper';
+import MarkdownIt from 'markdown-it';
+import { renderMarkdownNotes } from '../../src/markdown-engine/presentation-notes';
 import {
   sanitizeRenderedHTML,
   sanitizeStableHTML,
+  settledHTML,
 } from '../../src/markdown-engine/sanitize';
 import {
   LONG_MUTATION,
@@ -249,6 +252,27 @@ async function speakerViewOf(
     on === 'slide'
       ? `<section class="slide" data-notes="${escape(notes)}"><h1>One</h1></section>`
       : `<section class="slide"><h1>One</h1>${element}</section>`;
+  return speakerViewOfSlide(context, page, slide, on === 'fragment');
+}
+
+/**
+ * Present a slide as a deck laid out like an export — the document loads
+ * reveal.js and its notes plugin, and starts the presentation — open the
+ * speaker view, click the first link of its notes, and return what the view
+ * finds in the notes, and what the pages say.
+ *
+ * The speaker view previews the slides in iframes that load the deck again,
+ * and tells the presentation that it is connected once they have: the deck is
+ * answered for every window of the browser context. reveal.js takes the notes
+ * of the slide, and of the fragment that is current: with `toFragment`,
+ * the presentation is moved on first, and a fragment is found by its class.
+ */
+async function speakerViewOfSlide(
+  context: BrowserContext,
+  page: Page,
+  slide: string,
+  toFragment: boolean = false,
+) {
   await context.route(/\/deck\.html(\?|$)/, (route) =>
     route.fulfill({
       contentType: 'text/html; charset=utf-8',
@@ -268,7 +292,7 @@ async function speakerViewOf(
   );
   await page.goto(`${server.url}/deck.html`);
   await page.waitForFunction(() => (window as RevealWindow).Reveal.isReady());
-  if (on === 'fragment') {
+  if (toFragment) {
     await page.keyboard.press('ArrowRight');
     await page.waitForFunction(() =>
       document.querySelector('.current-fragment')?.hasAttribute('data-notes'),
@@ -294,6 +318,14 @@ async function speakerViewOf(
     NOTES,
     { timeout: 10000 },
   );
+  // A link of the notes is clicked the way a speaker would; a dialog it makes
+  // is heard before the view is closed.
+  await speakerView.evaluate((selector) => {
+    (
+      document.querySelector(`${selector} a`) as HTMLAnchorElement | null
+    )?.click();
+  }, NOTES);
+  await speakerView.waitForTimeout(300);
   const found = await speakerView.evaluate((selector) => {
     const box = document.querySelector(selector)!;
     const handlers = Array.from(box.querySelectorAll('*')).flatMap((el) =>
@@ -301,10 +333,43 @@ async function speakerViewOf(
         .filter(({ name }) => /^on/i.test(name))
         .map(({ name }) => `${name} on ${el.tagName.toLowerCase()}`),
     );
-    return { handlers, html: box.innerHTML };
+    const links = Array.from(box.querySelectorAll('a')).map((link) =>
+      link.getAttribute('href'),
+    );
+    return { handlers, links, html: box.innerHTML };
   }, NOTES);
   await speakerView.close();
   return { ...found, dialogs };
+}
+
+/**
+ * Present a slide whose speaker notes are the markdown of an `aside.notes`
+ * marked `data-markdown`, as an export of crossnote lays it out, and open the
+ * speaker view on it.
+ *
+ * The engine cannot be loaded here, so the step it takes for such notes
+ * (`parseSlides`) is applied by hand when `rendered` is set: the notes are
+ * rendered with `renderMarkdownNotes`, by a markdown-it like the one of a
+ * notebook, and the slide is sanitized and settled as the engine hands a page
+ * over. Without it the notes are as the engine left them before it took that
+ * step, and the notes plugin renders them with the `marked` bundled in it.
+ */
+async function speakerViewOfMarkdownNotes(
+  context: BrowserContext,
+  page: Page,
+  notes: string,
+  rendered: boolean,
+) {
+  const $ = cheerio.load(
+    `<div class="reveal"><div class="slides"><section class="slide"><h1>One</h1><aside class="notes" data-markdown>${notes}</aside></section></div></div>`,
+  );
+  if (rendered) {
+    const md = new MarkdownIt({ html: true });
+    renderMarkdownNotes($, (markdown) => md.render(markdown));
+  }
+  sanitizeRenderedHTML($);
+  const slide = settledHTML($, $('.slides').html() ?? '');
+  return speakerViewOfSlide(context, page, slide);
 }
 
 test.describe('the speaker view of a presentation', () => {
@@ -349,4 +414,35 @@ test.describe('the speaker view of a presentation', () => {
       expect(found.handlers).not.toEqual([]);
     });
   }
+});
+
+test.describe('the speaker view of a presentation whose notes are markdown', () => {
+  // The notes of an `aside.notes` marked `data-markdown` are markdown. Left
+  // as they are, reveal.js renders them with the `marked` bundled in its
+  // notes plugin, which keeps a `javascript:` link, and writes what it made
+  // into the speaker view as it is (crossnote#600). The engine renders the
+  // notes itself, before the sanitizer sees the slide.
+  const notes = '**bold** and [click me](javascript:alert(1))';
+
+  test('finds no link with a javascript: address in the notes the engine rendered', async ({
+    context,
+    page,
+  }) => {
+    const found = await speakerViewOfMarkdownNotes(context, page, notes, true);
+
+    expect(found.dialogs).toEqual([]);
+    expect(found.links).toEqual([]);
+    // The notes did reach the speaker view, rendered.
+    expect(found.html).toContain('<strong>bold</strong>');
+  });
+
+  test('in the notes the engine did not render, the link runs its script when it is clicked', async ({
+    context,
+    page,
+  }) => {
+    const found = await speakerViewOfMarkdownNotes(context, page, notes, false);
+
+    expect(found.links).toEqual(['javascript:alert(1)']);
+    expect(found.dialogs).toEqual(['1']);
+  });
 });
