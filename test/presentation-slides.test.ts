@@ -213,6 +213,36 @@ let a = 1;
     },
   );
 
+  // The table is open at the first marker: the part before the first slide
+  // ends inside it.
+  test('a slide marker on the line after a table starts the first slide: what is before it is hidden, and the deck is not', async () => {
+    const { html } = await render(
+      '# Title\n\n| a | b |\n| - | - |\n| 1 | 2 |\n<!-- slide class="b" -->\n\n# Two\n',
+    );
+    const $ = load(html);
+    const hidden = $('body > div[style*="display:none"]');
+
+    expect(hidden.find('> h1').text().trim()).toBe('Title');
+    expect(hidden.find('> table tbody tr')).toHaveLength(1);
+    // The deck is beside the hidden part, not in it.
+    expect(hidden.find('.reveal')).toHaveLength(0);
+    expect(
+      $('body > .reveal > .slides > section.slide.b h1').text().trim(),
+    ).toBe('Two');
+  });
+
+  test('a slide marker inside a table starts a slide there: the rows after it are on that slide, as text', async () => {
+    const { html } = await render(
+      '<!-- slide -->\n\n| a | b |\n| - | - |\n| 1 | 2 |\n<!-- slide -->\n| 3 | 4 |\n\n# Two\n',
+    );
+    const slides = load(html)('section[data-h]');
+
+    expect(slides).toHaveLength(2);
+    expect(slides.eq(0).find('table tbody tr')).toHaveLength(1);
+    expect(slides.eq(1).find('table')).toHaveLength(0);
+    expect(slides.eq(1).text().replace(/\s+/g, ' ').trim()).toBe('3 4 Two');
+  });
+
   // Only a `<!-- slide -->` is configured a slide. The same span, written as
   // HTML, is text: it stays where it was written, and what follows it stays
   // on the slide before.

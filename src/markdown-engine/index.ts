@@ -3311,8 +3311,13 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     const $ = cheerio.load(
-      `<div style="display:none;">${before}</div><div class="reveal"><div class="slides"></div></div>`,
+      `<div style="display:none;"></div><div class="reveal"><div class="slides"></div></div>`,
     );
+    // What comes before the first slide is hidden. It is written into its
+    // element as the content of an element: what it leaves open is closed
+    // there — a table of which the first marker made a row — and does not
+    // take the deck in with it.
+    $('body').children().first().html(before);
     const deck = $('.slides');
     // The slides of a stack are sections of a section.
     let stack: Cheerio<AnyNode> | null = null;
