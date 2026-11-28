@@ -1,5 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { Readable } from 'stream';
+import { fileURLToPath } from 'url';
 import { load } from 'cheerio';
 import { ebookConvert } from '../src/converters/ebook-convert';
 import { mkdirSync, track } from '../src/lib/temp';
@@ -8,6 +10,7 @@ import { Notebook } from '../src/notebook';
 import {
   getCrossnoteBuildDirectory,
   setCrossnoteBuildDirectory,
+  toFileURL,
 } from '../src/utility';
 
 /**
@@ -263,6 +266,196 @@ describe('the eBook export', () => {
 
       await expect(exported).rejects.toThrow('ebook-convert failed');
       expect(pagesLeft()).toEqual([]);
+    });
+
+    describe('with the images of the web', () => {
+      const fetch_ = globalThis.fetch;
+
+      afterEach(() => {
+        globalThis.fetch = fetch_;
+      });
+
+      /** Make `fetch` answer the engine as `respond` does. */
+      const answerFetch = (respond: (url: string) => unknown) => {
+        globalThis.fetch = jest.fn(respond) as unknown as typeof fetch;
+      };
+
+      /** An image on the web, whose body tells of the address it was asked by. */
+      const imageAt = (url: string) => ({
+        ok: true,
+        body: Readable.toWeb(
+          Readable.from([Buffer.from(`the image asked of ${url}`)]),
+        ),
+      });
+
+      /** What the page says of an image of the web, and what lies where it points. */
+      interface Image {
+        /** The `src` of the image in the page. */
+        src: string;
+        /** The name of the file next to the note that it was saved as. */
+        file: string;
+        /** What that file held while `ebook-convert` had the page. */
+        content: string;
+      }
+
+      /** A line of the note with the image of `src` in it, as markdown. */
+      const imageLine = (offset: number, src: string) =>
+        `Image ${offset + 1}: ![image ${offset}](<${src}>)`;
+
+      /**
+       * Export a note of the lines of `images` as an EPUB.
+       * `imagesOfThePage()` tells of each image of the page, in order, as
+       * `ebook-convert` had it: the files the images were saved as are
+       * removed after the conversion.
+       */
+      async function exportEPUB(images: string[]) {
+        const filePath = path.join(tmpDir, 'note.md');
+        // An image alone on its line is a file to import, which the
+        // transformer reads itself; in a sentence it is an image.
+        fs.writeFileSync(
+          filePath,
+          `---\nebook:\n  title: T\n---\n\n${images.join('  \n')}\n`,
+        );
+        const notebook = await Notebook.init({
+          notebookPath: tmpDir,
+          config: {
+            markdownParser: 'markdown-it',
+            markdownYoBinaryPath: '',
+            previewTheme: 'github-light.css',
+          },
+        });
+        const engine = new MarkdownEngine({ notebook, filePath });
+
+        let imagesOfPage: Image[] = [];
+        convert.mockImplementation(async (page) => {
+          const $ = load(fs.readFileSync(page, 'utf8'));
+          imagesOfPage = $('img')
+            .map((offset, img) => {
+              const src = $(img).attr('src') ?? '';
+              const file = path.basename(fileURLToPath(src));
+              return {
+                src,
+                file,
+                content: fs.readFileSync(path.join(tmpDir, file), 'utf8'),
+              };
+            })
+            .get();
+        });
+        return {
+          exported: engine.eBookExport({ fileType: 'epub' }),
+          imagesOfThePage: () => imagesOfPage,
+        };
+      }
+
+      /**
+       * The name a download was saved under, without the prefix that keeps
+       * it from the file of another download and from a file of the user's
+       * next to the note.
+       */
+      const nameOf = (file: string) => {
+        expect(file).toMatch(/^[0-9a-z]{1,9}_/);
+        return file.replace(/^[0-9a-z]{1,9}_/, '');
+      };
+
+      /** The files that downloads left next to the note. */
+      const downloadsLeft = () =>
+        fs.readdirSync(tmpDir).filter((name) => /^[0-9a-z]{1,9}_/.test(name));
+
+      test.each([
+        [
+          'an address with a query and a fragment',
+          'https://example.com/a.png?v=1&size=2#the-image',
+          'a.png',
+        ],
+        [
+          'a percent-encoded path',
+          'https://example.com/my%20image%20%E5%9B%BE%201.png',
+          'myimage1.png',
+        ],
+        ['an escaped %', 'https://example.com/50%25off.png', '50off.png'],
+        ['a path that ends in a slash', 'https://example.com/', 'image'],
+        [
+          'a path of which nothing stays but the extension',
+          'https://example.com/%E5%9B%BE.png',
+          'image.png',
+        ],
+        [
+          'a last segment of characters no file name takes',
+          'https://example.com/my image: 1 (final) & v2.png',
+          'myimage1finalv2.png',
+        ],
+      ])(
+        'saves the image of %s under a name every system takes',
+        async (_, src, name) => {
+          answerFetch(imageAt);
+          const { exported, imagesOfThePage } = await exportEPUB([
+            imageLine(0, src),
+          ]);
+
+          await expect(exported).resolves.toBe(path.join(tmpDir, 'note.epub'));
+          const [image] = imagesOfThePage();
+          expect(nameOf(image.file)).toBe(name);
+          // The page points at that file, and it is gone after the conversion.
+          expect(image.src).toBe(toFileURL(path.join(tmpDir, image.file)));
+          expect(downloadsLeft()).toEqual([]);
+        },
+      );
+
+      test('takes the name of an image written as HTML from the path as it is written, where a % escapes nothing', async () => {
+        // As HTML the address comes to the engine as it is written; as
+        // markdown it would have had the % as `%25` first.
+        answerFetch(imageAt);
+        const { exported, imagesOfThePage } = await exportEPUB([
+          'Image 1: <img src="https://example.com/50%off.png" alt="image 0">',
+        ]);
+
+        await expect(exported).resolves.toBe(path.join(tmpDir, 'note.epub'));
+        const [image] = imagesOfThePage();
+        expect(nameOf(image.file)).toBe('50off.png');
+        expect(image.src).toBe(toFileURL(path.join(tmpDir, image.file)));
+        expect(downloadsLeft()).toEqual([]);
+      });
+
+      test('cuts a last segment too long for a file name, keeping its extension', async () => {
+        answerFetch(imageAt);
+        const { exported, imagesOfThePage } = await exportEPUB([
+          imageLine(0, `https://example.com/${'a'.repeat(296)}.png`),
+        ]);
+
+        await expect(exported).resolves.toBe(path.join(tmpDir, 'note.epub'));
+        const [image] = imagesOfThePage();
+        expect(nameOf(image.file)).toBe(`${'a'.repeat(196)}.png`);
+        // The whole name, the prefix in front included, in bytes.
+        expect(Buffer.byteLength(image.file)).toBeLessThanOrEqual(255);
+        expect(image.src).toBe(toFileURL(path.join(tmpDir, image.file)));
+        expect(downloadsLeft()).toEqual([]);
+      });
+
+      test('saves two addresses with the same last segment as two files, each pointed at by its own image', async () => {
+        answerFetch(imageAt);
+        const one = 'https://example.com/one/a.png';
+        const two = 'https://example.com/two/a.png';
+        const { exported, imagesOfThePage } = await exportEPUB([
+          imageLine(0, one),
+          imageLine(1, two),
+        ]);
+
+        await expect(exported).resolves.toBe(path.join(tmpDir, 'note.epub'));
+        const images = imagesOfThePage();
+        expect(images.map((image) => nameOf(image.file))).toEqual([
+          'a.png',
+          'a.png',
+        ]);
+        // Two files: one was not written over the other.
+        expect(new Set(images.map((image) => image.file)).size).toBe(2);
+        for (const [offset, src] of [one, two].entries()) {
+          const image = images[offset];
+          // Each image of the page points at the file of its own address.
+          expect(image.src).toBe(toFileURL(path.join(tmpDir, image.file)));
+          expect(image.content).toBe(`the image asked of ${src}`);
+        }
+        expect(downloadsLeft()).toEqual([]);
+      });
     });
   });
 });

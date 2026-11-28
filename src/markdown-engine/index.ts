@@ -388,6 +388,48 @@ const NOT_SLIDE_ATTRIBUTES = new Set([
 const ATTRIBUTE_NAME = /^[a-z_:][a-z0-9:._-]*$/i;
 
 /**
+ * The most characters the name of a downloaded image takes. With the prefix
+ * in front of it (ten characters at most) it stays well under the 255 bytes
+ * that Linux, macOS and Windows allow a file name.
+ */
+const DOWNLOADED_IMAGE_NAME_MAX_LENGTH = 200;
+
+/**
+ * The name an image downloaded from `src` is saved under: the last segment
+ * of the path of the address, its percent-escapes decoded, of the
+ * characters a file name takes on every system. The extension stays on it,
+ * the name is cut to `DOWNLOADED_IMAGE_NAME_MAX_LENGTH` with the extension
+ * kept, and it is `image` when nothing is left of the segment. The name
+ * never begins or ends with a dot; with the prefix in front of it, as it is
+ * saved, it is a file name on every system — not `.`, `..`, or one of the
+ * devices of Windows (`CON`, `NUL`, …).
+ */
+function downloadedImageName(src: string): string {
+  let segment = '';
+  try {
+    segment = new URL(src).pathname.split('/').pop() ?? '';
+  } catch {
+    // Not an address: there is no name to take.
+  }
+  try {
+    segment = decodeURIComponent(segment);
+  } catch {
+    // A path with a `%` that escapes nothing (`50%off.png`): its name is
+    // taken as it is written.
+  }
+  const name = segment.replace(/[^A-Za-z0-9._-]/g, '');
+  // An extension is a dot followed by one to sixteen letters or digits, at
+  // the end of the name.
+  const extension = name.match(/\.[A-Za-z0-9]{1,16}$/)?.[0] ?? '';
+  // A stem of dots only is no stem: `..`, or nothing at all before `.png`.
+  const stem = name
+    .slice(0, name.length - extension.length)
+    .replace(/^\.+|\.+$/g, '');
+  const maxLength = DOWNLOADED_IMAGE_NAME_MAX_LENGTH - extension.length;
+  return (stem || 'image').slice(0, maxLength) + extension;
+}
+
+/**
  * The markdown engine that can be used to parse markdown and export files
  */
 export class MarkdownEngine {
@@ -2227,8 +2269,14 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     const savePaths: string[] = [];
     const asyncFunctions = imagesToDownload.map(async ($img) => {
       const httpSrc = $img.attr('src') ?? '';
+      // The prefix in front of the name keeps this download from that of
+      // another image of the same name, from those of an export of the note
+      // that runs at the same time, and from a file of the user's next to
+      // the note — the file is removed after the conversion.
       let savePath =
-        Math.random().toString(36).substr(2, 9) + '_' + path.basename(httpSrc);
+        Math.random().toString(36).substr(2, 9) +
+        '_' +
+        downloadedImageName(httpSrc);
       savePath = path.resolve(this.fileDirectoryPath, savePath);
       savePaths.push(savePath);
 
