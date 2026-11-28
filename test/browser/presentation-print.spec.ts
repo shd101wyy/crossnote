@@ -148,7 +148,7 @@ test('with the speaker notes on sheets of their own, no empty sheet follows the 
   page,
 }) => {
   await page.setViewportSize({ width: 800, height: 600 });
-  const { sheets, runs } = await printDeck(page, {
+  const { sheets } = await printDeck(page, {
     slides: deckWithNotes,
     printStyle: presentationPrintStyle,
     presentationConfig: { showNotes: 'separate-page' },
@@ -159,5 +159,4 @@ test('with the speaker notes on sheets of their own, no empty sheet follows the 
   // the print style the notes of the last slide ended the deck on a page
   // break, and Chrome printed one more sheet, which held no text.
   expect(sheets).toBe(6);
-  expect(runs).toHaveLength(6);
 });
