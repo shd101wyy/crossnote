@@ -511,6 +511,13 @@ export async function transformMarkdown(
   let slideConfigs: BlockAttributes[] = [];
   const JSAndCssFiles: string[] = [];
   let headings: HeadingData[] = [];
+  // The headings of the note itself. `headings` holds the headings of the
+  // files the note imports as well, each where its import stands, which is
+  // what the TOC is made of. A `#fragment` of the note is resolved among the
+  // headings of the note alone: a heading of an imported file is not a
+  // heading of the note, and its line number is a line of its own file, not
+  // of the note (crossnote#629).
+  const ownHeadings: HeadingData[] = [];
   let tocBracketEnabled = false;
   let frontMatterString = '';
 
@@ -948,7 +955,14 @@ export async function transformMarkdown(
         }
 
         if (!ignore) {
-          headings.push({ content: heading, level, id, lineNo: lineNo + 1 });
+          const headingData: HeadingData = {
+            content: heading,
+            level,
+            id,
+            lineNo: lineNo + 1,
+          };
+          headings.push(headingData);
+          ownHeadings.push(headingData);
         }
         // console.log(`heading: |${heading}|`);
 
@@ -1770,7 +1784,9 @@ export async function transformMarkdown(
         }
         headings = [];
       } else if (targetId) {
-        let targetHeadingIndex = headings.findIndex(
+        // The heading the fragment names, and the one that ends its section,
+        // are looked for among the headings of the note alone.
+        let targetHeadingIndex = ownHeadings.findIndex(
           (heading) => heading.id === targetId,
         );
         if (targetHeadingIndex < 0) {
@@ -1778,20 +1794,20 @@ export async function transformMarkdown(
           // `#Colours` vs slug `colours`).  Slugify and retry so we
           // match Obsidian's case-insensitive heading resolution.
           const slug = new HeadingIdGenerator().generateId(targetId);
-          targetHeadingIndex = headings.findIndex(
+          targetHeadingIndex = ownHeadings.findIndex(
             (heading) => heading.id === slug,
           );
         }
         if (targetHeadingIndex >= 0) {
-          const startHeading = headings[targetHeadingIndex];
+          const startHeading = ownHeadings[targetHeadingIndex];
           const startHeadingIndex = targetHeadingIndex;
           const { level } = startHeading;
 
           // Find the endHeading which has the same or lower level as startHeading
           let endHeadingIndex = startHeadingIndex + 1;
           let endHeading: HeadingData | null = null;
-          while (endHeadingIndex < headings.length) {
-            const heading = headings[endHeadingIndex];
+          while (endHeadingIndex < ownHeadings.length) {
+            const heading = ownHeadings[endHeadingIndex];
             if (heading.level <= level) {
               endHeading = heading;
               break;
@@ -1800,8 +1816,13 @@ export async function transformMarkdown(
           }
 
           const startLineNo = startHeading.lineNo as number;
+          // The headings the section brings are taken from the list of them
+          // all, from where the start heading stands in it to where the end
+          // heading does: the headings of the files the section imports are
+          // part of it too, each where its import stands in the note.
+          const firstIndex = headings.indexOf(startHeading);
           if (endHeading) {
-            headings = headings.slice(startHeadingIndex, endHeadingIndex);
+            headings = headings.slice(firstIndex, headings.indexOf(endHeading));
             const endLineNo = endHeading.lineNo as number;
             outputString = outputString
               .split('\n')
@@ -1809,7 +1830,7 @@ export async function transformMarkdown(
               .join('\n');
             keepSlideConfigsOfLines(startLineNo, endLineNo);
           } else {
-            headings = headings.slice(startHeadingIndex);
+            headings = headings.slice(firstIndex);
             outputString = outputString
               .split('\n')
               .slice(outputLineOf(startLineNo) - 1)
