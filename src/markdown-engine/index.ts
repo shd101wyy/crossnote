@@ -49,6 +49,7 @@ import { readOfflineCss, readOfflineJs } from './inline-offline-assets';
 import { buildMathJaxConfigScript, mathJaxConfigOf } from './mathjax-config';
 import { buildMermaidExportScript } from './mermaid-export';
 import { MERMAID_LEGACY_WEBVIEW_POLYFILL } from './mermaid-polyfill';
+import { slideMarkerRegExp, tocMarkerRegExp } from './page-markers';
 import { buildPeleExportScript } from './pele-export';
 import { buildPresentationInitScript } from './presentation-export';
 import {
@@ -3172,8 +3173,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // on the line: a fenced block is not followed by a newline, as a
     // paragraph is. One that is not in a paragraph of its own has to start
     // the line.
-    const marker =
-      /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTESLIDE(?::(\d+))?\]<\/span>(?:<\/p>)?\s*/gm;
+    const marker = slideMarkerRegExp();
 
     // A marker that names no configuration — one written as HTML, or one of
     // a slide whose configuration did not reach the page — starts no slide:
@@ -3554,19 +3554,16 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     if (tocBracketEnabled) {
       // [TOC]
-      html = html.replace(
-        /(?:<p[^>]*>|^\s*)<span>\[CROSSNOTETOC\]<\/span>(?:<\/p>)?\s*/gm,
-        ($0) => {
-          // Check if $0 has `data-source-line` attribute
-          const match = $0.match(/data-source-line="(\d+)"/);
-          const lineNo = match ? match[1] : '';
-          if (lineNo) {
-            return `<div data-source-line="${lineNo}">${this.tocHTML}</div>`;
-          } else {
-            return this.tocHTML;
-          }
-        },
-      );
+      html = html.replace(tocMarkerRegExp(), ($0) => {
+        // Check if $0 has `data-source-line` attribute
+        const match = $0.match(/data-source-line="(\d+)"/);
+        const lineNo = match ? match[1] : '';
+        if (lineNo) {
+          return `<div data-source-line="${lineNo}">${this.tocHTML}</div>`;
+        } else {
+          return this.tocHTML;
+        }
+      });
     }
 
     /**
