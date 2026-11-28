@@ -3308,7 +3308,10 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     // sees the slide, as the HTML they are then. They are of this note: a
     // wikilink of theirs is resolved from the path of this file, as one of
     // the page is (a note embedded in the page has set the path to its own
-    // in the meantime).
+    // in the meantime). The path is given back afterwards: the sidebar table
+    // of contents, which markdown-it renders under pandoc too, is resolved
+    // from the path that is left here.
+    const pagePath = this.notebook.currentRenderFilePath;
     this.notebook.currentRenderFilePath = path.relative(
       this.notebook.notebookPath.fsPath,
       this.filePath,
@@ -3316,6 +3319,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     renderMarkdownNotes($, (markdown) =>
       this.notebook.getFragmentMarkdownIt().render(markdown),
     );
+    this.notebook.currentRenderFilePath = pagePath;
 
     // The page was sanitized before the attributes of the slides and of the
     // list items were written: it is sanitized again.

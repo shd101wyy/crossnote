@@ -26,6 +26,48 @@ interface Slide {
 }
 
 /**
+ * A notebook of the given files, its markdown rendered by the given parser.
+ */
+async function notebookOf(
+  markdownParser: 'markdown-it' | 'pandoc' = 'markdown-it',
+  files: Record<string, string> = {},
+): Promise<Notebook> {
+  const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
+  for (const [name, content] of Object.entries(files)) {
+    const file = path.join(tmpDir, name);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, content);
+  }
+  return Notebook.init({
+    notebookPath: tmpDir,
+    config: {
+      markdownParser,
+      markdownYoBinaryPath: '',
+    },
+  });
+}
+
+/**
+ * Render `markdown` as the preview of the file `name` of the notebook, and
+ * return what the rendering made: the page and the table of contents.
+ */
+async function renderFile(
+  notebook: Notebook,
+  name: string,
+  markdown: string,
+  useRelativeFilePath: boolean = false,
+): Promise<{ html: string; tocHTML: string; isPresentation: boolean }> {
+  const filePath = path.join(notebook.notebookPath.fsPath, name);
+  const engine = new MarkdownEngine({ notebook, filePath });
+  const { html, tocHTML } = await engine.parseMD(markdown, {
+    isForPreview: true,
+    useRelativeFilePath,
+    hideFrontMatter: false,
+  });
+  return { html, tocHTML, isPresentation: engine.isPreviewInPresentationMode };
+}
+
+/**
  * Render `markdown` as the preview of a document.
  */
 async function render(
@@ -34,31 +76,20 @@ async function render(
   files: Record<string, string> = {},
   useRelativeFilePath: boolean = false,
 ): Promise<{ html: string; isPresentation: boolean }> {
-  const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
-  const filePath = path.join(tmpDir, 'deck.md');
-  fs.writeFileSync(filePath, markdown);
-  for (const [name, content] of Object.entries(files)) {
-    const file = path.join(tmpDir, name);
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, content);
-  }
-  const notebook = await Notebook.init({
-    notebookPath: tmpDir,
-    config: {
-      markdownParser,
-      markdownYoBinaryPath: '',
-    },
+  const notebook = await notebookOf(markdownParser, {
+    'deck.md': markdown,
+    ...files,
   });
-  const engine = new MarkdownEngine({ notebook, filePath });
-  const { html } = await engine.parseMD(markdown, {
-    isForPreview: true,
+  const { html, isPresentation } = await renderFile(
+    notebook,
+    'deck.md',
+    markdown,
     useRelativeFilePath,
-    hideFrontMatter: false,
-  });
+  );
 
   // The marker of a slide that was not turned into one is left in the page.
   expect(html).not.toContain('[CROSSNOTESLIDE]');
-  return { html, isPresentation: engine.isPreviewInPresentationMode };
+  return { html, isPresentation };
 }
 
 /**
@@ -1127,6 +1158,45 @@ Text ^note
 
       expect(notes.attr('data-markdown')).toBeUndefined();
       expect(notes.html()).toBe('<p><em>a</em></p>\n');
+    });
+
+    test('a wikilink of the notes is resolved from the path of their note, not from the path of a note embedded in the page', async () => {
+      // The embedding sets the path of the notebook to the file embedded,
+      // and leaves it so.
+      const { html } = await render(
+        [
+          '<!-- slide -->',
+          '',
+          '# First',
+          '',
+          'Intro ![[sub/other.md]] inline',
+          '',
+          '<aside class="notes" data-markdown>See [[a/x]]</aside>',
+        ].join('\n'),
+        'markdown-it',
+        { 'sub/other.md': 'other', 'a/x.md': 'x' },
+      );
+      const notes = load(html)('section[data-h] > aside.notes');
+
+      expect(notes.find('a').text()).toBe('a/x');
+      expect(notes.find('a').attr('href')).toBe('a/x.md');
+    });
+
+    test('the path is given back: under pandoc, the table of contents of the note rendered next is resolved from the path of that note', async () => {
+      // Under pandoc the path of the note is never set by a rendering, so
+      // the table of contents, which markdown-it renders, would be resolved
+      // from the path of the presentation.
+      const notebook = await notebookOf('pandoc', {
+        'x.md': 'x',
+      });
+      await renderFile(
+        notebook,
+        'pres/deck.md',
+        '<!-- slide -->\n\n# First\n\n<aside class="notes" data-markdown>See [[x]]</aside>',
+      );
+      const { tocHTML } = await renderFile(notebook, 'doc.md', '# See [[x]]');
+
+      expect(tocHTML).toContain('href="x.md"');
     });
   });
 });
