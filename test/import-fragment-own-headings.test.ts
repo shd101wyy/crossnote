@@ -80,6 +80,21 @@ text of Part A
 
 b
 `,
+  // Front matter, and an import of a file with headings of its own, above
+  // the section.
+  'with-front-matter.md': `---
+title: x
+---
+@import "part.md"
+
+# Part A
+
+## A.2
+
+# Part B
+
+after
+`,
   // No heading of that name of its own; the file it imports has one.
   'only-imported.md': `# Intro
 
@@ -333,6 +348,26 @@ describe.each(PARSERS)(
       // No heading and no slide of the file comes along.
       expect(outlineOf(headings)).toEqual([['Own', 1, 1]]);
       expect(slideConfigs).toEqual([]);
+    });
+
+    // The lines of a section are lines of its own file, counted from the
+    // first line of the file, front matter included, and found in the output
+    // past an import that took several of its lines (under pandoc). part.md
+    // has a `# Part A` of its own, on its first line.
+    test('is cut by the lines of its own file, past front matter and an import over several lines of the output', async () => {
+      const { outputString, headings } = await imported(
+        '@import "with-front-matter.md#Part A"',
+      );
+      expect(brought(outputString)).toEqual([
+        '# Part A {#part-a }',
+        '',
+        '## A.2 {#a2 }',
+      ]);
+      // Lines of with-front-matter.md: the sixth and the eighth.
+      expect(outlineOf(headings)).toEqual([
+        ['Part A', 1, 6],
+        ['A.2', 2, 8],
+      ]);
     });
 
     test('is not taken from a file imported by a file it imports', async () => {
