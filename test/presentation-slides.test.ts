@@ -1172,6 +1172,9 @@ Text ^note
         { 'a/x.md': 'a', 'pres/x.md': 'pres' },
         { wikiLinkResolution: 'shortest' },
       );
+      // Under pandoc the notes of the notebook are not looked up by a
+      // rendering; they are here.
+      await notebook.refreshNotes({ dir: '.', includeSubdirectories: true });
       const { html } = await renderFile(
         notebook,
         'pres/deck.md',
