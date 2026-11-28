@@ -511,7 +511,7 @@ describe('the eBook export', () => {
         // The first chunk comes, then the connection is gone: the pipeline
         // rejects with what the stream errors with, which names no image.
         const body = new ReadableStream<Uint8Array>({
-          start(controller) {
+          start(controller: ReadableStreamDefaultController<Uint8Array>) {
             controller.enqueue(Buffer.from('the first chunk'));
             controller.error(new Error('socket hang up'));
           },
