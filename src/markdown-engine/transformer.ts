@@ -324,13 +324,53 @@ const BLOCK_ID_RE = /(?<!\s)\s+\^([a-zA-Z0-9_-]+)$/;
  * indented code block (crossnote#594). The class cannot cross a line
  * break: a `\s` here is quadratic on a run of whitespace-only lines
  * (the engine restarts at every line and backtracks through the run).
- * `{4}` plus a second `[ \t>]*` also catches a tab with 1–3 spaces
+ * Two `[ \t>]*` runs around `(?:\t| {4})` are quadratic on a long
+ * run of spaces on one line; a lookahead for the indent keeps the
+ * match linear. The class still covers a tab with 1–3 spaces
  * (`\t @import`) and a `>` after four spaces (`    > @import`), which
  * the line test at the import site sees after the `>` is stripped.
  */
-const INDENTED_IMPORT_GATE = /^[ \t>]*(?:\t| {4})[ \t>]*(?:@import|!\[)/m;
+const INDENTED_IMPORT_GATE = /^(?=[ \t>]*(?:\t| {4}))[ \t>]*(?:@import|!\[)/m;
 
-const SLIDE_COMMENT_OPEN = /^<!--[ \t]+(?:\.slide:?|slide)(?:[ \t]|$)/;
+/**
+ * Same prefix the transform pass takes off a line before reading it.
+ */
+const BLOCKQUOTE_PREFIX_RE = /^\s*(>+)\s?/;
+
+/**
+ * Same subject the transform pass reads from an HTML comment
+ * (`\s` includes NBSP).
+ */
+const HTML_COMMENT_SUBJECT_RE = /^<!--\s+([^\s]+)/;
+
+const SLIDE_SUBJECT_RE = /^\.?slide:?$/;
+
+function splitQuotePrefix(line: string): {
+  line: string;
+  blockquotePrefix: string;
+} {
+  const blockquoteMatch = line.match(BLOCKQUOTE_PREFIX_RE);
+  if (blockquoteMatch) {
+    return {
+      blockquotePrefix: blockquoteMatch[0],
+      line: line.replace(blockquoteMatch[0], ''),
+    };
+  }
+  return { line, blockquotePrefix: '' };
+}
+
+/**
+ * Whether this line, as the transform pass sees it (quote prefix
+ * already taken off), is a `<!-- slide -->` comment.
+ */
+function isSlideCommentLine(line: string): boolean {
+  const subjectMatch = line.match(HTML_COMMENT_SUBJECT_RE);
+  if (!subjectMatch) {
+    return false;
+  }
+  const subject = subjectMatch[1];
+  return subject in CustomSubjects && SLIDE_SUBJECT_RE.test(subject);
+}
 
 /**
  * This pass writes a `<!-- slide -->` as a paragraph marker
@@ -348,23 +388,28 @@ function slideCommentsAsWritten(src: string): string {
     const nl = src.indexOf('\n', i);
     const lineEnd = nl < 0 ? src.length : nl;
     const line = src.slice(i, lineEnd);
-    if (SLIDE_COMMENT_OPEN.test(line)) {
+    const { line: asPassSeesIt, blockquotePrefix } = splitQuotePrefix(line);
+    if (isSlideCommentLine(asPassSeesIt)) {
       const close = src.indexOf('-->', i);
-      if (close >= 0) {
-        const comment = src.slice(i, close + 3);
-        let newlines = 0;
-        for (let k = 0; k < comment.length; k++) {
-          if (comment.charCodeAt(k) === 10) {
-            newlines += 1;
-          }
-        }
-        out += marker;
-        for (let n = 0; n < newlines; n++) {
-          out += '\n';
-        }
-        i = close + 3;
-        continue;
+      if (close < 0) {
+        // The pass ends the note at the first unclosed comment;
+        // nothing below can close one, so stop looking.
+        out += src.slice(i);
+        break;
       }
+      const comment = src.slice(i, close + 3);
+      let newlines = 0;
+      for (let k = 0; k < comment.length; k++) {
+        if (comment.charCodeAt(k) === 10) {
+          newlines += 1;
+        }
+      }
+      out += blockquotePrefix + marker;
+      for (let n = 0; n < newlines; n++) {
+        out += '\n';
+      }
+      i = close + 3;
+      continue;
     }
     out += src.slice(i, lineEnd);
     if (nl < 0) {
@@ -511,16 +556,9 @@ export async function transformMarkdown(
       if (end < 0) {
         end = inputString.length;
       }
-      let line = inputString.substring(i, end);
-
-      let blockquotePrefix: string;
-      const blockquoteMatch = line.match(/^\s*(>+)\s?/);
-      if (blockquoteMatch) {
-        blockquotePrefix = blockquoteMatch[0];
-        line = line.replace(blockquoteMatch[0], '');
-      } else {
-        blockquotePrefix = '';
-      }
+      const { line, blockquotePrefix } = splitQuotePrefix(
+        inputString.substring(i, end),
+      );
       return {
         line,
         blockquotePrefix,
@@ -784,7 +822,7 @@ export async function transformMarkdown(
           commentEnd += 3;
         }
 
-        const subjectMatch = line.match(/^<!--\s+([^\s]+)/);
+        const subjectMatch = line.match(HTML_COMMENT_SUBJECT_RE);
         if (!subjectMatch) {
           const content = inputString.slice(i + 4, commentEnd - 3);
           const newlinesMatch = content.match(/\n/g);
@@ -821,7 +859,7 @@ export async function transformMarkdown(
                 '<div class="pagebreak"> </div>' +
                 '\n'.repeat(newlines);
               continue;
-            } else if (subject.match(/^\.?slide:?$/)) {
+            } else if (isSlideCommentLine(line)) {
               // slide
               if (omitSlideComments) {
                 i = commentEnd;

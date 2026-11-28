@@ -163,6 +163,42 @@ Paragraph.
       expect(output).not.toContain('    @import "part.md"');
     });
 
+    test('a quoted slide comment then an indented @import is still rewritten', async () => {
+      const output = await transform(
+        '> <!-- slide -->\n>     @import "part.md"\n',
+      );
+      expect(output).toContain('@embedding');
+      expect(output).not.toContain('@import "part.md"');
+    });
+
+    test('a quoted slide comment after a quoted paragraph then an indented @import is still rewritten', async () => {
+      const output = await transform(
+        '> quote\n>\n> <!-- slide -->\n>     @import "part.md"\n',
+      );
+      expect(output).toContain('@embedding');
+      expect(output).not.toContain('@import "part.md"');
+    });
+
+    test('a quoted slide comment then an indented image is still rewritten', async () => {
+      const output = await transform('> <!-- slide -->\n>     ![](part.md)\n');
+      expect(output).toContain('@embedding');
+      expect(output).not.toContain('![](part.md)');
+    });
+
+    test('a NBSP slide comment then an indented @import is still rewritten', async () => {
+      const output = await transform(
+        '<!--\u00a0slide -->\n    @import "part.md"\n',
+      );
+      expect(output).toContain('@embedding');
+      expect(output).not.toContain('    @import "part.md"');
+    });
+
+    test('a quoted paragraph, blank quote line, then indented @import stays as typed', async () => {
+      const output = await transform('> code:\n>\n>     @import "part.md"\n');
+      expect(output).toContain('>     @import "part.md"');
+      expect(output).not.toContain('@embedding');
+    });
+
     test('a leftover CR still rewrites a real @import', async () => {
       const output = await transform(
         'a\rb\n\n    x\n    y\n@import "part.md"\n\n    @import "x.md"\n',
@@ -258,6 +294,44 @@ Paragraph.
       expect(html).not.toContain('@import');
     });
 
+    test('a quoted slide comment then an indented @import still embeds the file', async () => {
+      const html = await render('> <!-- slide -->\n>     @import "part.md"\n');
+      expect(html).toContain('Imported part body');
+      expect(html).not.toContain('@import');
+    });
+
+    test('a quoted slide comment after a quoted paragraph then an indented @import still embeds the file', async () => {
+      const html = await render(
+        '> quote\n>\n> <!-- slide -->\n>     @import "part.md"\n',
+      );
+      expect(html).toContain('Imported part body');
+      expect(html).not.toContain('@import');
+    });
+
+    test('a quoted slide comment then an indented image still embeds the file', async () => {
+      const html = await render('> <!-- slide -->\n>     ![](part.md)\n');
+      expect(html).toContain('Imported part body');
+      expect(html).not.toContain('![](part.md)');
+    });
+
+    test('a NBSP slide comment then an indented @import still embeds the file', async () => {
+      const html = await render('<!--\u00a0slide -->\n    @import "part.md"\n');
+      expect(html).toContain('Imported part body');
+      expect(html).not.toContain('@import');
+    });
+
+    test('a quoted paragraph, blank quote line, then indented @import stays a code block', async () => {
+      const html = await render('> code:\n>\n>     @import "part.md"\n');
+      const $ = load(html);
+      const code = $('pre')
+        .map((_, el) => $(el).text())
+        .get()
+        .join('\n');
+      expect(code).toContain('@import "part.md"');
+      expect(html).not.toContain('@embedding');
+      expect(html).not.toContain('Imported part body');
+    });
+
     test('a slide comment then an indented image imports the file as a code block', async () => {
       const html = await render('<!-- slide -->\n    ![](x.txt)\n');
       expect(html).toContain('plain file body');
@@ -308,13 +382,17 @@ Paragraph.
   /**
    * The indented-import gate and the code-line lookup run on every
    * render. A `\s` in the gate is quadratic on whitespace-only lines
-   * (crossnote#594); scanning every range on every line is
-   * O(lines × code blocks). Both must stay linear: well under a
+   * (crossnote#594); two `[ \t>]*` runs around a tab-or-four-spaces
+   * indent are quadratic on a long run of spaces on one line;
+   * scanning every range on every line is O(lines × code blocks);
+   * `indexOf('-->')` from every unclosed `<!-- slide` is quadratic
+   * in the rest of the note. All must stay linear: well under a
    * second on the shapes that used to take seconds, same spirit as
    * the 80k line-break scan in test/page-markers.test.ts (#620).
    */
   describe('transformMarkdown performance', () => {
     const SCAN_BOUND_MS = 1000;
+    const GATE_LINE_BOUND_MS = 250;
 
     async function timedTransform(markdown: string): Promise<number> {
       const started = process.hrtime.bigint();
@@ -337,6 +415,23 @@ Paragraph.
         '    x\n# h\n'.repeat(10_000) + '    ![\n',
       );
       expect(ms).toBeLessThan(SCAN_BOUND_MS);
+    }, 20_000);
+
+    test('a line of many leading spaces is transformed quickly', async () => {
+      const ms = await timedTransform(' '.repeat(80_000) + 'x\n');
+      expect(ms).toBeLessThan(GATE_LINE_BOUND_MS);
+    }, 20_000);
+
+    test('a page of many long space-only lines is transformed quickly', async () => {
+      const ms = await timedTransform((' '.repeat(1_000) + '\n').repeat(5_000));
+      expect(ms).toBeLessThan(SCAN_BOUND_MS);
+    }, 20_000);
+
+    test('unclosed slide comments do not rescan the rest of the note', async () => {
+      const ms = await timedTransform(
+        '    @import "part.md"\n' + '<!-- slide\n'.repeat(10_000),
+      );
+      expect(ms).toBeLessThan(GATE_LINE_BOUND_MS);
     }, 20_000);
   });
 });
