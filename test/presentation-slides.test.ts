@@ -1186,7 +1186,7 @@ Text ^note
       expect(notes.find('a').attr('href')).toMatch(/\/pres\/x\.md$/);
     });
 
-    test('the path of the notebook is given back: under pandoc, the table of contents of the note rendered next is resolved from the path of that note', async () => {
+    test('the path of the notebook is given back: under pandoc, the table of contents of the note rendered next is not resolved from the path of the presentation', async () => {
       const notebook = await notebookOf(
         'pandoc',
         { 'x.md': 'x' },
@@ -1208,8 +1208,9 @@ Text ^note
     // markup — an aside marked for markdown that was no element in the page,
     // in the element that a note itself marks as the fragment that is
     // current. reveal.js would render it with `marked`, into the speaker view
-    // as it is. The sanitizer takes the marker off it, and what it holds
-    // goes through the sanitizer as the HTML it now is.
+    // as it is. The sanitizer takes the marker off it: reveal.js takes what
+    // it holds as the HTML it is — a link that is text, an input that is the
+    // text of a style.
     const exposed = [
       [
         'a link',
@@ -1220,6 +1221,7 @@ Text ^note
           '<div class="current-fragment">A<aside class="notes" data-markdown>[x](javascript:alert(1))</aside></div>',
           '</style>',
         ],
+        '[x](javascript:alert(1))',
       ],
       [
         'an input that takes the focus',
@@ -1235,24 +1237,42 @@ Text ^note
           '</aside></div>',
           '</style>',
         ],
+        '<input autofocus onfocus=alert(1)>',
       ],
-    ] as [string, string[]][];
+    ] as [string, string[], string][];
 
     test.each(exposed)(
-      'an aside marked for markdown that the rendering of the notes brings out is not left to reveal.js: %s runs nothing',
-      async (_, markup) => {
+      'an aside marked for markdown that the rendering of the notes brings out is not left to reveal.js: the %s it holds is text',
+      async (_, markup, text) => {
         const { html } = await render(
           `<!-- slide -->\n\n# First\n\n${markup.join('\n')}`,
         );
         const $ = load(html);
         const current = $('.current-fragment aside.notes');
 
-        // The notes reveal.js takes are there, and it takes them as HTML.
+        // The notes reveal.js takes from the fragment that is current are
+        // there, as HTML: what would run is their text.
         expect(current).toHaveLength(1);
         expect($('[data-markdown]')).toHaveLength(0);
-        expect($('[onfocus]')).toHaveLength(0);
-        expect($('a[href^="javascript"]')).toHaveLength(0);
+        expect(current.text()).toContain(text);
       },
     );
+
+    // The browser reads the page once more than the sanitizer, and in MathML
+    // that reading brings out an element that was the text of a `style`: the
+    // page is read and sanitized again there, and the marker is taken off on
+    // that reading too.
+    test('an aside marked for markdown that a reading of the page brings out is not left to reveal.js either', async () => {
+      const { html } = await render(
+        '<!-- slide -->\n\n# First\n\n<math><mtext><table><mglyph><style><!--</style><img title="--><aside class="notes" data-markdown>[x](javascript:alert(1))</aside>">',
+      );
+      const $ = load(html);
+      const notes = $('aside.notes');
+
+      // The reading brought the aside out.
+      expect(notes).toHaveLength(1);
+      expect($('[data-markdown]')).toHaveLength(0);
+      expect(notes.text()).toContain('[x](javascript:alert(1))');
+    });
   });
 });

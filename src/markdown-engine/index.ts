@@ -3596,10 +3596,9 @@ sidebarTOCBtn.addEventListener('click', function(event) {
     }
 
     // The speaker notes that are markdown are rendered before the page is
-    // enhanced, so that what they hold is what the note wrote — markdown and
-    // HTML — and not the markup an enhancer made of it (a formula rendered by
-    // KaTeX would be read as markdown again). What the rendering makes goes
-    // through the sanitizer with the page.
+    // enhanced, so that the markup an enhancer makes is not read as markdown
+    // again (a formula rendered by KaTeX would be). What the rendering makes
+    // goes through the sanitizer with the page.
     // The notes are of this note: a wikilink of theirs is resolved from the
     // path of this file. The path is given back afterwards: the sidebar
     // table of contents, which markdown-it renders under pandoc too, is
