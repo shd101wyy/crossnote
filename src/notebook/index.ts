@@ -269,14 +269,15 @@ export class Notebook {
    */
   private markdownEngines: { [key: FilePath]: MarkdownEngine } = {};
   /**
-   * Lazily created markdown-it instance for rendering the sidebar TOC.
-   * `parseMD` needs one on every render, and building the plugin chain is
-   * not cheap. `updateConfig` mutates `this.md.options` in place through
+   * Lazily created markdown-it instance for rendering a fragment of a note
+   * that is not a note of its own: the sidebar TOC, the speaker notes of a
+   * slide. `parseMD` needs one on every render, and building the plugin chain
+   * is not cheap. `updateConfig` mutates `this.md.options` in place through
    * `md.set`, so the instance is rebuilt when the live-updated options
    * change.
    */
-  private tocMarkdownIt: MarkdownItInstance | null = null;
-  private tocMarkdownItOptions: {
+  private fragmentMarkdownIt: MarkdownItInstance | null = null;
+  private fragmentMarkdownItOptions: {
     breaks: boolean;
     linkify: boolean;
     typographer: boolean;
@@ -366,31 +367,33 @@ export class Notebook {
   }
 
   /**
-   * A markdown-it instance for rendering the sidebar TOC, with source maps
-   * disabled. `parseMD` renders the TOC on every preview update, so the
-   * instance is created lazily and reused until the live-updated markdown-it
-   * options change.
+   * A markdown-it instance for rendering a fragment of a note that is not a
+   * note of its own — the sidebar TOC, the speaker notes of a slide — with
+   * source maps disabled: a line of such a fragment is not a line of the
+   * note. `parseMD` renders the TOC on every preview update, so the instance
+   * is created lazily and reused until the live-updated markdown-it options
+   * change.
    */
-  public getTocMarkdownIt(): MarkdownItInstance {
+  public getFragmentMarkdownIt(): MarkdownItInstance {
     const currentOptions = {
       breaks: !!this.md.options.breaks,
       linkify: !!this.md.options.linkify,
       typographer: !!this.md.options.typographer,
     };
     if (
-      !this.tocMarkdownIt ||
-      !this.tocMarkdownItOptions ||
-      currentOptions.breaks !== this.tocMarkdownItOptions.breaks ||
-      currentOptions.linkify !== this.tocMarkdownItOptions.linkify ||
-      currentOptions.typographer !== this.tocMarkdownItOptions.typographer
+      !this.fragmentMarkdownIt ||
+      !this.fragmentMarkdownItOptions ||
+      currentOptions.breaks !== this.fragmentMarkdownItOptions.breaks ||
+      currentOptions.linkify !== this.fragmentMarkdownItOptions.linkify ||
+      currentOptions.typographer !== this.fragmentMarkdownItOptions.typographer
     ) {
-      this.tocMarkdownIt = this.initMarkdownIt({
+      this.fragmentMarkdownIt = this.initMarkdownIt({
         ...this.md.options,
         sourceMap: false,
       });
-      this.tocMarkdownItOptions = currentOptions;
+      this.fragmentMarkdownItOptions = currentOptions;
     }
-    return this.tocMarkdownIt;
+    return this.fragmentMarkdownIt;
   }
 
   initFs(_fs?: FileSystemApi) {

@@ -61,6 +61,7 @@ import {
   presentationConfigOf,
   presentationPrintStyle,
 } from './presentation-export';
+import { renderMarkdownNotes } from './presentation-notes';
 import {
   sanitizeRenderedHTML,
   sanitizeStableHTML,
@@ -3671,7 +3672,7 @@ sidebarTOCBtn.addEventListener('click', function(event) {
 
     // Collaposible ToC
     // NOTE: We disable the source map here.
-    const sidebarTocMd = this.notebook.getTocMarkdownIt();
+    const sidebarTocMd = this.notebook.getFragmentMarkdownIt();
     // The headings are the note's: the markup is read and sanitized as the
     // content of an element, which is what the sidebar of an export and the
     // page itself make of it.
@@ -3716,6 +3717,24 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       normalizeMarkdownYoCodeBlocks($);
       normalizeMarkdownYoHeadings($);
     }
+
+    // The speaker notes that are markdown are rendered before the page is
+    // enhanced, so that the markup an enhancer makes is not read as markdown
+    // again (a formula rendered by KaTeX would be). What the rendering makes
+    // goes through the sanitizer with the page.
+    // The notes are of this note: a wikilink of theirs is resolved from the
+    // path of this file. The path is given back afterwards: the sidebar
+    // table of contents, which markdown-it renders under pandoc too, is
+    // resolved from the path that is left here.
+    const pagePath = this.notebook.currentRenderFilePath;
+    this.notebook.currentRenderFilePath = path.relative(
+      this.notebook.notebookPath.fsPath,
+      this.filePath,
+    );
+    renderMarkdownNotes($, (markdown) =>
+      this.notebook.getFragmentMarkdownIt().render(markdown),
+    );
+    this.notebook.currentRenderFilePath = pagePath;
 
     await enhanceWithFencedMath(
       $,

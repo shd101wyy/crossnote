@@ -4,7 +4,7 @@ import { load } from 'cheerio';
 import { mkdirSync, track } from '../src/lib/temp';
 import { MarkdownEngine } from '../src/markdown-engine';
 import * as transformer from '../src/markdown-engine/transformer';
-import { Notebook } from '../src/notebook';
+import { Notebook, NotebookConfig } from '../src/notebook';
 
 jest.mock('less', () => ({
   render: (
@@ -27,9 +27,14 @@ interface Slide {
 }
 
 /**
- * A notebook in a folder of its own, with `files` in the folder.
+ * A notebook in a folder of its own, with `files` in the folder, its markdown
+ * rendered by the given parser and its wikilinks resolved as given.
  */
-async function notebookOf(files: Record<string, string> = {}) {
+async function notebookIn(
+  files: Record<string, string>,
+  markdownParser: 'markdown-it' | 'pandoc',
+  config: Partial<Pick<NotebookConfig, 'wikiLinkResolution'>> = {},
+) {
   const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
   for (const [name, content] of Object.entries(files)) {
     const file = path.join(tmpDir, name);
@@ -39,11 +44,36 @@ async function notebookOf(files: Record<string, string> = {}) {
   const notebook = await Notebook.init({
     notebookPath: tmpDir,
     config: {
-      markdownParser: 'markdown-it',
+      markdownParser,
       markdownYoBinaryPath: '',
+      ...config,
     },
   });
   return { tmpDir, notebook };
+}
+
+/** A notebook in a folder of its own, with `files` in the folder. */
+const notebookOf = (files: Record<string, string> = {}) =>
+  notebookIn(files, 'markdown-it');
+
+/**
+ * Render `markdown` as the preview of the file `name` of the notebook, and
+ * return what the rendering made: the page and the table of contents.
+ */
+async function renderFile(
+  notebook: Notebook,
+  name: string,
+  markdown: string,
+  useRelativeFilePath: boolean = false,
+): Promise<{ html: string; tocHTML: string; isPresentation: boolean }> {
+  const filePath = path.join(notebook.notebookPath.fsPath, name);
+  const engine = new MarkdownEngine({ notebook, filePath });
+  const { html, tocHTML } = await engine.parseMD(markdown, {
+    isForPreview: true,
+    useRelativeFilePath,
+    hideFrontMatter: false,
+  });
+  return { html, tocHTML, isPresentation: engine.isPreviewInPresentationMode };
 }
 
 /**
@@ -55,33 +85,22 @@ async function render(
   files: Record<string, string> = {},
   useRelativeFilePath: boolean = false,
 ): Promise<{ html: string; isPresentation: boolean }> {
-  const tmpDir = mkdirSync({ prefix: 'xnote-slides-' });
-  const filePath = path.join(tmpDir, 'deck.md');
-  fs.writeFileSync(filePath, markdown);
-  for (const [name, content] of Object.entries(files)) {
-    const file = path.join(tmpDir, name);
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, content);
-  }
-  const notebook = await Notebook.init({
-    notebookPath: tmpDir,
-    config: {
-      markdownParser,
-      markdownYoBinaryPath: '',
-    },
-  });
-  const engine = new MarkdownEngine({ notebook, filePath });
-  const { html } = await engine.parseMD(markdown, {
-    isForPreview: true,
+  const { notebook } = await notebookIn(
+    { 'deck.md': markdown, ...files },
+    markdownParser,
+  );
+  const { html, isPresentation } = await renderFile(
+    notebook,
+    'deck.md',
+    markdown,
     useRelativeFilePath,
-    hideFrontMatter: false,
-  });
+  );
 
   // A marker of the engine that was not turned into a slide is left in the
   // page (crossnote#574). One written in the note is text, and stays: it
   // carries no token of the rendering, or that of another one.
   expect(html).not.toMatch(/\[CROSSNOTESLIDE:[0-9a-f]{32}:\d+\]/);
-  return { html, isPresentation: engine.isPreviewInPresentationMode };
+  return { html, isPresentation };
 }
 
 /**
@@ -1399,5 +1418,258 @@ text ![[part.md]] more
         expect(section.attr('data-background-image')).toBe('bg.png');
       },
     );
+  });
+
+  describe('the speaker notes that are markdown', () => {
+    /**
+     * Render a presentation of one slide that holds the given markup, and
+     * return the notes of the slide: the `aside.notes` that are its content.
+     */
+    async function notesOf(markup: string) {
+      const { html } = await render(`<!-- slide -->\n\n# First\n\n${markup}`);
+      return load(html)('section[data-h] > aside.notes');
+    }
+
+    test('the notes of an aside marked data-markdown are rendered by crossnote, and sanitized as the HTML they are then', async () => {
+      // Left as markdown, reveal.js renders them itself with the `marked`
+      // bundled in its notes plugin, which keeps a `javascript:` link, and
+      // writes what it made into the window of its speaker view as it is
+      // (#600).
+      const notes = await notesOf(
+        [
+          '<aside class="notes" data-markdown>',
+          '- **one** <img src=x onerror=alert(1)>',
+          '- [two](javascript:alert(1))',
+          '</aside>',
+        ].join('\n'),
+      );
+
+      // reveal.js takes the notes as markdown for as long as the attribute is
+      // on the aside.
+      expect(notes.attr('data-markdown')).toBeUndefined();
+      expect(notes.find('li strong').text()).toBe('one');
+      // The image is raw HTML of the page's first rendering, so its path was
+      // resolved as the path of any image of the page.
+      expect(notes.find('img').attr('src')).toMatch(/\/x$/);
+      expect(notes.find('[onerror]')).toHaveLength(0);
+      expect(notes.find('a')).toHaveLength(0);
+    });
+
+    test('an attribute the notes give an element in markdown is not written: the notes are sanitized after they are rendered', async () => {
+      // The rendering of the notes makes the attribute; a sanitizer that ran
+      // before it would not have seen it.
+      const notes = await notesOf(
+        '<aside class="notes" data-markdown># Heading {onmouseover=alert(1)}</aside>',
+      );
+
+      expect(notes.find('h1').text().trim()).toBe('Heading');
+      expect(notes.find('[onmouseover]')).toHaveLength(0);
+    });
+
+    test('the notes of every slide are rendered, not only those of the first', async () => {
+      const { html } = await render(
+        [
+          '<!-- slide -->',
+          '',
+          '# First',
+          '',
+          '<aside class="notes" data-markdown>*a*</aside>',
+          '',
+          '<!-- slide -->',
+          '',
+          '# Second',
+          '',
+          '<aside class="notes" data-markdown>*b*</aside>',
+        ].join('\n'),
+      );
+      const notes = load(html)('section[data-h] aside.notes');
+
+      expect(notes).toHaveLength(2);
+      expect(notes.eq(0).html()).toBe('<p><em>a</em></p>\n');
+      expect(notes.eq(1).html()).toBe('<p><em>b</em></p>\n');
+    });
+
+    test('they are rendered with the markdown-it of the notebook', async () => {
+      const notes = await notesOf(
+        '<aside class="notes" data-markdown>:smile: a\nb</aside>',
+      );
+
+      expect(notes.html()).toContain('😄');
+      expect(notes.html()).toContain('a<br>\nb');
+    });
+
+    test('what they hold is not given a line of the note, but a heading keeps the line it has in the note', async () => {
+      // The transformer writes the line of a heading into the heading itself,
+      // as attributes for the attrs plugin of markdown-it.
+      const notes = await notesOf(
+        '<aside class="notes" data-markdown>\n# Heading\nA paragraph.\n</aside>',
+      );
+
+      expect(notes.find('p').text()).toBe('A paragraph.');
+      expect(notes.find('[data-source-line]')).toHaveLength(1);
+      expect(notes.find('h1').attr('data-source-line')).toBe('6');
+    });
+
+    test('the attribute is the same in capitals', async () => {
+      const notes = await notesOf(
+        '<aside class="notes" DATA-MARKDOWN>*a*</aside>',
+      );
+
+      expect(notes.attr('data-markdown')).toBeUndefined();
+      expect(notes.html()).toBe('<p><em>a</em></p>\n');
+    });
+
+    test('an aside without the attribute is left as it is', async () => {
+      const notes = await notesOf(
+        '<aside class="notes"><b>Note</b> [x](y)</aside>',
+      );
+
+      expect(notes.html()).toBe('<b>Note</b> [x](y)');
+    });
+
+    test('an element that reveal.js takes no notes from is left as it is', async () => {
+      const { html } = await render(
+        '<!-- slide -->\n\n# First\n\n<div class="notes" data-markdown>*a*</div>\n\n<aside data-markdown>*b*</aside>',
+      );
+      const marked = load(html)('section[data-h] [data-markdown]');
+
+      expect(marked).toHaveLength(2);
+      expect(marked.eq(0).prop('tagName')).toBe('DIV');
+      expect(marked.eq(0).html()).toBe('*a*');
+      expect(marked.eq(1).prop('tagName')).toBe('ASIDE');
+      expect(marked.eq(1).html()).toBe('*b*');
+    });
+
+    test('notes within notes: the inner ones are rendered before the markdown around them', async () => {
+      const outer = await notesOf(
+        '<aside class="notes" data-markdown>- *outer*\n\n<aside class="notes" data-markdown>*inner*</aside></aside>',
+      );
+
+      expect(outer.attr('data-markdown')).toBeUndefined();
+      expect(outer.find('li em').text()).toBe('outer');
+      expect(outer.find('[data-markdown]')).toHaveLength(0);
+      expect(outer.find('aside.notes').html()).toBe('<p><em>inner</em></p>\n');
+    });
+
+    test('the notes of a fragment are rendered too', async () => {
+      const { html } = await render(
+        '<!-- slide -->\n\n# First\n\n<div class="fragment">A point<aside class="notes" data-markdown>*a*</aside></div>',
+      );
+      const notes = load(html)('section[data-h] .fragment aside.notes');
+
+      expect(notes.attr('data-markdown')).toBeUndefined();
+      expect(notes.html()).toBe('<p><em>a</em></p>\n');
+    });
+
+    // Under pandoc the path of the notebook is not set to the path of the
+    // note that is rendered, so where a wikilink is resolved from is what the
+    // rendering makes of it. (With the default resolution, a link is relative
+    // to the path it is resolved from, so it comes out the same from any.)
+    test('a wikilink of the notes is resolved from the path of their note: of two notes of the same name, the one next to the note', async () => {
+      const { notebook } = await notebookIn(
+        { 'a/x.md': 'a', 'pres/x.md': 'pres' },
+        'pandoc',
+        { wikiLinkResolution: 'shortest' },
+      );
+      // Under pandoc the notes of the notebook are not looked up by a
+      // rendering; they are here.
+      await notebook.refreshNotes({ dir: '.', includeSubdirectories: true });
+      const { html } = await renderFile(
+        notebook,
+        'pres/deck.md',
+        '<!-- slide -->\n\n# First\n\n<aside class="notes" data-markdown>See [[x]]</aside>',
+      );
+      const notes = load(html)('section[data-h] > aside.notes');
+
+      expect(notes.find('a').text()).toBe('x');
+      expect(notes.find('a').attr('href')).toMatch(/\/pres\/x\.md$/);
+    });
+
+    test('the path of the notebook is given back: under pandoc, the table of contents of the note rendered next is not resolved from the path of the presentation', async () => {
+      const { notebook } = await notebookIn({ 'x.md': 'x' }, 'pandoc', {
+        wikiLinkResolution: 'absolute',
+      });
+      await renderFile(
+        notebook,
+        'pres/deck.md',
+        '<!-- slide -->\n\n# First\n\n<aside class="notes" data-markdown>See [[x]]</aside>',
+      );
+      const { tocHTML } = await renderFile(notebook, 'doc.md', '# See [[x]]');
+
+      expect(tocHTML).toContain('href="x.md"');
+    });
+
+    // The notes are read once more than they were written: the HTML parser
+    // takes `<style @>` for an element, and CommonMark does not. In the page
+    // what follows it is the text of the element, and in the reading it is
+    // markup — an aside marked for markdown that was no element in the page,
+    // in the element that a note itself marks as the fragment that is
+    // current. reveal.js would render it with `marked`, into the speaker view
+    // as it is. The sanitizer takes the marker off it: reveal.js takes what
+    // it holds as the HTML it is — a link that is text, an input that is the
+    // text of a style.
+    const exposed = [
+      [
+        'a link',
+        [
+          '<aside class="notes" data-markdown>',
+          'x<style @>',
+          '',
+          '<div class="current-fragment">A<aside class="notes" data-markdown>[x](javascript:alert(1))</aside></div>',
+          '</style>',
+        ],
+        '[x](javascript:alert(1))',
+      ],
+      [
+        'an input that takes the focus',
+        [
+          '<aside class="notes" data-markdown>',
+          'x<style @>',
+          '',
+          '<div class="current-fragment">A<aside class="notes" data-markdown>',
+          '<span a="1',
+          '2"><style @>',
+          '<input autofocus onfocus=alert(1)>',
+          '</style>',
+          '</aside></div>',
+          '</style>',
+        ],
+        '<input autofocus onfocus=alert(1)>',
+      ],
+    ] as [string, string[], string][];
+
+    test.each(exposed)(
+      'an aside marked for markdown that the rendering of the notes brings out is not left to reveal.js: the %s it holds is text',
+      async (_, markup, text) => {
+        const { html } = await render(
+          `<!-- slide -->\n\n# First\n\n${markup.join('\n')}`,
+        );
+        const $ = load(html);
+        const current = $('.current-fragment aside.notes');
+
+        // The notes reveal.js takes from the fragment that is current are
+        // there, as HTML: what would run is their text.
+        expect(current).toHaveLength(1);
+        expect($('[data-markdown]')).toHaveLength(0);
+        expect(current.text()).toContain(text);
+      },
+    );
+
+    // The browser reads the page once more than the sanitizer, and in MathML
+    // that reading brings out an element that was the text of a `style`: the
+    // page is read and sanitized again there, and the marker is taken off on
+    // that reading too.
+    test('an aside marked for markdown that a reading of the page brings out is not left to reveal.js either', async () => {
+      const { html } = await render(
+        '<!-- slide -->\n\n# First\n\n<math><mtext><table><mglyph><style><!--</style><img title="--><aside class="notes" data-markdown>[x](javascript:alert(1))</aside>">',
+      );
+      const $ = load(html);
+      const notes = $('aside.notes');
+
+      // The reading brought the aside out.
+      expect(notes).toHaveLength(1);
+      expect($('[data-markdown]')).toHaveLength(0);
+      expect(notes.text()).toContain('[x](javascript:alert(1))');
+    });
   });
 });
