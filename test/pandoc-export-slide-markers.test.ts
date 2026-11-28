@@ -327,4 +327,28 @@ describe('the [toc] a pandoc export replaces', () => {
     expect(given).toContain('- [First](#first )');
     expect(given).toContain('- [Second](#second )');
   });
+
+  test('a [toc] inside a block quote is replaced there too', async () => {
+    const given = await exported(`> # First
+> [toc]
+> # Second
+`);
+
+    expect(given).not.toContain('[CROSSNOTETOC]');
+    expect(given).toContain('- [First](#first )');
+    expect(given).toContain('- [Second](#second )');
+  });
+
+  test('a [toc] in a list item stays as typed', async () => {
+    const given = await exported(`# First
+
+- [toc]
+
+# Second
+`);
+
+    expect(given).toContain('- [toc]');
+    expect(given).not.toContain('[CROSSNOTETOC]');
+    expect(given).not.toContain('- [First](#first )');
+  });
 });
