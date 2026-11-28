@@ -2280,7 +2280,17 @@ sidebarTOCBtn.addEventListener('click', function(event) {
       savePath = path.resolve(this.fileDirectoryPath, savePath);
       savePaths.push(savePath);
 
-      const response = await fetch(httpSrc);
+      let response: Response;
+      try {
+        response = await fetch(httpSrc);
+      } catch (error) {
+        // The network failed: what fetch rejects with then (`TypeError:
+        // fetch failed`) names no image. This error does, and keeps that
+        // one as its cause.
+        throw new Error(`Failed to download image from ${httpSrc}`, {
+          cause: error,
+        });
+      }
       if (!response.ok || !response.body) {
         throw new Error(`Failed to download image from ${httpSrc}`);
       }

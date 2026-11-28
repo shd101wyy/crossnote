@@ -456,6 +456,37 @@ describe('the eBook export', () => {
         }
         expect(downloadsLeft()).toEqual([]);
       });
+
+      test('says which image it could not fetch when the network fails', async () => {
+        // What fetch rejects with when the network fails: no address in it.
+        const failure = new TypeError('fetch failed', {
+          cause: new Error('getaddrinfo ENOTFOUND example.com'),
+        });
+        answerFetch((url: string) => {
+          if (url.endsWith('a.png')) {
+            throw failure;
+          }
+          return imageAt(url);
+        });
+        const { exported } = await exportEPUB([
+          imageLine(0, 'https://example.com/a.png'),
+          imageLine(1, 'https://example.com/b.png'),
+        ]);
+
+        const error: unknown = await exported.then(
+          () => undefined,
+          (reason: unknown) => reason,
+        );
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toBe(
+          'Failed to download image from https://example.com/a.png',
+        );
+        expect((error as Error).cause).toBe(failure);
+        // The export stopped there: the image that was fetched is removed
+        // again, and ebook-convert was not given the page.
+        expect(downloadsLeft()).toEqual([]);
+        expect(convert).not.toHaveBeenCalled();
+      });
     });
   });
 });
